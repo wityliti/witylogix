@@ -7,7 +7,7 @@
 <h3 align="center">Witylogix</h3>
 
 <p align="center">
-  Open-source delivery logistics for Shopify
+  Open-source delivery logistics for e-commerce
   <br />
   <a href="#getting-started"><strong>Get Started</strong></a> · <a href="https://docs.witylogix.com"><strong>Docs</strong></a> · <a href="https://github.com/witylogix/witylogix-platform/issues"><strong>Issues</strong></a> · <a href="https://discord.gg/witylogix"><strong>Discord</strong></a>
 </p>
@@ -30,29 +30,30 @@
 <br />
 
 <p align="center">
-  <img src="public/logo-banner.svg" width="600" alt="Witylogix — Open-source delivery logistics for Shopify" />
+  <img src="public/logo-banner.svg" width="600" alt="Witylogix — Open-source delivery logistics for e-commerce" />
 </p>
 
 ---
 
 ## What is Witylogix?
 
-Witylogix is a full-stack, multi-tenant delivery management platform built for the Shopify ecosystem. It gives merchants complete control over last-mile delivery — from zone-based rate calculation at checkout to real-time driver tracking and proof of delivery — without per-transaction SaaS fees.
+Witylogix is a full-stack, multi-tenant delivery management platform built for e-commerce. It gives merchants complete control over last-mile delivery — from zone-based rate calculation at checkout to real-time driver tracking and proof of delivery — without per-transaction SaaS fees.
 
-**The problem:** Shopify merchants using local delivery rely on fragmented tools, pay per-transaction fees that scale linearly with order volume, and have zero control over routing, driver workflows, or customer tracking experiences.
+**The problem:** E-commerce merchants using local delivery rely on fragmented tools, pay per-transaction fees that scale linearly with order volume, and have zero control over routing, driver workflows, or customer tracking experiences.
 
-**Our approach:** One open-source platform that handles the entire delivery lifecycle. Self-host it with `docker compose up` or use our managed cloud. Built on the 2025-2026 Shopify stack — React Router v7, Polaris Web Components, Preact extensions — so it stays current with Shopify's platform direction.
+**Our approach:** One open-source platform that handles the entire delivery lifecycle. Self-host it with `docker compose up` or use our managed cloud. Integrates with **Shopify** as a first-class platform (React Router v7, Polaris Web Components, Preact extensions) with support for more e-commerce platforms coming soon.
 
 ### Key capabilities
 
-- **Dynamic delivery rates** at Shopify checkout via the Carrier Service API (p95 < 500ms)
+- **Dynamic delivery rates** at checkout via platform-native APIs (p95 < 500ms)
 - **Zone-based pricing** with PostGIS polygon geometry — draw zones on a map, assign rates
 - **Route optimization** with distance matrix routing (Mapbox today, OSRM in Phase 2)
 - **Real-time driver tracking** over WebSockets with a customer-facing Leaflet map
 - **Driver mobile app** (React Native) with background GPS and proof-of-delivery capture
 - **Multi-channel notifications** — email (SendGrid), SMS (Twilio), WhatsApp (Meta Cloud API)
 - **Multi-tenant isolation** enforced at the database level via PostgreSQL Row-Level Security
-- **Shopify-native** — embedded admin app, checkout extensions, "Built for Shopify" ready
+- **Shopify integration** — embedded admin app, checkout extensions, Carrier Service API, "Built for Shopify" ready
+- **Platform-agnostic core** — decoupled business logic ready for WooCommerce, Magento, and custom storefronts
 
 ---
 
@@ -110,7 +111,7 @@ witylogix-platform/
 - [Node.js](https://nodejs.org) 20+
 - [pnpm](https://pnpm.io) 9+
 - [Docker](https://www.docker.com) and Docker Compose
-- A [Shopify Partner](https://partners.shopify.com) account
+- A [Shopify Partner](https://partners.shopify.com) account *(required for Shopify integration)*
 - A [Mapbox](https://www.mapbox.com) access token
 
 ### Quick start
@@ -309,6 +310,8 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] Phase 2: OSRM + OR-Tools route optimization
 - [ ] "Built for Shopify" certification
+- [ ] WooCommerce integration plugin
+- [ ] Standalone dashboard (platform-independent)
 
 ---
 
@@ -338,4 +341,3 @@ This means you can freely use, modify, and distribute the software. If you run a
   <br />
   <sub>Built with care by <a href="https://wityliti.io">Wityliti.io</a></sub>
 </p>
-# witylogix
