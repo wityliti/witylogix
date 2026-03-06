@@ -1,0 +1,16 @@
+{
+  "name": "@witylogix/checkout-ui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "shopify app build --source-map false",
+    "dev": "shopify app dev"
+  },
+  "dependencies": {
+    "preact": "^10.25.0"
+  },
+  "devDependencies": {
+    "@shopify/cli": "^3.70.0",
+    "typescript": "^5.7.0"
+  }
+}

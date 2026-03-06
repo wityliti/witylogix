@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <rect width="800" height="200" fill="white"/>
+
+  <!-- Logo mark (scaled down) -->
+  <g transform="translate(60, 100) scale(0.42)">
+    <defs>
+      <mask id="cutStar">
+        <rect x="-200" y="-200" width="400" height="400" fill="white"/>
+        <circle cx="91" cy="-53" r="52" fill="black"/>
+      </mask>
+    </defs>
+
+    <polygon points="0,-105 91,-53 91,53 0,105 -91,53 -91,-53"
+             fill="none" stroke="#2A9D8F" stroke-width="8"
+             stroke-linejoin="round"
+             mask="url(#cutStar)"/>
+
+    <g>
+      <polyline points="-38,-28 -12,0 -38,28"
+                fill="none" stroke="#2A9D8F" stroke-width="11"
+                stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+      <polyline points="-10,-28 16,0 -10,28"
+                fill="none" stroke="#2A9D8F" stroke-width="11"
+                stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+      <polyline points="18,-28 44,0 18,28"
+                fill="none" stroke="#E76F51" stroke-width="11"
+                stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+             fill="#E76F51" stroke="#E76F51" stroke-width="8"
+             stroke-linejoin="round"
+             transform="translate(91,-53)"/>
+
+    <polygon points="0,-11 2,-2 11,0 2,2 0,11 -2,2 -11,0 -2,-2"
+             fill="#E76F51" stroke="#E76F51" stroke-width="4"
+             stroke-linejoin="round"
+             transform="translate(132,-92)" opacity="0.55"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="150" y="88" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="44" font-weight="700" fill="#264653" letter-spacing="-0.5">
+    Witylogix
+  </text>
+
+  <!-- Tagline -->
+  <text x="150" y="120" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" fill="#6B7280" letter-spacing="0.5">
+    Open-source delivery logistics for Shopify
+  </text>
+</svg>

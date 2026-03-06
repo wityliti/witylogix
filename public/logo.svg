@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" fill="white"/>
+
+  <defs>
+    <mask id="cutStar">
+      <rect width="400" height="400" fill="white"/>
+      <circle cx="291" cy="147" r="52" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- Full hex outline — mask cuts clean hole at top-right vertex -->
+  <polygon points="200,95 291,147 291,253 200,305 109,253 109,147"
+           fill="none" stroke="#2A9D8F" stroke-width="8"
+           stroke-linejoin="round"
+           mask="url(#cutStar)"/>
+
+  <!-- 3 chevrons inside — SMALLER -->
+  <g transform="translate(200,200)">
+    <polyline points="-38,-28 -12,0 -38,28"
+              fill="none" stroke="#2A9D8F" stroke-width="11"
+              stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+    <polyline points="-10,-28 16,0 -10,28"
+              fill="none" stroke="#2A9D8F" stroke-width="11"
+              stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+    <polyline points="18,-28 44,0 18,28"
+              fill="none" stroke="#E76F51" stroke-width="11"
+              stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- BIG 4-point star — blunt tips -->
+  <polygon points="0,-22 5,-5 22,0 5,5 0,22 -5,5 -22,0 -5,-5"
+           fill="#E76F51" stroke="#E76F51" stroke-width="8"
+           stroke-linejoin="round"
+           transform="translate(291,147)"/>
+
+  <!-- Small star floating away -->
+  <polygon points="0,-11 2,-2 11,0 2,2 0,11 -2,2 -11,0 -2,-2"
+           fill="#E76F51" stroke="#E76F51" stroke-width="4"
+           stroke-linejoin="round"
+           transform="translate(332,108)" opacity="0.55"/>
+
+</svg>

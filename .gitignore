@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+.turbo/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sql.bak
+
+# OSRM data (large binary files)
+infra/osrm/*.osm.pbf
+infra/osrm/*.osrm*
+
+# Coverage
+coverage/
+
+# Docker
+docker-compose.override.yml
+
+# Prisma
+packages/db/prisma/migrations/**/migration_lock.toml

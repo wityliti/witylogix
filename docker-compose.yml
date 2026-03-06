@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL 16 with PostGIS ───────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: witylogix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: witylogix
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_dev}
+      POSTGRES_DB: witylogix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U witylogix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis 7 ──────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: witylogix-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── OSRM (Route Engine) — PHASE 2 ──────────────────────
+  # Phase 1 uses Mapbox APIs. Enable this in Phase 2 for zero-cost routing.
+  # Pre-process OSM data before first run:
+  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-extract -p /opt/car.lua /data/region.osm.pbf
+  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-partition /data/region.osrm
+  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-customize /data/region.osrm
+  # Then: docker compose --profile phase2 up
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: witylogix-osrm
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld /data/region.osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./infra/osrm:/data
+    profiles:
+      - phase2  # Phase 2 only: docker compose --profile phase2 up
+
+  # ─── BullMQ Board (Queue Dashboard) ──────────────────────
+  bull-board:
+    image: deadly0/bull-board:latest
+    container_name: witylogix-bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3100:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles:
+      - tools  # Only start with: docker compose --profile tools up
+
+volumes:
+  postgres_data:
+  redis_data:

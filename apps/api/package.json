@@ -1,0 +1,37 @@
+{
+  "name": "@witylogix/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.0",
+    "@fastify/helmet": "^12.0.0",
+    "@fastify/jwt": "^9.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@fastify/sensible": "^6.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "@socket.io/redis-adapter": "^8.3.0",
+    "@witylogix/core": "workspace:*",
+    "@witylogix/db": "workspace:*",
+    "@witylogix/types": "workspace:*",
+    "@witylogix/validators": "workspace:*",
+    "bullmq": "^5.25.0",
+    "dotenv": "^16.4.0",
+    "fastify": "^5.1.0",
+    "ioredis": "^5.4.0",
+    "pino": "^9.5.0",
+    "socket.io": "^4.8.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
