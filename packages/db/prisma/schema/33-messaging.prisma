@@ -1,0 +1,124 @@
+// ─── UNIFIED MESSAGING ─────────────────────────────────────
+// Multi-channel message delivery tracking and template management.
+// Supports: Email, SMS, WhatsApp, Push, In-App
+//
+// Architecture:
+//   Message: single message instance with delivery tracking
+//   MessageTemplate: reusable templates with variable substitution
+//   WhatsAppConfig: tenant-specific WhatsApp configuration
+
+// ─── MESSAGE ───────────────────────────────────────────────
+// Single message instance with full delivery lifecycle tracking.
+// Status transitions: queued → sending → sent/failed
+// Delivery status: sent → delivered/bounced/opened/clicked
+
+model Message {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  shopId    String?   @map("shop_id") @db.Uuid
+  channel   MessageChannel
+  recipient String
+  sender    String?
+  subject   String? // Email only
+  body      String
+  templateId String?  @map("template_id") @db.Uuid
+  status    MessageDeliveryStatus @default(QUEUED)
+  priority  MessagePriority @default(NORMAL)
+  externalId String?  @map("external_id") // Provider-specific message ID
+  sentAt    DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  failedAt  DateTime? @map("failed_at")
+  error     String?
+  retryCount Int     @default(0) @map("retry_count")
+  metadata  Json?    // Provider metadata, delivery receipts, etc.
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shop      Shop?   @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  template  MessageTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, channel, status])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([externalId])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("messages")
+}
+
+// ─── MESSAGE TEMPLATE ───────────────────────────────────────
+// Reusable message templates with variable substitution.
+// Supports {{variable}} syntax in body and subject.
+// Templates can be channel-specific or generic.
+
+model MessageTemplate {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  shopId    String?   @map("shop_id") @db.Uuid
+  channel   MessageChannel
+  name      String    // Template identifier (e.g., "order_confirmation")
+  subject   String?   // Email subject template
+  body      String    // Template body with {{variable}} placeholders
+  variables Json      @default("[]") // Array of variable names
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shop    Shop?     @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@unique([tenantId, channel, name])
+  @@index([tenantId, channel, isActive])
+  @@map("message_templates")
+}
+
+// ─── WHATSAPP CONFIGURATION ────────────────────────────────
+// Tenant-specific WhatsApp business account configuration.
+// Stores credentials and webhook settings for Meta Cloud API.
+
+model WhatsAppConfig {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String    @unique @map("tenant_id") @db.Uuid
+  shopId              String?   @map("shop_id") @db.Uuid
+  phoneNumberId       String    @map("phone_number_id") // Meta WhatsApp phone number ID
+  businessAccountId   String    @map("business_account_id") // Meta business account ID
+  accessToken         String    // Encrypted reference to secret management
+  webhookSecret       String?   @map("webhook_secret") // For webhook signature verification
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  shop Shop?  @relation(fields: [shopId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, isActive])
+  @@map("whatsapp_configs")
+}
+
+// ─── ENUMS ─────────────────────────────────────────────────
+
+enum MessageChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+  IN_APP
+}
+
+enum MessageDeliveryStatus {
+  QUEUED       // Waiting to be sent
+  SENDING      // Currently being sent to provider
+  SENT         // Accepted by provider
+  DELIVERED    // Confirmed delivered (provider-dependent)
+  FAILED       // Permanent failure after retries
+  BOUNCED      // Email/SMS bounced
+  OPENED       // Email opened
+  CLICKED      // Email link clicked or push tapped
+}
+
+enum MessagePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}

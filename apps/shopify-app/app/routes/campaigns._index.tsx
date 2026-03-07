@@ -8,12 +8,11 @@ import {
   Select,
   TextField,
   Box,
-  DataTable,
+  IndexTable,
   Badge,
   InlineStack,
   BlockStack,
   Text,
-  Icon,
 } from '@shopify/polaris';
 
 interface Campaign {
@@ -30,23 +29,6 @@ interface Campaign {
   bounced: number;
   audienceSize: number;
 }
-
-const getStatusColor = (status: string): 'critical' | 'success' | 'warning' | undefined => {
-  switch (status) {
-    case 'draft':
-      return undefined;
-    case 'scheduled':
-      return 'warning';
-    case 'active':
-      return 'success';
-    case 'completed':
-      return undefined;
-    case 'paused':
-      return 'critical';
-    default:
-      return undefined;
-  }
-};
 
 export default function CampaignsIndex() {
   const navigate = useNavigate();
@@ -127,16 +109,69 @@ export default function CampaignsIndex() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const rows = filteredCampaigns.map((campaign) => [
-    campaign.name,
-    campaign.type.toUpperCase(),
-    campaign.status,
-    campaign.sent.toString(),
-    campaign.delivered.toString(),
-    campaign.opened.toString(),
-    campaign.clicked.toString(),
-    `${campaign.audienceSize.toLocaleString()}`,
-  ]);
+  const resourceName = {
+    singular: 'campaign',
+    plural: 'campaigns',
+  };
+
+  const getStatusTone = (status: string): 'success' | 'warning' | 'critical' | 'info' => {
+    switch (status) {
+      case 'draft':
+        return 'info';
+      case 'scheduled':
+        return 'warning';
+      case 'active':
+        return 'success';
+      case 'completed':
+        return 'success';
+      case 'paused':
+        return 'critical';
+      default:
+        return 'info';
+    }
+  };
+
+  const rowMarkup = filteredCampaigns.map(
+    ({ id, name, type, status, sent, delivered, opened, clicked, audienceSize }, index) => (
+      <IndexTable.Row
+        id={id}
+        key={id}
+        position={index}
+        onClick={() => navigate(`/app/campaigns/${id}`)}
+      >
+        <IndexTable.Cell>
+          <Text variant="bodyMd" as="span" fontWeight="semibold">
+            {name}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Badge tone="info">
+            {type.toUpperCase()}
+          </Badge>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Badge tone={getStatusTone(status)}>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </Badge>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {sent.toString()}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {delivered.toString()}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {opened.toString()}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {clicked.toString()}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {audienceSize.toLocaleString()}
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    )
+  );
 
   return (
     <Page
@@ -204,11 +239,23 @@ export default function CampaignsIndex() {
             </Card>
           ) : (
             <Card>
-              <DataTable
-                columnContentTypes={['text', 'text', 'text', 'numeric', 'numeric', 'numeric', 'numeric', 'numeric']}
-                headings={['Name', 'Type', 'Status', 'Sent', 'Delivered', 'Opened', 'Clicked', 'Audience']}
-                rows={rows}
-              />
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={filteredCampaigns.length}
+                headings={[
+                  { title: 'Name' },
+                  { title: 'Type' },
+                  { title: 'Status' },
+                  { title: 'Sent' },
+                  { title: 'Delivered' },
+                  { title: 'Opened' },
+                  { title: 'Clicked' },
+                  { title: 'Audience' },
+                ]}
+                selectable={false}
+              >
+                {rowMarkup}
+              </IndexTable>
             </Card>
           )}
         </Layout.Section>

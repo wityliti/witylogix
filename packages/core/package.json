@@ -41,7 +41,12 @@
     "./analytics": "./src/analytics/index.ts",
     "./shipping-profiles": "./src/shipping-profiles/index.ts",
     "./queue": "./src/queue/index.ts",
-    "./spatial": "./src/spatial/index.ts"
+    "./spatial": "./src/spatial/index.ts",
+    "./rbac": "./src/rbac/index.ts",
+    "./audit": "./src/audit/index.ts",
+    "./logging": "./src/logging/index.ts",
+    "./encryption": "./src/encryption/index.ts",
+    "./messaging": "./src/messaging/index.ts"
   },
   "scripts": {
     "build": "tsc",
