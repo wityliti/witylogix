@@ -1,6 +1,11 @@
-import { Header } from "../../components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
+"use client";
+
+import { useState } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/ui/stat-card";
 import Link from "next/link";
 import {
   Settings,
@@ -9,7 +14,12 @@ import {
   Users,
   Bell,
   CreditCard,
+  Lock,
   ArrowRight,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 
 interface SettingsSection {
@@ -19,134 +29,201 @@ interface SettingsSection {
   icon: React.ReactNode;
   href: string;
   badge?: string;
+  badgeVariant?: "default" | "success" | "warning" | "danger" | "info" | "primary";
 }
 
 const settingsSections: SettingsSection[] = [
   {
     id: "general",
     title: "General Settings",
-    description:
-      "Configure tenant information, timezone, currency, and business hours",
+    description: "Configure store name, domain, timezone, language, and currency",
     icon: <Settings className="w-6 h-6" />,
     href: "/settings/general",
   },
   {
+    id: "auth",
+    title: "Authentication",
+    description: "Set up SSO providers, MFA, and security protocols",
+    icon: <Lock className="w-6 h-6" />,
+    href: "/settings/auth-providers",
+    badge: "Connected",
+    badgeVariant: "success",
+  },
+  {
     id: "api-keys",
     title: "API Keys",
-    description: "Manage API keys, scopes, and integrate with external systems",
+    description: "Manage API keys, scopes, and integration credentials",
     icon: <Key className="w-6 h-6" />,
     href: "/settings/api-keys",
     badge: "3 Active",
+    badgeVariant: "info",
   },
   {
     id: "branding",
     title: "Branding",
-    description:
-      "Customize colors, logo, and branded communication templates",
+    description: "Customize logo, colors, and tracking page appearance",
     icon: <Palette className="w-6 h-6" />,
     href: "/settings/branding",
   },
   {
+    id: "notifications",
+    title: "Notifications",
+    description: "Configure email, SMS, WhatsApp, and push notification providers",
+    icon: <Bell className="w-6 h-6" />,
+    href: "/settings/notifications-config",
+    badge: "BYOK Ready",
+    badgeVariant: "primary",
+  },
+  {
     id: "team",
     title: "Team Members",
-    description: "Invite team members, manage roles, and permissions",
+    description: "Invite teammates, manage roles, and set permissions",
     icon: <Users className="w-6 h-6" />,
     href: "/settings/team",
     badge: "5 Members",
-  },
-  {
-    id: "notifications",
-    title: "Notifications",
-    description: "Configure notification channels and event preferences",
-    icon: <Bell className="w-6 h-6" />,
-    href: "/settings/notifications-config",
+    badgeVariant: "info",
   },
   {
     id: "billing",
     title: "Billing & Plans",
-    description: "Manage subscription, invoices, and payment methods",
+    description: "View current plan, usage metrics, and upgrade options",
     icon: <CreditCard className="w-6 h-6" />,
     href: "/settings/billing",
     badge: "Pro Plan",
+    badgeVariant: "success",
   },
 ];
 
-export default function SettingsPage() {
+const statusCards = [
+  {
+    label: "Account Status",
+    value: "Active",
+    description: "Pro plan active since Jan 2025",
+    icon: <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)" }} />,
+  },
+  {
+    label: "API Usage",
+    value: "2.4M / 10M",
+    description: "24% of monthly quota",
+    icon: <AlertCircle className="w-5 h-5" style={{ color: "var(--wl-warning)" }} />,
+  },
+  {
+    label: "Team Members",
+    value: "5 / 10",
+    description: "2 pending invitations",
+    icon: <Users className="w-5 h-5" style={{ color: "var(--wl-primary)" }} />,
+  },
+];
+
+export default function SettingsHub() {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
       <Header title="Settings" subtitle="Manage your account and workspace configuration" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          <Card className="border-l-4 border-l-[var(--wl-primary)]">
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-[var(--wl-text-secondary)]">
-                Account Status
-              </div>
-              <div className="text-2xl font-bold text-[var(--wl-text-primary)] mt-2">
-                Active
-              </div>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
-                Pro plan active since Jan 2025
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-[var(--wl-success)]">
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-[var(--wl-text-secondary)]">
-                API Usage
-              </div>
-              <div className="text-2xl font-bold text-[var(--wl-text-primary)] mt-2">
-                2.4M / 10M
-              </div>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
-                24% of monthly quota
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-[var(--wl-warning)]">
-            <CardContent className="pt-6">
-              <div className="text-sm font-medium text-[var(--wl-text-secondary)]">
-                Team Members
-              </div>
-              <div className="text-2xl font-bold text-[var(--wl-text-primary)] mt-2">
-                5 / 10
-              </div>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
-                2 pending invitations
-              </p>
-            </CardContent>
-          </Card>
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2rem 1rem" }}>
+        {/* Quick Status Cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "1.5rem",
+            marginBottom: "3rem",
+          }}
+        >
+          {statusCards.map((card, idx) => (
+            <Card key={idx} style={{ borderLeft: "4px solid var(--wl-primary)" }}>
+              <CardContent style={{ paddingTop: "1.5rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                  <div>
+                    <div style={{ fontSize: "0.875rem", fontWeight: "500", color: "var(--wl-text-secondary)" }}>
+                      {card.label}
+                    </div>
+                    <div style={{ fontSize: "1.875rem", fontWeight: "700", color: "var(--wl-text-primary)", marginTop: "0.5rem" }}>
+                      {card.value}
+                    </div>
+                  </div>
+                  {card.icon}
+                </div>
+                <p style={{ fontSize: "0.75rem", color: "var(--wl-text-tertiary)" }}>{card.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Settings Sections Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Settings Sections Header */}
+        <div style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: "700", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            Settings Sections
+          </h2>
+          <p style={{ color: "var(--wl-text-secondary)", fontSize: "0.95rem" }}>
+            Manage all aspects of your Witylogix workspace
+          </p>
+        </div>
+
+        {/* Settings Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+            gap: "1.5rem",
+            marginBottom: "3rem",
+          }}
+        >
           {settingsSections.map((section) => (
-            <Link key={section.id} href={section.href}>
-              <Card className="h-full hover:border-[var(--wl-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group">
+            <Link key={section.id} href={section.href} style={{ textDecoration: "none" }}>
+              <Card
+                style={{
+                  height: "100%",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  borderColor: expandedSection === section.id ? "var(--wl-primary)" : "var(--wl-border)",
+                  boxShadow: expandedSection === section.id ? "0 10px 30px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.05)",
+                }}
+                onMouseEnter={() => setExpandedSection(section.id)}
+                onMouseLeave={() => setExpandedSection(null)}
+              >
                 <CardHeader>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="p-2 rounded-lg bg-[var(--wl-bg-tertiary)] group-hover:bg-[var(--wl-primary)] group-hover:text-white transition-colors">
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+                    <div
+                      style={{
+                        padding: "0.5rem",
+                        borderRadius: "0.5rem",
+                        backgroundColor: "var(--wl-bg-tertiary)",
+                        color: expandedSection === section.id ? "var(--wl-bg-primary)" : "var(--wl-text-primary)",
+                        background: expandedSection === section.id ? "var(--wl-primary)" : "var(--wl-bg-tertiary)",
+                        transition: "all 0.3s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       {section.icon}
                     </div>
                     {section.badge && (
-                      <span className="text-xs font-semibold px-2 py-1 rounded-full bg-[var(--wl-primary)]/10 text-[var(--wl-primary)]">
+                      <Badge variant={section.badgeVariant || "default"}>
                         {section.badge}
-                      </span>
+                      </Badge>
                     )}
                   </div>
-                  <CardTitle className="text-lg">{section.title}</CardTitle>
+                  <CardTitle style={{ fontSize: "1.125rem", marginBottom: "0.25rem" }}>{section.title}</CardTitle>
+                  <CardDescription>{section.description}</CardDescription>
                 </CardHeader>
+
                 <CardContent>
-                  <p className="text-sm text-[var(--wl-text-secondary)] mb-6">
-                    {section.description}
-                  </p>
-                  <div className="flex items-center text-[var(--wl-primary)] group-hover:translate-x-1 transition-transform">
-                    <span className="text-sm font-medium">Open settings</span>
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      color: "var(--wl-primary)",
+                      gap: "0.5rem",
+                      transition: "all 0.3s ease",
+                      transform: expandedSection === section.id ? "translateX(4px)" : "translateX(0)",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>Open settings</span>
+                    <ChevronRight className="w-4 h-4" />
                   </div>
                 </CardContent>
               </Card>
@@ -154,26 +231,83 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* Help Section */}
-        <Card className="mt-12 bg-[var(--wl-bg-tertiary)] border-0">
-          <CardContent className="pt-8">
-            <h3 className="text-lg font-semibold text-[var(--wl-text-primary)] mb-2">
+        {/* Information Sections */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
+          {/* Security Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.125rem" }}>Security & Compliance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
+                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+                    Two-factor authentication enabled
+                  </span>
+                </li>
+                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
+                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+                    SSO configured (Auth0)
+                  </span>
+                </li>
+                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
+                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+                    GDPR & SOC2 compliant
+                  </span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ fontSize: "1.125rem" }}>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                  <Clock className="w-5 h-5" style={{ color: "var(--wl-info)", marginTop: "2px", flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: "0.9rem", color: "var(--wl-text-primary)", fontWeight: "500" }}>
+                      API key created
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--wl-text-tertiary)" }}>
+                      2 hours ago
+                    </div>
+                  </div>
+                </li>
+                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                  <Clock className="w-5 h-5" style={{ color: "var(--wl-info)", marginTop: "2px", flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: "0.9rem", color: "var(--wl-text-primary)", fontWeight: "500" }}>
+                      Team member added
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--wl-text-tertiary)" }}>
+                      1 day ago
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Help & Support */}
+        <Card style={{ background: "var(--wl-bg-tertiary)", border: "none" }}>
+          <CardContent style={{ paddingTop: "2rem" }}>
+            <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
               Need Help?
             </h3>
-            <p className="text-sm text-[var(--wl-text-secondary)] mb-6">
-              Can't find what you're looking for? Check our documentation or
-              contact our support team.
+            <p style={{ fontSize: "0.875rem", color: "var(--wl-text-secondary)", marginBottom: "1.5rem" }}>
+              Can't find what you're looking for? Check our documentation or contact our support team for immediate assistance.
             </p>
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                className="border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)]"
-              >
-                View Documentation
-              </Button>
-              <Button className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90">
-                Contact Support
-              </Button>
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <Button variant="secondary">View Documentation</Button>
+              <Button variant="primary">Contact Support</Button>
             </div>
           </CardContent>
         </Card>

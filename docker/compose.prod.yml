@@ -1,0 +1,149 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: witylogix
+      POSTGRES_USER: ${DB_USER:-witylogix}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-witylogix}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-witylogix}:${DB_PASSWORD}@postgres:5432/witylogix
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:?required}
+      NODE_ENV: production
+      PORT: 3001
+      LOG_LEVEL: info
+    ports:
+      - "3001:3001"
+    networks:
+      - witylogix-network
+    labels:
+      com.witylogix.service: "api"
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/dashboard.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:3001
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    networks:
+      - witylogix-network
+    labels:
+      com.witylogix.service: "dashboard"
+
+  shopify-app:
+    build:
+      context: ..
+      dockerfile: docker/shopify-app.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_URL: http://api:3001
+      SHOPIFY_API_KEY: ${SHOPIFY_API_KEY:?required}
+      SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET:?required}
+      NODE_ENV: production
+    ports:
+      - "3002:3002"
+    networks:
+      - witylogix-network
+    labels:
+      com.witylogix.service: "shopify-app"
+
+  # BullMQ worker
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-witylogix}:${DB_PASSWORD}@postgres:5432/witylogix
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      NODE_ENV: production
+      LOG_LEVEL: info
+    networks:
+      - witylogix-network
+    labels:
+      com.witylogix.service: "worker"
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - dashboard
+      - shopify-app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - witylogix-network
+    labels:
+      com.witylogix.service: "nginx"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  witylogix-network:
+    driver: bridge

@@ -4,6 +4,25 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 2.8 — Auth Providers, Admin Panel & Production Deploy (2026-03-07)
+
+#### Added
+
+- **Auth provider abstraction** — BYOK auth system with provider registry, 7 providers (Local, Auth0, Clerk, Cognito, Firebase Auth, Generic OIDC, SAML 2.0), tenant override with deployer fallback, metered usage tracking (`packages/core/src/auth/`)
+- **ADR-008** — Architecture Decision Record for auth provider abstraction with options analysis, 4-phase implementation roadmap, and 7 monitoring KPIs (`docs/adr/ADR-008-auth-provider-abstraction.md`)
+- **POS integration** — Point-of-sale checkout with multi-provider support (Shopify POS, Square, Custom), 3 delivery modes (local, in-store pickup, curbside), custom form builder with 8 field types (`packages/core/src/pos/`)
+- **API hardening** — Standardized error handler (8 error classes, Prisma/Zod mapping), token-bucket rate limiter (tier-based: FREE→ENTERPRISE), request validator with XSS protection, OpenAPI 3.0 spec generator with Swagger UI (`packages/core/src/api-hardening/`)
+- **Platform admin panel** — Admin dashboard overview, user management (suspend/restore/impersonate), customer management across stores, store health monitoring (4 new dashboard pages)
+- **Activity log redesign** — Timeline/table dual views, advanced filters, expandable diff viewer, CSV export, real-time indicator
+- **Settings hub redesign** — 7-section settings with left sidebar navigation, auth provider config UI, security checklist
+- **Standard delivery workflow** — Orders/Shipments/Carriers management with batch actions
+- **Dashboard pages:** admin overview, admin users, admin customers, activity log (redesigned), settings hub (redesigned), settings/auth-providers, delivery/standard (7 new/redesigned pages, 64 total)
+- **API routes:** auth providers (10 endpoints), POS (10), admin platform (13), API hardening middleware — 33 new endpoints (total 75+)
+- **Shopify routes:** auth-providers config, POS index, POS detail (Polaris v13)
+- **Prisma modules:** 39-auth-providers (AuthProvider, ExternalAuthSession, AuthMeterEvent), 40-pos-integration (PosConfig, PosOrder, PosCustomForm) — 30 total schemas
+- **Docker production stack** — Multi-stage Dockerfiles (API, Dashboard, Shopify), compose.prod.yml with 8 services (Postgres+PostGIS, Redis, API, Dashboard, Shopify, Worker, Nginx), nginx reverse proxy with WebSocket support, docker-entrypoint with migrations
+- **6 new test suites:** auth provider registry, POS manager, error handler, rate limiter, request validator, admin API (57 total)
+
 ### Sprint 2.7 — Billing, Delivery Workflow & Polish (2026-03-07)
 
 #### Added

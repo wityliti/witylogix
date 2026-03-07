@@ -51,7 +51,10 @@
     "./collections": "./src/collections/index.ts",
     "./support": "./src/support/index.ts",
     "./saved-views": "./src/saved-views/index.ts",
-    "./widgets": "./src/widgets/index.ts"
+    "./widgets": "./src/widgets/index.ts",
+    "./auth": "./src/auth/index.ts",
+    "./pos": "./src/pos/index.ts",
+    "./api-hardening": "./src/api-hardening/index.ts"
   },
   "scripts": {
     "build": "tsc",

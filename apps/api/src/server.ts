@@ -146,6 +146,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(import("./routes/shops.js"), { prefix: "/api/v4/shops" });
   await app.register(import("./routes/orgs.js"), { prefix: "/api/v4/orgs" });
   await app.register(import("./routes/auth.js"), { prefix: "/api/v4/auth" });
+  await app.register(import("./routes/admin.js"), { prefix: "/api/v4/admin" });
+  await app.register(import("./routes/auth-providers.js"), { prefix: "/api/v4/auth-providers" });
   await app.register(import("./routes/users.js"), { prefix: "/api/v4/users" });
   await app.register(import("./routes/integrations.js"), { prefix: "/api/v4/integrations" });
   await app.register(import("./routes/shipments.js"), { prefix: "/api/v4/shipments" });
@@ -170,6 +172,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(import("./routes/feature-requests.js"), { prefix: "/api/v4/support/feature-requests" });
   await app.register(import("./routes/saved-views.js"), { prefix: "/api/v4/views" });
   await app.register(import("./routes/widget-config.js"), { prefix: "/api/v4/widgets" });
+  await app.register(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
   await app.register(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
