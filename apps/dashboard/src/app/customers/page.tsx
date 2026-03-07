@@ -6,6 +6,7 @@ import { StatCard } from "../../components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOMERS PAGE — Customer management with Shopify sync
@@ -261,16 +262,9 @@ export default function CustomersPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Stats Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Customers"
             value={CUSTOMERS.length}
@@ -302,17 +296,9 @@ export default function CustomersPage() {
         </div>
 
         {/* Filters Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex gap-4 mb-5 items-center flex-wrap">
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className="flex-1 flex-grow-0 w-[300px] max-w-96">
             <input
               type="text"
               placeholder="Search customers, email, phone..."
@@ -321,22 +307,12 @@ export default function CustomersPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
             />
           </div>
 
           {/* Status Filter */}
-          <div style={{ display: "flex", gap: 4 }}>
+          <div className="flex gap-1">
             {(["all", "active", "inactive"] as const).map((status) => (
               <button
                 key={status}
@@ -344,20 +320,13 @@ export default function CustomersPage() {
                   setStatusFilter(status);
                   setCurrentPage(1);
                 }}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-full)",
-                  border: "1px solid",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                  background: statusFilter === status ? "var(--wl-primary-500)" : "transparent",
-                  color: statusFilter === status ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  borderColor: statusFilter === status ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  textTransform: "capitalize",
-                }}
+                className={cn(
+                  "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast",
+                  statusFilter === status
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default",
+                  "capitalize"
+                )}
               >
                 {status === "all" ? "All Statuses" : status}
               </button>
@@ -371,17 +340,7 @@ export default function CustomersPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            style={{
-              padding: "var(--wl-space-1) var(--wl-space-3)",
-              background: "var(--wl-bg-elevated)",
-              border: "1px solid var(--wl-border-default)",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-primary)",
-              fontSize: "var(--wl-text-sm)",
-              fontFamily: "var(--wl-font-sans)",
-              cursor: "pointer",
-              outline: "none",
-            }}
+            className="p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans cursor-pointer outline-none"
           >
             <option value="name">Sort by Name</option>
             <option value="totalSpent">Sort by Total Spent</option>
@@ -391,10 +350,10 @@ export default function CustomersPage() {
         </div>
 
         {/* Segments Overview */}
-        <Card style={{ marginBottom: "var(--wl-space-5)", padding: "var(--wl-space-4)" }}>
-          <div style={{ display: "flex", gap: "var(--wl-space-4)", flexWrap: "wrap", alignItems: "center" }}>
+        <Card className="mb-5 p-4">
+          <div className="flex gap-4 flex-wrap items-center">
             <div>
-              <h3 style={{ margin: 0, fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+              <h3 className="m-0 text-sm font-semibold text-wl-text-primary">
                 Customer Segments
               </h3>
             </div>
@@ -408,25 +367,19 @@ export default function CustomersPage() {
                     setSegmentFilter(isActive ? "all" : segment);
                     setCurrentPage(1);
                   }}
-                  style={{
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    background: isActive ? "var(--wl-primary-500)" : "transparent",
-                    color: isActive ? "var(--wl-text-inverse)" : "var(--wl-text-secondary)",
-                    borderColor: isActive ? "var(--wl-primary-500)" : "var(--wl-border-subtle)",
-                    textTransform: "capitalize",
-                  }}
+                  className={cn(
+                    "p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans",
+                    isActive
+                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                      : "bg-transparent text-wl-text-secondary border-wl-border-subtle",
+                    "capitalize"
+                  )}
                 >
                   {segment === "vip" && "VIP (10+)"}
                   {segment === "regular" && "Regular (3-9)"}
                   {segment === "new" && "New (1-2)"}
                   {segment === "inactive" && "Inactive"}
-                  <span style={{ marginLeft: 6, opacity: 0.7 }}>({count})</span>
+                  <span className="ml-1.5 opacity-70">({count})</span>
                 </button>
               );
             })}
@@ -434,50 +387,39 @@ export default function CustomersPage() {
         </Card>
 
         {/* Customers Table */}
-        <Card style={{ overflow: "hidden", padding: 0 }}>
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "var(--wl-text-sm)",
-              }}
-            >
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
               <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid var(--wl-border-subtle)",
-                    background: "var(--wl-bg-overlay)",
-                  }}
-                >
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Name
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Email
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Phone
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Orders
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "right", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">
                     Total Spent
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Last Order
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Shopify ID
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Status
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                     Synced
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                     Actions
                   </th>
                 </tr>
@@ -486,43 +428,42 @@ export default function CustomersPage() {
                 {paginatedItems.map((customer, idx) => (
                   <tr
                     key={customer.id}
-                    style={{
-                      borderBottom: "1px solid var(--wl-border-subtle)",
-                      background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
-                      transition: "background var(--wl-duration-fast)",
-                    }}
+                    className={cn(
+                      "border-b border-wl-border-subtle transition-colors duration-fast",
+                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay"
+                    )}
                   >
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
                       {customer.name}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-wl-text-secondary">
                       {customer.email}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-wl-text-secondary">
                       {customer.phone}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-primary)", fontWeight: 600 }}>
+                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
                       {customer.ordersCount}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "right", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                    <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">
                       {formatCurrency(customer.totalSpent)}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-center text-wl-text-secondary">
                       {formatDate(customer.lastOrderDate)}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-tertiary)", fontSize: "var(--wl-text-xs)" }}>
+                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
                       {customer.shopifyId.split("/").pop()}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
+                    <td className="p-3 px-4 text-center">
                       <Badge variant={customer.status === "active" ? "success" : "default"}>
                         {customer.status}
                       </Badge>
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-tertiary)", fontSize: "var(--wl-text-xs)" }}>
+                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
                       {formatDateTime(customer.syncedAt)}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
-                      <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+                    <td className="p-3 px-4 text-center">
+                      <div className="flex gap-1 justify-center">
                         <Button variant="secondary" size="sm">
                           View
                         </Button>
@@ -538,22 +479,11 @@ export default function CustomersPage() {
           </div>
 
           {/* Pagination */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "var(--wl-space-4)",
-              borderTop: "1px solid var(--wl-border-subtle)",
-              background: "var(--wl-bg-overlay)",
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-text-secondary)",
-            }}
-          >
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>
-            <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+            <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -562,7 +492,7 @@ export default function CustomersPage() {
               >
                 Previous
               </Button>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+              <div className="flex items-center gap-2">
                 <span>Page {currentPage} of {totalPages}</span>
               </div>
               <Button

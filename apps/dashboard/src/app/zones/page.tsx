@@ -1,10 +1,10 @@
 "use client";
 
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { Header } from "../../components/layout/header";
+import { Card, CardHeader, CardTitle } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { formatCurrency } from "../../lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    ZONES PAGE — Delivery zone management with pricing
@@ -28,34 +28,27 @@ export default function ZonesPage() {
         actions={<Button variant="primary" size="md">+ Create Zone</Button>}
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: "var(--wl-space-4)" }}>
+      <div className="p-6">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-4">
           {ZONES.map((zone, i) => (
             <Card
               key={zone.id}
               hover
-              className="wl-animate-in"
+              className="wl-animate-in relative overflow-hidden"
               style={{
-                position: "relative",
-                overflow: "hidden",
                 opacity: zone.isActive ? 1 : 0.6,
                 animationDelay: `${i * 60}ms`,
               }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: zone.color }} />
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: zone.color }} />
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--wl-space-4)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-3">
                   <div
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: zone.color,
-                      flexShrink: 0,
-                    }}
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ background: zone.color }}
                   />
-                  <span style={{ fontSize: "var(--wl-text-md)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+                  <span className="text-base font-bold text-wl-text-primary">
                     {zone.name}
                   </span>
                 </div>
@@ -65,51 +58,41 @@ export default function ZonesPage() {
               </div>
 
               {/* Pricing Grid */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "var(--wl-space-3)",
-                  padding: "var(--wl-space-3)",
-                  background: "var(--wl-bg-surface)",
-                  borderRadius: "var(--wl-radius-md)",
-                  marginBottom: "var(--wl-space-4)",
-                }}
-              >
+              <div className="grid grid-cols-2 gap-3 p-3 bg-wl-bg-surface rounded-md mb-4">
                 <div>
-                  <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 2 }}>Base Rate</div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <div className="text-[10px] text-wl-text-tertiary mb-0.5">Base Rate</div>
+                  <div className="text-sm font-bold font-mono text-wl-text-primary">
                     {formatCurrency(zone.baseRate)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 2 }}>Per KM</div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <div className="text-[10px] text-wl-text-tertiary mb-0.5">Per KM</div>
+                  <div className="text-sm font-bold font-mono text-wl-text-primary">
                     {formatCurrency(zone.perKmRate)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 2 }}>Min Order</div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <div className="text-[10px] text-wl-text-tertiary mb-0.5">Min Order</div>
+                  <div className="text-sm font-bold font-mono text-wl-text-primary">
                     {formatCurrency(zone.minOrder)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 2 }}>Free Above</div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: zone.freeAbove ? "var(--wl-success-400)" : "var(--wl-text-tertiary)" }}>
+                  <div className="text-[10px] text-wl-text-tertiary mb-0.5">Free Above</div>
+                  <div className={`text-sm font-bold font-mono ${zone.freeAbove ? "text-wl-success-400" : "text-wl-text-tertiary"}`}>
                     {zone.freeAbove ? formatCurrency(zone.freeAbove) : "—"}
                   </div>
                 </div>
               </div>
 
               {/* Activity */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: "var(--wl-space-4)" }}>
-                  <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
-                    <strong style={{ color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)" }}>{zone.ordersToday}</strong> orders today
+              <div className="flex justify-between items-center">
+                <div className="flex gap-4">
+                  <span className="text-xs text-wl-text-tertiary">
+                    <strong className="text-wl-text-secondary font-mono">{zone.ordersToday}</strong> orders today
                   </span>
-                  <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
-                    <strong style={{ color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)" }}>{zone.drivers}</strong> drivers
+                  <span className="text-xs text-wl-text-tertiary">
+                    <strong className="text-wl-text-secondary font-mono">{zone.drivers}</strong> drivers
                   </span>
                 </div>
                 <Button variant="ghost" size="sm">Edit</Button>

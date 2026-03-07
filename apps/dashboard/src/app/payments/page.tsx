@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 
 interface Payment {
   id: string;
@@ -365,7 +365,6 @@ export default function PaymentsPage() {
 
   const handleRefund = () => {
     if (selectedPayment && selectedPayment.status === "COMPLETED") {
-      // Simulate refund
       const refund: Payment = {
         id: `pay-${Date.now()}`,
         shipmentId: selectedPayment.shipmentId,
@@ -470,9 +469,9 @@ export default function PaymentsPage() {
         </div>
 
         {/* Payment Methods Breakdown */}
-        <Card style={{ marginBottom: "2rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
-          <CardHeader style={{ paddingBottom: "1rem" }}>
-            <CardTitle style={{ fontSize: "1.125rem", fontWeight: 600, color: "#1e293b" }}>
+        <Card className="mb-8 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-slate-800">
               Payment Methods Breakdown
             </CardTitle>
           </CardHeader>
@@ -505,11 +504,12 @@ export default function PaymentsPage() {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={cn(
+                "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                 statusFilter === status
                   ? "bg-blue-600 text-white shadow-md"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              )}
             >
               {status}
             </button>
@@ -580,9 +580,10 @@ export default function PaymentsPage() {
 
       {/* Detail Side Panel */}
       <div
-        className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl transform transition-transform duration-300 z-50 ${
+        className={cn(
+          "fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl transform transition-transform duration-300 z-50",
           showDetailPanel ? "translate-x-0" : "translate-x-full"
-        }`}
+        )}
       >
         {selectedPayment && (
           <div className="h-full flex flex-col">

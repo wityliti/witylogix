@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
 import {
   Users,
   UserCheck,
@@ -176,9 +177,9 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`User Details: ${user.name}`}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+      <div className="flex flex-col gap-4">
         {/* Overview Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -187,42 +188,31 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "overview"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("overview") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
             Overview
           </button>
           {expandedSections.includes("overview") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-4)", marginTop: "var(--wl-space-3)" }}>
+            <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Name
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.name}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Email
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.email}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Role
                 </p>
                 <Badge
@@ -238,10 +228,10 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 </Badge>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Store
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.store}
                 </p>
               </div>
@@ -250,7 +240,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Activity Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -259,37 +249,26 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "activity"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("activity") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
             Activity
           </button>
           {expandedSections.includes("activity") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-4)", marginTop: "var(--wl-space-3)" }}>
+            <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Last Login
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.lastLogin}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Created
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.created}
                 </p>
               </div>
@@ -298,7 +277,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Permissions Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -307,26 +286,15 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "permissions"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("permissions") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
             Permissions ({user.permissions.length})
           </button>
           {expandedSections.includes("permissions") && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--wl-space-2)", marginTop: "var(--wl-space-3)" }}>
+            <div className="flex flex-wrap gap-2 mt-3">
               {user.permissions.map((perm) => (
-                <Badge key={perm} variant="info" style={{ fontSize: "var(--wl-text-xs)" }}>
+                <Badge key={perm} variant="info" className="text-xs">
                   {perm}
                 </Badge>
               ))}
@@ -344,32 +312,21 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "auth"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("auth") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
             Auth Providers ({user.authProviders.length})
           </button>
           {expandedSections.includes("auth") && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--wl-space-2)", marginTop: "var(--wl-space-3)" }}>
+            <div className="flex flex-wrap gap-2 mt-3">
               {user.authProviders.length > 0 ? (
                 user.authProviders.map((provider) => (
-                  <Badge key={provider} variant="success" style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
+                  <Badge key={provider} variant="success" className="text-xs capitalize">
                     {provider}
                   </Badge>
                 ))
               ) : (
-                <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", margin: 0 }}>
+                <p className="text-wl-text-secondary text-xs m-0">
                   No auth providers connected
                 </p>
               )}
@@ -379,13 +336,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
 
         {/* Actions */}
         <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-2)",
-            marginTop: "var(--wl-space-4)",
-            borderTop: "1px solid var(--wl-border-subtle)",
-            paddingTop: "var(--wl-space-4)",
-          }}
+          className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4"
         >
           <Button variant="secondary" size="sm">
             Reset Password
@@ -402,380 +353,226 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
   );
 };
 
-// Stats Bar
-const StatsBar = ({ users }: { users: User[] }) => {
-  const activeUsers = users.filter((u) => u.status === "active").length;
-  const todayLogins = users.filter((u) => u.lastLogin !== "—" && u.lastLogin.includes("2026-03-07")).length;
-  const invitedUsers = users.filter((u) => u.status === "invited").length;
-  const suspendedUsers = users.filter((u) => u.status === "suspended").length;
-
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "var(--wl-space-4)",
-        marginBottom: "var(--wl-space-6)",
-      }}
-    >
-      {[
-        { label: "Total Users", value: users.length.toString(), icon: Users, color: "#6366f1" },
-        { label: "Active Today", value: todayLogins.toString(), icon: LogIn, color: "#10b981" },
-        { label: "Invited", value: invitedUsers.toString(), icon: Mail, color: "#f59e0b" },
-        { label: "Suspended", value: suspendedUsers.toString(), icon: AlertCircle, color: "#ef4444" },
-      ].map((stat, idx) => {
-        const Icon = stat.icon;
-        return (
-          <Card
-            key={idx}
-            style={{
-              backgroundColor: "var(--wl-bg-surface)",
-              borderColor: "var(--wl-border-subtle)",
-              animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
-            }}
-          >
-            <CardContent style={{ padding: "var(--wl-space-4)", display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
-              <div
-                style={{
-                  padding: "var(--wl-space-2)",
-                  borderRadius: "var(--wl-radius-md)",
-                  backgroundColor: stat.color + "15",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {stat.label}
-                </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: "var(--wl-space-1) 0 0 0" }}>
-                  {stat.value}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
-};
-
-// Main Page
+// Users Table
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "manager" | "operator" | "viewer">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended" | "invited">("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const filteredUsers = useMemo(() => {
-    return mockUsers.filter((user) => {
-      const matchesSearch =
+    return mockUsers.filter(
+      (user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.store.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesRole = roleFilter === "all" || user.role === roleFilter;
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [searchTerm, roleFilter, statusFilter]);
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [mockUsers, searchTerm]);
 
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  const handleExport = () => {
-    const csv = [["Name", "Email", "Role", "Store", "Status", "Last Login", "Created"]];
-    filteredUsers.forEach((user) => {
-      csv.push([user.name, user.email, user.role, user.store, user.status, user.lastLogin, user.created]);
-    });
-    const csvString = csv.map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
-    const blob = new Blob([csvString], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `users-${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-  };
-
   return (
-    <div style={{ backgroundColor: "var(--wl-bg-base)" }}>
+    <>
       <Header
         title="User Management"
-        subtitle="Manage all users across all stores"
+        subtitle="Manage platform users, roles, and permissions"
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
-            <Button variant="secondary" size="sm" onClick={handleExport}>
-              <Download style={{ width: "14px", height: "14px", marginRight: "4px" }} />
-              Export
-            </Button>
-            <Button variant="primary" size="sm">
-              <Plus style={{ width: "14px", height: "14px", marginRight: "4px" }} />
-              Invite User
-            </Button>
-          </div>
+          <Button variant="primary" size="md">
+            <Plus style={{ width: "16px", height: "16px", marginRight: "6px" }} />
+            Add User
+          </Button>
         }
       />
 
-      <main style={{ flex: 1, padding: "var(--wl-space-6)", maxWidth: "1400px", margin: "0 auto" }}>
-        <StatsBar users={mockUsers} />
-
-        <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-          <CardContent style={{ padding: "var(--wl-space-4)" }}>
-            {/* Search */}
-            <div style={{ marginBottom: "var(--wl-space-4)", position: "relative" }}>
-              <input
-                type="text"
-                placeholder="Search by name, email, or store..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "var(--wl-space-2) var(--wl-space-3) var(--wl-space-2) var(--wl-space-8)",
-                  backgroundColor: "var(--wl-bg-base)",
-                  color: "var(--wl-text-primary)",
-                  border: "1px solid var(--wl-border-subtle)",
-                  borderRadius: "var(--wl-radius-md)",
-                  fontSize: "var(--wl-text-sm)",
-                }}
-              />
-              <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "var(--wl-text-secondary)", pointerEvents: "none" }} />
-            </div>
-
-            {/* Filters */}
-            <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap", marginBottom: "var(--wl-space-4)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
-                <Filter style={{ width: "16px", height: "16px", color: "var(--wl-text-secondary)" }} />
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
-                  Role:
-                </span>
+      <div className="p-6">
+        {/* Stats */}
+        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          <Card className="bg-wl-bg-surface border-wl-border-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
+                    Total Users
+                  </p>
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
+                    {mockUsers.length}
+                  </p>
+                </div>
+                <Users style={{ width: "24px", height: "24px", color: "var(--wl-primary-500)" }} />
               </div>
-              {(["all", "admin", "manager", "operator", "viewer"] as const).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setRoleFilter(role)}
-                  style={{
-                    padding: "4px 12px",
-                    background: roleFilter === role ? "var(--wl-brand-primary)" : "var(--wl-bg-base)",
-                    color: roleFilter === role ? "white" : "var(--wl-text-primary)",
-                    border: `1px solid ${roleFilter === role ? "var(--wl-brand-primary)" : "var(--wl-border-subtle)"}`,
-                    borderRadius: "var(--wl-radius-md)",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
+            </CardContent>
+          </Card>
 
-            <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
-                  Status:
-                </span>
+          <Card className="bg-wl-bg-surface border-wl-border-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
+                    Active
+                  </p>
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
+                    {mockUsers.filter((u) => u.status === "active").length}
+                  </p>
+                </div>
+                <UserCheck style={{ width: "24px", height: "24px", color: "#10b981" }} />
               </div>
-              {(["all", "active", "suspended", "invited"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  style={{
-                    padding: "4px 12px",
-                    background: statusFilter === status ? "var(--wl-brand-primary)" : "var(--wl-bg-base)",
-                    color: statusFilter === status ? "white" : "var(--wl-text-primary)",
-                    border: `1px solid ${statusFilter === status ? "var(--wl-brand-primary)" : "var(--wl-border-subtle)"}`,
-                    borderRadius: "var(--wl-radius-md)",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-wl-bg-surface border-wl-border-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
+                    Admins
+                  </p>
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
+                    {mockUsers.filter((u) => u.role === "admin").length}
+                  </p>
+                </div>
+                <Shield style={{ width: "24px", height: "24px", color: "#ef4444" }} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-wl-bg-surface border-wl-border-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
+                    Pending Invites
+                  </p>
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
+                    {mockUsers.filter((u) => u.status === "invited").length}
+                  </p>
+                </div>
+                <Mail style={{ width: "24px", height: "24px", color: "#f59e0b" }} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="mb-5 flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-2 pl-8 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
+            />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
+          </div>
+          <Button variant="secondary" size="sm">
+            <Filter style={{ width: "16px", height: "16px" }} />
+          </Button>
+          <Button variant="secondary" size="sm">
+            <Download style={{ width: "16px", height: "16px" }} />
+          </Button>
+        </div>
 
         {/* Users Table */}
-        <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-          {filteredUsers.length > 0 ? (
-            <>
-              <div
-                style={{
-                  padding: "var(--wl-space-3) var(--wl-space-4)",
-                  borderBottom: "1px solid var(--wl-border-subtle)",
-                  fontSize: "var(--wl-text-xs)",
-                  color: "var(--wl-text-secondary)",
-                }}
-              >
-                Showing {filteredUsers.length} of {mockUsers.length} users
-              </div>
-              <CardContent style={{ padding: 0 }}>
-                <div style={{ overflowX: "auto" }}>
-                  <table
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    Store
+                  </th>
+                  <th className="p-3 text-center text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    Last Login
+                  </th>
+                  <th className="p-3 text-center text-wl-text-secondary font-semibold text-xs uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user, idx) => (
+                  <tr
+                    key={user.id}
+                    className="border-b border-wl-border-subtle transition-colors duration-200 cursor-pointer"
                     style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      fontSize: "var(--wl-text-sm)",
+                      backgroundColor: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
                     }}
+                    onClick={() => handleUserClick(user)}
                   >
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid var(--wl-border-subtle)", backgroundColor: "var(--wl-bg-base)" }}>
-                        {["Name", "Email", "Role", "Store", "Status", "Last Login", "Created", "Actions"].map((header) => (
-                          <th
-                            key={header}
-                            style={{
-                              padding: "var(--wl-space-3)",
-                              textAlign: header === "Actions" ? "center" : "left",
-                              color: "var(--wl-text-secondary)",
-                              fontWeight: 600,
-                              fontSize: "var(--wl-text-xs)",
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                            }}
-                          >
-                            {header}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.map((user, idx) => (
-                        <tr
-                          key={user.id}
-                          style={{
-                            borderBottom: "1px solid var(--wl-border-subtle)",
-                            backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-                            transition: "all 0.2s",
-                            cursor: "pointer",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
-                          }}
-                          onClick={() => handleUserClick(user)}
-                        >
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-wl-bg-elevated flex items-center justify-center text-xs font-semibold text-wl-text-primary">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-wl-text-primary font-medium m-0">
                             {user.name}
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+                          </p>
+                          <p className="text-wl-text-secondary text-xs m-0">
                             {user.email}
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)" }}>
-                            <Badge
-                              variant="default"
-                              style={{
-                                backgroundColor: getRoleColor(user.role) + "20",
-                                color: getRoleColor(user.role),
-                                fontSize: "var(--wl-text-xs)",
-                                border: `1px solid ${getRoleColor(user.role)}40`,
-                              }}
-                            >
-                              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                            </Badge>
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)" }}>
-                            {user.store}
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)" }}>
-                            <Badge variant={getStatusBadgeVariant(user.status)} style={{ fontSize: "var(--wl-text-xs)" }}>
-                              {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                            </Badge>
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
-                            {user.lastLogin}
-                          </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
-                            {user.created}
-                          </td>
-                          <td
-                            style={{
-                              padding: "var(--wl-space-3)",
-                              textAlign: "center",
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "var(--wl-text-secondary)",
-                                cursor: "pointer",
-                                padding: "4px",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.2s",
-                              }}
-                              onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-primary)";
-                              }}
-                              onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-secondary)";
-                              }}
-                            >
-                              <MoreVertical style={{ width: "16px", height: "16px" }} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </>
-          ) : (
-            <CardContent
-              style={{
-                padding: "var(--wl-space-12)",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <UserX style={{ width: "48px", height: "48px", color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-3)", opacity: 0.3 }} />
-              <p style={{ color: "var(--wl-text-primary)", fontWeight: 500, margin: 0, marginBottom: "4px" }}>
-                No users found
-              </p>
-              <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-sm)", margin: 0 }}>
-                Try adjusting your filters
-              </p>
-            </CardContent>
-          )}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <Badge
+                        variant="default"
+                        style={{
+                          backgroundColor: getRoleColor(user.role) + "20",
+                          color: getRoleColor(user.role),
+                          fontSize: "var(--wl-text-xs)",
+                          border: `1px solid ${getRoleColor(user.role)}40`,
+                        }}
+                      >
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-wl-text-primary text-sm">
+                      {user.store}
+                    </td>
+                    <td className="p-3 text-center">
+                      <Badge
+                        variant={getStatusBadgeVariant(user.status)}
+                        className="text-xs"
+                      >
+                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-wl-text-secondary text-xs">
+                      {user.lastLogin}
+                    </td>
+                    <td className="p-3 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUserClick(user);
+                        }}
+                      >
+                        <MoreVertical style={{ width: "16px", height: "16px" }} />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
-      </main>
+      </div>
 
       <UserDetailModal user={selectedUser} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }

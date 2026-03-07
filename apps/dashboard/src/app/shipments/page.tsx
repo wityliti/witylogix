@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    SHIPMENTS PAGE — Full shipment management with filtering + detail
@@ -236,15 +236,10 @@ export default function ShipmentsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* KPI Stats Row */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
+          className="grid mb-6"
         >
           <StatCard
             label="Total Shipments"
@@ -286,13 +281,7 @@ export default function ShipmentsPage() {
 
         {/* Filters Bar */}
         <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
+          className="flex flex-wrap items-center mb-5"
         >
           {/* Search */}
           <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
@@ -307,8 +296,8 @@ export default function ShipmentsPage() {
                 background: "var(--wl-bg-elevated)",
                 border: "1px solid var(--wl-border-default)",
                 borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
+                className="text-wl-text-primary",
+                className="text-sm",
                 fontFamily: "var(--wl-font-sans)",
                 outline: "none",
               }}
@@ -316,7 +305,7 @@ export default function ShipmentsPage() {
           </div>
 
           {/* Status Filter Pills */}
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className="flex gap-4 flex-wrap">
             {STATUS_FILTERS.map((f) => {
               const count =
                 f.key === "ALL"
@@ -330,8 +319,8 @@ export default function ShipmentsPage() {
                     padding: "var(--wl-space-1) var(--wl-space-3)",
                     borderRadius: "var(--wl-radius-full)",
                     border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
+                    className="text-xs",
+                    className="font-600",
                     cursor: "pointer",
                     fontFamily: "var(--wl-font-sans)",
                     transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
@@ -350,13 +339,7 @@ export default function ShipmentsPage() {
 
         {/* Delivery Method Tabs */}
         <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-2)",
-            marginBottom: "var(--wl-space-5)",
-            overflowX: "auto",
-            paddingBottom: "var(--wl-space-2)",
-          }}
+          className="flex mb-5"
         >
           {DELIVERY_METHODS.map((m) => {
             const count =
@@ -367,30 +350,11 @@ export default function ShipmentsPage() {
               <button
                 key={m.key}
                 onClick={() => setMethodFilter(m.key)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--wl-space-1)",
-                  padding: "var(--wl-space-2) var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  border: "1px solid",
-                  fontSize: "var(--wl-text-sm)",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                  background:
-                    methodFilter === m.key ? "var(--wl-bg-overlay)" : "transparent",
-                  color:
-                    methodFilter === m.key ? "var(--wl-text-primary)" : "var(--wl-text-secondary)",
-                  borderColor:
-                    methodFilter === m.key ? "var(--wl-border-default)" : "var(--wl-border-subtle)",
-                  whiteSpace: "nowrap",
-                }}
+                className="flex items-center"
               >
                 <span>{m.icon}</span>
                 {m.label}
-                <span style={{ fontSize: "var(--wl-text-xs)", opacity: 0.7 }}>({count})</span>
+                <span style={{ className="text-xs", opacity: 0.7 }}>({count})</span>
               </button>
             );
           })}
@@ -398,11 +362,7 @@ export default function ShipmentsPage() {
 
         {/* Shipments Table + Detail */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: selectedShipment ? "1fr 420px" : "1fr",
-            gap: "var(--wl-space-5)",
-          }}
+          className="grid"
         >
           {/* Shipments Table */}
           <Card style={{ overflow: "hidden", padding: 0 }}>
@@ -411,7 +371,7 @@ export default function ShipmentsPage() {
                 style={{
                   width: "100%",
                   borderCollapse: "collapse",
-                  fontSize: "var(--wl-text-sm)",
+                  className="text-sm",
                 }}
               >
                 <thead>
@@ -423,9 +383,9 @@ export default function ShipmentsPage() {
                           style={{
                             textAlign: "left",
                             padding: "var(--wl-space-3) var(--wl-space-4)",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 600,
-                            color: "var(--wl-text-tertiary)",
+                            className="text-xs",
+                            className="font-600",
+                            className="text-wl-text-tertiary",
                             letterSpacing: "0.04em",
                             textTransform: "uppercase",
                             borderBottom: "1px solid var(--wl-border-subtle)",
@@ -463,15 +423,15 @@ export default function ShipmentsPage() {
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
                           fontFamily: "var(--wl-font-mono)",
-                          fontWeight: 600,
+                          className="font-600",
                           color: "var(--wl-primary-400)",
-                          fontSize: "var(--wl-text-xs)",
+                          className="text-xs",
                           whiteSpace: "nowrap",
                         }}
                       >
                         {shipment.trackingNumber ?? "—"}
                         {shipment.tags.length > 0 && (
-                          <div style={{ display: "flex", gap: 2, marginTop: 2 }}>
+                          <div className="flex">
                             {shipment.tags.map((t) => (
                               <span
                                 key={t}
@@ -491,7 +451,7 @@ export default function ShipmentsPage() {
                                       : t === "express"
                                         ? "var(--wl-primary-400)"
                                         : "var(--wl-info-400)",
-                                  fontWeight: 600,
+                                  className="font-600",
                                   textTransform: "uppercase",
                                   letterSpacing: "0.03em",
                                 }}
@@ -508,8 +468,8 @@ export default function ShipmentsPage() {
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
                           fontFamily: "var(--wl-font-mono)",
-                          fontWeight: 500,
-                          color: "var(--wl-text-primary)",
+                          className="font-500",
+                          className="text-wl-text-primary",
                         }}
                       >
                         {shipment.orderNumber}
@@ -519,8 +479,8 @@ export default function ShipmentsPage() {
                       <td
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-primary)",
-                          fontWeight: 500,
+                          className="text-wl-text-primary",
+                          className="font-500",
                           maxWidth: 150,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -541,8 +501,8 @@ export default function ShipmentsPage() {
                       <td
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-secondary)",
-                          fontSize: "var(--wl-text-sm)",
+                          className="text-wl-text-secondary",
+                          className="text-sm",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -560,7 +520,7 @@ export default function ShipmentsPage() {
                             ? "var(--wl-text-secondary)"
                             : "var(--wl-text-tertiary)",
                           fontStyle: shipment.driverName || shipment.locationName ? "normal" : "italic",
-                          fontSize: "var(--wl-text-xs)",
+                          className="text-xs",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -572,8 +532,8 @@ export default function ShipmentsPage() {
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
                           fontFamily: "var(--wl-font-mono)",
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-secondary)",
+                          className="text-xs",
+                          className="text-wl-text-secondary",
                           textAlign: "center",
                         }}
                       >
@@ -585,8 +545,8 @@ export default function ShipmentsPage() {
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
                           fontFamily: "var(--wl-font-mono)",
-                          fontWeight: 600,
-                          color: "var(--wl-text-primary)",
+                          className="font-600",
+                          className="text-wl-text-primary",
                         }}
                       >
                         {formatCurrency(shipment.shippingCost)}
@@ -597,7 +557,7 @@ export default function ShipmentsPage() {
                         style={{
                           padding: "var(--wl-space-3) var(--wl-space-4)",
                           fontFamily: "var(--wl-font-mono)",
-                          fontSize: "var(--wl-text-xs)",
+                          className="text-xs",
                           color:
                             shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
                               ? "var(--wl-primary-400)"
@@ -627,18 +587,13 @@ export default function ShipmentsPage() {
               }}
             >
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "var(--wl-space-4)",
-                }}
+                className="flex items-center justify-between mb-4"
               >
                 <div>
                   <span
                     style={{
-                      fontSize: "var(--wl-text-lg)",
-                      fontWeight: 700,
+                      className="text-lg",
+                      className="font-700",
                       fontFamily: "var(--wl-font-mono)",
                       color: "var(--wl-primary-400)",
                     }}
@@ -651,7 +606,7 @@ export default function ShipmentsPage() {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "var(--wl-text-tertiary)",
+                    className="text-wl-text-tertiary",
                     cursor: "pointer",
                     fontSize: 18,
                     fontFamily: "var(--wl-font-sans)",
@@ -664,39 +619,32 @@ export default function ShipmentsPage() {
               <Badge
                 variant={statusVariant(selectedShipment.status)}
                 dot
-                style={{ marginBottom: "var(--wl-space-4)" }}
+                className="mb-4"
               >
                 {selectedShipment.status.replace(/_/g, " ")}
               </Badge>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+              <div className="flex flex-col">
                 {/* Recipient Info */}
                 <div>
                   <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
+                    className="mb-2"
                   >
                     Recipient
                   </div>
                   <div
                     style={{
-                      fontSize: "var(--wl-text-base)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-primary)",
+                      className="text-base",
+                      className="font-600",
+                      className="text-wl-text-primary",
                     }}
                   >
                     {selectedShipment.recipientName}
                   </div>
                   <div
                     style={{
-                      fontSize: "var(--wl-text-xs)",
-                      color: "var(--wl-text-secondary)",
+                      className="text-xs",
+                      className="text-wl-text-secondary",
                       marginTop: 2,
                     }}
                   >
@@ -704,8 +652,8 @@ export default function ShipmentsPage() {
                   </div>
                   <div
                     style={{
-                      fontSize: "var(--wl-text-xs)",
-                      color: "var(--wl-text-secondary)",
+                      className="text-xs",
+                      className="text-wl-text-secondary",
                       fontFamily: "var(--wl-font-mono)",
                     }}
                   >
@@ -718,21 +666,14 @@ export default function ShipmentsPage() {
                 {/* Delivery Details */}
                 <div>
                   <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
+                    className="mb-2"
                   >
                     Delivery Address
                   </div>
                   <div
                     style={{
-                      fontSize: "var(--wl-text-sm)",
-                      color: "var(--wl-text-secondary)",
+                      className="text-sm",
+                      className="text-wl-text-secondary",
                       marginBottom: 4,
                       lineHeight: 1.4,
                     }}
@@ -743,14 +684,7 @@ export default function ShipmentsPage() {
                     {selectedShipment.postalCode}
                   </div>
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-1)",
-                      fontSize: "var(--wl-text-sm)",
-                      color: "var(--wl-text-secondary)",
-                      marginTop: "var(--wl-space-2)",
-                    }}
+                    className="flex items-center mt-2"
                   >
                     <span>{deliveryMethodIcon(selectedShipment.deliveryMethod)}</span>
                     {selectedShipment.deliveryMethod.replace(/_/g, " ")}
@@ -758,8 +692,8 @@ export default function ShipmentsPage() {
                   {(selectedShipment.driverName || selectedShipment.locationName) && (
                     <div
                       style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
+                        className="text-xs",
+                        className="text-wl-text-tertiary",
                         marginTop: 4,
                       }}
                     >
@@ -769,13 +703,7 @@ export default function ShipmentsPage() {
                   )}
                   {selectedShipment.estimatedDelivery && (
                     <div
-                      style={{
-                        fontSize: "var(--wl-text-sm)",
-                        fontWeight: 600,
-                        color: "var(--wl-primary-400)",
-                        fontFamily: "var(--wl-font-mono)",
-                        marginTop: "var(--wl-space-2)",
-                      }}
+                      className="mt-2"
                     >
                       ETA: {formatRelativeTime(selectedShipment.estimatedDelivery)}
                     </div>
@@ -787,37 +715,21 @@ export default function ShipmentsPage() {
                 {/* Status Timeline */}
                 <div>
                   <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
+                    className="mb-3"
                   >
                     Progress
                   </div>
                   <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--wl-space-2)",
-                    }}
+                    className="flex flex-col"
                   >
                     {statusProgression.map((step, idx) => {
                       const isCompleted =
                         statusProgression.indexOf(selectedShipment.status) >= idx;
                       const isCurrent = selectedShipment.status === step;
                       return (
-                        <div key={step} style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                        <div key={step} className="flex">
                           <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              width: "24px",
-                            }}
+                            className="flex flex-col items-center"
                           >
                             <div
                               style={{
@@ -847,7 +759,7 @@ export default function ShipmentsPage() {
                           </div>
                           <div
                             style={{
-                              fontSize: "var(--wl-text-xs)",
+                              className="text-xs",
                               color: isCompleted
                                 ? "var(--wl-text-primary)"
                                 : "var(--wl-text-tertiary)",
@@ -867,27 +779,23 @@ export default function ShipmentsPage() {
 
                 {/* Shipment Info */}
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "var(--wl-space-3)",
-                  }}
+                  className="grid"
                 >
                   <div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
+                        className="text-xs",
+                        className="text-wl-text-tertiary",
                       }}
                     >
                       Items
                     </div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
+                        className="text-base",
+                        className="font-700",
                         fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-primary)",
+                        className="text-wl-text-primary",
                       }}
                     >
                       {selectedShipment.itemCount}
@@ -896,18 +804,18 @@ export default function ShipmentsPage() {
                   <div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
+                        className="text-xs",
+                        className="text-wl-text-tertiary",
                       }}
                     >
                       Weight
                     </div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
+                        className="text-base",
+                        className="font-700",
                         fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-secondary)",
+                        className="text-wl-text-secondary",
                       }}
                     >
                       {selectedShipment.weight ? `${selectedShipment.weight} kg` : "—"}
@@ -916,16 +824,16 @@ export default function ShipmentsPage() {
                   <div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
+                        className="text-xs",
+                        className="text-wl-text-tertiary",
                       }}
                     >
                       Shipping Cost
                     </div>
                     <div
                       style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
+                        className="text-base",
+                        className="font-700",
                         fontFamily: "var(--wl-font-mono)",
                         color: "var(--wl-success-400)",
                       }}
@@ -937,16 +845,16 @@ export default function ShipmentsPage() {
                     <div>
                       <div
                         style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-tertiary)",
+                          className="text-xs",
+                          className="text-wl-text-tertiary",
                         }}
                       >
                         COD Amount
                       </div>
                       <div
                         style={{
-                          fontSize: "var(--wl-text-base)",
-                          fontWeight: 700,
+                          className="text-base",
+                          className="font-700",
                           fontFamily: "var(--wl-font-mono)",
                           color: "var(--wl-warning-400)",
                         }}
@@ -963,18 +871,11 @@ export default function ShipmentsPage() {
                     <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
                     <div>
                       <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 600,
-                          color: "var(--wl-text-tertiary)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                          marginBottom: "var(--wl-space-2)",
-                        }}
+                        className="mb-2"
                       >
                         Tags
                       </div>
-                      <div style={{ display: "flex", gap: "var(--wl-space-1)", flexWrap: "wrap" }}>
+                      <div className="flex flex-wrap">
                         {selectedShipment.tags.map((t) => (
                           <Badge
                             key={t}
@@ -1000,21 +901,14 @@ export default function ShipmentsPage() {
                     <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
                     <div>
                       <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 600,
-                          color: "var(--wl-text-tertiary)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                          marginBottom: "var(--wl-space-2)",
-                        }}
+                        className="mb-2"
                       >
                         Notes
                       </div>
                       <div
                         style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-secondary)",
+                          className="text-xs",
+                          className="text-wl-text-secondary",
                           fontStyle: "italic",
                         }}
                       >
@@ -1026,12 +920,7 @@ export default function ShipmentsPage() {
 
                 {/* Actions */}
                 <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-2)",
-                    flexWrap: "wrap",
-                    marginTop: "var(--wl-space-2)",
-                  }}
+                  className="flex flex-wrap mt-2"
                 >
                   <Button variant="primary" size="sm">
                     Assign Driver

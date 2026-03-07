@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   BarChart3,
   Users,
@@ -179,11 +180,9 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
 
   return (
     <div
+      className="grid gap-4 mb-6"
       style={{
-        display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "var(--wl-space-4)",
-        marginBottom: "var(--wl-space-6)",
       }}
     >
       {[
@@ -197,31 +196,25 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
         return (
           <Card
             key={idx}
+            className="bg-wl-bg-surface border-wl-border-subtle"
             style={{
-              backgroundColor: "var(--wl-bg-surface)",
-              borderColor: "var(--wl-border-subtle)",
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
           >
-            <CardContent style={{ padding: "var(--wl-space-4)", display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+            <CardContent className="p-4 flex gap-3 items-start">
               <div
+                className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
                 style={{
-                  padding: "var(--wl-space-2)",
-                  borderRadius: "var(--wl-radius-md)",
                   backgroundColor: metric.color + "15",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
                 }}
               >
                 <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div className="flex-1">
+                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wider">
                   {metric.label}
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: "var(--wl-space-1) 0 0 0" }}>
+                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
                   {metric.value}
                 </p>
               </div>
@@ -244,48 +237,38 @@ const SystemHealth = () => {
 
   return (
     <Card
-      style={{
-        backgroundColor: "var(--wl-bg-surface)",
-        borderColor: "var(--wl-border-subtle)",
-        marginBottom: "var(--wl-space-6)",
-      }}
+      className="bg-wl-bg-surface border-wl-border-subtle mb-6"
     >
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
-        <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
           <Server style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
           System Health
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div
+          className="grid gap-4"
           style={{
-            display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
           }}
         >
           {metrics.map((metric, idx) => {
             const Icon = metric.icon;
             return (
-              <div key={idx} style={{ display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+              <div key={idx} className="flex gap-3 items-start">
                 <div
+                  className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
                   style={{
-                    padding: "var(--wl-space-2)",
-                    borderRadius: "var(--wl-radius-md)",
                     backgroundColor: metric.status === "healthy" ? "#10b98115" : "#f59e0b15",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
                   }}
                 >
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
                 </div>
                 <div>
-                  <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "2px", fontWeight: 600, textTransform: "uppercase" }}>
+                  <p className="text-xs text-wl-text-secondary m-0 mb-0.5 font-semibold uppercase">
                     {metric.label}
                   </p>
-                  <p style={{ color: "var(--wl-text-primary)", fontWeight: 600, margin: 0, fontSize: "var(--wl-text-sm)" }}>
+                  <p className="text-wl-text-primary font-semibold m-0 text-sm">
                     {metric.value}
                   </p>
                 </div>
@@ -302,20 +285,16 @@ const SystemHealth = () => {
 const QuickActions = () => {
   return (
     <Card
-      style={{
-        backgroundColor: "var(--wl-bg-surface)",
-        borderColor: "var(--wl-border-subtle)",
-        marginBottom: "var(--wl-space-6)",
-      }}
+      className="bg-wl-bg-surface border-wl-border-subtle mb-6"
     >
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
-        <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
           <Zap style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
           Quick Actions
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap" }}>
+        <div className="flex gap-3 flex-wrap">
           <Button variant="primary" size="sm">
             <Plus style={{ width: "14px", height: "14px", marginRight: "4px" }} />
             Create Store
@@ -357,58 +336,35 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
 
   return (
     <Card
-      style={{
-        backgroundColor: "var(--wl-bg-surface)",
-        borderColor: "var(--wl-border-subtle)",
-      }}
+      className="bg-wl-bg-surface border-wl-border-subtle"
     >
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
           <CardTitle>Store Health</CardTitle>
-          <div style={{ position: "relative", width: "100%", maxWidth: "250px" }}>
+          <div className="relative w-full max-w-xs">
             <input
               type="text"
               placeholder="Search stores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-3) var(--wl-space-2) var(--wl-space-8)",
-                backgroundColor: "var(--wl-bg-base)",
-                color: "var(--wl-text-primary)",
-                border: "1px solid var(--wl-border-subtle)",
-                borderRadius: "var(--wl-radius-md)",
-                fontSize: "var(--wl-text-sm)",
-              }}
+              className="w-full p-2 pl-8 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
             />
-            <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "var(--wl-text-secondary)", pointerEvents: "none" }} />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent style={{ padding: 0 }}>
-        <div style={{ overflowX: "auto" }}>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
           <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "var(--wl-text-sm)",
-            }}
+            className="w-full border-collapse text-sm"
           >
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--wl-border-subtle)", backgroundColor: "var(--wl-bg-base)" }}>
+              <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
                 {["Store", "Plan", "Orders (30d)", "Revenue", "Users", "Status", "Last Active", "Actions"].map((header) => (
                   <th
                     key={header}
-                    style={{
-                      padding: "var(--wl-space-3)",
-                      textAlign: "left",
-                      color: "var(--wl-text-secondary)",
-                      fontWeight: 600,
-                      fontSize: "var(--wl-text-xs)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                    }}
+                    className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider"
                   >
                     {header}
                   </th>
@@ -419,10 +375,9 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
+                  className="border-b border-wl-border-subtle transition-all duration-200"
                   style={{
-                    borderBottom: "1px solid var(--wl-border-subtle)",
                     backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-                    transition: "all 0.2s",
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
@@ -431,22 +386,18 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                     (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
                   }}
                 >
-                  <td style={{ padding: "var(--wl-space-3)" }}>
+                  <td className="p-3">
                     <Link
                       href={`/admin/shops/${store.id}`}
-                      style={{
-                        color: "var(--wl-brand-primary)",
-                        textDecoration: "none",
-                        fontWeight: 500,
-                      }}
+                      className="text-wl-brand-primary no-underline font-medium"
                     >
                       {store.name}
                     </Link>
-                    <p style={{ color: "var(--wl-text-secondary)", margin: "2px 0 0 0", fontSize: "var(--wl-text-xs)" }}>
+                    <p className="text-wl-text-secondary m-0 mt-0.5 text-xs">
                       {store.domain}
                     </p>
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)" }}>
+                  <td className="p-3">
                     <Badge
                       variant="default"
                       style={{
@@ -459,39 +410,29 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                       {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
                     </Badge>
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                  <td className="p-3 text-wl-text-primary font-medium">
                     {store.ordersThisMonth}
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-brand-primary)", fontWeight: 600 }}>
+                  <td className="p-3 text-wl-brand-primary font-semibold">
                     ${store.revenue.toLocaleString()}
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                  <td className="p-3 text-wl-text-primary font-medium">
                     {store.totalUsers}
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)" }}>
+                  <td className="p-3">
                     <Badge
                       variant={store.status === "active" ? "success" : store.status === "suspended" ? "danger" : "info"}
-                      style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}
+                      className="text-xs capitalize"
                     >
                       {store.status}
                     </Badge>
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+                  <td className="p-3 text-wl-text-secondary text-xs">
                     {store.lastActive}
                   </td>
-                  <td style={{ padding: "var(--wl-space-3)", textAlign: "center" }}>
+                  <td className="p-3 text-center">
                     <button
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--wl-text-secondary)",
-                        cursor: "pointer",
-                        padding: "4px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "all 0.2s",
-                      }}
+                      className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200"
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-primary)";
                       }}
@@ -515,13 +456,13 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
 // Main Page
 export default function AdminDashboardPage() {
   return (
-    <div style={{ backgroundColor: "var(--wl-bg-base)" }}>
+    <div className="bg-wl-bg-base">
       <Header
         title="Platform Admin"
         subtitle="Manage all stores, users, and platform operations"
       />
 
-      <main style={{ flex: 1, padding: "var(--wl-space-6)", maxWidth: "1400px", margin: "0 auto" }}>
+      <main className="flex-1 p-6 max-w-6xl mx-auto">
         {/* Key Metrics */}
         <MetricsBar stores={mockStores} />
 

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
 import {
   Users,
   ShoppingCart,
@@ -209,9 +210,9 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Customer Details: ${customer.name}`}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+      <div className="flex flex-col gap-4" >
         {/* Overview Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -233,21 +234,21 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               padding: "var(--wl-space-2) 0",
             }}
           >
-            {expandedSections.includes("overview") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("overview") ? <ChevronUp  /> : <ChevronDown  />}
             Overview
           </button>
           {expandedSections.includes("overview") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-4)", marginTop: "var(--wl-space-3)" }}>
+            <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Name
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.name}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Status
                 </p>
                 <Badge variant={getStatusBadgeVariant(customer.status)} style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
@@ -255,7 +256,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </Badge>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Email
                 </p>
                 <a href={`mailto:${customer.email}`} style={{ color: "var(--wl-brand-primary)", textDecoration: "none", fontSize: "var(--wl-text-sm)", fontWeight: 500 }}>
@@ -263,26 +264,26 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </a>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Phone
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.phone}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Store
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.store}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Joined
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.joined}
                 </p>
               </div>
@@ -291,7 +292,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Order History Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -313,13 +314,13 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               padding: "var(--wl-space-2) 0",
             }}
           >
-            {expandedSections.includes("orders") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("orders") ? <ChevronUp  /> : <ChevronDown  />}
             Order History
           </button>
           {expandedSections.includes("orders") && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--wl-space-4)", marginTop: "var(--wl-space-3)" }}>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Total Orders
                 </p>
                 <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: 0 }}>
@@ -327,7 +328,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Total Spent
                 </p>
                 <p style={{ color: "var(--wl-brand-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: 0 }}>
@@ -335,10 +336,10 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                   Last Order
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", fontWeight: 500, margin: 0 }}>
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.lastOrder}
                 </p>
               </div>
@@ -347,7 +348,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Addresses Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -369,7 +370,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               padding: "var(--wl-space-2) 0",
             }}
           >
-            {expandedSections.includes("addresses") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("addresses") ? <ChevronUp  /> : <ChevronDown  />}
             Addresses ({customer.addresses.length})
           </button>
           {expandedSections.includes("addresses") && (
@@ -384,7 +385,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                     border: "1px solid var(--wl-border-subtle)",
                   }}
                 >
-                  <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "4px", fontWeight: 600, textTransform: "uppercase" }}>
+                  <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
                     {addr.type}
                   </p>
                   <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", margin: 0 }}>
@@ -397,7 +398,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Tags Section */}
-        <div style={{ borderBottom: "1px solid var(--wl-border-subtle)", paddingBottom: "var(--wl-space-3)" }}>
+        <div className="border-b border-wl-border-subtle pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -419,7 +420,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               padding: "var(--wl-space-2) 0",
             }}
           >
-            {expandedSections.includes("tags") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("tags") ? <ChevronUp  /> : <ChevronDown  />}
             Tags ({customer.tags.length})
           </button>
           {expandedSections.includes("tags") && (
@@ -456,7 +457,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               padding: "var(--wl-space-2) 0",
             }}
           >
-            {expandedSections.includes("notes") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("notes") ? <ChevronUp  /> : <ChevronDown  />}
             Notes
           </button>
           {expandedSections.includes("notes") && (
@@ -536,7 +537,7 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
               >
                 <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
               </div>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1" >
                 <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {stat.label}
                 </p>
@@ -596,7 +597,7 @@ export default function AdminCustomersPage() {
   };
 
   return (
-    <div style={{ backgroundColor: "var(--wl-bg-base)" }}>
+    <div className="bg-wl-bg-base" >
       <Header
         title="Customer Management"
         subtitle="Manage all customers across all stores"
@@ -612,7 +613,7 @@ export default function AdminCustomersPage() {
         <StatsBar customers={mockCustomers} />
 
         <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-          <CardContent style={{ padding: "var(--wl-space-4)" }}>
+          <CardContent className="p-4" >
             {/* Search */}
             <div style={{ marginBottom: "var(--wl-space-4)", position: "relative" }}>
               <input
@@ -635,7 +636,7 @@ export default function AdminCustomersPage() {
 
             {/* Filters */}
             <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap", marginBottom: "var(--wl-space-4)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+              <div className="flex items-center gap-2" >
                 <Filter style={{ width: "16px", height: "16px", color: "var(--wl-text-secondary)" }} />
                 <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
                   Store:
@@ -663,7 +664,7 @@ export default function AdminCustomersPage() {
             </div>
 
             <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+              <div className="flex items-center gap-2" >
                 <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
                   Status:
                 </span>
@@ -774,7 +775,7 @@ export default function AdminCustomersPage() {
                           <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
                             {customer.lastOrder}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)" }}>
+                          <td className="p-3" >
                             <Badge variant={getStatusBadgeVariant(customer.status)} style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
                               {customer.status}
                             </Badge>
@@ -805,7 +806,7 @@ export default function AdminCustomersPage() {
                                 (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-secondary)";
                               }}
                             >
-                              <MoreVertical style={{ width: "16px", height: "16px" }} />
+                              <MoreVertical  />
                             </button>
                           </td>
                         </tr>

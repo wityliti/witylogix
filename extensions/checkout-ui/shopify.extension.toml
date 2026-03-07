@@ -1,0 +1,11 @@
+# Shopify Checkout UI Extension Configuration
+name = "Witylogix Delivery Date & Time Picker"
+handle = "witylogix-delivery-picker"
+type = "checkout_ui_extension"
+
+[[targets]]
+target = "purchase.checkout.block.render"
+
+[build]
+command = "npm run build"
+watch = ["src/**/*"]

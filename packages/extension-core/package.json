@@ -1,0 +1,55 @@
+{
+  "name": "@witylogix/extension-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared utilities for Shopify checkout-ui and POS-ui extensions (Preact)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./types": {
+      "import": "./src/types.ts",
+      "types": "./src/types.ts"
+    },
+    "./theme-bridge": {
+      "import": "./src/theme-bridge.ts",
+      "types": "./src/theme-bridge.ts"
+    },
+    "./app-bridge": {
+      "import": "./src/app-bridge.ts",
+      "types": "./src/app-bridge.ts"
+    },
+    "./hooks": {
+      "import": "./src/hooks.ts",
+      "types": "./src/hooks.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "shopify",
+    "extensions",
+    "checkout-ui",
+    "pos-ui",
+    "preact",
+    "app-bridge",
+    "theme",
+    "design-tokens"
+  ],
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  },
+  "devDependencies": {
+    "preact": "^10.16.0"
+  }
+}

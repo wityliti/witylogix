@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.1 — Page Migration, Queue Consumers & Extensions (2026-03-08)
+
+#### Added
+
+- **Extension-core package** — `@witylogix/extension-core` with theme token bridge, App Bridge wrapper, POS postMessage RPC, and 8 Preact hooks (`packages/extension-core/`)
+- **ADR-011** — Extension architecture decision record (`docs/adr/ADR-011-extension-architecture.md`)
+- **Checkout UI extension** — Preact delivery date picker + time slot selector for Shopify checkout (`extensions/checkout-ui/`)
+- **Event-webhook bridge** — connects TypedEventBus to outbound webhook delivery with tenant scoping and wildcard filtering (`packages/core/src/webhooks/event-bridge.ts`)
+- **S3 file storage** — real AWS S3 provider with presigned URLs, tenant-scoped keys, MIME detection (`packages/core/src/file-storage/s3-provider.ts`)
+- **Local file storage** — filesystem fallback for dev/self-hosted (`packages/core/src/file-storage/local-provider.ts`)
+- **FCM push provider** — Firebase Cloud Messaging HTTP v1 with multicast batching (`packages/core/src/push/fcm-provider.ts`)
+- **Expo push provider** — Expo Push Notifications for React Native driver app (`packages/core/src/push/expo-provider.ts`)
+- **6 test suites** — pipeline integration, consumer, file-storage, push (75 total)
+
+#### Changed
+
+- **20 dashboard pages migrated to Tailwind CSS** — customers, drivers, products, zones, calendar, activity, payments, shipments, shipments/[id], settings, settings/auth-providers, settings/billing, saved-views, mobile-config, admin, admin/users, admin/customers, admin/shops/[id], admin/workflows, admin/workflows/[id]
+- **Queue consumer DB integration** — product-webhook, order-webhook, driver-tracking, event-scheduler wired with Prisma + event bus emission
+- **File storage index** — replaced stub with provider factory pattern
+
 ### Sprint 3.0 — Event System, Webhooks & Design System (2026-03-07)
 
 #### Added

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Package,
   Truck,
@@ -83,31 +84,20 @@ interface TimelineEvent {
 
 const DeliveryProofSection = ({ proof }: { proof: any }) => {
   return (
-    <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginTop: '16px' }}>
-      <CardContent style={{ padding: '24px' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#e2e8f0', marginBottom: '16px' }}>Delivery Proof</h3>
+    <Card className="bg-wl-bg-surface border border-wl-border-subtle mt-4">
+      <CardContent className="p-6">
+        <h3 className="text-base font-semibold text-wl-text-primary mb-4">Delivery Proof</h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+        <div className="grid grid-cols-2 gap-4 mb-5">
           {/* Signature Placeholder */}
           {proof.signatureRequired && (
             <div>
-              <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>Signature</p>
+              <p className="text-xs font-semibold text-wl-text-secondary mb-2">Signature</p>
               <div
-                style={{
-                  width: '100%',
-                  height: '120px',
-                  borderRadius: '8px',
-                  border: '2px dashed #334155',
-                  backgroundColor: '#0f0f15',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
+                className="w-full h-30 rounded-lg border-2 border-dashed border-wl-border-subtle bg-wl-bg-elevated flex flex-col items-center justify-center gap-2"
               >
-                <PenTool size={24} style={{ color: '#6C63FF', opacity: 0.5 }} />
-                <p style={{ fontSize: '12px', color: '#94a3b8' }}>Awaiting signature</p>
+                <PenTool size={24} className="text-wl-primary-500 opacity-50" />
+                <p className="text-xs text-wl-text-secondary">Awaiting signature</p>
               </div>
             </div>
           )}
@@ -115,58 +105,27 @@ const DeliveryProofSection = ({ proof }: { proof: any }) => {
           {/* Photo Placeholder */}
           {proof.photoRequired && (
             <div>
-              <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>Proof of Delivery</p>
+              <p className="text-xs font-semibold text-wl-text-secondary mb-2">Proof of Delivery</p>
               <div
-                style={{
-                  width: '100%',
-                  height: '120px',
-                  borderRadius: '8px',
-                  border: '2px dashed #334155',
-                  backgroundColor: '#0f0f15',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
+                className="w-full h-30 rounded-lg border-2 border-dashed border-wl-border-subtle bg-wl-bg-elevated flex flex-col items-center justify-center gap-2"
               >
-                <Camera size={24} style={{ color: '#6C63FF', opacity: 0.5 }} />
-                <p style={{ fontSize: '12px', color: '#94a3b8' }}>Awaiting photo</p>
+                <Camera size={24} className="text-wl-primary-500 opacity-50" />
+                <p className="text-xs text-wl-text-secondary">Awaiting photo</p>
               </div>
             </div>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex gap-2">
           <Button
-            style={{
-              flex: 1,
-              backgroundColor: '#6C63FF',
-              color: '#e2e8f0',
-              border: 'none',
-              padding: '10px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '600',
-            }}
+            className="flex-1 bg-wl-primary-500 text-white flex items-center justify-center gap-1.5 rounded py-2.5 px-4 text-xs font-semibold"
           >
-            <Camera size={14} style={{ marginRight: '6px' }} /> Capture Photo
+            <Camera size={14} /> Capture Photo
           </Button>
           <Button
-            style={{
-              flex: 1,
-              backgroundColor: '#1e293b',
-              color: '#e2e8f0',
-              border: '1px solid #334155',
-              padding: '10px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '600',
-            }}
+            className="flex-1 bg-wl-bg-surface text-white border border-wl-border-subtle flex items-center justify-center gap-1.5 rounded py-2.5 px-4 text-xs font-semibold"
           >
-            <PenTool size={14} style={{ marginRight: '6px' }} /> Get Signature
+            <PenTool size={14} /> Get Signature
           </Button>
         </div>
       </CardContent>
@@ -178,36 +137,30 @@ const Timeline = ({ events }: { events: TimelineEvent[] }) => {
   return (
     <div>
       {events.map((event, index) => (
-        <div key={index} style={{ display: 'flex', gap: '16px', marginBottom: index < events.length - 1 ? '20px' : '0' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div key={index} className={cn("flex gap-4", index < events.length - 1 ? "mb-5" : "")}>
+          <div className="flex flex-col items-center">
             <div
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: event.completed ? '#6C63FF' : '#334155',
-                border: '2px solid ' + (event.completed ? '#6C63FF' : '#1e293b'),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center",
+                event.completed
+                  ? "bg-wl-primary-500 border-wl-primary-500"
+                  : "bg-wl-border-subtle border-wl-bg-surface"
+              )}
             >
-              {event.completed && <CheckCircle size={16} style={{ color: '#0a0a0f' }} />}
+              {event.completed && <CheckCircle size={16} className="text-wl-bg-elevated" />}
             </div>
             {index < events.length - 1 && (
               <div
-                style={{
-                  width: '2px',
-                  height: '48px',
-                  backgroundColor: event.completed ? '#6C63FF' : '#1e293b',
-                  margin: '8px 0',
-                }}
+                className={cn(
+                  "w-0.5 h-12",
+                  event.completed ? "bg-wl-primary-500" : "bg-wl-bg-surface"
+                )}
               />
             )}
           </div>
-          <div style={{ paddingTop: '2px', flex: 1 }}>
-            <p style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>{event.label}</p>
-            <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>{event.time}</p>
+          <div className="pt-0.5 flex-1">
+            <p className="text-sm font-semibold text-wl-text-primary">{event.label}</p>
+            <p className="text-xs text-wl-text-secondary mt-1">{event.time}</p>
           </div>
         </div>
       ))}
@@ -221,8 +174,8 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
 
   if (!shipment) {
     return (
-      <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
-        <p style={{ color: '#94a3b8' }}>Shipment not found</p>
+      <div className="p-6 min-h-screen bg-wl-bg-root">
+        <p className="text-wl-text-secondary">Shipment not found</p>
       </div>
     );
   }
@@ -236,66 +189,66 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
+    <div className="p-6 min-h-screen bg-wl-bg-root">
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      <div className="mb-6">
+        <div className="flex justify-between items-start gap-3 mb-3">
           <div>
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '4px' }}>{shipment.trackingNumber}</h1>
-            <p style={{ color: '#94a3b8' }}>Shipment ID: {shipment.id}</p>
+            <h1 className="text-4xl font-bold text-wl-text-primary mb-1">{shipment.trackingNumber}</h1>
+            <p className="text-wl-text-secondary">Shipment ID: {shipment.id}</p>
           </div>
-          <Badge className={getStatusColor(shipment.status)} style={{ fontSize: '12px', padding: '6px 12px' }}>
+          <Badge className={cn(getStatusColor(shipment.status), "text-xs px-3 py-1.5")}>
             {shipment.status.replace(/_|-/g, ' ').toUpperCase()}
           </Badge>
         </div>
       </div>
 
       {/* Main Content Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
-        <div>
+        <div className="lg:col-span-2">
           {/* Timeline Section */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-            <CardContent style={{ padding: '24px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#e2e8f0', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={18} style={{ color: '#6C63FF' }} /> Shipment Timeline
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-5 flex items-center gap-2">
+                <Clock size={18} className="text-wl-primary-500" /> Shipment Timeline
               </h2>
               <Timeline events={shipment.timeline} />
             </CardContent>
           </Card>
 
           {/* Package Details */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-            <CardContent style={{ padding: '24px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#e2e8f0', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Package size={18} style={{ color: '#6C63FF' }} /> Package Details
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
+                <Package size={18} className="text-wl-primary-500" /> Package Details
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+              <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <p className="text-xs font-semibold text-wl-text-secondary mb-1.5 flex items-center gap-1.5">
                     <Weight size={14} /> Weight
                   </p>
-                  <p style={{ fontSize: '14px', color: '#e2e8f0', fontWeight: '600' }}>{shipment.package.weight}</p>
+                  <p className="text-sm font-semibold text-wl-text-primary">{shipment.package.weight}</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <p className="text-xs font-semibold text-wl-text-secondary mb-1.5 flex items-center gap-1.5">
                     <Ruler size={14} /> Dimensions
                   </p>
-                  <p style={{ fontSize: '14px', color: '#e2e8f0', fontWeight: '600' }}>{shipment.package.dimensions}</p>
+                  <p className="text-sm font-semibold text-wl-text-primary">{shipment.package.dimensions}</p>
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
-                <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '12px' }}>Items</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="border-t border-wl-border-subtle pt-4">
+                <p className="text-xs font-semibold text-wl-text-secondary mb-3">Items</p>
+                <div className="flex flex-col gap-2.5">
                   {shipment.package.items.map((item: any, index: number) => (
-                    <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderRadius: '6px', backgroundColor: '#0a0a0f' }}>
+                    <div key={index} className="flex justify-between p-2.5 rounded-lg bg-wl-bg-elevated">
                       <div>
-                        <p style={{ fontSize: '12px', color: '#e2e8f0', fontWeight: '600' }}>{item.name}</p>
-                        <p style={{ fontSize: '11px', color: '#94a3b8' }}>Qty: {item.quantity}</p>
+                        <p className="text-xs font-semibold text-wl-text-primary">{item.name}</p>
+                        <p className="text-xs text-wl-text-secondary">Qty: {item.quantity}</p>
                       </div>
-                      <p style={{ fontSize: '12px', color: '#6C63FF', fontWeight: '600' }}>{item.value}</p>
+                      <p className="text-xs font-semibold text-wl-primary-500">{item.value}</p>
                     </div>
                   ))}
                 </div>
@@ -304,47 +257,47 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
           </Card>
 
           {/* Recipient Information */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-            <CardContent style={{ padding: '24px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#e2e8f0', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={18} style={{ color: '#6C63FF' }} /> Recipient Information
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
+                <User size={18} className="text-wl-primary-500" /> Recipient Information
               </h2>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>Name</p>
-                <p style={{ fontSize: '14px', color: '#e2e8f0' }}>{shipment.recipient.name}</p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-wl-text-secondary mb-1.5">Name</p>
+                <p className="text-sm text-wl-text-primary">{shipment.recipient.name}</p>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px' }}>Address</p>
-                <p style={{ fontSize: '14px', color: '#e2e8f0' }}>{shipment.recipient.address}</p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-wl-text-secondary mb-1.5">Address</p>
+                <p className="text-sm text-wl-text-primary">{shipment.recipient.address}</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <p className="text-xs font-semibold text-wl-text-secondary mb-1.5 flex items-center gap-1.5">
                     <Phone size={14} /> Phone
                   </p>
-                  <p style={{ fontSize: '13px', color: '#e2e8f0' }}>{shipment.recipient.phone}</p>
+                  <p className="text-sm text-wl-text-primary">{shipment.recipient.phone}</p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <p className="text-xs font-semibold text-wl-text-secondary mb-1.5 flex items-center gap-1.5">
                     <Mail size={14} /> Email
                   </p>
-                  <p style={{ fontSize: '13px', color: '#e2e8f0' }}>{shipment.recipient.email}</p>
+                  <p className="text-sm text-wl-text-primary">{shipment.recipient.email}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Delivery Notes */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-            <CardContent style={{ padding: '24px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#e2e8f0', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={18} style={{ color: '#6C63FF' }} /> Delivery Notes
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
+                <FileText size={18} className="text-wl-primary-500" /> Delivery Notes
               </h2>
-              <div style={{ padding: '12px', borderRadius: '6px', backgroundColor: '#0a0a0f', borderLeft: '3px solid #6C63FF' }}>
-                <p style={{ fontSize: '13px', color: '#e2e8f0' }}>{shipment.notes}</p>
+              <div className="p-3 rounded-lg bg-wl-bg-elevated border-l-4 border-l-wl-primary-500">
+                <p className="text-sm text-wl-text-primary">{shipment.notes}</p>
               </div>
             </CardContent>
           </Card>
@@ -353,58 +306,19 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
           <DeliveryProofSection proof={shipment.deliveryProof} />
 
           {/* Action Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '24px' }}>
+          <div className="grid grid-cols-3 gap-3 mt-6">
             <Button
-              style={{
-                backgroundColor: '#6C63FF',
-                color: '#e2e8f0',
-                border: 'none',
-                padding: '12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-              }}
+              className="bg-wl-primary-500 text-white rounded py-3 px-4 text-xs font-semibold flex items-center justify-center gap-1.5"
             >
               <Edit3 size={14} /> Update Status
             </Button>
             <Button
-              style={{
-                backgroundColor: '#1e293b',
-                color: '#e2e8f0',
-                border: '1px solid #334155',
-                padding: '12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-              }}
+              className="bg-wl-bg-surface text-white border border-wl-border-subtle rounded py-3 px-4 text-xs font-semibold flex items-center justify-center gap-1.5"
             >
               <RefreshCw size={14} /> Reassign Driver
             </Button>
             <Button
-              style={{
-                backgroundColor: '#1e293b',
-                color: '#e2e8f0',
-                border: '1px solid #334155',
-                padding: '12px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-              }}
+              className="bg-wl-bg-surface text-white border border-wl-border-subtle rounded py-3 px-4 text-xs font-semibold flex items-center justify-center gap-1.5"
             >
               <PrinterIcon size={14} /> Print Label
             </Button>
@@ -412,72 +326,54 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
         </div>
 
         {/* Right Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="flex flex-col gap-4">
           {/* Quick Info Card */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-            <CardContent style={{ padding: '20px' }}>
-              <p style={{ fontSize: '12px', fontWeight: '600', color: '#6C63FF', marginBottom: '12px' }}>QUICK INFO</p>
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle">
+            <CardContent className="p-5">
+              <p className="text-xs font-semibold text-wl-primary-500 mb-3">QUICK INFO</p>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Carrier</p>
-                <p style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>{shipment.carrier}</p>
+              <div className="mb-4">
+                <p className="text-xs text-wl-text-secondary mb-1">Carrier</p>
+                <p className="text-xs font-semibold text-wl-text-primary">{shipment.carrier}</p>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Tracking #</p>
-                <p style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>{shipment.trackingNumber}</p>
+              <div className="mb-4">
+                <p className="text-xs text-wl-text-secondary mb-1">Tracking #</p>
+                <p className="text-xs font-semibold text-wl-text-primary">{shipment.trackingNumber}</p>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Created</p>
-                <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{shipment.createdAt}</p>
+              <div className="mb-4">
+                <p className="text-xs text-wl-text-secondary mb-1">Created</p>
+                <p className="text-xs text-wl-text-primary">{shipment.createdAt}</p>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>ETA</p>
-                <p style={{ fontSize: '12px', color: '#22c55e', fontWeight: '600' }}>{shipment.deliveryEta}</p>
+              <div className="mb-4">
+                <p className="text-xs text-wl-text-secondary mb-1">ETA</p>
+                <p className="text-xs font-semibold text-green-500">{shipment.deliveryEta}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Driver Information */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-            <CardContent style={{ padding: '20px' }}>
-              <p style={{ fontSize: '12px', fontWeight: '600', color: '#6C63FF', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle">
+            <CardContent className="p-5">
+              <p className="text-xs font-semibold text-wl-primary-500 mb-3 flex items-center gap-1.5">
                 <Truck size={14} /> Assigned Driver
               </p>
 
-              <div style={{ marginBottom: '12px', padding: '12px', borderRadius: '6px', backgroundColor: '#0a0a0f' }}>
-                <p style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>{shipment.driver.name}</p>
-                <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Vehicle: {shipment.driver.vehicle}</p>
+              <div className="mb-3 p-3 rounded-lg bg-wl-bg-elevated">
+                <p className="text-xs font-semibold text-wl-text-primary">{shipment.driver.name}</p>
+                <p className="text-xs text-wl-text-secondary mt-1">Vehicle: {shipment.driver.vehicle}</p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex gap-2">
                 <Button
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#1e293b',
-                    color: '#e2e8f0',
-                    border: '1px solid #334155',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                  }}
+                  className="flex-1 bg-wl-bg-surface text-white border border-wl-border-subtle rounded py-2 px-3 text-xs"
                 >
                   <Phone size={13} />
                 </Button>
                 <Button
-                  style={{
-                    flex: 1,
-                    backgroundColor: '#1e293b',
-                    color: '#e2e8f0',
-                    border: '1px solid #334155',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                  }}
+                  className="flex-1 bg-wl-bg-surface text-white border border-wl-border-subtle rounded py-2 px-3 text-xs"
                 >
                   <MessageSquare size={13} />
                 </Button>
@@ -486,13 +382,13 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
           </Card>
 
           {/* Status Card */}
-          <Card style={{ backgroundColor: '#12121a', border: '2px solid #6C63FF' }}>
-            <CardContent style={{ padding: '20px' }}>
-              <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '8px' }}>CURRENT STATUS</p>
-              <Badge className={getStatusColor(shipment.status)} style={{ fontSize: '13px', padding: '6px 12px' }}>
+          <Card className="bg-wl-bg-surface border-2 border-wl-primary-500">
+            <CardContent className="p-5">
+              <p className="text-xs text-wl-text-secondary mb-2">CURRENT STATUS</p>
+              <Badge className={cn(getStatusColor(shipment.status), "text-xs px-3 py-1.5")}>
                 {shipment.status.replace(/_|-/g, ' ').toUpperCase()}
               </Badge>
-              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '12px' }}>
+              <p className="text-xs text-wl-text-secondary mt-3">
                 {shipment.status === 'delivered'
                   ? 'Package has been delivered'
                   : shipment.status === 'out-for-delivery'
@@ -503,13 +399,13 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
           </Card>
 
           {/* Location Card */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-            <CardContent style={{ padding: '20px' }}>
-              <p style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={14} style={{ color: '#6C63FF' }} /> Delivery Address
+          <Card className="bg-wl-bg-surface border border-wl-border-subtle">
+            <CardContent className="p-5">
+              <p className="text-xs font-semibold text-wl-text-primary mb-3 flex items-center gap-1.5">
+                <MapPin size={14} className="text-wl-primary-500" /> Delivery Address
               </p>
-              <div style={{ padding: '12px', borderRadius: '6px', backgroundColor: '#0a0a0f' }}>
-                <p style={{ fontSize: '11px', color: '#e2e8f0', lineHeight: '1.6' }}>{shipment.recipient.address}</p>
+              <div className="p-3 rounded-lg bg-wl-bg-elevated">
+                <p className="text-xs text-wl-text-primary leading-relaxed">{shipment.recipient.address}</p>
               </div>
             </CardContent>
           </Card>

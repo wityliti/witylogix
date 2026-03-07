@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { StatCard } from "@/components/ui/stat-card";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
   Settings,
@@ -119,87 +119,70 @@ export default function SettingsHub() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
+    <div className="min-h-screen bg-gradient-to-135 from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
       <Header title="Settings" subtitle="Manage your account and workspace configuration" />
 
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Quick Status Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "1.5rem",
-            marginBottom: "3rem",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {statusCards.map((card, idx) => (
-            <Card key={idx} style={{ borderLeft: "4px solid var(--wl-primary)" }}>
-              <CardContent style={{ paddingTop: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+            <Card key={idx} className="border-l-4 border-l-[var(--wl-primary)]">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-start gap-4 mb-4">
                   <div>
-                    <div style={{ fontSize: "0.875rem", fontWeight: "500", color: "var(--wl-text-secondary)" }}>
+                    <div className="text-sm font-medium text-[var(--wl-text-secondary)]">
                       {card.label}
                     </div>
-                    <div style={{ fontSize: "1.875rem", fontWeight: "700", color: "var(--wl-text-primary)", marginTop: "0.5rem" }}>
+                    <div className="text-3xl font-bold text-[var(--wl-text-primary)] mt-2">
                       {card.value}
                     </div>
                   </div>
                   {card.icon}
                 </div>
-                <p style={{ fontSize: "0.75rem", color: "var(--wl-text-tertiary)" }}>{card.description}</p>
+                <p className="text-xs text-[var(--wl-text-tertiary)]">{card.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Settings Sections Header */}
-        <div style={{ marginBottom: "2rem" }}>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "700", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-[var(--wl-text-primary)] mb-2">
             Settings Sections
           </h2>
-          <p style={{ color: "var(--wl-text-secondary)", fontSize: "0.95rem" }}>
+          <p className="text-[var(--wl-text-secondary)]">
             Manage all aspects of your Witylogix workspace
           </p>
         </div>
 
         {/* Settings Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-            gap: "1.5rem",
-            marginBottom: "3rem",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {settingsSections.map((section) => (
-            <Link key={section.id} href={section.href} style={{ textDecoration: "none" }}>
+            <Link key={section.id} href={section.href} className="no-underline">
               <Card
+                className={cn(
+                  "h-full cursor-pointer transition-all",
+                  expandedSection === section.id && "border-[var(--wl-primary)] shadow-lg"
+                )}
                 style={{
-                  height: "100%",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  borderColor: expandedSection === section.id ? "var(--wl-primary)" : "var(--wl-border)",
                   boxShadow: expandedSection === section.id ? "0 10px 30px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.05)",
                 }}
                 onMouseEnter={() => setExpandedSection(section.id)}
                 onMouseLeave={() => setExpandedSection(null)}
               >
                 <CardHeader>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+                  <div className="flex items-start justify-between gap-4 mb-4">
                     <div
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "0.5rem",
-                        backgroundColor: "var(--wl-bg-tertiary)",
-                        color: expandedSection === section.id ? "var(--wl-bg-primary)" : "var(--wl-text-primary)",
-                        background: expandedSection === section.id ? "var(--wl-primary)" : "var(--wl-bg-tertiary)",
-                        transition: "all 0.3s ease",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      className={cn(
+                        "p-2 rounded-lg flex items-center justify-center transition-all",
+                        expandedSection === section.id
+                          ? "bg-[var(--wl-primary)]"
+                          : "bg-[var(--wl-bg-tertiary)]"
+                      )}
                     >
-                      {section.icon}
+                      <span className={expandedSection === section.id ? "text-white" : "text-[var(--wl-text-primary)]"}>
+                        {section.icon}
+                      </span>
                     </div>
                     {section.badge && (
                       <Badge variant={section.badgeVariant || "default"}>
@@ -207,22 +190,18 @@ export default function SettingsHub() {
                       </Badge>
                     )}
                   </div>
-                  <CardTitle style={{ fontSize: "1.125rem", marginBottom: "0.25rem" }}>{section.title}</CardTitle>
+                  <CardTitle className="text-lg mb-1">{section.title}</CardTitle>
                   <CardDescription>{section.description}</CardDescription>
                 </CardHeader>
 
                 <CardContent>
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: "var(--wl-primary)",
-                      gap: "0.5rem",
-                      transition: "all 0.3s ease",
-                      transform: expandedSection === section.id ? "translateX(4px)" : "translateX(0)",
-                    }}
+                    className={cn(
+                      "flex items-center text-[var(--wl-primary)] gap-2 transition-all",
+                      expandedSection === section.id && "translate-x-1"
+                    )}
                   >
-                    <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>Open settings</span>
+                    <span className="text-sm font-medium">Open settings</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
                 </CardContent>
@@ -232,29 +211,29 @@ export default function SettingsHub() {
         </div>
 
         {/* Information Sections */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Security Info */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontSize: "1.125rem" }}>Security & Compliance</CardTitle>
+              <CardTitle className="text-lg">Security & Compliance</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
-                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+              <ul className="flex flex-col gap-4">
+                <li className="flex gap-3 items-start">
+                  <CheckCircle className="w-5 h-5 text-[var(--wl-success)] mt-0.5 flex-shrink-0" />
+                  <span className="text-[var(--wl-text-secondary)] text-sm">
                     Two-factor authentication enabled
                   </span>
                 </li>
-                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
-                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle className="w-5 h-5 text-[var(--wl-success)] mt-0.5 flex-shrink-0" />
+                  <span className="text-[var(--wl-text-secondary)] text-sm">
                     SSO configured (Auth0)
                   </span>
                 </li>
-                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)", marginTop: "2px", flexShrink: 0 }} />
-                  <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.9rem" }}>
+                <li className="flex gap-3 items-start">
+                  <CheckCircle className="w-5 h-5 text-[var(--wl-success)] mt-0.5 flex-shrink-0" />
+                  <span className="text-[var(--wl-text-secondary)] text-sm">
                     GDPR & SOC2 compliant
                   </span>
                 </li>
@@ -265,28 +244,28 @@ export default function SettingsHub() {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontSize: "1.125rem" }}>Recent Activity</CardTitle>
+              <CardTitle className="text-lg">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <Clock className="w-5 h-5" style={{ color: "var(--wl-info)", marginTop: "2px", flexShrink: 0 }} />
+              <ul className="flex flex-col gap-4">
+                <li className="flex gap-3 items-start">
+                  <Clock className="w-5 h-5 text-[var(--wl-info)] mt-0.5 flex-shrink-0" />
                   <div>
-                    <div style={{ fontSize: "0.9rem", color: "var(--wl-text-primary)", fontWeight: "500" }}>
+                    <div className="text-sm text-[var(--wl-text-primary)] font-medium">
                       API key created
                     </div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--wl-text-tertiary)" }}>
+                    <div className="text-xs text-[var(--wl-text-tertiary)]">
                       2 hours ago
                     </div>
                   </div>
                 </li>
-                <li style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <Clock className="w-5 h-5" style={{ color: "var(--wl-info)", marginTop: "2px", flexShrink: 0 }} />
+                <li className="flex gap-3 items-start">
+                  <Clock className="w-5 h-5 text-[var(--wl-info)] mt-0.5 flex-shrink-0" />
                   <div>
-                    <div style={{ fontSize: "0.9rem", color: "var(--wl-text-primary)", fontWeight: "500" }}>
+                    <div className="text-sm text-[var(--wl-text-primary)] font-medium">
                       Team member added
                     </div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--wl-text-tertiary)" }}>
+                    <div className="text-xs text-[var(--wl-text-tertiary)]">
                       1 day ago
                     </div>
                   </div>
@@ -297,15 +276,15 @@ export default function SettingsHub() {
         </div>
 
         {/* Help & Support */}
-        <Card style={{ background: "var(--wl-bg-tertiary)", border: "none" }}>
-          <CardContent style={{ paddingTop: "2rem" }}>
-            <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+        <Card className="bg-[var(--wl-bg-tertiary)] border-0">
+          <CardContent className="pt-8">
+            <h3 className="text-lg font-semibold text-[var(--wl-text-primary)] mb-2">
               Need Help?
             </h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--wl-text-secondary)", marginBottom: "1.5rem" }}>
+            <p className="text-sm text-[var(--wl-text-secondary)] mb-6">
               Can't find what you're looking for? Check our documentation or contact our support team for immediate assistance.
             </p>
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <div className="flex gap-4 flex-wrap">
               <Button variant="secondary">View Documentation</Button>
               <Button variant="primary">Contact Support</Button>
             </div>

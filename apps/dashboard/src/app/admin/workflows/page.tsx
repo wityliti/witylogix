@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ArrowRight, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    WORKFLOW EXECUTIONS PAGE — Monitor and manage workflow runs
@@ -245,7 +246,7 @@ export default function WorkflowExecutionsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6" >
         {/* Stats Grid */}
         <div
           style={{
@@ -331,7 +332,7 @@ export default function WorkflowExecutionsPage() {
         </div>
 
         {/* Search Bar */}
-        <div style={{ marginBottom: "var(--wl-space-5)" }}>
+        <div className="mb-5" >
           <input
             type="text"
             placeholder="Search workflow name or execution ID..."
@@ -445,7 +446,7 @@ export default function WorkflowExecutionsPage() {
           </Card>
         ) : (
           <Card style={{ textAlign: "center", padding: "var(--wl-space-8)" }}>
-            <div style={{ color: "var(--wl-text-secondary)" }}>
+            <div className="text-wl-text-secondary" >
               <Activity size={40} style={{ margin: "0 auto var(--wl-space-3)", opacity: 0.5 }} />
               <h3 style={{ fontSize: "var(--wl-text-base)", fontWeight: 600, margin: "0 0 var(--wl-space-2) 0" }}>
                 No executions found

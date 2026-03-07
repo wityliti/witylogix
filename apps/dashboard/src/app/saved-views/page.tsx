@@ -5,6 +5,7 @@ import { Header } from "../../components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { cn } from "@/lib/utils";
 import { Copy, Edit2, Trash2, Eye, MoreVertical, Plus } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
@@ -227,80 +228,68 @@ export default function SavedViewsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* My Views Grid */}
-        <div style={{ marginBottom: "var(--wl-space-6)" }}>
-          <h2 style={{ fontSize: "var(--wl-text-lg)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-4)" }}>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
             My Views
           </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "var(--wl-space-4)",
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {SAVED_VIEWS.map((view) => (
-              <Card key={view.id} style={{ display: "flex", flexDirection: "column" }}>
-                <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "var(--wl-space-2)" }}>
-                    <div style={{ flex: 1 }}>
-                      <CardTitle style={{ fontSize: "var(--wl-text-base)", marginBottom: "var(--wl-space-2)" }}>
+              <Card key={view.id} className="flex flex-col">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1">
+                      <CardTitle className="text-base mb-2">
                         {view.name}
                       </CardTitle>
-                      <p style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", margin: 0 }}>
+                      <p className="text-sm text-wl-text-secondary">
                         {view.targetTable}
                       </p>
                     </div>
                     <button
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                        color: "var(--wl-text-tertiary)",
-                      }}
+                      className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary"
                     >
                       <MoreVertical size={18} />
                     </button>
                   </div>
                 </CardHeader>
-                <CardContent style={{ flex: 1, paddingTop: 0, paddingBottom: "var(--wl-space-4)" }}>
+                <CardContent className="flex-1 pt-0 pb-4">
                   {/* Badges */}
-                  <div style={{ display: "flex", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-4)", flexWrap: "wrap" }}>
+                  <div className="flex gap-2 mb-4 flex-wrap">
                     {view.isDefault && <Badge variant="primary">Default</Badge>}
                     {view.isShared && <Badge variant="info">Shared</Badge>}
                   </div>
 
                   {/* Stats */}
-                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--wl-space-2)" }}>
-                      <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>Filters</span>
-                      <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                  <div className="mb-4">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-xs text-wl-text-secondary">Filters</span>
+                      <span className="text-sm font-semibold text-wl-text-primary">
                         {view.filters.length}
                       </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>Visible Columns</span>
-                      <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-wl-text-secondary">Visible Columns</span>
+                      <span className="text-sm font-semibold text-wl-text-primary">
                         {view.visibleColumns.length}
                       </span>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div style={{ display: "flex", gap: "var(--wl-space-2)", flexWrap: "wrap" }}>
-                    <Button variant="primary" size="sm" style={{ flex: "1 1 auto", minWidth: 80 }}>
-                      <Eye size={14} style={{ marginRight: 4 }} />
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="primary" size="sm" className="flex-1 min-w-20">
+                      <Eye size={14} className="mr-1" />
                       Apply
                     </Button>
-                    <Button variant="secondary" size="sm" style={{ flex: "1 1 auto", minWidth: 70 }}>
+                    <Button variant="secondary" size="sm" className="flex-1 min-w-16">
                       <Edit2 size={14} />
                     </Button>
-                    <Button variant="secondary" size="sm" style={{ flex: "1 1 auto", minWidth: 70 }}>
+                    <Button variant="secondary" size="sm" className="flex-1 min-w-16">
                       <Copy size={14} />
                     </Button>
-                    <Button variant="danger" size="sm" style={{ flex: "1 1 auto", minWidth: 70 }}>
+                    <Button variant="danger" size="sm" className="flex-1 min-w-16">
                       <Trash2 size={14} />
                     </Button>
                   </div>
@@ -310,7 +299,7 @@ export default function SavedViewsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      style={{ width: "100%", marginTop: "var(--wl-space-3)", fontSize: "var(--wl-text-xs)" }}
+                      className="w-full mt-3 text-xs"
                       onClick={() => alert("Set as default (mock)")}
                     >
                       Set as Default
@@ -326,39 +315,21 @@ export default function SavedViewsPage() {
       {/* Create View Modal */}
       {showCreateModal && (
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "var(--wl-space-4)",
-          }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setShowCreateModal(false)}
         >
           <Card
-            style={{
-              width: "100%",
-              maxWidth: 700,
-              maxHeight: "90vh",
-              overflowY: "auto",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3)",
-            }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <CardHeader>
               <CardTitle>Create New Saved View</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+              <div className="flex flex-col gap-6">
                 {/* Name Input */}
                 <div>
-                  <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                     View Name
                   </label>
                   <input
@@ -366,40 +337,19 @@ export default function SavedViewsPage() {
                     placeholder="e.g., Today's Priority Orders"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    style={{
-                      width: "100%",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      background: "var(--wl-bg-elevated)",
-                      border: "1px solid var(--wl-border-default)",
-                      borderRadius: "var(--wl-radius-md)",
-                      color: "var(--wl-text-primary)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontFamily: "var(--wl-font-sans)",
-                      outline: "none",
-                    }}
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none"
                   />
                 </div>
 
                 {/* Target Table Select */}
                 <div>
-                  <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                     Target Table
                   </label>
                   <select
                     value={formData.targetTable}
                     onChange={(e) => handleTableChange(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      background: "var(--wl-bg-elevated)",
-                      border: "1px solid var(--wl-border-default)",
-                      borderRadius: "var(--wl-radius-md)",
-                      color: "var(--wl-text-primary)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontFamily: "var(--wl-font-sans)",
-                      outline: "none",
-                      cursor: "pointer",
-                    }}
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
                   >
                     {TABLE_OPTIONS.map((table) => (
                       <option key={table} value={table}>
@@ -411,27 +361,16 @@ export default function SavedViewsPage() {
 
                 {/* Filters Section */}
                 <div>
-                  <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                     Filters
                   </label>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+                  <div className="flex flex-col gap-3">
                     {formData.filters.map((filter, idx) => (
-                      <div key={idx} style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "flex-end" }}>
+                      <div key={idx} className="flex gap-2 items-end">
                         <select
                           value={filter.column}
                           onChange={(e) => updateFilter(idx, "column", e.target.value)}
-                          style={{
-                            flex: 1,
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            background: "var(--wl-bg-elevated)",
-                            border: "1px solid var(--wl-border-default)",
-                            borderRadius: "var(--wl-radius-md)",
-                            color: "var(--wl-text-primary)",
-                            fontSize: "var(--wl-text-sm)",
-                            fontFamily: "var(--wl-font-sans)",
-                            outline: "none",
-                            cursor: "pointer",
-                          }}
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
                         >
                           <option value="">Select Column</option>
                           {availableColumns.map((col) => (
@@ -443,18 +382,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.operator}
                           onChange={(e) => updateFilter(idx, "operator", e.target.value)}
-                          style={{
-                            flex: 0.8,
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            background: "var(--wl-bg-elevated)",
-                            border: "1px solid var(--wl-border-default)",
-                            borderRadius: "var(--wl-radius-md)",
-                            color: "var(--wl-text-primary)",
-                            fontSize: "var(--wl-text-sm)",
-                            fontFamily: "var(--wl-font-sans)",
-                            outline: "none",
-                            cursor: "pointer",
-                          }}
+                          className="flex-0.8 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
                         >
                           <option value="equals">equals</option>
                           <option value="not_equals">not equals</option>
@@ -471,23 +399,13 @@ export default function SavedViewsPage() {
                           placeholder="Value"
                           value={filter.value}
                           onChange={(e) => updateFilter(idx, "value", e.target.value)}
-                          style={{
-                            flex: 0.8,
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            background: "var(--wl-bg-elevated)",
-                            border: "1px solid var(--wl-border-default)",
-                            borderRadius: "var(--wl-radius-md)",
-                            color: "var(--wl-text-primary)",
-                            fontSize: "var(--wl-text-sm)",
-                            fontFamily: "var(--wl-font-sans)",
-                            outline: "none",
-                          }}
+                          className="flex-0.8 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none"
                         />
                         {formData.filters.length > 1 && (
                           <Button
                             variant="danger"
                             size="sm"
-                            style={{ padding: "var(--wl-space-2)" }}
+                            className="p-2"
                             onClick={() => removeFilter(idx)}
                           >
                             Remove
@@ -499,7 +417,7 @@ export default function SavedViewsPage() {
                       variant="secondary"
                       size="sm"
                       onClick={addFilter}
-                      style={{ alignSelf: "flex-start" }}
+                      className="self-start"
                     >
                       + Add Filter
                     </Button>
@@ -508,27 +426,20 @@ export default function SavedViewsPage() {
 
                 {/* Column Visibility */}
                 <div>
-                  <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                     Visible Columns
                   </label>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "var(--wl-space-3)" }}>
+                  <div className="grid grid-cols-2 gap-3">
                     {availableColumns.map((col) => (
                       <label
                         key={col}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "var(--wl-space-2)",
-                          cursor: "pointer",
-                          fontSize: "var(--wl-text-sm)",
-                          color: "var(--wl-text-primary)",
-                        }}
+                        className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-primary"
                       >
                         <input
                           type="checkbox"
                           checked={formData.visibleColumns.includes(col)}
                           onChange={() => toggleColumn(col)}
-                          style={{ cursor: "pointer" }}
+                          className="cursor-pointer"
                         />
                         {col}
                       </label>
@@ -537,26 +448,15 @@ export default function SavedViewsPage() {
                 </div>
 
                 {/* Sort Configuration */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-3)" }}>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                       Sort Column
                     </label>
                     <select
                       value={formData.sortColumn}
                       onChange={(e) => setFormData({ ...formData, sortColumn: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "var(--wl-space-2) var(--wl-space-3)",
-                        background: "var(--wl-bg-elevated)",
-                        border: "1px solid var(--wl-border-default)",
-                        borderRadius: "var(--wl-radius-md)",
-                        color: "var(--wl-text-primary)",
-                        fontSize: "var(--wl-text-sm)",
-                        fontFamily: "var(--wl-font-sans)",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
                     >
                       <option value="">None</option>
                       {availableColumns.map((col) => (
@@ -567,24 +467,13 @@ export default function SavedViewsPage() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)", display: "block" }}>
+                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                       Direction
                     </label>
                     <select
                       value={formData.sortDirection}
                       onChange={(e) => setFormData({ ...formData, sortDirection: e.target.value as "asc" | "desc" })}
-                      style={{
-                        width: "100%",
-                        padding: "var(--wl-space-2) var(--wl-space-3)",
-                        background: "var(--wl-bg-elevated)",
-                        border: "1px solid var(--wl-border-default)",
-                        borderRadius: "var(--wl-radius-md)",
-                        color: "var(--wl-text-primary)",
-                        fontSize: "var(--wl-text-sm)",
-                        fontFamily: "var(--wl-font-sans)",
-                        outline: "none",
-                        cursor: "pointer",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
                     >
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>
@@ -594,26 +483,19 @@ export default function SavedViewsPage() {
 
                 {/* Share with Team */}
                 <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--wl-space-2)",
-                    cursor: "pointer",
-                    fontSize: "var(--wl-text-sm)",
-                    color: "var(--wl-text-primary)",
-                  }}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-primary"
                 >
                   <input
                     type="checkbox"
                     checked={formData.shareWithTeam}
                     onChange={(e) => setFormData({ ...formData, shareWithTeam: e.target.checked })}
-                    style={{ cursor: "pointer" }}
+                    className="cursor-pointer"
                   />
                   Share with team
                 </label>
 
                 {/* Modal Actions */}
-                <div style={{ display: "flex", gap: "var(--wl-space-3)", justifyContent: "flex-end", paddingTop: "var(--wl-space-4)", borderTop: "1px solid var(--wl-border-subtle)" }}>
+                <div className="flex gap-3 justify-end pt-4 border-t border-wl-border-subtle">
                   <Button
                     variant="secondary"
                     size="md"

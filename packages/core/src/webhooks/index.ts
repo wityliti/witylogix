@@ -21,6 +21,14 @@ export {
   WebhookSignature,
 } from "./types";
 
+// Event Bridge Types
+export {
+  EventWebhookBridgeConfig,
+  EventWebhookMapping,
+  BridgeMetrics,
+  WebhookPayloadTransformation,
+} from "./event-bridge.types";
+
 // Signing and verification
 export {
   signPayload,
@@ -69,3 +77,8 @@ export {
   WebhookEventEmitter,
   getWebhookEventEmitter,
 } from "./event-emitter";
+
+// Event Bridge
+export {
+  EventWebhookBridge,
+} from "./event-bridge";

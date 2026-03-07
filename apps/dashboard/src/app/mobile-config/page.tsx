@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/ca
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { Select } from "../../components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   Smartphone,
   Palette,
@@ -143,7 +144,6 @@ export default function MobileConfigPage() {
 
   // Handle save
   const handleSave = () => {
-    // In a real app, this would call an API
     console.log({
       appName,
       primaryColor,
@@ -173,68 +173,41 @@ export default function MobileConfigPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* App Branding Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
               App Branding
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "var(--wl-space-6)" }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Logo Upload */}
               <div>
-                <label style={{ display: "block", fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-3)" }}>
+                <label className="block text-sm font-semibold text-wl-text-primary mb-3">
                   App Logo
                 </label>
                 <div
-                  style={{
-                    border: "2px dashed var(--wl-border-subtle)",
-                    borderRadius: "var(--wl-radius-lg)",
-                    padding: "var(--wl-space-8)",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                    background: "var(--wl-bg-surface)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "var(--wl-primary-500)";
-                    e.currentTarget.style.background = "rgba(245, 166, 35, 0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--wl-border-subtle)";
-                    e.currentTarget.style.background = "var(--wl-bg-surface)";
-                  }}
+                  className="border-2 border-dashed border-wl-border-subtle rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-surface hover:border-wl-primary-500 hover:bg-wl-primary-500/8"
                 >
-                  <Upload className="w-8 h-8" style={{ margin: "0 auto var(--wl-space-2)", color: "var(--wl-text-secondary)" }} />
-                  <p style={{ fontSize: "var(--wl-text-sm)", fontWeight: 500, color: "var(--wl-text-primary)", margin: 0 }}>
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-wl-text-secondary" />
+                  <p className="text-sm font-medium text-wl-text-primary">
                     Drag logo or click to upload
                   </p>
-                  <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: "var(--wl-space-1)" }}>
+                  <p className="text-xs text-wl-text-tertiary mt-1">
                     PNG, JPG, WEBP (Max 2MB)
                   </p>
                 </div>
                 {logoUrl && (
-                  <div style={{ marginTop: "var(--wl-space-3)", padding: "var(--wl-space-3)", background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-md)", textAlign: "center" }}>
+                  <div className="mt-3 p-3 bg-wl-bg-surface rounded-lg text-center">
                     <div
-                      style={{
-                        width: 60,
-                        height: 60,
-                        margin: "0 auto var(--wl-space-2)",
-                        background: "var(--wl-bg-elevated)",
-                        borderRadius: "var(--wl-radius-md)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "10px",
-                        color: "var(--wl-text-tertiary)",
-                      }}
+                      className="w-15 h-15 mx-auto mb-2 bg-wl-bg-elevated rounded-lg flex items-center justify-center text-xs text-wl-text-tertiary"
                     >
                       LOGO
                     </div>
-                    <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: 0 }}>
+                    <p className="text-xs text-wl-text-secondary">
                       {logoUrl}
                     </p>
                   </div>
@@ -243,67 +216,37 @@ export default function MobileConfigPage() {
 
               {/* App Name */}
               <div>
-                <label style={{ display: "block", fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)" }}>
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   App Name
                 </label>
                 <input
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    border: "1px solid var(--wl-border-subtle)",
-                    borderRadius: "var(--wl-radius-md)",
-                    background: "var(--wl-bg-surface)",
-                    color: "var(--wl-text-primary)",
-                    fontSize: "var(--wl-text-sm)",
-                    outline: "none",
-                    transition: "border-color var(--wl-duration-fast) var(--wl-ease-default)",
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wl-primary-500)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--wl-border-subtle)")}
+                  className="w-full px-3 py-2 border border-wl-border-subtle rounded-lg bg-wl-bg-surface text-wl-text-primary text-sm outline-none transition-colors focus:border-wl-primary-500"
                 />
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: "var(--wl-space-1)" }}>
+                <p className="text-xs text-wl-text-tertiary mt-1">
                   Displayed on home screen
                 </p>
               </div>
 
               {/* Primary Color */}
               <div>
-                <label style={{ display: "block", fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)" }}>
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   Primary Color (Hex)
                 </label>
-                <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                <div className="flex gap-2">
                   <input
                     type="color"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    style={{
-                      width: 60,
-                      height: 40,
-                      border: "1px solid var(--wl-border-subtle)",
-                      borderRadius: "var(--wl-radius-md)",
-                      cursor: "pointer",
-                    }}
+                    className="w-15 h-10 border border-wl-border-subtle rounded-lg cursor-pointer"
                   />
                   <input
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      border: "1px solid var(--wl-border-subtle)",
-                      borderRadius: "var(--wl-radius-md)",
-                      background: "var(--wl-bg-surface)",
-                      color: "var(--wl-text-primary)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontFamily: "var(--wl-font-mono)",
-                      outline: "none",
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wl-primary-500)")}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--wl-border-subtle)")}
+                    className="flex-1 px-3 py-2 border border-wl-border-subtle rounded-lg bg-wl-bg-surface text-wl-text-primary text-sm font-mono outline-none transition-colors focus:border-wl-primary-500"
                   />
                 </div>
               </div>
@@ -312,63 +255,44 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Feature Toggles Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
               Feature Toggles
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+            <div className="flex flex-col gap-3">
               {features.map((feature) => (
                 <div
                   key={feature.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "var(--wl-space-3)",
-                    background: "var(--wl-bg-surface)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border-subtle)",
-                  }}
+                  className="flex items-center justify-between p-3 bg-wl-bg-surface rounded-lg border border-wl-border-subtle"
                 >
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", margin: 0 }}>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-wl-text-primary">
                       {feature.name}
                     </p>
-                    <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: "var(--wl-space-1)" }}>
+                    <p className="text-xs text-wl-text-tertiary mt-1">
                       {feature.description}
                     </p>
                   </div>
                   <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-2)",
-                      marginLeft: "var(--wl-space-4)",
-                      cursor: "pointer",
-                    }}
+                    className="flex items-center gap-2 ml-4 cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={feature.enabled}
                       onChange={() => toggleFeature(feature.id)}
-                      style={{
-                        width: 20,
-                        height: 20,
-                        cursor: "pointer",
-                        accentColor: "var(--wl-primary-500)",
-                      }}
+                      className="w-5 h-5 cursor-pointer accent-wl-primary-500"
                     />
                   </label>
                 </div>
               ))}
 
               {/* Route Navigation Options */}
-              <div style={{ marginTop: "var(--wl-space-4)", paddingTop: "var(--wl-space-4)", borderTop: "1px solid var(--wl-border-subtle)" }}>
-                <label style={{ display: "block", fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-2)" }}>
+              <div className="mt-4 pt-4 border-t border-wl-border-subtle">
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   Route Navigation Service
                 </label>
                 <Select
@@ -380,7 +304,7 @@ export default function MobileConfigPage() {
                     { value: "apple-maps", label: "Apple Maps" },
                   ]}
                 />
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: "var(--wl-space-1)" }}>
+                <p className="text-xs text-wl-text-tertiary mt-1">
                   Default navigation app for route guidance
                 </p>
               </div>
@@ -389,55 +313,36 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Notification Settings Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <Bell className="w-5 h-5" />
               Notification Settings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+            <div className="flex flex-col gap-3">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "var(--wl-space-3)",
-                    background: "var(--wl-bg-surface)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border-subtle)",
-                  }}
+                  className="flex items-center justify-between p-3 bg-wl-bg-surface rounded-lg border border-wl-border-subtle"
                 >
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", margin: 0 }}>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-wl-text-primary">
                       {notification.name}
                     </p>
-                    <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: "var(--wl-space-1)" }}>
+                    <p className="text-xs text-wl-text-tertiary mt-1">
                       {notification.description}
                     </p>
                   </div>
                   <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-2)",
-                      marginLeft: "var(--wl-space-4)",
-                      cursor: "pointer",
-                    }}
+                    className="flex items-center gap-2 ml-4 cursor-pointer"
                   >
                     <input
                       type="checkbox"
                       checked={notification.enabled}
                       onChange={() => toggleNotification(notification.id)}
-                      style={{
-                        width: 20,
-                        height: 20,
-                        cursor: "pointer",
-                        accentColor: "var(--wl-primary-500)",
-                      }}
+                      className="w-5 h-5 cursor-pointer accent-wl-primary-500"
                     />
                   </label>
                 </div>
@@ -447,15 +352,15 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* GPS Settings Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               GPS Settings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--wl-space-4)" }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 label="Tracking Interval"
                 value={trackingInterval}
@@ -480,23 +385,18 @@ export default function MobileConfigPage() {
               />
 
               <div>
-                <label style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", cursor: "pointer", marginBottom: "var(--wl-space-2)" }}>
+                <label className="flex items-center gap-2 cursor-pointer mb-2">
                   <input
                     type="checkbox"
                     checked={backgroundTracking}
                     onChange={(e) => setBackgroundTracking(e.target.checked)}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      cursor: "pointer",
-                      accentColor: "var(--wl-primary-500)",
-                    }}
+                    className="w-5 h-5 cursor-pointer accent-wl-primary-500"
                   />
-                  <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                  <span className="text-sm font-semibold text-wl-text-primary">
                     Background Tracking
                   </span>
                 </label>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className="text-xs text-wl-text-tertiary">
                   Continue tracking when app is in background
                 </p>
               </div>
@@ -505,15 +405,15 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Offline Mode Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <Smartphone className="w-5 h-5" />
               Offline Mode
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--wl-space-4)" }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 label="Max Offline Cache Size"
                 value={cacheSize}
@@ -539,23 +439,18 @@ export default function MobileConfigPage() {
               />
 
               <div>
-                <label style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", cursor: "pointer", marginBottom: "var(--wl-space-2)" }}>
+                <label className="flex items-center gap-2 cursor-pointer mb-2">
                   <input
                     type="checkbox"
                     checked={autoRetry}
                     onChange={(e) => setAutoRetry(e.target.checked)}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      cursor: "pointer",
-                      accentColor: "var(--wl-primary-500)",
-                    }}
+                    className="w-5 h-5 cursor-pointer accent-wl-primary-500"
                   />
-                  <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                  <span className="text-sm font-semibold text-wl-text-primary">
                     Auto-retry on Reconnect
                   </span>
                 </label>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className="text-xs text-wl-text-tertiary">
                   Automatically sync pending data when connection restored
                 </p>
               </div>
@@ -564,56 +459,56 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Configuration Summary */}
-        <Card style={{ background: "rgba(34, 197, 94, 0.08)", borderColor: "var(--wl-success-400)" }}>
+        <Card className="bg-green-900/8 border-green-400">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", color: "var(--wl-success-400)" }}>
+            <CardTitle className="flex items-center gap-2 text-green-400">
               <CheckCircle className="w-5 h-5" />
               Ready to Deploy
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "var(--wl-space-4)", marginBottom: "var(--wl-space-4)" }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className="text-xs text-wl-text-tertiary">
                   Features Enabled
                 </p>
-                <p style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 4 }}>
+                <p className="text-lg font-bold text-wl-text-primary mt-1">
                   {features.filter((f) => f.enabled).length} / {features.length}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className="text-xs text-wl-text-tertiary">
                   Notifications Enabled
                 </p>
-                <p style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 4 }}>
+                <p className="text-lg font-bold text-wl-text-primary mt-1">
                   {notifications.filter((n) => n.enabled).length} / {notifications.length}
                 </p>
               </div>
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className="text-xs text-wl-text-tertiary">
                   Configuration Status
                 </p>
-                <Badge variant="success" style={{ marginTop: 4 }}>
+                <Badge variant="success" className="mt-1">
                   Configured
                 </Badge>
               </div>
             </div>
 
-            <div style={{ padding: "var(--wl-space-3)", background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-md)", marginBottom: "var(--wl-space-4)" }}>
-              <p style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", margin: 0, marginBottom: "var(--wl-space-2)" }}>
+            <div className="p-3 bg-wl-bg-surface rounded-lg mb-4">
+              <p className="text-xs font-semibold text-wl-text-secondary mb-2">
                 DEPLOYMENT NOTES
               </p>
-              <p style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", margin: 0 }}>
+              <p className="text-sm text-wl-text-secondary">
                 All configurations are ready for deployment to production. Click "Save Configuration" to apply these settings to the driver mobile app.
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "var(--wl-space-3)" }}>
-              <Button variant="primary" onClick={handleSave} style={{ flex: 1 }}>
+            <div className="flex gap-3">
+              <Button variant="primary" onClick={handleSave} className="flex-1">
                 <Save className="w-4 h-4 mr-2" />
                 Save & Deploy
               </Button>
-              <Button variant="secondary" style={{ flex: 1 }}>
+              <Button variant="secondary" className="flex-1">
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Config
               </Button>

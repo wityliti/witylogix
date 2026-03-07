@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../../../components
 import { StatCard } from "../../../../components/ui/stat-card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -297,10 +298,10 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)", flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+                <div className="flex items-center gap-2" >
                   {getStatusIcon(step.status)}
                 </div>
-                <div style={{ flex: 1 }}>
+                <div className="flex-1" >
                   <div
                     style={{
                       display: "flex",
@@ -343,9 +344,9 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 }}
               >
                 {expandedStep === step.id ? (
-                  <ChevronUp size={18} style={{ color: "var(--wl-text-tertiary)" }} />
+                  <ChevronUp size={18} className="text-wl-text-tertiary"  />
                 ) : (
-                  <ChevronDown size={18} style={{ color: "var(--wl-text-tertiary)" }} />
+                  <ChevronDown size={18} className="text-wl-text-tertiary"  />
                 )}
               </div>
             </div>
@@ -360,7 +361,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 }}
               >
                 {step.input && (
-                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
+                  <div className="mb-4" >
                     <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
                       Input
                     </h5>
@@ -369,7 +370,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
 
                 {step.output && (
-                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
+                  <div className="mb-4" >
                     <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
                       Output
                     </h5>
@@ -378,7 +379,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
 
                 {step.error && (
-                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
+                  <div className="mb-4" >
                     <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-danger-400)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
                       Error Details
                     </h5>
@@ -458,12 +459,12 @@ export default function WorkflowExecutionDetailPage({
           zIndex: 40,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-4)" }}>
+        <div className="flex items-center gap-4" >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/admin/workflows")}
-            style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-1)" }}
+            className="flex items-center gap-1" 
           >
             <ChevronLeft size={18} />
             Back
@@ -493,7 +494,7 @@ export default function WorkflowExecutionDetailPage({
           <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
         </div>
 
-        <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+        <div className="flex gap-2" >
           {execution.status === "running" && (
             <>
               <Button variant="secondary" size="sm">
@@ -511,7 +512,7 @@ export default function WorkflowExecutionDetailPage({
         </div>
       </div>
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6" >
         {/* Stats Cards */}
         <div
           style={{
@@ -548,7 +549,7 @@ export default function WorkflowExecutionDetailPage({
         </div>
 
         {/* Step Timeline */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6" >
           <CardHeader>
             <CardTitle>Step Timeline</CardTitle>
           </CardHeader>
@@ -582,9 +583,9 @@ export default function WorkflowExecutionDetailPage({
               <CardTitle>Execution Context</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className="flex flex-col gap-3" >
                 {Object.entries(execution.context).map(([key, value]) => (
-                  <div key={key} style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                  <div key={key} className="flex gap-2" >
                     <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", minWidth: 80, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       {key}
                     </span>
@@ -603,10 +604,10 @@ export default function WorkflowExecutionDetailPage({
               <CardTitle>Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className="flex flex-col gap-3" >
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <Calendar size={14} style={{ color: "var(--wl-text-tertiary)" }} />
+                    <Calendar size={14} className="text-wl-text-tertiary"  />
                     <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       Started
                     </span>
@@ -630,7 +631,7 @@ export default function WorkflowExecutionDetailPage({
                 )}
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <User size={14} style={{ color: "var(--wl-text-tertiary)" }} />
+                    <User size={14} className="text-wl-text-tertiary"  />
                     <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       Created By
                     </span>
@@ -641,7 +642,7 @@ export default function WorkflowExecutionDetailPage({
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <RotateCcw size={14} style={{ color: "var(--wl-text-tertiary)" }} />
+                    <RotateCcw size={14} className="text-wl-text-tertiary"  />
                     <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                       Retry Count
                     </span>
@@ -666,7 +667,7 @@ export default function WorkflowExecutionDetailPage({
             }}
           >
             <CardHeader>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+              <div className="flex items-center gap-2" >
                 <AlertCircle size={20} style={{ color: "var(--wl-danger-400)" }} />
                 <CardTitle>Error Summary</CardTitle>
               </div>
@@ -675,7 +676,7 @@ export default function WorkflowExecutionDetailPage({
               {execution.steps
                 .filter((s) => s.error)
                 .map((step) => (
-                  <div key={step.id} style={{ marginBottom: "var(--wl-space-3)" }}>
+                  <div key={step.id} className="mb-3" >
                     <p style={{ margin: "0 0 var(--wl-space-1) 0", color: "var(--wl-danger-400)", fontSize: "var(--wl-text-sm)", fontWeight: 600 }}>
                       Step {step.number}: {step.name}
                     </p>

@@ -6,6 +6,7 @@ import { StatCard } from "../../components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    PRODUCTS PAGE — Product cache & sync management
@@ -211,9 +212,7 @@ export default function ProductsPage() {
   const syncedToday = PRODUCTS.filter((p) => {
     const syncDate = new Date(p.lastSyncAt);
     const today = new Date();
-    return (
-      syncDate.toLocaleDateString() === today.toLocaleDateString()
-    );
+    return syncDate.toLocaleDateString() === today.toLocaleDateString();
   }).length;
   const missingWeight = PRODUCTS.filter((p) => p.weight === null && p.requiresShipping).length;
   const missingType = PRODUCTS.filter((p) => !p.productType).length;
@@ -221,7 +220,6 @@ export default function ProductsPage() {
   // Filter and sort
   const filtered = useMemo(() => {
     let result = PRODUCTS.filter((p) => {
-      // Search filter
       if (search) {
         const q = search.toLowerCase();
         if (
@@ -233,11 +231,9 @@ export default function ProductsPage() {
         }
       }
 
-      // Active filters
       if (selectedFilters.has("requiresShipping") && !p.requiresShipping) return false;
       if (selectedFilters.has("missingWeight") && p.weight !== null) return false;
 
-      // Vendor filter
       for (const filter of selectedFilters) {
         if (filter !== "requiresShipping" && filter !== "missingWeight" && filter !== p.vendor) {
           continue;
@@ -299,7 +295,7 @@ export default function ProductsPage() {
         title="Products"
         subtitle={`${PRODUCTS.length} total · ${syncedToday} synced today`}
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+          <div className="flex gap-2">
             <Button variant="secondary" size="md">
               + Export CSV
             </Button>
@@ -310,16 +306,9 @@ export default function ProductsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Stats Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Products"
             value={PRODUCTS.length}
@@ -351,17 +340,8 @@ export default function ProductsPage() {
         </div>
 
         {/* Search and Sort Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+        <div className="flex gap-4 mb-5 items-center flex-wrap">
+          <div className="flex-1 flex-grow-0 w-[300px] max-w-96">
             <input
               type="text"
               placeholder="Search products, vendor..."
@@ -370,38 +350,17 @@ export default function ProductsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
             />
           </div>
 
-          {/* Sort Dropdown */}
           <select
             value={sortBy}
             onChange={(e) => {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            style={{
-              padding: "var(--wl-space-1) var(--wl-space-3)",
-              background: "var(--wl-bg-elevated)",
-              border: "1px solid var(--wl-border-default)",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-primary)",
-              fontSize: "var(--wl-text-sm)",
-              fontFamily: "var(--wl-font-sans)",
-              cursor: "pointer",
-              outline: "none",
-            }}
+            className="p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans cursor-pointer outline-none"
           >
             <option value="title">Sort by Title</option>
             <option value="type">Sort by Type</option>
@@ -410,74 +369,45 @@ export default function ProductsPage() {
         </div>
 
         {/* Filter Chips */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-2)",
-            marginBottom: "var(--wl-space-5)",
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+        <div className="flex gap-2 mb-5 flex-wrap items-center">
+          <span className="text-xs font-semibold text-wl-text-secondary">
             Filters:
           </span>
 
-          {/* Requires Shipping Filter */}
           <button
             onClick={() => toggleFilter("requiresShipping")}
-            style={{
-              padding: "var(--wl-space-1) var(--wl-space-3)",
-              borderRadius: "var(--wl-radius-full)",
-              border: "1px solid",
-              fontSize: "var(--wl-text-xs)",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "var(--wl-font-sans)",
-              background: selectedFilters.has("requiresShipping") ? "var(--wl-primary-500)" : "transparent",
-              color: selectedFilters.has("requiresShipping") ? "var(--wl-text-inverse)" : "var(--wl-text-secondary)",
-              borderColor: selectedFilters.has("requiresShipping") ? "var(--wl-primary-500)" : "var(--wl-border-subtle)",
-            }}
+            className={cn(
+              "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
+              selectedFilters.has("requiresShipping")
+                ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+            )}
           >
             Requires Shipping
           </button>
 
-          {/* Missing Weight Filter */}
           <button
             onClick={() => toggleFilter("missingWeight")}
-            style={{
-              padding: "var(--wl-space-1) var(--wl-space-3)",
-              borderRadius: "var(--wl-radius-full)",
-              border: "1px solid",
-              fontSize: "var(--wl-text-xs)",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "var(--wl-font-sans)",
-              background: selectedFilters.has("missingWeight") ? "var(--wl-warning-500)" : "transparent",
-              color: selectedFilters.has("missingWeight") ? "var(--wl-text-inverse)" : "var(--wl-text-secondary)",
-              borderColor: selectedFilters.has("missingWeight") ? "var(--wl-warning-500)" : "var(--wl-border-subtle)",
-            }}
+            className={cn(
+              "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
+              selectedFilters.has("missingWeight")
+                ? "bg-wl-warning-500 text-wl-text-inverse border-wl-warning-500"
+                : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+            )}
           >
             Missing Weight
           </button>
 
-          {/* Vendor Filters */}
           {vendors.map((vendor) => (
             <button
               key={vendor}
               onClick={() => toggleFilter(vendor)}
-              style={{
-                padding: "var(--wl-space-1) var(--wl-space-3)",
-                borderRadius: "var(--wl-radius-full)",
-                border: "1px solid",
-                fontSize: "var(--wl-text-xs)",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "var(--wl-font-sans)",
-                background: selectedFilters.has(vendor) ? "var(--wl-info-500)" : "transparent",
-                color: selectedFilters.has(vendor) ? "var(--wl-text-inverse)" : "var(--wl-text-secondary)",
-                borderColor: selectedFilters.has(vendor) ? "var(--wl-info-500)" : "var(--wl-border-subtle)",
-              }}
+              className={cn(
+                "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
+                selectedFilters.has(vendor)
+                  ? "bg-wl-info-500 text-wl-text-inverse border-wl-info-500"
+                  : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+              )}
             >
               {vendor}
             </button>
@@ -489,17 +419,7 @@ export default function ProductsPage() {
                 setSelectedFilters(new Set());
                 setCurrentPage(1);
               }}
-              style={{
-                padding: "var(--wl-space-1) var(--wl-space-3)",
-                borderRadius: "var(--wl-radius-full)",
-                border: "1px solid var(--wl-border-subtle)",
-                fontSize: "var(--wl-text-xs)",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "var(--wl-font-sans)",
-                background: "transparent",
-                color: "var(--wl-text-tertiary)",
-              }}
+              className="p-1 px-3 rounded-full border border-wl-border-subtle text-xs font-semibold cursor-pointer font-sans bg-transparent text-wl-text-tertiary"
             >
               Clear all
             </button>
@@ -508,19 +428,12 @@ export default function ProductsPage() {
 
         {/* Bulk Actions Bar */}
         {selectedProducts.size > 0 && (
-          <Card
-            style={{
-              marginBottom: "var(--wl-space-5)",
-              padding: "var(--wl-space-4)",
-              background: "var(--wl-primary-500)",
-              border: "1px solid var(--wl-primary-600)",
-            }}
-          >
-            <div style={{ display: "flex", gap: "var(--wl-space-4)", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ color: "var(--wl-text-inverse)", fontSize: "var(--wl-text-sm)", fontWeight: 600 }}>
+          <Card className="mb-5 p-4 bg-wl-primary-500 border border-wl-primary-600">
+            <div className="flex gap-4 items-center justify-between">
+              <div className="text-wl-text-inverse text-sm font-semibold">
                 {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
               </div>
-              <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+              <div className="flex gap-2">
                 <Button
                   variant="secondary"
                   size="sm"
@@ -548,23 +461,12 @@ export default function ProductsPage() {
         )}
 
         {/* Products Table */}
-        <Card style={{ overflow: "hidden", padding: 0 }}>
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "var(--wl-text-sm)",
-              }}
-            >
+        <Card className="overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
               <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid var(--wl-border-subtle)",
-                    background: "var(--wl-bg-overlay)",
-                  }}
-                >
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)", width: 40 }}>
+                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary w-10">
                     <input
                       type="checkbox"
                       checked={selectedProducts.size === paginatedItems.length && paginatedItems.length > 0}
@@ -577,79 +479,62 @@ export default function ProductsPage() {
                           setSelectedProducts(newSelected);
                         }
                       }}
-                      style={{ cursor: "pointer" }}
+                      className="cursor-pointer"
                     />
                   </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Title
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Type
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Vendor
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Weight
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Shipping
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Inventory
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Last Sync
-                  </th>
-                  <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
-                    Shopify ID
-                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Title</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Type</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vendor</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Weight</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Shipping</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Inventory</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Last Sync</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Shopify ID</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedItems.map((product, idx) => (
                   <tr
                     key={product.id}
-                    style={{
-                      borderBottom: "1px solid var(--wl-border-subtle)",
-                      background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
-                      transition: "background var(--wl-duration-fast)",
-                    }}
+                    className={cn(
+                      "border-b border-wl-border-subtle transition-colors duration-fast",
+                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay"
+                    )}
                   >
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
+                    <td className="p-3 px-4 text-center">
                       <input
                         type="checkbox"
                         checked={selectedProducts.has(product.id)}
                         onChange={() => toggleProductSelection(product.id)}
-                        style={{ cursor: "pointer" }}
+                        className="cursor-pointer"
                       />
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
                       {product.title}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-wl-text-secondary">
                       {product.productType}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-wl-text-secondary">
                       {product.vendor}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-secondary)" }}>
+                    <td className="p-3 px-4 text-center text-wl-text-secondary">
                       {product.weight ? `${product.weight} ${product.weightUnit}` : (
-                        <span style={{ color: "var(--wl-danger-400)", fontWeight: 600 }}>Missing</span>
+                        <span className="text-wl-danger-400 font-semibold">Missing</span>
                       )}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
+                    <td className="p-3 px-4 text-center">
                       <Badge variant={product.requiresShipping ? "primary" : "default"}>
                         {product.requiresShipping ? "Yes" : "No"}
                       </Badge>
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-primary)", fontWeight: 600 }}>
+                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
                       {product.inventoryQty}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-tertiary)", fontSize: "var(--wl-text-xs)" }}>
+                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
                       {formatDateTime(product.lastSyncAt)}
                     </td>
-                    <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-tertiary)", fontSize: "var(--wl-text-xs)" }}>
+                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
                       {product.shopifyId.split("/").pop()}
                     </td>
                   </tr>
@@ -659,22 +544,11 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "var(--wl-space-4)",
-              borderTop: "1px solid var(--wl-border-subtle)",
-              background: "var(--wl-bg-overlay)",
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-text-secondary)",
-            }}
-          >
+          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>
-            <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+            <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -683,7 +557,7 @@ export default function ProductsPage() {
               >
                 Previous
               </Button>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+              <div className="flex items-center gap-2">
                 <span>Page {currentPage} of {totalPages}</span>
               </div>
               <Button

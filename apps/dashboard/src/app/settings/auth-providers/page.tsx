@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Tabs } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle,
   AlertCircle,
@@ -146,15 +147,15 @@ export default function AuthProvidersPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
+    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
       <Header
         title="Authentication Providers"
         subtitle="Configure SSO providers, role mapping, and authentication settings"
       />
 
-      <div style={{ maxWidth: "1300px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Navigation Tabs */}
-        <div style={{ marginBottom: "2rem" }}>
+        <div className="mb-8">
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="underline" />
         </div>
 
@@ -163,16 +164,16 @@ export default function AuthProvidersPage() {
           <div>
             {/* Active Provider Info */}
             {providers.find((p) => p.id === activeProvider) && (
-              <Card style={{ marginBottom: "2rem", borderLeft: "4px solid var(--wl-success)" }}>
-                <CardContent style={{ paddingTop: "1.5rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <Card className="mb-8 border-l-4 border-l-[var(--wl-success)]">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
                       <Badge variant="success">Active Provider</Badge>
-                      <span style={{ fontSize: "1rem", fontWeight: "600", color: "var(--wl-text-primary)" }}>
+                      <span className="text-base font-semibold text-[var(--wl-text-primary)]">
                         {providers.find((p) => p.id === activeProvider)?.name}
                       </span>
                     </div>
-                    <span style={{ fontSize: "0.875rem", color: "var(--wl-text-tertiary)" }}>
+                    <span className="text-sm text-[var(--wl-text-tertiary)]">
                       All SSO authentication requests route through this provider
                     </span>
                   </div>
@@ -181,45 +182,24 @@ export default function AuthProvidersPage() {
             )}
 
             {/* Providers Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-                gap: "1.5rem",
-                marginBottom: "2rem",
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {providers.map((provider) => (
                 <Card
                   key={provider.id}
-                  style={{
-                    position: "relative",
-                    borderColor: activeProvider === provider.id ? "var(--wl-success)" : "var(--wl-border)",
-                    borderWidth: activeProvider === provider.id ? "2px" : "1px",
-                  }}
+                  className={cn(
+                    activeProvider === provider.id && "border-2 border-[var(--wl-success)]"
+                  )}
                 >
                   {/* Active Indicator */}
                   {activeProvider === provider.id && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "-2px",
-                        right: "1rem",
-                        background: "var(--wl-success)",
-                        color: "white",
-                        padding: "0.25rem 0.75rem",
-                        borderRadius: "0 0 0.5rem 0.5rem",
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                      }}
-                    >
+                    <div className="absolute -top-0.5 right-4 bg-[var(--wl-success)] text-white px-3 py-1 rounded-b text-xs font-semibold">
                       ACTIVE
                     </div>
                   )}
 
                   <CardHeader>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
-                      <div style={{ fontSize: "2.5rem" }}>{provider.icon}</div>
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="text-4xl">{provider.icon}</div>
                       <div>
                         {provider.status === "connected" ? (
                           <Badge variant="success">Connected</Badge>
@@ -228,20 +208,18 @@ export default function AuthProvidersPage() {
                         )}
                       </div>
                     </div>
-                    <CardTitle style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>
-                      {provider.name}
-                    </CardTitle>
+                    <CardTitle className="text-xl mb-1">{provider.name}</CardTitle>
                     <CardDescription>Provider ID: {provider.id}</CardDescription>
                   </CardHeader>
 
                   <CardContent>
-                    <div style={{ marginBottom: "1.5rem" }}>
-                      <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-secondary)", marginBottom: "0.5rem" }}>
+                    <div className="mb-6">
+                      <div className="text-sm font-semibold text-[var(--wl-text-secondary)] mb-2">
                         Capabilities
                       </div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div className="flex flex-wrap gap-2">
                         {provider.capabilities.map((cap) => (
-                          <Badge key={cap} variant="info" style={{ fontSize: "0.75rem" }}>
+                          <Badge key={cap} variant="info" className="text-xs">
                             {cap}
                           </Badge>
                         ))}
@@ -249,19 +227,19 @@ export default function AuthProvidersPage() {
                     </div>
 
                     {provider.config && (
-                      <div style={{ background: "var(--wl-bg-tertiary)", padding: "1rem", borderRadius: "0.5rem", marginBottom: "1rem" }}>
+                      <div className="bg-[var(--wl-bg-tertiary)] p-4 rounded-lg mb-4">
                         {provider.config.domain && (
-                          <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)", marginBottom: "0.5rem" }}>
+                          <div className="text-sm text-[var(--wl-text-secondary)] mb-2">
                             <strong>Domain:</strong> {provider.config.domain}
                           </div>
                         )}
                         {provider.config.clientId && (
-                          <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)", marginBottom: "0.5rem" }}>
+                          <div className="text-sm text-[var(--wl-text-secondary)] mb-2">
                             <strong>Client ID:</strong> {provider.config.clientId}
                           </div>
                         )}
                         {provider.config.callbackUrl && (
-                          <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                          <div className="text-sm text-[var(--wl-text-secondary)]">
                             <strong>Callback URL:</strong> {provider.config.callbackUrl}
                           </div>
                         )}
@@ -269,14 +247,14 @@ export default function AuthProvidersPage() {
                     )}
                   </CardContent>
 
-                  <CardFooter style={{ display: "flex", gap: "0.5rem", paddingTop: 0 }}>
+                  <CardFooter className="flex gap-2 pt-0">
                     <Button
                       variant={provider.status === "connected" ? "secondary" : "primary"}
                       onClick={() => {
                         setSelectedProvider(provider);
                         setIsConfigModalOpen(true);
                       }}
-                      style={{ flex: 1 }}
+                      className="flex-1"
                     >
                       {provider.status === "connected" ? "Reconfigure" : "Connect"}
                     </Button>
@@ -284,7 +262,7 @@ export default function AuthProvidersPage() {
                       <Button
                         variant="ghost"
                         onClick={() => handleTestConnection(provider.id)}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+                        className="flex-1 flex items-center justify-center gap-2"
                       >
                         <TestTube className="w-4 h-4" />
                         Test
@@ -293,7 +271,7 @@ export default function AuthProvidersPage() {
                     <Button
                       variant="danger"
                       onClick={() => handleDeleteProvider(provider.id)}
-                      style={{ padding: "0.5rem" }}
+                      className="p-2"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -305,23 +283,25 @@ export default function AuthProvidersPage() {
             {/* Test Result */}
             {testResult && (
               <Card
-                style={{
-                  borderLeft: `4px solid ${testResult.status === "success" ? "var(--wl-success)" : "var(--wl-danger)"}`,
-                  marginBottom: "2rem",
-                }}
+                className={cn(
+                  "mb-8 border-l-4",
+                  testResult.status === "success"
+                    ? "border-l-[var(--wl-success)]"
+                    : "border-l-[var(--wl-danger)]"
+                )}
               >
-                <CardContent style={{ paddingTop: "1.5rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
                     {testResult.status === "success" ? (
-                      <CheckCircle className="w-6 h-6" style={{ color: "var(--wl-success)" }} />
+                      <CheckCircle className="w-6 h-6 text-[var(--wl-success)] flex-shrink-0" />
                     ) : (
-                      <AlertCircle className="w-6 h-6" style={{ color: "var(--wl-danger)" }} />
+                      <AlertCircle className="w-6 h-6 text-[var(--wl-danger)] flex-shrink-0" />
                     )}
                     <div>
-                      <div style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--wl-text-primary)" }}>
+                      <div className="text-sm font-semibold text-[var(--wl-text-primary)]">
                         {testResult.status === "success" ? "Connection Successful" : "Connection Failed"}
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                      <div className="text-sm text-[var(--wl-text-secondary)]">
                         {testResult.message}
                       </div>
                     </div>
@@ -335,7 +315,7 @@ export default function AuthProvidersPage() {
         {/* ROLE MAPPING TAB */}
         {activeTab === "role-mapping" && (
           <div>
-            <Card style={{ marginBottom: "2rem" }}>
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Role Mapping Configuration</CardTitle>
                 <CardDescription>
@@ -343,31 +323,20 @@ export default function AuthProvidersPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div
-                  style={{
-                    overflowX: "auto",
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      fontSize: "0.9rem",
-                    }}
-                  >
+                <div className="overflow-x-auto mb-6">
+                  <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr style={{ borderBottom: "2px solid var(--wl-border)" }}>
-                        <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <tr className="border-b-2 border-[var(--wl-border)]">
+                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
                           External Role
                         </th>
-                        <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
                           Witylogix Role
                         </th>
-                        <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
                           Permissions
                         </th>
-                        <th style={{ padding: "1rem", textAlign: "center", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                        <th className="py-4 px-4 text-center text-[var(--wl-text-secondary)] font-semibold">
                           Action
                         </th>
                       </tr>
@@ -376,31 +345,31 @@ export default function AuthProvidersPage() {
                       {roleMapping.map((mapping, idx) => (
                         <tr
                           key={idx}
-                          style={{
-                            borderBottom: "1px solid var(--wl-border)",
-                            background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-tertiary)",
-                          }}
+                          className={cn(
+                            "border-b border-[var(--wl-border)]",
+                            idx % 2 === 1 && "bg-[var(--wl-bg-tertiary)]"
+                          )}
                         >
-                          <td style={{ padding: "1rem", color: "var(--wl-text-primary)" }}>
-                            <code style={{ background: "var(--wl-bg-secondary)", padding: "0.25rem 0.5rem", borderRadius: "0.25rem", fontSize: "0.85rem" }}>
+                          <td className="py-4 px-4 text-[var(--wl-text-primary)]">
+                            <code className="bg-[var(--wl-bg-secondary)] px-2 py-1 rounded text-xs">
                               {mapping.externalRole}
                             </code>
                           </td>
-                          <td style={{ padding: "1rem", color: "var(--wl-text-primary)" }}>
+                          <td className="py-4 px-4 text-[var(--wl-text-primary)]">
                             <Badge variant="primary">{mapping.witylogixRole}</Badge>
                           </td>
-                          <td style={{ padding: "1rem", color: "var(--wl-text-secondary)", fontSize: "0.85rem" }}>
+                          <td className="py-4 px-4 text-[var(--wl-text-secondary)] text-xs">
                             {mapping.witylogixRole === "SUPER_ADMIN" && "Full access"}
                             {mapping.witylogixRole === "ADMIN" && "Manage team, config"}
                             {mapping.witylogixRole === "DISPATCHER" && "Dispatch, track"}
                             {mapping.witylogixRole === "VIEWER" && "View-only access"}
                             {mapping.witylogixRole === "DRIVER" && "Driver app access"}
                           </td>
-                          <td style={{ padding: "1rem", textAlign: "center" }}>
+                          <td className="py-4 px-4 text-center">
                             <Button
                               variant="ghost"
                               onClick={() => setIsMappingModalOpen(true)}
-                              style={{ padding: "0.25rem", fontSize: "0.85rem" }}
+                              className="p-1 text-xs"
                             >
                               Edit
                             </Button>
@@ -421,52 +390,52 @@ export default function AuthProvidersPage() {
         {/* SETTINGS TAB */}
         {activeTab === "settings" && (
           <div>
-            <Card style={{ marginBottom: "2rem" }}>
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Authentication Settings</CardTitle>
                 <CardDescription>Configure global SSO and security options</CardDescription>
               </CardHeader>
               <CardContent>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                <div className="flex flex-col gap-8">
                   {/* JIT Provisioning */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "1.5rem", borderBottom: "1px solid var(--wl-border)" }}>
+                  <div className="flex items-center justify-between pb-6 border-b border-[var(--wl-border)]">
                     <div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.25rem" }}>
+                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
                         Just-In-Time Provisioning
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                      <div className="text-sm text-[var(--wl-text-secondary)]">
                         Automatically create users on first SSO login
                       </div>
                     </div>
                     <Button
                       variant={jitProvisioning ? "primary" : "secondary"}
                       onClick={() => setJitProvisioning(!jitProvisioning)}
-                      style={{ minWidth: "100px" }}
+                      className="min-w-[100px]"
                     >
                       {jitProvisioning ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
 
                   {/* MFA Required */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "1.5rem", borderBottom: "1px solid var(--wl-border)" }}>
+                  <div className="flex items-center justify-between pb-6 border-b border-[var(--wl-border)]">
                     <div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.25rem" }}>
+                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
                         Enforce MFA for All Users
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                      <div className="text-sm text-[var(--wl-text-secondary)]">
                         Require multi-factor authentication on login
                       </div>
                     </div>
-                    <Button variant="secondary" style={{ minWidth: "100px" }}>Disabled</Button>
+                    <Button variant="secondary" className="min-w-[100px]">Disabled</Button>
                   </div>
 
                   {/* Session Timeout */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", paddingBottom: "1.5rem", borderBottom: "1px solid var(--wl-border)" }}>
+                  <div className="flex items-start justify-between pb-6 border-b border-[var(--wl-border)]">
                     <div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.25rem" }}>
+                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
                         Session Timeout
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                      <div className="text-sm text-[var(--wl-text-secondary)]">
                         Auto-logout after period of inactivity
                       </div>
                     </div>
@@ -483,12 +452,12 @@ export default function AuthProvidersPage() {
                   </div>
 
                   {/* IP Whitelisting */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div className="flex items-start justify-between">
                     <div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.25rem" }}>
+                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
                         IP Whitelist
                       </div>
-                      <div style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>
+                      <div className="text-sm text-[var(--wl-text-secondary)]">
                         Restrict access to specific IP addresses (optional)
                       </div>
                     </div>
@@ -508,7 +477,7 @@ export default function AuthProvidersPage() {
         title={`${selectedProvider?.status === "connected" ? "Reconfigure" : "Connect"} ${selectedProvider?.name}`}
         size="lg"
         footer={
-          <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+          <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setIsConfigModalOpen(false)}>
               Cancel
             </Button>
@@ -518,10 +487,10 @@ export default function AuthProvidersPage() {
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div className="flex flex-col gap-6">
           {/* Domain/Tenant */}
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               Domain / Tenant
             </label>
             <Input placeholder="e.g., witylogix.auth0.com" defaultValue={selectedProvider?.config?.domain || ""} />
@@ -529,15 +498,15 @@ export default function AuthProvidersPage() {
 
           {/* Client ID */}
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               Client ID
             </label>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div className="flex gap-2">
               <Input
                 type={showSecrets[selectedProvider?.id || ""] ? "text" : "password"}
                 placeholder="Your client ID"
                 defaultValue={selectedProvider?.config?.clientId || ""}
-                style={{ flex: 1 }}
+                className="flex-1"
               />
               <Button
                 variant="ghost"
@@ -555,15 +524,15 @@ export default function AuthProvidersPage() {
 
           {/* Client Secret */}
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               Client Secret
             </label>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div className="flex gap-2">
               <Input
                 type={showSecrets[selectedProvider?.id || ""] ? "text" : "password"}
                 placeholder="Your client secret"
                 defaultValue={selectedProvider?.config?.clientSecret || ""}
-                style={{ flex: 1 }}
+                className="flex-1"
               />
               <Button
                 variant="ghost"
@@ -581,14 +550,14 @@ export default function AuthProvidersPage() {
 
           {/* Callback URL */}
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               Callback URL
             </label>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div className="flex gap-2">
               <Input
                 readOnly
                 value="https://app.witylogix.com/auth/callback"
-                style={{ flex: 1, background: "var(--wl-bg-tertiary)" }}
+                className="flex-1 bg-[var(--wl-bg-tertiary)]"
               />
               <Button
                 variant="ghost"
@@ -600,7 +569,7 @@ export default function AuthProvidersPage() {
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
-            <p style={{ fontSize: "0.75rem", color: "var(--wl-text-tertiary)", marginTop: "0.5rem" }}>
+            <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
               Use this URL in your auth provider settings
             </p>
           </div>
@@ -614,7 +583,7 @@ export default function AuthProvidersPage() {
         title="Edit Role Mapping"
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+          <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setIsMappingModalOpen(false)}>
               Cancel
             </Button>
@@ -624,15 +593,15 @@ export default function AuthProvidersPage() {
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div className="flex flex-col gap-6">
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               External Role Claim
             </label>
             <Input placeholder="e.g., admin, manager, viewer" />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
               Map to Witylogix Role
             </label>
             <Select

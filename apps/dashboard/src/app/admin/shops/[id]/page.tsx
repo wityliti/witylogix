@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ShoppingCart,
@@ -271,7 +272,7 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
   };
 
   return (
-    <div style={{ background: "var(--wl-bg)" }}>
+    <div style={{ background: "var(--wl-bg-root)" }}>
       {/* Header */}
       <div
         style={{
@@ -285,28 +286,28 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         <Link
           href="/admin"
           style={{
-            color: "var(--wl-primary)",
+            color: "var(--wl-primary-500)",
             textDecoration: "none",
             display: "flex",
             alignItems: "center",
             gap: "8px",
           }}
         >
-          <ArrowLeft style={{ width: "20px", height: "20px" }} />
+          <ArrowLeft  />
           Back to Shops
         </Link>
       </div>
 
-      <div style={{ padding: "24px" }}>
+      <div className="p-6">
         {/* Shop Header Card */}
         <Card
           style={{
-            background: "var(--wl-card)",
+            background: "var(--wl-bg-surface)",
             border: "1px solid var(--wl-border)",
             marginBottom: "24px",
           }}
         >
-          <CardContent style={{ padding: "24px" }}>
+          <CardContent className="p-6">
             <div
               style={{
                 display: "flex",
@@ -320,17 +321,17 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   style={{
                     fontSize: "28px",
                     fontWeight: "700",
-                    color: "var(--wl-text)",
+                    color: "var(--wl-text-primary)",
                     margin: "0 0 8px 0",
                   }}
                 >
                   {mockShopDetail.name}
                 </h1>
-                <p style={{ color: "var(--wl-muted)", margin: "0", fontSize: "14px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "14px" }}>
                   {mockShopDetail.domain}
                 </p>
               </div>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <div className="flex gap-3 items-center">
                 <Badge
                   style={{
                     background: getStatusColor(mockShopDetail.status) + "20",
@@ -363,34 +364,34 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
               }}
             >
               <div>
-                <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                   Owner Name
                 </p>
-                <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                   {mockShopDetail.owner.name}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                   Email
                 </p>
-                <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                   {mockShopDetail.owner.email}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                   Phone
                 </p>
-                <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                   {mockShopDetail.owner.phone}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                   Member Since
                 </p>
-                <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                   {new Date(mockShopDetail.owner.joinDate).toLocaleDateString()}
                 </p>
               </div>
@@ -407,30 +408,30 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             marginBottom: "24px",
           }}
         >
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start" >
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
                     Total Orders
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
                     {mockShopDetail.usage.orders.toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart style={{ width: "24px", height: "24px", color: "var(--wl-primary)" }} />
+                <ShoppingCart style={{ width: "24px", height: "24px", color: "var(--wl-primary-500)" }} />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start" >
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
                     Shipments
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
                     {mockShopDetail.usage.shipments.toLocaleString()}
                   </p>
                 </div>
@@ -439,14 +440,14 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start" >
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
                     Drivers
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
                     {mockShopDetail.usage.drivers}
                   </p>
                 </div>
@@ -455,18 +456,18 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start" >
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
                     API Uptime
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
                     {mockShopDetail.uptime}%
                   </p>
                 </div>
-                <Activity style={{ width: "24px", height: "24px", color: "var(--wl-success)" }} />
+                <Activity style={{ width: "24px", height: "24px", color: "var(--wl-success-400)" }} />
               </div>
             </CardContent>
           </Card>
@@ -475,21 +476,21 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         {/* API Usage */}
         <Card
           style={{
-            background: "var(--wl-card)",
+            background: "var(--wl-bg-surface)",
             border: "1px solid var(--wl-border)",
             marginBottom: "24px",
           }}
         >
-          <CardContent style={{ padding: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 16px 0" }}>
+          <CardContent className="p-5">
+            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
               API Usage
             </h3>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1" >
                 <div
                   style={{
                     height: "8px",
-                    background: "var(--wl-bg)",
+                    background: "var(--wl-bg-root)",
                     borderRadius: "4px",
                     overflow: "hidden",
                     marginBottom: "8px",
@@ -499,18 +500,18 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                     style={{
                       height: "100%",
                       width: `${(mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100}%`,
-                      background: "var(--wl-primary)",
+                      background: "var(--wl-primary-500)",
                       transition: "width 0.3s",
                     }}
                   />
                 </div>
-                <p style={{ color: "var(--wl-muted)", margin: "0", fontSize: "12px" }}>
+                <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "12px" }}>
                   {mockShopDetail.usage.apiCalls.toLocaleString()} /{" "}
                   {mockShopDetail.usage.apiCallsLimit.toLocaleString()} calls
                 </p>
               </div>
               <div style={{ textAlign: "right" }}>
-                <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
+                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
                   {((mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100).toFixed(1)}%
                 </p>
               </div>
@@ -521,14 +522,14 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         {/* Billing Section */}
         <Card
           style={{
-            background: "var(--wl-card)",
+            background: "var(--wl-bg-surface)",
             border: "1px solid var(--wl-border)",
             marginBottom: "24px",
           }}
         >
-          <CardContent style={{ padding: "20px" }}>
+          <CardContent className="p-5">
             <div style={{ marginBottom: "20px" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 16px 0" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
                 Current Billing
               </h3>
 
@@ -541,31 +542,31 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                 }}
               >
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                     Current Plan
                   </p>
-                  <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                     {mockShopDetail.billing.currentPlan}
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                     Monthly Fee
                   </p>
-                  <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                     ${mockShopDetail.billing.monthlyFee}/month
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                     Next Billing Date
                   </p>
-                  <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
                     {new Date(mockShopDetail.billing.nextBillingDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
                     Status
                   </p>
                   <Badge
@@ -583,7 +584,7 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
 
             {/* Billing History */}
             <div style={{ borderTop: "1px solid var(--wl-border)", paddingTop: "20px" }}>
-              <h4 style={{ fontSize: "14px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 12px 0" }}>
+              <h4 style={{ fontSize: "14px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 12px 0" }}>
                 Billing History
               </h4>
               <div style={{ maxHeight: "300px", overflowY: "auto" }}>
@@ -599,15 +600,15 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                     }}
                   >
                     <div>
-                      <p style={{ color: "var(--wl-text)", margin: "0 0 4px 0", fontSize: "14px" }}>
+                      <p style={{ color: "var(--wl-text-primary)", margin: "0 0 4px 0", fontSize: "14px" }}>
                         {record.description}
                       </p>
-                      <p style={{ color: "var(--wl-muted)", margin: "0", fontSize: "12px" }}>
+                      <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "12px" }}>
                         {new Date(record.date).toLocaleDateString()}
                       </p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
+                      <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
                         ${record.amount}
                       </p>
                       <Badge
@@ -631,19 +632,19 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         {/* Admin Actions */}
         <Card
           style={{
-            background: "var(--wl-card)",
+            background: "var(--wl-bg-surface)",
             border: "1px solid var(--wl-border)",
             marginBottom: "24px",
           }}
         >
-          <CardContent style={{ padding: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 16px 0" }}>
+          <CardContent className="p-5">
+            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
               Admin Actions
             </h3>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <Button
                 style={{
-                  background: "var(--wl-primary)",
+                  background: "var(--wl-primary-500)",
                   color: "white",
                   border: "none",
                   padding: "10px 16px",
@@ -656,14 +657,14 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   gap: "8px",
                 }}
               >
-                <Crown style={{ width: "16px", height: "16px" }} />
+                <Crown  />
                 Upgrade Plan
               </Button>
 
               <button
                 onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
                 style={{
-                  background: "var(--wl-warning)",
+                  background: "var(--wl-warning-400)",
                   color: "white",
                   border: "none",
                   padding: "10px 16px",
@@ -676,14 +677,14 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   gap: "8px",
                 }}
               >
-                <Lock style={{ width: "16px", height: "16px" }} />
+                <Lock  />
                 Suspend Shop
               </button>
 
               <Button
                 style={{
                   background: "rgba(108, 99, 255, 0.1)",
-                  color: "var(--wl-primary)",
+                  color: "var(--wl-primary-500)",
                   border: "1px solid var(--wl-primary)",
                   padding: "10px 16px",
                   borderRadius: "6px",
@@ -695,7 +696,7 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   gap: "8px",
                 }}
               >
-                <Zap style={{ width: "16px", height: "16px" }} />
+                <Zap  />
                 Impersonate
               </Button>
 
@@ -703,7 +704,7 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
                 style={{
                   background: "rgba(239, 68, 68, 0.1)",
-                  color: "var(--wl-danger)",
+                  color: "var(--wl-danger-400)",
                   border: "1px solid var(--wl-danger)",
                   padding: "10px 16px",
                   borderRadius: "6px",
@@ -715,24 +716,24 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   gap: "8px",
                 }}
               >
-                <Trash2 style={{ width: "16px", height: "16px" }} />
+                <Trash2  />
                 Delete Account
               </button>
             </div>
 
             {/* Confirmation Dialogs */}
             {showSuspendConfirm && (
-              <div style={{ marginTop: "16px", padding: "12px", background: "var(--wl-bg)", borderRadius: "6px" }}>
+              <div className="mt-4 p-3 bg-wl-bg-root rounded">
                 <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "12px" }}>
-                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-warning)", flexShrink: 0 }} />
-                  <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px" }}>
+                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-warning-400)", flexShrink: 0 }} />
+                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px" }}>
                     Suspending this shop will disable all access and API calls. This action can be reversed.
                   </p>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="flex gap-2">
                   <button
                     style={{
-                      background: "var(--wl-warning)",
+                      background: "var(--wl-warning-400)",
                       color: "white",
                       border: "none",
                       padding: "8px 16px",
@@ -746,8 +747,8 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   <button
                     onClick={() => setShowSuspendConfirm(false)}
                     style={{
-                      background: "var(--wl-border)",
-                      color: "var(--wl-text)",
+                      background: "var(--wl-border-subtle)",
+                      color: "var(--wl-text-primary)",
                       border: "none",
                       padding: "8px 16px",
                       borderRadius: "4px",
@@ -762,17 +763,17 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             )}
 
             {showDeleteConfirm && (
-              <div style={{ marginTop: "16px", padding: "12px", background: "var(--wl-bg)", borderRadius: "6px" }}>
+              <div className="mt-4 p-3 bg-wl-bg-root rounded">
                 <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "12px" }}>
-                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-danger)", flexShrink: 0 }} />
-                  <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "14px" }}>
+                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-danger-400)", flexShrink: 0 }} />
+                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px" }}>
                     Deleting this account is permanent and cannot be undone. All data will be lost.
                   </p>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="flex gap-2">
                   <button
                     style={{
-                      background: "var(--wl-danger)",
+                      background: "var(--wl-danger-400)",
                       color: "white",
                       border: "none",
                       padding: "8px 16px",
@@ -786,8 +787,8 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     style={{
-                      background: "var(--wl-border)",
-                      color: "var(--wl-text)",
+                      background: "var(--wl-border-subtle)",
+                      color: "var(--wl-text-primary)",
                       border: "none",
                       padding: "8px 16px",
                       borderRadius: "4px",
@@ -804,9 +805,9 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         </Card>
 
         {/* Activity Log */}
-        <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-          <CardContent style={{ padding: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 16px 0" }}>
+        <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+          <CardContent className="p-5">
+            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
               Activity Log
             </h3>
             <div style={{ maxHeight: "500px", overflowY: "auto" }}>
@@ -831,15 +832,15 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                     }}
                   />
                   <div style={{ flex: 1, minWidth: "0" }}>
-                    <p style={{ color: "var(--wl-text)", margin: "0 0 4px 0", fontSize: "14px" }}>
+                    <p style={{ color: "var(--wl-text-primary)", margin: "0 0 4px 0", fontSize: "14px" }}>
                       {log.action}
                     </p>
-                    <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "13px" }}>
+                    <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "13px" }}>
                       {log.details}
                     </p>
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <span style={{ color: "var(--wl-muted)", fontSize: "12px" }}>By: {log.user}</span>
-                      <span style={{ color: "var(--wl-muted)", fontSize: "12px" }}>{log.timestamp}</span>
+                    <div className="flex gap-3 items-center">
+                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "12px" }}>By: {log.user}</span>
+                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "12px" }}>{log.timestamp}</span>
                     </div>
                   </div>
                 </div>

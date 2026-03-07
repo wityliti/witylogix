@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import {
+import { cn } from "@/lib/utils";
   ChevronDown,
   ChevronUp,
   Calendar,
@@ -185,7 +186,7 @@ const StatsBar = ({ logs }: { logs: ActivityLogEntry[] }) => {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "var(--wl-space-4)",
+        className="gap-4",
         marginBottom: "var(--wl-space-6)",
       }}
     >
@@ -200,15 +201,15 @@ const StatsBar = ({ logs }: { logs: ActivityLogEntry[] }) => {
           <Card
             key={idx}
             style={{
-              backgroundColor: "var(--wl-bg-surface)",
+              className="bg-wl-bg-surface",
               borderColor: "var(--wl-border-subtle)",
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
           >
-            <CardContent style={{ padding: "var(--wl-space-4)", display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+            <CardContent style={{ className="p-4", display: "flex", className="gap-3", alignItems: "flex-start" }}>
               <div
                 style={{
-                  padding: "var(--wl-space-2)",
+                  className="p-2",
                   borderRadius: "var(--wl-radius-md)",
                   backgroundColor: stat.color + "15",
                   display: "flex",
@@ -220,12 +221,12 @@ const StatsBar = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <p style={{ className="text-wl-text-secondary", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {stat.label}
                 </p>
                 <p
                   style={{
-                    color: "var(--wl-text-primary)",
+                    className="text-wl-text-primary",
                     fontSize: "var(--wl-text-lg)",
                     fontWeight: 700,
                     margin: "var(--wl-space-1) 0 0 0",
@@ -276,21 +277,21 @@ const FilterBar = ({
   return (
     <Card
       style={{
-        backgroundColor: "var(--wl-bg-surface)",
+        className="bg-wl-bg-surface",
         borderColor: "var(--wl-border-subtle)",
         marginBottom: "var(--wl-space-6)",
       }}
     >
-      <CardContent style={{ padding: "var(--wl-space-4)" }}>
+      <CardContent style={{ className="p-4" }}>
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: "var(--wl-space-3)",
+            className="gap-3",
           }}
         >
           <div>
-            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-secondary", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Entity Type
             </label>
             <select
@@ -300,7 +301,7 @@ const FilterBar = ({
                 width: "100%",
                 padding: "var(--wl-space-2) var(--wl-space-3)",
                 backgroundColor: "var(--wl-bg-base)",
-                color: "var(--wl-text-primary)",
+                className="text-wl-text-primary",
                 border: "1px solid var(--wl-border-subtle)",
                 borderRadius: "var(--wl-radius-md)",
                 fontSize: "var(--wl-text-sm)",
@@ -320,7 +321,7 @@ const FilterBar = ({
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-secondary", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Action Type
             </label>
             <select
@@ -330,7 +331,7 @@ const FilterBar = ({
                 width: "100%",
                 padding: "var(--wl-space-2) var(--wl-space-3)",
                 backgroundColor: "var(--wl-bg-base)",
-                color: "var(--wl-text-primary)",
+                className="text-wl-text-primary",
                 border: "1px solid var(--wl-border-subtle)",
                 borderRadius: "var(--wl-radius-md)",
                 fontSize: "var(--wl-text-sm)",
@@ -347,7 +348,7 @@ const FilterBar = ({
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-secondary", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               From Date
             </label>
             <input
@@ -358,7 +359,7 @@ const FilterBar = ({
                 width: "100%",
                 padding: "var(--wl-space-2) var(--wl-space-3)",
                 backgroundColor: "var(--wl-bg-base)",
-                color: "var(--wl-text-primary)",
+                className="text-wl-text-primary",
                 border: "1px solid var(--wl-border-subtle)",
                 borderRadius: "var(--wl-radius-md)",
                 fontSize: "var(--wl-text-sm)",
@@ -367,7 +368,7 @@ const FilterBar = ({
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-secondary", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               To Date
             </label>
             <input
@@ -378,7 +379,7 @@ const FilterBar = ({
                 width: "100%",
                 padding: "var(--wl-space-2) var(--wl-space-3)",
                 backgroundColor: "var(--wl-bg-base)",
-                color: "var(--wl-text-primary)",
+                className="text-wl-text-primary",
                 border: "1px solid var(--wl-border-subtle)",
                 borderRadius: "var(--wl-radius-md)",
                 fontSize: "var(--wl-text-sm)",
@@ -387,7 +388,7 @@ const FilterBar = ({
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <label style={{ display: "block", fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-secondary", marginBottom: "var(--wl-space-2)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Search
             </label>
             <div style={{ position: "relative" }}>
@@ -400,13 +401,13 @@ const FilterBar = ({
                   width: "100%",
                   padding: "var(--wl-space-2) var(--wl-space-3) var(--wl-space-2) var(--wl-space-8)",
                   backgroundColor: "var(--wl-bg-base)",
-                  color: "var(--wl-text-primary)",
+                  className="text-wl-text-primary",
                   border: "1px solid var(--wl-border-subtle)",
                   borderRadius: "var(--wl-radius-md)",
                   fontSize: "var(--wl-text-sm)",
                 }}
               />
-              <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "var(--wl-text-secondary)", pointerEvents: "none" }} />
+              <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", className="text-wl-text-secondary", pointerEvents: "none" }} />
             </div>
           </div>
         </div>
@@ -433,7 +434,7 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
           style={{
             borderLeft: `3px solid ${getActionColor(log.actionType)}`,
             backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-            padding: "var(--wl-space-4)",
+            className="p-4",
             cursor: "pointer",
             transition: "all 0.2s",
             borderBottom: "1px solid var(--wl-border-subtle)",
@@ -447,10 +448,10 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
             (e.currentTarget as HTMLDivElement).style.transform = "translateX(0)";
           }}
         >
-          <div style={{ display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+          <div style={{ display: "flex", className="gap-3", alignItems: "flex-start" }}>
             <div
               style={{
-                padding: "var(--wl-space-2)",
+                className="p-2",
                 borderRadius: "var(--wl-radius-md)",
                 backgroundColor: getActionColor(log.actionType) + "15",
                 display: "flex",
@@ -464,11 +465,11 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
             </div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "var(--wl-space-2)", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+              <div style={{ display: "flex", alignItems: "baseline", className="gap-2", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, className="text-wl-text-primary" }}>
                   {log.action}
                 </span>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>
+                <span style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-secondary" }}>
                   {new Date(log.timestamp).toLocaleString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -485,9 +486,9 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 </Badge>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "var(--wl-space-3)", marginTop: "var(--wl-space-2)", fontSize: "var(--wl-text-xs)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", className="gap-3", marginTop: "var(--wl-space-2)", fontSize: "var(--wl-text-xs)" }}>
                 <div>
-                  <span style={{ color: "var(--wl-text-secondary)", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span style={{ className="text-wl-text-secondary", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Entity
                   </span>
                   <code
@@ -502,37 +503,37 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                   >
                     {log.entityId}
                   </code>
-                  {log.entityName && <p style={{ color: "var(--wl-text-secondary)", margin: "2px 0 0 0" }}>{log.entityName}</p>}
+                  {log.entityName && <p style={{ className="text-wl-text-secondary", margin: "2px 0 0 0" }}>{log.entityName}</p>}
                 </div>
 
                 <div>
-                  <span style={{ color: "var(--wl-text-secondary)", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span style={{ className="text-wl-text-secondary", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Type
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     {getEntityIcon(log.entityType)}
-                    <span style={{ color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                    <span style={{ className="text-wl-text-primary", fontWeight: 500 }}>
                       {log.entityType.charAt(0).toUpperCase() + log.entityType.slice(1)}
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <span style={{ color: "var(--wl-text-secondary)", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span style={{ className="text-wl-text-secondary", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Actor
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     {log.actorType === "user" ? <User style={{ width: "14px", height: "14px" }} /> : <Settings style={{ width: "14px", height: "14px" }} />}
-                    <span style={{ color: "var(--wl-text-primary)" }}>{log.actorName}</span>
+                    <span style={{ className="text-wl-text-primary" }}>{log.actorName}</span>
                   </div>
                 </div>
 
                 {log.ipAddress && (
                   <div>
-                    <span style={{ color: "var(--wl-text-secondary)", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <span style={{ className="text-wl-text-secondary", display: "block", marginBottom: "2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                       IP
                     </span>
-                    <code style={{ color: "var(--wl-text-secondary)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <code style={{ className="text-wl-text-secondary", fontFamily: "JetBrains Mono, monospace" }}>
                       {log.ipAddress}
                     </code>
                   </div>
@@ -566,7 +567,7 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                   style={{
                     marginTop: "var(--wl-space-3)",
                     backgroundColor: "var(--wl-bg-base)",
-                    padding: "var(--wl-space-3)",
+                    className="p-3",
                     borderRadius: "var(--wl-radius-md)",
                     fontSize: "var(--wl-text-xs)",
                     overflow: "auto",
@@ -600,14 +601,14 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
         }}
       >
         <thead>
-          <tr style={{ borderBottom: "1px solid var(--wl-border-subtle)", backgroundColor: "var(--wl-bg-surface)" }}>
+          <tr style={{ borderBottom: "1px solid var(--wl-border-subtle)", className="bg-wl-bg-surface" }}>
             {["Timestamp", "Action", "Entity", "Type", "Actor", "Status"].map((header) => (
               <th
                 key={header}
                 style={{
-                  padding: "var(--wl-space-3)",
+                  className="p-3",
                   textAlign: "left",
-                  color: "var(--wl-text-secondary)",
+                  className="text-wl-text-secondary",
                   fontWeight: 600,
                   fontSize: "var(--wl-text-xs)",
                   textTransform: "uppercase",
@@ -635,24 +636,24 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
               }}
             >
-              <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+              <td style={{ className="p-3", className="text-wl-text-secondary", fontSize: "var(--wl-text-xs)" }}>
                 {new Date(log.timestamp).toLocaleDateString()}{" "}
-                <span style={{ color: "var(--wl-text-secondary)" }}>
+                <span style={{ className="text-wl-text-secondary" }}>
                   {new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </td>
-              <td style={{ padding: "var(--wl-space-3)" }}>
+              <td style={{ className="p-3" }}>
                 <Badge variant="default" style={{ backgroundColor: getActionColor(log.actionType) + "20", color: getActionColor(log.actionType), fontSize: "var(--wl-text-xs)" }}>
                   {log.action}
                 </Badge>
               </td>
-              <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+              <td style={{ className="p-3", className="text-wl-text-primary", fontWeight: 500 }}>
                 <code style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "var(--wl-text-xs)" }}>
                   {log.entityId}
                 </code>
-                {log.entityName && <p style={{ color: "var(--wl-text-secondary)", margin: "2px 0 0 0", fontSize: "var(--wl-text-xs)" }}>{log.entityName}</p>}
+                {log.entityName && <p style={{ className="text-wl-text-secondary", margin: "2px 0 0 0", fontSize: "var(--wl-text-xs)" }}>{log.entityName}</p>}
               </td>
-              <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)" }}>
+              <td style={{ className="p-3", className="text-wl-text-primary" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                   {getEntityIcon(log.entityType)}
                   <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 500 }}>
@@ -660,10 +661,10 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                   </span>
                 </div>
               </td>
-              <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+              <td style={{ className="p-3", className="text-wl-text-secondary", fontSize: "var(--wl-text-xs)" }}>
                 {log.actorName}
               </td>
-              <td style={{ padding: "var(--wl-space-3)" }}>
+              <td style={{ className="p-3" }}>
                 <Badge
                   variant={log.status === "success" ? "success" : log.status === "error" ? "danger" : "info"}
                   style={{ fontSize: "var(--wl-text-xs)" }}
@@ -740,7 +741,7 @@ export default function ActivityLogPage() {
         }
       />
 
-      <main style={{ flex: 1, padding: "var(--wl-space-6)", maxWidth: "1400px", margin: "0 auto" }}>
+      <main style={{ flex: 1, className="p-6", maxWidth: "1400px", margin: "0 auto" }}>
         <StatsBar logs={allLogs} />
 
         <FilterBar onFilterChange={setFilters} />
@@ -766,7 +767,7 @@ export default function ActivityLogPage() {
 
         <Card
           style={{
-            backgroundColor: "var(--wl-bg-surface)",
+            className="bg-wl-bg-surface",
             borderColor: "var(--wl-border-subtle)",
           }}
         >
@@ -777,7 +778,7 @@ export default function ActivityLogPage() {
                   padding: "var(--wl-space-3) var(--wl-space-4)",
                   borderBottom: "1px solid var(--wl-border-subtle)",
                   fontSize: "var(--wl-text-xs)",
-                  color: "var(--wl-text-secondary)",
+                  className="text-wl-text-secondary",
                 }}
               >
                 Showing {filteredLogs.length} of {allLogs.length} events
@@ -789,7 +790,7 @@ export default function ActivityLogPage() {
           ) : (
             <CardContent
               style={{
-                padding: "var(--wl-space-12)",
+                className="p-12",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
@@ -797,11 +798,11 @@ export default function ActivityLogPage() {
                 justifyContent: "center",
               }}
             >
-              <FileJson style={{ width: "48px", height: "48px", color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-3)", opacity: 0.3 }} />
-              <p style={{ color: "var(--wl-text-primary)", fontWeight: 500, margin: 0, marginBottom: "4px" }}>
+              <FileJson style={{ width: "48px", height: "48px", className="text-wl-text-secondary", marginBottom: "var(--wl-space-3)", opacity: 0.3 }} />
+              <p style={{ className="text-wl-text-primary", fontWeight: 500, margin: 0, marginBottom: "4px" }}>
                 No activity logs found
               </p>
-              <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-sm)", margin: 0 }}>
+              <p style={{ className="text-wl-text-secondary", fontSize: "var(--wl-text-sm)", margin: 0 }}>
                 Try adjusting your filters to see more activity
               </p>
             </CardContent>

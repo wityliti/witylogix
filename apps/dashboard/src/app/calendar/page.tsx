@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Header } from "../../components/layout/header";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 import { Card } from "../../components/ui/card";
 import { StatCard } from "../../components/ui/stat-card";
 
@@ -187,9 +188,8 @@ export default function CalendarPage() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        backgroundColor: "var(--wl-bg-primary)",
-        color: "var(--wl-text-primary)",
+        className="min-h-screen bg-wl-bg-root"
+        className="text-wl-text-primary",
         paddingBottom: 40,
       }}
     >
@@ -217,7 +217,7 @@ export default function CalendarPage() {
               fontSize: 28,
               fontWeight: 600,
               margin: 0,
-              color: "var(--wl-text-primary)",
+              className="text-wl-text-primary",
             }}
           >
             Calendar & Availability
@@ -292,7 +292,7 @@ export default function CalendarPage() {
                     fontSize: 18,
                     fontWeight: 600,
                     margin: "0 0 16px 0",
-                    color: "var(--wl-text-primary)",
+                    className="text-wl-text-primary",
                   }}
                 >
                   March 2026
@@ -315,7 +315,7 @@ export default function CalendarPage() {
                           textAlign: "center",
                           fontSize: 12,
                           fontWeight: 600,
-                          color: "var(--wl-text-secondary)",
+                          className="text-wl-text-secondary",
                           padding: 8,
                           textTransform: "uppercase",
                         }}
@@ -472,7 +472,7 @@ export default function CalendarPage() {
                   fontSize: 18,
                   fontWeight: 600,
                   marginBottom: 16,
-                  color: "var(--wl-text-primary)",
+                  className="text-wl-text-primary",
                 }}
               >
                 Calendar Rules
@@ -513,7 +513,7 @@ export default function CalendarPage() {
                             fontSize: 14,
                             fontWeight: 600,
                             margin: 0,
-                            color: "var(--wl-text-primary)",
+                            className="text-wl-text-primary",
                           }}
                         >
                           {rule.name}
@@ -539,7 +539,7 @@ export default function CalendarPage() {
                       <div
                         style={{
                           fontSize: 12,
-                          color: "var(--wl-text-secondary)",
+                          className="text-wl-text-secondary",
                           marginBottom: 8,
                         }}
                       >
@@ -613,7 +613,7 @@ export default function CalendarPage() {
                       fontSize: 16,
                       fontWeight: 600,
                       margin: "0 0 8px 0",
-                      color: "var(--wl-text-primary)",
+                      className="text-wl-text-primary",
                     }}
                   >
                     {selectedDay.date.toLocaleDateString("en-US", {
@@ -626,7 +626,7 @@ export default function CalendarPage() {
                     style={{
                       margin: 0,
                       fontSize: 12,
-                      color: "var(--wl-text-secondary)",
+                      className="text-wl-text-secondary",
                     }}
                   >
                     {selectedDay.isBlackout
@@ -648,7 +648,7 @@ export default function CalendarPage() {
                       fontSize: 12,
                       fontWeight: 600,
                       margin: "0 0 12px 0",
-                      color: "var(--wl-text-secondary)",
+                      className="text-wl-text-secondary",
                       textTransform: "uppercase",
                     }}
                   >
@@ -667,13 +667,13 @@ export default function CalendarPage() {
                         fontSize: 13,
                       }}
                     >
-                      <span style={{ color: "var(--wl-text-secondary)" }}>
+                      <span style={{ className="text-wl-text-secondary" }}>
                         Total Slots
                       </span>
                       <span
                         style={{
                           fontWeight: 600,
-                          color: "var(--wl-text-primary)",
+                          className="text-wl-text-primary",
                         }}
                       >
                         {selectedDay.totalSlots}
@@ -686,7 +686,7 @@ export default function CalendarPage() {
                         fontSize: 13,
                       }}
                     >
-                      <span style={{ color: "var(--wl-text-secondary)" }}>
+                      <span style={{ className="text-wl-text-secondary" }}>
                         Booked
                       </span>
                       <span
@@ -705,7 +705,7 @@ export default function CalendarPage() {
                         fontSize: 13,
                       }}
                     >
-                      <span style={{ color: "var(--wl-text-secondary)" }}>
+                      <span style={{ className="text-wl-text-secondary" }}>
                         Available
                       </span>
                       <span
@@ -751,7 +751,7 @@ export default function CalendarPage() {
                         fontSize: 12,
                         fontWeight: 600,
                         margin: "0 0 12px 0",
-                        color: "var(--wl-text-secondary)",
+                        className="text-wl-text-secondary",
                         textTransform: "uppercase",
                       }}
                     >
@@ -776,7 +776,7 @@ export default function CalendarPage() {
                           <div
                             style={{
                               fontWeight: 600,
-                              color: "var(--wl-text-primary)",
+                              className="text-wl-text-primary",
                               marginBottom: 4,
                             }}
                           >
@@ -812,7 +812,7 @@ export default function CalendarPage() {
                       fontSize: 12,
                       fontWeight: 600,
                       margin: "0 0 12px 0",
-                      color: "var(--wl-text-secondary)",
+                      className="text-wl-text-secondary",
                       textTransform: "uppercase",
                     }}
                   >
@@ -839,7 +839,7 @@ export default function CalendarPage() {
                         >
                           <span
                             style={{
-                              color: "var(--wl-text-primary)",
+                              className="text-wl-text-primary",
                               fontWeight: 500,
                             }}
                           >
@@ -847,7 +847,7 @@ export default function CalendarPage() {
                           </span>
                           <span
                             style={{
-                              color: "var(--wl-text-secondary)",
+                              className="text-wl-text-secondary",
                             }}
                           >
                             {idx < 3 ? "3/5" : "2/5"} slots
@@ -881,7 +881,7 @@ export default function CalendarPage() {
                     marginTop: 12,
                     padding: 8,
                     backgroundColor: "transparent",
-                    color: "var(--wl-text-secondary)",
+                    className="text-wl-text-secondary",
                     border: "none",
                     cursor: "pointer",
                     fontSize: 12,
