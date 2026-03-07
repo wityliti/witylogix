@@ -161,10 +161,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(import("./routes/analytics-events.js"), { prefix: "/api/v4/analytics/v2" });
   await app.register(import("./routes/payment-methods.js"), { prefix: "/api/v4/payment-methods" });
   await app.register(import("./routes/billing.js"), { prefix: "/api/v4/billing" });
+  await app.register(import("./routes/billing-subscriptions.js"), { prefix: "/api/v4/billing/subscriptions" });
   await app.register(import("./routes/campaigns.js"), { prefix: "/api/v4/campaigns" });
   await app.register(import("./routes/messages.js"), { prefix: "/api/v4/messages" });
   await app.register(import("./routes/audit.js"), { prefix: "/api/v4/audit" });
   await app.register(import("./routes/permissions.js"), { prefix: "/api/v4/permissions" });
+  await app.register(import("./routes/support-tickets.js"), { prefix: "/api/v4/support/tickets" });
+  await app.register(import("./routes/feature-requests.js"), { prefix: "/api/v4/support/feature-requests" });
+  await app.register(import("./routes/saved-views.js"), { prefix: "/api/v4/views" });
+  await app.register(import("./routes/widget-config.js"), { prefix: "/api/v4/widgets" });
+  await app.register(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

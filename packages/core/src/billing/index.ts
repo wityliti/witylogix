@@ -1,13 +1,52 @@
 /**
  * Billing Service — Plan definitions, usage tracking, limit enforcement
+ * Subscription lifecycle management, quota enforcement, and invoice generation
  *
  * Exports:
  *   - PLANS: Plan definitions (FREE, STARTER, PROFESSIONAL, ENTERPRISE)
  *   - checkUsageLimit: Verify if usage is within plan limits
  *   - calculateProration: Calculate credits/charges for plan changes
  *   - getUsageSummary: Get current usage metrics for a shop
- *   - recordUsageEvent: Increment usage counters
+ *   - SubscriptionManager: Subscription lifecycle management
+ *   - QuotaEnforcer: Resource quota enforcement with middleware support
+ *   - InvoiceGenerator: Invoice generation with proration and discount support
  */
+
+// ─── RE-EXPORTS FROM SUBMODULES ─────────────────────────────────────
+
+export {
+  // Subscription Manager
+  SubscriptionManager,
+  SubscriptionNotFoundError,
+  PlanNotFoundError,
+  SubscriptionError,
+  type SubscriptionWithPlan,
+  type ProrationResult,
+  type BillingPlan,
+  type BillingSubscription,
+} from './subscription-manager.js';
+
+export {
+  // Quota Enforcer
+  QuotaEnforcer,
+  QuotaExceededError,
+  WARNING_THRESHOLD,
+  HARD_LIMIT,
+  type QuotaResource,
+  type QuotaCheckResult,
+  type QuotaUsageSummary,
+  type QuotaEvent,
+} from './quota-enforcer.js';
+
+export {
+  // Invoice Generator
+  InvoiceGenerator,
+  InvoiceError,
+  type LineItem,
+  type InvoiceLineItems,
+  type PaginationOptions,
+  type Invoice,
+} from './invoice-generator.js';
 
 // PlanTier from Prisma schema: FREE | STARTER | GROWTH | ENTERPRISE
 type PlanTier = "FREE" | "STARTER" | "GROWTH" | "ENTERPRISE";

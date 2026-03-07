@@ -1,0 +1,111 @@
+// ─── BILLING SUBSCRIPTION SYSTEM ─────────────────────────────────────
+// Models for subscription lifecycle, quota enforcement, and invoicing
+// Supports flexible billing plans with trial periods, prorated upgrades/downgrades,
+// and comprehensive quota management with threshold-based warnings.
+
+// ─── BILLING PLANS ───────────────────────────────────────────────────
+// Define available plans with pricing, intervals, features, and quota limits.
+// Plans are globally managed and reused across subscriptions.
+
+model BillingPlan {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "Starter", "Growth", "Enterprise"
+  slug      String   @unique // URL-friendly slug
+  price     Decimal  @db.Decimal(10, 2) // Monthly/yearly price
+  interval  String   @default("monthly") // "monthly" or "yearly"
+  features  Json     @default("{}") // Feature flags as JSON object
+  limits    Json     @default("{}") // Quota limits: {orders, shipments, api_calls, storage_gb, drivers}
+  trialDays Int      @default(0) // Trial period in days (0 = no trial)
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order") // Display order
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subscriptions BillingSubscription[]
+
+  @@map("billing_plans")
+}
+
+// ─── BILLING SUBSCRIPTIONS ───────────────────────────────────────────
+// Track active subscriptions tied to shops with lifecycle state management.
+// Supports trial periods, upgrades/downgrades, and cancellation modes.
+
+model BillingSubscription {
+  id                 String    @id @default(cuid())
+  shopId             String    @map("shop_id") @db.Uuid
+  planId             String    @map("plan_id")
+  status             String    @default("trialing") // trialing, active, past_due, cancelled, expired
+  currentPeriodStart DateTime  @map("current_period_start")
+  currentPeriodEnd   DateTime  @map("current_period_end")
+  trialEnd           DateTime? @map("trial_end")
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancelAtPeriodEnd  Boolean   @default(false) @map("cancel_at_period_end")
+  paymentMethodId    String?   @map("payment_method_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  plan       BillingPlan           @relation(fields: [planId], references: [id])
+  invoices   Invoice[]
+  quotaUsage StoreQuotaUsage[]
+
+  @@unique([shopId]) // One active subscription per shop
+  @@index([planId])
+  @@index([status])
+  @@map("billing_subscriptions")
+}
+
+// ─── INVOICES ────────────────────────────────────────────────────────
+// Line-item invoices for subscription charges, upgrades, and overages.
+// Supports prorations, discounts, and payment status tracking.
+
+model Invoice {
+  id             String    @id @default(cuid())
+  subscriptionId String    @map("subscription_id")
+  shopId         String    @map("shop_id") @db.Uuid
+  amount         Decimal   @db.Decimal(10, 2) // Total amount due
+  currency       String    @default("usd")
+  status         String    @default("draft") // draft, finalized, paid, failed, refunded
+  lineItems      Json      @default("[]") // Array of {description, amount, quantity}
+  discountAmount Decimal?  @db.Decimal(10, 2) @map("discount_amount")
+  couponCode     String?   @map("coupon_code")
+  paidAt         DateTime? @map("paid_at")
+  dueDate        DateTime  @map("due_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  subscription BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([shopId])
+  @@index([status])
+  @@map("invoices")
+}
+
+// ─── STORE QUOTA USAGE ───────────────────────────────────────────────
+// Track resource consumption per billing period per subscription.
+// Supports multiple resource types with independent quota tracking.
+// Updated atomically during operations to ensure consistency.
+
+model StoreQuotaUsage {
+  id              String   @id @default(cuid())
+  subscriptionId  String   @map("subscription_id")
+  shopId          String   @map("shop_id") @db.Uuid
+  resource        String   // orders, shipments, api_calls, storage, drivers
+  currentUsage    Int      @default(0) @map("current_usage")
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subscription BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Ensure one quota entry per subscription/resource/period combination
+  @@unique([subscriptionId, resource, periodStart])
+  @@index([subscriptionId])
+  @@index([shopId])
+  @@map("store_quota_usage")
+}

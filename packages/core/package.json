@@ -46,7 +46,12 @@
     "./audit": "./src/audit/index.ts",
     "./logging": "./src/logging/index.ts",
     "./encryption": "./src/encryption/index.ts",
-    "./messaging": "./src/messaging/index.ts"
+    "./messaging": "./src/messaging/index.ts",
+    "./process-manager": "./src/process-manager/index.ts",
+    "./collections": "./src/collections/index.ts",
+    "./support": "./src/support/index.ts",
+    "./saved-views": "./src/saved-views/index.ts",
+    "./widgets": "./src/widgets/index.ts"
   },
   "scripts": {
     "build": "tsc",

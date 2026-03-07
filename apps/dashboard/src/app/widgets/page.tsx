@@ -1,0 +1,418 @@
+"use client";
+
+import { useState } from "react";
+import { Header } from "../../components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Settings, Maximize2, Trash2, Plus, BarChart3, LineChart, PieChart, Table2, MapPin, Activity, Calendar } from "lucide-react";
+
+/* ═══════════════════════════════════════════════════════════
+   WIDGETS PAGE — Dashboard widget configuration & layout
+   ═══════════════════════════════════════════════════════════ */
+
+interface Widget {
+  id: string;
+  name: string;
+  type: "stat" | "line_chart" | "bar_chart" | "pie_chart" | "table" | "map" | "activity" | "calendar";
+  size: "1x1" | "2x1" | "1x2" | "2x2";
+  isActive: boolean;
+  gridPosition?: { row: number; col: number };
+}
+
+const ACTIVE_WIDGETS: Widget[] = [
+  {
+    id: "widget-001",
+    name: "Revenue Overview",
+    type: "line_chart",
+    size: "2x1",
+    isActive: true,
+    gridPosition: { row: 1, col: 1 },
+  },
+  {
+    id: "widget-002",
+    name: "Order Volume",
+    type: "bar_chart",
+    size: "2x1",
+    isActive: true,
+    gridPosition: { row: 1, col: 3 },
+  },
+  {
+    id: "widget-003",
+    name: "Delivery Status",
+    type: "pie_chart",
+    size: "1x1",
+    isActive: true,
+    gridPosition: { row: 2, col: 1 },
+  },
+  {
+    id: "widget-004",
+    name: "Recent Orders",
+    type: "table",
+    size: "2x1",
+    isActive: true,
+    gridPosition: { row: 2, col: 2 },
+  },
+  {
+    id: "widget-005",
+    name: "Zone Coverage",
+    type: "map",
+    size: "1x2",
+    isActive: true,
+    gridPosition: { row: 3, col: 1 },
+  },
+  {
+    id: "widget-006",
+    name: "Activity Feed",
+    type: "activity",
+    size: "1x1",
+    isActive: true,
+    gridPosition: { row: 3, col: 2 },
+  },
+];
+
+const AVAILABLE_WIDGETS = [
+  {
+    id: "avail-001",
+    name: "Revenue Chart",
+    type: "line_chart",
+    description: "Line chart showing revenue trends",
+  },
+  {
+    id: "avail-002",
+    name: "Order Volume",
+    type: "bar_chart",
+    description: "Bar chart of orders over time",
+  },
+  {
+    id: "avail-003",
+    name: "Delivery Heatmap",
+    type: "map",
+    description: "Geographic visualization of deliveries",
+  },
+  {
+    id: "avail-004",
+    name: "Driver Performance",
+    type: "table",
+    description: "Table of driver metrics and ratings",
+  },
+  {
+    id: "avail-005",
+    name: "Zone Coverage",
+    type: "map",
+    description: "Map of service zones and coverage",
+  },
+  {
+    id: "avail-006",
+    name: "Recent Activity",
+    type: "activity",
+    description: "Real-time activity log feed",
+  },
+  {
+    id: "avail-007",
+    name: "Upcoming Deliveries",
+    type: "calendar",
+    description: "Calendar view of scheduled deliveries",
+  },
+  {
+    id: "avail-008",
+    name: "Customer Satisfaction",
+    type: "pie_chart",
+    description: "Pie chart of satisfaction ratings",
+  },
+];
+
+const getWidgetIcon = (type: string) => {
+  switch (type) {
+    case "line_chart":
+      return <LineChart size={18} />;
+    case "bar_chart":
+      return <BarChart3 size={18} />;
+    case "pie_chart":
+      return <PieChart size={18} />;
+    case "table":
+      return <Table2 size={18} />;
+    case "map":
+      return <MapPin size={18} />;
+    case "activity":
+      return <Activity size={18} />;
+    case "calendar":
+      return <Calendar size={18} />;
+    case "stat":
+      return <BarChart3 size={18} />;
+    default:
+      return null;
+  }
+};
+
+const getWidgetColor = (index: number): string => {
+  const colors = [
+    "rgba(59, 130, 246, 0.1)",
+    "rgba(34, 197, 94, 0.1)",
+    "rgba(249, 115, 22, 0.1)",
+    "rgba(168, 85, 247, 0.1)",
+    "rgba(236, 72, 153, 0.1)",
+    "rgba(14, 165, 233, 0.1)",
+  ];
+  return colors[index % colors.length];
+};
+
+export default function WidgetsPage() {
+  const [activeWidgets, setActiveWidgets] = useState(ACTIVE_WIDGETS);
+  const [showGallery, setShowGallery] = useState(false);
+
+  const handleRemoveWidget = (widgetId: string) => {
+    setActiveWidgets(activeWidgets.filter((w) => w.id !== widgetId));
+  };
+
+  const handleAddWidget = (widget: (typeof AVAILABLE_WIDGETS)[0]) => {
+    alert(`Widget "${widget.name}" added to dashboard (mock)`);
+  };
+
+  return (
+    <>
+      <Header
+        title="Dashboard Widgets"
+        subtitle={`${activeWidgets.length} active · ${AVAILABLE_WIDGETS.length} available`}
+        actions={
+          <Button variant="primary" size="md" onClick={() => setShowGallery(!showGallery)}>
+            {showGallery ? "Hide Gallery" : "+ Add Widget"}
+          </Button>
+        }
+      />
+
+      <div style={{ padding: "var(--wl-space-6)" }}>
+        {/* Active Widgets Section */}
+        <div style={{ marginBottom: "var(--wl-space-8)" }}>
+          <h2 style={{ fontSize: "var(--wl-text-lg)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-4)" }}>
+            Active Widgets
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "var(--wl-space-4)",
+            }}
+          >
+            {activeWidgets.map((widget, idx) => (
+              <Card key={widget.id} style={{ display: "flex", flexDirection: "column" }}>
+                <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "center", flex: 1 }}>
+                      <div
+                        style={{
+                          padding: "var(--wl-space-2)",
+                          borderRadius: "var(--wl-radius-md)",
+                          background: getWidgetColor(idx),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--wl-text-primary)",
+                        }}
+                      >
+                        {getWidgetIcon(widget.type)}
+                      </div>
+                      <div>
+                        <CardTitle style={{ fontSize: "var(--wl-text-base)" }}>
+                          {widget.name}
+                        </CardTitle>
+                        <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", margin: "var(--wl-space-1) 0 0 0" }}>
+                          {widget.size}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent style={{ flex: 1, paddingTop: 0, paddingBottom: "var(--wl-space-4)" }}>
+                  {/* Status Badge */}
+                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
+                    <Badge variant="success">Active</Badge>
+                  </div>
+
+                  {/* Widget Preview Placeholder */}
+                  <div
+                    style={{
+                      background: getWidgetColor(idx),
+                      border: "1px dashed var(--wl-border-default)",
+                      borderRadius: "var(--wl-radius-md)",
+                      height: 120,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: "var(--wl-space-4)",
+                      fontSize: "var(--wl-text-xs)",
+                      color: "var(--wl-text-secondary)",
+                    }}
+                  >
+                    Widget Preview
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                    <Button variant="secondary" size="sm" style={{ flex: 1 }}>
+                      <Settings size={14} />
+                    </Button>
+                    <Button variant="secondary" size="sm" style={{ flex: 1 }}>
+                      <Maximize2 size={14} />
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onClick={() => handleRemoveWidget(widget.id)}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Widget Gallery Section */}
+        {showGallery && (
+          <div style={{ marginBottom: "var(--wl-space-8)" }}>
+            <h2 style={{ fontSize: "var(--wl-text-lg)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-4)" }}>
+              Widget Gallery
+            </h2>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: "var(--wl-space-4)",
+              }}
+            >
+              {AVAILABLE_WIDGETS.map((widget, idx) => (
+                <Card key={widget.id} style={{ display: "flex", flexDirection: "column" }}>
+                  <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+                    <div style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "center" }}>
+                      <div
+                        style={{
+                          padding: "var(--wl-space-2)",
+                          borderRadius: "var(--wl-radius-md)",
+                          background: getWidgetColor(idx),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--wl-text-primary)",
+                        }}
+                      >
+                        {getWidgetIcon(widget.type)}
+                      </div>
+                      <CardTitle style={{ fontSize: "var(--wl-text-base)" }}>
+                        {widget.name}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent style={{ flex: 1, paddingTop: 0, paddingBottom: "var(--wl-space-4)", display: "flex", flexDirection: "column" }}>
+                    {/* Description */}
+                    <p style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-4)", flex: 1 }}>
+                      {widget.description}
+                    </p>
+
+                    {/* Preview Placeholder */}
+                    <div
+                      style={{
+                        background: getWidgetColor(idx),
+                        border: "1px dashed var(--wl-border-default)",
+                        borderRadius: "var(--wl-radius-md)",
+                        height: 100,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: "var(--wl-space-4)",
+                        fontSize: "var(--wl-text-xs)",
+                        color: "var(--wl-text-secondary)",
+                      }}
+                    >
+                      Preview
+                    </div>
+
+                    {/* Add Button */}
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      style={{ width: "100%" }}
+                      onClick={() => handleAddWidget(widget)}
+                    >
+                      <Plus size={14} style={{ marginRight: 4 }} />
+                      Add to Dashboard
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Layout Preview */}
+        <div>
+          <h2 style={{ fontSize: "var(--wl-text-lg)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "var(--wl-space-4)" }}>
+            Layout Preview
+          </h2>
+          <Card style={{ padding: "var(--wl-space-6)" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gridTemplateRows: "repeat(3, 120px)",
+                gap: "var(--wl-space-3)",
+                minHeight: 400,
+              }}
+            >
+              {/* Grid Labels */}
+              {activeWidgets.map((widget) => {
+                const colSpan = widget.size.includes("2x") ? 2 : 1;
+                const rowSpan = widget.size.includes("x2") ? 2 : 1;
+
+                return (
+                  <div
+                    key={widget.id}
+                    style={{
+                      gridColumn: `span ${colSpan}`,
+                      gridRow: `span ${rowSpan}`,
+                      background: getWidgetColor(
+                        ACTIVE_WIDGETS.indexOf(widget)
+                      ),
+                      border: "2px solid var(--wl-border-default)",
+                      borderRadius: "var(--wl-radius-md)",
+                      padding: "var(--wl-space-3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: "var(--wl-space-2)",
+                      fontSize: "var(--wl-text-sm)",
+                      fontWeight: 600,
+                      color: "var(--wl-text-primary)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "center" }}>
+                      {getWidgetIcon(widget.type)}
+                      {widget.name}
+                    </div>
+                    <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>
+                      {widget.size}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* Grid Legend */}
+          <div style={{ marginTop: "var(--wl-space-4)", padding: "var(--wl-space-4)", background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-md)" }}>
+            <p style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", margin: 0, marginBottom: "var(--wl-space-2)" }}>
+              Grid: 4 columns x 3 rows · Widget sizes: 1x1, 2x1, 1x2, 2x2
+            </p>
+            <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", margin: 0 }}>
+              Drag widgets to reorder. Colors indicate different widget types.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

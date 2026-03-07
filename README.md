@@ -60,6 +60,11 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 - **Structured logging** — Pino-compatible JSON logger with request tracing (UUID v4 correlation IDs), slow-request warnings, and sensitive field redaction
 - **Field-level encryption** — AES-256-GCM with scrypt key derivation, key rotation support, and Prisma middleware for transparent encrypt/decrypt
 - **JWT authentication** with refresh token rotation, scrypt password hashing, and password reset flows
+- **Billing & subscriptions** — plan management with trial periods, upgrade/downgrade with proration, quota enforcement with atomic usage tracking, invoice generation with line items and PDF export, and metered fallback billing
+- **Process manager** — multi-worker orchestration with auto-restart, exponential backoff, graceful shutdown, and specialized workers for billing, campaigns, notifications, and analytics
+- **Saved views & widgets** — customizable dashboard views with filter builder (10 operators, 6 tables), column visibility, sort config, and 8 drag-and-drop widget types on a 4×3 grid
+- **Collections** — manual and auto product collections with rule evaluation, Shopify sync, and product reordering
+- **Support system** — full ticket lifecycle with threaded messages, assignment, resolution, and feature request voting
 - **Integration Marketplace** — unified catalog of 38 integrations across 6 categories (Communication, Routing, Order Management, Inventory, Payment, Analytics) with per-tenant install/configure, BYOK credentials, health monitoring, and metered fallback billing
 - **Shopify integration** — embedded admin app, checkout extensions, Carrier Service API, "Built for Shopify" ready
 - **Platform-agnostic core** — decoupled business logic ready for WooCommerce, Magento, and custom storefronts
@@ -100,8 +105,8 @@ witylogix-platform/
 │   ├── checkout-ui/         # Preact checkout extension (< 64KB)
 │   └── pos-ui/              # POS UI extension
 ├── packages/
-│   ├── db/                  # Prisma 6 schema (25 modules) + RLS policies
-│   ├── core/                # Business logic (43 modules — routing, messaging, RBAC, campaigns, etc.)
+│   ├── db/                  # Prisma 6 schema (28 modules) + RLS policies
+│   ├── core/                # Business logic (48 modules — routing, messaging, RBAC, campaigns, billing, etc.)
 │   ├── types/               # Shared TypeScript types (JIT, no build)
 │   ├── validators/          # Zod schemas (JIT, no build)
 │   └── carrier-service/     # Carrier rate abstraction
@@ -194,7 +199,7 @@ docker compose --profile tools up -d
 
 ## Database
 
-Witylogix uses PostgreSQL with PostGIS for spatial operations and Row-Level Security for tenant isolation. The schema is organized across 25 Prisma modules covering the full delivery lifecycle:
+Witylogix uses PostgreSQL with PostGIS for spatial operations and Row-Level Security for tenant isolation. The schema is organized across 28 Prisma modules covering the full delivery lifecycle:
 
 **Core:** organizations · org_members · shops · users · orders · drivers · delivery_zones · time_slots · routes · route_stops · proof_of_delivery
 
@@ -204,7 +209,11 @@ Witylogix uses PostgreSQL with PostGIS for spatial operations and Row-Level Secu
 
 **Campaigns:** campaigns · broadcast_groups · broadcast_group_members · campaign_events
 
-**Billing:** payments · payment_methods · billing_plans · billing_subscriptions · invoices
+**Billing:** payments · payment_methods · billing_plans · billing_subscriptions · invoices · store_quota_usage
+
+**Support & Views:** saved_views · widgets · support_tickets · support_messages · feature_requests
+
+**Other:** shipment_items · collections · collection_products
 
 **Metering:** routing_meter_events · notification_meter_events · integration_events
 
@@ -444,7 +453,7 @@ NOTIFICATIONS_BYOK=true
 | Package | Description |
 |---------|-------------|
 | `@witylogix/api` | Fastify 5 backend — REST API, WebSocket server, BullMQ workers |
-| `@witylogix/dashboard` | Next.js 15 merchant dashboard — 50 routes, dark theme, real-time updates |
+| `@witylogix/dashboard` | Next.js 15 merchant dashboard — 57 routes, dark theme, real-time updates |
 | `@witylogix/shopify-app` | Embedded Shopify admin app — React Router v7, Polaris Web Components |
 | `@witylogix/driver-app` | React Native driver app — GPS tracking, proof of delivery, route navigation |
 | `@witylogix/tracking-page` | Customer tracking page — Leaflet map, Socket.io real-time updates |
@@ -461,7 +470,7 @@ NOTIFICATIONS_BYOK=true
 | Package | Strategy | Description |
 |---------|----------|-------------|
 | `@witylogix/db` | Compiled | Prisma client, RLS tenant extension, migrations |
-| `@witylogix/core` | Compiled | 43 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, notifications, analytics, payments |
+| `@witylogix/core` | Compiled | 48 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support |
 | `@witylogix/types` | JIT | Shared TypeScript types (apps transpile directly) |
 | `@witylogix/validators` | JIT | Zod schemas for API validation |
 | `@witylogix/carrier-service` | Compiled | Carrier rate calculation abstraction |
@@ -514,7 +523,7 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] PostgreSQL schema with PostGIS + RLS (25 Prisma modules)
 - [x] Routing provider abstraction (Mapbox, OSRM, Google, HERE, GraphHopper, TomTom)
 - [x] Multi-shop organization support with dual-mode RLS
-- [x] Fastify API with full CRUD endpoints (44 route files, 33+ registered prefixes)
+- [x] Fastify API with full CRUD endpoints (51 route files, 39+ registered prefixes)
 - [x] JWT authentication with refresh token rotation and password reset
 - [x] Role-based access control — hierarchical RBAC with policy engine + permissions API
 - [x] Audit trail — batch logging, diff computation, sensitive field masking, CSV export
@@ -528,14 +537,19 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Organization management (create, link shops, manage members, cross-shop stats)
 - [x] Integration Marketplace — 38 integrations across 6 categories
 - [x] React Router v7 Shopify embedded app (38 routes)
-- [x] Next.js 15 merchant dashboard (50 routes, dark theme)
+- [x] Next.js 15 merchant dashboard (57 routes, dark theme)
 - [x] Socket.io real-time tracking + driver location streaming
 - [x] React Native driver app with background GPS
 - [x] Customer tracking page with Leaflet map
 - [x] Payment processing — gateway abstraction + billing system
 - [x] Analytics engine — event tracking, aggregation, dashboards
 - [x] Route optimization — nearest-neighbor, 2-opt, Clarke-Wright + ETA calc
-- [x] 44 test suites across core modules
+- [x] Billing & subscriptions — plans, trials, proration, quota enforcement, invoicing
+- [x] Process manager — multi-worker orchestration with 4 specialized workers
+- [x] Saved views engine & dashboard widgets — customizable views, 8 widget types
+- [x] Collections — manual/auto product collections with Shopify sync
+- [x] Support tickets & feature requests — full lifecycle with threaded messages
+- [x] 51 test suites across core modules
 - [ ] Docker production deployment
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] Phase 2: OSRM + OR-Tools advanced route optimization
@@ -559,8 +573,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 2.4 | Real-time | Socket.io, driver app, tracking page, file storage |
 | 2.5 | Shipping | Route optimization, shipping profiles, payments, analytics |
 | 2.6 | Campaigns & Admin | RBAC engine, audit trail, messaging, campaigns, logging, encryption |
+| 2.7 | Billing & Polish | Billing system, process manager, saved views, widgets, collections, support |
 
-**Current stats (Sprint 2.6):** 555 source files, 168,753 lines of code, 25 Prisma modules, 43 core modules, 44 test suites.
+**Current stats (Sprint 2.7):** 794 source files, 208,287 lines of code, 28 Prisma modules, 48 core modules, 51 test suites.
 
 See [`gap-analysis.xlsx`](gap-analysis.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

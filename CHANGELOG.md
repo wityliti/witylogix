@@ -4,6 +4,22 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 2.7 — Billing, Delivery Workflow & Polish (2026-03-07)
+
+#### Added
+
+- **Billing system** — Subscription manager with trial support, upgrade/downgrade, prorated billing; quota enforcer with atomic usage tracking, warning thresholds, and Fastify middleware; invoice generator with line items, discounts, and PDF export (`packages/core/src/billing/`)
+- **Process manager** — Multi-worker orchestration with auto-restart, exponential backoff (1s→30s), graceful shutdown, and 4 specialized workers: billing, campaign, notification, analytics (`packages/core/src/process-manager/`)
+- **Saved views engine** — Dynamic filter builder (10 operators, 6 tables), column visibility, sort config, share/unshare, duplicate, and default views (`packages/core/src/saved-views/`)
+- **Widget manager** — 8 widget types, auto-positioning on 4×3 grid, soft delete, drag-to-reorder, catalog browser (`packages/core/src/widgets/`)
+- **Collections manager** — Manual and auto collections, rule evaluation, Shopify sync, product ordering (`packages/core/src/collections/`)
+- **Support ticket system** — Full ticket lifecycle (open→assigned→resolved→closed), threaded messages, feature request voting (`packages/core/src/support/`)
+- **Dashboard pages:** delivery workflow hub, mobile config, billing & plans, saved views, widgets, collections (6 new pages)
+- **API routes:** billing subscriptions (10 endpoints), support tickets (8), feature requests (6), saved views (9), widget config (8), collections (8) — 49 new endpoints
+- **Shopify routes:** billing & invoices, support center & ticket detail, collections management (Polaris v13)
+- **Prisma modules:** 35-billing-subscriptions (BillingPlan, BillingSubscription, Invoice, StoreQuotaUsage), 36-shipment-items, 38-saved-views (SavedView, Widget, SupportTicket, SupportMessage, FeatureRequest)
+- **7 new test suites:** subscription manager, quota enforcer, collection manager, ticket manager, view engine, widget manager, process manager
+
 ### Sprint 2.6 — Campaigns, Messaging & Admin (2026-03-07)
 
 #### Added
