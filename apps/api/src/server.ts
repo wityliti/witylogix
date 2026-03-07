@@ -99,6 +99,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);
 
+  // Workflow integration (auto-trigger workflows from API operations)
+  await app.register(import("./plugins/workflow-integration.js"));
+
   // ─── Health & Readiness ─────────────────────────────────────
 
   app.get("/health", async () => {

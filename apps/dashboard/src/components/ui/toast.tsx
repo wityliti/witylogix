@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, type CSSProperties, createContext, useContext, useState, useCallback } from "react";
+import React, { type ReactNode, createContext, useContext, useState, useCallback, useEffect } from "react";
+import { cn } from "../../lib/utils";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -20,29 +21,32 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-const typeStyles: Record<ToastType, { bg: string; border: string; text: string; icon: string }> = {
+const typeClasses: Record<
+  ToastType,
+  { bg: string; border: string; text: string; icon: string }
+> = {
   success: {
-    bg: "var(--wl-success-bg)",
-    border: "var(--wl-success-400)",
-    text: "var(--wl-success-400)",
+    bg: "bg-wl-success-bg",
+    border: "border-wl-success-400",
+    text: "text-wl-success-400",
     icon: "✓",
   },
   error: {
-    bg: "var(--wl-danger-bg)",
-    border: "var(--wl-danger-400)",
-    text: "var(--wl-danger-400)",
+    bg: "bg-wl-danger-bg",
+    border: "border-wl-danger-400",
+    text: "text-wl-danger-400",
     icon: "✕",
   },
   warning: {
-    bg: "var(--wl-warning-bg)",
-    border: "var(--wl-warning-400)",
-    text: "var(--wl-warning-400)",
+    bg: "bg-wl-warning-bg",
+    border: "border-wl-warning-400",
+    text: "text-wl-warning-400",
     icon: "!",
   },
   info: {
-    bg: "var(--wl-info-bg)",
-    border: "var(--wl-info-400)",
-    text: "var(--wl-info-400)",
+    bg: "bg-wl-info-bg",
+    border: "border-wl-info-400",
+    text: "text-wl-info-400",
     icon: "ⓘ",
   },
 };
@@ -90,18 +94,7 @@ interface ToastContainerProps {
 
 function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "var(--wl-space-4)",
-        right: "var(--wl-space-4)",
-        zIndex: 100,
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--wl-space-3)",
-        pointerEvents: "none",
-      }}
-    >
+    <div className="fixed bottom-4 right-4 z-100 flex flex-col gap-3 pointer-events-none">
       {toasts.map((toast) => (
         <ToastItem
           key={toast.id}
@@ -120,14 +113,13 @@ interface ToastItemProps {
 
 function ToastItem({ toast, onRemove }: ToastItemProps) {
   const [progress, setProgress] = useState(100);
-  const styles = typeStyles[toast.type];
+  const styles = typeClasses[toast.type];
   const duration = toast.duration || 5000;
 
-  // Simulate progress bar
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev - (100 / (duration / 50));
+        const newProgress = prev - 100 / (duration / 50);
         return newProgress <= 0 ? 0 : newProgress;
       });
     }, 50);
@@ -135,125 +127,8 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
     return () => clearInterval(interval);
   }, [duration]);
 
-  const toastStyle: CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    background: "var(--wl-bg-elevated)",
-    border: `1px solid ${styles.border}`,
-    borderRadius: "var(--wl-radius-lg)",
-    padding: "var(--wl-space-4)",
-    minWidth: "320px",
-    maxWidth: "420px",
-    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-    animation: "slideInRight var(--wl-duration-fast) var(--wl-ease-spring)",
-    pointerEvents: "auto",
-  };
-
   return (
-    <div style={toastStyle}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: "var(--wl-space-3)",
-          marginBottom: toast.message ? "var(--wl-space-2)" : 0,
-        }}
-      >
-        {/* Icon */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "24px",
-            height: "24px",
-            borderRadius: "50%",
-            background: styles.bg,
-            color: styles.text,
-            flexShrink: 0,
-            fontSize: "14px",
-            fontWeight: 700,
-          }}
-        >
-          {styles.icon}
-        </div>
-
-        {/* Title and Message */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 600,
-              color: "var(--wl-text-primary)",
-              margin: 0,
-            }}
-          >
-            {toast.title}
-          </div>
-          {toast.message && (
-            <div
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-text-secondary)",
-                marginTop: "var(--wl-space-1)",
-              }}
-            >
-              {toast.message}
-            </div>
-          )}
-        </div>
-
-        {/* Close Button */}
-        <button
-          onClick={() => onRemove(toast.id)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "24px",
-            height: "24px",
-            background: "transparent",
-            border: "none",
-            color: "var(--wl-text-tertiary)",
-            cursor: "pointer",
-            flexShrink: 0,
-            transition: "color var(--wl-duration-fast) var(--wl-ease-default)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--wl-text-secondary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--wl-text-tertiary)";
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Progress Bar */}
-      <div
-        style={{
-          height: "2px",
-          background: "var(--wl-bg-surface)",
-          borderRadius: "var(--wl-radius-full)",
-          overflow: "hidden",
-          marginTop: "var(--wl-space-3)",
-        }}
-      >
-        <div
-          style={{
-            height: "100%",
-            background: styles.border,
-            width: `${progress}%`,
-            transition: "width 50ms linear",
-          }}
-        />
-      </div>
-
+    <>
       <style>{`
         @keyframes slideInRight {
           from {
@@ -265,10 +140,84 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
             opacity: 1;
           }
         }
+        .toast-slide-in {
+          animation: slideInRight var(--wl-duration-fast) var(--wl-ease-spring) forwards;
+        }
       `}</style>
-    </div>
+      <div
+        className={cn(
+          "flex flex-col bg-wl-bg-elevated rounded-lg p-4 min-w-80 max-w-96",
+          "shadow-lg pointer-events-auto toast-slide-in",
+          "border",
+          styles.border
+        )}
+      >
+        {/* Header */}
+        <div
+          className={cn(
+            "flex items-start gap-3",
+            toast.message && "mb-2"
+          )}
+        >
+          {/* Icon */}
+          <div
+            className={cn(
+              "flex items-center justify-center w-6 h-6 rounded-full",
+              "flex-shrink-0 text-sm font-bold",
+              styles.bg,
+              styles.text
+            )}
+          >
+            {styles.icon}
+          </div>
+
+          {/* Title and Message */}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-wl-text-primary">
+              {toast.title}
+            </div>
+            {toast.message && (
+              <div className="text-xs text-wl-text-secondary mt-1">
+                {toast.message}
+              </div>
+            )}
+          </div>
+
+          {/* Close Button */}
+          <button
+            onClick={() => onRemove(toast.id)}
+            className={cn(
+              "flex items-center justify-center w-6 h-6 flex-shrink-0",
+              "bg-transparent border-none text-wl-text-tertiary cursor-pointer",
+              "transition-colors duration-fast ease-default",
+              "hover:text-wl-text-secondary"
+            )}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="h-0.5 bg-wl-bg-surface rounded-full overflow-hidden mt-3">
+          <div
+            className={cn(
+              "h-full transition-all",
+              styles.border.replace("border-", "bg-")
+            )}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </>
   );
 }
-
-// Add React import for useEffect
-import React from "react";

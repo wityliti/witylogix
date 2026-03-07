@@ -4,6 +4,27 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.0 — Event System, Webhooks & Design System (2026-03-07)
+
+#### Added
+
+- **TypedEventBus** — Event bus with Redis Streams backend (XADD/XREADGROUP/XACK), InMemory fallback adapter, middleware pipeline (beforePublish/afterPublish), retry with exponential backoff, dead-letter queue, per-tenant metrics, and 18 typed domain events (`packages/core/src/event-bus/`)
+- **ADR-010** — Event bus architecture decision record with Redis Streams vs Kafka analysis, consumer group design, and scaling strategy (`docs/adr/ADR-010-event-bus-architecture.md`)
+- **Outbound webhook system** — WebhookManager with full lifecycle (register, update, delete, deliver, retry), HMAC-SHA256 payload signing, exponential retry with circuit breaker (5 failures → open), background polling processor, type-safe EventEmitter (`packages/core/src/webhooks/`)
+- **Webhook API routes** — 10 Fastify endpoints for webhook CRUD, test delivery, delivery logs, and retry (`apps/api/src/routes/outbound-webhooks.ts`)
+- **Webhook Prisma schema** — WebhookEndpoint, WebhookDelivery, WebhookEventLog models (`packages/db/prisma/schema/30-outbound-webhooks.prisma`)
+- **Workflow-API integration** — WorkflowIntegrationService with auto-trigger on order creation, driver assignment, and delivery completion; Fastify lifecycle hooks with non-blocking execution via setImmediate; trigger mode config (auto/manual/disabled) (`packages/core/src/workflow-integration/`)
+- **Workflow integration plugin** — Fastify plugin with `fastify.workflows` decorator (`apps/api/src/plugins/workflow-integration.ts`)
+- **Real-time workflow events** — WorkflowRealtimeService with Socket.io room-based emission, rate limiting (10 events/sec/execution), tenant-scoped rooms, graceful fallback, discriminated union payloads with 8 event types (`packages/core/src/realtime/workflow-events.ts`)
+- **SSE fallback endpoint** — Server-Sent Events endpoint for workflow execution streaming when Socket.io unavailable (`apps/api/src/routes/workflow-executions.ts`)
+- **Workflow realtime plugin** — Fastify plugin for Socket.io workflow event integration (`apps/api/src/plugins/workflow-realtime.ts`)
+- **shadcn/ui-inspired design system (Phase 1)** — Tailwind CSS migration with `cn()` utility, design token bridge mapping `--wl-*` CSS vars to Tailwind theme, migrated 6 components: button, card, badge, input, select, modal — all preserving exact same component API for backward compatibility (`apps/dashboard/`)
+- **shadcn/ui-inspired design system (Phase 2)** — Migrated 5 more components: table, tabs, toast, stat-card, empty-state; 3 new components: dropdown-menu (position-aware, keyboard nav), skeleton (6 variants), tooltip (hover trigger, positioning, arrow) (`apps/dashboard/src/components/ui/`)
+- **Design system foundation** — Tailwind token CSS layer with animations/keyframes, migrated header and sidebar layouts to Tailwind, barrel export (`ui/index.ts`), interactive component gallery page (`/admin/design-system`)
+- **Shopify webhook management** — Webhook config page with event picker multi-select, delivery log table, detail/edit page with Polaris v13 (`apps/shopify-app/`)
+- **Shopify webhook API handler** — HMAC-validated webhook receiver with Shopify order → workflow mapping (`apps/shopify-app/app/routes/api.webhooks.workflow.tsx`)
+- **6 test suites** — event-bus, webhook-manager, workflow-integration, realtime-workflows, ui-components, webhook-routes (69 total test files)
+
 ### Sprint 2.9 — Workflow Engine Framework (Medusa v2-Inspired) (2026-03-07)
 
 #### Added

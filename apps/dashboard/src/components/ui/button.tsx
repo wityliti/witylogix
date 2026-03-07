@@ -1,6 +1,7 @@
 "use client";
 
-import { type ButtonHTMLAttributes, type CSSProperties } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
@@ -8,80 +9,80 @@ type ButtonSize = "sm" | "md" | "lg";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  asChild?: boolean;
 }
 
-const variantStyles: Record<ButtonVariant, CSSProperties> = {
-  primary: {
-    background: "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-    color: "var(--wl-text-inverse)",
-    border: "1px solid var(--wl-primary-600)",
-    fontWeight: 600,
-  },
-  secondary: {
-    background: "var(--wl-bg-overlay)",
-    color: "var(--wl-text-primary)",
-    border: "1px solid var(--wl-border-default)",
-    fontWeight: 500,
-  },
-  ghost: {
-    background: "transparent",
-    color: "var(--wl-text-secondary)",
-    border: "1px solid transparent",
-    fontWeight: 500,
-  },
-  danger: {
-    background: "var(--wl-danger-bg)",
-    color: "var(--wl-danger-400)",
-    border: "1px solid rgba(239, 68, 68, 0.2)",
-    fontWeight: 600,
-  },
+const variantClasses: Record<ButtonVariant, string> = {
+  primary: cn(
+    "bg-gradient-to-br from-wl-primary-500 to-wl-primary-600",
+    "text-wl-text-inverse",
+    "border border-wl-primary-600",
+    "font-semibold",
+    "hover:from-wl-primary-600 hover:to-wl-primary-700",
+    "hover:shadow-md",
+    "active:shadow-sm"
+  ),
+  secondary: cn(
+    "bg-wl-bg-overlay text-wl-text-primary",
+    "border border-wl-border-default",
+    "font-medium",
+    "hover:bg-wl-bg-elevated hover:border-wl-border-strong",
+    "active:bg-wl-bg-elevated"
+  ),
+  ghost: cn(
+    "bg-transparent text-wl-text-secondary",
+    "border border-transparent",
+    "font-medium",
+    "hover:text-wl-text-primary hover:bg-wl-bg-overlay",
+    "active:bg-wl-bg-surface"
+  ),
+  danger: cn(
+    "bg-wl-danger-bg text-wl-danger-400",
+    "border border-wl-danger-400/20",
+    "font-semibold",
+    "hover:bg-wl-danger-500/20 hover:border-wl-danger-500/30 hover:text-wl-danger-500",
+    "active:bg-wl-danger-500/30"
+  ),
 };
 
-const sizeStyles: Record<ButtonSize, CSSProperties> = {
-  sm: {
-    fontSize: "var(--wl-text-xs)",
-    padding: "var(--wl-space-1) var(--wl-space-3)",
-    borderRadius: "var(--wl-radius-sm)",
-  },
-  md: {
-    fontSize: "var(--wl-text-sm)",
-    padding: "var(--wl-space-2) var(--wl-space-4)",
-    borderRadius: "var(--wl-radius-md)",
-  },
-  lg: {
-    fontSize: "var(--wl-text-base)",
-    padding: "var(--wl-space-3) var(--wl-space-5)",
-    borderRadius: "var(--wl-radius-md)",
-  },
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: "px-3 py-1 text-xs rounded-sm",
+  md: "px-4 py-2 text-sm rounded-md",
+  lg: "px-5 py-3 text-base rounded-md",
 };
 
-export function Button({
-  variant = "primary",
-  size = "md",
-  style,
-  disabled,
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "var(--wl-space-2)",
-        cursor: disabled ? "not-allowed" : "pointer",
-        fontFamily: "var(--wl-font-sans)",
-        transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-        letterSpacing: "0.01em",
-        lineHeight: 1.4,
-        whiteSpace: "nowrap",
-        opacity: disabled ? 0.5 : 1,
-        ...variantStyles[variant],
-        ...sizeStyles[size],
-        ...style,
-      }}
-      disabled={disabled}
-      {...props}
-    />
-  );
-}
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant = "primary",
+      size = "md",
+      className,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          "inline-flex items-center justify-center gap-2",
+          "cursor-pointer font-family-sans",
+          "transition-all duration-fast ease-default",
+          "tracking-wider leading-snug whitespace-nowrap",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
+          "disabled:opacity-50 disabled:cursor-not-allowed",
+          variantClasses[variant],
+          sizeClasses[size],
+          className
+        )}
+        disabled={disabled}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = "Button";
+
+export { Button };

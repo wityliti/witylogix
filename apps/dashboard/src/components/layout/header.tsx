@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface HeaderProps {
   title: string;
   subtitle?: string;
@@ -9,45 +11,39 @@ interface HeaderProps {
 export function Header({ title, subtitle, actions }: HeaderProps) {
   return (
     <header
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "var(--wl-space-5) var(--wl-space-6)",
-        borderBottom: "1px solid var(--wl-border-subtle)",
-        background: "var(--wl-bg-surface)",
-        backdropFilter: "blur(12px)",
-        position: "sticky",
-        top: 0,
-        zIndex: 40,
-      }}
+      className={cn(
+        "flex items-center justify-between",
+        "px-6 py-5",
+        "border-b border-wl-border-subtle",
+        "bg-wl-bg-surface backdrop-blur-sm",
+        "sticky top-0 z-40"
+      )}
     >
       <div>
         <h1
-          style={{
-            fontSize: "var(--wl-text-xl)",
-            fontWeight: 700,
-            color: "var(--wl-text-primary)",
-            margin: 0,
-            letterSpacing: "-0.02em",
-          }}
+          className={cn(
+            "text-xl font-bold",
+            "text-wl-text-primary",
+            "m-0",
+            "tracking-tighter"
+          )}
         >
           {title}
         </h1>
         {subtitle && (
           <p
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-text-tertiary)",
-              margin: "2px 0 0 0",
-            }}
+            className={cn(
+              "text-sm",
+              "text-wl-text-tertiary",
+              "mt-0.5 mb-0"
+            )}
           >
             {subtitle}
           </p>
         )}
       </div>
       {actions && (
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
+        <div className="flex items-center gap-3">
           {actions}
         </div>
       )}

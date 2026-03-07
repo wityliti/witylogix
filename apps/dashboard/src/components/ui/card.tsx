@@ -1,148 +1,138 @@
 "use client";
 
-import { type ReactNode, type CSSProperties } from "react";
+import { forwardRef, type HTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-interface CardProps {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
   hover?: boolean;
   glow?: boolean;
-  onClick?: () => void;
 }
 
-export function Card({ children, style, hover, glow, onClick }: CardProps) {
-  return (
+const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, children, hover, glow, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+          "transition-all duration-base ease-default",
+          hover && "hover:border-wl-border-default hover:shadow-md cursor-pointer",
+          glow && "shadow-glow",
+          props.onClick && "cursor-pointer",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Card.displayName = "Card";
+
+interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
+}
+
+const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ className, children, ...props }, ref) => (
     <div
-      onClick={onClick}
-      style={{
-        background: "var(--wl-bg-elevated)",
-        border: "1px solid var(--wl-border-subtle)",
-        borderRadius: "var(--wl-radius-lg)",
-        padding: "var(--wl-space-5)",
-        transition: `all var(--wl-duration-base) var(--wl-ease-default)`,
-        cursor: onClick ? "pointer" : undefined,
-        ...(hover
-          ? {
-              // Hover styles applied via onMouseEnter/Leave if needed
-            }
-          : {}),
-        ...(glow ? { boxShadow: "var(--wl-shadow-glow)" } : {}),
-        ...style,
-      }}
+      ref={ref}
+      className={cn(
+        "flex items-center justify-between mb-4",
+        className
+      )}
+      {...props}
     >
       {children}
     </div>
-  );
+  )
+);
+CardHeader.displayName = "CardHeader";
+
+interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
+  children: ReactNode;
 }
 
-export function CardHeader({
-  children,
-  style,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "var(--wl-space-4)",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function CardTitle({
-  children,
-  style,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  return (
+const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ className, children, ...props }, ref) => (
     <h3
-      style={{
-        fontSize: "var(--wl-text-sm)",
-        fontWeight: 600,
-        color: "var(--wl-text-secondary)",
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        margin: 0,
-        ...style,
-      }}
+      ref={ref}
+      className={cn(
+        "text-sm font-semibold text-wl-text-secondary tracking-wider uppercase m-0",
+        className
+      )}
+      {...props}
     >
       {children}
     </h3>
-  );
+  )
+);
+CardTitle.displayName = "CardTitle";
+
+interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
 }
 
-export function CardContent({
-  children,
-  style,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  return (
+const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
+  ({ className, children, ...props }, ref) => (
     <div
-      style={{
-        ...style,
-      }}
+      ref={ref}
+      className={className}
+      {...props}
     >
       {children}
     </div>
-  );
+  )
+);
+CardContent.displayName = "CardContent";
+
+interface CardDescriptionProps extends HTMLAttributes<HTMLParagraphElement> {
+  children: ReactNode;
 }
 
-export function CardDescription({
-  children,
-  style,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  return (
+const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+  ({ className, children, ...props }, ref) => (
     <p
-      style={{
-        fontSize: "var(--wl-text-sm, 14px)",
-        color: "var(--wl-text-secondary, #94a3b8)",
-        margin: "4px 0 0 0",
-        lineHeight: 1.5,
-        ...style,
-      }}
+      ref={ref}
+      className={cn(
+        "text-sm text-wl-text-secondary leading-relaxed mt-1",
+        className
+      )}
+      {...props}
     >
       {children}
     </p>
-  );
+  )
+);
+CardDescription.displayName = "CardDescription";
+
+interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
 }
 
-export function CardFooter({
-  children,
-  style,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-}) {
-  return (
+const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ className, children, ...props }, ref) => (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        gap: "8px",
-        marginTop: "var(--wl-space-4, 16px)",
-        paddingTop: "var(--wl-space-4, 16px)",
-        borderTop: "1px solid var(--wl-border-subtle, #1e293b)",
-        ...style,
-      }}
+      ref={ref}
+      className={cn(
+        "flex items-center justify-end gap-2 mt-4 pt-4 border-t border-wl-border-subtle",
+        className
+      )}
+      {...props}
     >
       {children}
     </div>
-  );
-}
+  )
+);
+CardFooter.displayName = "CardFooter";
+
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+};

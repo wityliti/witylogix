@@ -1,76 +1,57 @@
 "use client";
 
-import { type ReactNode, type CSSProperties } from "react";
+import { forwardRef, type HTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type BadgeVariant = "default" | "success" | "warning" | "danger" | "info" | "primary";
 
-interface BadgeProps {
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
   variant?: BadgeVariant;
   dot?: boolean;
-  style?: CSSProperties;
 }
 
-const variantStyles: Record<BadgeVariant, CSSProperties> = {
-  default: {
-    color: "var(--wl-neutral-300)",
-    background: "rgba(255, 255, 255, 0.06)",
-  },
-  success: {
-    color: "var(--wl-success-400)",
-    background: "var(--wl-success-bg)",
-  },
-  warning: {
-    color: "var(--wl-warning-400)",
-    background: "var(--wl-warning-bg)",
-  },
-  danger: {
-    color: "var(--wl-danger-400)",
-    background: "var(--wl-danger-bg)",
-  },
-  info: {
-    color: "var(--wl-info-400)",
-    background: "var(--wl-info-bg)",
-  },
-  primary: {
-    color: "var(--wl-primary-400)",
-    background: "rgba(245, 166, 35, 0.12)",
-  },
+const variantClasses: Record<BadgeVariant, string> = {
+  default: "text-wl-neutral-300 bg-white/6",
+  success: "text-wl-success-400 bg-wl-success-bg",
+  warning: "text-wl-warning-400 bg-wl-warning-bg",
+  danger: "text-wl-danger-400 bg-wl-danger-bg",
+  info: "text-wl-info-400 bg-wl-info-bg",
+  primary: "text-wl-primary-400 bg-wl-primary-500/12",
 };
 
-export function Badge({ children, variant = "default", dot, style }: BadgeProps) {
-  const vs = variantStyles[variant];
+const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ className, children, variant = "default", dot, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(
+          "inline-flex items-center gap-1",
+          "text-xs font-semibold",
+          "px-2 py-0.5",
+          "rounded-full",
+          "tracking-wide uppercase",
+          "leading-relaxed whitespace-nowrap",
+          variantClasses[variant],
+          className
+        )}
+        {...props}
+      >
+        {dot && (
+          <span
+            className={cn(
+              "w-1.5 h-1.5 rounded-full",
+              "bg-current flex-shrink-0"
+            )}
+            aria-hidden="true"
+          />
+        )}
+        {children}
+      </span>
+    );
+  }
+);
 
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "var(--wl-space-1)",
-        fontSize: "var(--wl-text-xs)",
-        fontWeight: 600,
-        padding: "2px 8px",
-        borderRadius: "var(--wl-radius-full)",
-        letterSpacing: "0.03em",
-        textTransform: "uppercase",
-        lineHeight: 1.6,
-        whiteSpace: "nowrap",
-        ...vs,
-        ...style,
-      }}
-    >
-      {dot && (
-        <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: "currentColor",
-            flexShrink: 0,
-          }}
-        />
-      )}
-      {children}
-    </span>
-  );
-}
+Badge.displayName = "Badge";
+
+export { Badge };

@@ -50,7 +50,7 @@ class PDFGenerator {
     const catalogId = this.addObject(this.createCatalog());
     const pagesId = this.addObject(this.createPages());
     const pageId = this.addObject(
-      this.createPage(pagesId, this.createContent())
+      this.createPage(pagesId, this.createContents())
     );
     const contentsId = this.addObject(this.createContents());
     const fontResourcesId = this.addObject(this.createFontResources());
@@ -150,7 +150,7 @@ class PDFGenerator {
 
     if (this.label.recipient.street2) {
       stream += "50 " + (this.pageHeight - 235) + " Td\n";
-      stream += `(${escapePDFString(this.label.recipient.street2)}) Tj\n";
+      stream += `(${escapePDFString(this.label.recipient.street2)}) Tj\n`;
     }
 
     const recipientCity = `${this.label.recipient.city}, ${this.label.recipient.state} ${this.label.recipient.postalCode}`;

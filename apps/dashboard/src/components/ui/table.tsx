@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, type CSSProperties, useState } from "react";
+import { cn } from "../../lib/utils";
 
 type SortDirection = "asc" | "desc" | null;
 type TextAlign = "left" | "center" | "right";
@@ -23,6 +24,7 @@ interface TableProps<T> {
   stickyHeader?: boolean;
   striped?: boolean;
   style?: CSSProperties;
+  className?: string;
 }
 
 export function Table<T extends { id?: string }>({
@@ -34,6 +36,7 @@ export function Table<T extends { id?: string }>({
   stickyHeader = true,
   striped = true,
   style,
+  className,
 }: TableProps<T>) {
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -76,12 +79,8 @@ export function Table<T extends { id?: string }>({
   if (sortedData.length === 0) {
     return (
       <div
-        style={{
-          padding: "var(--wl-space-8)",
-          textAlign: "center",
-          color: "var(--wl-text-secondary)",
-          ...style,
-        }}
+        className={cn("px-8 py-6 text-center text-wl-text-secondary", className)}
+        style={style}
       >
         {emptyMessage}
       </div>
@@ -90,75 +89,62 @@ export function Table<T extends { id?: string }>({
 
   return (
     <div
-      style={{
-        overflowX: "auto",
-        border: "1px solid var(--wl-border-subtle)",
-        borderRadius: "var(--wl-radius-lg)",
-        ...style,
-      }}
+      className={cn(
+        "overflow-x-auto border border-wl-border-subtle rounded-lg",
+        className
+      )}
+      style={style}
     >
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontFamily: "var(--wl-font-sans)",
-          fontSize: "var(--wl-text-sm)",
-        }}
-      >
+      <table className="w-full border-collapse font-sans text-sm">
         <thead>
           <tr
-            style={{
-              background: "var(--wl-bg-surface)",
-              borderBottom: "1px solid var(--wl-border-subtle)",
-              ...(stickyHeader
-                ? {
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 10,
-                  }
-                : {}),
-            }}
+            className={cn(
+              "bg-wl-bg-surface border-b border-wl-border-subtle",
+              stickyHeader && "sticky top-0 z-10"
+            )}
           >
             {columns.map((column) => (
               <th
                 key={column.key}
                 onClick={() => column.sortable && handleSort(column.key)}
+                className={cn(
+                  "px-4 py-3 text-xs font-semibold uppercase tracking-wider",
+                  "text-wl-text-secondary transition-colors duration-fast ease-default",
+                  column.sortable && "cursor-pointer hover:text-wl-text-primary"
+                )}
                 style={{
-                  padding: "var(--wl-space-3) var(--wl-space-4)",
                   textAlign: column.align || "left",
-                  color: "var(--wl-text-secondary)",
-                  fontWeight: 600,
-                  fontSize: "var(--wl-text-xs)",
-                  letterSpacing: "0.02em",
-                  textTransform: "uppercase",
-                  cursor: column.sortable ? "pointer" : undefined,
-                  userSelect: "none",
                   width: column.width,
-                  transition: `color var(--wl-duration-fast) var(--wl-ease-default)`,
-                }}
-                onMouseEnter={(e) => {
-                  if (column.sortable) {
-                    e.currentTarget.style.color = "var(--wl-text-primary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (column.sortable) {
-                    e.currentTarget.style.color = "var(--wl-text-secondary)";
-                  }
+                  userSelect: "none",
                 }}
               >
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--wl-space-2)",
-                    justifyContent: column.align === "center" ? "center" : column.align === "right" ? "flex-end" : "flex-start",
-                  }}
+                  className={cn(
+                    "flex items-center gap-2",
+                    column.align === "center" && "justify-center",
+                    column.align === "right" && "justify-end"
+                  )}
                 >
                   {column.header}
                   {column.sortable && sortConfig.key === column.key && (
-                    <span style={{ fontSize: "10px" }}>
-                      {sortConfig.direction === "asc" ? "↑" : "↓"}
+                    <span className="text-xs inline-block transition-transform duration-fast">
+                      {sortConfig.direction === "asc" ? (
+                        <svg
+                          className="w-3 h-3 inline"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M7 14l5-5 5 5z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-3 h-3 inline"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M7 10l5 5 5-5z" />
+                        </svg>
+                      )}
                     </span>
                   )}
                 </div>
@@ -174,46 +160,29 @@ export function Table<T extends { id?: string }>({
               <tr
                 key={rowId || rowIndex}
                 onClick={() => onRowClick?.(row)}
-                style={{
-                  background:
-                    isSelected
-                      ? "rgba(245, 166, 35, 0.08)"
-                      : striped && rowIndex % 2 === 1
-                        ? "var(--wl-bg-surface)"
-                        : "transparent",
-                  borderBottom: "1px solid var(--wl-border-subtle)",
-                  cursor: onRowClick ? "pointer" : undefined,
-                  transition: `background-color var(--wl-duration-fast) var(--wl-ease-default)`,
-                }}
-                onMouseEnter={(e) => {
-                  if (onRowClick && !isSelected) {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (onRowClick) {
-                    e.currentTarget.style.background = isSelected
-                      ? "rgba(245, 166, 35, 0.08)"
-                      : striped && rowIndex % 2 === 1
-                        ? "var(--wl-bg-surface)"
-                        : "transparent";
-                  }
-                }}
+                className={cn(
+                  "border-b border-wl-border-subtle transition-colors duration-fast ease-default group",
+                  isSelected && "bg-wl-primary-500/10",
+                  !isSelected && striped && rowIndex % 2 === 1 && "bg-wl-bg-surface",
+                  onRowClick && !isSelected && "hover:bg-white/[0.02]",
+                  onRowClick && "cursor-pointer"
+                )}
               >
                 {columns.map((column) => {
                   const cellValue = row[column.key as keyof T];
                   const rendered = column.render ? column.render(row) : cellValue;
-                  const isMonoContent = typeof cellValue === "string" && /^[A-Za-z0-9_-]+$/.test(cellValue);
+                  const isMonoContent =
+                    typeof cellValue === "string" && /^[A-Za-z0-9_-]+$/.test(cellValue);
 
                   return (
                     <td
                       key={column.key}
+                      className={cn(
+                        "px-4 py-3 text-sm text-wl-text-primary",
+                        isMonoContent && "font-mono"
+                      )}
                       style={{
-                        padding: "var(--wl-space-3) var(--wl-space-4)",
                         textAlign: column.align || "left",
-                        color: "var(--wl-text-primary)",
-                        fontFamily: isMonoContent ? "var(--wl-font-mono)" : "var(--wl-font-sans)",
-                        fontSize: "var(--wl-text-sm)",
                         width: column.width,
                       }}
                     >

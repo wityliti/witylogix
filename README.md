@@ -73,6 +73,11 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 - **Workflow engine** — Medusa v2-inspired step-based orchestration with DI container, per-step compensation (reverse-order rollback), retry with exponential backoff, timeout support, lifecycle hooks, and workflow registry (`packages/framework/`)
 - **3 core delivery workflows** — `createDeliveryOrder` (9 steps), `assignDriver` (10 steps with scoring algorithm), `completeDelivery` (11 steps with POD verification) — each with automatic compensation chains for safe rollback on failure (`packages/workflows/`)
 - **BullMQ durable execution** — workflow queue with retry policies, progress tracking, cron-based scheduling, dead-letter queue, and graceful degradation to in-memory mode
+- **Event bus** — TypedEventBus with Redis Streams backend (XADD/XREADGROUP/XACK), InMemory fallback, middleware pipeline, retry with exponential backoff, dead-letter queue, 18 domain events, and per-tenant metrics (`packages/core/src/event-bus/`)
+- **Outbound webhooks** — HMAC-SHA256 signed deliveries, exponential retry with circuit breaker, background polling processor, type-safe event emission, 10 API endpoints (`packages/core/src/webhooks/`)
+- **Workflow-API integration** — auto-trigger workflows from existing endpoints (order creation, driver assignment, delivery completion) with non-blocking execution via setImmediate (`packages/core/src/workflow-integration/`)
+- **Real-time workflow events** — Socket.io room-based emission with rate limiting (10 events/sec/execution), SSE fallback endpoint, discriminated union payloads (`packages/core/src/realtime/`)
+- **shadcn/ui-inspired design system** — Tailwind CSS migration preserving Witylogix industrial aesthetic, `cn()` utility, 16 migrated/new components (button, card, badge, input, select, modal, table, tabs, toast, stat-card, empty-state, dropdown-menu, skeleton, tooltip), design token bridge, component gallery page
 - **Docker production stack** — multi-stage Dockerfiles, compose with 8 services (Postgres+PostGIS, Redis, API, Dashboard, Shopify, Worker, Nginx), health checks, graceful shutdown, and automated Prisma migrations
 - **Shopify integration** — embedded admin app, checkout extensions, Carrier Service API, "Built for Shopify" ready
 - **Platform-agnostic core** — decoupled business logic ready for WooCommerce, Magento, and custom storefronts
@@ -90,7 +95,7 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 | Job queue | [BullMQ](https://bullmq.io) with tenant-aware groups |
 | Shopify app | [React Router v7](https://reactrouter.com) + [Polaris Web Components](https://polaris.shopify.com) |
 | Extensions | [Preact](https://preactjs.com) (checkout & POS, < 64KB) |
-| Dashboard | [Next.js 15](https://nextjs.org) (App Router, dark theme, CSS custom properties) |
+| Dashboard | [Next.js 15](https://nextjs.org) (App Router, dark theme, Tailwind CSS + shadcn/ui-inspired design system) |
 | Routing | [Mapbox](https://www.mapbox.com) (Phase 1) → [OSRM](https://project-osrm.org) (Phase 2) |
 | Real-time | [Socket.io](https://socket.io) + [Redis Adapter](https://socket.io/docs/v4/redis-adapter/) |
 | Mobile | [React Native](https://reactnative.dev) (Expo) + background geolocation |
@@ -480,7 +485,7 @@ NOTIFICATIONS_BYOK=true
 | Package | Strategy | Description |
 |---------|----------|-------------|
 | `@witylogix/db` | Compiled | Prisma client, RLS tenant extension, migrations |
-| `@witylogix/core` | Compiled | 51 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support |
+| `@witylogix/core` | Compiled | 57 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support, event-bus, webhooks, workflow-integration, realtime |
 | `@witylogix/framework` | Compiled | Workflow engine — DI container, step runner, compensation engine, workflow registry, BullMQ queue/worker/scheduler/DLQ |
 | `@witylogix/workflows` | Compiled | 3 core delivery workflows (30 steps) + 12 reusable step definitions |
 | `@witylogix/types` | JIT | Shared TypeScript types (apps transpile directly) |
@@ -567,6 +572,12 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] API hardening — rate limiting, error standardization, OpenAPI spec, XSS protection
 - [x] Docker production stack — multi-stage builds, compose, nginx, health checks
 - [x] 57 test suites across core modules
+- [x] Event bus — TypedEventBus with Redis Streams + InMemory adapters, 18 domain events
+- [x] Outbound webhooks — HMAC-SHA256, retry, circuit breaker, 10 API endpoints
+- [x] Workflow-API integration — auto-trigger from existing endpoints
+- [x] Real-time workflow events — Socket.io + SSE fallback
+- [x] shadcn/ui-inspired design system — Tailwind CSS migration, 16 components, design tokens
+- [x] Shopify webhook management UI — event picker, delivery logs, detail pages
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] Phase 2: OSRM + OR-Tools advanced route optimization
 - [ ] "Built for Shopify" certification
@@ -592,8 +603,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 2.7 | Billing & Polish | Billing system, process manager, saved views, widgets, collections, support |
 | 2.8 | Auth & Production | Auth providers (BYOK), POS integration, admin panel, API hardening, Docker deploy |
 | 2.9 | Workflow Engine | Medusa v2-inspired workflow framework, 3 core delivery workflows, BullMQ durable execution, dashboard workflow viewer |
+| 3.0 | Events & Design System | TypedEventBus (Redis Streams), outbound webhooks, workflow-API integration, Socket.io realtime, shadcn/ui-inspired Tailwind migration, Shopify webhook UI |
 
-**Current stats (Sprint 2.9):** 1,565 source files, 156,361+ lines of code, 30 Prisma modules, 51 core modules, 2 new framework packages (workflow engine + workflows), 65 dashboard pages, 63 API route files, 63 test suites.
+**Current stats (Sprint 3.0):** 1,609 source files, 170,399+ lines of code, 31 Prisma modules, 57 core modules, event bus + webhook + workflow-integration subsystems, 66 dashboard pages, 67 API route files, 69 test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

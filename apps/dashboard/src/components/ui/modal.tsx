@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, type CSSProperties, useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 type ModalSize = "sm" | "md" | "lg" | "full";
 
@@ -11,26 +12,13 @@ interface ModalProps {
   children: ReactNode;
   size?: ModalSize;
   footer?: ReactNode;
-  style?: CSSProperties;
 }
 
-const sizeStyles: Record<ModalSize, CSSProperties> = {
-  sm: {
-    width: "100%",
-    maxWidth: "400px",
-  },
-  md: {
-    width: "100%",
-    maxWidth: "560px",
-  },
-  lg: {
-    width: "100%",
-    maxWidth: "720px",
-  },
-  full: {
-    width: "90vw",
-    maxWidth: "90vw",
-  },
+const sizeClasses: Record<ModalSize, string> = {
+  sm: "w-full max-w-sm",
+  md: "w-full max-w-md",
+  lg: "w-full max-w-lg",
+  full: "w-[90vw] max-w-[90vw]",
 };
 
 export function Modal({
@@ -40,7 +28,6 @@ export function Modal({
   children,
   size = "md",
   footer,
-  style,
 }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -64,64 +51,35 @@ export function Modal({
 
   return (
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 50,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        animation: "fadeIn var(--wl-duration-fast) var(--wl-ease-default)",
-      }}
+      className={cn(
+        "fixed inset-0 z-50",
+        "flex items-center justify-center",
+        "animate-fadeIn"
+      )}
       onClick={onClose}
     >
       {/* Backdrop with blur */}
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(0, 0, 0, 0.5)",
-          backdropFilter: "blur(4px)",
-        }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        aria-hidden="true"
       />
 
       {/* Modal Content */}
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "relative",
-          zIndex: 51,
-          background: "var(--wl-bg-elevated)",
-          border: "1px solid var(--wl-border-subtle)",
-          borderRadius: "var(--wl-radius-lg)",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-          animation: "slideIn var(--wl-duration-fast) var(--wl-ease-spring)",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          ...sizeStyles[size],
-          ...style,
-        }}
+        className={cn(
+          "relative z-51",
+          "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg",
+          "shadow-lg",
+          "animate-slideIn",
+          "max-h-[90vh] overflow-y-auto",
+          sizeClasses[size]
+        )}
       >
         {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "var(--wl-space-5)",
-            borderBottom: "1px solid var(--wl-border-subtle)",
-            minHeight: "60px",
-          }}
-        >
+        <div className="flex items-center justify-between px-5 py-5 border-b border-wl-border-subtle min-h-15">
           {title && (
-            <h2
-              style={{
-                fontSize: "var(--wl-text-lg)",
-                fontWeight: 600,
-                color: "var(--wl-text-primary)",
-                margin: 0,
-              }}
-            >
+            <h2 className="text-lg font-semibold text-wl-text-primary m-0">
               {title}
             </h2>
           )}
@@ -129,30 +87,26 @@ export function Modal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              background: "transparent",
-              border: "none",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-secondary)",
-              cursor: "pointer",
-              transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-              marginLeft: "auto",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--wl-bg-surface)";
-              e.currentTarget.style.color = "var(--wl-text-primary)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "var(--wl-text-secondary)";
-            }}
+            className={cn(
+              "flex items-center justify-center",
+              "w-8 h-8",
+              "bg-transparent border-none rounded-md",
+              "text-wl-text-secondary",
+              "cursor-pointer transition-all duration-fast ease-default",
+              "ml-auto",
+              "hover:bg-wl-bg-surface hover:text-wl-text-primary"
+            )}
+            aria-label="Close modal"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -160,25 +114,13 @@ export function Modal({
         </div>
 
         {/* Body */}
-        <div
-          style={{
-            padding: "var(--wl-space-5)",
-            color: "var(--wl-text-primary)",
-          }}
-        >
+        <div className="px-5 py-5 text-wl-text-primary">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div
-            style={{
-              padding: "var(--wl-space-5)",
-              borderTop: "1px solid var(--wl-border-subtle)",
-              background: "var(--wl-bg-surface)",
-              borderRadius: "0 0 var(--wl-radius-lg) var(--wl-radius-lg)",
-            }}
-          >
+          <div className="px-5 py-5 border-t border-wl-border-subtle bg-wl-bg-surface rounded-b-lg">
             {footer}
           </div>
         )}
@@ -203,6 +145,18 @@ export function Modal({
             transform: scale(1) translateY(0);
             opacity: 1;
           }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn var(--wl-duration-fast) var(--wl-ease-default);
+        }
+
+        .animate-slideIn {
+          animation: slideIn var(--wl-duration-fast) var(--wl-ease-spring);
+        }
+
+        .z-51 {
+          z-index: 51;
         }
       `}</style>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, type CSSProperties } from "react";
+import { cn } from "../../lib/utils";
 
 type TabVariant = "pills" | "underline" | "segment";
 type TabSize = "sm" | "md";
@@ -19,18 +20,8 @@ interface TabsProps {
   variant?: TabVariant;
   size?: TabSize;
   style?: CSSProperties;
+  className?: string;
 }
-
-const sizeStyles: Record<TabSize, CSSProperties> = {
-  sm: {
-    fontSize: "var(--wl-text-xs)",
-    padding: "var(--wl-space-2) var(--wl-space-3)",
-  },
-  md: {
-    fontSize: "var(--wl-text-sm)",
-    padding: "var(--wl-space-2) var(--wl-space-4)",
-  },
-};
 
 export function Tabs({
   tabs,
@@ -39,16 +30,13 @@ export function Tabs({
   variant = "pills",
   size = "md",
   style,
+  className,
 }: TabsProps) {
   if (variant === "pills") {
     return (
       <div
-        style={{
-          display: "flex",
-          gap: "var(--wl-space-2)",
-          flexWrap: "wrap",
-          ...style,
-        }}
+        className={cn("flex gap-2 flex-wrap", className)}
+        style={style}
       >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -56,47 +44,20 @@ export function Tabs({
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-                fontFamily: "var(--wl-font-sans)",
-                fontWeight: 500,
-                border: "1px solid",
-                borderColor: isActive ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                background: isActive
-                  ? "rgba(245, 166, 35, 0.12)"
-                  : "transparent",
-                color: isActive ? "var(--wl-primary-400)" : "var(--wl-text-secondary)",
-                borderRadius: "var(--wl-radius-full)",
-                cursor: "pointer",
-                transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                ...sizeStyles[size],
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.borderColor = "var(--wl-border-subtle)";
-                  e.currentTarget.style.color = "var(--wl-text-primary)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.borderColor = "var(--wl-border-default)";
-                  e.currentTarget.style.color = "var(--wl-text-secondary)";
-                }
-              }}
+              className={cn(
+                "inline-flex items-center gap-2 font-sans font-medium",
+                "border rounded-full cursor-pointer transition-all duration-fast ease-default",
+                size === "sm" && "px-3 py-2 text-xs",
+                size === "md" && "px-4 py-2 text-sm",
+                isActive
+                  ? "border-wl-primary-500 bg-wl-primary-500/20 text-wl-primary-400"
+                  : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-subtle hover:text-wl-text-primary"
+              )}
             >
-              {tab.icon && <span style={{ display: "flex", alignItems: "center" }}>{tab.icon}</span>}
+              {tab.icon && <span className="flex items-center">{tab.icon}</span>}
               <span>{tab.label}</span>
               {tab.count !== undefined && (
-                <span
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    color: "var(--wl-text-tertiary)",
-                    marginLeft: "var(--wl-space-1)",
-                  }}
-                >
+                <span className="text-xs font-semibold text-wl-text-tertiary ml-1">
                   {tab.count}
                 </span>
               )}
@@ -109,60 +70,29 @@ export function Tabs({
 
   if (variant === "underline") {
     return (
-      <div style={{ ...style }}>
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            borderBottom: "1px solid var(--wl-border-default)",
-            position: "relative",
-          }}
-        >
+      <div className={className} style={style}>
+        <div className="flex gap-4 border-b border-wl-border-default relative">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => onChange(tab.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--wl-space-2)",
-                  fontFamily: "var(--wl-font-sans)",
-                  fontWeight: isActive ? 600 : 500,
-                  background: "transparent",
-                  border: "none",
-                  color: isActive ? "var(--wl-text-primary)" : "var(--wl-text-secondary)",
-                  cursor: "pointer",
-                  padding: "var(--wl-space-3) 0",
-                  position: "relative",
-                  transition: `color var(--wl-duration-fast) var(--wl-ease-default)`,
-                  ...sizeStyles[size],
-                  borderBottom: isActive ? "2px solid var(--wl-primary-500)" : "none",
-                  marginBottom: "-1px",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = "var(--wl-text-primary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = "var(--wl-text-secondary)";
-                  }
-                }}
+                className={cn(
+                  "flex items-center gap-2 font-sans",
+                  "bg-transparent border-none cursor-pointer padding-relative",
+                  "transition-colors duration-fast ease-default",
+                  size === "sm" && "px-0 py-3 text-xs",
+                  size === "md" && "px-0 py-3 text-sm",
+                  isActive
+                    ? "font-semibold text-wl-text-primary border-b-2 border-wl-primary-500 -mb-px"
+                    : "font-medium text-wl-text-secondary hover:text-wl-text-primary"
+                )}
               >
-                {tab.icon && <span style={{ display: "flex", alignItems: "center" }}>{tab.icon}</span>}
+                {tab.icon && <span className="flex items-center">{tab.icon}</span>}
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <span
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      marginLeft: "var(--wl-space-1)",
-                    }}
-                  >
+                  <span className="text-xs font-semibold text-wl-text-tertiary ml-1">
                     {tab.count}
                   </span>
                 )}
@@ -177,14 +107,11 @@ export function Tabs({
   // segment variant
   return (
     <div
-      style={{
-        display: "inline-flex",
-        gap: "var(--wl-space-1)",
-        padding: "var(--wl-space-1)",
-        background: "var(--wl-bg-surface)",
-        borderRadius: "var(--wl-radius-lg)",
-        ...style,
-      }}
+      className={cn(
+        "inline-flex gap-1 p-1 bg-wl-bg-surface rounded-lg",
+        className
+      )}
+      style={style}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -192,42 +119,21 @@ export function Tabs({
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              fontFamily: "var(--wl-font-sans)",
-              fontWeight: isActive ? 600 : 500,
-              background: isActive ? "var(--wl-bg-elevated)" : "transparent",
-              border: "none",
-              color: isActive ? "var(--wl-text-primary)" : "var(--wl-text-secondary)",
-              cursor: "pointer",
-              transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-              borderRadius: "var(--wl-radius-md)",
-              ...sizeStyles[size],
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.color = "var(--wl-text-primary)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.color = "var(--wl-text-secondary)";
-              }
-            }}
+            className={cn(
+              "flex items-center gap-2 font-sans",
+              "border-none cursor-pointer transition-all duration-fast ease-default",
+              "rounded-md",
+              size === "sm" && "px-3 py-2 text-xs",
+              size === "md" && "px-4 py-2 text-sm",
+              isActive
+                ? "bg-wl-bg-elevated font-semibold text-wl-text-primary"
+                : "bg-transparent font-medium text-wl-text-secondary hover:text-wl-text-primary"
+            )}
           >
-            {tab.icon && <span style={{ display: "flex", alignItems: "center" }}>{tab.icon}</span>}
+            {tab.icon && <span className="flex items-center">{tab.icon}</span>}
             <span>{tab.label}</span>
             {tab.count !== undefined && (
-              <span
-                style={{
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  color: "var(--wl-text-tertiary)",
-                  marginLeft: "var(--wl-space-1)",
-                }}
-              >
+              <span className="text-xs font-semibold text-wl-text-tertiary ml-1">
                 {tab.count}
               </span>
             )}

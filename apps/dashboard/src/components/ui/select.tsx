@@ -1,6 +1,7 @@
 "use client";
 
-import { type CSSProperties, useState } from "react";
+import { forwardRef, useState, type SelectHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 
 type SelectSize = "sm" | "md" | "lg";
 
@@ -9,127 +10,112 @@ interface SelectOption {
   label: string;
 }
 
-interface SelectProps {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   label?: string;
-  value: string;
-  onChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
   error?: string;
-  disabled?: boolean;
   size?: SelectSize;
-  style?: CSSProperties;
 }
 
-const sizeStyles: Record<SelectSize, CSSProperties> = {
-  sm: {
-    fontSize: "var(--wl-text-xs)",
-    padding: "var(--wl-space-2) var(--wl-space-3)",
-  },
-  md: {
-    fontSize: "var(--wl-text-sm)",
-    padding: "var(--wl-space-2) var(--wl-space-4)",
-  },
-  lg: {
-    fontSize: "var(--wl-text-base)",
-    padding: "var(--wl-space-3) var(--wl-space-4)",
-  },
+const sizeClasses: Record<SelectSize, string> = {
+  sm: "px-3 py-2 text-xs",
+  md: "px-4 py-2 text-sm",
+  lg: "px-4 py-3 text-base",
 };
 
-export function Select({
-  label,
-  value,
-  onChange,
-  options,
-  placeholder,
-  error,
-  disabled = false,
-  size = "md",
-  style,
-}: SelectProps) {
-  const [isFocused, setIsFocused] = useState(false);
+const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      className,
+      label,
+      options,
+      placeholder,
+      error,
+      disabled = false,
+      size = "md",
+      onFocus,
+      onBlur,
+      ...props
+    },
+    ref
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)", ...style }}>
-      {label && (
-        <label
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 600,
-            color: "var(--wl-text-primary)",
-          }}
-        >
-          {label}
-        </label>
-      )}
+    const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
+      setIsFocused(true);
+      onFocus?.(e);
+    };
 
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          style={{
-            width: "100%",
-            fontFamily: "var(--wl-font-sans)",
-            background: "var(--wl-bg-surface)",
-            color: "var(--wl-text-primary)",
-            border: `1px solid ${
-              error ? "var(--wl-danger-400)" : isFocused ? "var(--wl-primary-500)" : "var(--wl-border-default)"
-            }`,
-            borderRadius: "var(--wl-radius-md)",
-            outline: "none",
-            transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-            opacity: disabled ? 0.6 : 1,
-            cursor: disabled ? "not-allowed" : "pointer",
-            appearance: "none",
-            paddingRight: "var(--wl-space-10)",
-            ...sizeStyles[size],
-          }}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+    const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
+      setIsFocused(false);
+      onBlur?.(e);
+    };
 
-        {/* Chevron icon */}
-        <svg
-          style={{
-            position: "absolute",
-            right: "var(--wl-space-3)",
-            width: "16px",
-            height: "16px",
-            pointerEvents: "none",
-            color: "var(--wl-text-secondary)",
-          }}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+    return (
+      <div className="flex flex-col gap-2">
+        {label && (
+          <label className="text-sm font-semibold text-wl-text-primary">
+            {label}
+          </label>
+        )}
+
+        <div className="relative flex items-center">
+          <select
+            ref={ref}
+            className={cn(
+              "w-full font-sans bg-wl-bg-surface text-wl-text-primary",
+              "border rounded-md outline-none appearance-none",
+              "transition-all duration-fast ease-default",
+              error
+                ? "border-wl-danger-400 focus:border-wl-danger-500"
+                : isFocused
+                  ? "border-wl-primary-500"
+                  : "border-wl-border-default focus:border-wl-primary-500",
+              "disabled:opacity-60 disabled:cursor-not-allowed",
+              "pr-10",
+              sizeClasses[size],
+              className
+            )}
+            disabled={disabled}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            {...props}
+          >
+            {placeholder && (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            )}
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <svg
+            className="absolute right-3 w-4 h-4 text-wl-text-secondary pointer-events-none"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
+
+        {error && (
+          <span className="text-xs text-wl-danger-400">
+            {error}
+          </span>
+        )}
       </div>
+    );
+  }
+);
 
-      {error && (
-        <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-danger-400)" }}>
-          {error}
-        </span>
-      )}
-    </div>
-  );
-}
+Select.displayName = "Select";
+
+export { Select };

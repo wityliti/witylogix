@@ -41,6 +41,8 @@
     "./analytics": "./src/analytics/index.ts",
     "./shipping-profiles": "./src/shipping-profiles/index.ts",
     "./queue": "./src/queue/index.ts",
+    "./event-bus": "./src/event-bus/index.ts",
+    "./workflow-integration": "./src/workflow-integration/index.ts",
     "./spatial": "./src/spatial/index.ts",
     "./rbac": "./src/rbac/index.ts",
     "./audit": "./src/audit/index.ts",

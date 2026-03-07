@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 /* ─── Icon SVGs (inline for zero deps) ──────── */
 function Icon({ d, size = 20 }: { d: string; size?: number }) {
@@ -111,45 +112,35 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{
-        width: collapsed ? "var(--wl-sidebar-collapsed)" : "var(--wl-sidebar-width)",
-        height: "100vh",
-        background: "var(--wl-bg-sidebar)",
-        borderRight: "1px solid var(--wl-border-subtle)",
-        display: "flex",
-        flexDirection: "column",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: 50,
-        transition: `width var(--wl-duration-base) var(--wl-ease-default)`,
-        overflow: "hidden",
-      }}
+      className={cn(
+        "h-screen",
+        "bg-wl-bg-sidebar border-r border-wl-border-subtle",
+        "flex flex-col",
+        "fixed top-0 left-0 z-50",
+        "transition-all duration-base ease-default",
+        "overflow-hidden",
+        collapsed ? "w-[var(--wl-sidebar-collapsed)]" : "w-[var(--wl-sidebar-width)]"
+      )}
     >
       {/* Logo */}
       <div
-        style={{
-          height: "var(--wl-header-height)",
-          display: "flex",
-          alignItems: "center",
-          padding: collapsed ? "0 var(--wl-space-4)" : "0 var(--wl-space-5)",
-          gap: "var(--wl-space-3)",
-          borderBottom: "1px solid var(--wl-border-subtle)",
-          flexShrink: 0,
-        }}
+        className={cn(
+          "h-[var(--wl-header-height)]",
+          "flex items-center",
+          "px-4 gap-3",
+          "border-b border-wl-border-subtle",
+          "flex-shrink-0",
+          collapsed ? "justify-center" : ""
+        )}
       >
         {/* Logo icon */}
         <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: "var(--wl-radius-md)",
-            background: "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-700))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
+          className={cn(
+            "w-8 h-8 flex-shrink-0",
+            "rounded-md",
+            "bg-gradient-to-br from-wl-primary-500 to-wl-primary-700",
+            "flex items-center justify-center"
+          )}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path
@@ -162,25 +153,24 @@ export function Sidebar() {
           </svg>
         </div>
         {!collapsed && (
-          <div style={{ overflow: "hidden" }}>
+          <div className="overflow-hidden">
             <div
-              style={{
-                fontSize: "var(--wl-text-md)",
-                fontWeight: 700,
-                color: "var(--wl-text-primary)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.2,
-              }}
+              className={cn(
+                "text-md font-bold",
+                "text-wl-text-primary",
+                "tracking-tighter",
+                "leading-tight"
+              )}
             >
               Witylogix
             </div>
             <div
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-text-tertiary)",
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}
+              className={cn(
+                "text-xs",
+                "text-wl-text-tertiary",
+                "tracking-widest",
+                "uppercase"
+              )}
             >
               Delivery Hub
             </div>
@@ -190,14 +180,12 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav
-        style={{
-          flex: 1,
-          padding: "var(--wl-space-3)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          overflowY: "auto",
-        }}
+        className={cn(
+          "flex-1",
+          "p-3",
+          "flex flex-col gap-0.5",
+          "overflow-y-auto"
+        )}
       >
         {(() => {
           const sections = [
@@ -213,19 +201,17 @@ export function Sidebar() {
             <div key={sectionIdx}>
               {section.heading && !collapsed && (
                 <div
-                  style={{
-                    padding: "var(--wl-space-3) var(--wl-space-2) var(--wl-space-1)",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    color: "var(--wl-text-tertiary)",
-                    letterSpacing: "0.05em",
-                  }}
+                  className={cn(
+                    "px-2 py-3 pb-1",
+                    "text-xs font-bold uppercase",
+                    "text-wl-text-tertiary",
+                    "tracking-wider"
+                  )}
                 >
                   {section.heading}
                 </div>
               )}
-              {section.items.map((item, i) => {
+              {section.items.map((item) => {
                 const isActive =
                   item.href === "/"
                     ? pathname === "/"
@@ -235,39 +221,32 @@ export function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-3)",
-                      padding: collapsed
-                        ? "var(--wl-space-2) var(--wl-space-3)"
-                        : "var(--wl-space-2) var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? "var(--wl-primary-400)" : "var(--wl-text-secondary)",
-                      background: isActive ? "rgba(245, 166, 35, 0.08)" : "transparent",
-                      textDecoration: "none",
-                      transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                      position: "relative",
-                      justifyContent: collapsed ? "center" : "flex-start",
-                    }}
+                    className={cn(
+                      "flex items-center gap-3",
+                      "px-3 py-2",
+                      "rounded-md",
+                      "text-sm font-medium",
+                      "no-underline",
+                      "transition-all duration-fast ease-default",
+                      "relative",
+                      collapsed ? "justify-center" : "justify-start",
+                      isActive
+                        ? "text-wl-primary-400 bg-[rgba(245,166,35,0.08)]"
+                        : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay"
+                    )}
                   >
                     {isActive && (
                       <div
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          width: 3,
-                          height: 16,
-                          borderRadius: "0 var(--wl-radius-full) var(--wl-radius-full) 0",
-                          background: "var(--wl-primary-500)",
-                        }}
+                        className={cn(
+                          "absolute left-0",
+                          "top-1/2 -translate-y-1/2",
+                          "w-0.5 h-4",
+                          "rounded-r-full",
+                          "bg-wl-primary-500"
+                        )}
                       />
                     )}
-                    <span style={{ display: "flex", flexShrink: 0 }}>
+                    <span className="flex flex-shrink-0">
                       <Icon d={item.icon} />
                     </span>
                     {!collapsed && <span>{item.label}</span>}
@@ -281,29 +260,27 @@ export function Sidebar() {
 
       {/* Collapse Toggle */}
       <div
-        style={{
-          padding: "var(--wl-space-3)",
-          borderTop: "1px solid var(--wl-border-subtle)",
-        }}
+        className={cn(
+          "p-3",
+          "border-t border-wl-border-subtle"
+        )}
       >
         <button
           onClick={() => setCollapsed(!collapsed)}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
-            gap: "var(--wl-space-3)",
-            padding: "var(--wl-space-2) var(--wl-space-3)",
-            borderRadius: "var(--wl-radius-md)",
-            border: "none",
-            background: "transparent",
-            color: "var(--wl-text-tertiary)",
-            fontSize: "var(--wl-text-sm)",
-            cursor: "pointer",
-            fontFamily: "var(--wl-font-sans)",
-            transition: `color var(--wl-duration-fast) var(--wl-ease-default)`,
-          }}
+          className={cn(
+            "w-full",
+            "flex items-center",
+            "px-3 py-2",
+            "rounded-md",
+            "border-none bg-transparent",
+            "text-wl-text-tertiary",
+            "text-sm",
+            "cursor-pointer font-sans",
+            "transition-colors duration-fast ease-default",
+            "hover:text-wl-text-primary",
+            collapsed ? "justify-center" : "justify-start",
+            "gap-3"
+          )}
         >
           <svg
             width="20"
@@ -314,10 +291,10 @@ export function Sidebar() {
             strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{
-              transform: collapsed ? "rotate(180deg)" : "none",
-              transition: `transform var(--wl-duration-base) var(--wl-ease-default)`,
-            }}
+            className={cn(
+              "transition-transform duration-base ease-default",
+              collapsed ? "rotate-180" : ""
+            )}
           >
             <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
           </svg>

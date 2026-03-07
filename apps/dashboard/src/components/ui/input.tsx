@@ -1,201 +1,154 @@
 "use client";
 
-import { type ReactNode, type CSSProperties, useState } from "react";
+import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes, type ReactNode, useState } from "react";
+import { cn } from "@/lib/utils";
 
-type InputType = "text" | "email" | "password" | "number" | "search" | "url";
 type InputSize = "sm" | "md" | "lg";
 
-interface InputProps {
+interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   label?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: InputType;
   error?: string;
   hint?: string;
-  disabled?: boolean;
   icon?: ReactNode;
   size?: InputSize;
-  style?: CSSProperties;
 }
 
-interface TextareaProps {
-  label?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (value: string) => void;
-  rows?: number;
-  error?: string;
-  disabled?: boolean;
-  style?: CSSProperties;
-}
-
-const sizeStyles: Record<InputSize, CSSProperties> = {
-  sm: {
-    fontSize: "var(--wl-text-xs)",
-    padding: "var(--wl-space-2) var(--wl-space-3)",
-  },
-  md: {
-    fontSize: "var(--wl-text-sm)",
-    padding: "var(--wl-space-2) var(--wl-space-4)",
-  },
-  lg: {
-    fontSize: "var(--wl-text-base)",
-    padding: "var(--wl-space-3) var(--wl-space-4)",
-  },
+const sizeClasses: Record<InputSize, string> = {
+  sm: "px-3 py-2 text-xs",
+  md: "px-4 py-2 text-sm",
+  lg: "px-4 py-3 text-base",
 };
 
-export function Input({
-  label,
-  placeholder,
-  value,
-  onChange,
-  type = "text",
-  error,
-  hint,
-  disabled = false,
-  icon,
-  size = "md",
-  style,
-}: InputProps) {
-  const [isFocused, setIsFocused] = useState(false);
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      className,
+      label,
+      error,
+      hint,
+      icon,
+      size = "md",
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)", ...style }}>
-      {label && (
-        <label
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 600,
-            color: "var(--wl-text-primary)",
-          }}
-        >
-          {label}
-        </label>
-      )}
+    return (
+      <div className="flex flex-col gap-2">
+        {label && (
+          <label className="text-sm font-semibold text-wl-text-primary">
+            {label}
+          </label>
+        )}
 
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        {icon && (
-          <span
-            style={{
-              position: "absolute",
-              left: "var(--wl-space-3)",
-              display: "flex",
-              alignItems: "center",
-              color: "var(--wl-text-secondary)",
-              pointerEvents: "none",
-            }}
-          >
-            {icon}
+        <div className="relative flex items-center">
+          {icon && (
+            <span className="absolute left-3 flex items-center text-wl-text-secondary pointer-events-none">
+              {icon}
+            </span>
+          )}
+
+          <input
+            ref={ref}
+            className={cn(
+              "w-full font-sans bg-wl-bg-surface text-wl-text-primary",
+              "border rounded-md outline-none",
+              "transition-all duration-fast ease-default",
+              error
+                ? "border-wl-danger-400 focus:border-wl-danger-500"
+                : isFocused
+                  ? "border-wl-primary-500"
+                  : "border-wl-border-default focus:border-wl-primary-500",
+              "disabled:opacity-60 disabled:cursor-not-allowed",
+              icon && "pl-10",
+              sizeClasses[size],
+              className
+            )}
+            disabled={disabled}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...props}
+          />
+        </div>
+
+        {error && (
+          <span className="text-xs text-wl-danger-400">
+            {error}
           </span>
         )}
 
-        <input
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+        {hint && !error && (
+          <span className="text-xs text-wl-text-tertiary">
+            {hint}
+          </span>
+        )}
+      </div>
+    );
+  }
+);
+
+Input.displayName = "Input";
+
+interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
+  label?: string;
+  error?: string;
+}
+
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  (
+    {
+      className,
+      label,
+      error,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
+
+    return (
+      <div className="flex flex-col gap-2">
+        {label && (
+          <label className="text-sm font-semibold text-wl-text-primary">
+            {label}
+          </label>
+        )}
+
+        <textarea
+          ref={ref}
+          className={cn(
+            "w-full font-sans bg-wl-bg-surface text-wl-text-primary",
+            "border rounded-md outline-none",
+            "px-4 py-3 text-sm",
+            "transition-all duration-fast ease-default",
+            error
+              ? "border-wl-danger-400 focus:border-wl-danger-500"
+              : isFocused
+                ? "border-wl-primary-500"
+                : "border-wl-border-default focus:border-wl-primary-500",
+            "disabled:opacity-60 disabled:cursor-not-allowed",
+            "resize-vertical min-h-20",
+            className
+          )}
           disabled={disabled}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          style={{
-            width: "100%",
-            fontFamily: "var(--wl-font-sans)",
-            background: "var(--wl-bg-surface)",
-            color: "var(--wl-text-primary)",
-            border: `1px solid ${
-              error ? "var(--wl-danger-400)" : isFocused ? "var(--wl-primary-500)" : "var(--wl-border-default)"
-            }`,
-            borderRadius: "var(--wl-radius-md)",
-            outline: "none",
-            transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-            opacity: disabled ? 0.6 : 1,
-            cursor: disabled ? "not-allowed" : "text",
-            ...(icon ? { paddingLeft: "var(--wl-space-10)" } : {}),
-            ...sizeStyles[size],
-          }}
+          {...props}
         />
+
+        {error && (
+          <span className="text-xs text-wl-danger-400">
+            {error}
+          </span>
+        )}
       </div>
+    );
+  }
+);
 
-      {error && (
-        <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-danger-400)" }}>
-          {error}
-        </span>
-      )}
+Textarea.displayName = "Textarea";
 
-      {hint && !error && (
-        <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
-          {hint}
-        </span>
-      )}
-    </div>
-  );
-}
-
-export function Textarea({
-  label,
-  placeholder,
-  value,
-  onChange,
-  rows = 4,
-  error,
-  disabled = false,
-  style,
-}: TextareaProps) {
-  const [isFocused, setIsFocused] = useState(false);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)", ...style }}>
-      {label && (
-        <label
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 600,
-            color: "var(--wl-text-primary)",
-          }}
-        >
-          {label}
-        </label>
-      )}
-
-      <textarea
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        rows={rows}
-        style={{
-          fontFamily: "var(--wl-font-sans)",
-          fontSize: "var(--wl-text-sm)",
-          background: "var(--wl-bg-surface)",
-          color: "var(--wl-text-primary)",
-          border: `1px solid ${
-            error ? "var(--wl-danger-400)" : isFocused ? "var(--wl-primary-500)" : "var(--wl-border-default)"
-          }`,
-          borderRadius: "var(--wl-radius-md)",
-          padding: "var(--wl-space-3) var(--wl-space-4)",
-          outline: "none",
-          transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-          opacity: disabled ? 0.6 : 1,
-          cursor: disabled ? "not-allowed" : "text",
-          resize: "vertical",
-          minHeight: "80px",
-        }}
-      />
-
-      {error && (
-        <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-danger-400)" }}>
-          {error}
-        </span>
-      )}
-    </div>
-  );
-}
+export { Input, Textarea };

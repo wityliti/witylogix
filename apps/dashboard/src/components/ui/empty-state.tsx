@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, type CSSProperties } from "react";
+import { cn } from "../../lib/utils";
 import { Button } from "./button";
 
 interface EmptyStateProps {
@@ -9,6 +10,7 @@ interface EmptyStateProps {
   description?: string;
   action?: { label: string; onClick: () => void };
   style?: CSSProperties;
+  className?: string;
 }
 
 export function EmptyState({
@@ -17,59 +19,28 @@ export function EmptyState({
   description,
   action,
   style,
+  className,
 }: EmptyStateProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "var(--wl-space-12)",
-        minHeight: "300px",
-        textAlign: "center",
-        ...style,
-      }}
+      className={cn(
+        "flex flex-col items-center justify-center p-12 min-h-80 text-center",
+        className
+      )}
+      style={style}
     >
       {icon && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "64px",
-            height: "64px",
-            borderRadius: "var(--wl-radius-lg)",
-            background: "var(--wl-bg-surface)",
-            color: "var(--wl-text-secondary)",
-            marginBottom: "var(--wl-space-4)",
-            fontSize: "32px",
-          }}
-        >
+        <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-wl-bg-surface text-wl-text-secondary mb-4 text-3xl">
           {icon}
         </div>
       )}
 
-      <h3
-        style={{
-          fontSize: "var(--wl-text-lg)",
-          fontWeight: 600,
-          color: "var(--wl-text-primary)",
-          margin: "0 0 var(--wl-space-2) 0",
-        }}
-      >
+      <h3 className="text-lg font-semibold text-wl-text-primary mb-2">
         {title}
       </h3>
 
       {description && (
-        <p
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            color: "var(--wl-text-secondary)",
-            margin: "0 0 var(--wl-space-4) 0",
-            maxWidth: "400px",
-          }}
-        >
+        <p className="text-sm text-wl-text-secondary mb-4 max-w-96">
           {description}
         </p>
       )}

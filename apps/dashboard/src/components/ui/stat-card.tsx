@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, type CSSProperties } from "react";
+import { cn } from "../../lib/utils";
 
 interface StatCardProps {
   label: string;
@@ -9,6 +10,7 @@ interface StatCardProps {
   icon?: ReactNode;
   accentColor?: string;
   style?: CSSProperties;
+  className?: string;
   index?: number;
 }
 
@@ -19,107 +21,61 @@ export function StatCard({
   icon,
   accentColor = "var(--wl-primary-500)",
   style,
+  className,
   index = 0,
 }: StatCardProps) {
   const isPositive = change && change.value >= 0;
 
   return (
     <div
-      className="wl-animate-in"
+      className={cn(
+        "wl-animate-in bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+        "relative overflow-hidden",
+        className
+      )}
       style={{
-        background: "var(--wl-bg-elevated)",
-        border: "1px solid var(--wl-border-subtle)",
-        borderRadius: "var(--wl-radius-lg)",
-        padding: "var(--wl-space-5)",
-        position: "relative",
-        overflow: "hidden",
         animationDelay: `${index * 80}ms`,
         ...style,
       }}
     >
       {/* Accent top line */}
       <div
+        className="absolute top-0 left-0 right-0 h-0.5"
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
           background: `linear-gradient(90deg, ${accentColor}, transparent)`,
         }}
       />
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginBottom: "var(--wl-space-3)",
-        }}
-      >
-        <span
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 500,
-            color: "var(--wl-text-secondary)",
-            letterSpacing: "0.02em",
-          }}
-        >
+      <div className="flex items-start justify-between mb-3">
+        <span className="text-sm font-medium text-wl-text-secondary tracking-wider">
           {label}
         </span>
         {icon && (
           <span
-            style={{
-              color: accentColor,
-              opacity: 0.7,
-              display: "flex",
-              alignItems: "center",
-            }}
+            className="flex items-center opacity-70"
+            style={{ color: accentColor }}
           >
             {icon}
           </span>
         )}
       </div>
 
-      <div
-        style={{
-          fontSize: "var(--wl-text-3xl)",
-          fontWeight: 700,
-          color: "var(--wl-text-primary)",
-          lineHeight: 1.1,
-          fontFamily: "var(--wl-font-mono)",
-          letterSpacing: "-0.02em",
-        }}
-      >
+      <div className="text-3xl font-bold text-wl-text-primary leading-tight font-mono -tracking-wider">
         {value}
       </div>
 
       {change && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--wl-space-1)",
-            marginTop: "var(--wl-space-2)",
-          }}
-        >
+        <div className="flex items-center gap-1 mt-2">
           <span
-            style={{
-              fontSize: "var(--wl-text-xs)",
-              fontWeight: 600,
-              color: isPositive ? "var(--wl-success-400)" : "var(--wl-danger-400)",
-              fontFamily: "var(--wl-font-mono)",
-            }}
+            className={cn(
+              "text-xs font-semibold font-mono",
+              isPositive ? "text-wl-success-400" : "text-wl-danger-400"
+            )}
           >
             {isPositive ? "+" : ""}
             {change.value}%
           </span>
-          <span
-            style={{
-              fontSize: "var(--wl-text-xs)",
-              color: "var(--wl-text-tertiary)",
-            }}
-          >
+          <span className="text-xs text-wl-text-tertiary">
             {change.label}
           </span>
         </div>

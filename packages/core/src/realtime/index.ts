@@ -200,3 +200,28 @@ export type EventPayload = {
   [EVENTS.ACTIVITY_NEW]: ActivityEventPayload;
   [EVENTS.SYSTEM_HEALTH]: SystemHealthEventPayload;
 };
+
+// ─── Workflow Real-time Events ──────────────────────────────
+
+export {
+  WorkflowRealtimeService,
+  WORKFLOW_SOCKET_COMMANDS,
+  type WorkflowSubscribeRequest,
+  type WorkflowUnsubscribeRequest,
+  type WorkflowSubscriptionResponse,
+} from "./workflow-events.js";
+
+export {
+  WORKFLOW_EVENTS,
+  type WorkflowEventBase,
+  type WorkflowStartedPayload,
+  type WorkflowCompletedPayload,
+  type WorkflowFailedPayload,
+  type StepStartedPayload,
+  type StepCompletedPayload,
+  type StepFailedPayload,
+  type CompensationStartedPayload,
+  type CompensationCompletedPayload,
+  type WorkflowSocketEvent,
+  type WorkflowEventName,
+} from "./workflow-events.types.js";

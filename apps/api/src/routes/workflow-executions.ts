@@ -303,6 +303,171 @@ async function workflowExecutionsRoutes(
       };
     }
   );
+
+  // ── GET /api/workflow/executions/:id/stream (SSE stream fallback) ──
+  /**
+   * Server-Sent Events (SSE) stream for workflow progress updates.
+   *
+   * Provides real-time workflow progress when WebSocket is blocked.
+   * Falls back to polling if SSE not supported.
+   *
+   * Usage (client):
+   *   const eventSource = new EventSource('/api/workflow/executions/:id/stream');
+   *   eventSource.addEventListener('workflow:step:completed', (e) => {
+   *     const payload = JSON.parse(e.data);
+   *     // Update UI with step completion
+   *   });
+   *
+   * Emits events every 30s (heartbeat) even if no progress, to detect disconnections.
+   */
+
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/:id/stream",
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      const { id } = request.params;
+      const tenantDb = (request as any).tenantDb;
+      const logger = fastify.log;
+
+      // Validate execution exists and user has access
+      const execution = await tenantDb.workflowExecution.findUnique({
+        where: { id },
+        select: { id: true, status: true, workflowName: true },
+      });
+
+      if (!execution) {
+        throw new NotFoundError(`Workflow execution ${id} not found`);
+      }
+
+      // Set SSE headers
+      reply.header("Content-Type", "text/event-stream");
+      reply.header("Cache-Control", "no-cache");
+      reply.header("Connection", "keep-alive");
+      reply.header("X-Accel-Buffering", "no"); // Disable buffering in proxies
+
+      // Track sent events to avoid duplicates
+      let lastEventId = 0;
+      let isClosed = false;
+
+      // Cleanup on connection close
+      request.socket.once("close", () => {
+        isClosed = true;
+        logger.debug("SSE client disconnected", {
+          executionId: id,
+        });
+      });
+
+      // Helper to send SSE event
+      const sendEvent = (eventType: string, data: any) => {
+        if (isClosed) return;
+
+        const eventId = ++lastEventId;
+        const eventData = JSON.stringify(data);
+        const eventString = `id: ${eventId}\nevent: ${eventType}\ndata: ${eventData}\n\n`;
+
+        try {
+          reply.raw.write(eventString);
+        } catch (err) {
+          isClosed = true;
+          logger.error("Error writing to SSE stream", {
+            executionId: id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      };
+
+      // Send initial message
+      sendEvent("connection:established", {
+        executionId: id,
+        timestamp: new Date().toISOString(),
+        message: `Connected to workflow execution stream`,
+      });
+
+      // Heartbeat interval to keep connection alive
+      // (SSE clients need data every 30s to detect disconnections)
+      const heartbeatInterval = setInterval(() => {
+        if (!isClosed) {
+          sendEvent("heartbeat", {
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }, 30000);
+
+      // Poll for execution status changes every 2 seconds
+      // In a production system, this would be replaced with proper event streaming
+      const pollInterval = setInterval(async () => {
+        if (isClosed) {
+          clearInterval(pollInterval);
+          return;
+        }
+
+        try {
+          const updated = await tenantDb.workflowExecution.findUnique({
+            where: { id },
+            select: {
+              status: true,
+              completedAt: true,
+              durationMs: true,
+              error: true,
+              metadata: true,
+            },
+          });
+
+          if (!updated) return;
+
+          // Detect status changes and emit events
+          if (updated.status === "completed" && execution.status !== "completed") {
+            sendEvent("workflow:completed", {
+              executionId: id,
+              status: updated.status,
+              completedAt: updated.completedAt,
+              durationMs: updated.durationMs,
+              timestamp: new Date().toISOString(),
+            });
+          } else if (
+            updated.status === "failed" &&
+            !["failed", "compensated"].includes(execution.status)
+          ) {
+            sendEvent("workflow:failed", {
+              executionId: id,
+              status: updated.status,
+              error: updated.error,
+              completedAt: updated.completedAt,
+              durationMs: updated.durationMs,
+              timestamp: new Date().toISOString(),
+            });
+          }
+
+          // Update tracked execution state
+          (execution as any).status = updated.status;
+        } catch (err) {
+          logger.error("Error polling execution status", {
+            executionId: id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }, 2000);
+
+      // Cleanup on client disconnect
+      request.socket.once("close", () => {
+        clearInterval(heartbeatInterval);
+        clearInterval(pollInterval);
+        logger.debug("SSE stream cleaned up", {
+          executionId: id,
+        });
+      });
+
+      // Return without closing the response
+      // This keeps the connection open for SSE
+      return;
+    }
+  );
 }
 
 export default workflowExecutionsRoutes;

@@ -10,6 +10,15 @@ export {
   WebhookSubscription,
   WebhookDeliveryResult,
   WebhookDeliveryAttempt,
+  WebhookEndpoint,
+  WebhookEndpointConfig,
+  WebhookDelivery,
+  WebhookEvent,
+  DeliveryStatus,
+  DeliveryAttempt,
+  RetryPolicy,
+  CircuitBreakerState,
+  WebhookSignature,
 } from "./types";
 
 // Signing and verification
@@ -20,16 +29,24 @@ export {
   WEBHOOK_HEADERS,
 } from "./signer";
 
-// Delivery engine
+// Webhook Manager
 export {
+  WebhookManager,
+  getWebhookManager,
+} from "./webhook-manager";
+
+// Delivery Service
+export {
+  WebhookDeliveryService,
+  getWebhookDeliveryService,
   deliverWebhook,
   scheduleRetry,
   getRetryDelay,
   shouldRetry,
   getMaxRetryAttempts,
-} from "./delivery";
+} from "./webhook-delivery";
 
-// Event dispatcher
+// Event dispatcher (legacy)
 export {
   dispatchEvent,
   processQueue,
@@ -39,3 +56,16 @@ export {
   unregisterSubscription,
   getStats,
 } from "./dispatcher";
+
+// Webhook Processor
+export {
+  WebhookProcessor,
+  getWebhookProcessor,
+  initializeWebhookProcessor,
+} from "./webhook-processor";
+
+// Event Emitter
+export {
+  WebhookEventEmitter,
+  getWebhookEventEmitter,
+} from "./event-emitter";
