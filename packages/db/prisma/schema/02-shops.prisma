@@ -1,0 +1,64 @@
+// ─── SHOPS (Shopify Install = One Shop) ─────────────────────
+// Shop remains the primary RLS boundary for Shopify-facing operations
+// (webhooks, carrier service, session tokens). The orgId link is
+// optional and set post-install, never during the Shopify OAuth flow.
+
+model Shop {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId              String?   @map("org_id") @db.Uuid // null = standalone shop
+  shopifyDomain      String    @unique @map("shopify_domain")
+  shopifyAccessToken String    @map("shopify_access_token") // encrypted at app layer
+  shopifyShopId      String    @unique @map("shopify_shop_id")
+  name               String
+  email              String?
+  phone              String?
+  timezone           String    @default("UTC")
+  currency           String    @default("USD")
+  planTier           PlanTier  @default(FREE) @map("plan_tier") // overridden by org plan if linked
+  settings           Json      @default("{}") // shop-specific overrides
+  isActive           Boolean   @default(true) @map("is_active")
+  installedAt        DateTime  @default(now()) @map("installed_at")
+  uninstalledAt      DateTime? @map("uninstalled_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization            Organization?            @relation(fields: [orgId], references: [id])
+  orders                  Order[]
+  drivers                 Driver[] // Shop-specific drivers (not shared)
+  deliveryZones           DeliveryZone[] // Shop-specific zones
+  timeSlots               TimeSlot[]
+  routes                  Route[]
+  notificationLogs        NotificationLog[]
+  carrierServices         CarrierService[]
+  webhookSubscriptions    WebhookSubscription[]
+  routingMeterEvents      RoutingMeterEvent[]
+  notificationMeterEvents NotificationMeterEvent[]
+  integrations            Integration[]
+  integrationEvents       IntegrationEvent[]
+  users                   User[]
+  // Phase 1 relations
+  locations               Location[]
+  shipments               Shipment[]
+  shippingProfiles        ShippingProfile[]
+  calendarRules           CalendarRule[]
+  notificationTemplates   NotificationTemplate[]
+  activityLogs            ActivityLog[]
+  paymentTransactions     PaymentTransaction[]
+  paymentMethods          PaymentMethod[]
+  refunds                 Refund[]
+  codCollections          CODCollection[]
+  idempotencyKeys         IdempotencyKey[]
+  products                Product[]
+  customers               Customer[]
+
+  @@index([orgId])
+  @@map("shops")
+}
+
+enum PlanTier {
+  FREE
+  STARTER
+  GROWTH
+  ENTERPRISE
+}

@@ -47,11 +47,15 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 
 - **Dynamic delivery rates** at checkout via platform-native APIs (p95 < 500ms)
 - **Zone-based pricing** with PostGIS polygon geometry — draw zones on a map, assign rates
-- **Route optimization** with distance matrix routing (Mapbox today, OSRM in Phase 2)
+- **Route optimization** with multi-provider routing (Mapbox, OSRM, Google Maps, HERE, GraphHopper, TomTom) — deployers set a default, tenants can BYOK (Bring Your Own Key) with metered fallback billing
 - **Real-time driver tracking** over WebSockets with a customer-facing Leaflet map
 - **Driver mobile app** (React Native) with background GPS and proof-of-delivery capture
-- **Multi-channel notifications** — email (SendGrid), SMS (Twilio), WhatsApp (Meta Cloud API)
+- **Multi-channel notifications** with multi-provider support — Email (SendGrid, Mailgun, SES, Postmark, Resend, SMTP), SMS (Twilio, Vonage, SNS, MessageBird, Plivo), WhatsApp (Meta Cloud, Twilio, 360dialog), Push (Firebase, OneSignal, Expo) — deployers set defaults per channel, tenants can BYOK with metered fallback
 - **Multi-tenant isolation** enforced at the database level via PostgreSQL Row-Level Security
+- **Multi-shop organizations** — merchants with multiple stores group them under one org with shared drivers, zones, and cross-shop analytics
+- **Role-based access control** — shop-level roles (SUPER_ADMIN, ADMIN, DISPATCHER, VIEWER) and org-level roles (OWNER, ADMIN, MEMBER) with hierarchy enforcement
+- **JWT authentication** with refresh token rotation, scrypt password hashing, and password reset flows
+- **Integration Marketplace** — unified catalog of 38 integrations across 6 categories (Communication, Routing, Order Management, Inventory, Payment, Analytics) with per-tenant install/configure, BYOK credentials, health monitoring, and metered fallback billing
 - **Shopify integration** — embedded admin app, checkout extensions, Carrier Service API, "Built for Shopify" ready
 - **Platform-agnostic core** — decoupled business logic ready for WooCommerce, Magento, and custom storefronts
 
@@ -96,7 +100,9 @@ witylogix-platform/
 │   └── carrier-service/     # Carrier rate abstraction
 ├── infra/                   # Docker, K8s, OSRM, Nginx configs
 ├── docs/                    # Architecture Decision Records
-├── docker-compose.yml       # One-command local setup
+├── infra/                  # Docker & deployment
+│   ├── docker/             # Dockerfiles
+│   └── docker-compose.yml  # One-command local setup
 └── turbo.json               # Task pipeline configuration
 ```
 
@@ -182,45 +188,236 @@ docker compose --profile tools up -d
 
 ## Database
 
-Witylogix uses PostgreSQL with PostGIS for spatial operations and Row-Level Security for tenant isolation. The schema includes 11 models:
+Witylogix uses PostgreSQL with PostGIS for spatial operations and Row-Level Security for tenant isolation. The schema includes 13 models:
 
-**shops** · **users** · **orders** · **drivers** · **delivery_zones** · **time_slots** · **routes** · **route_stops** · **proof_of_delivery** · **notification_logs** · **carrier_services**
+**organizations** · **org_members** · **shops** · **users** · **orders** · **drivers** · **delivery_zones** · **time_slots** · **routes** · **route_stops** · **proof_of_delivery** · **notification_logs** · **carrier_services** · **routing_meter_events** · **notification_meter_events**
 
-Every tenant-scoped table has an RLS policy that automatically filters queries by `shop_id`. The Prisma client includes a `forTenant()` extension that sets the RLS context per transaction:
+Every tenant-scoped table has an RLS policy that automatically filters queries by `shop_id`. The Prisma client provides three scoping modes:
 
 ```typescript
-import { forTenant } from "@witylogix/db";
+import { forTenant, forOrg, forTenantInOrg } from "@witylogix/db";
 
+// Shop-only (standalone shops, Shopify webhooks, carrier service)
 const db = forTenant(shopId);
-const orders = await db.order.findMany(); // Automatically filtered by RLS
+const orders = await db.order.findMany(); // Filtered by shop_id
+
+// Org-wide (org dashboard, cross-shop analytics)
+const orgDb = forOrg(orgId);
+const drivers = await orgDb.driver.findMany(); // All drivers across org
+
+// Dual-scoped (shop data + org-shared drivers/zones)
+const dualDb = forTenantInOrg(shopId, orgId);
+const available = await dualDb.driver.findMany(); // Shop drivers + org drivers
 ```
 
 PostGIS helper functions:
 
-- `find_delivery_zone(shop_id, lng, lat)` — find which zone contains a point
-- `find_nearby_drivers(shop_id, lng, lat, radius)` — find available drivers within radius
+- `find_delivery_zone(shop_id, lng, lat)` — find which zone contains a point (includes org-shared zones)
+- `find_nearby_drivers(shop_id, lng, lat, radius)` — find available drivers within radius (includes org-shared drivers)
+
+### Multi-shop organizations
+
+Merchants with multiple Shopify stores can group them under an **Organization**. This is entirely optional — standalone shops work exactly as before with zero behavioral change.
+
+```
+Organization (optional)
+├── Shop A  (shopify-store-a.myshopify.com)
+├── Shop B  (shopify-store-b.myshopify.com)
+├── Shared Drivers (org-level)
+├── Shared Delivery Zones (org-level)
+└── Org Members (OWNER, ADMIN, MEMBER)
+```
+
+Key design decisions: Shopify OAuth, webhooks, and carrier service always operate at the **shop level** — they are completely unaware of the org layer. The org layer only affects the dashboard and driver app, where users can manage cross-shop resources.
+
+### Authentication & RBAC
+
+Three authentication flows converge at the same JWT middleware:
+
+1. **Dashboard users**: email + password → JWT with `shopId`, `orgId`, `role`, `orgRole`
+2. **Driver app**: phone + password → JWT with `shopId`, `role: DRIVER`
+3. **Shopify embedded app**: session token from App Bridge (verified separately)
+
+**Shop-level roles** (enforced on every route via `requireRole()` middleware):
+
+| Role | Capabilities |
+|------|-------------|
+| SUPER_ADMIN | Full access, manage users, manage settings |
+| ADMIN | Manage orders, drivers, zones, routes |
+| DISPATCHER | Assign orders, manage routes, update statuses |
+| VIEWER | Read-only dashboard access |
+| DRIVER | Driver app only — update own status/location |
+
+**Org-level roles** (enforced via `requireOrgRole()` on org routes):
+
+| Role | Capabilities |
+|------|-------------|
+| OWNER | Full org management, link/unlink shops, manage all members |
+| ADMIN | Manage org members, link shops |
+| MEMBER | View cross-shop data within permitted shops |
+
+Role hierarchy is enforced — users can only manage others at their level or below. The last SUPER_ADMIN or OWNER cannot be removed.
 
 ---
 
 ## Routing
 
-The routing system uses a **provider abstraction** so you can swap backends without changing business logic:
+The routing system uses a **multi-provider registry** with a clean abstraction layer. Deployers choose a default provider; tenants can pick their own when BYOK mode is enabled.
 
 ```typescript
 import { createRoutingProvider } from "@witylogix/core/routing";
 
-const routing = createRoutingProvider(); // Reads ROUTING_PROVIDER env var
+// Platform mode — uses deployer's configured provider
+const { instance: routing } = createRoutingProvider();
+
+// BYOK mode — pass tenant credentials from shop.settings.routing
+const { instance: routing } = createRoutingProvider(
+  { provider: "mapbox", apiKey: "pk.eyJ1..." },
+  shopId,
+);
+
 const matrix = await routing.getDistanceMatrix(points);
 const route = await routing.getRoute(origin, destination);
 const results = await routing.geocode("123 Main St, Brooklyn, NY");
 ```
 
-| Phase | Provider | Pros | Limitations |
-|-------|----------|------|-------------|
-| **Phase 1** (current) | Mapbox | Production-ready, familiar API | 25-point matrix limit, per-request cost |
-| **Phase 2** (planned) | OSRM | Zero cost, unlimited matrix size | Requires self-hosting, memory-intensive |
+### Supported Providers
 
-Switch providers with one env var: `ROUTING_PROVIDER=mapbox` or `ROUTING_PROVIDER=osrm`
+| Provider | Status | Auth | Capabilities |
+|----------|--------|------|-------------|
+| **Mapbox** | Available | API Key (Access Token) | Routing, Matrix (25 pts), Geocoding, ETA |
+| **OSRM** (self-hosted) | Available | None (base URL) | Routing, Matrix (unlimited), ETA |
+| **Google Maps** | Coming Soon | API Key | Routing, Matrix, Geocoding, ETA |
+| **HERE** | Coming Soon | API Key | Routing, Matrix, Geocoding, ETA |
+| **GraphHopper** | Coming Soon | API Key | Routing, Matrix, Geocoding, ETA |
+| **TomTom** | Coming Soon | API Key | Routing, Matrix, Geocoding, ETA |
+
+Switch providers with one env var: `ROUTING_PROVIDER=mapbox` (or `osrm`, `google_maps`, `here`, `graphhopper`, `tomtom`)
+
+### BYOK (Bring Your Own Key) mode
+
+Deployers control how routing credentials are provisioned across tenants via `ROUTING_BYOK`:
+
+| Mode | Env var | Behavior |
+|------|---------|----------|
+| **Platform-managed** (default) | `ROUTING_BYOK=false` | Deployer provides credentials for one provider. All tenants share it. Simplest setup. |
+| **Bring Your Own Key** | `ROUTING_BYOK=true` | Each tenant picks their own provider and enters credentials via Settings → Routing. Fallback to deployer credentials is **metered** for billing. |
+
+When BYOK is enabled, tenants see a "Routing" tab in Settings with a **provider picker** showing all available and coming-soon providers. They select a provider, enter credentials, and save. Credentials are stored in the shop's `settings.routing` JSON object and never exposed in API responses (only masked previews).
+
+If a tenant hasn't configured their own credentials, the platform falls back to the deployer's default provider and credentials. Every API call that uses the fallback is **metered** in the `routing_meter_events` table, giving deployers data for usage-based billing.
+
+### Metering
+
+When BYOK is enabled and a tenant uses the deployer's fallback credentials, every routing operation is recorded:
+
+| Field | Description |
+|-------|-------------|
+| `shopId` | Which tenant made the call |
+| `provider` | Which provider was used |
+| `operation` | `route`, `matrix`, `geocode`, `reverse_geocode`, or `eta` |
+| `usedFallback` | Always `true` for metered events |
+| `timestamp` | When the call was made |
+
+Query the `routing_meter_events` table or call `GET /api/v4/shops/me/routing/meter` for a 30-day summary.
+
+```bash
+# Platform-managed (default — one key for everyone)
+ROUTING_PROVIDER=mapbox
+MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoiZGVwbG95ZXIiLCJhIjoiY2xr...
+
+# BYOK mode — tenants pick their own provider + credentials
+ROUTING_BYOK=true
+ROUTING_PROVIDER=mapbox                  # deployer default (fallback)
+MAPBOX_ACCESS_TOKEN=pk.eyJ1Ijoi...       # optional fallback key (metered)
+
+# Or if deployer prefers Google Maps as default:
+# ROUTING_PROVIDER=google_maps
+# GOOGLE_MAPS_API_KEY=AIzaSy...
+```
+
+---
+
+## Notifications
+
+The notification system uses the same **multi-provider registry + BYOK** pattern as routing. Each notification channel (Email, SMS, WhatsApp, Push) has its own independent provider registry.
+
+```typescript
+import { resolveNotificationProvider } from "@witylogix/core/notifications";
+
+// Resolve provider for a channel (tenant → deployer fallback + metering)
+const resolved = resolveNotificationProvider("email", tenantConfig?.email, shopId);
+
+if (resolved.available) {
+  // resolved.provider = "sendgrid" | "mailgun" | etc.
+  // resolved.credentials = { SENDGRID_API_KEY: "SG.xxx" }
+  // resolved.usedFallback = true if using deployer credentials
+}
+```
+
+### Supported Notification Providers
+
+**Email:**
+
+| Provider | Status | Auth Type |
+|----------|--------|-----------|
+| **SendGrid** | Available | API Key |
+| **Mailgun** | Coming Soon | API Key + Domain |
+| **AWS SES** | Coming Soon | Access Key + Secret |
+| **Postmark** | Coming Soon | Server Token |
+| **Resend** | Coming Soon | API Key |
+| **SMTP (Generic)** | Coming Soon | Host + Port + Credentials |
+
+**SMS:**
+
+| Provider | Status | Auth Type |
+|----------|--------|-----------|
+| **Twilio** | Available | Account SID + Auth Token |
+| **Vonage (Nexmo)** | Coming Soon | API Key + Secret |
+| **AWS SNS** | Coming Soon | Access Key + Secret |
+| **MessageBird** | Coming Soon | API Key |
+| **Plivo** | Coming Soon | Auth ID + Auth Token |
+
+**WhatsApp:**
+
+| Provider | Status | Auth Type |
+|----------|--------|-----------|
+| **Meta Cloud API** | Available | Access Token + Phone Number ID |
+| **Twilio WhatsApp** | Coming Soon | Account SID + Auth Token |
+| **360dialog** | Coming Soon | API Key |
+
+**Push:**
+
+| Provider | Status | Auth Type |
+|----------|--------|-----------|
+| **Firebase (FCM)** | Available | Service Account credentials |
+| **OneSignal** | Coming Soon | App ID + REST API Key |
+| **Expo Push** | Coming Soon | Access Token (optional) |
+
+Switch providers with env vars: `EMAIL_PROVIDER=sendgrid`, `SMS_PROVIDER=twilio`, `WHATSAPP_PROVIDER=meta_cloud`, `PUSH_PROVIDER=firebase`
+
+### Notification BYOK mode
+
+Same pattern as routing — deployers control whether tenants can pick their own notification providers via `NOTIFICATIONS_BYOK`:
+
+| Mode | Env var | Behavior |
+|------|---------|----------|
+| **Platform-managed** (default) | `NOTIFICATIONS_BYOK=false` | Deployer provides credentials for each channel. All tenants share them. |
+| **Bring Your Own Key** | `NOTIFICATIONS_BYOK=true` | Tenants choose per-channel providers via Settings → Notifications. Fallback to deployer credentials is **metered**. |
+
+Tenant notification credentials are stored in `shop.settings.notifications.<channel>` and masked in API responses. Metering events are recorded in `notification_meter_events` for billing.
+
+```bash
+# Platform-managed (default)
+EMAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=SG.xxxx
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=ACxxxx
+TWILIO_AUTH_TOKEN=xxxx
+
+# BYOK mode — tenants pick per-channel
+NOTIFICATIONS_BYOK=true
+```
 
 ---
 
@@ -299,13 +496,18 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Turborepo monorepo structure
 - [x] PostgreSQL schema with PostGIS + RLS
 - [x] Routing provider abstraction (Mapbox Phase 1)
-- [ ] Fastify API with full CRUD endpoints
+- [x] Multi-shop organization support with dual-mode RLS
+- [x] Fastify API with full CRUD endpoints (orders, drivers, zones, routes, time-slots, shops)
+- [x] JWT authentication with refresh token rotation and password reset
+- [x] User management with role-based access control (shop + org levels)
+- [x] BullMQ notification workers — multi-provider, BYOK-aware (email, SMS, WhatsApp, push)
+- [x] Carrier Service API (< 500ms p95)
+- [x] Shopify webhook ingestion (orders, app lifecycle, GDPR)
+- [x] Organization management (create, link shops, manage members, cross-shop stats)
 - [ ] React Router v7 Shopify embedded app
 - [ ] Preact checkout UI extension
 - [ ] Socket.io real-time tracking
 - [ ] React Native driver app with background GPS
-- [ ] BullMQ notification workers (email, SMS, WhatsApp)
-- [ ] Carrier Service API (< 500ms p95)
 - [ ] Docker production deployment
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] Phase 2: OSRM + OR-Tools route optimization

@@ -2,15 +2,16 @@
   "name": "@witylogix/db",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy",
+    "build": "prisma generate --schema=./prisma/schema && tsc",
+    "db:generate": "prisma generate --schema=./prisma/schema",
+    "db:migrate": "prisma migrate dev --schema=./prisma/schema",
+    "db:migrate:deploy": "prisma migrate deploy --schema=./prisma/schema",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio --schema=./prisma/schema"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0"

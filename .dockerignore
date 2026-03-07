@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+.next/
+.turbo/
+
+# Version control
+.git/
+.gitignore
+
+# Documentation
+*.md
+CONTRIBUTING.md
+README.md
+LICENSE
+
+# Environment files (NEVER include secrets in image)
+.env
+.env.local
+.env.*.local
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Miscellaneous
+.pnpm-store/
+logs/
+*.log
+tmp/

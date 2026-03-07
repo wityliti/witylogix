@@ -1,0 +1,405 @@
+/**
+ * Orders CRUD — full lifecycle management.
+ *
+ * Routes:
+ *   GET    /              List orders (paginated, filterable)
+ *   GET    /:id           Get single order
+ *   POST   /              Create order
+ *   PATCH  /:id           Update order fields
+ *   PATCH  /:id/status    Update order status (with state machine)
+ *   PATCH  /:id/assign    Assign order to driver
+ *   DELETE /:id           Soft-cancel order
+ *   GET    /:id/timeline  Get order status history (via notification logs)
+ */
+
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { Prisma } from "@prisma/client";
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+  paginationSchema,
+} from "@witylogix/validators";
+import { z } from "zod";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
+import { NotFoundError, ValidationError, ConflictError } from "../lib/errors.js";
+import {
+  emitOrderCreated,
+  emitOrderStatusChanged,
+} from "../lib/events.js";
+
+// ─── Valid Status Transitions ───────────────────────────────
+
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["ACCEPTED", "CANCELLED"],
+  ACCEPTED: ["ASSIGNED", "CANCELLED"],
+  ASSIGNED: ["PICKED_UP", "CANCELLED"],
+  PICKED_UP: ["OUT_FOR_DELIVERY"],
+  OUT_FOR_DELIVERY: ["ARRIVED", "FAILED"],
+  ARRIVED: ["DELIVERED", "FAILED"],
+  DELIVERED: [],
+  FAILED: ["RETURNED", "OUT_FOR_DELIVERY"], // retry or return
+  RETURNED: [],
+  CANCELLED: [],
+};
+
+// ─── Query Params Schema ────────────────────────────────────
+
+const listOrdersQuery = paginationSchema.extend({
+  status: z.string().optional(),
+  driverId: z.string().uuid().optional(),
+  deliveryDate: z.string().optional(),
+  search: z.string().optional(),
+  sortBy: z.enum(["createdAt", "deliveryDate", "status", "customerName"]).default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+// ─── Route Plugin ───────────────────────────────────────────
+
+async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
+  // All routes require auth + tenant context
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
+
+  // ── LIST ORDERS ─────────────────────────────────────────────
+
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = listOrdersQuery.parse(request.query);
+    const { page, limit, status, driverId, deliveryDate, search, sortBy, sortOrder } = query;
+
+    const where: Prisma.OrderWhereInput = {};
+
+    if (status) {
+      where.status = status as any;
+    }
+    if (driverId) {
+      where.driverId = driverId;
+    }
+    if (deliveryDate) {
+      const date = new Date(deliveryDate);
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      where.deliveryDate = { gte: date, lt: nextDay };
+    }
+    if (search) {
+      where.OR = [
+        { customerName: { contains: search, mode: "insensitive" } },
+        { customerEmail: { contains: search, mode: "insensitive" } },
+        { shopifyOrderNumber: { contains: search, mode: "insensitive" } },
+        { addressLine1: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [orders, total] = await Promise.all([
+      request.tenantDb.order.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          driver: { select: { id: true, name: true, phone: true } },
+          timeSlot: { select: { id: true, name: true, startTime: true, endTime: true } },
+          proofOfDelivery: { select: { id: true, photoUrls: true, deliveredAt: true } },
+        },
+      }),
+      request.tenantDb.order.count({ where }),
+    ]);
+
+    return {
+      data: orders,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  });
+
+  // ── GET ORDER ───────────────────────────────────────────────
+
+  fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const order = await request.tenantDb.order.findUnique({
+      where: { id },
+      include: {
+        driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+        timeSlot: true,
+        proofOfDelivery: true,
+        notificationLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundError("Order", id);
+    }
+
+    return { data: order };
+  });
+
+  // ── CREATE ORDER ────────────────────────────────────────────
+
+  fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+
+    const body = createOrderSchema.parse(request.body);
+    const { latitude, longitude, ...orderData } = body;
+
+    // Generate tracking token
+    const trackingToken = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+
+    // Build delivery location point if coordinates provided
+    let locationSql: Prisma.Sql | undefined;
+    if (latitude !== undefined && longitude !== undefined) {
+      locationSql = Prisma.sql`ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`;
+    }
+
+    // Create with raw SQL for PostGIS geometry
+    const order = await request.tenantDb.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          shopId: request.shopId,
+          ...orderData,
+          deliveryDate: orderData.deliveryDate ? new Date(orderData.deliveryDate) : undefined,
+          totalPrice: orderData.totalPrice,
+          totalWeight: orderData.totalWeight,
+          trackingToken,
+        },
+      });
+
+      // Set PostGIS point if coordinates were provided
+      if (locationSql) {
+        await tx.$executeRaw`
+          UPDATE orders
+          SET delivery_location = ${locationSql}
+          WHERE id = ${created.id}::uuid
+        `;
+      }
+
+      return created;
+    });
+
+    // Invalidate order list cache
+    await request.tenantRedis.invalidateGroup("orders");
+
+    // Emit real-time event
+    emitOrderCreated({
+      id: order.id,
+      shopId: request.shopId,
+      status: order.status,
+      orderId: order.shopifyOrderNumber,
+      customerId: (order as any).customerId,
+      totalAmount: order.totalPrice,
+      createdAt: order.createdAt.toISOString(),
+    } as any);
+
+    reply.status(201);
+    return { data: order };
+  });
+
+  // ── UPDATE ORDER ────────────────────────────────────────────
+
+  const updateOrderSchema = z.object({
+    customerName: z.string().optional(),
+    customerEmail: z.string().email().optional(),
+    customerPhone: z.string().optional(),
+    addressLine1: z.string().optional(),
+    addressLine2: z.string().optional(),
+    city: z.string().optional(),
+    province: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().optional(),
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
+    deliveryDate: z.string().datetime().optional(),
+    timeSlotId: z.string().uuid().nullable().optional(),
+    notes: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  });
+
+  fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+
+    const { id } = request.params as { id: string };
+    const body = updateOrderSchema.parse(request.body);
+    const { latitude, longitude, ...updateData } = body;
+
+    const existing = await request.tenantDb.order.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundError("Order", id);
+    }
+
+    const order = await request.tenantDb.$transaction(async (tx) => {
+      const updated = await tx.order.update({
+        where: { id },
+        data: {
+          ...updateData,
+          deliveryDate: updateData.deliveryDate ? new Date(updateData.deliveryDate) : undefined,
+        },
+      });
+
+      if (latitude !== undefined && longitude !== undefined) {
+        await tx.$executeRaw`
+          UPDATE orders
+          SET delivery_location = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)
+          WHERE id = ${id}::uuid
+        `;
+      }
+
+      return updated;
+    });
+
+    await request.tenantRedis.invalidateGroup("orders");
+    return { data: order };
+  });
+
+  // ── UPDATE ORDER STATUS ─────────────────────────────────────
+
+  fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+
+    const { id } = request.params as { id: string };
+    const { status: newStatus, notes } = updateOrderStatusSchema.parse(request.body);
+
+    const order = await request.tenantDb.order.findUnique({
+      where: { id },
+      select: { id: true, status: true, shopId: true },
+    });
+
+    if (!order) {
+      throw new NotFoundError("Order", id);
+    }
+
+    // Validate status transition
+    const allowedNext = STATUS_TRANSITIONS[order.status] || [];
+    if (!allowedNext.includes(newStatus)) {
+      throw new ValidationError(
+        `Cannot transition from '${order.status}' to '${newStatus}'. Allowed: ${allowedNext.join(", ") || "none"}`,
+      );
+    }
+
+    const updatePayload: any = { status: newStatus };
+
+    // Set timestamps based on status
+    if (newStatus === "DELIVERED") {
+      updatePayload.actualDelivery = new Date();
+    }
+    if (notes) {
+      updatePayload.notes = notes;
+    }
+
+    const updated = await request.tenantDb.order.update({
+      where: { id },
+      data: updatePayload,
+    });
+
+    await request.tenantRedis.invalidateGroup("orders");
+
+    // Emit real-time event
+    emitOrderStatusChanged({
+      id: updated.id,
+      shopId: request.shopId,
+      status: updated.status,
+      orderId: updated.shopifyOrderNumber,
+      customerId: (updated as any).customerId,
+      totalAmount: updated.totalPrice,
+      createdAt: updated.createdAt.toISOString(),
+      previousStatus: order.status,
+      changedAt: new Date().toISOString(),
+    } as any);
+
+    // TODO: Enqueue notification job (BullMQ)
+    // await notificationQueue.add('order-status-change', {
+    //   shopId: request.shopId, orderId: id, status: newStatus
+    // });
+
+    return { data: updated };
+  });
+
+  // ── ASSIGN ORDER TO DRIVER ──────────────────────────────────
+
+  const assignOrderSchema = z.object({
+    driverId: z.string().uuid(),
+  });
+
+  fastify.patch("/:id/assign", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+
+    const { id } = request.params as { id: string };
+    const { driverId } = assignOrderSchema.parse(request.body);
+
+    const [order, driver] = await Promise.all([
+      request.tenantDb.order.findUnique({ where: { id } }),
+      request.tenantDb.driver.findUnique({ where: { id: driverId } }),
+    ]);
+
+    if (!order) throw new NotFoundError("Order", id);
+    if (!driver) throw new NotFoundError("Driver", driverId);
+    if (!driver.isActive) throw new ValidationError("Driver is not active");
+
+    const updated = await request.tenantDb.order.update({
+      where: { id },
+      data: {
+        driverId,
+        status: order.status === "ACCEPTED" || order.status === "PENDING" ? "ASSIGNED" : undefined,
+      },
+    });
+
+    await request.tenantRedis.invalidateGroup("orders");
+    return { data: updated };
+  });
+
+  // ── CANCEL ORDER ────────────────────────────────────────────
+
+  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+
+    const { id } = request.params as { id: string };
+
+    const order = await request.tenantDb.order.findUnique({ where: { id } });
+    if (!order) throw new NotFoundError("Order", id);
+
+    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+      throw new ConflictError(`Cannot cancel order in '${order.status}' status`);
+    }
+
+    const cancelled = await request.tenantDb.order.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
+
+    await request.tenantRedis.invalidateGroup("orders");
+    return { data: cancelled };
+  });
+
+  // ── ORDER TIMELINE ──────────────────────────────────────────
+
+  fastify.get("/:id/timeline", async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const order = await request.tenantDb.order.findUnique({ where: { id } });
+    if (!order) throw new NotFoundError("Order", id);
+
+    const logs = await request.tenantDb.notificationLog.findMany({
+      where: { orderId: id },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        channel: true,
+        eventType: true,
+        status: true,
+        createdAt: true,
+        sentAt: true,
+      },
+    });
+
+    return { data: logs };
+  });
+}
+
+export default ordersRoutes;

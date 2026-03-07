@@ -1,0 +1,35 @@
+// ─── CARRIER SERVICES ───────────────────────────────────────
+
+model CarrierService {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId           String   @map("shop_id") @db.Uuid
+  shopifyCarrierId String?  @map("shopify_carrier_id")
+  name             String
+  callbackUrl      String   @map("callback_url")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@map("carrier_services")
+}
+
+// ─── WEBHOOK SUBSCRIPTIONS ──────────────────────────────────
+
+model WebhookSubscription {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId           String   @map("shop_id") @db.Uuid
+  shopifyWebhookId String?  @map("shopify_webhook_id")
+  topic            String
+  callbackUrl      String   @map("callback_url")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, topic])
+  @@map("webhook_subscriptions")
+}

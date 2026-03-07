@@ -4,19 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "shopify app dev",
+    "dev": "shopify app dev --skip-dependencies-installation --use-localhost --localhost-port 3001",
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "lint": "eslint app/"
   },
   "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "@shopify/polaris": "^13.0.0",
     "@shopify/shopify-app-react-router": "^1.0.0",
     "@shopify/shopify-app-session-storage-prisma": "^5.0.0",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "^7.0.0"
+    "react-router": "^7.0.0",
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
@@ -24,6 +28,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.7.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vite-tsconfig-paths": "^5.1.0"
   }
 }

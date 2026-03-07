@@ -1,0 +1,38 @@
+// ─── NOTIFICATION LOG ───────────────────────────────────────
+
+model NotificationLog {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String              @map("shop_id") @db.Uuid
+  orderId       String?             @map("order_id") @db.Uuid
+  channel       NotificationChannel
+  eventType     String              @map("event_type")
+  recipient     String
+  status        NotificationStatus  @default(QUEUED)
+  providerMsgId String?             @map("provider_msg_id")
+  errorMessage  String?             @map("error_message")
+  sentAt        DateTime?           @map("sent_at")
+  deliveredAt   DateTime?           @map("delivered_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  shop  Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([orderId])
+  @@map("notification_logs")
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}

@@ -1,0 +1,70 @@
+# Dockerfile.api
+# Multi-stage build for Fastify API
+# Production-ready image with optimized layers and minimal attack surface
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Base image with pnpm and dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Install pnpm globally and depsify tools
+RUN npm install -g pnpm@9.15.0
+RUN apk add --no-cache libc6-compat
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Install dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS deps
+
+# Copy workspace and lockfile
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
+
+# Install dependencies in frozen mode (faster, more secure in CI)
+RUN pnpm install --frozen-lockfile
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Build application
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+# Generate Prisma client (critical for ORM to work)
+# This must run before TypeScript compilation
+RUN pnpm --filter @witylogix/db db:generate
+
+# Build only necessary packages (core, db, types, validators) and API
+# turbo build is smart about dependency graph and only builds what's needed
+RUN pnpm --filter "@witylogix/db" build
+RUN pnpm --filter "@witylogix/types" build
+RUN pnpm --filter "@witylogix/validators" build
+RUN pnpm --filter "@witylogix/core" build
+RUN pnpm --filter "@witylogix/api" build
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 4: Production runtime
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS production
+
+# Copy node_modules from deps stage (only includes prod dependencies after prune)
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/packages/ ./packages/
+
+# Copy built API code
+COPY --from=build /app/apps/api/dist/ ./apps/api/dist/
+COPY --from=build /app/apps/api/package.json ./apps/api/
+
+# Copy Prisma schema and migrations (needed for runtime and potential migrations)
+COPY --from=build /app/packages/db/prisma ./packages/db/prisma/
+COPY --from=build /app/packages/db/dist ./packages/db/dist/
+
+# Expose API port (configurable via PORT env var)
+EXPOSE 3001
+
+# Health check endpoint: ensures container restarts if API is unresponsive
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start API server (Node.js will use dist/server.js)
+CMD ["node", "apps/api/dist/server.js"]

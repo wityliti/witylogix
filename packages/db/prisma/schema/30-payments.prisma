@@ -1,0 +1,166 @@
+// ─── PAYMENT METHODS ──────────────────────────────────────────────────
+// Stored payment methods for a shop (credit cards, bank accounts, etc.)
+
+model PaymentMethod {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
+  type        String   @map("payment_method_type") // credit_card, debit_card, cod, bank_transfer, wallet, etc.
+  isDefault   Boolean  @default(false) @map("is_default")
+  isActive    Boolean  @default(true) @map("is_active")
+  displayName String   @map("display_name") // e.g., "Visa ending in 4242"
+  gatewayId   String?  @map("gateway_id") // Provider-specific gateway identifier (Stripe account_id)
+  providerRef String?  @map("provider_ref") // Provider-specific token/reference (Stripe payment_method_id)
+  lastDigits  String?  @map("last_digits") // Last 4 digits for cards
+  expiryDate  String?  @map("expiry_date") // MM/YY format
+  metadata    Json     @default("{}") // Additional provider-specific data
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  paymentTransactions PaymentTransaction[]
+
+  @@unique([shopId, providerRef])
+  @@index([shopId, isDefault])
+  @@index([shopId, type])
+  @@map("payment_methods")
+}
+
+// ─── PAYMENT TRANSACTIONS ──────────────────────────────────────────────
+// Core transaction record for every payment attempt
+// Supports: captures, refunds, COD collections, adjustments
+
+model PaymentTransaction {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId          String    @map("shop_id") @db.Uuid
+  orderId         String?   @map("order_id") @db.Uuid
+  shipmentId      String?   @map("shipment_id") @db.Uuid
+  paymentMethodId String?   @map("payment_method_id") @db.Uuid
+  // Amount in smallest currency unit (cents for USD)
+  amount          BigInt    @map("amount") // BigInt to avoid floating point issues
+  currency        String    @default("USD") @map("currency")
+  // Transaction classification
+  type            String    @map("transaction_type") // charge, refund, adjustment, cod_collection
+  status          String    @map("transaction_status") // pending, processing, completed, failed, refunded
+  // Provider details
+  providerName    String?   @map("provider_name") // stripe, cod, shopify, paypal, etc.
+  providerTxnId   String?   @map("provider_txn_id")
+  providerRef     String?   @map("provider_ref")
+  // For refunds: reference to original transaction
+  refundOf        String?   @map("refund_of") @db.Uuid
+  // Error tracking
+  errorCode       String?   @map("error_code")
+  errorMessage    String?   @map("error_message")
+  // Idempotency key to prevent duplicates
+  idempotencyKey  String?   @unique @map("idempotency_key")
+  // Audit trail
+  metadata        Json      @default("{}") // Additional context, webhook data, etc.
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order               Order?               @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment            Shipment?            @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  paymentMethod       PaymentMethod?       @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  refundedTransaction PaymentTransaction?  @relation("RefundRelation", fields: [refundOf], references: [id], onDelete: SetNull)
+  refundsOfThis       PaymentTransaction[] @relation("RefundRelation")
+  codCollections      CODCollection[]
+
+  @@unique([shopId, idempotencyKey])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([shopId, status])
+  @@index([shopId, type])
+  @@index([providerTxnId])
+  @@index([orderId])
+  @@index([shipmentId])
+  @@map("payment_transactions")
+}
+
+// ─── REFUNDS ──────────────────────────────────────────────────────────
+// Structured refund tracking (full and partial refunds)
+
+model Refund {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId           String    @map("shop_id") @db.Uuid
+  originalTxnId    String    @map("original_txn_id") @db.Uuid
+  amount           BigInt    @map("amount") // In cents; null = full refund
+  currency         String    @default("USD") @map("currency")
+  reason           String    @map("reason") // customer_request, duplicate_charge, order_cancelled, merchant_error, other
+  description      String?   @map("description")
+  status           String    @map("refund_status") // pending, processing, completed, failed
+  providerRefundId String?   @map("provider_refund_id")
+  errorMessage     String?   @map("error_message")
+  metadata         Json      @default("{}")
+  requestedAt      DateTime  @default(now()) @map("requested_at")
+  completedAt      DateTime? @map("completed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, status])
+  @@index([originalTxnId])
+  @@index([createdAt(sort: Desc)])
+  @@map("refunds")
+}
+
+// ─── COD COLLECTIONS ──────────────────────────────────────────────────
+// Cash on Delivery: driver collects cash → shop verifies → bank reconciliation
+
+model CODCollection {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String    @map("shop_id") @db.Uuid
+  orderId      String?   @map("order_id") @db.Uuid
+  shipmentId   String?   @map("shipment_id") @db.Uuid
+  paymentTxnId String?   @map("payment_txn_id") @db.Uuid
+  driverId     String    @map("driver_id") @db.Uuid
+  // Amount in cents
+  amount       BigInt    @map("amount")
+  currency     String    @default("USD") @map("currency")
+  // Collection lifecycle
+  status       String    @map("cod_status") // pending, collected, verified, reconciled, failed
+  collectedAt  DateTime? @map("collected_at")
+  verifiedAt   DateTime? @map("verified_at")
+  // Bank reconciliation
+  depositId    String?   @map("deposit_id") // Reference to bank deposit
+  depositDate  DateTime? @map("deposit_date")
+  reconciledAt DateTime? @map("reconciled_at")
+  // Notes from driver
+  driverNotes  String?   @map("driver_notes")
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  shop       Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order      Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment   Shipment?           @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  paymentTxn PaymentTransaction? @relation(fields: [paymentTxnId], references: [id], onDelete: SetNull)
+  driver     Driver              @relation(fields: [driverId], references: [id], onDelete: Restrict)
+
+  @@index([shopId, status])
+  @@index([driverId, status])
+  @@index([shipmentId])
+  @@index([depositId])
+  @@index([collectedAt(sort: Desc)])
+  @@map("cod_collections")
+}
+
+// ─── IDEMPOTENCY KEYS ──────────────────────────────────────────────────
+// Prevent duplicate charges via idempotent request keys (24 hour expiry)
+
+model IdempotencyKey {
+  key       String   @id
+  shopId    String   @map("shop_id") @db.Uuid
+  resultId  String?  @map("result_id") @db.Uuid // Transaction/refund ID if completed
+  status    String   @map("idempotency_status") // pending, completed, failed
+  result    Json?    @map("result") // Serialized result
+  error     Json?    @map("error") // Serialized error if failed
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, expiresAt])
+  @@index([resultId])
+  @@map("idempotency_keys")
+}

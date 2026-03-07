@@ -18,10 +18,19 @@
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
     "db:seed": "turbo db:seed",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "docker:build": "docker compose build",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "docker:build": "docker compose -f infra/docker-compose.yml build",
+    "docker:dev": "docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "deploy": "./infra/deploy-scripts/railway.sh deploy",
+    "deploy:setup": "./infra/deploy-scripts/railway.sh setup",
+    "deploy:link": "./infra/deploy-scripts/railway.sh link",
+    "deploy:logs": "./infra/deploy-scripts/railway.sh logs",
+    "deploy:status": "./infra/deploy-scripts/railway.sh status",
+    "deploy:redeploy": "./infra/deploy-scripts/railway.sh redeploy",
+    "deploy:open": "./infra/deploy-scripts/railway.sh open",
+    "deploy:domain": "./infra/deploy-scripts/railway.sh domain"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

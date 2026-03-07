@@ -1,0 +1,33 @@
+// ─── ACTIVITY LOG (Audit Trail) ──────────────────────────
+// Immutable log of every significant action in the system.
+// Used for audit trail, debugging, and compliance.
+
+model ActivityLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String   @map("shop_id") @db.Uuid
+  entityType String   @map("entity_type") // "order", "shipment", "driver", etc.
+  entityId   String   @map("entity_id") @db.Uuid // polymorphic — no FK constraint
+  action     String // "created", "status_changed", "assigned", "delivered", etc.
+  actorType  String   @map("actor_type") // "user", "driver", "system", "webhook"
+  actorId    String?  @map("actor_id") @db.Uuid
+  changes    Json     @default("{}") // { field: { from: old, to: new } }
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  timestamp  DateTime @default(now())
+
+  // Optional typed FK for the most common entity type (shipment)
+  // Other entity types are resolved at the application layer via entityType + entityId
+  shipmentId String? @map("shipment_id") @db.Uuid
+
+  // Relations
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, entityType, entityId])
+  @@index([shopId, timestamp(sort: Desc)])
+  @@index([entityType, entityId, timestamp(sort: Desc)])
+  @@index([shipmentId])
+  @@map("activity_logs")
+}
+
+// Payment enums moved to 30-payments.prisma to avoid conflict with PaymentMethod model

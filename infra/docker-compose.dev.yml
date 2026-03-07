@@ -1,0 +1,56 @@
+# infra/docker-compose.dev.yml
+# Development overrides for hot-reload and debugging
+#
+# Usage (from repo root):
+#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up
+#
+# Overrides:
+#   - Volume mounts for source code (hot-reload)
+#   - Development servers with file watchers
+#   - More verbose logging
+#   - Exposed debug ports
+
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.api
+    command: sh -c "pnpm install && pnpm --filter @witylogix/db db:generate && pnpm --filter @witylogix/api dev"
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ../apps/api/src:/app/apps/api/src
+      - ../packages/core/src:/app/packages/core/src
+      - ../packages/db/src:/app/packages/db/src
+      - ../packages/types/src:/app/packages/types/src
+      - ../packages/validators/src:/app/packages/validators/src
+      - /app/node_modules
+      - /app/apps/api/node_modules
+    ports:
+      - "3001:3001"
+      - "9229:9229"
+
+  dashboard:
+    command: sh -c "pnpm install && pnpm --filter @witylogix/dashboard dev"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ../apps/dashboard/src:/app/apps/dashboard/src
+      - ../apps/dashboard/public:/app/apps/dashboard/public
+      - ../apps/dashboard/app:/app/apps/dashboard/app
+      - ../packages/types/src:/app/packages/types/src
+      - ../packages/validators/src:/app/packages/validators/src
+      - dashboard_cache:/.next/cache
+      - /app/node_modules
+      - /app/apps/dashboard/node_modules
+
+  postgres:
+    environment:
+      POSTGRES_INITDB_ARGS: "-c log_statement=all"
+
+volumes:
+  dashboard_cache:
+    driver: local

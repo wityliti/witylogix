@@ -1,0 +1,45 @@
+// Metafields: Custom key-value metadata for entities
+model Metafield {
+  id        String @id @default(cuid())
+  shopId    String
+  namespace String
+  key       String
+  value     String // JSON-serialized for flexibility
+  type      String // STRING, NUMBER, BOOLEAN, JSON, DATE
+
+  // Entity reference (polymorphic)
+  entityType String // ORDER, SHIPMENT, CUSTOMER, PRODUCT, DRIVER
+  entityId   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, namespace, key, entityType, entityId])
+  @@index([shopId, entityType, entityId])
+  @@index([shopId, namespace])
+}
+
+// Metafield definitions: Schema and validation rules
+model MetafieldDefinition {
+  id          String  @id @default(cuid())
+  shopId      String
+  namespace   String
+  key         String
+  name        String
+  description String?
+  type        String // STRING, NUMBER, BOOLEAN, JSON, DATE
+
+  // Entity type this definition applies to
+  entityType String // ORDER, SHIPMENT, CUSTOMER, PRODUCT, DRIVER
+
+  // Validation rules (JSON serialized)
+  validations Json?
+  required    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, namespace, key, entityType])
+  @@index([shopId, entityType])
+  @@index([shopId, namespace])
+}

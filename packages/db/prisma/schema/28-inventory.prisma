@@ -1,0 +1,63 @@
+// Inventory Management Models
+
+/// Inventory items tracked by shop, product, variant, and location
+model InventoryItem {
+  id         String  @id @default(cuid())
+  shopId     String
+  productId  String
+  variantId  String? // Optional variant ID
+  locationId String
+
+  quantity         Int @default(0) // Physical quantity on hand
+  reservedQuantity Int @default(0) // Quantity reserved for orders
+  reorderPoint     Int @default(10) // Low stock alert threshold
+  reorderQuantity  Int @default(50) // Suggested reorder amount
+
+  movements InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, productId, variantId, locationId])
+  @@index([shopId])
+  @@index([productId])
+  @@index([locationId])
+}
+
+/// Track all inventory movements
+model InventoryMovement {
+  id     String        @id @default(cuid())
+  itemId String
+  item   InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  type     String // RECEIVE, SHIP, ADJUST, TRANSFER
+  quantity Int
+
+  fromLocationId String? // For transfers
+  toLocationId   String? // For transfers
+  reference      String? // PO#, Order#, etc
+
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+/// Product collections for grouping and bulk operations
+model Collection {
+  id        String  @id @default(cuid())
+  shopId    String
+  title     String
+  handle    String
+  shopifyId String? // Shopify collection ID for sync
+
+  productIds String[] // Array of product IDs in collection
+  sortOrder  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, handle])
+  @@index([shopId])
+}

@@ -1,0 +1,54 @@
+// ─── ORGANIZATIONS (Multi-Shop Tenant Root) ─────────────────
+// Optional grouping layer. A merchant with multiple Shopify stores
+// creates one org and links their shops to it. Single-shop merchants
+// don't need an org — the Shop operates independently.
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique // URL-safe identifier, e.g. "acme-logistics"
+  email     String? // billing contact
+  planTier  PlanTier @default(FREE) @map("plan_tier")
+  settings  Json     @default("{}") // org-wide defaults (branding, notification prefs)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shops         Shop[]
+  orgMembers    OrgMember[]
+  drivers       Driver[] // Org-level drivers (shared across shops)
+  deliveryZones DeliveryZone[] // Org-level zones (shared across shops)
+  locations     Location[] // Org-level locations (shared across shops)
+
+  @@map("organizations")
+}
+
+// ─── ORG MEMBERS (User ↔ Org junction with role) ────────────
+// Controls which users can access the org dashboard and which
+// shops within the org they can manage.
+
+model OrgMember {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      OrgRole  @default(MEMBER)
+  shopIds   String[] @map("shop_ids") @db.Uuid // empty = access to ALL shops in org
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([orgId])
+  @@index([userId])
+  @@map("org_members")
+}
+
+enum OrgRole {
+  OWNER // Full control: billing, add/remove shops, manage members
+  ADMIN // Manage all shops, drivers, zones within org
+  MEMBER // Access only assigned shops (via shopIds)
+}

@@ -1,0 +1,28 @@
+// ─── Witylogix Database Schema ──────────────────────────────
+// PostgreSQL 16 + PostGIS + Row-Level Security
+//
+// Tenant hierarchy:  Organization (optional) → Shop → Data
+//
+// - Single-shop merchants: Shop is the tenant root, no org needed.
+// - Multi-shop merchants: Organization groups shops. Drivers, zones,
+//   and users can be shared across shops within the same org.
+// - Shopify flow is unchanged: each install creates one Shop.
+//   The org link is set post-install from the dashboard.
+//
+// RLS policies are applied via SQL migrations (see migrations/).
+// Two RLS modes:
+//   app.current_shop_id  — per-shop isolation (default, used by all tables)
+//   app.current_org_id   — org-level access (used for cross-shop queries)
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "prismaSchemaFolder"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // NOTE: postgis removed temporarily for dev without PostGIS extension
+  // In production: extensions = [postgis, pgcrypto, uuid_ossp(map: "uuid-ossp")]
+  extensions = [pgcrypto, uuid_ossp(map: "uuid-ossp")]
+}

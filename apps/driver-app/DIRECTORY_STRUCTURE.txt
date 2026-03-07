@@ -1,0 +1,336 @@
+Witylogix Driver Mobile App - Complete Directory Structure
+===========================================================
+
+driver-app/
+│
+├── Configuration Files
+│   ├── package.json                  # npm dependencies and scripts
+│   ├── tsconfig.json                 # TypeScript compiler configuration
+│   ├── app.json                      # Expo app manifest
+│   ├── .eslintrc.json                # ESLint configuration
+│   ├── .gitignore                    # Git ignore patterns
+│   └── .env.example                  # Environment variables template
+│
+├── Documentation Files
+│   ├── README.md                     # User guide and features
+│   ├── ARCHITECTURE.md               # Technical architecture overview
+│   ├── SETUP.md                      # Development setup guide
+│   ├── FILES_SUMMARY.md              # Complete file listing
+│   └── DIRECTORY_STRUCTURE.txt       # This file
+│
+├── Root Application
+│   └── App.tsx                       # Root component with navigation logic
+│
+└── src/                              # Source code directory
+    │
+    ├── navigation/                   # Navigation configuration
+    │   ├── AuthStack.tsx             # Authentication stack (login flow)
+    │   └── MainTabs.tsx              # Main app tabs (home, routes, profile)
+    │
+    ├── screens/                      # Screen components
+    │   ├── LoginScreen.tsx           # Phone + password login screen
+    │   ├── HomeScreen.tsx            # Today's dashboard with stats
+    │   ├── RoutesScreen.tsx          # List of assigned routes
+    │   ├── RouteDetailScreen.tsx     # Route details with stops
+    │   ├── DeliveryScreen.tsx        # Active delivery management
+    │   └── ProfileScreen.tsx         # Driver profile and settings
+    │
+    ├── services/                     # API and device services
+    │   ├── api.ts                    # HTTP client with JWT injection
+    │   ├── auth.ts                   # Authentication service
+    │   └── location.ts               # Location tracking service
+    │
+    └── hooks/                        # Custom React hooks
+        └── useAuth.ts                # Auth context provider and hook
+
+
+FILE ORGANIZATION BY PURPOSE
+=============================
+
+AUTHENTICATION
+  - App.tsx                          # Auth check and navigation
+  - src/navigation/AuthStack.tsx     # Login screen navigation
+  - src/screens/LoginScreen.tsx      # Login UI and form
+  - src/services/auth.ts             # Auth logic
+  - src/hooks/useAuth.ts             # Auth context
+
+DASHBOARD
+  - src/screens/HomeScreen.tsx       # Stats and active delivery
+  - src/navigation/MainTabs.tsx      # Home tab setup
+
+ROUTE MANAGEMENT
+  - src/screens/RoutesScreen.tsx     # Route list
+  - src/screens/RouteDetailScreen.tsx # Route details
+  - src/navigation/MainTabs.tsx      # Routes tab setup
+
+DELIVERY MANAGEMENT
+  - src/screens/DeliveryScreen.tsx   # Active delivery form
+  - src/navigation/MainTabs.tsx      # Delivery navigation
+
+DRIVER PROFILE
+  - src/screens/ProfileScreen.tsx    # Profile and settings
+  - src/navigation/MainTabs.tsx      # Profile tab setup
+
+API & SERVICES
+  - src/services/api.ts              # HTTP client
+  - src/services/auth.ts             # Auth service
+  - src/services/location.ts         # Location tracking
+  - src/hooks/useAuth.ts             # Auth provider
+
+CONFIGURATION
+  - package.json                     # Dependencies
+  - tsconfig.json                    # TypeScript config
+  - app.json                         # Expo config
+  - .eslintrc.json                   # Linting rules
+  - .gitignore                       # Git patterns
+  - .env.example                     # Env template
+
+DOCUMENTATION
+  - README.md                        # Quick start
+  - ARCHITECTURE.md                  # Technical details
+  - SETUP.md                         # Dev guide
+  - FILES_SUMMARY.md                 # File listing
+
+
+COMPONENT HIERARCHY
+===================
+
+RootComponent (App.tsx)
+│
+├─ AuthProvider (useAuth.ts)
+│  └─ NavigationContainer
+│     │
+│     ├─ AuthStack (unauthenticated)
+│     │  └─ LoginScreen
+│     │
+│     └─ MainTabs (authenticated)
+│        ├─ HomeStack
+│        │  ├─ HomeScreen
+│        │  └─ DeliveryScreen
+│        │
+│        ├─ RoutesStack
+│        │  ├─ RoutesScreen
+│        │  └─ RouteDetailScreen
+│        │
+│        └─ ProfileScreen
+
+
+DATA FLOW
+=========
+
+User Input → Screen Component → Service → API → Backend
+                    ↓
+            State Update (useState/Context)
+                    ↓
+            UI Re-render
+
+
+SCREEN DEPENDENCIES
+===================
+
+LoginScreen
+  ├─ useAuth (for login function)
+  ├─ authService (authentication)
+  └─ api (HTTP calls)
+
+HomeScreen
+  ├─ api (fetch stats and delivery)
+  ├─ useAuth (get user info)
+  └─ useNavigation (navigate to delivery)
+
+RoutesScreen
+  ├─ api (fetch routes)
+  ├─ useNavigation (navigate to route detail)
+  └─ useFocusEffect (refresh on tab focus)
+
+RouteDetailScreen
+  ├─ api (fetch route details)
+  ├─ useRoute (get routeId param)
+  ├─ useNavigation (navigate back)
+  └─ Linking (native maps)
+
+DeliveryScreen
+  ├─ api (fetch and update delivery)
+  ├─ useRoute (get deliveryId param)
+  ├─ ImagePicker & Camera (POD photos)
+  └─ useNavigation (navigate back)
+
+ProfileScreen
+  ├─ useAuth (user info, logout)
+  ├─ api (fetch profile)
+  └─ useNavigation (redirect after logout)
+
+
+SERVICE DEPENDENCIES
+====================
+
+api.ts (ApiClient)
+  └─ SecureStore (token management)
+
+auth.ts (AuthService)
+  ├─ api (HTTP calls)
+  └─ SecureStore (token & user storage)
+
+location.ts (LocationService)
+  ├─ expo-location (GPS)
+  ├─ api (HTTP location updates)
+  └─ socket.io-client (real-time updates)
+
+useAuth.ts (Hook)
+  ├─ authService (auth logic)
+  └─ React.Context (state management)
+
+
+TOTAL FILE COUNT: 24
+=====================
+
+Configuration:     6 files
+Documentation:     5 files (including this one)
+Root Component:    1 file
+Navigation:        2 files
+Screens:           6 files
+Services:          3 files
+Hooks:             1 file
+────────────────────────────
+Total:            24 files
+
+
+TOTAL LINES OF CODE: ~4,400
+==========================
+
+TypeScript/TSX:    ~2,600 lines
+Configuration:     ~500 lines
+Documentation:     ~1,300 lines
+
+
+SIZE BREAKDOWN
+==============
+
+Source Code:       ~150 KB
+Documentation:     ~45 KB
+Configuration:     ~5 KB
+────────────────
+Total:            ~200 KB
+
+
+DEVELOPMENT WORKFLOW
+====================
+
+1. Clone/Create Project
+   └─ npm install
+
+2. Configure Environment
+   └─ cp .env.example .env
+   └─ Edit .env
+
+3. Start Development
+   └─ npm start
+   └─ Press 'i' (iOS) or 'a' (Android)
+
+4. Code & Test
+   └─ Make changes
+   └─ Hot reload (auto)
+   └─ Test features
+
+5. Build & Deploy
+   └─ npm run typecheck
+   └─ npm run lint
+   └─ eas build --platform ios/android
+
+
+BUILD TARGETS
+=============
+
+Development:
+  └─ npm start (Expo CLI)
+
+Staging:
+  └─ eas build --platform ios
+  └─ eas build --platform android
+
+Production:
+  └─ eas build --platform ios --profile production
+  └─ eas build --platform android --profile production
+  └─ eas submit (to app stores)
+
+
+SUPPORTED PLATFORMS
+===================
+
+Android:
+  └─ Minimum: Android 5.0+ (API 21)
+  └─ Target: Android 14+ (API 34)
+  └─ Arch: arm64-v8a, armeabi-v7a
+
+iOS:
+  └─ Minimum: iOS 13+
+  └─ Target: iOS 17+
+  └─ Arch: arm64
+
+
+PERMISSIONS REQUIRED
+====================
+
+Camera:
+  └─ Take photos for proof of delivery
+
+Image Picker:
+  └─ Select photos from gallery
+
+Location (Foreground):
+  └─ Get current position during delivery
+
+Location (Background):
+  └─ Track driver location continuously
+
+Secure Store:
+  └─ Store JWT token securely
+
+
+ENVIRONMENT VARIABLES
+====================
+
+Required:
+  EXPO_PUBLIC_API_URL     Backend API base URL
+
+Optional:
+  EXPO_PUBLIC_SOCKET_URL  WebSocket server URL
+
+
+NEXT STEPS AFTER SETUP
+======================
+
+1. Set up backend API
+   └─ Create all /api/v4 endpoints
+   └─ Implement authentication
+   └─ Set up database
+
+2. Configure app
+   └─ Update .env with API URL
+   └─ Customize branding in app.json
+   └─ Add app icons/splash screens
+
+3. Test thoroughly
+   └─ Unit tests for services
+   └─ Integration tests for flows
+   └─ E2E tests for workflows
+   └─ Device testing (iOS & Android)
+
+4. Deploy
+   └─ Create EAS account
+   └─ Configure build profiles
+   └─ Build APK/IPA
+   └─ Submit to app stores
+
+5. Monitor & Iterate
+   └─ Collect user feedback
+   └─ Monitor crash reports
+   └─ Track analytics
+   └─ Plan enhancements
+
+
+For more information, see:
+- README.md           (User guide)
+- ARCHITECTURE.md     (Technical details)
+- SETUP.md           (Development setup)
+- FILES_SUMMARY.md   (File listing)

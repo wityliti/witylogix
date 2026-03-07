@@ -1,0 +1,63 @@
+# Dockerfile.shopify-app
+# Multi-stage build for Shopify Integration App (React Router v7 + Vite)
+#
+# Production-ready image with optimized build and minimal runtime
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Dependencies installation
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Install pnpm and build tools
+RUN npm install -g pnpm@9.15.0
+RUN apk add --no-cache libc6-compat
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all packages and Shopify app
+COPY packages/ ./packages/
+COPY apps/shopify-app/ ./apps/shopify-app/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Build application
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+# Build shared packages first
+RUN pnpm --filter "@witylogix/types" build
+RUN pnpm --filter "@witylogix/validators" build
+RUN pnpm --filter "@witylogix/core" build
+
+# Build Shopify app with Vite
+RUN pnpm --filter "@witylogix/shopify-app" build
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Production runtime
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Install simple HTTP server for serving built files
+RUN npm install -g serve
+
+# Copy built Shopify app
+COPY --from=build /app/apps/shopify-app/dist ./public
+
+# Copy package.json for reference
+COPY --from=build /app/apps/shopify-app/package.json ./
+
+# Expose port (Vite default or custom)
+EXPOSE 5173
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:5173/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Serve built Shopify app
+CMD ["serve", "-s", "public", "-l", "5173"]

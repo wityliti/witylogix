@@ -1,0 +1,55 @@
+// ─── DELIVERY ZONES ────────────────────────────────────────
+// Zones can be org-level (shared) or shop-level.
+
+model DeliveryZone {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  shopId    String?  @map("shop_id") @db.Uuid
+  name      String
+  // TODO: Restore PostGIS: Unsupported("geometry(Polygon, 4326)")? when PostGIS is available
+  boundary  Json?    @map("boundary")
+  baseRate  Decimal  @default(0) @map("base_rate") @db.Decimal(10, 2)
+  perKmRate Decimal  @default(0) @map("per_km_rate") @db.Decimal(10, 2)
+  minOrder  Decimal  @default(0) @map("min_order") @db.Decimal(10, 2)
+  freeAbove Decimal? @map("free_above") @db.Decimal(10, 2)
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization  Organization?      @relation(fields: [orgId], references: [id])
+  shop          Shop?              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  timeSlots     TimeSlot[]
+  locationLinks LocationZoneLink[]
+
+  @@index([orgId, isActive])
+  @@index([shopId, isActive])
+  @@map("delivery_zones")
+}
+
+// ─── TIME SLOTS ─────────────────────────────────────────────
+
+model TimeSlot {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String   @map("shop_id") @db.Uuid
+  deliveryZoneId String?  @map("delivery_zone_id") @db.Uuid
+  name           String
+  startTime      String   @map("start_time")
+  endTime        String   @map("end_time")
+  daysOfWeek     Int[]    @map("days_of_week")
+  maxCapacity    Int      @default(50) @map("max_capacity")
+  cutoffMinutes  Int      @default(120) @map("cutoff_minutes")
+  surcharge      Decimal  @default(0) @db.Decimal(10, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  deliveryZone DeliveryZone? @relation(fields: [deliveryZoneId], references: [id])
+  orders       Order[]
+  shipments    Shipment[]
+
+  @@index([shopId, isActive])
+  @@map("time_slots")
+}

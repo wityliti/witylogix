@@ -1,0 +1,1 @@
+{"version":3,"file":"StatusTimeline.d.ts","sourceRoot":"","sources":["StatusTimeline.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,WAAW,EAAE,MAAM,UAAU,CAAA;AAGxD,UAAU,mBAAmB;IAC3B,aAAa,EAAE,WAAW,CAAA;IAC1B,aAAa,EAAE,WAAW,EAAE,CAAA;CAC7B;AAYD,wBAAgB,cAAc,CAAC,EAC7B,aAAa,EACb,aAAa,GACd,EAAE,mBAAmB,+BAiGrB"}

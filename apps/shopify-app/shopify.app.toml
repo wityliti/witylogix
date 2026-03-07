@@ -1,0 +1,34 @@
+# Shopify App Configuration
+# See: https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "Witylogix"
+client_id = "${SHOPIFY_API_KEY}"
+application_url = "https://localhost:3000"
+embedded = true
+
+[access_scopes]
+scopes = "read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers"
+
+[auth]
+redirect_urls = [ "https://localhost:3000/auth/callback" ]
+
+[webhooks]
+api_version = "2025-01"
+
+[[webhooks.subscriptions]]
+compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+uri = "/api/v4/webhooks/shopify/gdpr"
+
+[[webhooks.subscriptions]]
+topics = [
+  "orders/create",
+  "orders/updated",
+  "orders/cancelled",
+  "orders/fulfilled",
+  "app/uninstalled",
+  "shop/update"
+]
+uri = "/api/v4/webhooks/shopify"
+
+[pos]
+embedded = false

@@ -1,0 +1,31 @@
+// ─── USERS (Dashboard Users) ────────────────────────────────
+// Users are created per-shop (via Shopify install or invite).
+// Optionally linked to an org via OrgMember for cross-shop access.
+
+model User {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId    String    @map("shop_id") @db.Uuid // primary shop (where they were created)
+  email     String
+  name      String
+  role      UserRole  @default(ADMIN)
+  password  String? // hashed; null for Shopify-auth users
+  isActive  Boolean   @default(true) @map("is_active")
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orgMembers OrgMember[] // org-level access (if any)
+
+  @@unique([shopId, email])
+  @@index([shopId])
+  @@index([email]) // for cross-shop login lookups
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  DISPATCHER
+  VIEWER
+}

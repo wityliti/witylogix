@@ -1,0 +1,189 @@
+# infra/docker-compose.yml
+# Witylogix platform infrastructure and application stack
+#
+# Services:
+#   - postgres: PostgreSQL 16 with PostGIS (spatial queries)
+#   - redis: Redis 7 (caching, sessions, job queue)
+#   - api: Fastify 5 backend API
+#   - dashboard: Next.js 15 admin dashboard
+#   - shopify-app: Shopify integration app
+#
+# Usage (from repo root):
+#   docker compose -f infra/docker-compose.yml up -d
+#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up
+#
+# Or via pnpm: pnpm docker:up
+
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL 16 with PostGIS (Geospatial support)
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: witylogix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-witylogix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-witylogix}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-witylogix}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - witylogix-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Redis 7 (Caching, sessions, job queue)
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: witylogix-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory ${REDIS_MAXMEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - witylogix-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Fastify 5 API Backend
+  # ─────────────────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: witylogix-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_dev}@postgres:5432/${POSTGRES_DB:-witylogix}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    ports:
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - witylogix-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Next.js 15 Dashboard (Admin UI)
+  # ─────────────────────────────────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.dashboard
+    container_name: witylogix-dashboard
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+    depends_on:
+      - api
+    networks:
+      - witylogix-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Shopify Integration App (React Router v7)
+  # ─────────────────────────────────────────────────────────────────────────────
+  shopify-app:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.shopify-app
+    container_name: witylogix-shopify-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+      SHOPIFY_API_KEY: ${SHOPIFY_API_KEY:-}
+      SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET:-}
+    ports:
+      - "${SHOPIFY_APP_PORT:-3002}:5173"
+    depends_on:
+      - api
+    networks:
+      - witylogix-network
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Optional: BullMQ Board (Job Queue Dashboard)
+  # Enable with: docker compose --profile tools up
+  # ─────────────────────────────────────────────────────────────────────────────
+  bull-board:
+    image: deadly0/bull-board:latest
+    container_name: witylogix-bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3100:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - witylogix-network
+    profiles:
+      - tools
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Optional: OSRM Route Engine (Phase 2)
+  # Enable with: docker compose --profile phase2 up
+  # ─────────────────────────────────────────────────────────────────────────────
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: witylogix-osrm
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld /data/region.osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./osrm:/data
+    networks:
+      - witylogix-network
+    profiles:
+      - phase2
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  witylogix-network:
+    driver: bridge

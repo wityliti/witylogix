@@ -1,0 +1,63 @@
+# Dockerfile.dashboard
+# Multi-stage build for Next.js 15 dashboard
+# Uses standalone output mode for minimal production image
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Dependencies installation
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@9.15.0
+RUN apk add --no-cache libc6-compat
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all packages and dashboard (for dependency resolution)
+COPY packages/ ./packages/
+COPY apps/dashboard/ ./apps/dashboard/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Build Next.js application
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+# Build dependencies first
+RUN pnpm --filter "@witylogix/types" build
+RUN pnpm --filter "@witylogix/validators" build
+RUN pnpm --filter "@witylogix/core" build
+
+# Build dashboard with Next.js standalone output
+# next.config.ts should have output: 'standalone' configured
+RUN pnpm --filter "@witylogix/dashboard" build
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Production runtime
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Copy standalone output (self-contained Next.js runtime)
+COPY --from=build /app/apps/dashboard/.next/standalone ./
+
+# Copy static files (CSS, JS bundles, images)
+COPY --from=build /app/apps/dashboard/.next/static ./.next/static/
+
+# Copy public assets
+COPY --from=build /app/apps/dashboard/public ./public/
+
+# Expose dashboard port
+EXPOSE 3000
+
+# Health check: verify Next.js server is responding
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start Next.js server using node (standalone mode)
+CMD ["node", "server.js"]

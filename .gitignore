@@ -6,6 +6,7 @@ node_modules/
 dist/
 .next/
 .turbo/
+.temp/
 out/
 
 # Environment
