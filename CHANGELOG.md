@@ -4,6 +4,21 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 2.9 — Workflow Engine Framework (Medusa v2-Inspired) (2026-03-07)
+
+#### Added
+
+- **Workflow engine framework** — Medusa v2-inspired step-based orchestration engine with DI container, step runner with retry/timeout, compensation engine (reverse-order rollback), workflow registry, and lifecycle hooks (`packages/framework/`)
+- **3 core delivery workflows** — `createDeliveryOrderWorkflow` (9 steps: validate → geocode → rate → create → zone → inventory → reserve → notify → emit), `assignDriverWorkflow` (10 steps: validate → find → score → select → assign → optimize → ETA → notify driver → notify customer → emit), `completeDeliveryWorkflow` (11 steps: validate → POD → status → driver → metrics → billing → inventory → notify customer → notify merchant → archive → emit) — all with per-step compensation (`packages/workflows/`)
+- **12 reusable workflow steps** — validation, geocoding (Haversine), rate calculation (zone-based tiered pricing), driver scoring (proximity 40%, rating 25%, load 20%, completion 15%), POD verification (photo/signature/code), billing, notifications, zone assignment, inventory management (`packages/workflows/src/steps/`)
+- **BullMQ durable execution** — workflow queue with retry policies (3 attempts, exponential backoff), worker with progress tracking, scheduler with cron expressions, dead-letter queue handler with alert hooks (`packages/framework/src/queue/`)
+- **Workflow API routes** — `POST /api/workflow/orders`, `POST /api/workflow/drivers/assign`, `POST /api/workflow/delivery/complete` with execution tracking, retry, and cancellation endpoints (4 new route files, 12+ endpoints)
+- **Dashboard workflow viewer** — execution list page with status filters + step timeline detail page with collapsible JSON data, compensation indicators, and retry actions (2 new pages, 66 total)
+- **6 test suites** — workflow engine, DI container, step runner, and all 3 delivery workflow tests (240+ test cases, 63 total test files)
+- **ADR-009** — Medusa v2-inspired architecture evolution with deep technical comparison, 10 workflow definitions, target file structure, billing module migration strategy, 5 conscious differences from Medusa, and 4-phase 18-month roadmap
+- **Architecture debate** — Blue team / Red team standup debate stored in `docs/sprint-notes/STANDUP-2026-03-07-architecture-debate.md`
+- **Sprint tracker renamed** — `gap-analysis.xlsx` → `witylogix-sprint-tracker.xlsx` with new "Standup Notes & Actions" sheet
+
 ### Sprint 2.8 — Auth Providers, Admin Panel & Production Deploy (2026-03-07)
 
 #### Added

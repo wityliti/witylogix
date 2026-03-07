@@ -51,6 +51,12 @@ model Shop {
   idempotencyKeys         IdempotencyKey[]
   products                Product[]
   customers               Customer[]
+  // Messaging & Campaigns relations
+  messages                Message[]
+  messageTemplates        MessageTemplate[]
+  whatsappConfigs         WhatsAppConfig[]
+  campaigns               Campaign[]
+  broadcastGroups         BroadcastGroup[]
 
   @@index([orgId])
   @@map("shops")

@@ -70,6 +70,9 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 - **POS integration** — point-of-sale checkout with multi-provider support (Shopify POS, Square, Custom), 3 delivery modes (local delivery, in-store pickup, curbside), custom form builder with 8 field types and validation
 - **Platform admin panel** — store/user/customer management across the entire platform, suspension/restoration, impersonation, health monitoring, and aggregated dashboard metrics
 - **API hardening** — standardized error handling (8 error classes with Prisma/Zod mapping), token-bucket rate limiter (tier-based: FREE 50/min → ENTERPRISE 1000/min), request validation with XSS protection, and OpenAPI 3.0 spec with Swagger UI
+- **Workflow engine** — Medusa v2-inspired step-based orchestration with DI container, per-step compensation (reverse-order rollback), retry with exponential backoff, timeout support, lifecycle hooks, and workflow registry (`packages/framework/`)
+- **3 core delivery workflows** — `createDeliveryOrder` (9 steps), `assignDriver` (10 steps with scoring algorithm), `completeDelivery` (11 steps with POD verification) — each with automatic compensation chains for safe rollback on failure (`packages/workflows/`)
+- **BullMQ durable execution** — workflow queue with retry policies, progress tracking, cron-based scheduling, dead-letter queue, and graceful degradation to in-memory mode
 - **Docker production stack** — multi-stage Dockerfiles, compose with 8 services (Postgres+PostGIS, Redis, API, Dashboard, Shopify, Worker, Nginx), health checks, graceful shutdown, and automated Prisma migrations
 - **Shopify integration** — embedded admin app, checkout extensions, Carrier Service API, "Built for Shopify" ready
 - **Platform-agnostic core** — decoupled business logic ready for WooCommerce, Magento, and custom storefronts
@@ -110,8 +113,10 @@ witylogix-platform/
 │   ├── checkout-ui/         # Preact checkout extension (< 64KB)
 │   └── pos-ui/              # POS UI extension
 ├── packages/
-│   ├── db/                  # Prisma 6 schema (28 modules) + RLS policies
-│   ├── core/                # Business logic (48 modules — routing, messaging, RBAC, campaigns, billing, etc.)
+│   ├── db/                  # Prisma 6 schema (30 modules) + RLS policies
+│   ├── core/                # Business logic (51 modules — routing, messaging, RBAC, campaigns, billing, etc.)
+│   ├── framework/           # Workflow engine (DI container, step runner, compensation, registry, BullMQ queue)
+│   ├── workflows/           # 3 core delivery workflows (30 steps) + 12 reusable step definitions
 │   ├── types/               # Shared TypeScript types (JIT, no build)
 │   ├── validators/          # Zod schemas (JIT, no build)
 │   └── carrier-service/     # Carrier rate abstraction
@@ -475,7 +480,9 @@ NOTIFICATIONS_BYOK=true
 | Package | Strategy | Description |
 |---------|----------|-------------|
 | `@witylogix/db` | Compiled | Prisma client, RLS tenant extension, migrations |
-| `@witylogix/core` | Compiled | 48 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support |
+| `@witylogix/core` | Compiled | 51 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support |
+| `@witylogix/framework` | Compiled | Workflow engine — DI container, step runner, compensation engine, workflow registry, BullMQ queue/worker/scheduler/DLQ |
+| `@witylogix/workflows` | Compiled | 3 core delivery workflows (30 steps) + 12 reusable step definitions |
 | `@witylogix/types` | JIT | Shared TypeScript types (apps transpile directly) |
 | `@witylogix/validators` | JIT | Zod schemas for API validation |
 | `@witylogix/carrier-service` | Compiled | Carrier rate calculation abstraction |
@@ -584,10 +591,11 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 2.6 | Campaigns & Admin | RBAC engine, audit trail, messaging, campaigns, logging, encryption |
 | 2.7 | Billing & Polish | Billing system, process manager, saved views, widgets, collections, support |
 | 2.8 | Auth & Production | Auth providers (BYOK), POS integration, admin panel, API hardening, Docker deploy |
+| 2.9 | Workflow Engine | Medusa v2-inspired workflow framework, 3 core delivery workflows, BullMQ durable execution, dashboard workflow viewer |
 
-**Current stats (Sprint 2.8):** 900+ source files, 201,208 lines of code, 30 Prisma modules, 51 core modules, 57 test suites.
+**Current stats (Sprint 2.9):** 1,565 source files, 156,361+ lines of code, 30 Prisma modules, 51 core modules, 2 new framework packages (workflow engine + workflows), 65 dashboard pages, 63 API route files, 63 test suites.
 
-See [`gap-analysis.xlsx`](gap-analysis.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
+See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 
 ---
 
