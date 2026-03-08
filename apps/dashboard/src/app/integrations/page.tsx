@@ -128,9 +128,9 @@ export default function IntegrationsPage() {
                     : "bg-transparent text-wl-text-tertiary border-wl-border-default"
                 )}
               >
-                <span style={{ fontSize: 12 }}>{cat.icon}</span>
+                <span className="text-xs">{cat.icon}</span>
                 {cat.label}
-                <span style={{ opacity: 0.7 }}>{cat.count}</span>
+                <span className="opacity-70">{cat.count}</span>
               </button>
             ))}
           </div>
@@ -145,13 +145,13 @@ export default function IntegrationsPage() {
             return (
               <Card
                 key={integ.slug}
-                className="wl-animate-in"
+                className={cn(
+                  "wl-animate-in relative overflow-hidden",
+                  isComingSoon && "opacity-60",
+                  isInstalled && "border-wl-success-400 border-opacity-30"
+                )}
                 style={{
-                  position: "relative",
-                  overflow: "hidden",
-                  opacity: isComingSoon ? 0.6 : 1,
                   animationDelay: `${i * 40}ms`,
-                  borderColor: isInstalled ? "rgba(16, 185, 129, 0.3)" : undefined,
                 }}
               >
                 {/* Installed indicator */}
@@ -166,12 +166,12 @@ export default function IntegrationsPage() {
                         {integ.name}
                       </span>
                       {integ.popular && (
-                        <span className={cn("text-xs px-1 rounded text-wl-primary-400 font-bold uppercase")} style={{ background: "rgba(245,166,35,0.12)", letterSpacing: "0.04em" }}>
+                        <span className={cn("text-xs px-1 rounded text-wl-primary-400 font-bold uppercase tracking-wider")} style={{ background: "rgba(245,166,35,0.12)" }}>
                           Popular
                         </span>
                       )}
                     </div>
-                    <p className={cn("text-xs text-wl-text-tertiary m-0")} style={{ lineHeight: 1.5 }}>
+                    <p className={cn("text-xs text-wl-text-tertiary m-0 leading-relaxed")}>
                       {integ.description}
                     </p>
                   </div>
@@ -185,7 +185,7 @@ export default function IntegrationsPage() {
 
                 {/* Category + subcategory */}
                 <div className={cn("flex gap-1 mb-3")}>
-                  <span className={cn("text-xs px-1.5 rounded bg-wl-bg-surface text-wl-text-tertiary font-medium uppercase")} style={{ letterSpacing: "0.04em" }}>
+                  <span className={cn("text-xs px-1.5 rounded bg-wl-bg-surface text-wl-text-tertiary font-medium uppercase tracking-wider")}>
                     {integ.category.replace(/_/g, " ")}
                   </span>
                   {integ.subcategory && (
@@ -200,7 +200,7 @@ export default function IntegrationsPage() {
                   {integ.capabilities.map((cap) => (
                     <span
                       key={cap}
-                      className={cn("text-xs px-1.5 rounded border border-wl-border-subtle text-wl-text-tertiary")}
+                      className={cn("text-xs px-1.5 py-1 rounded border border-wl-border-subtle text-wl-text-tertiary")}
                       style={{ background: "rgba(255,255,255,0.04)" }}
                     >
                       {cap}

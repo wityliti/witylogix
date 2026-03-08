@@ -241,7 +241,7 @@ const SystemHealth = () => {
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Server style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
+          <Server className="w-5 h-5 text-wl-text-secondary" />
           System Health
         </CardTitle>
       </CardHeader>
@@ -288,30 +288,30 @@ const QuickActions = () => {
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Zap style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
+          <Zap className="w-5 h-5 text-wl-text-secondary" />
           Quick Actions
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex gap-3 flex-wrap">
           <Button variant="primary" size="sm">
-            <Plus style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+            <Plus className="w-3.5 h-3.5 mr-1" />
             Create Store
           </Button>
           <Link href="/admin/users">
             <Button variant="secondary" size="sm">
-              <Users style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+              <Users className="w-3.5 h-3.5 mr-1" />
               Manage Users
             </Button>
           </Link>
           <Link href="/activity">
             <Button variant="secondary" size="sm">
-              <ActivitySquare style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+              <ActivitySquare className="w-3.5 h-3.5 mr-1" />
               View Logs
             </Button>
           </Link>
           <Button variant="ghost" size="sm">
-            <TrendingUp style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+            <TrendingUp className="w-3.5 h-3.5 mr-1" />
             Analytics
           </Button>
         </div>
@@ -374,16 +374,10 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className="border-b border-wl-border-subtle transition-all duration-200"
-                  style={{
-                    backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
-                  }}
+                  className={cn("border-b border-wl-border-subtle transition-all duration-200 hover:bg-wl-bg-surface", {
+                    "bg-wl-bg-base": idx % 2 === 0,
+                    "bg-wl-bg-surface": idx % 2 !== 0,
+                  })}
                 >
 
                   <td className="p-3">
@@ -434,15 +428,9 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                   <td className="p-3 text-center">
                     <button
                       className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary"
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-primary)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-secondary)";
-                      }}
                     >
 
-                      <MoreVertical style={{ width: "16px", height: "16px" }} />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>

@@ -548,7 +548,7 @@ export default function PaymentsPage() {
                         : "-"}
                     </td>
                     <td className="px-6 py-4">
-                      <Badge style={{ backgroundColor: "#e2e8f0", color: "#1e293b" }}>
+                      <Badge className="bg-slate-200 text-slate-900">
                         {payment.paymentType}
                       </Badge>
                     </td>
@@ -616,7 +616,8 @@ export default function PaymentsPage() {
                   Status
                 </p>
                 <Badge
-                  style={{ marginTop: "0.5rem", ...getBadgeStyle(statusBadgeColor(selectedPayment.status)) }}
+                  className="mt-2"
+                  style={getBadgeStyle(statusBadgeColor(selectedPayment.status))}
                 >
                   {selectedPayment.status}
                 </Badge>
@@ -696,7 +697,7 @@ export default function PaymentsPage() {
               {selectedPayment.status === "COMPLETED" && (
                 <Button
                   onClick={handleRefund}
-                  style={{ width: "100%", backgroundColor: "#dc2626", color: "white" }}
+                  className="w-full bg-red-600 text-white hover:bg-red-700"
                 >
                   Initiate Refund
                 </Button>
@@ -704,7 +705,7 @@ export default function PaymentsPage() {
               <Button
                 onClick={() => setShowDetailPanel(false)}
                 variant="secondary"
-                style={{ width: "100%" }}
+                className="w-full"
               >
                 Close
               </Button>

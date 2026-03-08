@@ -17,7 +17,7 @@ export type PaymentMethodType =
   | 'cod' // Cash on Delivery
   | 'bank_transfer'
   | 'wallet'
-  | 'shopify_payment'
+  | 'platform_payment' // Generic platform payment (Shopify, WooCommerce, Magento, etc.)
   | 'other';
 
 export interface PaymentMethod {

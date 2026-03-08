@@ -254,9 +254,9 @@ export class ProductWebhookConsumer extends QueueConsumer {
       for (const variant of payload.variants) {
         // Upsert variant inventory using tenant-aware Prisma
         await (dbPrisma as any).variant.upsert({
-          where: { shopifyVariantId: variant.id },
+          where: { externalVariantId: variant.id },
           create: {
-            shopifyVariantId: variant.id,
+            externalVariantId: variant.id,
             sku: variant.sku,
             barcode: variant.barcode,
             title: variant.title,

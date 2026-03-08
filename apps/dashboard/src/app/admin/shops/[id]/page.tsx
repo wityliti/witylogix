@@ -434,11 +434,10 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
               <div className="flex-1">
                 <div className="h-2 bg-wl-bg-root rounded overflow-hidden mb-2">
                   <div
+                    className="h-full rounded transition-all duration-300"
                     style={{
-                      height: "100%",
                       width: `${(mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100}%`,
                       background: "var(--wl-primary-500)",
-                      transition: "width 0.3s",
                     }}
                   />
                 </div>
@@ -534,7 +533,6 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                           background: getBillingStatusColor(record.status) + "20",
                           color: getBillingStatusColor(record.status),
                           border: `1px solid ${getBillingStatusColor(record.status)}40`,
-                          fontSize: "11px",
                         }}
                       >
                         {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
@@ -641,13 +639,9 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                   className={cn("py-3 flex gap-3", index < mockActivityLog.length - 1 && "border-b border-wl-border")}
                 >
                   <div
+                    className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5"
                     style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
                       background: getSeverityColor(log.severity),
-                      marginTop: "6px",
-                      flexShrink: 0,
                     }}
                   />
                   <div className="flex-1 min-w-0">

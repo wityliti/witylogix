@@ -340,18 +340,10 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
       {logs.map((log, idx) => (
         <div
           key={log.id}
-          className="cursor-pointer transition-all border-l-2 border-b border-wl-border-subtle p-4"
+          className="cursor-pointer transition-all border-l-2 border-b border-wl-border-subtle p-4 hover:bg-wl-bg-surface hover:translate-x-1"
           style={{
             borderLeftColor: getActionColor(log.actionType),
             backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.backgroundColor = "var(--wl-bg-surface)";
-            (e.currentTarget as HTMLDivElement).style.transform = "translateX(4px)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
-            (e.currentTarget as HTMLDivElement).style.transform = "translateX(0)";
           }}
         >
           <div className="flex gap-3 items-start">
@@ -485,7 +477,7 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 </span>
               </td>
               <td className="px-3 py-3">
-                <Badge variant="default" style={{ backgroundColor: getActionColor(log.actionType) + "20", color: getActionColor(log.actionType), fontSize: "var(--wl-text-xs)" }}>
+                <Badge variant="default" style={{ backgroundColor: getActionColor(log.actionType) + "20", color: getActionColor(log.actionType) }}>
                   {log.action}
                 </Badge>
               </td>

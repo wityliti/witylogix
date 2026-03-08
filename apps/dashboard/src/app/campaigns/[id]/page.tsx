@@ -215,7 +215,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
         </div>
 
         {/* Performance Stats */}
-        <div className="grid grid-cols-auto-fit gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+        <div className="grid gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
           <StatCard
             label="Sent"
             value={formatNumber(campaign.stats.sent)}
@@ -268,14 +268,9 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                 {campaign.timeline.map((event, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-3"
-                    style={{
-                      paddingBottom: idx < campaign.timeline.length - 1 ? "var(--wl-space-3)" : 0,
-                      borderBottom:
-                        idx < campaign.timeline.length - 1
-                          ? "1px solid var(--wl-border-subtle)"
-                          : "none",
-                    }}
+                    className={cn("flex gap-3", {
+                      "pb-3 border-b border-wl-border-subtle": idx < campaign.timeline.length - 1,
+                    })}
                   >
                     <div
                       className="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
@@ -361,10 +356,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                       <span className="text-sm font-medium">
                         {formatNumber(item.value)}
                       </span>
-                      <span
-                        className="text-xs text-wl-text-secondary"
-                        style={{ minWidth: "35px", textAlign: "right" }}
-                      >
+                      <span className="text-xs text-wl-text-secondary" style={{ minWidth: "35px", textAlign: "right" }}>
                         {item.percentage}%
                       </span>
                     </div>

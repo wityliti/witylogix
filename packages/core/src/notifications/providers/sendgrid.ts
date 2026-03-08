@@ -59,9 +59,6 @@ export class SendGridEmailProvider implements NotificationProvider {
       // Build SendGrid request payload
       const payload = this.buildSendGridPayload(message);
 
-      // TODO: Make HTTP POST request to SendGrid API
-      // POST https://api.sendgrid.com/v3/mail/send
-      // Headers: Authorization: Bearer {apiKey}, Content-Type: application/json
       const response = await this.sendRequest(payload);
 
       return {

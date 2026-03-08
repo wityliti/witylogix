@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.6 — Magento, Custom Adapter, Tests & Tailwind Finish (2026-03-08)
+
+#### Added
+
+- **ADR-016** — Magento 2 integration architecture (671 lines) with data mapping tables, sequence diagrams, and 3-phase plan (`docs/adr/ADR-016-magento-integration.md`)
+- **Magento adapter** — Magento 2 REST API v1: Bearer token auth, HMAC-SHA256 webhook validation, order/product/customer mapping, configurable product support, EAV attributes (`packages/core/src/platforms/adapters/magento.ts`)
+- **Custom platform adapter** — configurable field mapping (dot notation), multi-auth (API key, HMAC, Bearer), merchant-defined JSON schema mapping (`packages/core/src/platforms/adapters/custom.ts`)
+- **Magento webhook consumer** — BullMQ consumer for Magento order/product lifecycle events (`packages/core/src/queue/consumers/magento-webhook.ts`)
+- **Custom webhook consumer** — BullMQ consumer for custom platform events (`packages/core/src/queue/consumers/custom-webhook.ts`)
+- **Magento webhook route** — POST `/api/v4/webhooks/magento` with HMAC validation, topic routing (`apps/api/src/routes/magento-webhooks.ts`)
+- **Custom webhook route** — POST `/api/v4/webhooks/custom/:shopId` with multi-auth validation (`apps/api/src/routes/custom-webhooks.ts`)
+- **4 API route test suites** — orders (61 tests), drivers (61 tests), routes-optimization (52 tests), webhooks (39 tests) — 213 test cases total
+- **4 platform adapter test suites** — shopify-adapter (46 tests), woocommerce-adapter (47 tests), magento-adapter (37 tests), registry (36 tests) — 197 test cases, 101+ total suites
+
+#### Changed
+
+- **Platform abstraction Phase 3 (final)** — `shopify_payment` → `platform_payment` in payments types, `shopifyVariantId` → `externalVariantId` in product-webhook consumer — zero Shopify-specific refs remaining
+- **TODO stub cleanup (2→0)** — removed stale TODO comments in SendGrid and Twilio providers where real implementation already existed
+- **15 dashboard pages migrated to Tailwind CSS** (103 total) — admin, widgets, delivery/standard, campaigns/[id], admin/design-system, register, shipping-profiles/[id], shipments, home, (auth)/layout, integrations, stores, payments, admin/shops/[id], activity
+
 ### Sprint 3.5 — WooCommerce Integration, TODO Cleanup & Final Tailwind Push (2026-03-08)
 
 #### Added

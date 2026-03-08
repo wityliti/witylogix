@@ -621,9 +621,20 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] TODO stub cleanup — campaign dispatcher, event-bus DLQ, route optimization queue, integration worker
 - [x] 88 dashboard pages migrated to Tailwind CSS (11 more pages)
 - [x] 93+ test suites across core modules
+- [x] ADR-016 — Magento 2 integration architecture decision record
+- [x] Magento 2 adapter — REST API v1, Bearer token auth, HMAC webhooks (implements PlatformAdapter)
+- [x] Custom platform adapter — configurable field mapping, multi-auth (API key, HMAC, Bearer)
+- [x] Magento + Custom webhook consumers + Fastify routes
+- [x] Platform abstraction Phase 3 — final Shopify refs cleaned (payments, product-webhook variants)
+- [x] All TODO stubs resolved (0 remaining)
+- [x] API route integration tests — orders, drivers, routes, webhooks (213 test cases)
+- [x] Platform adapter unit tests — Shopify, WooCommerce, Magento, registry (197 test cases)
+- [x] 103 dashboard pages migrated to Tailwind CSS (15 more pages)
+- [x] 101+ test suites across core modules
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] "Built for Shopify" certification
 - [x] WooCommerce integration plugin (Phase 1 — adapter + webhooks)
+- [x] Magento integration (Phase 1 — adapter + webhooks)
 
 ---
 
@@ -650,8 +661,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.3 | Workers, Auth & Routing | Notification worker → orchestrator, DHL adapter, OSRM Phase 2, Auth OAuth2 (6 providers), BullMQ job wiring, Shopify webhooks, 17 more pages → Tailwind |
 | 3.4 | Platform Abstraction & Competitive Intel | Platform source abstraction (ADR-014), `externalOrderId` + `source` enum, collection platform adapter, Shopify GraphQL adapter, Fleetbase competitive analysis, analytics DI, billing routes, 16 more pages → Tailwind |
 | 3.5 | WooCommerce, TODO Cleanup & Tailwind | ADR-015 WooCommerce integration, platform adapter system (Shopify + WooCommerce), webhook consumer, TODO cleanup (10→2), platform abstraction Phase 2, 11 more pages → Tailwind |
+| 3.6 | Magento, Custom Adapter, Tests & Tailwind Finish | ADR-016 Magento integration, Magento + Custom platform adapters, API route tests (213 cases), platform adapter tests (197 cases), 0 TODOs remaining, 15 more pages → Tailwind |
 
-**Current stats (Sprint 3.5):** ~1,900 source files, ~248,000 lines of code, 31 Prisma modules, 72 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (88 migrated to Tailwind), 71 API route files, 93+ test suites.
+**Current stats (Sprint 3.6):** ~1,960 source files, ~262,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (103 migrated to Tailwind), 73 API route files, 101+ test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

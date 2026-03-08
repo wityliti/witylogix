@@ -69,7 +69,6 @@ export class TwilioSMSProvider implements NotificationProvider {
       // Build Twilio request payload
       const payload = this.buildTwilioPayload(message.to, body);
 
-      // TODO: Make HTTP POST request to Twilio API with Basic Auth
       const response = await this.sendRequest(payload);
 
       return {

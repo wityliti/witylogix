@@ -325,79 +325,79 @@ export default function StandardDeliveryPage() {
   ];
 
   return (
-    <div className={cn("min-h-screen")} style={{ background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
+    <div className="min-h-screen bg-gradient-to-br from-wl-bg-primary to-wl-bg-secondary">
       <Header title="Standard Delivery" subtitle="Manage standard shipping orders, shipments, and carrier integrations" />
 
-      <div className={cn("max-w-[1400px] mx-auto p-8")}>
+      <div className="max-w-[1400px] mx-auto p-8">
         {/* Stats Bar */}
-        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8")}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
           <Card>
-            <CardContent className={cn("pt-4 pb-4")}>
-              <div className={cn("flex items-center gap-4 justify-between")}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-4 justify-between">
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
+                  <div className="text-xs font-semibold text-wl-text-secondary">
                     Pending
                   </div>
-                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+                  <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.pending}
                   </div>
                 </div>
-                <Clock className="w-8 h-8" style={{ color: "var(--wl-warning)", opacity: 0.7 }} />
+                <Clock className="w-8 h-8 text-wl-warning opacity-70" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className={cn("pt-4 pb-4")}>
-              <div className={cn("flex items-center gap-4 justify-between")}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-4 justify-between">
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
+                  <div className="text-xs font-semibold text-wl-text-secondary">
                     In Transit
                   </div>
-                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+                  <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.inTransit}
                   </div>
                 </div>
-                <Truck className="w-8 h-8" style={{ color: "var(--wl-info)", opacity: 0.7 }} />
+                <Truck className="w-8 h-8 text-wl-info opacity-70" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className={cn("pt-4 pb-4")}>
-              <div className={cn("flex items-center gap-4 justify-between")}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-4 justify-between">
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
+                  <div className="text-xs font-semibold text-wl-text-secondary">
                     Delivered Today
                   </div>
-                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+                  <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.delivered}
                   </div>
                 </div>
-                <CheckCircle className="w-8 h-8" style={{ color: "var(--wl-success)", opacity: 0.7 }} />
+                <CheckCircle className="w-8 h-8 text-wl-success opacity-70" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className={cn("pt-4 pb-4")}>
-              <div className={cn("flex items-center gap-4 justify-between")}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-4 justify-between">
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
+                  <div className="text-xs font-semibold text-wl-text-secondary">
                     Exceptions
                   </div>
-                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+                  <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.exceptions}
                   </div>
                 </div>
-                <AlertCircle className="w-8 h-8" style={{ color: "var(--wl-danger)", opacity: 0.7 }} />
+                <AlertCircle className="w-8 h-8 text-wl-danger opacity-70" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Tabs */}
-        <div className={cn("mb-8")}>
+        <div className="mb-8">
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="underline" />
         </div>
 
@@ -405,9 +405,9 @@ export default function StandardDeliveryPage() {
         {activeTab === "orders" && (
           <div>
             {/* Filters & Actions */}
-            <Card className={cn("mb-8")}>
-              <CardContent className={cn("pt-6")}>
-                <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4")} style={{ marginBottom: selectedOrders.size > 0 ? "1rem" : 0 }}>
+            <Card className="mb-8">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4" style={{ marginBottom: selectedOrders.size > 0 ? "1rem" : 0 }}>
                   <Select
                     options={[
                       { value: "all", label: "All Statuses" },
@@ -436,8 +436,8 @@ export default function StandardDeliveryPage() {
 
                 {/* Batch Actions */}
                 {selectedOrders.size > 0 && (
-                  <div className={cn("flex gap-2 pt-4 border-t border-wl-border")}>
-                    <span className={cn("text-sm text-wl-text-secondary flex items-center pr-4")}>
+                  <div className="flex gap-2 pt-4 border-t border-wl-border">
+                    <span className="text-sm text-wl-text-secondary flex items-center pr-4">
                       {selectedOrders.size} selected
                     </span>
                     <Button variant="primary" onClick={() => handleBatchAction("bulk_assign")}>
@@ -457,11 +457,11 @@ export default function StandardDeliveryPage() {
 
             {/* Orders Table */}
             <Card>
-              <CardContent className={cn("pt-6 overflow-x-auto")}>
-                <table className={cn("w-full border-collapse text-sm")}>
+              <CardContent className="pt-6 overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className={cn("border-b-2 border-wl-border")}>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                    <tr className="border-b-2 border-wl-border">
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         <input
                           type="checkbox"
                           onChange={(e) => {
@@ -473,28 +473,28 @@ export default function StandardDeliveryPage() {
                           }}
                         />
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Order #
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Recipient
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Location
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Carrier
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Tracking
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Status
                       </th>
-                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-left text-wl-text-secondary font-semibold">
                         Cost
                       </th>
-                      <th className={cn("p-4 text-center text-wl-text-secondary font-semibold")}>
+                      <th className="p-4 text-center text-wl-text-secondary font-semibold">
                         Action
                       </th>
                     </tr>
@@ -503,53 +503,52 @@ export default function StandardDeliveryPage() {
                     {filteredOrders.map((order, idx) => (
                       <tr
                         key={order.id}
-                        className={cn("border-b border-wl-border")}
-                        style={{
-                          background: selectedOrders.has(order.id) ? "var(--wl-bg-tertiary)" : idx % 2 === 0 ? "transparent" : "var(--wl-bg-tertiary)",
-                        }}
+                        className={cn("border-b border-wl-border", {
+                          "bg-wl-bg-tertiary": selectedOrders.has(order.id) || idx % 2 !== 0,
+                        })}
                       >
-                        <td className={cn("p-4 text-wl-text-primary")}>
+                        <td className="p-4 text-wl-text-primary">
                           <input
                             type="checkbox"
                             checked={selectedOrders.has(order.id)}
                             onChange={() => toggleOrderSelection(order.id)}
                           />
                         </td>
-                        <td className={cn("p-4 text-wl-text-primary font-semibold")}>
+                        <td className="p-4 text-wl-text-primary font-semibold">
                           {order.orderNumber}
                         </td>
-                        <td className={cn("p-4 text-wl-text-primary")}>
+                        <td className="p-4 text-wl-text-primary">
                           {order.recipient}
                         </td>
-                        <td className={cn("p-4 text-wl-text-secondary text-xs")}>
+                        <td className="p-4 text-wl-text-secondary text-xs">
                           {order.city}, {order.state} {order.zip}
                         </td>
-                        <td className={cn("p-4 text-wl-text-primary")}>
+                        <td className="p-4 text-wl-text-primary">
                           {order.carrier ? (
-                            <span className={cn("font-semibold")}>{order.carrier}</span>
+                            <span className="font-semibold">{order.carrier}</span>
                           ) : (
-                            <span className={cn("text-wl-text-tertiary text-xs")}>—</span>
+                            <span className="text-wl-text-tertiary text-xs">—</span>
                           )}
                         </td>
-                        <td className={cn("p-4 text-wl-text-secondary text-xs")} style={{ fontFamily: "monospace" }}>
+                        <td className="p-4 text-wl-text-secondary text-xs font-mono">
                           {order.trackingNumber ? order.trackingNumber.substring(0, 12) + "..." : "—"}
                         </td>
-                        <td className={cn("p-4")}>
+                        <td className="p-4">
                           <Badge variant={statusVariant(order.status)}>
                             {statusLabel(order.status)}
                           </Badge>
                         </td>
-                        <td className={cn("p-4 text-wl-text-primary font-semibold")}>
+                        <td className="p-4 text-wl-text-primary font-semibold">
                           {order.cost > 0 ? `$${order.cost.toFixed(2)}` : "—"}
                         </td>
-                        <td className={cn("p-4 text-center")}>
-                          <div className={cn("flex gap-2 justify-center")}>
+                        <td className="p-4 text-center">
+                          <div className="flex gap-2 justify-center">
                             {order.status === "pending" && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setIsCarrierModalOpen(true)}
-                                className={cn("text-xs p-1")}
+                                className="text-xs p-1"
                               >
                                 Assign
                               </Button>
@@ -558,7 +557,7 @@ export default function StandardDeliveryPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className={cn("text-xs p-1")}
+                                className="text-xs p-1"
                               >
                                 <Printer className="w-3 h-3" />
                               </Button>
@@ -576,13 +575,13 @@ export default function StandardDeliveryPage() {
 
         {/* SHIPMENTS TAB */}
         {activeTab === "shipments" && (
-          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6")}>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
             {shipments.map((ship) => (
               <Card key={ship.id}>
                 <CardHeader>
-                  <div className={cn("flex items-start justify-between")}>
+                  <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className={cn("text-base mb-1")}>
+                      <CardTitle className="text-base mb-1">
                         {ship.carrier} Shipment
                       </CardTitle>
                       <CardDescription>{ship.trackingNumber}</CardDescription>
@@ -593,23 +592,23 @@ export default function StandardDeliveryPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className={cn("flex flex-col gap-4")}>
-                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Weight</span>
-                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.weight} lbs</span>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between pb-3 border-b border-wl-border">
+                      <span className="text-xs text-wl-text-secondary">Weight</span>
+                      <span className="text-wl-text-primary font-semibold">{ship.weight} lbs</span>
                     </div>
-                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Last Update</span>
-                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.lastUpdate}</span>
+                    <div className="flex justify-between pb-3 border-b border-wl-border">
+                      <span className="text-xs text-wl-text-secondary">Last Update</span>
+                      <span className="text-wl-text-primary font-semibold">{ship.lastUpdate}</span>
                     </div>
-                    <div className={cn("flex justify-between")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Est. Delivery</span>
-                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.estimatedDelivery}</span>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-wl-text-secondary">Est. Delivery</span>
+                      <span className="text-wl-text-primary font-semibold">{ship.estimatedDelivery}</span>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="secondary" className={cn("w-full")}>
+                  <Button variant="secondary" className="w-full">
                     View Details
                   </Button>
                 </CardFooter>
@@ -620,47 +619,47 @@ export default function StandardDeliveryPage() {
 
         {/* CARRIERS TAB */}
         {activeTab === "carriers" && (
-          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-6")}>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-6">
             {mockCarriers.map((carrier) => (
-              <Card key={carrier.id} className={cn("relative")}>
+              <Card key={carrier.id} className="relative">
                 <CardHeader>
-                  <div className={cn("flex items-start justify-between mb-4")}>
-                    <div className={cn("text-4xl")}>{carrier.icon}</div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-4xl">{carrier.icon}</div>
                     {carrier.connected ? (
                       <Badge variant="success">Connected</Badge>
                     ) : (
                       <Badge variant="warning">Disconnected</Badge>
                     )}
                   </div>
-                  <CardTitle className={cn("text-xl mb-1")}>
+                  <CardTitle className="text-xl mb-1">
                     {carrier.name}
                   </CardTitle>
                   <CardDescription>Shipping carrier integration</CardDescription>
                 </CardHeader>
 
                 <CardContent>
-                  <div className={cn("flex flex-col gap-4")}>
-                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Connected Accounts</span>
-                      <span className={cn("text-sm font-semibold text-wl-text-primary")}>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between pb-3 border-b border-wl-border">
+                      <span className="text-xs text-wl-text-secondary">Connected Accounts</span>
+                      <span className="text-sm font-semibold text-wl-text-primary">
                         {carrier.accounts}
                       </span>
                     </div>
-                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Success Rate</span>
-                      <span className={cn("text-sm font-semibold")} style={{ color: carrier.successRate > 0 ? "var(--wl-success)" : "var(--wl-text-tertiary)" }}>
+                    <div className="flex justify-between pb-3 border-b border-wl-border">
+                      <span className="text-xs text-wl-text-secondary">Success Rate</span>
+                      <span className={cn("text-sm font-semibold", carrier.successRate > 0 ? "text-wl-success" : "text-wl-text-tertiary")}>
                         {carrier.successRate > 0 ? `${carrier.successRate}%` : "N/A"}
                       </span>
                     </div>
-                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Avg Cost / lb</span>
-                      <span className={cn("text-sm font-semibold text-wl-text-primary")}>
+                    <div className="flex justify-between pb-3 border-b border-wl-border">
+                      <span className="text-xs text-wl-text-secondary">Avg Cost / lb</span>
+                      <span className="text-sm font-semibold text-wl-text-primary">
                         {carrier.avgCost > 0 ? `$${carrier.avgCost.toFixed(2)}` : "—"}
                       </span>
                     </div>
-                    <div className={cn("flex justify-between")}>
-                      <span className={cn("text-xs text-wl-text-secondary")}>Last Used</span>
-                      <span className={cn("text-sm text-wl-text-primary")}>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-wl-text-secondary">Last Used</span>
+                      <span className="text-sm text-wl-text-primary">
                         {carrier.lastUsed}
                       </span>
                     </div>
@@ -669,14 +668,14 @@ export default function StandardDeliveryPage() {
 
                 <CardFooter>
                   {carrier.connected ? (
-                    <Button variant="secondary" className={cn("w-full")}>
+                    <Button variant="secondary" className="w-full">
                       Manage Account
                     </Button>
                   ) : (
                     <Button variant="primary" onClick={() => {
                       setSelectedCarrier(carrier);
                       setIsCarrierModalOpen(true);
-                    }} className={cn("w-full")}>
+                    }} className="w-full">
                       <Plus className="w-4 h-4 mr-2" />
                       Connect
                     </Button>
@@ -698,7 +697,7 @@ export default function StandardDeliveryPage() {
         title={selectedCarrier ? `Connect ${selectedCarrier.name}` : "Assign Carrier to Orders"}
         size="md"
         footer={
-          <div className={cn("flex gap-3 justify-end")}>
+          <div className="flex gap-3 justify-end">
             <Button
               variant="secondary"
               onClick={() => {
@@ -717,17 +716,17 @@ export default function StandardDeliveryPage() {
           </div>
         }
       >
-        <div className={cn("flex flex-col gap-6")}>
+        <div className="flex flex-col gap-6">
           {selectedCarrier ? (
             <>
               <div>
-                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
+                <label className="block text-xs font-semibold text-wl-text-primary mb-2">
                   API Key
                 </label>
                 <Input type="password" placeholder="Enter your API key" />
               </div>
               <div>
-                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
+                <label className="block text-xs font-semibold text-wl-text-primary mb-2">
                   Account Number
                 </label>
                 <Input placeholder="Your account number" />
@@ -736,7 +735,7 @@ export default function StandardDeliveryPage() {
           ) : (
             <>
               <div>
-                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
+                <label className="block text-xs font-semibold text-wl-text-primary mb-2">
                   Select Carrier
                 </label>
                 <Select
@@ -746,7 +745,7 @@ export default function StandardDeliveryPage() {
                 />
               </div>
               <div>
-                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
+                <label className="block text-xs font-semibold text-wl-text-primary mb-2">
                   Shipping Service
                 </label>
                 <Select
@@ -759,7 +758,7 @@ export default function StandardDeliveryPage() {
                   onChange={() => {}}
                 />
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-2")}>
+              <p className="text-xs text-wl-text-tertiary mt-2">
                 Selected orders: {selectedOrders.size}
               </p>
             </>

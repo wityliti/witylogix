@@ -90,7 +90,7 @@ export default function DashboardPage() {
         title="Dashboard"
         subtitle="Friday, March 6, 2026"
         actions={
-          <div className={cn("flex gap-1 bg-wl-bg-overlay rounded-md p-0.5")}>
+          <div className="flex gap-1 bg-wl-bg-overlay rounded-md p-0.5">
             {(["today", "week", "month"] as const).map((t) => (
               <button
                 key={t}
@@ -107,10 +107,10 @@ export default function DashboardPage() {
         }
       />
 
-      <div className={cn("p-6")}>
+      <div className="p-6">
         {/* ═══ KPI Stats Grid ═══ */}
         <div
-          className={cn("grid gap-4 mb-6 auto-fill")}
+          className="grid gap-4 mb-6 auto-fill"
           style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}
         >
           {STATS.map((stat, i) => (
@@ -127,21 +127,21 @@ export default function DashboardPage() {
 
         {/* ═══ Main Content Grid ═══ */}
         <div
-          className={cn("grid gap-5")}
+          className="grid gap-5"
           style={{ gridTemplateColumns: "1fr 380px" }}
         >
           {/* Left Column */}
-          <div className={cn("flex flex-col gap-5")}>
+          <div className="flex flex-col gap-5">
             {/* Delivery Volume Bar Chart */}
             <Card>
               <CardHeader>
                 <CardTitle>Delivery Volume</CardTitle>
-                <span className={cn("text-xs text-wl-text-tertiary")}>
+                <span className="text-xs text-wl-text-tertiary">
                   Today&apos;s hourly distribution
                 </span>
               </CardHeader>
               <div
-                className={cn("flex items-end gap-1.5 h-35 pt-2")}
+                className="flex items-end gap-1.5 h-35 pt-2"
               >
                 {DELIVERY_TIMELINE.map((d, i) => {
                   const height = (d.count / maxCount) * 100;
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={d.hour}
-                      className={cn("flex-1 flex flex-col items-center gap-1")}
+                      className="flex-1 flex flex-col items-center gap-1"
                     >
                       <span
                         className={cn("text-2xs font-mono", {
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                         }}
                       />
                       <span
-                        className={cn("text-2xs text-wl-text-tertiary font-mono")}
+                        className="text-2xs text-wl-text-tertiary font-mono"
                       >
                         {d.hour}
                       </span>
@@ -190,16 +190,16 @@ export default function DashboardPage() {
                   View all →
                 </Button>
               </CardHeader>
-              <div className={cn("overflow-x-auto")}>
+              <div className="overflow-x-auto">
                 <table
-                  className={cn("w-full border-collapse text-sm")}
+                  className="w-full border-collapse text-sm"
                 >
                   <thead>
                     <tr>
                       {["Order", "Customer", "Status", "Driver", "ETA", "Amount"].map((h) => (
                         <th
                           key={h}
-                          className={cn("text-left p-2 p-3 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wide border-b border-wl-border-subtle")}
+                          className="text-left p-2 p-3 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wide border-b border-wl-border-subtle"
                         >
                           {h}
                         </th>
@@ -210,25 +210,25 @@ export default function DashboardPage() {
                     {RECENT_ORDERS.map((order) => (
                       <tr
                         key={order.id}
-                        className={cn("border-b border-wl-border-subtle")}
+                        className="border-b border-wl-border-subtle"
                       >
                         <td
-                          className={cn("p-3 font-mono font-semibold text-wl-primary-400 text-xs")}
+                          className="p-3 font-mono font-semibold text-wl-primary-400 text-xs"
                         >
                           {order.id}
                         </td>
                         <td
-                          className={cn("p-3 text-wl-text-primary")}
+                          className="p-3 text-wl-text-primary"
                         >
                           {order.customer}
                         </td>
-                        <td className={cn("p-3")}>
+                        <td className="p-3">
                           <Badge variant={statusVariant(order.status)} dot>
                             {order.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
                         <td
-                          className={cn("p-3 text-wl-text-secondary")}
+                          className="p-3 text-wl-text-secondary"
                         >
                           {order.driver}
                         </td>
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                           {order.eta}
                         </td>
                         <td
-                          className={cn("p-3 font-mono font-semibold text-wl-text-primary")}
+                          className="p-3 font-mono font-semibold text-wl-text-primary"
                         >
                           {formatCurrency(order.amount)}
                         </td>
@@ -256,15 +256,15 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Zone Performance</CardTitle>
-                <span className={cn("text-xs text-wl-text-tertiary")}>
+                <span className="text-xs text-wl-text-tertiary">
                   Delivery metrics by zone
                 </span>
               </CardHeader>
-              <div className={cn("flex flex-col gap-3")}>
+              <div className="flex flex-col gap-3">
                 {ZONE_PERFORMANCE.map((zone, i) => (
                   <div
                     key={zone.zone}
-                    className={cn("wl-animate-in flex items-center gap-4 p-3 rounded-md bg-wl-bg-surface")}
+                    className="wl-animate-in flex items-center gap-4 p-3 rounded-md bg-wl-bg-surface"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Zone rank */}
@@ -278,12 +278,12 @@ export default function DashboardPage() {
                     </span>
 
                     {/* Zone name + bar */}
-                    <div className={cn("flex-1 min-w-0")}>
+                    <div className="flex-1 min-w-0">
                       <div
-                        className={cn("flex justify-between mb-1")}
+                        className="flex justify-between mb-1"
                       >
                         <span
-                          className={cn("text-sm font-semibold text-wl-text-primary")}
+                          className="text-sm font-semibold text-wl-text-primary"
                         >
                           {zone.zone}
                         </span>
@@ -298,10 +298,10 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <div
-                        className={cn("h-1 bg-wl-bg-overlay rounded-full overflow-hidden")}
+                        className="h-1 bg-wl-bg-overlay rounded-full overflow-hidden"
                       >
                         <div
-                          className={cn("h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full")}
+                          className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full"
                           style={{
                             width: `${(zone.orders / 45) * 100}%`,
                             transition: `width var(--wl-duration-slow) var(--wl-ease-spring)`,
@@ -312,40 +312,40 @@ export default function DashboardPage() {
 
                     {/* Stats */}
                     <div
-                      className={cn("flex gap-5 flex-shrink-0")}
+                      className="flex gap-5 flex-shrink-0"
                     >
-                      <div className={cn("text-right")}>
+                      <div className="text-right">
                         <div
-                          className={cn("text-xs text-wl-text-tertiary")}
+                          className="text-xs text-wl-text-tertiary"
                         >
                           Orders
                         </div>
                         <div
-                          className={cn("text-sm font-bold font-mono text-wl-text-primary")}
+                          className="text-sm font-bold font-mono text-wl-text-primary"
                         >
                           {zone.orders}
                         </div>
                       </div>
-                      <div className={cn("text-right")}>
+                      <div className="text-right">
                         <div
-                          className={cn("text-xs text-wl-text-tertiary")}
+                          className="text-xs text-wl-text-tertiary"
                         >
                           Avg Time
                         </div>
                         <div
-                          className={cn("text-sm font-semibold font-mono text-wl-text-secondary")}
+                          className="text-sm font-semibold font-mono text-wl-text-secondary"
                         >
                           {zone.avgTime}
                         </div>
                       </div>
-                      <div className={cn("text-right")}>
+                      <div className="text-right">
                         <div
-                          className={cn("text-xs text-wl-text-tertiary")}
+                          className="text-xs text-wl-text-tertiary"
                         >
                           Revenue
                         </div>
                         <div
-                          className={cn("text-sm font-semibold font-mono text-wl-success-400")}
+                          className="text-sm font-semibold font-mono text-wl-success-400"
                         >
                           {formatCurrency(zone.revenue)}
                         </div>
@@ -358,7 +358,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Column — Sidebar Panels */}
-          <div className={cn("flex flex-col gap-5")}>
+          <div className="flex flex-col gap-5">
             {/* Active Drivers Panel */}
             <Card>
               <CardHeader>
@@ -367,7 +367,7 @@ export default function DashboardPage() {
                   {ACTIVE_DRIVERS.filter((d) => d.status !== "OFFLINE").length} online
                 </Badge>
               </CardHeader>
-              <div className={cn("flex flex-col gap-3")}>
+              <div className="flex flex-col gap-3">
                 {ACTIVE_DRIVERS.map((driver, i) => (
                   <div
                     key={driver.name}
@@ -378,29 +378,29 @@ export default function DashboardPage() {
                   >
                     {/* Avatar */}
                     <div
-                      className={cn("w-9 h-9 rounded-md bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary relative flex-shrink-0")}
+                      className="w-9 h-9 rounded-md bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary relative flex-shrink-0"
                     >
                       {driver.name.split(" ").map((w) => w[0]).join("")}
                       <span
-                        className={cn("absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-wl-bg-elevated")}
+                        className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-wl-bg-elevated"
                         style={{ background: statusColor(driver.status) }}
                       />
                     </div>
 
-                    <div className={cn("flex-1 min-w-0")}>
+                    <div className="flex-1 min-w-0">
                       <div
-                        className={cn("text-sm font-semibold text-wl-text-primary")}
+                        className="text-sm font-semibold text-wl-text-primary"
                       >
                         {driver.name}
                       </div>
                       <div
-                        className={cn("text-xs text-wl-text-tertiary")}
+                        className="text-xs text-wl-text-tertiary"
                       >
                         {driver.vehicle} · {driver.completed} done
                       </div>
                     </div>
 
-                    <div className={cn("text-right")}>
+                    <div className="text-right">
                       <Badge variant={statusVariant(driver.status)}>
                         {driver.status === "ON_ROUTE"
                           ? `${driver.orders} active`
@@ -417,7 +417,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <div className={cn("flex flex-col gap-2")}>
+              <div className="flex flex-col gap-2">
                 {[
                   { label: "Create New Order", icon: "+" },
                   { label: "Optimize Routes", icon: "⟳" },
@@ -427,10 +427,10 @@ export default function DashboardPage() {
                 ].map((action) => (
                   <button
                     key={action.label}
-                    className={cn("flex items-center gap-3 p-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm cursor-pointer font-sans transition-all w-full text-left")}
+                    className="flex items-center gap-3 p-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm cursor-pointer font-sans transition-all w-full text-left"
                   >
                     <span
-                      className={cn("w-7 h-7 rounded text-sm flex items-center justify-center bg-wl-bg-overlay flex-shrink-0")}
+                      className="w-7 h-7 rounded text-sm flex items-center justify-center bg-wl-bg-overlay flex-shrink-0"
                     >
                       {action.icon}
                     </span>
@@ -442,7 +442,7 @@ export default function DashboardPage() {
 
             {/* System Health */}
             <Card
-              className={cn("bg-gradient-to-br from-wl-bg-elevated to-wl-bg-overlay")}
+              className="bg-gradient-to-br from-wl-bg-elevated to-wl-bg-overlay"
             >
               <CardHeader>
                 <CardTitle>System Status</CardTitle>
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                   Operational
                 </Badge>
               </CardHeader>
-              <div className={cn("flex flex-col gap-3")}>
+              <div className="flex flex-col gap-3">
                 {[
                   { name: "API", status: "Healthy", latency: "12ms" },
                   { name: "Database", status: "Healthy", latency: "3ms" },
@@ -460,23 +460,23 @@ export default function DashboardPage() {
                 ].map((service) => (
                   <div
                     key={service.name}
-                    className={cn("flex items-center justify-between")}
+                    className="flex items-center justify-between"
                   >
                     <div
-                      className={cn("flex items-center gap-2")}
+                      className="flex items-center gap-2"
                     >
                       <span
-                        className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0")}
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                         style={{ background: statusColor(service.status === "Healthy" ? "HEALTHY" : "DEGRADED") }}
                       />
                       <span
-                        className={cn("text-sm text-wl-text-secondary")}
+                        className="text-sm text-wl-text-secondary"
                       >
                         {service.name}
                       </span>
                     </div>
                     <span
-                      className={cn("text-xs font-mono text-wl-text-tertiary")}
+                      className="text-xs font-mono text-wl-text-tertiary"
                     >
                       {service.latency}
                     </span>

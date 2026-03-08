@@ -281,7 +281,7 @@ export default function ShipmentsPage() {
         {/* Filters Bar */}
         <div className="flex flex-wrap items-center mb-5 gap-4">
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className="flex-1 min-w-80 max-w-96">
             <input
               type="text"
               placeholder="Search shipments, tracking, recipient..."

@@ -211,25 +211,18 @@ export default function StoresManagement() {
   const getSyncIcon = (status: string) => {
     switch (status) {
       case "success":
-        return <CheckCircle2 style={{ width: "16px", height: "16px", color: "var(--wl-success)" }} />;
+        return <CheckCircle2 className="w-4 h-4 text-wl-success" />;
       case "error":
-        return <AlertCircle style={{ width: "16px", height: "16px", color: "var(--wl-danger)" }} />;
+        return <AlertCircle className="w-4 h-4 text-wl-danger" />;
       case "syncing":
-        return <RefreshCw style={{ width: "16px", height: "16px", color: "var(--wl-warning)", animation: "spin 1s linear infinite" }} />;
+        return <RefreshCw className="w-4 h-4 text-wl-warning animate-spin" />;
       default:
-        return <Clock style={{ width: "16px", height: "16px", color: "var(--wl-muted)" }} />;
+        return <Clock className="w-4 h-4 text-wl-muted" />;
     }
   };
 
   return (
     <div className="bg-wl-bg">
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-
       {/* Header */}
       <div className="px-6 py-8 border-b border-wl-border flex justify-between items-center">
         <div>

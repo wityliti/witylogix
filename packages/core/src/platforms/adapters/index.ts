@@ -31,10 +31,33 @@ export {
   type ShopifyCredentials,
 } from './shopify.js';
 
+export {
+  MagentoAdapter,
+  type MagentoOrder,
+  type MagentoAddress,
+  type MagentoProduct,
+  type MagentoCustomer,
+  type MagentoOrderItem,
+  type MagentoPayment,
+  type CreateOrderInput as MagentoCreateOrderInput,
+  type CreateProductInput as MagentoCreateProductInput,
+  type CreateCustomerInput as MagentoCreateCustomerInput,
+  type MagentoCredentials,
+} from './magento.js';
+
+export {
+  CustomAdapter,
+  type CustomFieldMapping,
+  type CustomAuthConfig,
+  type CustomWebhookConfig,
+  type CustomCredentials,
+  DEFAULT_FIELD_MAPPING,
+} from './custom.js';
+
 /**
  * Union type of all platform adapters
  */
-export type PlatformAdapter = typeof WooCommerceAdapter | typeof ShopifyAdapter;
+export type PlatformAdapter = typeof WooCommerceAdapter | typeof ShopifyAdapter | typeof MagentoAdapter | typeof CustomAdapter;
 
 /**
  * Platform source enum for normalizing across adapters
@@ -42,12 +65,14 @@ export type PlatformAdapter = typeof WooCommerceAdapter | typeof ShopifyAdapter;
 export enum PlatformSource {
   SHOPIFY = 'SHOPIFY',
   WOOCOMMERCE = 'WOOCOMMERCE',
+  MAGENTO = 'MAGENTO',
+  CUSTOM = 'CUSTOM',
 }
 
 /**
  * Get adapter instance by platform source
  *
- * @param source Platform source (SHOPIFY, WOOCOMMERCE)
+ * @param source Platform source (SHOPIFY, WOOCOMMERCE, MAGENTO, CUSTOM)
  * @param apiVersion Optional API version for Shopify
  * @returns Adapter instance
  * @throws Error if source is not supported
@@ -55,12 +80,16 @@ export enum PlatformSource {
 export function getAdapter(
   source: PlatformSource | string,
   apiVersion?: string
-): WooCommerceAdapter | ShopifyAdapter {
+): WooCommerceAdapter | ShopifyAdapter | MagentoAdapter | CustomAdapter {
   switch (source.toUpperCase()) {
     case PlatformSource.SHOPIFY:
       return new ShopifyAdapter(apiVersion);
     case PlatformSource.WOOCOMMERCE:
       return new WooCommerceAdapter();
+    case PlatformSource.MAGENTO:
+      return new MagentoAdapter();
+    case PlatformSource.CUSTOM:
+      return new CustomAdapter();
     default:
       throw new Error(`Unsupported platform source: ${source}`);
   }

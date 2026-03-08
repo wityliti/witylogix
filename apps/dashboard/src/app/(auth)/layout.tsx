@@ -39,7 +39,7 @@ export default function AuthLayout({
           <div className="relative z-10 w-full max-w-sm">
             {/* Logo and branding */}
             <div
-              className="flex flex-col items-center mb-8"
+              className="flex flex-col items-center mb-8 animate-in fade-in"
               style={{
                 animation: "wl-fade-in 600ms var(--wl-ease-default) both",
                 animationDelay: "100ms",
@@ -66,10 +66,9 @@ export default function AuthLayout({
 
             {/* Auth form card */}
             <div
-              className="rounded-lg border border-wl-border-subtle p-8"
+              className="rounded-lg border border-wl-border-subtle p-8 backdrop-blur-lg"
               style={{
                 background: "rgba(17, 17, 20, 0.8)",
-                backdropFilter: "blur(16px)",
                 boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
                 animation: "wl-fade-in 600ms var(--wl-ease-default) both",
                 animationDelay: "200ms",
@@ -80,7 +79,7 @@ export default function AuthLayout({
 
             {/* Footer */}
             <div
-              className="mt-8 text-center text-xs text-wl-text-tertiary"
+              className="mt-8 text-center text-xs text-wl-text-tertiary animate-in fade-in"
               style={{
                 animation: "wl-fade-in 600ms var(--wl-ease-default) both",
                 animationDelay: "300ms",

@@ -140,10 +140,9 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center min-h-screen bg-wl-bg">
         <div className="flex flex-col items-center gap-4">
           <div
-            className="w-12 h-12 rounded-full border-2 border-wl-border"
+            className="w-12 h-12 rounded-full border-2 border-wl-border animate-spin"
             style={{
               borderTopColor: "var(--wl-primary)",
-              animation: "spin 1s linear infinite",
             }}
           />
 
@@ -513,7 +512,7 @@ export default function RegisterPage() {
             </span>
           </label>
           {termsError && (
-            <span className="text-xs text-wl-danger-400" style={{ marginTop: "-var(--wl-space-1)" }}>
+            <span className="text-xs text-wl-danger-400 -mt-1">
               {termsError}
             </span>
           )}
@@ -522,7 +521,7 @@ export default function RegisterPage() {
         {/* Error Message */}
         {error && (
           <div
-            className="p-3 rounded-lg bg-wl-danger-400/10 border border-wl-danger-400/20 text-sm text-wl-danger-400"
+            className="p-3 rounded-lg bg-wl-danger-400/10 border border-wl-danger-400/20 text-sm text-wl-danger-400 animate-in"
             style={{
               animation: "wl-fade-in 300ms var(--wl-ease-default) both",
             }}
@@ -538,7 +537,7 @@ export default function RegisterPage() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer"
+            isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
           )}
           style={{
             background: isLoading
@@ -562,7 +561,7 @@ export default function RegisterPage() {
         >
           {isLoading ? (
             <>
-              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader2 size={16} className="animate-spin" />
               Creating account...
             </>
           ) : (
