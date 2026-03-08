@@ -263,12 +263,12 @@ export default function ShippingProfilesPage() {
                 <button
                   key={m}
                   onClick={() => setDeliveryFilter(m)}
-                  className={cn("px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200")}
-                  style={{
-                    background: deliveryFilter === m ? "var(--wl-primary-500)" : "transparent",
-                    color: deliveryFilter === m ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                    borderColor: deliveryFilter === m ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  }}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200",
+                    deliveryFilter === m
+                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                  )}
                 >
                   {m === "ALL" ? "All Methods" : deliveryMethodLabel(m as DeliveryMethod).split(" ")[0]}
                   <span className="ml-1 opacity-70">{count}</span>
@@ -287,12 +287,12 @@ export default function ShippingProfilesPage() {
               <button
                 key={r}
                 onClick={() => setRateTypeFilter(r)}
-                className={cn("px-3 py-1 rounded-lg border text-xs font-semibold cursor-pointer font-sans transition-all")}
-                style={{
-                  background: rateTypeFilter === r ? "var(--wl-primary-500)" : "transparent",
-                  color: rateTypeFilter === r ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  borderColor: rateTypeFilter === r ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                }}
+                className={cn(
+                  "px-3 py-1 rounded-lg border text-xs font-semibold cursor-pointer font-sans transition-all",
+                  rateTypeFilter === r
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                )}
               >
                 {r === "ALL" ? "All Rate Types" : rateTypeLabel(r as RateType).split(" ")[0]}
                 <span className="ml-1 opacity-70">{count}</span>
@@ -303,6 +303,7 @@ export default function ShippingProfilesPage() {
 
         {/* Profiles Grid + Detail */}
         <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedProfile ? "1fr 420px" : "1fr" }}>
+
 
           {/* Profiles Grid */}
           <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4")}>
@@ -318,13 +319,15 @@ export default function ShippingProfilesPage() {
                   borderColor: selectedProfile?.id === profile.id ? "var(--wl-primary-500)" : undefined,
                 }}
               >
+
                 {/* Status indicator line */}
                 <div
-                  className={cn("absolute top-0 left-0 right-0 h-0.5")}
-                  style={{
-                    background: profile.isActive ? "var(--wl-success-400)" : "var(--wl-danger-400)",
-                  }}
+                  className={cn(
+                    "absolute top-0 left-0 right-0 h-0.5",
+                    profile.isActive ? "bg-wl-success-400" : "bg-wl-danger-400"
+                  )}
                 />
+
 
                 {/* Header */}
                 <div className={cn("flex justify-between items-start mb-3")}>
@@ -347,10 +350,11 @@ export default function ShippingProfilesPage() {
 
                 {/* Description */}
                 {profile.description && (
-                  <div className={cn("text-xs text-wl-text-secondary mb-3")} style={{ lineHeight: 1.4 }}>
+                  <div className={cn("text-xs text-wl-text-secondary mb-3 leading-relaxed")}>
                     {profile.description}
                   </div>
                 )}
+
 
                 {/* Method & Rate Badges */}
                 <div className={cn("flex gap-2 flex-wrap mb-3")}>
@@ -366,56 +370,70 @@ export default function ShippingProfilesPage() {
                 <div className={cn("grid grid-cols-2 gap-3 p-3 bg-wl-bg-surface rounded-lg mb-3")}>
                   <div>
                       <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Flat Rate</div>
-                    <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: profile.flatRate && profile.flatRate > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}>
+                    <div className={cn(
+                      "text-base font-bold font-mono",
+                      profile.flatRate && profile.flatRate > 0 ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                    )}>
                       {profile.flatRate !== null ? (profile.flatRate > 0 ? formatCurrency(profile.flatRate) : "FREE") : "—"}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Free Above</div>
-                    <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: profile.freeShippingAbove ? "var(--wl-success-400)" : "var(--wl-text-tertiary)" }}>
+                    <div className={cn(
+                      "text-base font-bold font-mono",
+                      profile.freeShippingAbove ? "text-wl-success-400" : "text-wl-text-tertiary"
+                    )}>
                       {profile.freeShippingAbove ? formatCurrency(profile.freeShippingAbove) : "—"}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Processing Time</div>
-                    <div className={cn("text-base font-bold text-wl-text-secondary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-text-secondary")}>
                       {profile.processingTimeHours}h
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Min Order</div>
-                    <div className={cn("text-base font-bold text-wl-text-secondary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-text-secondary")}>
                       {profile.minOrderAmount ? formatCurrency(profile.minOrderAmount) : "—"}
                     </div>
                   </div>
+
                 </div>
 
                 {/* Stats Grid */}
                 <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-subtle mb-3")}>
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Linked Locations</div>
-                    <div className={cn("text-base font-bold text-wl-primary-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-primary-400")}>
                       {profile.linkedLocations}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Total Shipments</div>
-                    <div className={cn("text-base font-bold text-wl-success-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-success-400")}>
                       {profile.totalShipments}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Revenue</div>
-                    <div className={cn("text-base font-bold text-wl-info-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-info-400")}>
                       {formatCurrency(profile.revenue)}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Calendar Rules</div>
-                    <div className={cn("text-base font-bold text-wl-warning-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-base font-bold font-mono text-wl-warning-400")}>
                       {profile.calendarRules}
                     </div>
                   </div>
+
                 </div>
               </Card>
             ))}
@@ -463,9 +481,10 @@ export default function ShippingProfilesPage() {
                     <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-2")}>
                       Description
                     </div>
-                    <div className={cn("text-sm text-wl-text-primary")} style={{ lineHeight: 1.5 }}>
+                    <div className={cn("text-sm text-wl-text-primary leading-relaxed")}>
                       {selectedProfile.description}
                     </div>
+
                   </div>
                 )}
 
@@ -502,28 +521,41 @@ export default function ShippingProfilesPage() {
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Flat Rate</div>
-                      <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: selectedProfile.flatRate && selectedProfile.flatRate > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}>
+                      <div className={cn(
+                        "text-base font-bold font-mono",
+                        selectedProfile.flatRate && selectedProfile.flatRate > 0 ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                      )}>
                         {selectedProfile.flatRate !== null ? (selectedProfile.flatRate > 0 ? formatCurrency(selectedProfile.flatRate) : "FREE") : "—"}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Free Shipping Above</div>
-                      <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: selectedProfile.freeShippingAbove ? "var(--wl-success-400)" : "var(--wl-text-tertiary)" }}>
+                      <div className={cn(
+                        "text-base font-bold font-mono",
+                        selectedProfile.freeShippingAbove ? "text-wl-success-400" : "text-wl-text-tertiary"
+                      )}>
                         {selectedProfile.freeShippingAbove ? formatCurrency(selectedProfile.freeShippingAbove) : "—"}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Min Order Amount</div>
-                      <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: selectedProfile.minOrderAmount ? "var(--wl-text-primary)" : "var(--wl-text-tertiary)" }}>
+                      <div className={cn(
+                        "text-base font-bold font-mono",
+                        selectedProfile.minOrderAmount ? "text-wl-text-primary" : "text-wl-text-tertiary"
+                      )}>
                         {selectedProfile.minOrderAmount ? formatCurrency(selectedProfile.minOrderAmount) : "—"}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Processing Time</div>
-                      <div className={cn("text-base font-bold text-wl-text-primary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <div className={cn("text-base font-bold font-mono text-wl-text-primary")}>
                         {selectedProfile.processingTimeHours}h
                       </div>
                     </div>
+
                   </div>
                 </div>
 
@@ -536,9 +568,10 @@ export default function ShippingProfilesPage() {
                   </div>
                   <div className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-lg p-3 flex flex-col gap-2")}>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("text-sm font-bold text-wl-primary-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <div className={cn("text-sm font-bold font-mono text-wl-primary-400")}>
                         {selectedProfile.linkedLocations}
                       </div>
+
                       <div className={cn("text-sm text-wl-text-secondary")}>
                         location{selectedProfile.linkedLocations !== 1 ? "s" : ""} active
                       </div>
@@ -566,22 +599,25 @@ export default function ShippingProfilesPage() {
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Shipments</div>
-                      <div className={cn("text-lg font-bold text-wl-success-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-success-400")}>
                         {selectedProfile.totalShipments}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Revenue</div>
-                      <div className={cn("text-lg font-bold text-wl-info-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-info-400")}>
                         {formatCurrency(selectedProfile.revenue)}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Calendar Rules</div>
-                      <div className={cn("text-lg font-bold text-wl-warning-400")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-warning-400")}>
                         {selectedProfile.calendarRules}
                       </div>
                     </div>
+
                   </div>
                 </div>
 

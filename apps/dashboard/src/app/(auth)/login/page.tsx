@@ -90,16 +90,7 @@ function LoginPageInner() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-wl-bg">
         <div className="flex flex-col items-center gap-4">
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              border: "2px solid var(--wl-border)",
-              borderTopColor: "var(--wl-primary)",
-              animation: "spin 1s linear infinite",
-            }}
-          />
+          <div className="w-12 h-12 rounded-full border-2 border-wl-border border-t-wl-primary animate-spin" />
           <p className="text-wl-text">Loading...</p>
         </div>
       </div>
@@ -147,11 +138,9 @@ function LoginPageInner() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 emailError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -200,11 +189,9 @@ function LoginPageInner() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 passwordError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -229,21 +216,18 @@ function LoginPageInner() {
         {/* Remember Me & Forgot Password */}
         <div className="flex items-center justify-between text-sm">
           <label
-            className="flex items-center gap-2 cursor-pointer text-wl-text-secondary select-none"
-            style={{
-              opacity: isLoading ? 0.6 : 1,
-              pointerEvents: isLoading ? "none" : "auto",
-            }}
+            className={cn(
+              "flex items-center gap-2 cursor-pointer text-wl-text-secondary select-none",
+              isLoading && "opacity-60 pointer-events-none"
+            )}
           >
             <input
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               disabled={isLoading}
+              className={cn(isLoading && "cursor-not-allowed")}
               style={{
-                width: 16,
-                height: 16,
-                cursor: isLoading ? "not-allowed" : "pointer",
                 accentColor: "var(--wl-primary-500)",
               }}
             />
@@ -251,11 +235,10 @@ function LoginPageInner() {
           </label>
           <Link
             href="/forgot-password"
-            className="text-wl-primary-400 no-underline transition-colors"
-            style={{
-              pointerEvents: isLoading ? "none" : "auto",
-              opacity: isLoading ? 0.6 : 1,
-            }}
+            className={cn(
+              "text-wl-primary-400 no-underline transition-colors",
+              isLoading && "opacity-60 pointer-events-none"
+            )}
             onMouseEnter={(e) => {
               if (!isLoading) {
                 (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
@@ -273,12 +256,7 @@ function LoginPageInner() {
 
         {/* Error Message */}
         {error && (
-          <div
-            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
-            style={{
-              animation: "wl-fade-in 300ms var(--wl-ease-default) both",
-            }}
-          >
+          <div className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400 animate-in">
             {error}
           </div>
         )}
@@ -287,13 +265,14 @@ function LoginPageInner() {
         <button
           type="submit"
           disabled={isLoading}
-          className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+          className={cn(
+            "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-80 cursor-not-allowed"
+          )}
           style={{
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            cursor: isLoading ? "not-allowed" : "pointer",
-            opacity: isLoading ? 0.8 : 1,
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
           onMouseEnter={(e) => {
@@ -324,7 +303,7 @@ function LoginPageInner() {
       </form>
 
       {/* Demo Credentials Hint */}
-      <div className="p-3 rounded-lg bg-opacity-5 border border-opacity-15 text-xs text-wl-text-tertiary bg-blue-400 border-blue-400" style={{ lineHeight: 1.6 }}>
+      <div className="p-3 rounded-lg bg-opacity-5 border border-opacity-15 text-xs text-wl-text-tertiary bg-blue-400 border-blue-400 leading-relaxed">
         Demo credentials: <span className="text-wl-text-secondary font-semibold">demo@witylogix.com</span> / <span className="text-wl-text-secondary font-semibold">demo123</span>
       </div>
 
@@ -333,11 +312,10 @@ function LoginPageInner() {
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="text-wl-primary-400 no-underline font-semibold transition-colors"
-          style={{
-            pointerEvents: isLoading ? "none" : "auto",
-            opacity: isLoading ? 0.6 : 1,
-          }}
+          className={cn(
+            "text-wl-primary-400 no-underline font-semibold transition-colors",
+            isLoading && "opacity-60 pointer-events-none"
+          )}
           onMouseEnter={(e) => {
             if (!isLoading) {
               (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
@@ -358,7 +336,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
       <LoginPageInner />
     </Suspense>
   );

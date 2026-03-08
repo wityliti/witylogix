@@ -133,7 +133,8 @@ export interface CollectionData {
   shopId: string;
   title: string;
   handle: string;
-  shopifyId?: string;
+  externalId?: string;
+  source?: string;
   productIds: string[];
   sortOrder: number;
   createdAt: Date;

@@ -4,6 +4,24 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.5 — WooCommerce Integration, TODO Cleanup & Final Tailwind Push (2026-03-08)
+
+#### Added
+
+- **ADR-015** — WooCommerce integration architecture (1,761 lines) with data mapping tables, sequence diagrams, and 4-phase implementation plan (`docs/adr/ADR-015-woocommerce-integration.md`)
+- **Platform adapter system** — `PlatformAdapter` interface (713 lines), adapter registry with factory pattern, lazy loading, singleton caching (`packages/core/src/platforms/`)
+- **WooCommerce adapter** — REST API v3 integration: HMAC-SHA256 webhook validation, order/product/customer mapping, paginated fetch (`packages/core/src/platforms/adapters/woocommerce.ts`)
+- **Shopify adapter** — REST Admin API adapter implementing same PlatformAdapter interface (`packages/core/src/platforms/adapters/shopify.ts`)
+- **WooCommerce webhook consumer** — BullMQ consumer for order/product lifecycle events with source='WOOCOMMERCE' (`packages/core/src/queue/consumers/woocommerce-webhook.ts`)
+- **WooCommerce webhook route** — POST `/api/v4/webhooks/woocommerce` with HMAC validation, topic routing, async processing (`apps/api/src/routes/woocommerce-webhooks.ts`)
+- **4 test suites** — platform-adapter (932 lines), workflow platform abstraction (997 lines), campaign channel dispatch (812 lines), event-bus DLQ (881 lines) — 93+ total
+
+#### Changed
+
+- **Platform abstraction Phase 2** — `shopifyOrderId` → `externalOrderId` in workflow-integration types/index/hooks, `shopifyId` → `externalId` in inventory types, backward-compatible migration transformers
+- **TODO stub cleanup (10→2)** — route optimization BullMQ dispatch, collections Shopify GraphQL sync, integration-worker sync/webhook logic, campaign dispatcher → orchestrator integration, event-bus DLQ tracking, notification orchestrator/worker provider name tracking, campaign scheduler channel-based rate limits
+- **11 dashboard pages migrated to Tailwind CSS** (88 total) — drivers (76→8), onboarding (73→1), shipping-profiles (24→3), locations (17→4), admin (16→14), register (15→9), inventory (13→1), login (12→4), admin/customers (11→3), delivery (10→4), forgot-password (10→1)
+
 ### Sprint 3.4 — Platform Source Abstraction & Competitive Intelligence (2026-03-08)
 
 #### Added

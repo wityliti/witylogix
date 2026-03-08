@@ -19,6 +19,7 @@ import { paginationSchema, optimizeRouteSchema } from "@witylogix/validators";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
+import { getOptimizationQueue } from "../lib/queue.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -270,12 +271,24 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
       throw new ValidationError("Route must have at least 2 stops to optimize");
     }
 
-    // TODO: Dispatch to BullMQ optimization queue
-    // await optimizationQueue.add('optimize-route', {
-    //   shopId: request.shopId, routeId: id,
-    // });
+    // Dispatch to BullMQ optimization queue
+    const queue = getOptimizationQueue();
+    await queue.add(
+      "optimize",
+      {
+        shopId: request.shopId,
+        routeId: id,
+        depot: { lat: 0, lng: 0 }, // Default depot — should come from shop settings
+        orderIds: route.stops.map((s) => s.orderId).filter(Boolean) as string[],
+        vehicleIds: route.driverId ? [route.driverId] : [],
+      },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 2000 },
+      },
+    );
 
-    // For now, mark as optimized (the worker will update with actual results)
+    // Mark as optimized (the worker will update with actual results)
     await request.tenantDb.route.update({
       where: { id },
       data: { status: "OPTIMIZED" },

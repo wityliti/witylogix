@@ -291,7 +291,14 @@ export class NotificationOrchestrator {
       );
 
       if (result.success) {
-        return result;
+        // Attach provider name to successful result
+        return {
+          ...result,
+          providerResponse: {
+            ...(typeof result.providerResponse === 'object' ? result.providerResponse : {}),
+            providerName: providerName,
+          },
+        };
       }
 
       // Provider failed, log and continue to next
@@ -394,13 +401,20 @@ export class NotificationOrchestrator {
     try {
       const { prisma } = await import("@witylogix/db");
 
+      // Extract provider name from result metadata
+      let providerName = "";
+      if (result.providerResponse && typeof result.providerResponse === "object") {
+        const providerResponse = result.providerResponse as Record<string, unknown>;
+        providerName = (providerResponse.providerName as string) || "";
+      }
+
       await (prisma as any).notificationLog.create({
         data: {
           shopId,
           templateId,
           channel,
           recipient,
-          providerName: "", // TODO: track provider from result metadata
+          providerName,
           messageId: result.messageId,
           status: result.success ? "SENT" : "FAILED",
           error: result.error,

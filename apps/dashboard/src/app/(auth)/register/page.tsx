@@ -140,15 +140,13 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center min-h-screen bg-wl-bg">
         <div className="flex flex-col items-center gap-4">
           <div
+            className="w-12 h-12 rounded-full border-2 border-wl-border"
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              border: "2px solid var(--wl-border)",
               borderTopColor: "var(--wl-primary)",
               animation: "spin 1s linear infinite",
             }}
           />
+
           <p className="text-wl-text">Loading...</p>
         </div>
       </div>
@@ -196,11 +194,10 @@ export default function RegisterPage() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 nameError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
+
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = nameError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -249,11 +246,10 @@ export default function RegisterPage() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 emailError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
+
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -302,11 +298,10 @@ export default function RegisterPage() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 companyError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
+
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = companyError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -355,11 +350,10 @@ export default function RegisterPage() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 passwordError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
+
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -387,12 +381,16 @@ export default function RegisterPage() {
                 {[...Array(5)].map((_, i) => (
                   <div
                     key={i}
-                    className="flex-1 h-1 rounded-full transition-all"
+                    className={cn(
+                      "flex-1 h-1 rounded-full transition-all",
+                      i < strength.score ? "bg-current" : "bg-wl-border"
+                    )}
                     style={{
-                      background: i < strength.score ? strength.color : "var(--wl-border)",
+                      backgroundColor: i < strength.score ? strength.color : undefined,
                     }}
                   />
                 ))}
+
               </div>
               <span
                 className="text-xs font-medium"
@@ -402,6 +400,7 @@ export default function RegisterPage() {
               >
                 {strength.label} password
               </span>
+
             </div>
           )}
         </div>
@@ -441,12 +440,13 @@ export default function RegisterPage() {
                   ? "border-wl-danger-500 border-1.5"
                   : confirmPassword && password === confirmPassword
                     ? "border-wl-success-500"
-                    : "border-wl-border-default"
+                    : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
               style={{
-                opacity: isLoading ? 0.6 : 1,
                 paddingRight: confirmPassword && password === confirmPassword ? 44 : "var(--wl-space-3)",
               }}
+
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor =
@@ -474,12 +474,12 @@ export default function RegisterPage() {
         {/* Terms & Conditions */}
         <div className="flex flex-col gap-2">
           <label
-            className="flex items-start gap-2 text-sm text-wl-text-secondary select-none"
-            style={{
-              cursor: isLoading ? "not-allowed" : "pointer",
-              opacity: isLoading ? 0.6 : 1,
-            }}
+            className={cn(
+              "flex items-start gap-2 text-sm text-wl-text-secondary select-none cursor-pointer",
+              isLoading && "opacity-60 cursor-not-allowed"
+            )}
           >
+
             <input
               type="checkbox"
               checked={agreeTerms}
@@ -488,15 +488,13 @@ export default function RegisterPage() {
                 setTermsError("");
               }}
               disabled={isLoading}
+              className="w-4 h-4 mt-0.5 flex-shrink-0"
               style={{
-                width: 16,
-                height: 16,
-                marginTop: 2,
-                cursor: isLoading ? "not-allowed" : "pointer",
                 accentColor: "var(--wl-primary-500)",
-                flexShrink: 0,
+                cursor: isLoading ? "not-allowed" : "pointer",
               }}
             />
+
             <span>
               I agree to the{" "}
               <a
@@ -524,7 +522,7 @@ export default function RegisterPage() {
         {/* Error Message */}
         {error && (
           <div
-            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
+            className="p-3 rounded-lg bg-wl-danger-400/10 border border-wl-danger-400/20 text-sm text-wl-danger-400"
             style={{
               animation: "wl-fade-in 300ms var(--wl-ease-default) both",
             }}
@@ -533,19 +531,22 @@ export default function RegisterPage() {
           </div>
         )}
 
+
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+          className={cn(
+            "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer"
+          )}
           style={{
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            cursor: isLoading ? "not-allowed" : "pointer",
-            opacity: isLoading ? 0.8 : 1,
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
+
           onMouseEnter={(e) => {
             if (!isLoading) {
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
@@ -578,11 +579,10 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-wl-primary-400 no-underline font-semibold transition-colors"
-          style={{
-            pointerEvents: isLoading ? "none" : "auto",
-            opacity: isLoading ? 0.6 : 1,
-          }}
+          className={cn(
+            "text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300",
+            isLoading && "opacity-60 pointer-events-none"
+          )}
           onMouseEnter={(e) => {
             if (!isLoading) {
               (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
@@ -597,6 +597,7 @@ export default function RegisterPage() {
           Sign in
         </Link>
       </div>
+
     </div>
   );
 }

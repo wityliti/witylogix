@@ -130,13 +130,20 @@ async function logDeliveryAttempt(
   try {
     const db = forTenant(shopId);
 
+    // Extract provider name from result metadata
+    let providerName = "";
+    if (result.providerResponse && typeof result.providerResponse === "object") {
+      const providerResponse = result.providerResponse as Record<string, unknown>;
+      providerName = (providerResponse.providerName as string) || "";
+    }
+
     await (db as any).notificationLog.create({
       data: {
         shopId,
         channel,
         templateId,
         recipient,
-        providerName: "", // TODO: track provider name from result metadata
+        providerName,
         messageId: result.messageId,
         status: result.success ? "SENT" : "FAILED",
         error: result.error,

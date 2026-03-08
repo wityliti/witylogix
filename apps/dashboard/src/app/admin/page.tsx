@@ -180,11 +180,9 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
 
   return (
     <div
-      className="grid gap-4 mb-6"
-      style={{
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-      }}
+      className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]"
     >
+
       {[
         { label: "Total Stores", value: totalStores.toString(), icon: ShoppingCart, color: "#6366f1" },
         { label: "Active Stores", value: activeStores.toString(), icon: CheckCircle2, color: "#10b981" },
@@ -201,6 +199,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
           >
+
             <CardContent className="p-4 flex gap-3 items-start">
               <div
                 className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
@@ -208,6 +207,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
                   backgroundColor: metric.color + "15",
                 }}
               >
+
                 <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
               </div>
               <div className="flex-1">
@@ -247,11 +247,9 @@ const SystemHealth = () => {
       </CardHeader>
       <CardContent>
         <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          }}
+          className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]"
         >
+
           {metrics.map((metric, idx) => {
             const Icon = metric.icon;
             return (
@@ -262,6 +260,7 @@ const SystemHealth = () => {
                     backgroundColor: metric.status === "healthy" ? "#10b98115" : "#f59e0b15",
                   }}
                 >
+
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
                 </div>
                 <div>
@@ -386,6 +385,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                     (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
                   }}
                 >
+
                   <td className="p-3">
                     <Link
                       href={`/admin/shops/${store.id}`}
@@ -407,6 +407,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >
+
                       {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
                     </Badge>
                   </td>
@@ -432,7 +433,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                   </td>
                   <td className="p-3 text-center">
                     <button
-                      className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200"
+                      className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary"
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-primary)";
                       }}
@@ -440,6 +441,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                         (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-secondary)";
                       }}
                     >
+
                       <MoreVertical style={{ width: "16px", height: "16px" }} />
                     </button>
                   </td>

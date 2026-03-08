@@ -415,7 +415,7 @@ export default function DeliveryPage() {
               <Card className={cn("bg-[rgba(245,166,35,0.08)]")} style={{ borderColor: "var(--wl-primary-500)" }}>
                 <CardContent>
                   <div className={cn("flex items-center justify-between")}>
-                    <span style={{ color: "var(--wl-text-secondary)" }}>
+                    <span className="text-wl-text-secondary">
                       {selectedOrders.size} order{selectedOrders.size !== 1 ? "s" : ""} selected
                     </span>
                     <div className={cn("flex gap-2")}>
@@ -452,7 +452,7 @@ export default function DeliveryPage() {
                             onChange={() => toggleOrderSelection(order.id)}
                             className={cn("cursor-pointer")}
                           />
-                          <span className={cn("font-semibold")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                          <span className={cn("font-semibold font-mono")}>
                             {order.orderNumber}
                           </span>
                         </div>
@@ -466,7 +466,7 @@ export default function DeliveryPage() {
                       align: "center" as const,
                       width: "80px",
                       render: (order) => (
-                        <span style={{ fontFamily: "var(--wl-font-mono)" }}>
+                        <span className="font-mono">
                           {order.items}
                         </span>
                       ),
@@ -477,7 +477,7 @@ export default function DeliveryPage() {
                       align: "center" as const,
                       width: "100px",
                       render: (order) => (
-                        <span style={{ fontFamily: "var(--wl-font-mono)" }}>
+                        <span className="font-mono">
                           {order.weight.toFixed(1)}
                         </span>
                       ),
@@ -529,7 +529,7 @@ export default function DeliveryPage() {
               <Card
                 key={delivery.id}
                 hover
-                className="wl-animate-in"
+                className="animate-in"
                 style={{
                   animationDelay: `${i * 60}ms`,
                 }}
@@ -570,7 +570,7 @@ export default function DeliveryPage() {
                       <span className={cn("text-xs text-wl-text-secondary")}>
                         Progress
                       </span>
-                      <span className={cn("text-xs font-semibold text-wl-text-primary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <span className={cn("text-xs font-semibold text-wl-text-primary font-mono")}>
                         {delivery.stopsCompleted} / {delivery.stopsTotal}
                       </span>
                     </div>
@@ -730,7 +730,7 @@ export default function DeliveryPage() {
                     align: "center" as const,
                     width: "80px",
                     render: (exception) => (
-                      <span className={cn("font-semibold")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                      <span className={cn("font-semibold font-mono")}>
                         {exception.attempts}
                       </span>
                     ),

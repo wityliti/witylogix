@@ -123,12 +123,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="flex flex-col gap-6 text-center">
         {/* Success Icon */}
-        <div
-          className="flex justify-center"
-          style={{
-            animation: "wl-scale-in 600ms var(--wl-ease-spring) both",
-          }}
-        >
+        <div className="flex justify-center animate-in scale-in-95">
           <div className="flex items-center justify-center w-16 h-16 rounded-full border-2 bg-opacity-10 bg-wl-success-500 border-wl-success-500">
             <CheckCircle2 size={36} color="var(--wl-success-500)" />
           </div>
@@ -139,7 +134,7 @@ export default function ForgotPasswordPage() {
           <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
             Check your email
           </h2>
-          <p className="text-sm text-wl-text-tertiary" style={{ lineHeight: 1.6 }}>
+          <p className="text-sm text-wl-text-tertiary leading-relaxed">
             We&apos;ve sent password reset instructions to{" "}
             <span className="text-wl-text-secondary font-semibold">
               {email}
@@ -149,21 +144,13 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Additional Info */}
-        <div
-          className="p-4 rounded-lg text-xs text-wl-text-tertiary bg-opacity-5 border border-opacity-15 bg-blue-400 border-blue-400"
-          style={{ lineHeight: 1.6 }}
-        >
+        <div className="p-4 rounded-lg text-xs text-wl-text-tertiary bg-opacity-5 border border-opacity-15 bg-blue-400 border-blue-400 leading-relaxed">
           Didn&apos;t receive the email? Check your spam folder or resend below.
         </div>
 
         {/* Error Message */}
         {error && (
-          <div
-            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
-            style={{
-              animation: "wl-fade-in 300ms var(--wl-ease-default) both",
-            }}
-          >
+          <div className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400 animate-in">
             {error}
           </div>
         )}
@@ -172,13 +159,11 @@ export default function ForgotPasswordPage() {
         <button
           onClick={handleResendEmail}
           disabled={isLoading || countdown > 0}
-          className="py-3 px-4 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 transition-all border-wl-border-default"
-          style={{
-            background: countdown > 0 ? "var(--wl-bg-surface)" : "var(--wl-primary-500)",
-            color: countdown > 0 ? "var(--wl-text-muted)" : "var(--wl-text-inverse)",
-            cursor: isLoading || countdown > 0 ? "not-allowed" : "pointer",
-            opacity: isLoading || countdown > 0 ? 0.6 : 1,
-          }}
+          className={cn(
+            "py-3 px-4 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 transition-all border-wl-border-default",
+            countdown > 0 ? "bg-wl-bg-surface text-wl-text-muted" : "bg-wl-primary-500 text-wl-text-inverse",
+            (isLoading || countdown > 0) && "opacity-60 cursor-not-allowed"
+          )}
           onMouseEnter={(e) => {
             if (!isLoading && countdown === 0) {
               (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-primary-600)";
@@ -194,7 +179,7 @@ export default function ForgotPasswordPage() {
         >
           {isLoading ? (
             <>
-              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader2 size={16} className="animate-spin" />
               Sending...
             </>
           ) : countdown > 0 ? (
@@ -207,15 +192,7 @@ export default function ForgotPasswordPage() {
         {/* Back to Login */}
         <Link
           href="/login"
-          className="py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold no-underline flex items-center justify-center gap-2 transition-all cursor-pointer"
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--wl-primary-500)";
-            (e.currentTarget as HTMLAnchorElement).style.background = "var(--wl-bg-overlay)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--wl-border-default)";
-            (e.currentTarget as HTMLAnchorElement).style.background = "var(--wl-bg-surface)";
-          }}
+          className="py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold no-underline flex items-center justify-center gap-2 transition-all cursor-pointer hover:border-wl-primary-500 hover:bg-wl-bg-overlay"
         >
           Back to sign in
           <ArrowRight size={16} />
@@ -265,11 +242,9 @@ export default function ForgotPasswordPage() {
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
                 emailError
                   ? "border-wl-danger-500 border-1.5"
-                  : "border-wl-border-default"
+                  : "border-wl-border-default",
+                isLoading && "opacity-60"
               )}
-              style={{
-                opacity: isLoading ? 0.6 : 1,
-              }}
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
@@ -293,12 +268,7 @@ export default function ForgotPasswordPage() {
 
         {/* Error Message */}
         {error && (
-          <div
-            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
-            style={{
-              animation: "wl-fade-in 300ms var(--wl-ease-default) both",
-            }}
-          >
+          <div className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400 animate-in">
             {error}
           </div>
         )}
@@ -307,13 +277,14 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+          className={cn(
+            "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-80 cursor-not-allowed"
+          )}
           style={{
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            cursor: isLoading ? "not-allowed" : "pointer",
-            opacity: isLoading ? 0.8 : 1,
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
           onMouseEnter={(e) => {
@@ -331,7 +302,7 @@ export default function ForgotPasswordPage() {
         >
           {isLoading ? (
             <>
-              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader2 size={16} className="animate-spin" />
               Sending reset link...
             </>
           ) : (
@@ -348,13 +319,7 @@ export default function ForgotPasswordPage() {
         Remember your password?{" "}
         <Link
           href="/login"
-          className="text-wl-primary-400 no-underline font-semibold transition-colors"
-          onMouseEnter={(e) => {
-            (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
-          }}
+          className="text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300"
         >
           Sign in
         </Link>

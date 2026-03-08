@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, CSSProperties } from "react";
+import { useState } from "react";
 import { cn } from "../../lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -164,11 +164,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const containerStyle: CSSProperties = {
-    width: "100%",
-    maxWidth: "700px",
-  };
-
   return (
     <div className="w-full max-w-2xl mx-auto">
       {/* Progress Bar */}
@@ -191,11 +186,9 @@ export default function OnboardingPage() {
                     'w-11 h-11 rounded-full flex items-center justify-center mb-2 font-semibold',
                     isCompleted || isActive
                       ? 'bg-indigo-500 text-slate-50'
-                      : 'bg-slate-700 text-slate-400 border border-slate-600'
+                      : 'bg-slate-700 text-slate-400 border border-slate-600',
+                    isActive && !isCompleted && 'border-2 border-indigo-500'
                   )}
-                  style={{
-                    ...(isActive && !isCompleted ? { borderWidth: '2px', borderColor: '#6366f1' } : {})
-                  }}
                 >
                   {isCompleted ? (
                     <Check size={20} />
@@ -219,7 +212,7 @@ export default function OnboardingPage() {
         {/* Progress Line */}
         <div className="w-full h-0.5 bg-slate-700 rounded overflow-hidden">
           <div
-            className="h-full bg-indigo-500 transition-all"
+            className="h-full bg-indigo-500 transition-all duration-300"
             style={{
               width: `${((currentStep - 1) / 4) * 100}%`,
             }}
@@ -272,15 +265,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Business Size
                 </label>
                 <div className="flex gap-3 flex-wrap">
@@ -301,23 +286,8 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  marginTop: "var(--wl-space-6)",
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "rgba(108, 99, 255, 0.05)",
-                  borderLeft: "3px solid var(--wl-primary)",
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
-                >
+              <div className="mt-6 p-4 rounded-md bg-indigo-500/5 border-l-3 border-indigo-500">
+                <p className="m-0 text-xs text-slate-400 leading-relaxed">
                   This information helps us personalize your Witylogix experience and provide relevant features for your business type.
                 </p>
               </div>
@@ -326,47 +296,18 @@ export default function OnboardingPage() {
 
           {/* Step 2: Shopify Connection */}
           {currentStep === 2 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-5)",
-                flex: 1,
-              }}
-            >
+            <div className="flex flex-col gap-5 flex-1">
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Shopify Store URL
                 </label>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-2)",
-                  }}
-                >
+                <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="mystore.myshopify.com"
                     value={data.shopifyStoreUrl}
                     onChange={(e) => updateData("shopifyStoreUrl", e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border)",
-                      background: "var(--wl-surface)",
-                      color: "var(--wl-text)",
-                      fontSize: "var(--wl-text-sm)",
-                      boxSizing: "border-box",
-                    }}
+                    className="flex-1 px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                   />
                   <button
                     onClick={() => {
@@ -375,20 +316,12 @@ export default function OnboardingPage() {
                       }
                     }}
                     disabled={!data.shopifyStoreUrl.trim() || data.shopifyConnected}
-                    style={{
-                      padding: "var(--wl-space-2) var(--wl-space-4)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-primary)",
-                      background: data.shopifyConnected
-                        ? "var(--wl-primary)"
-                        : "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-                      color: "var(--wl-text-inverse)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      cursor: data.shopifyConnected ? "default" : "pointer",
-                      opacity: data.shopifyConnected ? 0.7 : 1,
-                      whiteSpace: "nowrap",
-                    }}
+                    className={cn(
+                      "px-4 py-2 rounded text-sm font-semibold whitespace-nowrap transition-all",
+                      data.shopifyConnected
+                        ? "border border-indigo-500 bg-indigo-500 text-slate-50 opacity-70 cursor-default"
+                        : "border border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 cursor-pointer hover:shadow-lg"
+                    )}
                   >
                     {data.shopifyConnected ? "Connected" : "Connect"}
                   </button>
@@ -396,53 +329,18 @@ export default function OnboardingPage() {
               </div>
 
               {data.shopifyConnected && (
-                <div
-                  style={{
-                    padding: "var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    background: "rgba(34, 197, 94, 0.05)",
-                    borderLeft: "3px solid #22c55e",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "var(--wl-text-sm)",
-                      color: "#22c55e",
-                      fontWeight: 500,
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                <div className="p-4 rounded-md bg-green-500/5 border-l-3 border-green-500">
+                  <p className="m-0 text-sm font-medium text-green-400 mb-2">
                     ✓ Store connected successfully!
                   </p>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "var(--wl-text-xs)",
-                      color: "var(--wl-text-muted)",
-                    }}
-                  >
+                  <p className="m-0 text-xs text-slate-400">
                     Your Shopify store is now linked to Witylogix. We can now sync your products and orders.
                   </p>
                 </div>
               )}
 
-              <div
-                style={{
-                  marginTop: "auto",
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "var(--wl-surface)",
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
-                >
+              <div className="mt-auto p-4 rounded-md bg-slate-800">
+                <p className="m-0 text-xs text-slate-400 leading-relaxed">
                   We securely connect to your Shopify store to sync products, orders, and customer data. You can skip this for now and connect later from Settings.
                 </p>
               </div>
@@ -451,84 +349,29 @@ export default function OnboardingPage() {
 
           {/* Step 3: Delivery Zones */}
           {currentStep === 3 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-5)",
-                flex: 1,
-              }}
-            >
+            <div className="flex flex-col gap-5 flex-1">
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 500,
-                      color: "var(--wl-text)",
-                    }}
-                  >
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-sm font-medium text-slate-100">
                     Delivery Zones
                   </label>
                   <button
                     onClick={handleAddZone}
-                    style={{
-                      padding: "var(--wl-space-1) var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-sm)",
-                      border: "1px solid var(--wl-primary)",
-                      background: "transparent",
-                      color: "var(--wl-primary)",
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
+                    className="px-3 py-1 rounded text-xs font-semibold border border-indigo-500 bg-transparent text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer"
                   >
                     + Add Zone
                   </button>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "var(--wl-space-4)",
-                  }}
-                >
+                <div className="flex flex-col gap-4">
                   {data.zones.map((zone) => (
                     <div
                       key={zone.id}
-                      style={{
-                        padding: "var(--wl-space-4)",
-                        borderRadius: "var(--wl-radius-md)",
-                        border: "1px solid var(--wl-border)",
-                        background: "var(--wl-surface)",
-                      }}
+                      className="p-4 rounded-md border border-slate-700 bg-slate-900"
                     >
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr auto",
-                          gap: "var(--wl-space-3)",
-                          alignItems: "flex-end",
-                        }}
-                      >
+                      <div className="grid grid-cols-2 gap-3 items-end auto-rows-max">
                         <div>
-                          <label
-                            style={{
-                              display: "block",
-                              fontSize: "var(--wl-text-xs)",
-                              fontWeight: 500,
-                              color: "var(--wl-text-muted)",
-                              marginBottom: "var(--wl-space-1)",
-                            }}
-                          >
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
                             Zone Name
                           </label>
                           <input
@@ -536,28 +379,11 @@ export default function OnboardingPage() {
                             placeholder="e.g., Downtown"
                             value={zone.name}
                             onChange={(e) => updateZone(zone.id, "name", e.target.value)}
-                            style={{
-                              width: "100%",
-                              padding: "var(--wl-space-2) var(--wl-space-3)",
-                              borderRadius: "var(--wl-radius-sm)",
-                              border: "1px solid var(--wl-border)",
-                              background: "var(--wl-bg)",
-                              color: "var(--wl-text)",
-                              fontSize: "var(--wl-text-sm)",
-                              boxSizing: "border-box",
-                            }}
+                            className="w-full px-3 py-2 rounded text-sm border border-slate-700 bg-slate-800 text-slate-100"
                           />
                         </div>
                         <div>
-                          <label
-                            style={{
-                              display: "block",
-                              fontSize: "var(--wl-text-xs)",
-                              fontWeight: 500,
-                              color: "var(--wl-text-muted)",
-                              marginBottom: "var(--wl-space-1)",
-                            }}
-                          >
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
                             Radius (km)
                           </label>
                           <input
@@ -565,31 +391,13 @@ export default function OnboardingPage() {
                             placeholder="5"
                             value={zone.radius}
                             onChange={(e) => updateZone(zone.id, "radius", e.target.value)}
-                            style={{
-                              width: "100%",
-                              padding: "var(--wl-space-2) var(--wl-space-3)",
-                              borderRadius: "var(--wl-radius-sm)",
-                              border: "1px solid var(--wl-border)",
-                              background: "var(--wl-bg)",
-                              color: "var(--wl-text)",
-                              fontSize: "var(--wl-text-sm)",
-                              boxSizing: "border-box",
-                            }}
+                            className="w-full px-3 py-2 rounded text-sm border border-slate-700 bg-slate-800 text-slate-100"
                           />
                         </div>
                         {data.zones.length > 1 && (
                           <button
                             onClick={() => handleRemoveZone(zone.id)}
-                            style={{
-                              padding: "var(--wl-space-2) var(--wl-space-3)",
-                              borderRadius: "var(--wl-radius-sm)",
-                              border: "1px solid var(--wl-border)",
-                              background: "transparent",
-                              color: "var(--wl-text-muted)",
-                              fontSize: "var(--wl-text-sm)",
-                              cursor: "pointer",
-                              whiteSpace: "nowrap",
-                            }}
+                            className="col-span-2 px-3 py-2 rounded text-sm border border-slate-700 bg-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors cursor-pointer whitespace-nowrap"
                           >
                             Remove
                           </button>
@@ -600,22 +408,8 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  marginTop: "auto",
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "var(--wl-surface)",
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
-                >
+              <div className="mt-auto p-4 rounded-md bg-slate-800">
+                <p className="m-0 text-xs text-slate-400 leading-relaxed">
                   Define geographic zones where you'll deliver. You can draw custom service areas later in the map settings.
                 </p>
               </div>
@@ -624,24 +418,9 @@ export default function OnboardingPage() {
 
           {/* Step 4: First Driver */}
           {currentStep === 4 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-5)",
-                flex: 1,
-              }}
-            >
+            <div className="flex flex-col gap-5 flex-1">
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Driver Name
                 </label>
                 <input
@@ -649,29 +428,12 @@ export default function OnboardingPage() {
                   placeholder="Enter driver's name"
                   value={data.driverName}
                   onChange={(e) => updateData("driverName", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "var(--wl-surface)",
-                    color: "var(--wl-text)",
-                    fontSize: "var(--wl-text-sm)",
-                    boxSizing: "border-box",
-                  }}
+                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                 />
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Phone Number
                 </label>
                 <input
@@ -679,44 +441,18 @@ export default function OnboardingPage() {
                   placeholder="+1 (555) 123-4567"
                   value={data.driverPhone}
                   onChange={(e) => updateData("driverPhone", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "var(--wl-surface)",
-                    color: "var(--wl-text)",
-                    fontSize: "var(--wl-text-sm)",
-                    boxSizing: "border-box",
-                  }}
+                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                 />
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Vehicle Type
                 </label>
                 <select
                   value={data.vehicleType}
                   onChange={(e) => updateData("vehicleType", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "var(--wl-surface)",
-                    color: "var(--wl-text)",
-                    fontSize: "var(--wl-text-sm)",
-                    boxSizing: "border-box",
-                  }}
+                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                 >
                   <option value="bike">Bike</option>
                   <option value="scooter">Scooter</option>
@@ -726,22 +462,8 @@ export default function OnboardingPage() {
                 </select>
               </div>
 
-              <div
-                style={{
-                  marginTop: "auto",
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "var(--wl-surface)",
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
-                >
+              <div className="mt-auto p-4 rounded-md bg-slate-800">
+                <p className="m-0 text-xs text-slate-400 leading-relaxed">
                   You can add more drivers after onboarding. We'll send a welcome email to your driver with login instructions.
                 </p>
               </div>
@@ -750,178 +472,51 @@ export default function OnboardingPage() {
 
           {/* Step 5: Review & Launch */}
           {currentStep === 5 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-5)",
-                flex: 1,
-              }}
-            >
-              <div
-                style={{
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "rgba(108, 99, 255, 0.05)",
-                  borderLeft: "3px solid var(--wl-primary)",
-                }}
-              >
-                <h3
-                  style={{
-                    margin: "0 0 var(--wl-space-3) 0",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 600,
-                    color: "var(--wl-text)",
-                  }}
-                >
+            <div className="flex flex-col gap-5 flex-1">
+              <div className="p-4 rounded-md bg-indigo-500/5 border-l-3 border-indigo-500">
+                <h3 className="m-0 mb-3 text-sm font-semibold text-slate-100">
                   Review Your Setup
                 </h3>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
-                >
+                <p className="m-0 text-xs text-slate-400 leading-relaxed">
                   Everything looks good! Review the details below and launch your dashboard.
                 </p>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "var(--wl-space-4)",
-                }}
-              >
+              <div className="flex flex-col gap-4">
                 {/* Business Info */}
-                <div
-                  style={{
-                    padding: "var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                  }}
-                >
-                  <h4
-                    style={{
-                      margin: "0 0 var(--wl-space-2) 0",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      color: "var(--wl-text)",
-                    }}
-                  >
+                <div className="p-4 rounded-md border border-slate-700">
+                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
                     Business Information
                   </h4>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "var(--wl-space-4)",
-                      fontSize: "var(--wl-text-xs)",
-                    }}
-                  >
+                  <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Company
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {data.companyName}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Company</p>
+                      <p className="m-0 text-slate-100 font-medium">{data.companyName}</p>
                     </div>
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Industry
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {data.industry}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Industry</p>
+                      <p className="m-0 text-slate-100 font-medium capitalize">{data.industry}</p>
                     </div>
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Size
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {data.businessSize}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Size</p>
+                      <p className="m-0 text-slate-100 font-medium capitalize">{data.businessSize}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Zones */}
-                <div
-                  style={{
-                    padding: "var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                  }}
-                >
-                  <h4
-                    style={{
-                      margin: "0 0 var(--wl-space-2) 0",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      color: "var(--wl-text)",
-                    }}
-                  >
+                <div className="p-4 rounded-md border border-slate-700">
+                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
                     Delivery Zones ({data.zones.length})
                   </h4>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--wl-space-2)",
-                      fontSize: "var(--wl-text-xs)",
-                    }}
-                  >
+                  <div className="flex flex-col gap-2 text-xs">
                     {data.zones.map((zone) => (
                       <div
                         key={zone.id}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          paddingBottom: "var(--wl-space-2)",
-                          borderBottom: "1px solid var(--wl-border)",
-                        }}
+                        className="flex justify-between items-center pb-2 border-b border-slate-700"
                       >
-                        <span style={{ color: "var(--wl-text)" }}>{zone.name}</span>
-                        <span style={{ color: "var(--wl-text-muted)" }}>
+                        <span className="text-slate-100">{zone.name}</span>
+                        <span className="text-slate-400">
                           {zone.radius} km radius
                         </span>
                       </div>
@@ -930,88 +525,22 @@ export default function OnboardingPage() {
                 </div>
 
                 {/* Driver */}
-                <div
-                  style={{
-                    padding: "var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                  }}
-                >
-                  <h4
-                    style={{
-                      margin: "0 0 var(--wl-space-2) 0",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      color: "var(--wl-text)",
-                    }}
-                  >
+                <div className="p-4 rounded-md border border-slate-700">
+                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
                     First Driver
                   </h4>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "var(--wl-space-4)",
-                      fontSize: "var(--wl-text-xs)",
-                    }}
-                  >
+                  <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Name
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {data.driverName}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Name</p>
+                      <p className="m-0 text-slate-100 font-medium">{data.driverName}</p>
                     </div>
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Phone
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {data.driverPhone}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Phone</p>
+                      <p className="m-0 text-slate-100 font-medium">{data.driverPhone}</p>
                     </div>
                     <div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        Vehicle
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--wl-text)",
-                          fontWeight: 500,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {data.vehicleType}
-                      </p>
+                      <p className="m-0 mb-1 text-slate-400">Vehicle</p>
+                      <p className="m-0 text-slate-100 font-medium capitalize">{data.vehicleType}</p>
                     </div>
                   </div>
                 </div>
@@ -1022,56 +551,26 @@ export default function OnboardingPage() {
       </Card>
 
       {/* Navigation */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "var(--wl-space-6)",
-          gap: "var(--wl-space-3)",
-        }}
-      >
+      <div className="flex justify-between items-center mt-6 gap-3">
         <button
           onClick={handleBack}
           disabled={currentStep === 1}
-          style={{
-            padding: "var(--wl-space-2) var(--wl-space-4)",
-            borderRadius: "var(--wl-radius-md)",
-            border: "1px solid var(--wl-border)",
-            background: "transparent",
-            color: currentStep === 1 ? "var(--wl-text-muted)" : "var(--wl-text)",
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 500,
-            cursor: currentStep === 1 ? "not-allowed" : "pointer",
-            opacity: currentStep === 1 ? 0.5 : 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--wl-space-2)",
-          }}
+          className={cn(
+            "px-4 py-2 rounded-md border flex items-center gap-2 text-sm font-medium transition-all",
+            currentStep === 1
+              ? "border-slate-700 bg-transparent text-slate-400 opacity-50 cursor-not-allowed"
+              : "border-slate-700 bg-transparent text-slate-100 hover:border-slate-600 cursor-pointer"
+          )}
         >
           <ChevronLeft size={16} />
           Back
         </button>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-3)",
-          }}
-        >
+        <div className="flex gap-3">
           {currentStep < 5 && (
             <button
               onClick={handleSkip}
-              style={{
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                borderRadius: "var(--wl-radius-md)",
-                border: "1px solid var(--wl-border)",
-                background: "transparent",
-                color: "var(--wl-text-muted)",
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-md border border-slate-700 bg-transparent text-slate-400 text-sm font-medium hover:text-slate-200 hover:border-slate-600 transition-all cursor-pointer"
             >
               Skip
             </button>
@@ -1081,22 +580,12 @@ export default function OnboardingPage() {
             <button
               onClick={handleNext}
               disabled={!isStepValid()}
-              style={{
-                padding: "var(--wl-space-2) var(--wl-space-5)",
-                borderRadius: "var(--wl-radius-md)",
-                border: "1px solid var(--wl-primary)",
-                background: isStepValid()
-                  ? "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))"
-                  : "var(--wl-surface)",
-                color: isStepValid() ? "var(--wl-text-inverse)" : "var(--wl-text-muted)",
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 600,
-                cursor: isStepValid() ? "pointer" : "not-allowed",
-                opacity: isStepValid() ? 1 : 0.5,
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
+              className={cn(
+                "px-5 py-2 rounded-md border flex items-center gap-2 text-sm font-semibold transition-all",
+                isStepValid()
+                  ? "border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 cursor-pointer hover:shadow-lg"
+                  : "border-slate-700 bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed"
+              )}
             >
               Next
               <ChevronRight size={16} />
@@ -1104,19 +593,7 @@ export default function OnboardingPage() {
           ) : (
             <button
               onClick={handleLaunch}
-              style={{
-                padding: "var(--wl-space-2) var(--wl-space-5)",
-                borderRadius: "var(--wl-radius-md)",
-                border: "1px solid var(--wl-primary)",
-                background: "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-                color: "var(--wl-text-inverse)",
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
+              className="px-5 py-2 rounded-md border border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 text-sm font-semibold flex items-center gap-2 cursor-pointer hover:shadow-lg transition-all"
             >
               <Zap size={16} />
               Launch Dashboard

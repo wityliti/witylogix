@@ -51,6 +51,16 @@ export class SchedulerError extends Error {
 }
 
 /**
+ * Channel rate limit constants based on provider limits
+ */
+const CHANNEL_RATE_LIMITS: Record<string, number> = {
+  email: 300,     // SendGrid default rate limit
+  sms: 60,        // Twilio rate limit
+  whatsapp: 80,   // Meta limit
+  push: 500,      // FCM batch limit
+};
+
+/**
  * Campaign Scheduler for managing scheduled campaign execution
  */
 export class CampaignScheduler {
@@ -58,10 +68,10 @@ export class CampaignScheduler {
    * Default rate limits per channel (sends per minute)
    */
   private readonly defaultRateLimits: Record<string, number> = {
-    email: 1000, // Email has higher throughput
-    sms: 100, // SMS is rate-limited by providers
-    whatsapp: 50, // WhatsApp has strict rate limits
-    push: 500, // Push is fast but has service limits
+    email: CHANNEL_RATE_LIMITS.email,
+    sms: CHANNEL_RATE_LIMITS.sms,
+    whatsapp: CHANNEL_RATE_LIMITS.whatsapp,
+    push: CHANNEL_RATE_LIMITS.push,
   };
 
   /**
@@ -81,11 +91,17 @@ export class CampaignScheduler {
   /**
    * Schedule a campaign for execution
    * Returns the job ID for tracking
+   *
+   * @param campaignId Campaign identifier
+   * @param tenantId Tenant identifier
+   * @param schedule Schedule configuration
+   * @param campaignType Campaign channel type (email, sms, whatsapp, push) - used to derive rate limits
    */
   schedule(
     campaignId: string,
     tenantId: string,
-    schedule: CampaignSchedule
+    schedule: CampaignSchedule,
+    campaignType?: string
   ): ScheduledJob {
     if (!campaignId || !tenantId || !schedule) {
       throw new SchedulerError('campaignId, tenantId, and schedule are required');
@@ -109,7 +125,9 @@ export class CampaignScheduler {
     const jobId = this.generateJobId(campaignId, tenantId);
 
     // Determine rate limit based on campaign type
-    const maxSendsPerMinute = this.getMaxSendsPerMinute('email'); // TODO: derive from campaign type
+    // Use provided campaign type or default to email
+    const channelType = campaignType?.toLowerCase() || 'email';
+    const maxSendsPerMinute = this.getMaxSendsPerMinute(channelType);
 
     const job: ScheduledJob = {
       jobId,

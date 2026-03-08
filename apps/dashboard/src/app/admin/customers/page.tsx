@@ -410,11 +410,11 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         {/* Actions */}
         <div className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4">
           <Button variant="secondary" size="sm">
-            <FileText style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+            <FileText className="w-3.5 h-3.5 mr-1" />
             Add Note
           </Button>
           <Button variant="ghost" size="sm">
-            <GitMerge style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+            <GitMerge className="w-3.5 h-3.5 mr-1" />
             Merge Duplicates
           </Button>
         </div>
@@ -442,9 +442,9 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
         return (
           <Card
             key={idx}
-            className="bg-wl-bg-surface border-wl-border-subtle"
+            className="bg-wl-bg-surface border-wl-border-subtle animate-in"
             style={{
-              animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
+              animationDelay: `${idx * 50}ms`,
             }}
           >
             <CardContent className="p-4 flex gap-3 items-start">
@@ -454,7 +454,7 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
                   backgroundColor: stat.color + "15",
                 }}
               >
-                <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
+                <Icon style={{ color: stat.color }} className="w-5 h-5" />
               </div>
               <div className="flex-1">
                 <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wide">
@@ -522,7 +522,7 @@ export default function AdminCustomersPage() {
         subtitle="Manage all customers across all stores"
         actions={
           <Button variant="primary" size="sm" onClick={handleExport}>
-            <Download style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+            <Download className="w-3.5 h-3.5 mr-1" />
             Export
           </Button>
         }
@@ -542,13 +542,13 @@ export default function AdminCustomersPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full p-2 pl-8 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
               />
-              <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "var(--wl-text-secondary)", pointerEvents: "none" }} />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
             </div>
 
             {/* Filters */}
             <div className="flex gap-3 flex-wrap mb-4">
               <div className="flex items-center gap-2">
-                <Filter style={{ width: "16px", height: "16px", color: "var(--wl-text-secondary)" }} />
+                <Filter className="w-4 h-4 text-wl-text-secondary" />
                 <span className="text-xs text-wl-text-secondary font-semibold uppercase">
                   Store:
                 </span>
@@ -605,10 +605,10 @@ export default function AdminCustomersPage() {
                         {["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status", "Actions"].map((header) => (
                           <th
                             key={header}
-                            className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide"
-                            style={{
-                              textAlign: header === "Actions" ? "center" : "left",
-                            }}
+                            className={cn(
+                              "p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide",
+                              header === "Actions" && "text-center"
+                            )}
                           >
                             {header}
                           </th>
@@ -619,16 +619,16 @@ export default function AdminCustomersPage() {
                       {filteredCustomers.map((customer, idx) => (
                         <tr
                           key={customer.id}
-                          className="border-b border-wl-border-subtle transition-all cursor-pointer"
-                          style={{
-                            backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-                          }}
+                          className={cn(
+                            "border-b border-wl-border-subtle transition-all cursor-pointer",
+                            idx % 2 === 0 ? "bg-wl-bg-base" : "bg-wl-bg-surface"
+                          )}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
-                          }}
+                          }}>
                           onClick={() => handleCustomerClick(customer)}
                         >
                           <td className="p-3 text-wl-text-primary font-medium">
@@ -674,7 +674,7 @@ export default function AdminCustomersPage() {
             </>
           ) : (
             <CardContent className="p-12 text-center flex flex-col items-center justify-center">
-              <AlertCircle style={{ width: "48px", height: "48px", color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-3)", opacity: 0.3 }} />
+              <AlertCircle className="w-12 h-12 text-wl-text-secondary mb-3 opacity-30" />
               <p className="text-wl-text-primary font-medium m-0 mb-1">
                 No customers found
               </p>

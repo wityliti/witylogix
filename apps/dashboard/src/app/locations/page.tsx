@@ -383,33 +383,26 @@ export default function LocationsPage() {
                 key={location.id}
                 hover
                 onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
+                className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
                 style={{
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
                   opacity: 0,
                   borderColor: selectedLocation?.id === location.id ? "var(--wl-primary-500)" : undefined,
-                  display: "flex",
-                  flexDirection: "column",
                 }}
               >
+
                 {/* Status indicator line */}
                 <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background:
-                      location.status === "ACTIVE"
-                        ? "var(--wl-success-400)"
-                        : location.status === "MAINTENANCE"
-                          ? "var(--wl-warning-400)"
-                          : "var(--wl-danger-400)",
-                  }}
+                  className={cn(
+                    "absolute top-0 left-0 right-0 h-0.5",
+                    location.status === "ACTIVE"
+                      ? "bg-wl-success-400"
+                      : location.status === "MAINTENANCE"
+                        ? "bg-wl-warning-400"
+                        : "bg-wl-danger-400"
+                  )}
                 />
+
 
                 {/* Header */}
                 <div className={cn("flex justify-between items-start mb-3")}>
@@ -450,46 +443,45 @@ export default function LocationsPage() {
                   <div>
                     <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Active Shipments</div>
                     <div
-                      className={cn("text-base font-bold")}
-                      style={{ fontFamily: "var(--wl-font-mono)", color: location.activeShipments > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}
+                      className={cn(
+                        "text-base font-bold font-mono",
+                        location.activeShipments > 0 ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                      )}
                     >
                       {location.activeShipments}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Processed</div>
-                    <div
-                      className={cn("text-base font-bold")}
-                      style={{ fontFamily: "var(--wl-font-mono)", color: "var(--wl-success-400)" }}
-                    >
+                    <div className={cn("text-base font-bold font-mono text-wl-success-400")}>
                       {location.totalProcessed}
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg Prep Time</div>
-                    <div
-                      className={cn("text-base font-bold")}
-                      style={{ fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-secondary)" }}
-                    >
+                    <div className={cn("text-base font-bold font-mono text-wl-text-secondary")}>
                       {location.avgPrepTime}m
                     </div>
                   </div>
+
                   <div>
                     <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Status</div>
                     <div
-                      className={cn("text-xs font-semibold")}
-                      style={{
-                        color:
-                          location.status === "ACTIVE"
-                            ? "var(--wl-success-400)"
-                            : location.status === "MAINTENANCE"
-                              ? "var(--wl-warning-400)"
-                              : "var(--wl-danger-400)",
-                      }}
+                      className={cn(
+                        "text-xs font-semibold",
+                        location.status === "ACTIVE"
+                          ? "text-wl-success-400"
+                          : location.status === "MAINTENANCE"
+                            ? "text-wl-warning-400"
+                            : "text-wl-danger-400"
+                      )}
                     >
                       {location.status}
                     </div>
                   </div>
+
                 </div>
 
                 {/* Operating Hours Preview */}
@@ -572,15 +564,17 @@ export default function LocationsPage() {
                     Contact
                   </div>
                   {selectedLocation.phone && (
-                    <div className={cn("text-sm text-wl-text-secondary mb-1")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-sm text-wl-text-secondary mb-1 font-mono")}>
                       {selectedLocation.phone}
                     </div>
                   )}
+
                   {selectedLocation.email && (
-                    <div className={cn("text-sm text-wl-text-secondary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-sm text-wl-text-secondary font-mono")}>
                       {selectedLocation.email}
                     </div>
                   )}
+
                 </div>
 
                 <div className={cn("h-px bg-wl-border-subtle")} />
@@ -593,40 +587,25 @@ export default function LocationsPage() {
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Active Shipments</div>
-                      <div
-                        className={cn("text-lg font-bold")}
-                        style={{
-                          fontFamily: "var(--wl-font-mono)",
-                          color: "var(--wl-primary-400)",
-                        }}
-                      >
+                      <div className={cn("text-lg font-bold font-mono text-wl-primary-400")}>
                         {selectedLocation.activeShipments}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Processed</div>
-                      <div
-                        className={cn("text-lg font-bold")}
-                        style={{
-                          fontFamily: "var(--wl-font-mono)",
-                          color: "var(--wl-success-400)",
-                        }}
-                      >
+                      <div className={cn("text-lg font-bold font-mono text-wl-success-400")}>
                         {selectedLocation.totalProcessed}
                       </div>
                     </div>
+
                     <div>
                       <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg Prep Time</div>
-                      <div
-                        className={cn("text-lg font-bold")}
-                        style={{
-                          fontFamily: "var(--wl-font-mono)",
-                          color: "var(--wl-text-secondary)",
-                        }}
-                      >
+                      <div className={cn("text-lg font-bold font-mono text-wl-text-secondary")}>
                         {selectedLocation.avgPrepTime}m
                       </div>
                     </div>
+
                   </div>
                 </div>
 
@@ -649,17 +628,14 @@ export default function LocationsPage() {
                                 {day}
                               </td>
                               <td
-                                className={cn("p-2")}
-                                style={{
-                                  color:
-                                    hours.open === "closed"
-                                      ? "var(--wl-text-tertiary)"
-                                      : "var(--wl-text-primary)",
-                                  fontFamily: hours.open === "closed" ? "var(--wl-font-sans)" : "var(--wl-font-mono)",
-                                }}
+                                className={cn(
+                                  "p-2",
+                                  hours.open === "closed" ? "text-wl-text-tertiary font-sans" : "text-wl-text-primary font-mono"
+                                )}
                               >
                                 {hours.open === "closed" ? "Closed" : `${hours.open} - ${hours.close}`}
                               </td>
+
                             </tr>
                           ))}
                         </tbody>
@@ -679,13 +655,15 @@ export default function LocationsPage() {
                     className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-md p-4 flex flex-col items-center justify-center text-center")}
                     style={{ minHeight: 140 }}
                   >
-                    <div style={{ fontSize: 24, marginBottom: "var(--wl-space-2)", opacity: 0.5 }}>⊙</div>
+                    <div className={cn("text-2xl mb-2 opacity-50")}>⊙</div>
+
                     <div className={cn("text-xs text-wl-text-secondary mb-1")}>
                       Coordinates
                     </div>
-                    <div className={cn("text-xs font-semibold text-wl-text-primary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-xs font-semibold font-mono text-wl-text-primary")}>
                       {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
                     </div>
+
                   </div>
                 </div>
 

@@ -277,8 +277,8 @@ export class WorkflowIntegrationService {
       const workflowInput: CreateDeliveryOrderInput = {
         shopId: context.tenantId,
         userId: context.userId,
-        shopifyOrderId: orderData.shopifyOrderId,
-        shopifyOrderNumber: orderData.shopifyOrderNumber,
+        externalOrderId: orderData.externalOrderId,
+        externalOrderNumber: orderData.externalOrderNumber,
         customerName: orderData.customerName,
         customerEmail: orderData.customerEmail,
         customerPhone: orderData.customerPhone,

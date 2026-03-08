@@ -24,6 +24,7 @@ import {
   ForbiddenError,
   ConflictError,
 } from "../lib/errors.js";
+import { getIntegrationQueue } from "../lib/queue.js";
 
 // ─── Schemas ────────────────────────────────────────────────────
 
@@ -467,9 +468,89 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
         throw new ValidationError("Shop not connected to Shopify or missing access token");
       }
 
-      // TODO: Implement actual Shopify GraphQL API call
-      // const shopifyCollections = await fetchFromShopifyGraphQL(...)
-      // Then sync to database
+      // Fetch Shopify collections via GraphQL API
+      try {
+        const shopifyDomain = shop.shopifyDomain || `${shop.id}.myshopify.com`;
+        const graphqlUrl = `https://${shopifyDomain}/admin/api/2024-01/graphql.json`;
+
+        // GraphQL query to fetch collections and their products
+        const query = `
+          query {
+            collections(first: 100) {
+              edges {
+                node {
+                  id
+                  title
+                  description
+                  products(first: 50) {
+                    edges {
+                      node {
+                        id
+                        title
+                        handle
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(graphqlUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": shop.shopifyAccessToken,
+          },
+          body: JSON.stringify({ query }),
+        });
+
+        if (!response.ok) {
+          throw new ValidationError(
+            `Shopify API error: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const data = await response.json() as any;
+
+        if (data.errors) {
+          throw new ValidationError(
+            `Shopify GraphQL error: ${data.errors.map((e: any) => e.message).join(", ")}`,
+          );
+        }
+
+        // Queue integration sync job to process collections asynchronously
+        const queue = getIntegrationQueue();
+        await queue.add(
+          "sync",
+          {
+            shopId: request.shopId,
+            appSlug: "shopify",
+            integrationId: shop.id, // Use shop ID as integration ID for Shopify
+            jobType: "sync",
+            payload: {
+              collections: data.data?.collections?.edges || [],
+              shopifyDomain,
+            },
+          },
+          {
+            attempts: 3,
+            backoff: { type: "exponential", delay: 3000 },
+          },
+        );
+
+        fastify.log.info(
+          { shopId: request.shopId, collectionsCount: data.data?.collections?.edges?.length },
+          "Shopify collections sync job queued",
+        );
+      } catch (error) {
+        fastify.log.error(
+          { shopId: request.shopId, error },
+          "Failed to fetch Shopify collections",
+        );
+        throw error;
+      }
 
       reply.status(202);
       return {

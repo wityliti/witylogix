@@ -58,8 +58,8 @@ export async function workflowAfterOrderCreate(
 
       const orderData: OrderOperationData = {
         orderId: order.id,
-        shopifyOrderId: order.shopifyOrderId,
-        shopifyOrderNumber: order.shopifyOrderNumber,
+        externalOrderId: order.externalOrderId,
+        externalOrderNumber: order.externalOrderNumber,
         customerName: order.customerName,
         customerEmail: order.customerEmail,
         customerPhone: order.customerPhone,

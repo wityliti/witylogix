@@ -612,9 +612,18 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Fleetbase competitive analysis — 840-line strategic brief
 - [x] 77 dashboard pages migrated to Tailwind CSS
 - [x] 89+ test suites across core modules
+- [x] ADR-015 — WooCommerce integration architecture decision record
+- [x] Platform adapter system — `PlatformAdapter` interface, registry, factory
+- [x] WooCommerce adapter — REST API v3 (orders, products, customers, webhook validation)
+- [x] Shopify adapter — REST Admin API + HMAC validation (implements PlatformAdapter)
+- [x] WooCommerce webhook consumer + Fastify route (order/product lifecycle)
+- [x] Platform abstraction Phase 2 — workflow-integration, inventory, migration transformers
+- [x] TODO stub cleanup — campaign dispatcher, event-bus DLQ, route optimization queue, integration worker
+- [x] 88 dashboard pages migrated to Tailwind CSS (11 more pages)
+- [x] 93+ test suites across core modules
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] "Built for Shopify" certification
-- [ ] WooCommerce integration plugin
+- [x] WooCommerce integration plugin (Phase 1 — adapter + webhooks)
 
 ---
 
@@ -640,8 +649,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.2 | Providers, Carriers & POS | Notification providers (SendGrid, Twilio, WhatsApp, Firebase Push) → real HTTP, carrier adapters (FedEx, UPS) → real API, notification orchestrator, POS UI extension, 24 more pages → Tailwind |
 | 3.3 | Workers, Auth & Routing | Notification worker → orchestrator, DHL adapter, OSRM Phase 2, Auth OAuth2 (6 providers), BullMQ job wiring, Shopify webhooks, 17 more pages → Tailwind |
 | 3.4 | Platform Abstraction & Competitive Intel | Platform source abstraction (ADR-014), `externalOrderId` + `source` enum, collection platform adapter, Shopify GraphQL adapter, Fleetbase competitive analysis, analytics DI, billing routes, 16 more pages → Tailwind |
+| 3.5 | WooCommerce, TODO Cleanup & Tailwind | ADR-015 WooCommerce integration, platform adapter system (Shopify + WooCommerce), webhook consumer, TODO cleanup (10→2), platform abstraction Phase 2, 11 more pages → Tailwind |
 
-**Current stats (Sprint 3.4):** ~1,860 source files, ~235,000 lines of code, 31 Prisma modules, 68 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (77 migrated to Tailwind), 70 API route files, 89+ test suites.
+**Current stats (Sprint 3.5):** ~1,900 source files, ~248,000 lines of code, 31 Prisma modules, 72 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (88 migrated to Tailwind), 71 API route files, 93+ test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

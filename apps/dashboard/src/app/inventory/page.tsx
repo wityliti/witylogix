@@ -229,7 +229,7 @@ export default function InventoryPage() {
                   {lowStockCount}
                 </p>
               </div>
-              <AlertTriangle size={32} style={{ color: "#eab308", opacity: 0.7 }} />
+              <AlertTriangle size={32} className="text-yellow-500 opacity-70" />
             </CardContent>
           </Card>
 
@@ -241,7 +241,7 @@ export default function InventoryPage() {
                   {outOfStockCount}
                 </p>
               </div>
-              <TrendingDown size={32} style={{ color: "#ef4444", opacity: 0.7 }} />
+              <TrendingDown size={32} className="text-red-500 opacity-70" />
             </CardContent>
           </Card>
 
@@ -253,12 +253,12 @@ export default function InventoryPage() {
                   {products.length}
                 </p>
               </div>
-              <CheckCircle size={32} style={{ color: "#22c55e", opacity: 0.7 }} />
+              <CheckCircle size={32} className="text-green-500 opacity-70" />
             </CardContent>
           </Card>
         </div>
 
-        <div className={cn("grid gap-6")} style={{ gridTemplateColumns: "1fr 320px", marginBottom: "24px" }}>
+        <div className={cn("grid gap-6 mb-6")} style={{ gridTemplateColumns: "1fr 320px" }}>
           {/* Inventory Table */}
           <Card className={cn("bg-wl-card border border-wl-border")}>
             <CardHeader>
@@ -321,7 +321,7 @@ export default function InventoryPage() {
                   <tbody>
                     {filteredProducts.map((product) => (
                       <tr key={product.id} className={cn("border-b border-wl-border")}>
-                        <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
+                        <td className={cn("p-3 text-wl-text text-xs font-medium font-mono")}>
                           {product.sku}
                         </td>
                         <td className={cn("p-3 text-wl-text text-sm")}>
@@ -337,7 +337,7 @@ export default function InventoryPage() {
                           {product.reorderPoint}
                         </td>
                         <td className={cn("p-3")}>
-                          <Badge style={{ ...getStatusBadge(product.status), padding: "4px 8px", fontSize: "11px", fontWeight: "600" }}>
+                          <Badge style={getStatusBadge(product.status)} className="px-2 py-1 text-xs font-semibold">
                             {product.status.replace("-", " ").toUpperCase()}
                           </Badge>
                         </td>
@@ -382,7 +382,7 @@ export default function InventoryPage() {
                     className={cn("p-3 bg-wl-bg rounded border border-wl-border")}
                   >
                     <div className={cn("flex items-start gap-2 mb-1.5")}>
-                      <AlertTriangle size={14} style={{ color: "#eab308", marginTop: "2px", flexShrink: 0 }} />
+                      <AlertTriangle size={14} className="text-yellow-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className={cn("text-wl-text text-xs font-medium")}>
                           {product.name}
@@ -436,23 +436,23 @@ export default function InventoryPage() {
                 <tbody>
                   {movements.map((movement) => (
                     <tr key={movement.id} className={cn("border-b border-wl-border")}>
-                      <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
+                      <td className={cn("p-3 text-wl-text text-xs font-medium font-mono")}>
                         {movement.id}
                       </td>
-                      <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
+                      <td className={cn("p-3 text-wl-text text-xs font-medium font-mono")}>
                         {movement.sku}
                       </td>
                       <td className={cn("p-3 text-center")}>
                         <div className={cn("flex items-center justify-center gap-1")}>
                           {movement.type === "in" ? (
                             <>
-                              <ArrowDownLeft size={14} style={{ color: "#22c55e" }} />
-                              <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: "600" }}>IN</span>
+                              <ArrowDownLeft size={14} className="text-green-500" />
+                              <span className="text-green-500 text-xs font-semibold">IN</span>
                             </>
                           ) : (
                             <>
-                              <ArrowUpRight size={14} style={{ color: "#ef4444" }} />
-                              <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: "600" }}>OUT</span>
+                              <ArrowUpRight size={14} className="text-red-500" />
+                              <span className="text-red-500 text-xs font-semibold">OUT</span>
                             </>
                           )}
                         </div>

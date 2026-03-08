@@ -79,6 +79,16 @@ const vehicleIcon: Record<VehicleType, string> = {
   TRUCK: "🚛",
 };
 
+const statusColor = (status: DriverStatus): string => {
+  const colors: Record<DriverStatus, string> = {
+    ACTIVE: "#10b981",
+    ON_DELIVERY: "#3b82f6",
+    ON_BREAK: "#f59e0b",
+    OFFLINE: "#6b7280",
+  };
+  return colors[status];
+};
+
 const DRIVERS: Driver[] = [
   {
     id: "drv-1",
@@ -320,13 +330,14 @@ const StarRating = ({ rating, size = 14 }: { rating: number; size?: number }) =>
   const fullStars = Math.floor(rating);
   const hasHalf = rating % 1 >= 0.5;
   return (
-    <span className="flex" gap: 2, alignItems: "center" }}>
+    <span className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => {
         const isFull = i < fullStars;
         const isHalf = i === fullStars && hasHalf;
         return (
           <span
             key={i}
+            className="leading-none"
             style={{
               fontSize: size,
               opacity: isFull || isHalf ? 1 : 0.3,
@@ -336,7 +347,7 @@ const StarRating = ({ rating, size = 14 }: { rating: number; size?: number }) =>
           </span>
         );
       })}
-      <span style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary", marginLeft: 4 }}>
+      <span className="text-xs text-slate-400 ml-1">
         {rating.toFixed(1)}
       </span>
     </span>
@@ -410,13 +421,7 @@ export default function DriversPage() {
 
       <div className="p-6">
         {/* ═══ KPI Stats Row ═══ */}
-        <div
-          className="grid"
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            className="gap-4",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 auto-rows-max">
           <StatCard
             label="Total Drivers"
             value={stats.total}
@@ -448,56 +453,32 @@ export default function DriversPage() {
         </div>
 
         {/* ═══ Filters Row ═══ */}
-        <div
-          className="flex"
-            className="gap-4",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex flex-col sm:flex-row gap-4 mb-5 items-start sm:items-center flex-wrap">
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className="flex-1 min-w-[300px] max-w-[400px]">
             <input
               type="text"
               placeholder="Search drivers by name, email, phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                className="bg-wl-bg-elevated",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                className="text-wl-text-primary",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className="w-full px-4 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm placeholder-slate-500 focus:outline-none"
             />
           </div>
 
           {/* Status Filter */}
-          <div className="flex" gap: 4, flexWrap: "wrap" }}>
+          <div className="flex gap-2 flex-wrap">
             {(["ALL", "ACTIVE", "ON_DELIVERY", "ON_BREAK", "OFFLINE"] as const).map((s) => {
               const count = s === "ALL" ? DRIVERS.length : DRIVERS.filter((d) => d.status === s).length;
               return (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
-                  style={{
-                    padding: "var(--wl-space-1) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-full)",
-                    border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    background: statusFilter === s ? "var(--wl-primary-500)" : "transparent",
-                    color: statusFilter === s ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                    borderColor: statusFilter === s ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                    transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                  }}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                    statusFilter === s
+                      ? "bg-indigo-500 text-slate-50 border-indigo-500"
+                      : "border-slate-700 bg-transparent text-slate-400 hover:border-slate-600"
+                  )}
                 >
                   {s === "ALL" ? "All" : s.replace(/_/g, " ")} ({count})
                 </button>
@@ -507,61 +488,36 @@ export default function DriversPage() {
         </div>
 
         {/* ═══ Vehicle Type & Sort Row ═══ */}
-        <div
-          className="flex"
-            className="gap-4",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex flex-col sm:flex-row gap-4 mb-5 items-start sm:items-center flex-wrap">
           {/* Vehicle Type Filter */}
-          <div className="flex" gap: 4, flexWrap: "wrap" }}>
+          <div className="flex gap-2 flex-wrap">
             {(["ALL", "CAR", "VAN", "TRUCK", "MOTORCYCLE", "BICYCLE"] as const).map((v) => {
               const count = v === "ALL" ? DRIVERS.length : DRIVERS.filter((d) => d.vehicleType === v).length;
               return (
                 <button
                   key={v}
                   onClick={() => setVehicleFilter(v)}
-                  className="flex"
-                    alignItems: "center",
-                    className="gap-1",
-                    padding: "var(--wl-space-1) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    background: vehicleFilter === v ? "var(--wl-bg-overlay)" : "transparent",
-                    color: vehicleFilter === v ? "var(--wl-text-primary)" : "var(--wl-text-secondary)",
-                    borderColor: vehicleFilter === v ? "var(--wl-border-default)" : "var(--wl-border-subtle)",
-                    transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                  }}
+                  className={cn(
+                    "flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer border",
+                    vehicleFilter === v
+                      ? "bg-slate-800 text-slate-100 border-slate-700"
+                      : "bg-transparent text-slate-400 border-slate-800 hover:border-slate-700"
+                  )}
                 >
                   {v !== "ALL" && <span>{vehicleIcon[v]}</span>}
                   <span>{v === "ALL" ? "All Vehicles" : v}</span>
-                  <span style={{ fontSize: "var(--wl-text-xs)", opacity: 0.7 }}>({count})</span>
+                  <span className="text-xs opacity-70">({count})</span>
                 </button>
               );
             })}
           </div>
 
           {/* Sort */}
-          <div style={{ marginLeft: "auto" }}>
+          <div className="ml-auto">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              style={{
-                padding: "var(--wl-space-2) var(--wl-space-3)",
-                className="bg-wl-bg-elevated",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                className="text-wl-text-primary",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                cursor: "pointer",
-              }}
+              className="px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm focus:outline-none"
             >
               <option value="name">Sort by Name</option>
               <option value="rating">Sort by Rating</option>
@@ -573,192 +529,108 @@ export default function DriversPage() {
 
         {/* ═══ Drivers Grid + Detail Panel ═══ */}
         <div
-          className="grid"
-            gridTemplateColumns: selectedDriver ? "1fr 400px" : "1fr",
-            className="gap-5",
-          }}
+          className={cn(
+            "grid gap-5",
+            selectedDriver ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"
+          )}
         >
           {/* Driver Cards Grid */}
-          <div
-            className="grid"
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              className="gap-4",
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((driver, i) => (
               <Card
                 key={driver.id}
                 hover
                 onClick={() => setSelectedDriver(selectedDriver?.id === driver.id ? null : driver)}
+                className={cn(
+                  "relative overflow-hidden cursor-pointer transition-all",
+                  selectedDriver?.id === driver.id && "border-indigo-500"
+                )}
                 style={{
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
                   opacity: 0,
-                  borderColor: selectedDriver?.id === driver.id ? "var(--wl-primary-500)" : undefined,
                 }}
               >
                 {/* Status indicator line */}
                 <div
+                  className="absolute top-0 left-0 right-0 h-1"
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 3,
-                    background: statusColor(driver.status),
+                    backgroundColor: statusColor(driver.status),
                   }}
                 />
 
                 {/* Avatar & Header */}
-                <div className="flex" className="gap-4", marginBottom: "var(--wl-space-3)" }}>
+                <div className="flex gap-4 mb-3">
                   {/* Avatar Circle */}
                   <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold text-slate-50 flex-shrink-0"
                     style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "var(--wl-text-lg)",
-                      fontWeight: 700,
-                      color: "var(--wl-text-inverse)",
-                      position: "relative",
-                      flexShrink: 0,
-                      boxShadow: `0 2px 8px rgba(245, 166, 35, 0.2)`,
+                      background: "linear-gradient(135deg, #6366f1, #4f46e5)",
+                      boxShadow: "0 2px 8px rgba(99, 102, 241, 0.3)",
                     }}
                   >
                     {driver.name.split(" ").map((w) => w[0]).join("")}
                     <span
+                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2"
                       style={{
-                        position: "absolute",
-                        bottom: -2,
-                        right: -2,
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        background: statusColor(driver.status),
-                        border: "3px solid var(--wl-bg-elevated)",
+                        backgroundColor: statusColor(driver.status),
+                        borderColor: "var(--wl-bg-elevated)",
                       }}
                     />
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="flex" justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1 gap-2">
                       <div>
-                        <div style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, className="text-wl-text-primary" }}>
+                        <div className="text-base font-bold text-slate-100">
                           {driver.name}
                         </div>
-                        <div
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            className="text-wl-text-tertiary",
-                            marginTop: 2,
-                          }}
-                        >
+                        <div className="text-xs text-slate-400 mt-0.5">
                           {driver.email}
                         </div>
                       </div>
                     </div>
-                    <Badge variant={statusVariant(driver.status)} dot style={{ marginTop: 4 }}>
+                    <Badge variant={statusVariant(driver.status)} dot className="mt-1">
                       {driver.status.replace(/_/g, " ")}
                     </Badge>
                   </div>
                 </div>
 
                 {/* Vehicle & Location */}
-                <div
-                  className="flex"
-                    alignItems: "center",
-                    className="gap-2",
-                    padding: "var(--wl-space-3) 0",
-                    borderTop: "1px solid var(--wl-border-subtle)",
-                    borderBottom: "1px solid var(--wl-border-subtle)",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
-                  <span style={{ fontSize: 18 }}>{vehicleIcon[driver.vehicleType]}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>
+                <div className="flex items-center gap-2 py-3 px-0 border-t border-b border-slate-700 mb-3">
+                  <span className="text-lg">{vehicleIcon[driver.vehicleType]}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-slate-400">
                       {driver.vehicleType} · {driver.vehiclePlate}
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-secondary", marginTop: 2 }}>
+                    <div className="text-xs text-slate-400 mt-0.5">
                       📍 {driver.currentLocation}
                     </div>
                   </div>
                 </div>
 
                 {/* Performance Metrics Grid */}
-                <div
-                  className="grid"
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    className="gap-3",
-                    marginBottom: "var(--wl-space-4)",
-                  }}
-                >
+                <div className="grid grid-cols-2 gap-3 mb-4">
                   {/* Deliveries Today */}
-                  <div
-                    style={{
-                      className="p-2",
-                      className="bg-wl-wl-surface",
-                      borderRadius: "var(--wl-radius-md)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary", marginBottom: 2 }}>
-                      Today
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-lg)",
-                        fontWeight: 700,
-                        color: "var(--wl-primary-400)",
-                        fontFamily: "var(--wl-font-mono)",
-                      }}
-                    >
+                  <div className="p-2 bg-slate-800 rounded-md text-center">
+                    <div className="text-xs text-slate-400 mb-1">Today</div>
+                    <div className="text-lg font-bold text-indigo-400 font-mono">
                       {driver.completedToday}
                     </div>
                   </div>
 
                   {/* Average Rating */}
-                  <div
-                    style={{
-                      className="p-2",
-                      className="bg-wl-wl-surface",
-                      borderRadius: "var(--wl-radius-md)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary", marginBottom: 4 }}>
-                      Rating
-                    </div>
+                  <div className="p-2 bg-slate-800 rounded-md flex flex-col items-center justify-center">
+                    <div className="text-xs text-slate-400 mb-1">Rating</div>
                     <StarRating rating={driver.avgRating} size={12} />
                   </div>
 
                   {/* On-time % */}
-                  <div
-                    style={{
-                      className="p-2",
-                      className="bg-wl-wl-surface",
-                      borderRadius: "var(--wl-radius-md)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary", marginBottom: 2 }}>
-                      On-time %
-                    </div>
+                  <div className="p-2 bg-slate-800 rounded-md text-center">
+                    <div className="text-xs text-slate-400 mb-1">On-time %</div>
                     <div
+                      className="text-lg font-bold font-mono"
                       style={{
-                        fontSize: "var(--wl-text-lg)",
-                        fontWeight: 700,
-                        color: driver.onTimePercentage >= 90 ? "var(--wl-success-400)" : "var(--wl-warning-400)",
-                        fontFamily: "var(--wl-font-mono)",
+                        color: driver.onTimePercentage >= 90 ? "#10b981" : "#f59e0b",
                       }}
                     >
                       {driver.onTimePercentage}%
@@ -766,44 +638,23 @@ export default function DriversPage() {
                   </div>
 
                   {/* Total Deliveries */}
-                  <div
-                    style={{
-                      className="p-2",
-                      className="bg-wl-wl-surface",
-                      borderRadius: "var(--wl-radius-md)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary", marginBottom: 2 }}>
-                      Total
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-lg)",
-                        fontWeight: 700,
-                        color: "var(--wl-info-400)",
-                        fontFamily: "var(--wl-font-mono)",
-                      }}
-                    >
+                  <div className="p-2 bg-slate-800 rounded-md text-center">
+                    <div className="text-xs text-slate-400 mb-1">Total</div>
+                    <div className="text-lg font-bold text-blue-400 font-mono">
                       {driver.totalDeliveries}
                     </div>
                   </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div
-                  className="grid"
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    className="gap-2",
-                  }}
-                >
-                  <Button variant="ghost" size="sm" style={{ fontSize: "var(--wl-text-xs)" }}>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="ghost" size="sm" className="text-xs">
                     Details
                   </Button>
-                  <Button variant="ghost" size="sm" style={{ fontSize: "var(--wl-text-xs)" }}>
+                  <Button variant="ghost" size="sm" className="text-xs">
                     Route
                   </Button>
-                  <Button variant="ghost" size="sm" style={{ fontSize: "var(--wl-text-xs)" }}>
+                  <Button variant="ghost" size="sm" className="text-xs">
                     Message
                   </Button>
                 </div>
@@ -817,137 +668,91 @@ export default function DriversPage() {
               className="wl-animate-in"
               style={{
                 position: "sticky",
-                top: "calc(var(--wl-header-height) + var(--wl-space-6))",
-                maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
+                top: "calc(var(--wl-header-height) + 24px)",
+                maxHeight: "calc(100vh - var(--wl-header-height) - 48px)",
                 overflowY: "auto",
               }}
             >
               {/* Header with close button */}
-              <div
-                className="flex"
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "var(--wl-space-4)",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "var(--wl-text-lg)",
-                    fontWeight: 700,
-                    className="text-wl-text-primary",
-                  }}
-                >
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-bold text-slate-100">
                   Driver Profile
                 </span>
                 <button
                   onClick={() => setSelectedDriver(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    className="text-wl-text-tertiary",
-                    cursor: "pointer",
-                    fontSize: 20,
-                    fontFamily: "var(--wl-font-sans)",
-                  }}
+                  className="bg-none border-none text-slate-400 cursor-pointer text-xl font-light hover:text-slate-200 transition-colors"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="flex" flexDirection: "column", className="gap-4" }}>
+              <div className="flex flex-col gap-4">
                 {/* Profile Header */}
-                <div style={{ textAlign: "center" }}>
+                <div className="text-center">
                   <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-4xl font-bold text-slate-50 mx-auto mb-3"
                     style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "var(--wl-text-4xl)",
-                      fontWeight: 700,
-                      color: "var(--wl-text-inverse)",
-                      margin: "0 auto var(--wl-space-3) auto",
-                      boxShadow: `0 4px 12px rgba(245, 166, 35, 0.3)`,
+                      background: "linear-gradient(135deg, #6366f1, #4f46e5)",
+                      boxShadow: "0 4px 12px rgba(99, 102, 241, 0.4)",
                     }}
                   >
                     {selectedDriver.name.split(" ").map((w) => w[0]).join("")}
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, className="text-wl-text-primary" }}>
+                  <div className="text-base font-bold text-slate-100">
                     {selectedDriver.name}
                   </div>
-                  <Badge variant={statusVariant(selectedDriver.status)} dot style={{ marginTop: "var(--wl-space-2)", justifyContent: "center" }}>
+                  <Badge variant={statusVariant(selectedDriver.status)} dot className="mt-2 justify-center">
                     {selectedDriver.status.replace(/_/g, " ")}
                   </Badge>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-slate-700" />
 
                 {/* Contact Info */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      className="text-wl-text-tertiary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Contact
                   </div>
-                  <div className="flex" flexDirection: "column", className="gap-2" }}>
+                  <div className="flex flex-col gap-2">
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>Email</div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", className="text-wl-text-primary" }}>
+                      <div className="text-xs text-slate-400">Email</div>
+                      <div className="text-sm text-slate-100">
                         {selectedDriver.email}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>Phone</div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", className="text-wl-text-primary", fontFamily: "var(--wl-font-mono)" }}>
+                      <div className="text-xs text-slate-400">Phone</div>
+                      <div className="text-sm text-slate-100 font-mono">
                         {selectedDriver.phone}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-slate-700" />
 
                 {/* Employment Info */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      className="text-wl-text-tertiary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     Employment
                   </div>
-                  <div className="flex" flexDirection: "column", className="gap-2" }}>
+                  <div className="flex flex-col gap-2">
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>Hired</div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", className="text-wl-text-primary", fontFamily: "var(--wl-font-mono)" }}>
+                      <div className="text-xs text-slate-400">Hired</div>
+                      <div className="text-sm text-slate-100 font-mono">
                         {new Date(selectedDriver.hireDate).toLocaleDateString()}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>License #</div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", className="text-wl-text-primary", fontFamily: "var(--wl-font-mono)" }}>
+                      <div className="text-xs text-slate-400">License #</div>
+                      <div className="text-sm text-slate-100 font-mono">
                         {selectedDriver.licenseNumber}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>Vehicle</div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", className="text-wl-text-primary" }}>
-                        <span style={{ marginRight: "var(--wl-space-1)" }}>
+                      <div className="text-xs text-slate-400">Vehicle</div>
+                      <div className="text-sm text-slate-100">
+                        <span className="mr-1">
                           {vehicleIcon[selectedDriver.vehicleType]}
                         </span>
                         {selectedDriver.vehicleType} ({selectedDriver.vehiclePlate})
@@ -956,47 +761,28 @@ export default function DriversPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-slate-700" />
 
                 {/* Documents Section */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      className="text-wl-text-tertiary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
-                  >
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                     Documents
                   </div>
-                  <div className="flex" flexDirection: "column", className="gap-2" }}>
+                  <div className="flex flex-col gap-2">
                     {selectedDriver.documents.map((doc) => (
                       <div
                         key={doc.id}
-                        style={{
-                          className="p-2",
-                          className="bg-wl-wl-surface",
-                          borderRadius: "var(--wl-radius-md)",
-                        }}
+                        className="p-2 bg-slate-800 rounded-md"
                       >
-                        <div
-                          className="flex"
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 4,
-                          }}
-                        >
-                          <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, className="text-wl-text-primary" }}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-semibold text-slate-100">
                             {doc.type.replace(/_/g, " ")}
                           </span>
                           <Badge variant={docStatusVariant(doc.status)}>
                             {doc.status}
                           </Badge>
                         </div>
-                        <div style={{ fontSize: "var(--wl-text-xs)", className="text-wl-text-tertiary" }}>
+                        <div className="text-xs text-slate-400">
                           Exp: {new Date(doc.expiryDate).toLocaleDateString()}
                         </div>
                       </div>
@@ -1004,61 +790,31 @@ export default function DriversPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-slate-700" />
 
                 {/* Performance Chart Placeholder */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      className="text-wl-text-tertiary",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
-                  >
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                     Performance
                   </div>
-                  <div
-                    style={{
-                      className="p-4",
-                      className="bg-wl-wl-surface",
-                      borderRadius: "var(--wl-radius-md)",
-                      textAlign: "center",
-                      minHeight: 120,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      className="text-wl-text-tertiary",
-                    }}
-                  >
+                  <div className="p-4 bg-slate-800 rounded-md text-center min-h-[120px] flex items-center justify-center text-slate-400">
                     <div>
-                      <div style={{ fontSize: 24, marginBottom: "var(--wl-space-2)" }}>📊</div>
-                      <div style={{ fontSize: "var(--wl-text-xs)" }}>Delivery history chart</div>
+                      <div className="text-2xl mb-2">📊</div>
+                      <div className="text-xs">Delivery history chart</div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-slate-700" />
 
                 {/* Zone Assignments */}
                 {selectedDriver.zones.length > 0 && (
                   <>
                     <div>
-                      <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 600,
-                          className="text-wl-text-tertiary",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                          marginBottom: "var(--wl-space-2)",
-                        }}
-                      >
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                         Assigned Zones
                       </div>
-                      <div className="flex" className="gap-1", flexWrap: "wrap" }}>
+                      <div className="flex gap-1 flex-wrap">
                         {selectedDriver.zones.map((zone) => (
                           <Badge key={zone} variant="primary">
                             {zone}
@@ -1067,7 +823,7 @@ export default function DriversPage() {
                       </div>
                     </div>
 
-                    <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                    <div className="h-px bg-slate-700" />
                   </>
                 )}
 
@@ -1075,30 +831,14 @@ export default function DriversPage() {
                 {selectedDriver.recentDeliveries.length > 0 && (
                   <>
                     <div>
-                      <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 600,
-                          className="text-wl-text-tertiary",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                          marginBottom: "var(--wl-space-2)",
-                        }}
-                      >
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                         Recent Deliveries
                       </div>
-                      <div className="flex" flexDirection: "column", className="gap-2" }}>
+                      <div className="flex flex-col gap-2">
                         {selectedDriver.recentDeliveries.map((ord) => (
                           <div
                             key={ord}
-                            style={{
-                              padding: "var(--wl-space-2) var(--wl-space-3)",
-                              className="bg-wl-wl-surface",
-                              borderRadius: "var(--wl-radius-sm)",
-                              fontSize: "var(--wl-text-xs)",
-                              fontFamily: "var(--wl-font-mono)",
-                              color: "var(--wl-primary-400)",
-                            }}
+                            className="px-3 py-2 bg-slate-800 rounded text-xs font-mono text-indigo-400"
                           >
                             {ord}
                           </div>
@@ -1106,22 +846,22 @@ export default function DriversPage() {
                       </div>
                     </div>
 
-                    <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                    <div className="h-px bg-slate-700" />
                   </>
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex" flexDirection: "column", className="gap-2" }}>
-                  <Button variant="primary" size="md" style={{ width: "100%" }}>
+                <div className="flex flex-col gap-2">
+                  <Button variant="primary" size="md" className="w-full">
                     Edit Profile
                   </Button>
-                  <Button variant="secondary" size="md" style={{ width: "100%" }}>
+                  <Button variant="secondary" size="md" className="w-full">
                     Assign Route
                   </Button>
-                  <Button variant="ghost" size="md" style={{ width: "100%" }}>
+                  <Button variant="ghost" size="md" className="w-full">
                     View Full Routes
                   </Button>
-                  <Button variant="danger" size="md" style={{ width: "100%" }}>
+                  <Button variant="danger" size="md" className="w-full">
                     Deactivate
                   </Button>
                 </div>

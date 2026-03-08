@@ -19,6 +19,8 @@ import {
   SegmentRule,
 } from './types';
 
+import { getNotificationOrchestrator } from '../notifications/orchestrator.js';
+
 /**
  * Campaign Manager for creating, scheduling, and executing campaigns
  */
@@ -124,7 +126,7 @@ export class CampaignManager {
   /**
    * Execute a campaign (send immediately or at scheduled time)
    */
-  executeCampaign(request: CampaignExecutionRequest): CampaignExecutionResult {
+  async executeCampaign(request: CampaignExecutionRequest): Promise<CampaignExecutionResult> {
     const campaign = this.getCampaign(request.campaignId);
 
     if (
@@ -149,7 +151,7 @@ export class CampaignManager {
 
     // Execute based on campaign type
     const executionId = this.generateId('exec');
-    const messages = this.dispatchToChan(
+    const messages = await this.dispatchToChan(
       campaign,
       recipients,
       executionId,
@@ -439,43 +441,96 @@ export class CampaignManager {
   }
 
   /**
-   * Dispatch message to appropriate channel
+   * Dispatch message to appropriate channel via notification orchestrator
    */
-  private dispatchToChan(
+  private async dispatchToChan(
     campaign: Campaign,
     recipients: string[],
     executionId: string,
     isTest: boolean
-  ): Array<{ id: string; recipient: string }> {
+  ): Promise<Array<{ id: string; recipient: string }>> {
     const messages: Array<{ id: string; recipient: string }> = [];
+    const orchestrator = getNotificationOrchestrator();
+
+    // Map campaign type to channel(s)
+    const channels = this.getChannelsForCampaignType(campaign.type);
 
     for (const recipient of recipients) {
       const messageId = this.generateId('msg');
 
-      // TODO: Integrate with actual channel dispatchers
-      // For now, just queue messages
-      switch (campaign.type) {
-        case CampaignType.EMAIL:
-          // Dispatch to email service
-          break;
-        case CampaignType.SMS:
-          // Dispatch to SMS service
-          break;
-        case CampaignType.WHATSAPP:
-          // Dispatch to WhatsApp client
-          break;
-        case CampaignType.PUSH:
-          // Dispatch to push notification service
-          break;
-        case CampaignType.MULTI_CHANNEL:
-          // Dispatch to multiple channels
-          break;
+      // Build variables for template interpolation
+      const variables = this.buildTemplateVariables(campaign);
+
+      // Send via orchestrator for each channel
+      for (const channel of channels) {
+        try {
+          const result = await orchestrator.sendNotification(
+            'default-tenant', // In production, derive from campaign or context
+            channel,
+            recipient,
+            campaign.templateId || `campaign_${campaign.id}`,
+            variables,
+          );
+
+          if (!result.success) {
+            console.warn(
+              `Failed to send ${channel} to ${recipient}: ${result.error}`
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Error dispatching ${channel} for campaign ${campaign.id}:`,
+            error
+          );
+        }
       }
 
       messages.push({ id: messageId, recipient });
     }
 
     return messages;
+  }
+
+  /**
+   * Map campaign type to notification channels
+   */
+  private getChannelsForCampaignType(
+    type: CampaignType
+  ): Array<'EMAIL' | 'SMS' | 'WHATSAPP' | 'PUSH'> {
+    switch (type) {
+      case CampaignType.EMAIL:
+        return ['EMAIL'];
+      case CampaignType.SMS:
+        return ['SMS'];
+      case CampaignType.WHATSAPP:
+        return ['WHATSAPP'];
+      case CampaignType.PUSH:
+        return ['PUSH'];
+      case CampaignType.MULTI_CHANNEL:
+        return ['EMAIL', 'SMS', 'WHATSAPP', 'PUSH'];
+      default:
+        return ['EMAIL'];
+    }
+  }
+
+  /**
+   * Build template variables from campaign for rendering
+   */
+  private buildTemplateVariables(campaign: Campaign): Record<string, unknown> {
+    const variables: Record<string, unknown> = {
+      campaignId: campaign.id,
+      campaignName: campaign.name,
+      executionId: this.generateId('exec'),
+    };
+
+    // Add campaign-specific variables from content
+    if (campaign.content?.variables) {
+      for (const varName of campaign.content.variables) {
+        variables[varName] = `{{${varName}}}`;
+      }
+    }
+
+    return variables;
   }
 
   /**

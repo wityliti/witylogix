@@ -98,8 +98,8 @@ export interface WorkflowTriggerResult {
  */
 export interface OrderOperationData {
   orderId: string;
-  shopifyOrderId: string;
-  shopifyOrderNumber?: string;
+  externalOrderId: string;
+  externalOrderNumber?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;

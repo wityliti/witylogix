@@ -1,42 +1,42 @@
 /**
  * Data Transformers
- * Entity-specific transformation logic: shopifyOrder → Order, Shipment, Driver, etc.
+ * Entity-specific transformation logic: order → Order, Shipment, Driver, etc.
  * Handles field mapping, enum conversion, relation resolution, and default values
  */
 
 /**
- * Transform Shopify Order to internal Order entity
- * Maps Shopify order structure to database Order model
+ * Transform external order to internal Order entity
+ * Maps external order structure (Shopify, WooCommerce, etc.) to database Order model
  */
-export function transformOrder(shopifyOrder: any): any {
-  if (!shopifyOrder) return null;
+export function transformOrder(orderData: any): any {
+  if (!orderData) return null;
 
-  const orderId = shopifyOrder.id?.toString() || shopifyOrder._id?.toString();
-  const customerId = shopifyOrder.customer?.id?.toString() || shopifyOrder.customerId;
+  const orderId = orderData.id?.toString() || orderData._id?.toString();
+  const customerId = orderData.customer?.id?.toString() || orderData.customerId;
 
   return {
     id: orderId,
-    shopId: shopifyOrder.shop_id || shopifyOrder.shopId,
+    shopId: orderData.shop_id || orderData.shopId,
     customerId: customerId,
-    shopifyOrderId: shopifyOrder.shopify_order_id || shopifyOrder.name || orderId,
-    status: transformOrderStatus(shopifyOrder.status || shopifyOrder.fulfillment_status || 'pending'),
-    email: shopifyOrder.customer?.email || shopifyOrder.email,
-    phone: shopifyOrder.customer?.phone || shopifyOrder.phone,
-    totalPrice: parseFloat(shopifyOrder.total_price ?? shopifyOrder.totalPrice ?? '0'),
-    currency: shopifyOrder.currency || 'USD',
-    shippingAddress: transformAddress(shopifyOrder.shipping_address || shopifyOrder.shippingAddress),
-    billingAddress: transformAddress(shopifyOrder.billing_address || shopifyOrder.billingAddress),
-    lineItems: transformLineItems(shopifyOrder.line_items || shopifyOrder.lineItems),
-    tags: (shopifyOrder.tags || '').split(',').filter((t: string) => t.trim()),
-    notes: shopifyOrder.note || shopifyOrder.notes || null,
-    discountCode: shopifyOrder.discount_codes?.[0]?.code || shopifyOrder.discountCode || null,
-    discountAmount: parseFloat(shopifyOrder.total_discounts ?? shopifyOrder.discountAmount ?? '0'),
-    taxAmount: parseFloat(shopifyOrder.total_tax ?? shopifyOrder.taxAmount ?? '0'),
-    shippingMethod: shopifyOrder.shipping_lines?.[0]?.title || shopifyOrder.shippingMethod || null,
-    shippingCost: parseFloat(shopifyOrder.shipping_lines?.[0]?.price ?? '0'),
-    metadata: shopifyOrder.metadata || shopifyOrder.metafields || {},
-    createdAt: new Date(shopifyOrder.created_at || shopifyOrder.createdAt || new Date()),
-    updatedAt: new Date(shopifyOrder.updated_at || shopifyOrder.updatedAt || new Date()),
+    externalOrderId: orderData.shopify_order_id || orderData.external_order_id || orderData.externalOrderId || orderData.name || orderId,
+    status: transformOrderStatus(orderData.status || orderData.fulfillment_status || 'pending'),
+    email: orderData.customer?.email || orderData.email,
+    phone: orderData.customer?.phone || orderData.phone,
+    totalPrice: parseFloat(orderData.total_price ?? orderData.totalPrice ?? '0'),
+    currency: orderData.currency || 'USD',
+    shippingAddress: transformAddress(orderData.shipping_address || orderData.shippingAddress),
+    billingAddress: transformAddress(orderData.billing_address || orderData.billingAddress),
+    lineItems: transformLineItems(orderData.line_items || orderData.lineItems),
+    tags: (orderData.tags || '').split(',').filter((t: string) => t.trim()),
+    notes: orderData.note || orderData.notes || null,
+    discountCode: orderData.discount_codes?.[0]?.code || orderData.discountCode || null,
+    discountAmount: parseFloat(orderData.total_discounts ?? orderData.discountAmount ?? '0'),
+    taxAmount: parseFloat(orderData.total_tax ?? orderData.taxAmount ?? '0'),
+    shippingMethod: orderData.shipping_lines?.[0]?.title || orderData.shippingMethod || null,
+    shippingCost: parseFloat(orderData.shipping_lines?.[0]?.price ?? '0'),
+    metadata: orderData.metadata || orderData.metafields || {},
+    createdAt: new Date(orderData.created_at || orderData.createdAt || new Date()),
+    updatedAt: new Date(orderData.updated_at || orderData.updatedAt || new Date()),
   };
 }
 
@@ -106,7 +106,7 @@ export function transformCustomer(customer: any): any {
   return {
     id: customer._id?.toString() || customer.id,
     shopId: customer.shop_id || customer.shopId,
-    shopifyCustomerId: customer.shopify_customer_id || customer.shopifyCustomerId || null,
+    externalCustomerId: customer.shopify_customer_id || customer.external_customer_id || customer.externalCustomerId || null,
     firstName: customer.first_name || customer.firstName || '',
     lastName: customer.last_name || customer.lastName || '',
     email: customer.email || null,
@@ -132,7 +132,7 @@ export function transformProduct(product: any): any {
   return {
     id: product._id?.toString() || product.id,
     shopId: product.shop_id || product.shopId,
-    shopifyProductId: product.shopify_product_id || product.shopifyProductId || null,
+    externalProductId: product.shopify_product_id || product.external_product_id || product.externalProductId || null,
     name: product.name || 'Unknown Product',
     sku: product.sku || null,
     barcode: product.barcode || null,

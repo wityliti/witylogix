@@ -104,6 +104,9 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
   private failedCount = 0;
   private latencies: number[] = [];
 
+  // Dead-letter queue tracking: event type -> failure count
+  private dlqCounts: Map<string, number> = new Map();
+
   // Consumer state
   private consumerId: string;
   private consumerGroups = new Set<string>();
@@ -361,6 +364,12 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
     const p95Idx = Math.floor(sorted.length * 0.95);
     const p99Idx = Math.floor(sorted.length * 0.99);
 
+    // Calculate total DLQ count
+    const totalDlqCount = Array.from(this.dlqCounts.values()).reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
     return {
       timestamp: new Date().toISOString(),
       publishedCount: this.publishedCount,
@@ -374,7 +383,7 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
       averageLatencyMs: avgLatency,
       p95LatencyMs: sorted[p95Idx] ?? 0,
       p99LatencyMs: sorted[p99Idx] ?? 0,
-      deadLetterCount: 0, // TODO: track DLQ size
+      deadLetterCount: totalDlqCount,
     };
   }
 
@@ -578,9 +587,42 @@ export class TypedEventBus<TEvents extends Record<string, any>> {
       this.failedCount++;
       console.error(`Error handling message ${messageId}:`, error);
 
-      // Move to dead-letter if configured
-      if (this.config.deadLetter?.enabled) {
-        // TODO: implement DLQ
+      // Track failed event in DLQ
+      try {
+        const envelope = this.deserializeEnvelope(data);
+        const eventType = envelope.metadata.type;
+
+        // Increment DLQ count for this event type
+        const currentCount = this.dlqCounts.get(eventType) ?? 0;
+        this.dlqCounts.set(eventType, currentCount + 1);
+
+        // Emit to dead-letter queue stream if configured
+        if (this.config.deadLetter?.enabled) {
+          const dlqKey = '__dlq';
+          const dlqMessage = {
+            originalMessageId: messageId,
+            originalStreamKey: streamKey,
+            originalEventType: eventType,
+            envelope: envelope,
+            error: error instanceof Error ? error.message : String(error),
+            failedAt: new Date().toISOString(),
+            groupName: groupName,
+          };
+
+          try {
+            await this.config.adapter.publish(dlqKey, dlqMessage as any);
+            console.warn(
+              `Message ${messageId} moved to DLQ for event type ${eventType}`
+            );
+          } catch (dlqError) {
+            console.error(
+              `Failed to publish to DLQ for message ${messageId}:`,
+              dlqError
+            );
+          }
+        }
+      } catch (dlqTrackingError) {
+        console.error(`Error tracking DLQ for message ${messageId}:`, dlqTrackingError);
       }
     }
   }
