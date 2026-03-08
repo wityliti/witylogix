@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "../../lib/utils";
 import {
   Card,
   CardContent,
@@ -188,57 +189,43 @@ export default function InventoryPage() {
   const lowStockCount = products.filter((p) => p.status === "low").length;
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--wl-bg)", padding: "24px" }}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <div className={cn("min-h-screen bg-wl-bg p-6")}>
+      <div className={cn("max-w-6xl mx-auto")}>
         {/* Header */}
-        <div style={{ marginBottom: "32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className={cn("mb-8 flex items-center justify-between")}>
           <div>
-            <h1 style={{ fontSize: "32px", fontWeight: "700", color: "var(--wl-text)", marginBottom: "8px" }}>
+            <h1 className={cn("text-3xl font-bold text-wl-text mb-2")}>
               Inventory Management
             </h1>
-            <p style={{ color: "var(--wl-muted)", fontSize: "14px" }}>
+            <p className={cn("text-wl-muted text-sm")}>
               Track and manage product inventory across warehouses
             </p>
           </div>
-          <Button
-            style={{
-              backgroundColor: "var(--wl-primary)",
-              color: "white",
-              border: "none",
-              padding: "10px 16px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
+          <Button variant="primary" size="md" className={cn("flex items-center gap-1.5")}>
             <Plus size={16} />
             Add Product
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-6")}>
+          <Card className={cn("bg-wl-card border border-wl-border")}>
+            <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p style={{ color: "var(--wl-muted)", fontSize: "12px", fontWeight: "500" }}>Total Items</p>
-                <p style={{ color: "var(--wl-text)", fontSize: "28px", fontWeight: "700", marginTop: "4px" }}>
+                <p className={cn("text-wl-muted text-xs font-medium")}>Total Items</p>
+                <p className={cn("text-wl-text text-2xl font-bold mt-1")}>
                   {totalInventoryValue}
                 </p>
               </div>
-              <Package size={32} style={{ color: "var(--wl-primary)", opacity: 0.7 }} />
+              <Package size={32} className={cn("text-wl-primary opacity-70")} />
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Card className={cn("bg-wl-card border border-wl-border")}>
+            <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p style={{ color: "var(--wl-muted)", fontSize: "12px", fontWeight: "500" }}>Low Stock</p>
-                <p style={{ color: "var(--wl-text)", fontSize: "28px", fontWeight: "700", marginTop: "4px" }}>
+                <p className={cn("text-wl-muted text-xs font-medium")}>Low Stock</p>
+                <p className={cn("text-wl-text text-2xl font-bold mt-1")}>
                   {lowStockCount}
                 </p>
               </div>
@@ -246,11 +233,11 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Card className={cn("bg-wl-card border border-wl-border")}>
+            <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p style={{ color: "var(--wl-muted)", fontSize: "12px", fontWeight: "500" }}>Out of Stock</p>
-                <p style={{ color: "var(--wl-text)", fontSize: "28px", fontWeight: "700", marginTop: "4px" }}>
+                <p className={cn("text-wl-muted text-xs font-medium")}>Out of Stock</p>
+                <p className={cn("text-wl-text text-2xl font-bold mt-1")}>
                   {outOfStockCount}
                 </p>
               </div>
@@ -258,11 +245,11 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Card className={cn("bg-wl-card border border-wl-border")}>
+            <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p style={{ color: "var(--wl-muted)", fontSize: "12px", fontWeight: "500" }}>Total SKUs</p>
-                <p style={{ color: "var(--wl-text)", fontSize: "28px", fontWeight: "700", marginTop: "4px" }}>
+                <p className={cn("text-wl-muted text-xs font-medium")}>Total SKUs</p>
+                <p className={cn("text-wl-text text-2xl font-bold mt-1")}>
                   {products.length}
                 </p>
               </div>
@@ -271,25 +258,17 @@ export default function InventoryPage() {
           </Card>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "24px", marginBottom: "24px" }}>
+        <div className={cn("grid gap-6")} style={{ gridTemplateColumns: "1fr 320px", marginBottom: "24px" }}>
           {/* Inventory Table */}
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+          <Card className={cn("bg-wl-card border border-wl-border")}>
             <CardHeader>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Product Inventory</CardTitle>
-                <div style={{ display: "flex", gap: "8px" }}>
+              <div className={cn("flex items-center justify-between")}>
+                <CardTitle className={cn("text-wl-text")}>Product Inventory</CardTitle>
+                <div className={cn("flex gap-2")}>
                   <select
                     value={selectedWarehouse}
                     onChange={(e) => setSelectedWarehouse(e.target.value)}
-                    style={{
-                      padding: "6px 10px",
-                      backgroundColor: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "4px",
-                      color: "var(--wl-text)",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                    }}
+                    className={cn("px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs cursor-pointer")}
                   >
                     {warehouses.map((w) => (
                       <option key={w} value={w}>
@@ -301,15 +280,7 @@ export default function InventoryPage() {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    style={{
-                      padding: "6px 10px",
-                      backgroundColor: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "4px",
-                      color: "var(--wl-text)",
-                      fontSize: "12px",
-                      cursor: "pointer",
-                    }}
+                    className={cn("px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs cursor-pointer")}
                   >
                     <option value="all">All Status</option>
                     <option value="in-stock">In Stock</option>
@@ -320,85 +291,67 @@ export default function InventoryPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <div className={cn("overflow-x-auto")}>
+                <table className={cn("w-full border-collapse")}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid var(--wl-border)" }}>
-                      <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <tr className={cn("border-b-2 border-wl-border")}>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                         SKU
                       </th>
-                      <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                         Product Name
                       </th>
-                      <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                         Warehouse
                       </th>
-                      <th style={{ padding: "12px", textAlign: "center", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>
                         Quantity
                       </th>
-                      <th style={{ padding: "12px", textAlign: "center", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>
                         Reorder Point
                       </th>
-                      <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                         Status
                       </th>
-                      <th style={{ padding: "12px", textAlign: "center", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                      <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredProducts.map((product) => (
-                      <tr key={product.id} style={{ borderBottom: "1px solid var(--wl-border)" }}>
-                        <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", fontFamily: "monospace" }}>
+                      <tr key={product.id} className={cn("border-b border-wl-border")}>
+                        <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
                           {product.sku}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "13px" }}>
+                        <td className={cn("p-3 text-wl-text text-sm")}>
                           {product.name}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px" }}>
+                        <td className={cn("p-3 text-wl-muted text-xs")}>
                           {product.warehouse}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "13px", textAlign: "center", fontWeight: "600" }}>
+                        <td className={cn("p-3 text-wl-text text-sm text-center font-semibold")}>
                           {product.quantity}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px", textAlign: "center" }}>
+                        <td className={cn("p-3 text-wl-muted text-xs text-center")}>
                           {product.reorderPoint}
                         </td>
-                        <td style={{ padding: "12px" }}>
+                        <td className={cn("p-3")}>
                           <Badge style={{ ...getStatusBadge(product.status), padding: "4px 8px", fontSize: "11px", fontWeight: "600" }}>
                             {product.status.replace("-", " ").toUpperCase()}
                           </Badge>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
-                          <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+                        <td className={cn("p-3 text-center")}>
+                          <div className={cn("flex gap-1.5 justify-center")}>
                             <button
                               onClick={() => handleAdjustQuantity(product.id, product.quantity + 10)}
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "transparent",
-                                border: "1px solid var(--wl-primary)",
-                                borderRadius: "4px",
-                                color: "var(--wl-primary)",
-                                cursor: "pointer",
-                                fontSize: "11px",
-                                fontWeight: "500",
-                              }}
+                              className={cn("px-2 py-1 bg-transparent border border-wl-primary rounded text-wl-primary cursor-pointer text-xs font-medium")}
                             >
                               +
                             </button>
                             <button
                               onClick={() => handleAdjustQuantity(product.id, Math.max(0, product.quantity - 10))}
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "transparent",
-                                border: "1px solid var(--wl-primary)",
-                                borderRadius: "4px",
-                                color: "var(--wl-primary)",
-                                cursor: "pointer",
-                                fontSize: "11px",
-                                fontWeight: "500",
-                              }}
+                              className={cn("px-2 py-1 bg-transparent border border-wl-primary rounded text-wl-primary cursor-pointer text-xs font-medium")}
                             >
                               -
                             </button>
@@ -413,50 +366,33 @@ export default function InventoryPage() {
           </Card>
 
           {/* Low Stock Alerts */}
-          <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)", height: "fit-content" }}>
+          <Card className={cn("bg-wl-card border border-wl-border h-fit")}>
             <CardHeader>
-              <CardTitle style={{ color: "var(--wl-text)", fontSize: "16px" }}>Low Stock Alerts</CardTitle>
+              <CardTitle className={cn("text-wl-text text-base")}>Low Stock Alerts</CardTitle>
             </CardHeader>
-            <CardContent style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <CardContent className={cn("flex flex-col gap-3")}>
               {lowStockAlerts.length === 0 ? (
-                <p style={{ color: "var(--wl-muted)", fontSize: "12px", textAlign: "center", padding: "20px 0" }}>
+                <p className={cn("text-wl-muted text-xs text-center py-5")}>
                   All items well stocked
                 </p>
               ) : (
                 lowStockAlerts.map((product) => (
                   <div
                     key={product.id}
-                    style={{
-                      padding: "12px",
-                      backgroundColor: "var(--wl-bg)",
-                      borderRadius: "6px",
-                      border: "1px solid var(--wl-border)",
-                    }}
+                    className={cn("p-3 bg-wl-bg rounded border border-wl-border")}
                   >
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "6px" }}>
+                    <div className={cn("flex items-start gap-2 mb-1.5")}>
                       <AlertTriangle size={14} style={{ color: "#eab308", marginTop: "2px", flexShrink: 0 }} />
                       <div>
-                        <p style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "500" }}>
+                        <p className={cn("text-wl-text text-xs font-medium")}>
                           {product.name}
                         </p>
-                        <p style={{ color: "var(--wl-muted)", fontSize: "11px" }}>
+                        <p className={cn("text-wl-muted text-xs")}>
                           {product.quantity} / {product.reorderPoint}
                         </p>
                       </div>
                     </div>
-                    <Button
-                      style={{
-                        width: "100%",
-                        padding: "4px",
-                        backgroundColor: "var(--wl-primary)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "11px",
-                        fontWeight: "500",
-                        cursor: "pointer",
-                      }}
-                    >
+                    <Button variant="primary" size="sm" className={cn("w-full")}>
                       Reorder
                     </Button>
                   </div>
@@ -467,47 +403,47 @@ export default function InventoryPage() {
         </div>
 
         {/* Stock Movement History */}
-        <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+        <Card className={cn("bg-wl-card border border-wl-border")}>
           <CardHeader>
-            <CardTitle style={{ color: "var(--wl-text)" }}>Stock Movement History</CardTitle>
-            <CardDescription style={{ color: "var(--wl-muted)" }}>Recent inventory transactions</CardDescription>
+            <CardTitle className={cn("text-wl-text")}>Stock Movement History</CardTitle>
+            <CardDescription className={cn("text-wl-muted")}>Recent inventory transactions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div className={cn("overflow-x-auto")}>
+              <table className={cn("w-full border-collapse")}>
                 <thead>
-                  <tr style={{ borderBottom: "2px solid var(--wl-border)" }}>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                  <tr className={cn("border-b-2 border-wl-border")}>
+                    <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                       ID
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                       SKU
                     </th>
-                    <th style={{ padding: "12px", textAlign: "center", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>
                       Type
                     </th>
-                    <th style={{ padding: "12px", textAlign: "center", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>
                       Quantity
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                       Reason
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>
                       Date
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {movements.map((movement) => (
-                    <tr key={movement.id} style={{ borderBottom: "1px solid var(--wl-border)" }}>
-                      <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", fontFamily: "monospace" }}>
+                    <tr key={movement.id} className={cn("border-b border-wl-border")}>
+                      <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
                         {movement.id}
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", fontFamily: "monospace" }}>
+                      <td className={cn("p-3 text-wl-text text-xs font-medium")} style={{ fontFamily: "monospace" }}>
                         {movement.sku}
                       </td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                      <td className={cn("p-3 text-center")}>
+                        <div className={cn("flex items-center justify-center gap-1")}>
                           {movement.type === "in" ? (
                             <>
                               <ArrowDownLeft size={14} style={{ color: "#22c55e" }} />
@@ -521,13 +457,13 @@ export default function InventoryPage() {
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "13px", textAlign: "center", fontWeight: "600" }}>
+                      <td className={cn("p-3 text-wl-text text-sm text-center font-semibold")}>
                         {movement.quantity}
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px" }}>
+                      <td className={cn("p-3 text-wl-muted text-xs")}>
                         {movement.reason}
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px" }}>
+                      <td className={cn("p-3 text-wl-muted text-xs")}>
                         {movement.date}
                       </td>
                     </tr>

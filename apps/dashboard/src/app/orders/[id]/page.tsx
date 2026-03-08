@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { cn } from '../../../lib/utils';
 
 interface Activity {
   id: string;
@@ -147,441 +148,196 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     setNewNote('');
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      backgroundColor: 'var(--wl-bg)',
-      padding: '20px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    header: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '30px'
-    } as React.CSSProperties,
-    headerTitle: {
-      fontSize: '32px',
-      fontWeight: '700'
-    } as React.CSSProperties,
-    headerSubtitle: {
-      fontSize: '13px',
-      color: 'var(--wl-muted)',
-      marginTop: '4px'
-    } as React.CSSProperties,
-    actionButtonGroup: {
-      display: 'flex',
-      gap: '10px',
-      flexWrap: 'wrap'
-    } as React.CSSProperties,
-    button: {
-      padding: '10px 16px',
-      borderRadius: '6px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: '600',
-      transition: 'all 0.2s'
-    } as React.CSSProperties,
-    primaryButton: {
-      backgroundColor: 'var(--wl-primary)',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    secondaryButton: {
-      backgroundColor: 'transparent',
-      color: 'var(--wl-primary)',
-      border: '1px solid var(--wl-primary)'
-    } as React.CSSProperties,
-    dangerButton: {
-      backgroundColor: '#ff4444',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-      gap: '20px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    card: {
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '8px',
-      padding: '20px'
-    } as React.CSSProperties,
-    cardTitle: {
-      fontSize: '14px',
-      fontWeight: '600',
-      marginBottom: '15px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    infoRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '12px 0',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    infoLabel: {
-      color: 'var(--wl-muted)',
-      fontWeight: '500'
-    } as React.CSSProperties,
-    infoValue: {
-      color: 'var(--wl-text)',
-      fontWeight: '600'
-    } as React.CSSProperties,
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse' as const,
-      marginTop: '15px'
-    } as React.CSSProperties,
-    tableHeader: {
-      backgroundColor: 'var(--wl-bg)',
-      borderBottom: '1px solid var(--wl-border)',
-      padding: '12px',
-      textAlign: 'left' as const,
-      fontSize: '12px',
-      fontWeight: '600',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    tableCell: {
-      padding: '12px',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    timeline: {
-      position: 'relative' as const,
-      paddingLeft: '30px'
-    } as React.CSSProperties,
-    timelineItem: {
-      marginBottom: '20px',
-      paddingBottom: '20px',
-      borderBottom: '1px solid var(--wl-border)'
-    } as React.CSSProperties,
-    timelineDot: {
-      position: 'absolute' as const,
-      left: '-22px',
-      top: '0',
-      width: '12px',
-      height: '12px',
-      borderRadius: '50%',
-      backgroundColor: 'var(--wl-primary)',
-      border: '3px solid var(--wl-surface)'
-    } as React.CSSProperties,
-    timelineTime: {
-      fontSize: '12px',
-      color: 'var(--wl-muted)',
-      marginBottom: '4px'
-    } as React.CSSProperties,
-    timelineAction: {
-      fontSize: '13px',
-      fontWeight: '600',
-      color: 'var(--wl-text)',
-      marginBottom: '2px'
-    } as React.CSSProperties,
-    timelineDescription: {
-      fontSize: '12px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    noteCard: {
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      padding: '12px',
-      marginBottom: '12px'
-    } as React.CSSProperties,
-    noteHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginBottom: '8px',
-      fontSize: '12px'
-    } as React.CSSProperties,
-    noteAuthor: {
-      fontWeight: '600',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    noteTime: {
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    noteContent: {
-      fontSize: '13px',
-      color: 'var(--wl-text)',
-      lineHeight: '1.5'
-    } as React.CSSProperties,
-    textarea: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      minHeight: '80px',
-      fontFamily: 'inherit',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    fullWidth: {
-      gridColumn: '1 / -1'
-    } as React.CSSProperties,
-    shippingInfo: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '15px'
-    } as React.CSSProperties,
-    mapPlaceholder: {
-      width: '100%',
-      height: '200px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'var(--wl-muted)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    totalsTable: {
-      width: '100%',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    totalRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '12px 0',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    grandTotal: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      paddingTop: '15px',
-      fontSize: '16px',
-      fontWeight: '700',
-      color: 'var(--wl-primary)'
-    } as React.CSSProperties,
-    label: {
-      display: 'block',
-      fontSize: '13px',
-      fontWeight: '500',
-      marginBottom: '6px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <div style={styles.headerTitle}>{mockOrder.orderNumber}</div>
-          <div style={styles.headerSubtitle}>
+          <div className="text-4xl font-bold">{mockOrder.orderNumber}</div>
+          <div className="text-sm text-wl-muted mt-1">
             Created on {mockOrder.createdDate} • Source: {mockOrder.source}
           </div>
         </div>
-        <div style={styles.actionButtonGroup}>
-          <button style={{ ...styles.button, ...styles.primaryButton }}>Edit Order</button>
-          <button style={{ ...styles.button, ...styles.secondaryButton }}>Create Shipment</button>
-          <button style={{ ...styles.button, ...styles.secondaryButton }}>Print Label</button>
-          <button style={{ ...styles.button, ...styles.secondaryButton }}>Refund</button>
-          <button style={{ ...styles.button, ...styles.dangerButton }}>Cancel</button>
+        <div className="flex gap-2 flex-wrap">
+          <button className="px-4 py-2 rounded bg-wl-primary text-white font-semibold text-sm transition-all">Edit Order</button>
+          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Create Shipment</button>
+          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Print Label</button>
+          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Refund</button>
+          <button className="px-4 py-2 rounded bg-red-400 text-white font-semibold text-sm transition-all">Cancel</button>
         </div>
       </div>
 
       {/* Status Banner */}
-      <div style={{ ...styles.card, ...styles.fullWidth, marginBottom: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="flex justify-between items-center">
           <div>
-            <div style={styles.cardTitle}>Order Status</div>
-            <div style={{ marginTop: '8px' }}>
+            <div className="font-semibold text-sm mb-2">Order Status</div>
+            <div className="mt-2">
               <Badge
                 label={getStatusLabel(mockOrder.status)}
                 color={statusColors[mockOrder.status]}
               />
             </div>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--wl-muted)' }}>
+          <div className="text-sm text-wl-muted">
             Last updated: 2026-03-05 14:30
           </div>
         </div>
       </div>
 
-      <div style={styles.grid}>
+      <div className="grid grid-cols-1 gap-5 mb-5 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
         {/* Customer Info */}
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Customer Information</div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Name</span>
-            <span style={styles.infoValue}>{mockOrder.customer.name}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Email</span>
-            <span style={styles.infoValue}>{mockOrder.customer.email}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Phone</span>
-            <span style={styles.infoValue}>{mockOrder.customer.phone}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Order History</span>
-            <span style={styles.infoValue}>{mockOrder.customer.orderHistoryCount} orders</span>
-          </div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="font-semibold text-sm mb-4">Customer Information</div>
+          {[
+            { label: 'Name', value: mockOrder.customer.name },
+            { label: 'Email', value: mockOrder.customer.email },
+            { label: 'Phone', value: mockOrder.customer.phone },
+            { label: 'Order History', value: `${mockOrder.customer.orderHistoryCount} orders` }
+          ].map((row, idx) => (
+            <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
+              <span className="text-wl-muted font-medium">{row.label}</span>
+              <span className="text-wl-text font-semibold">{row.value}</span>
+            </div>
+          ))}
         </div>
 
         {/* Delivery Address */}
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Delivery Address</div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Street</span>
-            <span style={styles.infoValue}>{mockOrder.address.street}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>City</span>
-            <span style={styles.infoValue}>{mockOrder.address.city}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>State</span>
-            <span style={styles.infoValue}>{mockOrder.address.state}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Zip</span>
-            <span style={styles.infoValue}>{mockOrder.address.zip}</span>
-          </div>
-          <div style={styles.mapPlaceholder}>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="font-semibold text-sm mb-4">Delivery Address</div>
+          {[
+            { label: 'Street', value: mockOrder.address.street },
+            { label: 'City', value: mockOrder.address.city },
+            { label: 'State', value: mockOrder.address.state },
+            { label: 'Zip', value: mockOrder.address.zip }
+          ].map((row, idx) => (
+            <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
+              <span className="text-wl-muted font-medium">{row.label}</span>
+              <span className="text-wl-text font-semibold">{row.value}</span>
+            </div>
+          ))}
+          <div className="w-full h-52 bg-wl-bg border border-wl-border rounded mt-3 flex items-center justify-center text-wl-muted text-sm">
             Map View Placeholder
           </div>
         </div>
 
         {/* Shipment Info */}
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Shipment Information</div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Tracking #</span>
-            <span style={styles.infoValue}>{mockOrder.shipment.trackingNumber}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Carrier</span>
-            <span style={styles.infoValue}>{mockOrder.shipment.carrier}</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Status</span>
-            <span>
-              <Badge
-                label={mockOrder.shipment.status.charAt(0).toUpperCase() + mockOrder.shipment.status.slice(1)}
-                color={shipmentStatusColors[mockOrder.shipment.status]}
-              />
-            </span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Estimated Delivery</span>
-            <span style={styles.infoValue}>{mockOrder.shipment.eta}</span>
-          </div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="font-semibold text-sm mb-4">Shipment Information</div>
+          {[
+            { label: 'Tracking #', value: mockOrder.shipment.trackingNumber },
+            { label: 'Carrier', value: mockOrder.shipment.carrier },
+            { label: 'Status', value: null, isBadge: true },
+            { label: 'Estimated Delivery', value: mockOrder.shipment.eta }
+          ].map((row, idx) => (
+            <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
+              <span className="text-wl-muted font-medium">{row.label}</span>
+              {row.isBadge ? (
+                <Badge
+                  label={mockOrder.shipment.status.charAt(0).toUpperCase() + mockOrder.shipment.status.slice(1)}
+                  color={shipmentStatusColors[mockOrder.shipment.status]}
+                />
+              ) : (
+                <span className="text-wl-text font-semibold">{row.value}</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Line Items */}
-      <div style={{ ...styles.card, ...styles.fullWidth, marginBottom: '20px' }}>
-        <div style={styles.cardTitle}>Line Items</div>
-        <table style={styles.table}>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="font-semibold text-sm mb-4">Line Items</div>
+        <table className="w-full border-collapse mt-4">
           <thead>
             <tr>
-              <th style={styles.tableHeader}>Product</th>
-              <th style={styles.tableHeader}>SKU</th>
-              <th style={styles.tableHeader}>Qty</th>
-              <th style={styles.tableHeader}>Unit Price</th>
-              <th style={styles.tableHeader}>Total</th>
+              {['Product', 'SKU', 'Qty', 'Unit Price', 'Total'].map(h => (
+                <th key={h} className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {mockOrder.lineItems.map(item => (
               <tr key={item.id}>
-                <td style={styles.tableCell}>{item.product}</td>
-                <td style={styles.tableCell}>{item.sku}</td>
-                <td style={styles.tableCell}>{item.quantity}</td>
-                <td style={styles.tableCell}>₹{item.unitPrice.toLocaleString()}</td>
-                <td style={styles.tableCell}>₹{item.total.toLocaleString()}</td>
+                <td className="border-b border-wl-border p-3 text-sm">{item.product}</td>
+                <td className="border-b border-wl-border p-3 text-sm">{item.sku}</td>
+                <td className="border-b border-wl-border p-3 text-sm">{item.quantity}</td>
+                <td className="border-b border-wl-border p-3 text-sm">₹{item.unitPrice.toLocaleString()}</td>
+                <td className="border-b border-wl-border p-3 text-sm">₹{item.total.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         {/* Order Totals */}
-        <div style={styles.totalsTable}>
-          <div style={styles.totalRow}>
-            <span>Subtotal</span>
-            <span>₹{mockOrder.subtotal.toLocaleString()}</span>
-          </div>
-          <div style={styles.totalRow}>
-            <span>Tax</span>
-            <span>₹{mockOrder.tax.toLocaleString()}</span>
-          </div>
-          <div style={styles.totalRow}>
-            <span>Shipping</span>
-            <span>₹{mockOrder.shipping.toLocaleString()}</span>
-          </div>
-          <div style={styles.totalRow}>
-            <span>Discount</span>
-            <span>-₹{mockOrder.discount.toLocaleString()}</span>
-          </div>
-          <div style={styles.grandTotal}>
+        <div className="mt-4">
+          {[
+            { label: 'Subtotal', value: `₹${mockOrder.subtotal.toLocaleString()}` },
+            { label: 'Tax', value: `₹${mockOrder.tax.toLocaleString()}` },
+            { label: 'Shipping', value: `₹${mockOrder.shipping.toLocaleString()}` },
+            { label: 'Discount', value: `-₹${mockOrder.discount.toLocaleString()}` }
+          ].map((row, idx) => (
+            <div key={idx} className="flex justify-between py-2 border-b border-wl-border text-sm">
+              <span>{row.label}</span>
+              <span>{row.value}</span>
+            </div>
+          ))}
+          <div className="flex justify-between py-4 border-t border-wl-border text-base font-bold text-wl-primary">
             <span>Total Amount</span>
             <span>₹{mockOrder.total.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {/* Activity Timeline */}
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Activity Timeline</div>
-          <div style={styles.timeline}>
-            {mockOrder.activities.map(activity => (
-              <div key={activity.id} style={styles.timelineItem}>
-                <div style={styles.timelineDot} />
-                <div style={styles.timelineTime}>{activity.timestamp}</div>
-                <div style={styles.timelineAction}>{activity.action.replace(/_/g, ' ').toUpperCase()}</div>
-                <div style={styles.timelineDescription}>{activity.description}</div>
-                <div style={{ fontSize: '12px', color: 'var(--wl-muted)', marginTop: '4px' }}>
-                  by {activity.actor}
-                </div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="font-semibold text-sm mb-4">Activity Timeline</div>
+          <div className="relative pl-8">
+            {mockOrder.activities.map((activity, idx) => (
+              <div key={activity.id} className="mb-5 pb-5 border-b border-wl-border last:border-0">
+                <div className="absolute left-0 top-0 w-3 h-3 rounded-full bg-wl-primary border-4 border-wl-surface" />
+                <div className="text-xs text-wl-muted">{activity.timestamp}</div>
+                <div className="text-sm font-semibold text-wl-text mt-1">{activity.action.replace(/_/g, ' ').toUpperCase()}</div>
+                <div className="text-xs text-wl-muted mt-1">{activity.description}</div>
+                <div className="text-xs text-wl-muted mt-1">by {activity.actor}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Notes Section */}
-        <div style={styles.card}>
-          <div style={styles.cardTitle}>Internal Notes</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="font-semibold text-sm mb-4">Internal Notes</div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={styles.label}>Add Note</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1">Add Note</label>
             <textarea
-              style={styles.textarea}
+              className="w-full p-3 bg-wl-bg border border-wl-border rounded text-wl-text text-sm min-h-20 font-inherit box-border"
               placeholder="Add internal notes..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
             />
             <button
               onClick={addNote}
-              style={{
-                ...styles.button,
-                ...styles.primaryButton,
-                marginTop: '10px',
-                width: '100%'
-              }}
+              className="w-full mt-2 px-4 py-2 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
             >
               Add Note
             </button>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--wl-border)', paddingTop: '15px' }}>
-            <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--wl-muted)', marginBottom: '12px' }}>
+          <div className="border-t border-wl-border pt-4">
+            <div className="text-xs font-semibold text-wl-muted mb-3">
               {notes.length} Note{notes.length !== 1 ? 's' : ''}
             </div>
             {notes.map(note => (
-              <div key={note.id} style={styles.noteCard}>
-                <div style={styles.noteHeader}>
-                  <span style={styles.noteAuthor}>{note.author}</span>
-                  <span style={styles.noteTime}>{note.timestamp}</span>
+              <div key={note.id} className="bg-wl-bg border border-wl-border rounded p-3 mb-3">
+                <div className="flex justify-between mb-2 text-xs">
+                  <span className="font-semibold text-wl-text">{note.author}</span>
+                  <span className="text-wl-muted">{note.timestamp}</span>
                 </div>
-                <div style={styles.noteContent}>{note.content}</div>
+                <div className="text-sm text-wl-text leading-relaxed">{note.content}</div>
               </div>
             ))}
           </div>

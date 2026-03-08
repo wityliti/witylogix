@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { cn } from "../../lib/utils";
 import { Header } from "../../components/layout/header";
 import { StatCard } from "../../components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
@@ -314,7 +315,7 @@ export default function DeliveryPage() {
         title="Delivery Operations"
         subtitle="Manage and track all deliveries in real-time"
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-3)" }}>
+          <div className={cn("flex gap-3")}>
             <Button variant="secondary" size="md">
               <Download className="w-4 h-4 mr-2" />
               Export CSV
@@ -327,9 +328,9 @@ export default function DeliveryPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className={cn("p-6")}>
         {/* Top Stats Bar */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--wl-space-4)", marginBottom: "var(--wl-space-6)" }}>
+        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6")}>
           <StatCard
             label="Pending"
             value={queueCount}
@@ -361,17 +362,17 @@ export default function DeliveryPage() {
         </div>
 
         {/* Tabs Navigation */}
-        <div style={{ marginBottom: "var(--wl-space-6)" }}>
+        <div className={cn("mb-6")}>
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="underline" />
         </div>
 
         {/* Queue Tab */}
         {activeTab === "queue" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+          <div className={cn("flex flex-col gap-4")}>
             {/* Filters */}
             <Card>
               <CardContent>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--wl-space-4)" }}>
+                <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4")}>
                   <Select
                     label="Status"
                     value={statusFilter}
@@ -411,13 +412,13 @@ export default function DeliveryPage() {
 
             {/* Batch Actions */}
             {selectedOrders.size > 0 && (
-              <Card style={{ background: "rgba(245, 166, 35, 0.08)", borderColor: "var(--wl-primary-500)" }}>
+              <Card className={cn("bg-[rgba(245,166,35,0.08)]")} style={{ borderColor: "var(--wl-primary-500)" }}>
                 <CardContent>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div className={cn("flex items-center justify-between")}>
                     <span style={{ color: "var(--wl-text-secondary)" }}>
                       {selectedOrders.size} order{selectedOrders.size !== 1 ? "s" : ""} selected
                     </span>
-                    <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                    <div className={cn("flex gap-2")}>
                       <Button variant="primary" size="sm">
                         Assign Driver
                       </Button>
@@ -444,14 +445,14 @@ export default function DeliveryPage() {
                       sortable: true,
                       width: "120px",
                       render: (order) => (
-                        <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+                        <div className={cn("flex items-center gap-2")}>
                           <input
                             type="checkbox"
                             checked={selectedOrders.has(order.id)}
                             onChange={() => toggleOrderSelection(order.id)}
-                            style={{ cursor: "pointer" }}
+                            className={cn("cursor-pointer")}
                           />
-                          <span style={{ fontFamily: "var(--wl-font-mono)", fontWeight: 600 }}>
+                          <span className={cn("font-semibold")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                             {order.orderNumber}
                           </span>
                         </div>
@@ -523,7 +524,7 @@ export default function DeliveryPage() {
 
         {/* In Transit Tab */}
         {activeTab === "in-transit" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: "var(--wl-space-4)" }}>
+          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-4")}>
             {IN_TRANSIT_DELIVERIES.map((delivery, i) => (
               <Card
                 key={delivery.id}
@@ -533,13 +534,13 @@ export default function DeliveryPage() {
                   animationDelay: `${i * 60}ms`,
                 }}
               >
-                <CardHeader style={{ marginBottom: "var(--wl-space-4)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <CardHeader className={cn("mb-4")}>
+                  <div className={cn("flex justify-between items-center w-full")}>
                     <div>
-                      <h4 style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, color: "var(--wl-text-primary)", margin: 0 }}>
+                      <h4 className={cn("text-base font-bold text-wl-text-primary m-0")}>
                         {delivery.driverName}
                       </h4>
-                      <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", margin: "var(--wl-space-1) 0 0 0" }}>
+                      <p className={cn("text-xs text-wl-text-tertiary m-0 mt-1")}>
                         Route {delivery.driverId}
                       </p>
                     </div>
@@ -549,14 +550,14 @@ export default function DeliveryPage() {
 
                 <CardContent>
                   {/* Current Stop */}
-                  <div style={{ marginBottom: "var(--wl-space-4)", padding: "var(--wl-space-3)", background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-md)" }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--wl-space-2)" }}>
-                      <MapPin className="w-4 h-4" style={{ color: "var(--wl-info-400)", marginTop: 2, flexShrink: 0 }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                  <div className={cn("mb-4 p-3 bg-wl-bg-surface rounded-lg")}>
+                    <div className={cn("flex items-start gap-2")}>
+                      <MapPin className="w-4 h-4 text-wl-info-400 mt-0.5 flex-shrink-0" />
+                      <div className={cn("flex-1")}>
+                        <div className={cn("text-xs text-wl-text-tertiary")}>
                           Current Stop
                         </div>
-                        <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", marginTop: 2 }}>
+                        <div className={cn("text-sm font-semibold text-wl-text-primary mt-0.5")}>
                           {delivery.currentStop}
                         </div>
                       </div>
@@ -564,53 +565,52 @@ export default function DeliveryPage() {
                   </div>
 
                   {/* Progress */}
-                  <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--wl-space-2)" }}>
-                      <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("mb-4")}>
+                    <div className={cn("flex justify-between items-center mb-2")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>
                         Progress
                       </span>
-                      <span style={{ fontSize: "var(--wl-text-xs)", fontFamily: "var(--wl-font-mono)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                      <span className={cn("text-xs font-semibold text-wl-text-primary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                         {delivery.stopsCompleted} / {delivery.stopsTotal}
                       </span>
                     </div>
-                    <div style={{ width: "100%", height: 6, background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-full)", overflow: "hidden" }}>
+                    <div className={cn("w-full h-1.5 bg-wl-bg-surface rounded-full overflow-hidden")}>
                       <div
+                        className={cn("h-full bg-wl-success-400")}
                         style={{
-                          height: "100%",
                           width: `${(delivery.stopsCompleted / delivery.stopsTotal) * 100}%`,
-                          background: "var(--wl-success-400)",
                         }}
                       />
                     </div>
                   </div>
 
                   {/* ETA and Orders */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-3)", marginBottom: "var(--wl-space-4)" }}>
+                  <div className={cn("grid grid-cols-2 gap-3 mb-4")}>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                      <div className={cn("text-xs text-wl-text-tertiary")}>
                         ETA
                       </div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 2 }}>
+                      <div className={cn("text-sm font-bold text-wl-text-primary mt-0.5")}>
                         {delivery.eta}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                      <div className={cn("text-xs text-wl-text-tertiary")}>
                         Orders
                       </div>
-                      <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 2 }}>
+                      <div className={cn("text-sm font-bold text-wl-text-primary mt-0.5")}>
                         {delivery.ordersInRoute}
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
-                    <Button variant="secondary" size="sm" style={{ flex: 1 }}>
+                  <div className={cn("flex gap-2")}>
+                    <Button variant="secondary" size="sm" className={cn("flex-1")}>
                       <Phone className="w-4 h-4 mr-2" />
                       Contact
                     </Button>
-                    <Button variant="ghost" size="sm" style={{ flex: 1 }}>
+                    <Button variant="ghost" size="sm" className={cn("flex-1")}>
                       Reassign
                     </Button>
                   </div>
@@ -622,40 +622,40 @@ export default function DeliveryPage() {
 
         {/* Completed Tab */}
         {activeTab === "completed" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+          <div className={cn("flex flex-col gap-4")}>
             {/* Stats Row */}
             <Card>
               <CardContent>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "var(--wl-space-4)" }}>
+                <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4")}>
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className={cn("text-xs text-wl-text-tertiary")}>
                       Total Delivered
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 4 }}>
+                    <div className={cn("text-2xl font-bold text-wl-text-primary mt-1")}>
                       {COMPLETED_DELIVERIES.length}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className={cn("text-xs text-wl-text-tertiary")}>
                       On-Time %
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, color: "var(--wl-success-400)", marginTop: 4 }}>
+                    <div className={cn("text-2xl font-bold text-wl-success-400 mt-1")}>
                       92%
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className={cn("text-xs text-wl-text-tertiary")}>
                       Avg Delivery Time
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, color: "var(--wl-text-primary)", marginTop: 4 }}>
+                    <div className={cn("text-2xl font-bold text-wl-text-primary mt-1")}>
                       23m
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className={cn("text-xs text-wl-text-tertiary")}>
                       Avg Rating
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, color: "var(--wl-info-400)", marginTop: 4 }}>
+                    <div className={cn("text-2xl font-bold text-wl-info-400 mt-1")}>
                       4.7
                     </div>
                   </div>
@@ -730,7 +730,7 @@ export default function DeliveryPage() {
                     align: "center" as const,
                     width: "80px",
                     render: (exception) => (
-                      <span style={{ fontFamily: "var(--wl-font-mono)", fontWeight: 600 }}>
+                      <span className={cn("font-semibold")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                         {exception.attempts}
                       </span>
                     ),
@@ -742,7 +742,7 @@ export default function DeliveryPage() {
                     width: "140px",
                     align: "center" as const,
                     render: () => (
-                      <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                      <div className={cn("flex gap-2")}>
                         <Button variant="ghost" size="sm">
                           Reschedule
                         </Button>

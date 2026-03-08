@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '../../../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
@@ -166,47 +167,38 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
 
   if (!profile) {
     return (
-      <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
-        <p style={{ color: '#94a3b8' }}>Profile not found</p>
+      <div className={cn("p-6 min-h-screen bg-wl-bg")}>
+        <p className={cn("text-wl-muted")}>Profile not found</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
+    <div className={cn("p-6 min-h-screen bg-wl-bg")}>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      <div className={cn("mb-6")}>
+        <div className={cn("flex justify-between items-start mb-3")}>
           <div>
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '4px' }}>
+            <h1 className={cn("text-4xl font-bold text-wl-text mb-1")}>
               {isEditing ? (
                 <Input
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    backgroundColor: '#12121a',
-                    border: '1px solid #6C63FF',
-                    borderRadius: '6px',
-                    color: '#e2e8f0',
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                  }}
+                  className={cn("w-full p-2 px-3 bg-wl-bg border border-wl-primary rounded text-wl-text text-2xl font-bold")}
                 />
               ) : (
                 profile.name
               )}
             </h1>
-            <p style={{ color: '#94a3b8' }}>ID: {profile.id}</p>
+            <p className={cn("text-wl-muted")}>ID: {profile.id}</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className={cn("flex gap-2")}>
             {isEditing ? (
               <>
                 <Button
                   variant="primary"
                   size="md"
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  className={cn("flex items-center gap-1.5")}
                   onClick={handleSave}
                 >
                   <Save size={16} /> Save Changes
@@ -214,7 +206,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 <Button
                   variant="ghost"
                   size="md"
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  className={cn("flex items-center gap-1.5")}
                   onClick={handleCancel}
                 >
                   <X size={16} /> Cancel
@@ -224,7 +216,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               <Button
                 variant="secondary"
                 size="md"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                className={cn("flex items-center gap-1.5")}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit size={16} /> Edit Profile
@@ -232,33 +224,33 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className={cn("flex gap-3 items-center flex-wrap")}>
           <Badge variant={profile.status === 'active' ? 'success' : 'warning'}>{profile.status.toUpperCase()}</Badge>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Last updated: {profile.lastUpdated}</span>
+          <span className={cn("text-xs text-wl-muted")}>Last updated: {profile.lastUpdated}</span>
         </div>
       </div>
 
       {/* Quick Info Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-          <CardContent style={{ padding: '20px' }}>
-            <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6")}>
+        <Card className={cn("bg-wl-card border border-wl-border")}>
+          <CardContent className={cn("p-5")}>
+            <p className={cn("text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5")}>
               <Truck size={14} /> Carrier
             </p>
-            <p style={{ fontSize: '16px', color: '#e2e8f0', fontWeight: '600' }}>{profile.carrier}</p>
+            <p className={cn("text-base text-wl-text font-semibold")}>{profile.carrier}</p>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-          <CardContent style={{ padding: '20px' }}>
-            <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Card className={cn("bg-wl-card border border-wl-border")}>
+          <CardContent className={cn("p-5")}>
+            <p className={cn("text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5")}>
               <DollarSign size={14} /> Default Cost
             </p>
-            <p style={{ fontSize: '16px', color: '#6C63FF', fontWeight: '600' }}>${profile.defaultCost.toFixed(2)}</p>
+            <p className={cn("text-base font-semibold")} style={{ color: "#6C63FF" }}>${profile.defaultCost.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-          <CardContent style={{ padding: '20px' }}>
-            <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Card className={cn("bg-wl-card border border-wl-border")}>
+          <CardContent className={cn("p-5")}>
+            <p className={cn("text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5")}>
               <Settings size={14} /> Cost Structure
             </p>
             {isEditing ? (
@@ -268,7 +260,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 <option value="tiered">Tiered</option>
               </Select>
             ) : (
-              <p style={{ fontSize: '16px', color: '#e2e8f0', fontWeight: '600' }}>{costStructure.replace('-', ' ').toUpperCase()}</p>
+              <p className={cn("text-base text-wl-text font-semibold")}>{costStructure.replace('-', ' ').toUpperCase()}</p>
             )}
           </CardContent>
         </Card>
@@ -276,22 +268,16 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
 
       {/* Tabs for Editing */}
       {isEditing && (
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '12px', flexWrap: 'wrap' }}>
+        <div className={cn("mb-6")}>
+          <div className={cn("flex gap-2 border-b border-wl-border pb-3 flex-wrap")}>
             {(['rates', 'rules', 'windows', 'locations', 'calendar'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setEditingTab(tab)}
+                className={cn("px-4 py-2 rounded border-none cursor-pointer text-xs font-semibold transition-all")}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: 'none',
                   backgroundColor: editingTab === tab ? '#6C63FF' : 'transparent',
                   color: editingTab === tab ? '#e2e8f0' : '#94a3b8',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  transition: 'all 200ms ease',
                 }}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -302,82 +288,82 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       )}
 
       {/* Rate Table Section */}
-      <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-        <CardHeader style={{ paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Card className={cn("bg-wl-card border border-wl-border mb-6")}>
+        <CardHeader className={cn("pb-4 border-b border-wl-border")}>
+          <CardTitle className={cn("flex items-center gap-2")}>
             <DollarSign size={18} style={{ color: '#6C63FF' }} /> Rate Configuration
           </CardTitle>
         </CardHeader>
-        <CardContent style={{ padding: '24px' }}>
+        <CardContent className={cn("p-6")}>
           {!isEditing || editingTab === 'rates' ? (
             <>
-              <div style={{ overflowX: 'auto', marginBottom: '16px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className={cn("overflow-x-auto mb-4")}>
+                <table className={cn("w-full border-collapse")}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Zone</th>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Distance</th>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Base Rate</th>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Per KM</th>
-                      <th style={{ padding: '12px', textAlign: 'left', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Min Cost</th>
-                      {isEditing && <th style={{ padding: '12px', textAlign: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>Action</th>}
+                    <tr className={cn("border-b border-wl-border")}>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>Zone</th>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>Distance</th>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>Base Rate</th>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>Per KM</th>
+                      <th className={cn("p-3 text-left text-wl-muted text-xs font-semibold")}>Min Cost</th>
+                      {isEditing && <th className={cn("p-3 text-center text-wl-muted text-xs font-semibold")}>Action</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {rateTable.map((rate, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #1e293b' }}>
-                        <td style={{ padding: '12px', color: '#e2e8f0', fontSize: '13px' }}>
+                      <tr key={idx} className={cn("border-b border-wl-border")}>
+                        <td className={cn("p-3 text-wl-text text-sm")}>
                           {isEditing ? (
-                            <Input value={rate.zone} onChange={(e) => updateRate(idx, 'zone', e.target.value)} style={{ width: '100%' }} />
+                            <Input value={rate.zone} onChange={(e) => updateRate(idx, 'zone', e.target.value)} className={cn("w-full")} />
                           ) : (
                             rate.zone
                           )}
                         </td>
-                        <td style={{ padding: '12px', color: '#e2e8f0', fontSize: '13px' }}>
+                        <td className={cn("p-3 text-wl-text text-sm")}>
                           {isEditing ? (
-                            <Input value={rate.distance} onChange={(e) => updateRate(idx, 'distance', e.target.value)} style={{ width: '100%' }} />
+                            <Input value={rate.distance} onChange={(e) => updateRate(idx, 'distance', e.target.value)} className={cn("w-full")} />
                           ) : (
                             rate.distance
                           )}
                         </td>
-                        <td style={{ padding: '12px', color: '#6C63FF', fontSize: '13px', fontWeight: '600' }}>
+                        <td className={cn("p-3 text-sm font-semibold")} style={{ color: '#6C63FF' }}>
                           {isEditing ? (
                             <Input
                               type="number"
                               value={rate.baseRate}
                               onChange={(e) => updateRate(idx, 'baseRate', parseFloat(e.target.value))}
-                              style={{ width: '100%' }}
+                              className={cn("w-full")}
                             />
                           ) : (
                             `$${rate.baseRate.toFixed(2)}`
                           )}
                         </td>
-                        <td style={{ padding: '12px', color: '#e2e8f0', fontSize: '13px' }}>
+                        <td className={cn("p-3 text-wl-text text-sm")}>
                           {isEditing ? (
                             <Input
                               type="number"
                               value={rate.perKm}
                               onChange={(e) => updateRate(idx, 'perKm', parseFloat(e.target.value))}
-                              style={{ width: '100%' }}
+                              className={cn("w-full")}
                             />
                           ) : (
                             `$${rate.perKm.toFixed(2)}`
                           )}
                         </td>
-                        <td style={{ padding: '12px', color: '#e2e8f0', fontSize: '13px' }}>
+                        <td className={cn("p-3 text-wl-text text-sm")}>
                           {isEditing ? (
                             <Input
                               type="number"
                               value={rate.minCost}
                               onChange={(e) => updateRate(idx, 'minCost', parseFloat(e.target.value))}
-                              style={{ width: '100%' }}
+                              className={cn("w-full")}
                             />
                           ) : (
                             `$${rate.minCost.toFixed(2)}`
                           )}
                         </td>
                         {isEditing && (
-                          <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <td className={cn("p-3 text-center")}>
                             <Button variant="danger" size="sm" onClick={() => deleteRate(idx)}>
                               <Trash2 size={14} />
                             </Button>
@@ -389,7 +375,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 </table>
               </div>
               {isEditing && (
-                <Button variant="secondary" size="sm" onClick={addRate} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Button variant="secondary" size="sm" onClick={addRate} className={cn("flex items-center gap-1.5")}>
                   <Plus size={14} /> Add Rate
                 </Button>
               )}
@@ -399,34 +385,26 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Zone-Based Rules */}
-      <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-        <CardHeader style={{ paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Card className={cn("bg-wl-card border border-wl-border mb-6")}>
+        <CardHeader className={cn("pb-4 border-b border-wl-border")}>
+          <CardTitle className={cn("flex items-center gap-2")}>
             <AlertCircle size={18} style={{ color: '#f5a623' }} /> Zone-Based Rules
           </CardTitle>
         </CardHeader>
-        <CardContent style={{ padding: '24px' }}>
+        <CardContent className={cn("p-6")}>
           {!isEditing || editingTab === 'rules' ? (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+              <div className={cn("flex flex-col gap-3 mb-4")}>
                 {rules.map((rule) => (
                   <div
                     key={rule.id}
-                    style={{
-                      padding: '12px',
-                      borderRadius: '6px',
-                      backgroundColor: '#0a0a0f',
-                      border: '1px solid #1e293b',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
+                    className={cn("p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-center")}
                   >
                     <div>
-                      <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>
+                      <p className={cn("text-xs text-wl-muted mb-1")}>
                         <strong>{rule.zone}</strong> · {rule.condition}
                       </p>
-                      <Badge variant="success" style={{ fontSize: '11px' }}>
+                      <Badge variant="success" className={cn("text-xs")}>
                         {rule.discount} Discount
                       </Badge>
                     </div>
@@ -440,18 +418,8 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               </div>
 
               {isEditing && (
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '6px',
-                    backgroundColor: '#0f0f15',
-                    border: '1px solid #1e293b',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                  }}
-                >
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div className={cn("p-4 rounded bg-wl-bg border border-wl-border flex flex-col gap-3")}>
+                  <div className={cn("grid grid-cols-3 gap-2")}>
                     <Select value={newRuleZone} onChange={(v) => setNewRuleZone(v)}>
                       <option value="">Zone</option>
                       {rateTable.map((r) => (
@@ -463,7 +431,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                     <Input placeholder="Condition (e.g., weight < 5kg)" value={newRuleCondition} onChange={(e) => setNewRuleCondition(e.target.value)} />
                     <Input placeholder="Discount %" value={newRuleDiscount} onChange={(e) => setNewRuleDiscount(e.target.value)} />
                   </div>
-                  <Button variant="primary" size="sm" onClick={addRule} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Button variant="primary" size="sm" onClick={addRule} className={cn("flex items-center gap-1.5")}>
                     <Plus size={14} /> Add Rule
                   </Button>
                 </div>
@@ -474,31 +442,23 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Delivery Time Windows */}
-      <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-        <CardHeader style={{ paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Card className={cn("bg-wl-card border border-wl-border mb-6")}>
+        <CardHeader className={cn("pb-4 border-b border-wl-border")}>
+          <CardTitle className={cn("flex items-center gap-2")}>
             <Clock size={18} style={{ color: '#6C63FF' }} /> Delivery Time Windows
           </CardTitle>
         </CardHeader>
-        <CardContent style={{ padding: '24px' }}>
+        <CardContent className={cn("p-6")}>
           {!isEditing || editingTab === 'windows' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className={cn("flex flex-col gap-3")}>
               {timeWindows.map((window, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    padding: '12px',
-                    borderRadius: '6px',
-                    backgroundColor: '#0a0a0f',
-                    border: '1px solid #1e293b',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
+                  className={cn("p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-center")}
                 >
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: '600' }}>{window.day}</p>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  <div className={cn("flex-1")}>
+                    <p className={cn("text-sm text-wl-text font-semibold")}>{window.day}</p>
+                    <p className={cn("text-xs text-wl-muted mt-1")}>
                       {window.start} – {window.end}
                     </p>
                   </div>
@@ -507,7 +467,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                       variant={window.active ? 'primary' : 'ghost'}
                       size="sm"
                       onClick={() => toggleTimeWindow(idx)}
-                      style={{ minWidth: '80px' }}
+                      className={cn("min-w-20")}
                     >
                       {window.active ? 'Active' : 'Inactive'}
                     </Button>
@@ -522,32 +482,24 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Location Attachments */}
-      <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-        <CardHeader style={{ paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Card className={cn("bg-wl-card border border-wl-border mb-6")}>
+        <CardHeader className={cn("pb-4 border-b border-wl-border")}>
+          <CardTitle className={cn("flex items-center gap-2")}>
             <MapPin size={18} style={{ color: '#6C63FF' }} /> Attached Locations
           </CardTitle>
         </CardHeader>
-        <CardContent style={{ padding: '24px' }}>
+        <CardContent className={cn("p-6")}>
           {!isEditing || editingTab === 'locations' ? (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+              <div className={cn("flex flex-col gap-3 mb-4")}>
                 {locations.map((location) => (
                   <div
                     key={location.id}
-                    style={{
-                      padding: '12px',
-                      borderRadius: '6px',
-                      backgroundColor: '#0a0a0f',
-                      border: '1px solid #1e293b',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                    }}
+                    className={cn("p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-start")}
                   >
                     <div>
-                      <p style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: '600' }}>{location.name}</p>
-                      <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>{location.address}</p>
+                      <p className={cn("text-sm text-wl-text font-semibold")}>{location.name}</p>
+                      <p className={cn("text-xs text-wl-muted mt-1")}>{location.address}</p>
                     </div>
                     {isEditing && (
                       <Button variant="danger" size="sm" onClick={() => deleteLocation(location.id)}>
@@ -559,20 +511,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               </div>
 
               {isEditing && (
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '6px',
-                    backgroundColor: '#0f0f15',
-                    border: '1px solid #1e293b',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                  }}
-                >
+                <div className={cn("p-4 rounded bg-wl-bg border border-wl-border flex flex-col gap-3")}>
                   <Input placeholder="Location Name" value={newLocationName} onChange={(e) => setNewLocationName(e.target.value)} />
                   <Input placeholder="Address" value={newLocationAddress} onChange={(e) => setNewLocationAddress(e.target.value)} />
-                  <Button variant="primary" size="sm" onClick={addLocation} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Button variant="primary" size="sm" onClick={addLocation} className={cn("flex items-center gap-1.5")}>
                     <Plus size={14} /> Add Location
                   </Button>
                 </div>
@@ -583,13 +525,13 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Calendar Profile Picker */}
-      <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-        <CardHeader style={{ paddingBottom: '16px', borderBottom: '1px solid #1e293b' }}>
-          <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Card className={cn("bg-wl-card border border-wl-border")}>
+        <CardHeader className={cn("pb-4 border-b border-wl-border")}>
+          <CardTitle className={cn("flex items-center gap-2")}>
             <Calendar size={18} style={{ color: '#6C63FF' }} /> Calendar Profile
           </CardTitle>
         </CardHeader>
-        <CardContent style={{ padding: '24px' }}>
+        <CardContent className={cn("p-6")}>
           {isEditing ? (
             <Select value={calendarProfile} onChange={(v) => setCalendarProfile(v)}>
               <option value="Business Hours">Business Hours</option>
@@ -598,7 +540,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               <option value="Weekend">Weekend Only</option>
             </Select>
           ) : (
-            <p style={{ fontSize: '14px', color: '#e2e8f0' }}>{calendarProfile}</p>
+            <p className={cn("text-base text-wl-text")}>{calendarProfile}</p>
           )}
         </CardContent>
       </Card>

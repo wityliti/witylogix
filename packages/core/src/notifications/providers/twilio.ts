@@ -99,9 +99,18 @@ export class TwilioSMSProvider implements NotificationProvider {
         return false;
       }
 
-      // TODO: Make test API call to validate credentials
-      // GET https://api.twilio.com/2010-04-01/Accounts/{sid}
-      return true;
+      // Make test API call to validate credentials
+      const auth = Buffer.from(`${config.accountSid}:${config.authToken}`).toString("base64");
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${config.accountSid}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Basic ${auth}`,
+        },
+      });
+
+      return response.ok;
     } catch {
       return false;
     }
@@ -119,8 +128,21 @@ export class TwilioSMSProvider implements NotificationProvider {
     try {
       const startTime = Date.now();
 
-      // TODO: Make health check request
-      // GET https://api.twilio.com/2010-04-01/Accounts/{sid}
+      // Make health check request
+      const auth = Buffer.from(`${this.config.accountSid}:${this.config.authToken}`).toString("base64");
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${this.config.accountSid}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Basic ${auth}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.statusText}`);
+      }
+
       const status: ProviderStatus = {
         healthy: true,
         latency: Date.now() - startTime,
@@ -156,7 +178,7 @@ export class TwilioSMSProvider implements NotificationProvider {
   /**
    * Send HTTP request to Twilio API.
    * Uses Basic Authentication with accountSid:authToken.
-   * TODO: Implement actual HTTP call.
+   * POST to https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json
    */
   private async sendRequest(
     payload: Record<string, string>,
@@ -164,49 +186,59 @@ export class TwilioSMSProvider implements NotificationProvider {
     const accountSid = this.config.accountSid;
     const authToken = this.config.authToken;
 
-    // TODO: Replace with actual fetch call
-    // const auth = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
-    // const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-    //
-    // const response = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Authorization": `Basic ${auth}`,
-    //     "Content-Type": "application/x-www-form-urlencoded",
-    //   },
-    //   body: new URLSearchParams(payload).toString(),
-    // });
-    //
-    // const data = await response.json() as { sid?: string; error_code?: string };
-    //
-    // if (!response.ok) {
-    //   const errorCode = data.error_code || response.status;
-    //   switch (errorCode) {
-    //     case 429:
-    //     case "20429":
-    //       throw new RateLimitError("twilio", "Rate limit exceeded");
-    //     case 21211:
-    //       throw new InvalidRecipientError(
-    //         "twilio",
-    //         payload.To,
-    //         "Invalid phone number format",
-    //       );
-    //     case 20003:
-    //       throw new AuthenticationError("twilio", "Invalid credentials");
-    //     default:
-    //       throw new ProviderError(
-    //         `TWILIO_${errorCode}`,
-    //         `Twilio error: ${errorCode}`,
-    //         "twilio",
-    //         false,
-    //       );
-    //   }
-    // }
-    //
-    // return data;
+    const auth = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+    const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
-    console.log("TODO: Implement Twilio API call", payload);
-    return { sid: "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" };
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(payload).toString(),
+    });
+
+    const data = await response.json() as { sid?: string; error_code?: string };
+
+    // Handle response status codes and Twilio error codes
+    if (response.status === 429) {
+      throw new RateLimitError("twilio", "Rate limit exceeded");
+    }
+
+    if (response.status === 401 || data.error_code === "20003") {
+      throw new AuthenticationError("twilio", "Invalid credentials (accountSid or authToken)");
+    }
+
+    if (!response.ok) {
+      const errorCode = data.error_code || response.status;
+
+      // Map Twilio-specific error codes
+      switch (errorCode) {
+        case "21211": // Invalid phone number
+          throw new InvalidRecipientError(
+            "twilio",
+            payload.To,
+            "Invalid phone number format",
+          );
+        case "21612": // Unverified phone number
+          throw new InvalidRecipientError(
+            "twilio",
+            payload.To,
+            "Phone number is not verified",
+          );
+        case "20429":
+          throw new RateLimitError("twilio", "Rate limit exceeded");
+        default:
+          throw new ProviderError(
+            `TWILIO_${errorCode}`,
+            `Twilio error: ${errorCode}`,
+            "twilio",
+            false,
+          );
+      }
+    }
+
+    return data;
   }
 
   /**

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
+import { cn } from "../../../lib/utils";
 
 interface Stop {
   id: string;
@@ -169,216 +170,25 @@ export default function CreateRoutePage() {
         ? formData.stops.length > 0
         : true;
 
-  const containerStyle: React.CSSProperties = {
-    minHeight: "100vh",
-    backgroundColor: "var(--wl-bg)",
-    padding: "24px",
-  };
-
-  const headerStyle: React.CSSProperties = {
-    marginBottom: "32px",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    color: "var(--wl-text)",
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "8px",
-  };
-
-  const subtitleStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    fontSize: "14px",
-  };
-
-  const stepsContainerStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    marginBottom: "32px",
-    maxWidth: "900px",
-  };
-
-  const stepStyle = (isActive: boolean, isCompleted: boolean): React.CSSProperties => ({
-    flex: 1,
-    padding: "12px 16px",
-    borderRadius: "8px",
-    backgroundColor: isActive
-      ? "var(--wl-primary)"
-      : isCompleted
-        ? "var(--wl-surface)"
-        : "var(--wl-surface)",
-    border: `1px solid ${isActive ? "var(--wl-primary)" : "var(--wl-border)"}`,
-    color: isActive ? "white" : "var(--wl-muted)",
-    textAlign: "center",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-  });
-
-  const contentStyle: React.CSSProperties = {
-    maxWidth: "900px",
-    marginBottom: "32px",
-  };
-
-  const formGroupStyle: React.CSSProperties = {
-    marginBottom: "24px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    color: "var(--wl-text)",
-    fontSize: "14px",
-    fontWeight: "600",
-    marginBottom: "8px",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-    color: "var(--wl-text)",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    transition: "border-color 0.2s ease",
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "16px",
-  };
-
-  const searchStyle: React.CSSProperties = {
-    ...inputStyle,
-    marginBottom: "16px",
-  };
-
-  const orderListStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "12px",
-    marginBottom: "24px",
-  };
-
-  const orderCardStyle: React.CSSProperties = {
-    padding: "16px",
-    borderRadius: "8px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  };
-
-  const mapPlaceholderStyle: React.CSSProperties = {
-    width: "100%",
-    height: "400px",
-    backgroundColor: "var(--wl-surface)",
-    borderRadius: "8px",
-    border: "1px solid var(--wl-border)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "24px",
-    position: "relative",
-    overflow: "hidden",
-  };
-
-  const stopListStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    marginTop: "16px",
-  };
-
-  const stopItemStyle = (isDragging: boolean): React.CSSProperties => ({
-    padding: "12px 16px",
-    borderRadius: "6px",
-    backgroundColor: isDragging ? "var(--wl-primary)" : "var(--wl-surface)",
-    border: `1px solid ${isDragging ? "var(--wl-primary)" : "var(--wl-border)"}`,
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    cursor: "grab",
-    transition: "all 0.2s ease",
-    opacity: isDragging ? 0.7 : 1,
-  });
-
-  const dragHandleStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-    color: "var(--wl-muted)",
-    fontSize: "12px",
-  };
-
-  const statsBarStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "16px",
-    margin: "24px 0",
-  };
-
-  const statCardStyle: React.CSSProperties = {
-    padding: "16px",
-    borderRadius: "8px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-    textAlign: "center",
-  };
-
-  const statValueStyle: React.CSSProperties = {
-    color: "var(--wl-primary)",
-    fontSize: "24px",
-    fontWeight: "700",
-    marginBottom: "4px",
-  };
-
-  const statLabelStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    fontSize: "12px",
-  };
-
-  const optionsGridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "12px",
-  };
-
-  const optionButtonStyle = (isSelected: boolean): React.CSSProperties => ({
-    padding: "16px",
-    borderRadius: "8px",
-    backgroundColor: isSelected ? "var(--wl-primary)" : "var(--wl-surface)",
-    border: `1px solid ${isSelected ? "var(--wl-primary)" : "var(--wl-border)"}`,
-    color: isSelected ? "white" : "var(--wl-text)",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    transition: "all 0.2s ease",
-    textAlign: "center",
-  });
-
-  const actionBarStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    maxWidth: "900px",
-    justifyContent: "space-between",
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Create New Route</h1>
-        <p style={subtitleStyle}>Set up a new delivery route with multiple stops</p>
+    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-wl-text mb-2">Create New Route</h1>
+        <p className="text-sm text-wl-muted">Set up a new delivery route with multiple stops</p>
       </div>
 
-      <div style={stepsContainerStyle}>
+      <div className="flex gap-3 mb-8 max-w-4xl">
         {["Route Basics", "Add Stops", "Map Preview", "Optimization"].map((name, idx) => (
           <div
             key={idx}
-            style={stepStyle(step === idx + 1, step > idx + 1)}
+            className={cn(
+              "flex-1 p-3 rounded-lg border text-center text-sm font-semibold cursor-pointer transition-all",
+              step === idx + 1
+                ? "bg-wl-primary text-white border-wl-primary"
+                : step > idx + 1
+                  ? "bg-wl-surface text-wl-muted border-wl-border"
+                  : "bg-wl-surface text-wl-muted border-wl-border"
+            )}
             onClick={() => step > idx + 1 && setStep(idx + 1)}
           >
             {name}
@@ -386,7 +196,7 @@ export default function CreateRoutePage() {
         ))}
       </div>
 
-      <Card style={{ maxWidth: "900px", marginBottom: "24px" }}>
+      <Card className="max-w-4xl mb-6">
         <CardHeader>
           <CardTitle>
             Step {step}:{" "}
@@ -401,38 +211,38 @@ export default function CreateRoutePage() {
         </CardHeader>
         <CardContent>
           {step === 1 && (
-            <div style={contentStyle}>
-              <div style={gridStyle}>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Route Name</label>
+            <div className="max-w-4xl">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-wl-text text-sm font-semibold mb-2">Route Name</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., Downtown Delivery Route A"
-                    style={inputStyle}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                   />
                 </div>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Delivery Date</label>
+                <div>
+                  <label className="block text-wl-text text-sm font-semibold mb-2">Delivery Date</label>
                   <input
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    style={inputStyle}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                   />
                 </div>
               </div>
-              <div style={gridStyle}>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Assign Driver</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-wl-text text-sm font-semibold mb-2">Assign Driver</label>
                   <select
                     name="driverId"
                     value={formData.driverId}
                     onChange={handleInputChange}
-                    style={inputStyle}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                   >
                     <option value="">Select a driver</option>
                     {mockDrivers.map((driver) => (
@@ -442,13 +252,13 @@ export default function CreateRoutePage() {
                     ))}
                   </select>
                 </div>
-                <div style={formGroupStyle}>
-                  <label style={labelStyle}>Vehicle</label>
+                <div>
+                  <label className="block text-wl-text text-sm font-semibold mb-2">Vehicle</label>
                   <select
                     name="vehicleId"
                     value={formData.vehicleId}
                     onChange={handleInputChange}
-                    style={inputStyle}
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                   >
                     <option value="">Select a vehicle</option>
                     {mockVehicles.map((vehicle) => (
@@ -463,60 +273,46 @@ export default function CreateRoutePage() {
           )}
 
           {step === 2 && (
-            <div style={contentStyle}>
-              <div style={formGroupStyle}>
-                <label style={labelStyle}>Search & Add Orders</label>
+            <div className="max-w-4xl">
+              <div className="mb-6">
+                <label className="block text-wl-text text-sm font-semibold mb-2">Search & Add Orders</label>
                 <input
                   type="text"
                   placeholder="Search by order ID or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  style={searchStyle}
+                  className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm mb-4 box-border"
                 />
               </div>
 
               {filteredOrders.length > 0 && (
                 <>
-                  <h3 style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>
+                  <h3 className="text-wl-text text-sm font-semibold mb-3">
                     Available Orders ({filteredOrders.length})
                   </h3>
-                  <div style={orderListStyle}>
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 mb-6">
                     {filteredOrders.map((order) => (
                       <div
                         key={order.id}
-                        style={orderCardStyle}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.borderColor = "var(--wl-primary)";
-                          (e.currentTarget as HTMLElement).style.backgroundColor = "var(--wl-surface)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.borderColor = "var(--wl-border)";
-                        }}
+                        className="p-4 rounded-lg bg-wl-surface border border-wl-border cursor-pointer transition-all hover:border-wl-primary hover:bg-wl-surface"
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "start",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <span style={{ color: "var(--wl-text)", fontWeight: "600", fontSize: "13px" }}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-wl-text font-semibold text-sm">
                             {order.id}
                           </span>
                           <Badge>{order.priority.toUpperCase()}</Badge>
                         </div>
-                        <p style={{ color: "var(--wl-muted)", fontSize: "12px", marginBottom: "8px" }}>
+                        <p className="text-wl-muted text-xs mb-2">
                           {order.address}
                         </p>
-                        <p style={{ color: "var(--wl-muted)", fontSize: "12px", marginBottom: "12px" }}>
+                        <p className="text-wl-muted text-xs mb-3">
                           {order.timeWindow.start} - {order.timeWindow.end}
                         </p>
                         <Button
                           onClick={() => handleAddStop(order)}
                           variant="primary"
                           size="sm"
-                          style={{ width: "100%" }}
+                          className="w-full"
                         >
                           Add to Route
                         </Button>
@@ -528,36 +324,33 @@ export default function CreateRoutePage() {
 
               {formData.stops.length > 0 && (
                 <>
-                  <h3
-                    style={{
-                      color: "var(--wl-text)",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      marginTop: "32px",
-                      marginBottom: "12px",
-                    }}
-                  >
+                  <h3 className="text-wl-text text-sm font-semibold mt-8 mb-3">
                     Route Stops ({formData.stops.length})
                   </h3>
-                  <div style={stopListStyle}>
+                  <div className="flex flex-col gap-2 mt-4">
                     {formData.stops.map((stop, idx) => (
                       <div
                         key={stop.id}
-                        style={stopItemStyle(draggedStop === idx)}
+                        className="p-3 rounded-md bg-wl-surface border border-wl-border flex items-center gap-3 cursor-grab transition-all"
+                        style={{
+                          backgroundColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-surface)",
+                          borderColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-border)",
+                          opacity: draggedStop === idx ? 0.7 : 1,
+                        }}
                         draggable
                         onDragStart={() => handleDragStart(idx)}
                         onDragOver={handleDragOver}
                         onDrop={() => handleDrop(idx)}
                       >
-                        <div style={dragHandleStyle}>
+                        <div className="flex flex-col gap-0.5 text-wl-muted text-xs">
                           <span>::::</span>
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600" }}>
+                        <div className="flex-1">
+                          <div className="text-wl-text text-sm font-semibold">
                             {stop.orderId}
                           </div>
-                          <div style={{ color: "var(--wl-muted)", fontSize: "12px" }}>{stop.address}</div>
-                          <div style={{ color: "var(--wl-muted)", fontSize: "12px", marginTop: "4px" }}>
+                          <div className="text-wl-muted text-xs">{stop.address}</div>
+                          <div className="text-wl-muted text-xs mt-1">
                             {stop.timeWindow.start} - {stop.timeWindow.end}
                           </div>
                         </div>
@@ -573,22 +366,22 @@ export default function CreateRoutePage() {
                     ))}
                   </div>
 
-                  <div style={statsBarStyle}>
-                    <div style={statCardStyle}>
-                      <div style={statValueStyle}>{formData.stops.length}</div>
-                      <div style={statLabelStyle}>Total Stops</div>
+                  <div className="grid grid-cols-4 gap-4 my-6">
+                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
+                      <div className="text-lg font-bold text-wl-primary mb-1">{formData.stops.length}</div>
+                      <div className="text-xs text-wl-muted">Total Stops</div>
                     </div>
-                    <div style={statCardStyle}>
-                      <div style={statValueStyle}>{estimatedDistance.toFixed(1)}km</div>
-                      <div style={statLabelStyle}>Est. Distance</div>
+                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
+                      <div className="text-lg font-bold text-wl-primary mb-1">{estimatedDistance.toFixed(1)}km</div>
+                      <div className="text-xs text-wl-muted">Est. Distance</div>
                     </div>
-                    <div style={statCardStyle}>
-                      <div style={statValueStyle}>{estimatedDuration}min</div>
-                      <div style={statLabelStyle}>Est. Duration</div>
+                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
+                      <div className="text-lg font-bold text-wl-primary mb-1">{estimatedDuration}min</div>
+                      <div className="text-xs text-wl-muted">Est. Duration</div>
                     </div>
-                    <div style={statCardStyle}>
-                      <div style={statValueStyle}>850kg</div>
-                      <div style={statLabelStyle}>Est. Capacity</div>
+                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
+                      <div className="text-lg font-bold text-wl-primary mb-1">850kg</div>
+                      <div className="text-xs text-wl-muted">Est. Capacity</div>
                     </div>
                   </div>
                 </>
@@ -597,8 +390,8 @@ export default function CreateRoutePage() {
           )}
 
           {step === 3 && (
-            <div style={contentStyle}>
-              <div style={mapPlaceholderStyle}>
+            <div className="max-w-4xl">
+              <div className="w-full h-96 bg-wl-surface border border-wl-border rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
                 <svg
                   width="100%"
                   height="100%"
@@ -655,63 +448,37 @@ export default function CreateRoutePage() {
                     );
                   })}
                 </svg>
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "16px",
-                    right: "16px",
-                    fontSize: "12px",
-                    color: "var(--wl-muted)",
-                  }}
-                >
+                <div className="absolute bottom-4 right-4 text-xs text-wl-muted">
                   Map Preview - {formData.stops.length} stops
                 </div>
               </div>
 
               <div>
-                <h3 style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>
-                  Stop Details
-                </h3>
-                <div style={stopListStyle}>
+                <h3 className="text-wl-text text-sm font-semibold mb-3">Stop Details</h3>
+                <div className="flex flex-col gap-2">
                   {formData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
+                      className="p-4 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center"
                       style={{
-                        padding: "12px 16px",
-                        borderRadius: "6px",
-                        backgroundColor: "var(--wl-surface)",
-                        border: "1px solid var(--wl-border)",
-                        display: "grid",
                         gridTemplateColumns: "30px 1fr auto",
-                        gap: "12px",
-                        alignItems: "center",
                       }}
                     >
                       <div
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          borderRadius: "4px",
-                          backgroundColor: getPriorityColor(stop.priority),
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                        }}
+                        className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: getPriorityColor(stop.priority) }}
                       >
                         {idx + 1}
                       </div>
                       <div>
-                        <div style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600" }}>
+                        <div className="text-wl-text text-sm font-semibold">
                           {stop.orderId}
                         </div>
-                        <div style={{ color: "var(--wl-muted)", fontSize: "12px", marginTop: "2px" }}>
+                        <div className="text-wl-muted text-xs mt-0.5">
                           {stop.address}
                         </div>
                       </div>
-                      <div style={{ textAlign: "right" }}>
+                      <div className="text-right">
                         <Badge>{stop.priority.toUpperCase()}</Badge>
                       </div>
                     </div>
@@ -722,11 +489,9 @@ export default function CreateRoutePage() {
           )}
 
           {step === 4 && (
-            <div style={contentStyle}>
-              <h3 style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "600", marginBottom: "16px" }}>
-                Route Optimization Strategy
-              </h3>
-              <div style={optionsGridStyle}>
+            <div className="max-w-4xl">
+              <h3 className="text-wl-text text-sm font-semibold mb-4">Route Optimization Strategy</h3>
+              <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   {
                     id: "shortest_distance",
@@ -746,7 +511,12 @@ export default function CreateRoutePage() {
                 ].map((option) => (
                   <div
                     key={option.id}
-                    style={optionButtonStyle(formData.optimizationMode === (option.id as any))}
+                    className={cn(
+                      "p-4 rounded-lg border text-center cursor-pointer transition-all",
+                      formData.optimizationMode === (option.id as any)
+                        ? "bg-wl-primary text-white border-wl-primary"
+                        : "bg-wl-surface text-wl-text border-wl-border"
+                    )}
                     onClick={() =>
                       setFormData((prev) => ({
                         ...prev,
@@ -754,25 +524,15 @@ export default function CreateRoutePage() {
                       }))
                     }
                   >
-                    <div style={{ fontWeight: "600", marginBottom: "4px" }}>{option.name}</div>
-                    <div style={{ fontSize: "12px", opacity: "0.8" }}>{option.desc}</div>
+                    <div className="font-semibold mb-1">{option.name}</div>
+                    <div className="text-xs opacity-80">{option.desc}</div>
                   </div>
                 ))}
               </div>
 
-              <div
-                style={{
-                  marginTop: "24px",
-                  padding: "16px",
-                  borderRadius: "8px",
-                  backgroundColor: "var(--wl-surface)",
-                  border: "1px solid var(--wl-border)",
-                }}
-              >
-                <h4 style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600", marginBottom: "8px" }}>
-                  Summary
-                </h4>
-                <div style={{ color: "var(--wl-muted)", fontSize: "13px", lineHeight: "1.6" }}>
+              <div className="mt-6 p-4 rounded-lg bg-wl-surface border border-wl-border">
+                <h4 className="text-wl-text text-sm font-semibold mb-2">Summary</h4>
+                <div className="text-wl-muted text-sm leading-relaxed">
                   <p>
                     <strong>Route:</strong> {formData.name}
                   </p>
@@ -798,15 +558,15 @@ export default function CreateRoutePage() {
         </CardContent>
       </Card>
 
-      <div style={actionBarStyle}>
-        <div style={{ display: "flex", gap: "12px" }}>
+      <div className="flex gap-3 max-w-4xl justify-between">
+        <div className="flex gap-3">
           {step > 1 && (
             <Button variant="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
           )}
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="flex gap-3">
           {step === 4 ? (
             <>
               <Button variant="secondary">Save as Draft</Button>

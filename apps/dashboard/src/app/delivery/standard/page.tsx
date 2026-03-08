@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -324,27 +325,20 @@ export default function StandardDeliveryPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
+    <div className={cn("min-h-screen")} style={{ background: "linear-gradient(135deg, var(--wl-bg-primary) 0%, var(--wl-bg-secondary) 100%)" }}>
       <Header title="Standard Delivery" subtitle="Manage standard shipping orders, shipments, and carrier integrations" />
 
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <div className={cn("max-w-[1400px] mx-auto p-8")}>
         {/* Stats Bar */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "1rem",
-            marginBottom: "2rem",
-          }}
-        >
+        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8")}>
           <Card>
-            <CardContent style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", justifyContent: "space-between" }}>
+            <CardContent className={cn("pt-4 pb-4")}>
+              <div className={cn("flex items-center gap-4 justify-between")}>
                 <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
                     Pending
                   </div>
-                  <div style={{ fontSize: "1.75rem", fontWeight: "700", color: "var(--wl-text-primary)" }}>
+                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
                     {stats.pending}
                   </div>
                 </div>
@@ -354,13 +348,13 @@ export default function StandardDeliveryPage() {
           </Card>
 
           <Card>
-            <CardContent style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", justifyContent: "space-between" }}>
+            <CardContent className={cn("pt-4 pb-4")}>
+              <div className={cn("flex items-center gap-4 justify-between")}>
                 <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
                     In Transit
                   </div>
-                  <div style={{ fontSize: "1.75rem", fontWeight: "700", color: "var(--wl-text-primary)" }}>
+                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
                     {stats.inTransit}
                   </div>
                 </div>
@@ -370,13 +364,13 @@ export default function StandardDeliveryPage() {
           </Card>
 
           <Card>
-            <CardContent style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", justifyContent: "space-between" }}>
+            <CardContent className={cn("pt-4 pb-4")}>
+              <div className={cn("flex items-center gap-4 justify-between")}>
                 <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
                     Delivered Today
                   </div>
-                  <div style={{ fontSize: "1.75rem", fontWeight: "700", color: "var(--wl-text-primary)" }}>
+                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
                     {stats.delivered}
                   </div>
                 </div>
@@ -386,13 +380,13 @@ export default function StandardDeliveryPage() {
           </Card>
 
           <Card>
-            <CardContent style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", justifyContent: "space-between" }}>
+            <CardContent className={cn("pt-4 pb-4")}>
+              <div className={cn("flex items-center gap-4 justify-between")}>
                 <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: "600", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-secondary")}>
                     Exceptions
                   </div>
-                  <div style={{ fontSize: "1.75rem", fontWeight: "700", color: "var(--wl-text-primary)" }}>
+                  <div className={cn("text-2xl font-bold text-wl-text-primary")}>
                     {stats.exceptions}
                   </div>
                 </div>
@@ -403,7 +397,7 @@ export default function StandardDeliveryPage() {
         </div>
 
         {/* Tabs */}
-        <div style={{ marginBottom: "2rem" }}>
+        <div className={cn("mb-8")}>
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="underline" />
         </div>
 
@@ -411,9 +405,9 @@ export default function StandardDeliveryPage() {
         {activeTab === "orders" && (
           <div>
             {/* Filters & Actions */}
-            <Card style={{ marginBottom: "2rem" }}>
-              <CardContent style={{ paddingTop: "1.5rem" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: selectedOrders.size > 0 ? "1rem" : 0 }}>
+            <Card className={cn("mb-8")}>
+              <CardContent className={cn("pt-6")}>
+                <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4")} style={{ marginBottom: selectedOrders.size > 0 ? "1rem" : 0 }}>
                   <Select
                     options={[
                       { value: "all", label: "All Statuses" },
@@ -442,15 +436,15 @@ export default function StandardDeliveryPage() {
 
                 {/* Batch Actions */}
                 {selectedOrders.size > 0 && (
-                  <div style={{ display: "flex", gap: "0.5rem", paddingTop: "1rem", borderTop: "1px solid var(--wl-border)" }}>
-                    <span style={{ fontSize: "0.875rem", color: "var(--wl-text-secondary)", display: "flex", alignItems: "center", paddingRight: "1rem" }}>
+                  <div className={cn("flex gap-2 pt-4 border-t border-wl-border")}>
+                    <span className={cn("text-sm text-wl-text-secondary flex items-center pr-4")}>
                       {selectedOrders.size} selected
                     </span>
                     <Button variant="primary" onClick={() => handleBatchAction("bulk_assign")}>
                       Assign Carrier
                     </Button>
                     <Button variant="secondary" onClick={() => handleBatchAction("bulk_print")}>
-                      <Printer className="w-4 h-4" style={{ marginRight: "0.5rem" }} />
+                      <Printer className="w-4 h-4 mr-2" />
                       Print Labels
                     </Button>
                     <Button variant="secondary" onClick={() => handleBatchAction("bulk_update")}>
@@ -463,17 +457,11 @@ export default function StandardDeliveryPage() {
 
             {/* Orders Table */}
             <Card>
-              <CardContent style={{ paddingTop: "1.5rem", overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "0.9rem",
-                  }}
-                >
+              <CardContent className={cn("pt-6 overflow-x-auto")}>
+                <table className={cn("w-full border-collapse text-sm")}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid var(--wl-border)" }}>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                    <tr className={cn("border-b-2 border-wl-border")}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         <input
                           type="checkbox"
                           onChange={(e) => {
@@ -485,28 +473,28 @@ export default function StandardDeliveryPage() {
                           }}
                         />
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Order #
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Recipient
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Location
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Carrier
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Tracking
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Status
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "left", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-left text-wl-text-secondary font-semibold")}>
                         Cost
                       </th>
-                      <th style={{ padding: "1rem", textAlign: "center", color: "var(--wl-text-secondary)", fontWeight: "600" }}>
+                      <th className={cn("p-4 text-center text-wl-text-secondary font-semibold")}>
                         Action
                       </th>
                     </tr>
@@ -515,52 +503,53 @@ export default function StandardDeliveryPage() {
                     {filteredOrders.map((order, idx) => (
                       <tr
                         key={order.id}
+                        className={cn("border-b border-wl-border")}
                         style={{
-                          borderBottom: "1px solid var(--wl-border)",
                           background: selectedOrders.has(order.id) ? "var(--wl-bg-tertiary)" : idx % 2 === 0 ? "transparent" : "var(--wl-bg-tertiary)",
                         }}
                       >
-                        <td style={{ padding: "1rem", color: "var(--wl-text-primary)" }}>
+                        <td className={cn("p-4 text-wl-text-primary")}>
                           <input
                             type="checkbox"
                             checked={selectedOrders.has(order.id)}
                             onChange={() => toggleOrderSelection(order.id)}
                           />
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-primary)", fontWeight: "600" }}>
+                        <td className={cn("p-4 text-wl-text-primary font-semibold")}>
                           {order.orderNumber}
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-primary)" }}>
+                        <td className={cn("p-4 text-wl-text-primary")}>
                           {order.recipient}
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-secondary)", fontSize: "0.85rem" }}>
+                        <td className={cn("p-4 text-wl-text-secondary text-xs")}>
                           {order.city}, {order.state} {order.zip}
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-primary)" }}>
+                        <td className={cn("p-4 text-wl-text-primary")}>
                           {order.carrier ? (
-                            <span style={{ fontWeight: "600" }}>{order.carrier}</span>
+                            <span className={cn("font-semibold")}>{order.carrier}</span>
                           ) : (
-                            <span style={{ color: "var(--wl-text-tertiary)", fontSize: "0.85rem" }}>—</span>
+                            <span className={cn("text-wl-text-tertiary text-xs")}>—</span>
                           )}
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-secondary)", fontSize: "0.85rem", fontFamily: "monospace" }}>
+                        <td className={cn("p-4 text-wl-text-secondary text-xs")} style={{ fontFamily: "monospace" }}>
                           {order.trackingNumber ? order.trackingNumber.substring(0, 12) + "..." : "—"}
                         </td>
-                        <td style={{ padding: "1rem" }}>
+                        <td className={cn("p-4")}>
                           <Badge variant={statusVariant(order.status)}>
                             {statusLabel(order.status)}
                           </Badge>
                         </td>
-                        <td style={{ padding: "1rem", color: "var(--wl-text-primary)", fontWeight: "600" }}>
+                        <td className={cn("p-4 text-wl-text-primary font-semibold")}>
                           {order.cost > 0 ? `$${order.cost.toFixed(2)}` : "—"}
                         </td>
-                        <td style={{ padding: "1rem", textAlign: "center" }}>
-                          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                        <td className={cn("p-4 text-center")}>
+                          <div className={cn("flex gap-2 justify-center")}>
                             {order.status === "pending" && (
                               <Button
                                 variant="ghost"
+                                size="sm"
                                 onClick={() => setIsCarrierModalOpen(true)}
-                                style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
+                                className={cn("text-xs p-1")}
                               >
                                 Assign
                               </Button>
@@ -568,7 +557,8 @@ export default function StandardDeliveryPage() {
                             {order.status === "label_created" && (
                               <Button
                                 variant="ghost"
-                                style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
+                                size="sm"
+                                className={cn("text-xs p-1")}
                               >
                                 <Printer className="w-3 h-3" />
                               </Button>
@@ -586,13 +576,13 @@ export default function StandardDeliveryPage() {
 
         {/* SHIPMENTS TAB */}
         {activeTab === "shipments" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "1.5rem" }}>
+          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6")}>
             {shipments.map((ship) => (
               <Card key={ship.id}>
                 <CardHeader>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div className={cn("flex items-start justify-between")}>
                     <div>
-                      <CardTitle style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>
+                      <CardTitle className={cn("text-base mb-1")}>
                         {ship.carrier} Shipment
                       </CardTitle>
                       <CardDescription>{ship.trackingNumber}</CardDescription>
@@ -603,23 +593,23 @@ export default function StandardDeliveryPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid var(--wl-border)" }}>
-                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.85rem" }}>Weight</span>
-                      <span style={{ color: "var(--wl-text-primary)", fontWeight: "600" }}>{ship.weight} lbs</span>
+                  <div className={cn("flex flex-col gap-4")}>
+                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Weight</span>
+                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.weight} lbs</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid var(--wl-border)" }}>
-                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.85rem" }}>Last Update</span>
-                      <span style={{ color: "var(--wl-text-primary)", fontWeight: "600" }}>{ship.lastUpdate}</span>
+                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Last Update</span>
+                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.lastUpdate}</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "0.85rem" }}>Est. Delivery</span>
-                      <span style={{ color: "var(--wl-text-primary)", fontWeight: "600" }}>{ship.estimatedDelivery}</span>
+                    <div className={cn("flex justify-between")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Est. Delivery</span>
+                      <span className={cn("text-wl-text-primary font-semibold")}>{ship.estimatedDelivery}</span>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="secondary" style={{ width: "100%" }}>
+                  <Button variant="secondary" className={cn("w-full")}>
                     View Details
                   </Button>
                 </CardFooter>
@@ -630,47 +620,47 @@ export default function StandardDeliveryPage() {
 
         {/* CARRIERS TAB */}
         {activeTab === "carriers" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.5rem" }}>
+          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-6")}>
             {mockCarriers.map((carrier) => (
-              <Card key={carrier.id} style={{ position: "relative" }}>
+              <Card key={carrier.id} className={cn("relative")}>
                 <CardHeader>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
-                    <div style={{ fontSize: "2.5rem" }}>{carrier.icon}</div>
+                  <div className={cn("flex items-start justify-between mb-4")}>
+                    <div className={cn("text-4xl")}>{carrier.icon}</div>
                     {carrier.connected ? (
                       <Badge variant="success">Connected</Badge>
                     ) : (
                       <Badge variant="warning">Disconnected</Badge>
                     )}
                   </div>
-                  <CardTitle style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>
+                  <CardTitle className={cn("text-xl mb-1")}>
                     {carrier.name}
                   </CardTitle>
                   <CardDescription>Shipping carrier integration</CardDescription>
                 </CardHeader>
 
                 <CardContent>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid var(--wl-border)" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>Connected Accounts</span>
-                      <span style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--wl-text-primary)" }}>
+                  <div className={cn("flex flex-col gap-4")}>
+                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Connected Accounts</span>
+                      <span className={cn("text-sm font-semibold text-wl-text-primary")}>
                         {carrier.accounts}
                       </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid var(--wl-border)" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>Success Rate</span>
-                      <span style={{ fontSize: "0.9rem", fontWeight: "600", color: carrier.successRate > 0 ? "var(--wl-success)" : "var(--wl-text-tertiary)" }}>
+                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Success Rate</span>
+                      <span className={cn("text-sm font-semibold")} style={{ color: carrier.successRate > 0 ? "var(--wl-success)" : "var(--wl-text-tertiary)" }}>
                         {carrier.successRate > 0 ? `${carrier.successRate}%` : "N/A"}
                       </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.75rem", borderBottom: "1px solid var(--wl-border)" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>Avg Cost / lb</span>
-                      <span style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--wl-text-primary)" }}>
+                    <div className={cn("flex justify-between pb-3 border-b border-wl-border")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Avg Cost / lb</span>
+                      <span className={cn("text-sm font-semibold text-wl-text-primary")}>
                         {carrier.avgCost > 0 ? `$${carrier.avgCost.toFixed(2)}` : "—"}
                       </span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--wl-text-secondary)" }}>Last Used</span>
-                      <span style={{ fontSize: "0.9rem", color: "var(--wl-text-primary)" }}>
+                    <div className={cn("flex justify-between")}>
+                      <span className={cn("text-xs text-wl-text-secondary")}>Last Used</span>
+                      <span className={cn("text-sm text-wl-text-primary")}>
                         {carrier.lastUsed}
                       </span>
                     </div>
@@ -679,15 +669,15 @@ export default function StandardDeliveryPage() {
 
                 <CardFooter>
                   {carrier.connected ? (
-                    <Button variant="secondary" style={{ width: "100%" }}>
+                    <Button variant="secondary" className={cn("w-full")}>
                       Manage Account
                     </Button>
                   ) : (
                     <Button variant="primary" onClick={() => {
                       setSelectedCarrier(carrier);
                       setIsCarrierModalOpen(true);
-                    }} style={{ width: "100%" }}>
-                      <Plus className="w-4 h-4" style={{ marginRight: "0.5rem" }} />
+                    }} className={cn("w-full")}>
+                      <Plus className="w-4 h-4 mr-2" />
                       Connect
                     </Button>
                   )}
@@ -708,7 +698,7 @@ export default function StandardDeliveryPage() {
         title={selectedCarrier ? `Connect ${selectedCarrier.name}` : "Assign Carrier to Orders"}
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+          <div className={cn("flex gap-3 justify-end")}>
             <Button
               variant="secondary"
               onClick={() => {
@@ -727,17 +717,17 @@ export default function StandardDeliveryPage() {
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div className={cn("flex flex-col gap-6")}>
           {selectedCarrier ? (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
                   API Key
                 </label>
                 <Input type="password" placeholder="Enter your API key" />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
                   Account Number
                 </label>
                 <Input placeholder="Your account number" />
@@ -746,7 +736,7 @@ export default function StandardDeliveryPage() {
           ) : (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
                   Select Carrier
                 </label>
                 <Select
@@ -756,7 +746,7 @@ export default function StandardDeliveryPage() {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "var(--wl-text-primary)", marginBottom: "0.5rem" }}>
+                <label className={cn("block text-xs font-semibold text-wl-text-primary mb-2")}>
                   Shipping Service
                 </label>
                 <Select
@@ -769,7 +759,7 @@ export default function StandardDeliveryPage() {
                   onChange={() => {}}
                 />
               </div>
-              <p style={{ fontSize: "0.85rem", color: "var(--wl-text-tertiary)", marginTop: "0.5rem" }}>
+              <p className={cn("text-xs text-wl-text-tertiary mt-2")}>
                 Selected orders: {selectedOrders.size}
               </p>
             </>

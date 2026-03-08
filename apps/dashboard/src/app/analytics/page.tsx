@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ANALYTICS & REPORTING PAGE — Comprehensive operational metrics & insights
@@ -153,24 +153,17 @@ export default function AnalyticsPage() {
         title="Analytics & Reporting"
         subtitle="Comprehensive operational metrics and performance insights"
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-1)", background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-md)", padding: 2 }}>
+          <div className={cn("flex gap-1 bg-wl-bg-overlay rounded-md p-2")}>
             {(["7d", "30d", "90d", "custom"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeRange(t)}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-sm)",
-                  border: "none",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  textTransform: "uppercase",
-                  background: timeRange === t ? "var(--wl-primary-500)" : "transparent",
-                  color: timeRange === t ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                }}
+                className={cn(
+                  "px-3 py-1 rounded-sm border-0 text-xs font-semibold cursor-pointer uppercase transition-all",
+                  timeRange === t
+                    ? "bg-wl-primary-500 text-wl-text-inverse"
+                    : "bg-transparent text-wl-text-tertiary"
+                )}
               >
                 {t}
               </button>
@@ -179,37 +172,16 @@ export default function AnalyticsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Toast Notification */}
         {showExportToast && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "var(--wl-space-4)",
-              right: "var(--wl-space-4)",
-              background: "var(--wl-success-500)",
-              color: "white",
-              padding: "var(--wl-space-3) var(--wl-space-4)",
-              borderRadius: "var(--wl-radius-md)",
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 600,
-              zIndex: 50,
-              animation: "slideIn 0.3s ease-out",
-            }}
-          >
+          <div className="fixed bottom-4 right-4 bg-wl-success-500 text-white px-4 py-3 rounded-md text-sm font-semibold z-50 animate-slideIn">
             Report exported successfully!
           </div>
         )}
 
         {/* KPI Row */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 mb-6">
           {KPI.map((stat, i) => (
             <StatCard
               key={stat.label}
@@ -223,23 +195,16 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Main Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "var(--wl-space-5)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-2 gap-5 mb-6">
           {/* Delivery Trends Chart */}
           <Card>
             <CardHeader>
               <CardTitle>Delivery Trends</CardTitle>
-              <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+              <span className="text-xs text-wl-text-tertiary">
                 Last 30 days
               </span>
             </CardHeader>
-            <div style={{ overflowX: "auto" }}>
+            <div className="overflow-x-auto">
               <svg
                 width="100%"
                 height="260"
@@ -312,11 +277,11 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Delivery Performance</CardTitle>
-              <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+              <span className="text-xs text-wl-text-tertiary">
                 Status breakdown
               </span>
             </CardHeader>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-6)" }}>
+            <div className="flex items-center gap-6">
               <svg
                 width="220"
                 height="160"
@@ -373,60 +338,39 @@ export default function AnalyticsPage() {
                 </text>
               </svg>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className="flex flex-col gap-3">
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: 4 }}>
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: "2px",
-                        background: "var(--wl-success-400)",
-                      }}
-                    />
-                    <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-3 h-3 rounded-sm bg-wl-success-400" />
+                    <span className="text-sm text-wl-text-secondary">
                       On-Time
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <span className="text-lg font-bold font-mono text-wl-text-primary">
                     {PERFORMANCE_DATA.onTime}%
                   </span>
                 </div>
 
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: 4 }}>
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: "2px",
-                        background: "var(--wl-warning-400)",
-                      }}
-                    />
-                    <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-3 h-3 rounded-sm bg-wl-warning-400" />
+                    <span className="text-sm text-wl-text-secondary">
                       Late
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <span className="text-lg font-bold font-mono text-wl-text-primary">
                     {PERFORMANCE_DATA.late}%
                   </span>
                 </div>
 
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: 4 }}>
-                    <span
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: "2px",
-                        background: "var(--wl-danger-400)",
-                      }}
-                    />
-                    <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-3 h-3 rounded-sm bg-wl-danger-400" />
+                    <span className="text-sm text-wl-text-secondary">
                       Failed
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                  <span className="text-lg font-bold font-mono text-wl-text-primary">
                     {PERFORMANCE_DATA.failed}%
                   </span>
                 </div>
@@ -436,36 +380,21 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Driver Performance Table */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Top Driver Performance</CardTitle>
-            <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+            <span className="text-xs text-wl-text-tertiary">
               This month (Top 10)
             </span>
           </CardHeader>
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "var(--wl-text-sm)",
-              }}
-            >
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
               <thead>
                 <tr>
                   {["Rank", "Driver", "Deliveries", "On-Time %", "Avg Time", "Rating"].map((h) => (
                     <th
                       key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "var(--wl-space-3)",
-                        fontSize: "var(--wl-text-xs)",
-                        fontWeight: 600,
-                        color: "var(--wl-text-tertiary)",
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                        borderBottom: "1px solid var(--wl-border-subtle)",
-                      }}
+                      className="text-left p-3 text-xs font-semibold text-wl-text-tertiary tracking-wide uppercase border-b border-wl-border-subtle"
                     >
                       {h}
                     </th>
@@ -476,66 +405,26 @@ export default function AnalyticsPage() {
                 {TOP_DRIVERS.map((driver, idx) => (
                   <tr
                     key={driver.name}
-                    style={{
-                      borderBottom: "1px solid var(--wl-border-subtle)",
-                      background: idx === 0 ? "rgba(99, 102, 241, 0.04)" : undefined,
-                    }}
+                    className={cn("border-b border-wl-border-subtle", idx === 0 ? "bg-[rgba(99,102,241,0.04)]" : "")}
                   >
                     <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        fontFamily: "var(--wl-font-mono)",
-                        fontWeight: 700,
-                        color: idx === 0 ? "var(--wl-primary-400)" : "var(--wl-text-secondary)",
-                        fontSize: "var(--wl-text-xs)",
-                      }}
+                      className={cn("p-3 font-mono font-bold text-xs", idx === 0 ? "text-wl-primary-400" : "text-wl-text-secondary")}
                     >
                       {idx + 1}
                     </td>
-                    <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        color: "var(--wl-text-primary)",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <td className="p-3 text-wl-text-primary font-semibold">
                       {driver.name}
                     </td>
-                    <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-secondary)",
-                      }}
-                    >
+                    <td className="p-3 font-mono text-wl-text-secondary">
                       {driver.deliveries}
                     </td>
-                    <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-success-400)",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <td className="p-3 font-mono text-wl-success-400 font-semibold">
                       {driver.onTimeRate}%
                     </td>
-                    <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-secondary)",
-                      }}
-                    >
+                    <td className="p-3 font-mono text-wl-text-secondary">
                       {driver.avgTime}
                     </td>
-                    <td
-                      style={{
-                        padding: "var(--wl-space-3)",
-                        color: "var(--wl-warning-400)",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <td className="p-3 text-wl-warning-400 font-semibold">
                       ★ {driver.rating}
                     </td>
                   </tr>
@@ -546,94 +435,52 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Zone Performance Grid */}
-        <div style={{ marginBottom: "var(--wl-space-6)" }}>
-          <div style={{ marginBottom: "var(--wl-space-4)" }}>
-            <h2
-              style={{
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 600,
-                color: "var(--wl-text-secondary)",
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-                margin: 0,
-              }}
-            >
+        <div className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-wl-text-secondary tracking-wide uppercase m-0">
               Zone Performance
             </h2>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "var(--wl-space-4)",
-            }}
-          >
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
             {ZONES.map((zone, i) => (
-              <Card key={zone.name} style={{ position: "relative" }}>
-                <div style={{ position: "absolute", top: "var(--wl-space-4)", right: "var(--wl-space-4)" }}>
-                  <Badge variant={zone.onTimeRate >= 95 ? "success" : "warning"} style={{ fontSize: "var(--wl-text-xs)" }}>
+              <Card key={zone.name} className="relative">
+                <div className="absolute top-4 right-4">
+                  <Badge variant={zone.onTimeRate >= 95 ? "success" : "warning"} className="text-xs">
                     {zone.onTimeRate}%
                   </Badge>
                 </div>
 
-                <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                  <h3
-                    style={{
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-primary)",
-                      margin: 0,
-                    }}
-                  >
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-wl-text-primary m-0">
                     {zone.name}
                   </h3>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+                <div className="flex flex-col gap-4">
                   {/* Volume */}
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className="flex justify-between mb-1.5">
+                      <span className="text-xs text-wl-text-tertiary">
                         Volume
                       </span>
-                      <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                      <span className="text-sm font-bold font-mono text-wl-text-primary">
                         {zone.volume}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        height: 6,
-                        background: "var(--wl-bg-overlay)",
-                        borderRadius: "var(--wl-radius-full)",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <div className="h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
                       <div
-                        style={{
-                          width: `${(zone.volume / 1840) * 100}%`,
-                          height: "100%",
-                          background: "linear-gradient(90deg, var(--wl-primary-500), var(--wl-primary-400))",
-                          borderRadius: "var(--wl-radius-full)",
-                        }}
+                        style={{ width: `${(zone.volume / 1840) * 100}%` }}
+                        className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full"
                       />
                     </div>
                   </div>
 
                   {/* Avg Time */}
-                  <div
-                    style={{
-                      padding: "var(--wl-space-3)",
-                      background: "var(--wl-bg-overlay)",
-                      borderRadius: "var(--wl-radius-md)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                  <div className="p-3 bg-wl-bg-overlay rounded-md flex justify-between items-center">
+                    <span className="text-xs text-wl-text-tertiary">
                       Avg Delivery Time
                     </span>
-                    <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-secondary)" }}>
+                    <span className="text-sm font-bold font-mono text-wl-text-secondary">
                       {zone.avgTime}
                     </span>
                   </div>
@@ -644,23 +491,17 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Cost Analysis */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Cost Analysis Breakdown</CardTitle>
-            <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+            <span className="text-xs text-wl-text-tertiary">
               This month
             </span>
           </CardHeader>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "var(--wl-space-6)",
-            }}
-          >
+          <div className="grid grid-cols-2 gap-6">
             {/* Cost items list */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+            <div className="flex flex-col gap-4">
               {[
                 { label: "Fuel Costs", value: COST_ANALYSIS.fuel, color: "var(--wl-warning-400)" },
                 { label: "Labor & Wages", value: COST_ANALYSIS.labor, color: "var(--wl-primary-400)" },
@@ -672,32 +513,21 @@ export default function AnalyticsPage() {
                 const percentage = (item.value / total) * 100;
                 return (
                   <div key={item.label}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-wl-text-secondary">
                         {item.label}
                       </span>
-                      <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                      <span className="text-sm font-semibold font-mono text-wl-text-primary">
                         {formatCurrency(item.value)}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        height: 8,
-                        background: "var(--wl-bg-overlay)",
-                        borderRadius: "var(--wl-radius-full)",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
                       <div
-                        style={{
-                          width: `${percentage}%`,
-                          height: "100%",
-                          background: item.color,
-                          borderRadius: "var(--wl-radius-full)",
-                        }}
+                        style={{ width: `${percentage}%`, background: item.color }}
+                        className="h-full rounded-full"
                       />
                     </div>
-                    <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <span className="text-xs text-wl-text-tertiary">
                       {percentage.toFixed(1)}%
                     </span>
                   </div>
@@ -706,47 +536,21 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Cost summary */}
-            <div
-              style={{
-                background: "var(--wl-bg-overlay)",
-                borderRadius: "var(--wl-radius-lg)",
-                padding: "var(--wl-space-5)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: "var(--wl-space-4)",
-              }}
-            >
+            <div className="bg-wl-bg-overlay rounded-lg p-5 flex flex-col justify-center gap-4">
               <div>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <span className="text-xs text-wl-text-tertiary">
                   Total Operating Costs
                 </span>
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-3xl)",
-                    fontWeight: 700,
-                    fontFamily: "var(--wl-font-mono)",
-                    color: "var(--wl-text-primary)",
-                    marginTop: "var(--wl-space-2)",
-                  }}
-                >
+                <div className="text-3xl font-bold font-mono text-wl-text-primary mt-2">
                   {formatCurrency(Object.values(COST_ANALYSIS).reduce((a, b) => a + b, 0))}
                 </div>
               </div>
 
-              <div style={{ borderTop: "1px solid var(--wl-border-subtle)", paddingTop: "var(--wl-space-4)" }}>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+              <div className="border-t border-wl-border-subtle pt-4">
+                <span className="text-xs text-wl-text-tertiary">
                   Cost per Delivery
                 </span>
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-2xl)",
-                    fontWeight: 700,
-                    fontFamily: "var(--wl-font-mono)",
-                    color: "var(--wl-success-400)",
-                    marginTop: "var(--wl-space-2)",
-                  }}
-                >
+                <div className="text-2xl font-bold font-mono text-wl-success-400 mt-2">
                   $6.24
                 </div>
               </div>
@@ -755,32 +559,18 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Export Section */}
-        <Card style={{ background: "linear-gradient(135deg, var(--wl-bg-elevated), var(--wl-bg-overlay))" }}>
+        <Card className="bg-gradient-to-br from-wl-bg-elevated to-wl-bg-overlay">
           <CardHeader>
             <CardTitle>Export Reports</CardTitle>
-            <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+            <span className="text-xs text-wl-text-tertiary">
               Download detailed analytics
             </span>
           </CardHeader>
 
-          <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap" }}>
+          <div className="flex gap-3 flex-wrap">
             <button
               onClick={() => handleExport("csv")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-                padding: "var(--wl-space-3) var(--wl-space-4)",
-                borderRadius: "var(--wl-radius-md)",
-                border: "1px solid var(--wl-border-subtle)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-secondary)",
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "var(--wl-font-sans)",
-                transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm font-semibold cursor-pointer transition-all"
             >
               <span>📊</span>
               Export CSV
@@ -788,29 +578,15 @@ export default function AnalyticsPage() {
 
             <button
               onClick={() => handleExport("pdf")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-                padding: "var(--wl-space-3) var(--wl-space-4)",
-                borderRadius: "var(--wl-radius-md)",
-                border: "1px solid var(--wl-border-subtle)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-secondary)",
-                fontSize: "var(--wl-text-sm)",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "var(--wl-font-sans)",
-                transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm font-semibold cursor-pointer transition-all"
             >
               <span>📄</span>
               Export PDF
             </button>
 
-            <div style={{ flex: 1 }} />
+            <div className="flex-1" />
 
-            <Badge variant="info" style={{ alignSelf: "center" }}>
+            <Badge variant="info" className="self-center">
               Updated 2 minutes ago
             </Badge>
           </div>

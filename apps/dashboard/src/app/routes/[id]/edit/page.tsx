@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
+import { cn } from "../../../../lib/utils";
 
 interface Stop {
   id: string;
@@ -186,200 +187,51 @@ export default function EditRoutePage() {
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    minHeight: "100vh",
-    backgroundColor: "var(--wl-bg)",
-    padding: "24px",
-  };
-
-  const headerStyle: React.CSSProperties = {
-    marginBottom: "32px",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    color: "var(--wl-text)",
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "8px",
-  };
-
-  const subtitleStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    fontSize: "14px",
-  };
-
-  const contentStyle: React.CSSProperties = {
-    maxWidth: "1000px",
-    marginBottom: "32px",
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
-    gap: "24px",
-  };
-
-  const formGroupStyle: React.CSSProperties = {
-    marginBottom: "24px",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    color: "var(--wl-text)",
-    fontSize: "14px",
-    fontWeight: "600",
-    marginBottom: "8px",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-    color: "var(--wl-text)",
-    fontSize: "14px",
-    fontFamily: "inherit",
-  };
-
-  const formColumnsStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "16px",
-  };
-
-  const stopListStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    marginBottom: "16px",
-  };
-
-  const stopItemStyle = (isDragging: boolean): React.CSSProperties => ({
-    padding: "12px 16px",
-    borderRadius: "6px",
-    backgroundColor: isDragging ? "var(--wl-primary)" : "var(--wl-surface)",
-    border: `1px solid ${isDragging ? "var(--wl-primary)" : "var(--wl-border)"}`,
-    display: "grid",
-    gridTemplateColumns: "24px 1fr auto auto",
-    gap: "12px",
-    alignItems: "center",
-    cursor: "grab",
-    transition: "all 0.2s ease",
-    opacity: isDragging ? 0.7 : 1,
-  });
-
-  const dragHandleStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-    color: "var(--wl-muted)",
-    fontSize: "12px",
-    cursor: "grab",
-  };
-
-  const statsBarStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "12px",
-    marginBottom: "24px",
-  };
-
-  const statCardStyle: React.CSSProperties = {
-    padding: "12px 16px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-  };
-
-  const statValueStyle: React.CSSProperties = {
-    color: "var(--wl-primary)",
-    fontSize: "18px",
-    fontWeight: "700",
-    marginBottom: "2px",
-  };
-
-  const statLabelStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    fontSize: "11px",
-  };
-
-  const sidebarStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const availableOrdersStyle: React.CSSProperties = {
-    maxHeight: "400px",
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  };
-
-  const orderItemStyle: React.CSSProperties = {
-    padding: "12px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-bg)",
-    border: "1px solid var(--wl-border)",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    fontSize: "12px",
-  };
-
-  const actionBarStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    maxWidth: "1000px",
-    justifyContent: "space-between",
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Edit Route</h1>
-        <p style={subtitleStyle}>Modify route details, reorder stops, and optimize delivery sequence</p>
+    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-wl-text mb-2">Edit Route</h1>
+        <p className="text-sm text-wl-muted">Modify route details, reorder stops, and optimize delivery sequence</p>
       </div>
 
-      <div style={contentStyle}>
-        <div style={gridStyle}>
+      <div className="max-w-4xl mb-8">
+        <div className="grid grid-cols-[2fr_1fr] gap-6">
           <div>
-            <Card style={{ marginBottom: "24px" }}>
+            <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Route Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div style={formColumnsStyle}>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Route Name</label>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-wl-text text-sm font-semibold mb-2">Route Name</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      style={inputStyle}
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     />
                   </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Delivery Date</label>
+                  <div>
+                    <label className="block text-wl-text text-sm font-semibold mb-2">Delivery Date</label>
                     <input
                       type="date"
                       name="date"
                       value={formData.date}
                       onChange={handleInputChange}
-                      style={inputStyle}
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     />
                   </div>
                 </div>
-                <div style={formColumnsStyle}>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Assign Driver</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-wl-text text-sm font-semibold mb-2">Assign Driver</label>
                     <select
                       name="driverId"
                       value={formData.driverId}
                       onChange={handleInputChange}
-                      style={inputStyle}
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     >
                       {mockDrivers.map((driver) => (
                         <option key={driver.id} value={driver.id}>
@@ -388,13 +240,13 @@ export default function EditRoutePage() {
                       ))}
                     </select>
                   </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Vehicle</label>
+                  <div>
+                    <label className="block text-wl-text text-sm font-semibold mb-2">Vehicle</label>
                     <select
                       name="vehicleId"
                       value={formData.vehicleId}
                       onChange={handleInputChange}
-                      style={inputStyle}
+                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     >
                       {mockVehicles.map((vehicle) => (
                         <option key={vehicle.id} value={vehicle.id}>
@@ -412,48 +264,46 @@ export default function EditRoutePage() {
                 <CardTitle>Route Stops</CardTitle>
               </CardHeader>
               <CardContent>
-                <div style={statsBarStyle}>
-                  <div style={statCardStyle}>
-                    <div style={statValueStyle}>{formData.stops.length}</div>
-                    <div style={statLabelStyle}>Total Stops</div>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
+                    <div className="text-lg font-bold text-wl-primary mb-0.5">{formData.stops.length}</div>
+                    <div className="text-xs text-wl-muted">Total Stops</div>
                   </div>
-                  <div style={statCardStyle}>
-                    <div style={statValueStyle}>{estimatedDistance.toFixed(1)}km</div>
-                    <div style={statLabelStyle}>Est. Distance</div>
+                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
+                    <div className="text-lg font-bold text-wl-primary mb-0.5">{estimatedDistance.toFixed(1)}km</div>
+                    <div className="text-xs text-wl-muted">Est. Distance</div>
                   </div>
-                  <div style={statCardStyle}>
-                    <div style={statValueStyle}>{estimatedDuration}min</div>
-                    <div style={statLabelStyle}>Est. Duration</div>
+                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
+                    <div className="text-lg font-bold text-wl-primary mb-0.5">{estimatedDuration}min</div>
+                    <div className="text-xs text-wl-muted">Est. Duration</div>
                   </div>
                 </div>
 
-                <div style={stopListStyle}>
+                <div className="flex flex-col gap-2 mb-4">
                   {formData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
-                      style={stopItemStyle(draggedStop === idx)}
+                      className="p-3 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center cursor-grab transition-all"
+                      style={{
+                        gridTemplateColumns: "24px 1fr auto auto",
+                        backgroundColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-surface)",
+                        borderColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-border)",
+                        opacity: draggedStop === idx ? 0.7 : 1,
+                      }}
                       draggable
                       onDragStart={() => handleDragStart(idx)}
                       onDragOver={handleDragOver}
                       onDrop={() => handleDrop(idx)}
                     >
-                      <div style={dragHandleStyle}>
+                      <div className="flex flex-col gap-0.5 text-wl-muted text-xs cursor-grab">
                         <span>⋮</span>
                         <span>⋮</span>
                       </div>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "600", marginBottom: "2px" }}>
+                      <div className="min-w-0">
+                        <div className="text-wl-text text-xs font-semibold mb-0.5">
                           {idx + 1}. {stop.orderId}
                         </div>
-                        <div
-                          style={{
-                            color: "var(--wl-muted)",
-                            fontSize: "11px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
+                        <div className="text-wl-muted text-xs overflow-hidden text-ellipsis whitespace-nowrap">
                           {stop.address}
                         </div>
                       </div>
@@ -469,66 +319,41 @@ export default function EditRoutePage() {
                   ))}
                 </div>
 
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="flex gap-2 mb-4">
                   <Button
                     variant="secondary"
                     onClick={() => setShowAddStop(!showAddStop)}
-                    style={{ flex: 1 }}
+                    className="flex-1"
                   >
                     {showAddStop ? "Hide Available Orders" : "Add Stop"}
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={handleReoptimize}
-                    style={{ flex: 1 }}
+                    className="flex-1"
                   >
                     Re-optimize Route
                   </Button>
                 </div>
 
                 {showAddStop && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      padding: "16px",
-                      borderRadius: "6px",
-                      backgroundColor: "var(--wl-surface)",
-                      border: "1px solid var(--wl-border)",
-                    }}
-                  >
-                    <h4 style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600", marginBottom: "12px" }}>
-                      Available Orders
-                    </h4>
-                    <div style={availableOrdersStyle}>
+                  <div className="mt-4 p-4 rounded-md bg-wl-surface border border-wl-border">
+                    <h4 className="text-wl-text text-sm font-semibold mb-3">Available Orders</h4>
+                    <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                       {mockAvailableOrders.map((order) => (
                         <div
                           key={order.id}
-                          style={orderItemStyle}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLElement).style.backgroundColor = "var(--wl-surface)";
-                            (e.currentTarget as HTMLElement).style.borderColor = "var(--wl-primary)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLElement).style.backgroundColor = "var(--wl-bg)";
-                            (e.currentTarget as HTMLElement).style.borderColor = "var(--wl-border)";
-                          }}
+                          className="p-3 rounded-md bg-wl-bg border border-wl-border cursor-pointer text-xs transition-all hover:bg-wl-surface hover:border-wl-primary"
                           onClick={() => handleAddStop(order)}
                         >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginBottom: "6px",
-                            }}
-                          >
-                            <span style={{ fontWeight: "600", color: "var(--wl-text)" }}>{order.id}</span>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="font-semibold text-wl-text">{order.id}</span>
                             <Badge>{order.priority.toUpperCase()}</Badge>
                           </div>
-                          <div style={{ color: "var(--wl-muted)", marginBottom: "4px" }}>
+                          <div className="text-wl-muted mb-1">
                             {order.address}
                           </div>
-                          <div style={{ color: "var(--wl-muted)", fontSize: "11px" }}>
+                          <div className="text-wl-muted text-xs">
                             {order.timeWindow.start} - {order.timeWindow.end}
                           </div>
                         </div>
@@ -540,26 +365,19 @@ export default function EditRoutePage() {
             </Card>
           </div>
 
-          <div style={sidebarStyle}>
+          <div className="flex flex-col gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Current Driver</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  style={{
-                    padding: "12px",
-                    borderRadius: "6px",
-                    backgroundColor: "var(--wl-surface)",
-                    border: "1px solid var(--wl-border)",
-                  }}
-                >
-                  <div style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600", marginBottom: "8px" }}>
+                <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
+                  <div className="text-wl-text text-sm font-semibold mb-2">
                     {mockDrivers.find((d) => d.id === formData.driverId)?.name}
                   </div>
-                  <div style={{ color: "var(--wl-muted)", fontSize: "12px", lineHeight: "1.6" }}>
+                  <div className="text-wl-muted text-xs leading-relaxed">
                     <div>ID: {formData.driverId}</div>
-                    <div style={{ marginTop: "8px" }}>Status: Active</div>
+                    <div className="mt-2">Status: Active</div>
                   </div>
                 </div>
               </CardContent>
@@ -570,22 +388,15 @@ export default function EditRoutePage() {
                 <CardTitle>Vehicle Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  style={{
-                    padding: "12px",
-                    borderRadius: "6px",
-                    backgroundColor: "var(--wl-surface)",
-                    border: "1px solid var(--wl-border)",
-                  }}
-                >
-                  <div style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600", marginBottom: "8px" }}>
+                <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
+                  <div className="text-wl-text text-sm font-semibold mb-2">
                     {mockVehicles.find((v) => v.id === formData.vehicleId)?.name}
                   </div>
-                  <div style={{ color: "var(--wl-muted)", fontSize: "12px", lineHeight: "1.6" }}>
+                  <div className="text-wl-muted text-xs leading-relaxed">
                     <div>
                       Capacity: {mockVehicles.find((v) => v.id === formData.vehicleId)?.capacity}
                     </div>
-                    <div style={{ marginTop: "8px" }}>Status: Available</div>
+                    <div className="mt-2">Status: Available</div>
                   </div>
                 </div>
               </CardContent>
@@ -596,17 +407,7 @@ export default function EditRoutePage() {
                 <CardTitle>Route Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  style={{
-                    padding: "12px",
-                    borderRadius: "6px",
-                    backgroundColor: "var(--wl-surface)",
-                    border: "1px solid var(--wl-border)",
-                    color: "var(--wl-muted)",
-                    fontSize: "12px",
-                    lineHeight: "1.8",
-                  }}
-                >
+                <div className="p-3 rounded-md bg-wl-surface border border-wl-border text-wl-muted text-xs leading-relaxed">
                   <div>
                     <strong>Name:</strong> {formData.name}
                   </div>
@@ -627,17 +428,7 @@ export default function EditRoutePage() {
             </Card>
 
             {hasChanges && (
-              <div
-                style={{
-                  padding: "12px",
-                  borderRadius: "6px",
-                  backgroundColor: "rgba(255, 107, 107, 0.1)",
-                  border: "1px solid #ff6b6b",
-                  color: "#ff6b6b",
-                  fontSize: "12px",
-                  textAlign: "center",
-                }}
-              >
+              <div className="p-3 rounded-md bg-red-500/10 border border-red-500 text-red-500 text-xs text-center">
                 You have unsaved changes
               </div>
             )}
@@ -645,11 +436,11 @@ export default function EditRoutePage() {
         </div>
       </div>
 
-      <div style={actionBarStyle}>
+      <div className="flex gap-3 max-w-4xl justify-between">
         <Button variant="secondary" onClick={handleCancel}>
           Cancel
         </Button>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="flex gap-3">
           <Button variant="secondary">Save as Draft</Button>
           <Button variant="primary" disabled={!hasChanges}>
             Save Changes

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { cn } from "../../lib/utils";
 import { Header } from "../../components/layout/header";
 import { StatCard } from "../../components/ui/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
@@ -220,16 +221,9 @@ export default function CollectionsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className={cn("p-6")}>
         {/* Stats Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6")}>
           <StatCard
             label="Total Collections"
             value={totalCollections}
@@ -261,17 +255,9 @@ export default function CollectionsPage() {
         </div>
 
         {/* Filters Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className={cn("flex gap-4 mb-5 items-center flex-wrap")}>
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className={cn("flex-1 min-w-[300px] max-w-[400px]")}>
             <input
               type="text"
               placeholder="Search collections..."
@@ -280,22 +266,12 @@ export default function CollectionsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans outline-none")}
             />
           </div>
 
           {/* Type Filter */}
-          <div style={{ display: "flex", gap: 4 }}>
+          <div className={cn("flex gap-1")}>
             {(["all", "auto", "manual"] as const).map((type) => (
               <button
                 key={type}
@@ -303,15 +279,8 @@ export default function CollectionsPage() {
                   setTypeFilter(type);
                   setCurrentPage(1);
                 }}
+                className={cn("px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all")}
                 style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-full)",
-                  border: "1px solid",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  transition: `all var(--wl-duration-fast)`,
                   background: typeFilter === type ? "var(--wl-primary-500)" : "transparent",
                   color: typeFilter === type ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
                   borderColor: typeFilter === type ? "var(--wl-primary-500)" : "var(--wl-border-default)",
@@ -330,17 +299,7 @@ export default function CollectionsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            style={{
-              padding: "var(--wl-space-1) var(--wl-space-3)",
-              background: "var(--wl-bg-elevated)",
-              border: "1px solid var(--wl-border-default)",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-primary)",
-              fontSize: "var(--wl-text-sm)",
-              fontFamily: "var(--wl-font-sans)",
-              cursor: "pointer",
-              outline: "none",
-            }}
+            className={cn("p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans cursor-pointer outline-none")}
           >
             <option value="title">Sort by Title</option>
             <option value="productCount">Sort by Product Count</option>
@@ -349,310 +308,74 @@ export default function CollectionsPage() {
         </div>
 
         {/* Collections Table */}
-        <Card style={{ overflow: "hidden", padding: 0, marginBottom: "var(--wl-space-6)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "var(--wl-text-sm)",
-              }}
-            >
+        <Card className={cn("overflow-hidden p-0 mb-6")}>
+          <div className={cn("overflow-x-auto")}>
+            <table className={cn("w-full border-collapse text-sm")}>
               <thead>
-                <tr
-                  style={{
-                    borderBottom: "1px solid var(--wl-border-subtle)",
-                    background: "var(--wl-bg-overlay)",
-                  }}
-                >
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "left",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                      width: 40,
-                    }}
-                  >
-                    {" "}
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "left",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Title
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "center",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Type
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "center",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Products
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "center",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Status
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "left",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Last Updated
-                  </th>
-                  <th
-                    style={{
-                      padding: "var(--wl-space-3) var(--wl-space-4)",
-                      textAlign: "center",
-                      fontWeight: 600,
-                      color: "var(--wl-text-secondary)",
-                    }}
-                  >
-                    Actions
-                  </th>
+                <tr className={cn("border-b border-wl-border-subtle bg-wl-bg-overlay")}>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-wl-text-secondary w-10")}> </th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-wl-text-secondary")}>Title</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-wl-text-secondary")}>Type</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-wl-text-secondary")}>Products</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-wl-text-secondary")}>Status</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-wl-text-secondary")}>Last Updated</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-wl-text-secondary")}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedItems.map((collection, idx) => (
                   <tbody key={collection.id}>
-                    <tr
-                      style={{
-                        borderBottom: "1px solid var(--wl-border-subtle)",
-                        background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
-                        transition: "background var(--wl-duration-fast)",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          textAlign: "center",
-                          cursor: "pointer",
-                        }}
-                        onClick={() =>
-                          setExpandedCollection(
-                            expandedCollection === collection.id
-                              ? null
-                              : collection.id
-                          )
-                        }
-                      >
+                    <tr className={cn("border-b border-wl-border-subtle")} style={{ background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)" }}>
+                      <td className={cn("p-3 px-4 text-center cursor-pointer")} onClick={() => setExpandedCollection(expandedCollection === collection.id ? null : collection.id)}>
                         {expandedCollection === collection.id ? (
                           <ChevronUp size={18} />
                         ) : (
                           <ChevronDown size={18} />
                         )}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-primary)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {collection.title}
+                      <td className={cn("p-3 px-4 text-wl-text-primary font-medium")}>{collection.title}</td>
+                      <td className={cn("p-3 px-4 text-center")}>
+                        <Badge variant={collection.type === "auto" ? "info" : "default"}>{collection.type}</Badge>
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          textAlign: "center",
-                        }}
-                      >
-                        <Badge
-                          variant={collection.type === "auto" ? "info" : "default"}
-                        >
-                          {collection.type}
-                        </Badge>
+                      <td className={cn("p-3 px-4 text-center text-wl-text-primary font-semibold")}>{collection.productCount}</td>
+                      <td className={cn("p-3 px-4 text-center")}>
+                        <Badge variant={collection.status === "active" ? "success" : "warning"}>{collection.status}</Badge>
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          textAlign: "center",
-                          color: "var(--wl-text-primary)",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {collection.productCount}
-                      </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          textAlign: "center",
-                        }}
-                      >
-                        <Badge
-                          variant={
-                            collection.status === "active"
-                              ? "success"
-                              : "warning"
-                          }
-                        >
-                          {collection.status}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-tertiary)",
-                          fontSize: "var(--wl-text-xs)",
-                        }}
-                      >
-                        {formatDateTime(collection.lastUpdated)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          textAlign: "center",
-                        }}
-                      >
-                        <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
-                          <Button variant="secondary" size="sm">
-                            <Edit2 size={14} />
-                          </Button>
-                          <Button variant="danger" size="sm">
-                            <Trash2 size={14} />
-                          </Button>
+                      <td className={cn("p-3 px-4 text-wl-text-tertiary text-xs")}>{formatDateTime(collection.lastUpdated)}</td>
+                      <td className={cn("p-3 px-4 text-center")}>
+                        <div className={cn("flex gap-1 justify-center")}>
+                          <Button variant="secondary" size="sm"><Edit2 size={14} /></Button>
+                          <Button variant="danger" size="sm"><Trash2 size={14} /></Button>
                         </div>
                       </td>
                     </tr>
 
                     {/* Expanded Details Row */}
                     {expandedCollection === collection.id && (
-                      <tr
-                        style={{
-                          borderBottom: "1px solid var(--wl-border-subtle)",
-                          background: "var(--wl-bg-overlay)",
-                        }}
-                      >
-                        <td colSpan={7} style={{ padding: 0 }}>
-                          <div style={{ padding: "var(--wl-space-4)" }}>
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "200px 1fr",
-                                gap: "var(--wl-space-6)",
-                              }}
-                            >
+                      <tr className={cn("border-b border-wl-border-subtle bg-wl-bg-overlay")}>
+                        <td colSpan={7} className={cn("p-0")}>
+                          <div className={cn("p-4")}>
+                            <div className={cn("grid gap-6")} style={{ gridTemplateColumns: "200px 1fr" }}>
                               {/* Collection Image & Meta */}
                               <div>
-                                <div
-                                  style={{
-                                    background: "var(--wl-bg-elevated)",
-                                    border: "1px dashed var(--wl-border-default)",
-                                    borderRadius: "var(--wl-radius-md)",
-                                    height: 180,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    marginBottom: "var(--wl-space-3)",
-                                    color: "var(--wl-text-secondary)",
-                                  }}
-                                >
+                                <div className={cn("bg-wl-bg-elevated border border-dashed border-wl-border-default rounded-lg h-45 flex items-center justify-center mb-3 text-wl-text-secondary")}>
                                   <ImageIcon size={32} opacity={0.5} />
                                 </div>
-                                <p
-                                  style={{
-                                    fontSize: "var(--wl-text-xs)",
-                                    color: "var(--wl-text-secondary)",
-                                    margin: 0,
-                                  }}
-                                >
-                                  {collection.description}
-                                </p>
+                                <p className={cn("text-xs text-wl-text-secondary m-0")}>{collection.description}</p>
                               </div>
 
                               {/* Products List */}
                               <div>
-                                <h4
-                                  style={{
-                                    fontSize: "var(--wl-text-sm)",
-                                    fontWeight: 600,
-                                    color: "var(--wl-text-primary)",
-                                    marginBottom: "var(--wl-space-3)",
-                                  }}
-                                >
-                                  Products in Collection
-                                </h4>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "var(--wl-space-2)",
-                                    marginBottom: "var(--wl-space-4)",
-                                  }}
-                                >
+                                <h4 className={cn("text-sm font-semibold text-wl-text-primary mb-3")}>Products in Collection</h4>
+                                <div className={cn("flex flex-col gap-2 mb-4")}>
                                   {collection.products?.map((product, pIdx) => (
-                                    <div
-                                      key={product.id}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "var(--wl-space-3)",
-                                        padding: "var(--wl-space-2) var(--wl-space-3)",
-                                        background: "var(--wl-bg-elevated)",
-                                        borderRadius: "var(--wl-radius-md)",
-                                      }}
-                                    >
-                                      <GripVertical
-                                        size={14}
-                                        style={{
-                                          color: "var(--wl-text-tertiary)",
-                                          cursor: "grab",
-                                        }}
-                                      />
-                                      <div style={{ flex: 1 }}>
-                                        <p
-                                          style={{
-                                            fontSize: "var(--wl-text-sm)",
-                                            color: "var(--wl-text-primary)",
-                                            margin: 0,
-                                            fontWeight: 500,
-                                          }}
-                                        >
-                                          {product.title}
-                                        </p>
-                                        <p
-                                          style={{
-                                            fontSize: "var(--wl-text-xs)",
-                                            color: "var(--wl-text-secondary)",
-                                            margin: "var(--wl-space-1) 0 0 0",
-                                          }}
-                                        >
-                                          SKU: {product.sku}
-                                        </p>
+                                    <div key={product.id} className={cn("flex items-center gap-3 p-2 px-3 bg-wl-bg-elevated rounded-lg")}>
+                                      <GripVertical size={14} className={cn("text-wl-text-tertiary cursor-grab")} />
+                                      <div className={cn("flex-1")}>
+                                        <p className={cn("text-sm text-wl-text-primary m-0 font-medium")}>{product.title}</p>
+                                        <p className={cn("text-xs text-wl-text-secondary m-0 mt-1")}>SKU: {product.sku}</p>
                                       </div>
-                                      <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() =>
-                                          alert(`Removing ${product.title} (mock)`)
-                                        }
-                                      >
+                                      <Button variant="danger" size="sm" onClick={() => alert(`Removing ${product.title} (mock)`)}>
                                         Remove
                                       </Button>
                                     </div>
@@ -660,47 +383,18 @@ export default function CollectionsPage() {
                                 </div>
 
                                 {/* Sort Rules for Auto Collections */}
-                                {collection.type === "auto" &&
-                                  collection.sortRules &&
-                                  collection.sortRules.length > 0 && (
-                                    <div>
-                                      <h4
-                                        style={{
-                                          fontSize: "var(--wl-text-sm)",
-                                          fontWeight: 600,
-                                          color: "var(--wl-text-primary)",
-                                          marginBottom: "var(--wl-space-2)",
-                                        }}
-                                      >
-                                        Sort Rules
-                                      </h4>
-                                      <ul
-                                        style={{
-                                          listStyle: "none",
-                                          padding: 0,
-                                          margin: 0,
-                                          display: "flex",
-                                          flexDirection: "column",
-                                          gap: "var(--wl-space-2)",
-                                        }}
-                                      >
-                                        {collection.sortRules.map((rule, rIdx) => (
-                                          <li
-                                            key={rIdx}
-                                            style={{
-                                              fontSize: "var(--wl-text-sm)",
-                                              color: "var(--wl-text-secondary)",
-                                              padding: "var(--wl-space-2) var(--wl-space-3)",
-                                              background: "var(--wl-bg-elevated)",
-                                              borderRadius: "var(--wl-radius-md)",
-                                            }}
-                                          >
-                                            {rule}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
+                                {collection.type === "auto" && collection.sortRules && collection.sortRules.length > 0 && (
+                                  <div>
+                                    <h4 className={cn("text-sm font-semibold text-wl-text-primary mb-2")}>Sort Rules</h4>
+                                    <ul className={cn("list-none p-0 m-0 flex flex-col gap-2")}>
+                                      {collection.sortRules.map((rule, rIdx) => (
+                                        <li key={rIdx} className={cn("text-sm text-wl-text-secondary p-2 px-3 bg-wl-bg-elevated rounded-lg")}>
+                                          {rule}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -714,27 +408,11 @@ export default function CollectionsPage() {
           </div>
 
           {/* Pagination */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "var(--wl-space-4)",
-              borderTop: "1px solid var(--wl-border-subtle)",
-              background: "var(--wl-bg-overlay)",
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-text-secondary)",
-            }}
-          >
+          <div className={cn("flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary")}>
             <div>
-              Showing{" "}
-              {paginatedItems.length > 0
-                ? (currentPage - 1) * pageSize + 1
-                : 0}{" "}
-              to {Math.min(currentPage * pageSize, filtered.length)} of{" "}
-              {filtered.length}
+              Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>
-            <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+            <div className={cn("flex gap-2")}>
               <Button
                 variant="secondary"
                 size="sm"
@@ -743,10 +421,8 @@ export default function CollectionsPage() {
               >
                 Previous
               </Button>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
-                <span>
-                  Page {currentPage} of {totalPages}
-                </span>
+              <div className={cn("flex items-center gap-2")}>
+                <span>Page {currentPage} of {totalPages}</span>
               </div>
               <Button
                 variant="secondary"

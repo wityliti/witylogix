@@ -1,0 +1,10 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "Witylogix POS Delivery"
+handle = "witylogix-pos-delivery"
+type = "pos_ui_extension"
+
+[extensions.targeting]
+module = "./src/index.tsx"
+target = "pos.home.tile.render"

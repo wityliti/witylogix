@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -326,16 +327,9 @@ export default function LocationsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className={cn("p-6")}>
         {/* KPI Stats */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6")}>
           <StatCard label="Total Locations" value={stats.totalLocations} index={0} accentColor="var(--wl-primary-500)" />
           <StatCard label="Active" value={stats.activeLocations} index={1} accentColor="var(--wl-success-400)" />
           <StatCard label="Shipments Today" value={stats.totalShipments} index={2} accentColor="var(--wl-info-400)" />
@@ -343,38 +337,20 @@ export default function LocationsPage() {
         </div>
 
         {/* Filters Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className={cn("flex gap-4 mb-5 items-center flex-wrap")}>
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className={cn("flex-1 min-w-72 max-w-sm")}>
             <input
               type="text"
               placeholder="Search locations, cities, addresses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none")}
             />
           </div>
 
           {/* Type Filter Pills */}
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className={cn("flex gap-1 flex-wrap")}>
             {(["ALL", "WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => {
               const count =
                 t === "ALL" ? LOCATIONS.length : LOCATIONS.filter((loc) => loc.type === t).length;
@@ -382,19 +358,12 @@ export default function LocationsPage() {
                 <button
                   key={t}
                   onClick={() => setTypeFilter(t)}
-                  style={{
-                    padding: "var(--wl-space-1) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-full)",
-                    border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                    background: typeFilter === t ? "var(--wl-primary-500)" : "transparent",
-                    color: typeFilter === t ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                    borderColor: typeFilter === t ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  }}
+                  className={cn(
+                    "py-1 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all",
+                    typeFilter === t
+                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                  )}
                 >
                   {t === "ALL" ? "All Types" : typeLabel(t as LocationType)}
                   <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
@@ -405,21 +374,9 @@ export default function LocationsPage() {
         </div>
 
         {/* Locations Grid + Detail */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr",
-            gap: "var(--wl-space-5)",
-          }}
-        >
+        <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
           {/* Locations Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "var(--wl-space-4)",
-            }}
-          >
+          <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
             {filtered.map((location, i) => (
               <Card
                 key={location.id}
@@ -454,14 +411,14 @@ export default function LocationsPage() {
                 />
 
                 {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--wl-space-3)" }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+                <div className={cn("flex justify-between items-start mb-3")}>
+                  <div className={cn("flex-1 min-w-0")}>
+                    <div className={cn("flex gap-2 items-center mb-1")}>
+                      <span className={cn("text-base font-bold text-wl-text-primary")}>
                         {location.name}
                       </span>
                       {location.isDefault && (
-                        <span style={{ fontSize: 14, opacity: 0.8, color: "var(--wl-primary-400)" }}>★</span>
+                        <span className={cn("text-sm opacity-80 text-wl-primary-400")}>★</span>
                       )}
                     </div>
                     <Badge variant={typeVariant(location.type)} dot>
@@ -471,7 +428,7 @@ export default function LocationsPage() {
                 </div>
 
                 {/* Address */}
-                <div style={{ marginBottom: "var(--wl-space-3)", fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>
+                <div className={cn("mb-3 text-xs text-wl-text-secondary")}>
                   <div>{location.addressLine1}</div>
                   <div>
                     {location.city}, {location.province} {location.postalCode}
@@ -482,68 +439,45 @@ export default function LocationsPage() {
                 <Badge
                   variant={statusVariant(location.status)}
                   dot
-                  style={{ marginBottom: "var(--wl-space-3)", width: "fit-content" }}
+                  className={cn("mb-3 w-fit")}
                 >
                   {location.status}
                 </Badge>
 
                 {/* Stats Grid */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "var(--wl-space-3)",
-                    padding: "var(--wl-space-3) 0",
-                    borderTop: "1px solid var(--wl-border-subtle)",
-                    borderBottom: "1px solid var(--wl-border-subtle)",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
+                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-subtle mb-3")}>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Active Shipments</div>
+                    <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Active Shipments</div>
                     <div
-                      style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
-                        fontFamily: "var(--wl-font-mono)",
-                        color: location.activeShipments > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)",
-                      }}
+                      className={cn("text-base font-bold")}
+                      style={{ fontFamily: "var(--wl-font-mono)", color: location.activeShipments > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}
                     >
                       {location.activeShipments}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Total Processed</div>
+                    <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Processed</div>
                     <div
-                      style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-success-400)",
-                      }}
+                      className={cn("text-base font-bold")}
+                      style={{ fontFamily: "var(--wl-font-mono)", color: "var(--wl-success-400)" }}
                     >
                       {location.totalProcessed}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Avg Prep Time</div>
+                    <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg Prep Time</div>
                     <div
-                      style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-secondary)",
-                      }}
+                      className={cn("text-base font-bold")}
+                      style={{ fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-secondary)" }}
                     >
                       {location.avgPrepTime}m
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Status</div>
+                    <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Status</div>
                     <div
+                      className={cn("text-xs font-semibold")}
                       style={{
-                        fontSize: "var(--wl-text-xs)",
-                        fontWeight: 600,
                         color:
                           location.status === "ACTIVE"
                             ? "var(--wl-success-400)"
@@ -559,8 +493,8 @@ export default function LocationsPage() {
 
                 {/* Operating Hours Preview */}
                 {location.operatingHours && (
-                  <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
-                    <div style={{ marginBottom: 4, fontWeight: 600, color: "var(--wl-text-secondary)" }}>Hours</div>
+                  <div className={cn("text-xs text-wl-text-tertiary")}>
+                    <div className={cn("mb-1 font-semibold text-wl-text-secondary")}>Hours</div>
                     <div>Mon: {location.operatingHours.Monday.open} - {location.operatingHours.Monday.close}</div>
                     <div>Sat: {location.operatingHours.Saturday.open} - {location.operatingHours.Saturday.close}</div>
                   </div>
@@ -582,20 +516,14 @@ export default function LocationsPage() {
                 flexDirection: "column",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--wl-space-4)" }}>
+              <div className={cn("flex justify-between items-start mb-4")}>
                 <div>
-                  <div style={{ display: "flex", gap: "var(--wl-space-2)", alignItems: "center", marginBottom: 4 }}>
-                    <span
-                      style={{
-                        fontSize: "var(--wl-text-lg)",
-                        fontWeight: 700,
-                        color: "var(--wl-text-primary)",
-                      }}
-                    >
+                  <div className={cn("flex gap-2 items-center mb-1")}>
+                    <span className={cn("text-lg font-bold text-wl-text-primary")}>
                       {selectedLocation.name}
                     </span>
                     {selectedLocation.isDefault && (
-                      <span style={{ fontSize: 16, color: "var(--wl-primary-400)" }}>★</span>
+                      <span className={cn("text-base text-wl-primary-400")}>★</span>
                     )}
                   </div>
                   <Badge variant={typeVariant(selectedLocation.type)} dot>
@@ -604,14 +532,7 @@ export default function LocationsPage() {
                 </div>
                 <button
                   onClick={() => setSelectedLocation(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--wl-text-tertiary)",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontFamily: "var(--wl-font-sans)",
-                  }}
+                  className={cn("bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans")}
                 >
                   ✕
                 </button>
@@ -620,88 +541,60 @@ export default function LocationsPage() {
               <Badge
                 variant={statusVariant(selectedLocation.status)}
                 dot
-                style={{ marginBottom: "var(--wl-space-4)", width: "fit-content" }}
+                className={cn("mb-4 w-fit")}
               >
                 {selectedLocation.status}
               </Badge>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)", flex: 1 }}>
+              <div className={cn("flex flex-col gap-4 flex-1")}>
                 {/* Address Info */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2")} style={{ letterSpacing: "0.04em" }}>
                     Address
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                  <div className={cn("text-sm text-wl-text-primary font-medium")}>
                     {selectedLocation.addressLine1}
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                  <div className={cn("text-sm text-wl-text-secondary")}>
                     {selectedLocation.city}, {selectedLocation.province} {selectedLocation.postalCode}
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginTop: 4 }}>
+                  <div className={cn("text-xs text-wl-text-tertiary mt-1")}>
                     {selectedLocation.country}
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className={cn("h-px bg-wl-border-subtle")} />
 
                 {/* Contact Info */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2")} style={{ letterSpacing: "0.04em" }}>
                     Contact
                   </div>
                   {selectedLocation.phone && (
-                    <div style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", marginBottom: 4, fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-sm text-wl-text-secondary mb-1")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                       {selectedLocation.phone}
                     </div>
                   )}
                   {selectedLocation.email && (
-                    <div style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)" }}>
+                    <div className={cn("text-sm text-wl-text-secondary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                       {selectedLocation.email}
                     </div>
                   )}
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className={cn("h-px bg-wl-border-subtle")} />
 
                 {/* Performance Stats */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
-                  >
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
                     Performance
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-3)" }}>
+                  <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Active Shipments</div>
+                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Active Shipments</div>
                       <div
+                        className={cn("text-lg font-bold")}
                         style={{
-                          fontSize: "var(--wl-text-lg)",
-                          fontWeight: 700,
                           fontFamily: "var(--wl-font-mono)",
                           color: "var(--wl-primary-400)",
                         }}
@@ -710,11 +603,10 @@ export default function LocationsPage() {
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Total Processed</div>
+                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Processed</div>
                       <div
+                        className={cn("text-lg font-bold")}
                         style={{
-                          fontSize: "var(--wl-text-lg)",
-                          fontWeight: 700,
                           fontFamily: "var(--wl-font-mono)",
                           color: "var(--wl-success-400)",
                         }}
@@ -723,11 +615,10 @@ export default function LocationsPage() {
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginBottom: 4 }}>Avg Prep Time</div>
+                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg Prep Time</div>
                       <div
+                        className={cn("text-lg font-bold")}
                         style={{
-                          fontSize: "var(--wl-text-lg)",
-                          fontWeight: 700,
                           fontFamily: "var(--wl-font-mono)",
                           color: "var(--wl-text-secondary)",
                         }}
@@ -738,48 +629,27 @@ export default function LocationsPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className={cn("h-px bg-wl-border-subtle")} />
 
                 {/* Operating Hours */}
                 {selectedLocation.operatingHours && (
                   <div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-xs)",
-                        fontWeight: 600,
-                        color: "var(--wl-text-tertiary)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                        marginBottom: "var(--wl-space-3)",
-                      }}
-                    >
+                    <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
                       Operating Hours
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", overflowX: "auto" }}>
-                      <table
-                        style={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          fontSize: "var(--wl-text-xs)",
-                        }}
-                      >
+                    <div className={cn("text-xs overflow-x-auto")}>
+                      <table className={cn("w-full border-collapse text-xs")}>
                         <tbody>
                           {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
-                            <tr key={day} style={{ borderBottom: "1px solid var(--wl-border-subtle)" }}>
+                            <tr key={day} className={cn("border-b border-wl-border-subtle")}>
                               <td
-                                style={{
-                                  padding: "var(--wl-space-2) 0",
-                                  paddingRight: "var(--wl-space-3)",
-                                  color: "var(--wl-text-secondary)",
-                                  fontWeight: 500,
-                                  whiteSpace: "nowrap",
-                                }}
+                                className={cn("p-2 pr-3 text-wl-text-secondary font-medium whitespace-nowrap")}
                               >
                                 {day}
                               </td>
                               <td
+                                className={cn("p-2")}
                                 style={{
-                                  padding: "var(--wl-space-2) 0",
                                   color:
                                     hours.open === "closed"
                                       ? "var(--wl-text-tertiary)"
@@ -797,41 +667,22 @@ export default function LocationsPage() {
                   </div>
                 )}
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className={cn("h-px bg-wl-border-subtle")} />
 
                 {/* Map Placeholder */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
-                  >
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
                     Location
                   </div>
                   <div
-                    style={{
-                      background: "var(--wl-bg-overlay)",
-                      border: "1px solid var(--wl-border-default)",
-                      borderRadius: "var(--wl-radius-md)",
-                      padding: "var(--wl-space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minHeight: 140,
-                      textAlign: "center",
-                    }}
+                    className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-md p-4 flex flex-col items-center justify-center text-center")}
+                    style={{ minHeight: 140 }}
                   >
                     <div style={{ fontSize: 24, marginBottom: "var(--wl-space-2)", opacity: 0.5 }}>⊙</div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", marginBottom: 4 }}>
+                    <div className={cn("text-xs text-wl-text-secondary mb-1")}>
                       Coordinates
                     </div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)", fontWeight: 600 }}>
+                    <div className={cn("text-xs font-semibold text-wl-text-primary")} style={{ fontFamily: "var(--wl-font-mono)" }}>
                       {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
                     </div>
                   </div>
@@ -839,14 +690,7 @@ export default function LocationsPage() {
 
                 {/* Action Buttons */}
                 <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-2)",
-                    flexWrap: "wrap",
-                    marginTop: "auto",
-                    paddingTop: "var(--wl-space-4)",
-                    borderTop: "1px solid var(--wl-border-subtle)",
-                  }}
+                  className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-subtle")}
                 >
                   <Button variant="primary" size="sm">
                     Edit

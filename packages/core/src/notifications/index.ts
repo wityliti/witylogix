@@ -76,13 +76,32 @@ export {
   WhatsAppProvider as WhatsAppBusinessProvider,
 } from "./providers/index.js";
 
+// ─── Provider Registry ────────────────────────────────────────
+
+export type {
+  ProviderHealthRecord,
+} from "./provider-registry.js";
+
+export {
+  TenantProviderRegistry,
+  getTenantProviderRegistry,
+  clearTenantRegistry,
+  clearAllRegistries,
+  getRegistryStats,
+} from "./provider-registry.js";
+
 // ─── Orchestrator ─────────────────────────────────────────────
 
-export type { NotificationTemplate } from "./orchestrator.js";
+export type {
+  NotificationTemplate,
+  DeliveryLogEntry,
+  RetryOptions,
+} from "./orchestrator.js";
 
 export {
   NotificationOrchestrator,
   getNotificationOrchestrator,
+  setOrchestratorRetryOptions,
 } from "./orchestrator.js";
 
 import type {

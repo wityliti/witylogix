@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    ROUTES PAGE — Route planning, optimization, and tracking
@@ -49,23 +50,16 @@ export default function RoutesPage() {
         title="Routes"
         subtitle="Plan, optimize, and track delivery routes"
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+          <div className="flex gap-2">
             <Button variant="secondary" size="md">Auto-Optimize</Button>
             <Button variant="primary" size="md">+ Create Route</Button>
           </div>
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Summary Stats */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-4 gap-4 mb-6">
           {[
             { label: "Total Routes", value: ROUTES.length, color: "var(--wl-primary-500)" },
             { label: "In Progress", value: ROUTES.filter((r) => r.status === "IN_PROGRESS").length, color: "var(--wl-info-400)" },
@@ -74,14 +68,14 @@ export default function RoutesPage() {
           ].map((stat, i) => (
             <Card
               key={stat.label}
-              className="wl-animate-in"
-              style={{ position: "relative", overflow: "hidden", animationDelay: `${i * 60}ms`, opacity: 0 }}
+              className="wl-animate-in relative overflow-hidden"
+              style={{ animationDelay: `${i * 60}ms`, opacity: 0 }}
             >
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: stat.color }} />
-              <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", marginBottom: "var(--wl-space-2)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <div className="text-xs text-wl-text-tertiary mb-2 font-semibold uppercase tracking-wider">
                 {stat.label}
               </div>
-              <div style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+              <div className="text-2xl font-bold font-mono text-wl-text-primary">
                 {stat.value}
               </div>
             </Card>
@@ -89,7 +83,7 @@ export default function RoutesPage() {
         </div>
 
         {/* Route Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+        <div className="flex flex-col gap-4">
           {ROUTES.map((route, i) => {
             const progress = route.stops > 0 ? (route.completedStops / route.stops) * 100 : 0;
 
@@ -102,18 +96,18 @@ export default function RoutesPage() {
                   opacity: 0,
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-5)" }}>
+                <div className="flex items-center gap-5">
                   {/* Route Info */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)", marginBottom: "var(--wl-space-2)" }}>
-                      <span style={{ fontSize: "var(--wl-text-md)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-md font-bold text-wl-text-primary">
                         {route.name}
                       </span>
                       <Badge variant={statusVariant(route.status)} dot>
                         {route.status.replace(/_/g, " ")}
                       </Badge>
                     </div>
-                    <div style={{ display: "flex", gap: "var(--wl-space-5)", fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)" }}>
+                    <div className="flex gap-5 text-xs text-wl-text-secondary">
                       <span>Driver: {route.driver ?? "Unassigned"}</span>
                       <span>{route.stops} stops</span>
                       <span>{route.totalDistance}</span>
@@ -123,21 +117,20 @@ export default function RoutesPage() {
 
                   {/* Progress bar */}
                   <div style={{ width: 200, flexShrink: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontSize: 10, color: "var(--wl-text-tertiary)" }}>Progress</span>
-                      <span style={{ fontSize: 10, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-secondary)" }}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-wl-text-tertiary">Progress</span>
+                      <span className="text-xs font-mono text-wl-text-secondary">
                         {route.completedStops}/{route.stops}
                       </span>
                     </div>
-                    <div style={{ height: 6, background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-full)", overflow: "hidden" }}>
+                    <div className="h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
                       <div
+                        className="h-full rounded-full transition-all"
                         style={{
                           width: `${progress}%`,
-                          height: "100%",
                           background: progress === 100
                             ? "var(--wl-success-400)"
                             : "linear-gradient(90deg, var(--wl-primary-500), var(--wl-primary-400))",
-                          borderRadius: "var(--wl-radius-full)",
                           transition: `width var(--wl-duration-slow) var(--wl-ease-spring)`,
                         }}
                       />
@@ -145,7 +138,7 @@ export default function RoutesPage() {
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                  <div className="flex gap-2">
                     {route.status === "DRAFT" && <Button variant="secondary" size="sm">Optimize</Button>}
                     {route.status === "OPTIMIZED" && <Button variant="primary" size="sm">Assign</Button>}
                     <Button variant="ghost" size="sm">View</Button>

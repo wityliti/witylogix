@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { cn } from '../../../lib/utils';
 
 interface LineItem {
   id: string;
@@ -117,262 +118,60 @@ export default function CreateOrderPage() {
     alert('Order saved as draft');
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      backgroundColor: 'var(--wl-bg)',
-      padding: '20px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    header: {
-      marginBottom: '30px'
-    } as React.CSSProperties,
-    title: {
-      fontSize: '32px',
-      fontWeight: '700',
-      marginBottom: '8px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    subtitle: {
-      fontSize: '14px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-      gap: '20px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    sectionCard: {
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '8px',
-      padding: '20px'
-    } as React.CSSProperties,
-    sectionTitle: {
-      fontSize: '16px',
-      fontWeight: '600',
-      marginBottom: '15px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    formGroup: {
-      marginBottom: '15px'
-    } as React.CSSProperties,
-    label: {
-      display: 'block',
-      fontSize: '13px',
-      fontWeight: '500',
-      marginBottom: '6px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    input: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    textarea: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      minHeight: '80px',
-      fontFamily: 'inherit',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    select: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    radioGroup: {
-      display: 'flex',
-      gap: '20px',
-      marginBottom: '15px'
-    } as React.CSSProperties,
-    radioLabel: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      cursor: 'pointer',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    button: {
-      padding: '10px 16px',
-      borderRadius: '6px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: '600',
-      transition: 'all 0.2s'
-    } as React.CSSProperties,
-    primaryButton: {
-      backgroundColor: 'var(--wl-primary)',
-      color: '#ffffff',
-      marginRight: '10px'
-    } as React.CSSProperties,
-    secondaryButton: {
-      backgroundColor: 'transparent',
-      color: 'var(--wl-primary)',
-      border: '1px solid var(--wl-primary)'
-    } as React.CSSProperties,
-    dangerButton: {
-      backgroundColor: '#ff4444',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse' as const,
-      marginTop: '15px'
-    } as React.CSSProperties,
-    tableHeader: {
-      backgroundColor: 'var(--wl-bg)',
-      borderBottom: '1px solid var(--wl-border)',
-      padding: '12px',
-      textAlign: 'left',
-      fontSize: '12px',
-      fontWeight: '600',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    tableCell: {
-      padding: '12px',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    totalsSection: {
-      marginTop: '20px',
-      paddingTop: '20px',
-      borderTop: '1px solid var(--wl-border)'
-    } as React.CSSProperties,
-    totalRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginBottom: '10px',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    totalValue: {
-      fontWeight: '600',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    grandTotal: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      paddingTop: '15px',
-      borderTop: '1px solid var(--wl-border)',
-      fontSize: '16px',
-      fontWeight: '700',
-      color: 'var(--wl-primary)'
-    } as React.CSSProperties,
-    buttonGroup: {
-      display: 'flex',
-      gap: '10px',
-      marginTop: '20px'
-    } as React.CSSProperties,
-    customerSearchResults: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      marginTop: '4px',
-      zIndex: 10,
-      maxHeight: '200px',
-      overflowY: 'auto' as const
-    } as React.CSSProperties,
-    customerOption: {
-      padding: '10px 12px',
-      cursor: 'pointer',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    customerOptionHover: {
-      backgroundColor: 'var(--wl-bg)'
-    } as React.CSSProperties,
-    productAutocomplete: {
-      position: 'relative',
-      marginBottom: '15px'
-    } as React.CSSProperties,
-    priorityBadge: {
-      display: 'inline-block',
-      padding: '4px 12px',
-      borderRadius: '4px',
-      fontSize: '12px',
-      fontWeight: '600',
-      backgroundColor: getPriorityColor(priority) + '20'
-    } as React.CSSProperties
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.title}>Create Order</div>
-        <div style={styles.subtitle}>Create and manage new orders with customer and delivery information</div>
+    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+      <div className="mb-8">
+        <div className="text-4xl font-bold mb-2 text-wl-text">Create Order</div>
+        <div className="text-sm text-wl-muted">Create and manage new orders with customer and delivery information</div>
       </div>
 
-      <div style={styles.grid}>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-5">
         {/* Customer Section */}
-        <div style={styles.sectionCard}>
-          <div style={styles.sectionTitle}>Customer Information</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="text-base font-semibold mb-4 text-wl-text">Customer Information</div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Customer Type</label>
-            <div style={styles.radioGroup}>
-              <label style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  checked={isNewCustomer}
-                  onChange={() => setIsNewCustomer(true)}
-                />
-                New Customer
-              </label>
-              <label style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  checked={!isNewCustomer}
-                  onChange={() => setIsNewCustomer(false)}
-                />
-                Existing Customer
-              </label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-2">Customer Type</label>
+            <div className="flex gap-5 mb-4">
+              {[
+                { checked: isNewCustomer, label: 'New Customer' },
+                { checked: !isNewCustomer, label: 'Existing Customer' }
+              ].map((opt, idx) => (
+                <label key={idx} className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input
+                    type="radio"
+                    checked={opt.checked}
+                    onChange={() => setIsNewCustomer(opt.label === 'New Customer')}
+                  />
+                  {opt.label}
+                </label>
+              ))}
             </div>
           </div>
 
           {!isNewCustomer ? (
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Search Customer</label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-wl-text mb-1.5">Search Customer</label>
               <input
                 type="text"
-                style={styles.input}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 placeholder="Search by name or email..."
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
               />
               {customerSearch && (
-                <div style={styles.customerSearchResults}>
+                <div className="absolute bg-wl-surface border border-wl-border rounded mt-1 z-10 max-h-52 overflow-y-auto">
                   {filteredCustomers.map(c => (
                     <div
                       key={c.id}
-                      style={styles.customerOption}
+                      className="p-3 cursor-pointer border-b border-wl-border hover:bg-wl-bg text-sm"
                       onClick={() => {
                         setCustomer(c);
                         setCustomerSearch('');
                       }}
                     >
-                      <div style={{ fontWeight: '500' }}>{c.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--wl-muted)' }}>{c.email}</div>
+                      <div className="font-medium">{c.name}</div>
+                      <div className="text-xs text-wl-muted">{c.email}</div>
                     </div>
                   ))}
                 </div>
@@ -380,33 +179,33 @@ export default function CreateOrderPage() {
             </div>
           ) : null}
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Full Name *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Full Name *</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="Enter customer name"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Email *</label>
             <input
               type="email"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="customer@example.com"
               value={customer.email}
               onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Phone Number</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Phone Number</label>
             <input
               type="tel"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="+91-9876543210"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
@@ -415,51 +214,49 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Address */}
-        <div style={styles.sectionCard}>
-          <div style={styles.sectionTitle}>Delivery Address</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="text-base font-semibold mb-4 text-wl-text">Delivery Address</div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Street Address *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Street Address *</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="Enter street address"
               value={address.street}
               onChange={(e) => setAddress({ ...address, street: e.target.value })}
             />
-            <div style={{ fontSize: '11px', color: 'var(--wl-muted)', marginTop: '4px' }}>
-              Address autocomplete placeholder
-            </div>
+            <div className="text-xs text-wl-muted mt-1">Address autocomplete placeholder</div>
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>City *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">City *</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="Enter city"
               value={address.city}
               onChange={(e) => setAddress({ ...address, city: e.target.value })}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>State *</label>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-wl-text mb-1.5">State *</label>
               <input
                 type="text"
-                style={styles.input}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 placeholder="Enter state"
                 value={address.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
               />
             </div>
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Zip Code *</label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-wl-text mb-1.5">Zip Code *</label>
               <input
                 type="text"
-                style={styles.input}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 placeholder="Enter zip code"
                 value={address.zip}
                 onChange={(e) => setAddress({ ...address, zip: e.target.value })}
@@ -469,23 +266,23 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Preferences */}
-        <div style={styles.sectionCard}>
-          <div style={styles.sectionTitle}>Delivery Preferences</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="text-base font-semibold mb-4 text-wl-text">Delivery Preferences</div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Preferred Delivery Date</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Preferred Delivery Date</label>
             <input
               type="date"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               value={deliveryDate}
               onChange={(e) => setDeliveryDate(e.target.value)}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Time Slot</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Time Slot</label>
             <select
-              style={styles.select}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
             >
@@ -496,10 +293,10 @@ export default function CreateOrderPage() {
             </select>
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Delivery Notes</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Delivery Notes</label>
             <textarea
-              style={styles.textarea}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm min-h-20 font-inherit box-border"
               placeholder="Add special delivery instructions..."
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
@@ -508,14 +305,14 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Payment & Priority */}
-        <div style={styles.sectionCard}>
-          <div style={styles.sectionTitle}>Payment & Priority</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5">
+          <div className="text-base font-semibold mb-4 text-wl-text">Payment & Priority</div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Payment Method</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-wl-text mb-2.5">Payment Method</label>
+            <div className="flex flex-col gap-2.5">
               {['cod', 'prepaid', 'invoice'].map(method => (
-                <label key={method} style={styles.radioLabel}>
+                <label key={method} className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
                     type="radio"
                     checked={paymentMethod === method}
@@ -527,25 +324,25 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
-          <div style={{ ...styles.formGroup, marginTop: '20px' }}>
-            <label style={styles.label}>Priority</label>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-wl-text mb-2.5">Priority</label>
+            <div className="flex gap-2.5 flex-wrap mb-2.5">
               {['normal', 'express', 'same-day'].map(pri => (
                 <button
                   key={pri}
                   onClick={() => setPriority(pri)}
-                  style={{
-                    ...styles.button,
-                    backgroundColor: priority === pri ? 'var(--wl-primary)' : 'transparent',
-                    color: priority === pri ? '#ffffff' : 'var(--wl-primary)',
-                    border: '1px solid ' + getPriorityColor(pri)
-                  }}
+                  className={cn(
+                    'px-4 py-2 rounded border text-sm font-semibold transition-all',
+                    priority === pri
+                      ? 'bg-wl-primary text-white border-wl-primary'
+                      : 'bg-transparent text-wl-primary border-wl-primary'
+                  )}
                 >
                   {pri === 'normal' ? 'Normal' : pri === 'express' ? 'Express' : 'Same Day'}
                 </button>
               ))}
             </div>
-            <div style={{ marginTop: '10px' }}>
+            <div className="mt-2.5">
               <Badge
                 label={priority.charAt(0).toUpperCase() + priority.slice(1)}
                 color={getPriorityColor(priority)}
@@ -553,11 +350,11 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
-          <div style={{ ...styles.formGroup, marginTop: '20px' }}>
-            <label style={styles.label}>Tags (comma-separated)</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Tags (comma-separated)</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="e.g., VIP, Fragile, Gift Wrap"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -567,15 +364,15 @@ export default function CreateOrderPage() {
       </div>
 
       {/* Line Items Section */}
-      <div style={styles.sectionCard}>
-        <div style={styles.sectionTitle}>Line Items</div>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="text-base font-semibold mb-4 text-wl-text">Line Items</div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 100px', gap: '10px', marginBottom: '15px' }}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Product Name</label>
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] gap-2.5 mb-4">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Product Name</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="Search product..."
               value={newLineItem.productName}
               onChange={(e) => {
@@ -596,44 +393,44 @@ export default function CreateOrderPage() {
             </datalist>
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>SKU</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">SKU</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="SKU"
               value={newLineItem.sku}
               readOnly
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Quantity</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Quantity</label>
             <input
               type="number"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               min="1"
               value={newLineItem.quantity}
               onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) })}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Unit Price</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">Unit Price</label>
             <input
               type="number"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               min="0"
               value={newLineItem.unitPrice}
               onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) })}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>&nbsp;</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-wl-text mb-1.5">&nbsp;</label>
             <button
               onClick={addLineItem}
-              style={{ ...styles.button, ...styles.primaryButton, width: '100%' }}
+              className="w-full px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
             >
               Add
             </button>
@@ -641,29 +438,28 @@ export default function CreateOrderPage() {
         </div>
 
         {lineItems.length > 0 && (
-          <table style={styles.table}>
+          <table className="w-full border-collapse mt-4 mb-5">
             <thead>
               <tr>
-                <th style={styles.tableHeader}>Product</th>
-                <th style={styles.tableHeader}>SKU</th>
-                <th style={styles.tableHeader}>Qty</th>
-                <th style={styles.tableHeader}>Unit Price</th>
-                <th style={styles.tableHeader}>Total</th>
-                <th style={styles.tableHeader}>Action</th>
+                {['Product', 'SKU', 'Qty', 'Unit Price', 'Total', 'Action'].map(h => (
+                  <th key={h} className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {lineItems.map(item => (
                 <tr key={item.id}>
-                  <td style={styles.tableCell}>{item.productName}</td>
-                  <td style={styles.tableCell}>{item.sku}</td>
-                  <td style={styles.tableCell}>{item.quantity}</td>
-                  <td style={styles.tableCell}>₹{item.unitPrice.toLocaleString()}</td>
-                  <td style={styles.tableCell}>₹{item.total.toLocaleString()}</td>
-                  <td style={styles.tableCell}>
+                  <td className="border-b border-wl-border p-3 text-sm">{item.productName}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">{item.sku}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">{item.quantity}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">₹{item.unitPrice.toLocaleString()}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">₹{item.total.toLocaleString()}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">
                     <button
                       onClick={() => removeLineItem(item.id)}
-                      style={{ ...styles.button, ...styles.dangerButton, padding: '6px 10px', fontSize: '12px' }}
+                      className="px-2.5 py-1.5 rounded bg-red-400 text-white font-semibold text-xs transition-all"
                     >
                       Remove
                     </button>
@@ -675,29 +471,29 @@ export default function CreateOrderPage() {
         )}
 
         {/* Order Totals */}
-        <div style={styles.totalsSection}>
-          <div style={styles.totalRow}>
+        <div className="border-t border-wl-border pt-4">
+          <div className="flex justify-between py-2 text-sm">
             <span>Subtotal:</span>
-            <span style={styles.totalValue}>₹{subtotal.toLocaleString()}</span>
+            <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '15px', marginTop: '15px' }}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Tax (%)</label>
+          <div className="grid grid-cols-2 gap-5 mb-4 mt-4">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-wl-text mb-1.5">Tax (%)</label>
               <input
                 type="number"
-                style={styles.input}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 min="0"
                 max="100"
                 value={tax}
                 onChange={(e) => setTax(parseFloat(e.target.value))}
               />
             </div>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Discount (₹)</label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-wl-text mb-1.5">Discount (₹)</label>
               <input
                 type="number"
-                style={styles.input}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 min="0"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value))}
@@ -705,37 +501,37 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
-          <div style={styles.totalRow}>
+          <div className="flex justify-between py-2 text-sm">
             <span>Tax ({tax}%):</span>
-            <span style={styles.totalValue}>₹{taxAmount.toLocaleString()}</span>
+            <span className="font-semibold">₹{taxAmount.toLocaleString()}</span>
           </div>
 
-          <div style={styles.totalRow}>
+          <div className="flex justify-between py-2 text-sm">
             <span>Shipping:</span>
-            <span style={styles.totalValue}>₹{shipping.toLocaleString()}</span>
+            <span className="font-semibold">₹{shipping.toLocaleString()}</span>
           </div>
 
-          <div style={styles.totalRow}>
+          <div className="flex justify-between py-2 text-sm">
             <span>Discount:</span>
-            <span style={styles.totalValue}>-₹{discountAmount.toLocaleString()}</span>
+            <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
           </div>
 
-          <div style={styles.grandTotal}>
+          <div className="flex justify-between py-4 border-t border-wl-border text-base font-bold text-wl-primary">
             <span>Total Amount:</span>
             <span>₹{total.toLocaleString()}</span>
           </div>
         </div>
 
-        <div style={styles.buttonGroup}>
+        <div className="flex gap-2.5 mt-5">
           <button
             onClick={handleCreateOrder}
-            style={{ ...styles.button, ...styles.primaryButton, flex: 1 }}
+            className="flex-1 px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
           >
             Create Order
           </button>
           <button
             onClick={handleSaveDraft}
-            style={{ ...styles.button, ...styles.secondaryButton, flex: 1 }}
+            className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
           >
             Save as Draft
           </button>

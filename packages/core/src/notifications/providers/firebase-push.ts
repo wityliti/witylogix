@@ -5,6 +5,8 @@
  * Authentication: OAuth2 Service Account
  */
 
+import { createSign } from "crypto";
+
 import type {
   NotificationProvider,
   NotificationMessage,
@@ -81,7 +83,7 @@ export class FirebasePushProvider implements NotificationProvider {
       // Build FCM request payload
       const payload = this.buildFCMPayload(message);
 
-      // TODO: Make HTTP POST request to FCM API with Bearer token
+      // Make HTTP POST request to FCM API with Bearer token
       const response = await this.sendRequest(payload, accessToken);
 
       return {
@@ -112,7 +114,7 @@ export class FirebasePushProvider implements NotificationProvider {
         return false;
       }
 
-      // TODO: Test access token generation
+      // Test access token generation to validate credentials
       await this.getAccessToken();
       return true;
     } catch {
@@ -122,6 +124,7 @@ export class FirebasePushProvider implements NotificationProvider {
 
   /**
    * Get Firebase provider health status.
+   * Validates by attempting to get a fresh access token and checking credentials.
    */
   async getStatus(): Promise<ProviderStatus> {
     // Cache status for 60 seconds
@@ -132,10 +135,14 @@ export class FirebasePushProvider implements NotificationProvider {
     try {
       const startTime = Date.now();
 
-      // TODO: Make health check request (e.g., GET to verify credentials)
+      // Attempt to get a fresh access token to validate credentials
+      await this.getAccessToken();
+
+      const latency = Date.now() - startTime;
+
       const status: ProviderStatus = {
         healthy: true,
-        latency: Date.now() - startTime,
+        latency,
         quotaRemaining: undefined,
       };
 
@@ -148,6 +155,7 @@ export class FirebasePushProvider implements NotificationProvider {
     } catch (error) {
       return {
         healthy: false,
+        latency: Date.now() - (this.lastStatusCheck?.timestamp || Date.now()),
         lastError: error instanceof Error ? error.message : String(error),
       };
     }
@@ -189,42 +197,49 @@ export class FirebasePushProvider implements NotificationProvider {
 
   /**
    * Get OAuth2 access token for Firebase API.
-   * TODO: Implement JWT signing and token exchange.
+   * Creates a JWT signed with the service account private key and exchanges it for an access token.
    */
   private async getAccessToken(): Promise<string> {
-    // Check if we have a valid cached token
+    // Check if we have a valid cached token (refresh 5 minutes before expiry)
     if (
       this.credentials.accessToken &&
       this.credentials.tokenExpiry &&
-      Date.now() < this.credentials.tokenExpiry - 60000
+      Date.now() < this.credentials.tokenExpiry - 300000
     ) {
       return this.credentials.accessToken;
     }
 
     try {
-      // TODO: Create JWT token signed with private key
-      // JWT Header: { alg: "RS256", typ: "JWT" }
-      // JWT Payload: {
-      //   iss: clientEmail,
-      //   scope: "https://www.googleapis.com/auth/cloud-platform",
-      //   aud: "https://oauth2.googleapis.com/token",
-      //   exp: Math.floor(Date.now() / 1000) + 3600,
-      //   iat: Math.floor(Date.now() / 1000),
-      // }
-      // Sign with RS256 using privateKey
-      //
-      // TODO: Exchange JWT for access token
-      // POST https://oauth2.googleapis.com/token
-      // {
-      //   grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      //   assertion: signedJWT,
-      // }
+      // Create JWT token
+      const jwt = this.createJWT();
 
-      console.log("TODO: Implement OAuth2 token exchange");
-      const mockToken = "ya29.mock_access_token";
-      this.credentials.accessToken = mockToken;
-      this.credentials.tokenExpiry = Date.now() + 3600000; // 1 hour
-      return mockToken;
+      // Exchange JWT for access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+          assertion: jwt,
+        }).toString(),
+      });
+
+      if (!tokenResponse.ok) {
+        const error = await tokenResponse.text();
+        throw new Error(`Token exchange failed: ${error}`);
+      }
+
+      const tokenData = await tokenResponse.json() as {
+        access_token: string;
+        expires_in: number;
+      };
+
+      this.credentials.accessToken = tokenData.access_token;
+      // Set expiry to current time + expires_in seconds (in milliseconds)
+      this.credentials.tokenExpiry = Date.now() + tokenData.expires_in * 1000;
+
+      return tokenData.access_token;
     } catch (error) {
       throw new AuthenticationError(
         "firebase",
@@ -234,40 +249,113 @@ export class FirebasePushProvider implements NotificationProvider {
   }
 
   /**
+   * Create a JWT token signed with the service account private key.
+   * JWT Header: { alg: "RS256", typ: "JWT" }
+   * JWT Payload: { iss, scope, aud, iat, exp }
+   */
+  private createJWT(): string {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 3600; // 1 hour expiry
+
+    // JWT Header
+    const header = {
+      alg: "RS256",
+      typ: "JWT",
+    };
+
+    // JWT Payload
+    const payload = {
+      iss: this.credentials.clientEmail,
+      scope: "https://www.googleapis.com/auth/firebase.messaging",
+      aud: "https://oauth2.googleapis.com/token",
+      iat: now,
+      exp,
+    };
+
+    // Encode header and payload as base64
+    const headerEncoded = Buffer.from(JSON.stringify(header)).toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+
+    const payloadEncoded = Buffer.from(JSON.stringify(payload)).toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+
+    const message = `${headerEncoded}.${payloadEncoded}`;
+
+    // Sign with RS256
+    const signer = createSign("RSA-SHA256");
+    signer.update(message);
+    const signature = signer.sign(this.credentials.privateKey, "base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+
+    return `${message}.${signature}`;
+  }
+
+  /**
    * Send HTTP request to Firebase Cloud Messaging API.
-   * TODO: Implement actual HTTP call.
+   * POST to https://fcm.googleapis.com/v1/projects/{projectId}/messages:send
    */
   private async sendRequest(
     payload: Record<string, unknown>,
     accessToken: string,
   ): Promise<{ name?: string }> {
-    // TODO: Replace with actual fetch call
-    // const url = `https://fcm.googleapis.com/v1/projects/${this.config.projectId}/messages:send`;
-    //
-    // const response = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Authorization": `Bearer ${accessToken}`,
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(payload),
-    // });
-    //
-    // if (!response.ok) {
-    //   const errorData = await response.json();
-    //   throw new ProviderError(
-    //     "FCM_ERROR",
-    //     `FCM API error: ${response.statusText}`,
-    //     "firebase",
-    //     false,
-    //   );
-    // }
-    //
-    // const data = await response.json() as { name?: string };
-    // return data;
+    const url = `https://fcm.googleapis.com/v1/projects/${this.config.projectId}/messages:send`;
 
-    console.log("TODO: Implement Firebase FCM API call", payload, accessToken);
-    return { name: "projects/mock-project/messages/1234567890" };
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      // Handle specific Firebase error codes
+      if (response.status === 401) {
+        throw new AuthenticationError("firebase", "Invalid access token");
+      }
+
+      if (response.status === 404) {
+        throw new InvalidRecipientError(
+          "firebase",
+          "",
+          "Invalid registration token or project ID",
+        );
+      }
+
+      if (response.status === 429) {
+        throw new ProviderError(
+          "FCM_RATE_LIMIT",
+          "Firebase rate limit exceeded",
+          "firebase",
+          true,
+        );
+      }
+
+      const errorData = await response.json() as {
+        error?: {
+          code: number;
+          message: string;
+          details?: Array<{ errorCode?: string }>;
+        };
+      };
+
+      throw new ProviderError(
+        `FCM_${response.status}`,
+        `FCM API error: ${errorData.error?.message || response.statusText}`,
+        "firebase",
+        false,
+      );
+    }
+
+    const data = await response.json() as { name?: string };
+    return data;
   }
 
   /**

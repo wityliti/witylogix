@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,23 +88,15 @@ export default function IntegrationsPage() {
         title="Integrations"
         subtitle={`${INTEGRATIONS.length} available · ${installed.length} installed`}
         actions={
-          <div style={{ display: "flex", gap: 2, background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-md)", padding: 2 }}>
+          <div className={cn("flex gap-1 bg-wl-bg-overlay rounded-md p-1")}>
             {(["marketplace", "installed"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-sm)",
-                  border: "none",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  textTransform: "capitalize",
-                  background: view === v ? "var(--wl-primary-500)" : "transparent",
-                  color: view === v ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                }}
+                className={cn(
+                  "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
+                  view === v ? "bg-wl-primary-500 text-wl-text-inverse" : "bg-transparent text-wl-text-tertiary"
+                )}
               >
                 {v} {v === "installed" ? `(${installed.length})` : ""}
               </button>
@@ -112,47 +105,28 @@ export default function IntegrationsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className={cn("p-6")}>
         {/* Search + Categories */}
-        <div style={{ display: "flex", gap: "var(--wl-space-4)", marginBottom: "var(--wl-space-5)", flexWrap: "wrap", alignItems: "center" }}>
+        <div className={cn("flex gap-4 mb-5 flex-wrap items-center")}>
           <input
             type="text"
             placeholder="Search integrations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: 300,
-              padding: "var(--wl-space-2) var(--wl-space-4)",
-              background: "var(--wl-bg-elevated)",
-              border: "1px solid var(--wl-border-default)",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-primary)",
-              fontSize: "var(--wl-text-sm)",
-              fontFamily: "var(--wl-font-sans)",
-              outline: "none",
-            }}
+            className={cn("w-80 p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none")}
           />
 
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className={cn("flex gap-1 flex-wrap")}>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.key}
                 onClick={() => setCategory(cat.key)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--wl-space-2)",
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-full)",
-                  border: "1px solid",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  background: category === cat.key ? "var(--wl-primary-500)" : "transparent",
-                  color: category === cat.key ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  borderColor: category === cat.key ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                }}
+                className={cn(
+                  "flex items-center gap-2 py-1 px-3 rounded-full border text-xs font-semibold cursor-pointer",
+                  category === cat.key
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                )}
               >
                 <span style={{ fontSize: 12 }}>{cat.icon}</span>
                 {cat.label}
@@ -163,13 +137,7 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Integration Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: "var(--wl-space-4)",
-          }}
-        >
+        <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4")}>
           {filtered.map((integ, i) => {
             const isInstalled = integ.status === "INSTALLED";
             const isComingSoon = integ.status === "COMING_SOON";
@@ -188,22 +156,22 @@ export default function IntegrationsPage() {
               >
                 {/* Installed indicator */}
                 {isInstalled && (
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "var(--wl-success-400)" }} />
+                  <div className={cn("absolute top-0 left-0 right-0 h-0.5 bg-wl-success-400")} />
                 )}
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "var(--wl-space-3)" }}>
+                <div className={cn("flex justify-between items-start mb-3")}>
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: 4 }}>
-                      <span style={{ fontSize: "var(--wl-text-md)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+                    <div className={cn("flex items-center gap-2 mb-1")}>
+                      <span className={cn("text-base font-bold text-wl-text-primary")}>
                         {integ.name}
                       </span>
                       {integ.popular && (
-                        <span style={{ fontSize: 9, padding: "1px 5px", borderRadius: 3, background: "rgba(245,166,35,0.12)", color: "var(--wl-primary-400)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                        <span className={cn("text-xs px-1 rounded text-wl-primary-400 font-bold uppercase")} style={{ background: "rgba(245,166,35,0.12)", letterSpacing: "0.04em" }}>
                           Popular
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", margin: 0, lineHeight: 1.5 }}>
+                    <p className={cn("text-xs text-wl-text-tertiary m-0")} style={{ lineHeight: 1.5 }}>
                       {integ.description}
                     </p>
                   </div>
@@ -216,30 +184,24 @@ export default function IntegrationsPage() {
                 </div>
 
                 {/* Category + subcategory */}
-                <div style={{ display: "flex", gap: 4, marginBottom: "var(--wl-space-3)" }}>
-                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: "var(--wl-bg-surface)", color: "var(--wl-text-tertiary)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                <div className={cn("flex gap-1 mb-3")}>
+                  <span className={cn("text-xs px-1.5 rounded bg-wl-bg-surface text-wl-text-tertiary font-medium uppercase")} style={{ letterSpacing: "0.04em" }}>
                     {integ.category.replace(/_/g, " ")}
                   </span>
                   {integ.subcategory && (
-                    <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: "var(--wl-bg-surface)", color: "var(--wl-text-tertiary)", fontWeight: 500 }}>
+                    <span className={cn("text-xs px-1.5 rounded bg-wl-bg-surface text-wl-text-tertiary font-medium")}>
                       {integ.subcategory}
                     </span>
                   )}
                 </div>
 
                 {/* Capabilities */}
-                <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: "var(--wl-space-3)" }}>
+                <div className={cn("flex gap-1 flex-wrap mb-3")}>
                   {integ.capabilities.map((cap) => (
                     <span
                       key={cap}
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 6px",
-                        borderRadius: 3,
-                        background: "rgba(255,255,255,0.04)",
-                        color: "var(--wl-text-tertiary)",
-                        border: "1px solid var(--wl-border-subtle)",
-                      }}
+                      className={cn("text-xs px-1.5 rounded border border-wl-border-subtle text-wl-text-tertiary")}
+                      style={{ background: "rgba(255,255,255,0.04)" }}
                     >
                       {cap}
                     </span>
@@ -247,7 +209,7 @@ export default function IntegrationsPage() {
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+                <div className={cn("flex gap-2")}>
                   {isInstalled ? (
                     <>
                       <Button variant="secondary" size="sm">Configure</Button>
@@ -265,7 +227,7 @@ export default function IntegrationsPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: "var(--wl-space-12)", color: "var(--wl-text-tertiary)" }}>
+          <div className={cn("text-center p-12 text-wl-text-tertiary")}>
             No integrations found matching your criteria.
           </div>
         )}

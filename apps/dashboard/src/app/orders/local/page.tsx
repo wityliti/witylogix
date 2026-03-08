@@ -6,6 +6,7 @@ import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Input } from '../../../components/ui/input';
 import { Select } from '../../../components/ui/select';
+import { cn } from '../../../lib/utils';
 import {
   Package,
   MapPin,
@@ -193,25 +194,18 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
   };
 
   return (
-    <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-      <CardHeader style={{ paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-        <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MapPin size={18} style={{ color: '#6C63FF' }} /> Delivery Map
+    <Card className="bg-slate-950 border-slate-700 mb-6">
+      <CardHeader className="pb-3 border-b border-slate-700">
+        <CardTitle className="flex items-center gap-2">
+          <MapPin size={18} className="text-indigo-500" /> Delivery Map
         </CardTitle>
       </CardHeader>
-      <CardContent style={{ padding: '16px' }}>
+      <CardContent className="p-4">
         <svg
           width={gridSize}
           height={gridSize}
-          style={{
-            backgroundColor: '#0f0f15',
-            border: '1px solid #1e293b',
-            borderRadius: '8px',
-            cursor: 'crosshair',
-            marginBottom: '12px',
-          }}
+          className="bg-slate-900 border border-slate-700 rounded mb-3 cursor-crosshair"
         >
-          {/* Grid background */}
           {Array.from({ length: 11 }).map((_, i) => (
             <g key={`grid-${i}`}>
               <line x1={i * (gridSize / 10)} y1={0} x2={i * (gridSize / 10)} y2={gridSize} stroke="#1e293b" strokeWidth="0.5" />
@@ -219,7 +213,6 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
             </g>
           ))}
 
-          {/* Plot orders */}
           {orders.map((order: any) => {
             const { x, y } = normalizeCoords(order.lat, order.lng);
             const color = getStatusColor(order.status);
@@ -235,24 +228,18 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
           })}
         </svg>
 
-        {/* Legend */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '11px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-            <span style={{ color: '#94a3b8' }}>Pending</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#6C63FF' }} />
-            <span style={{ color: '#94a3b8' }}>Assigned</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-            <span style={{ color: '#94a3b8' }}>In Delivery</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
-            <span style={{ color: '#94a3b8' }}>Delivered</span>
-          </div>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          {[
+            { color: '#f59e0b', label: 'Pending' },
+            { color: '#6C63FF', label: 'Assigned' },
+            { color: '#3b82f6', label: 'In Delivery' },
+            { color: '#22c55e', label: 'Delivered' }
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-slate-400">{item.label}</span>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -323,30 +310,25 @@ export default function LocalOrdersPage() {
   const deliveredCount = orders.filter((o) => o.status === 'delivered').length;
 
   return (
-    <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
+    <div className="p-6 min-h-screen bg-slate-950">
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>Local Delivery Orders</h1>
-        <p style={{ color: '#94a3b8', marginBottom: '16px' }}>Today's deliveries in {orders.length} locations</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-200 mb-2">Local Delivery Orders</h1>
+        <p className="text-slate-400 mb-4">Today's deliveries in {orders.length} locations</p>
 
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', padding: '12px 16px', minWidth: '120px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Pending</div>
-              <div style={{ fontSize: '18px', fontWeight: '600', color: '#f59e0b' }}>{pendingCount}</div>
-            </Card>
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', padding: '12px 16px', minWidth: '120px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Assigned</div>
-              <div style={{ fontSize: '18px', fontWeight: '600', color: '#6C63FF' }}>{assignedCount}</div>
-            </Card>
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', padding: '12px 16px', minWidth: '120px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>In Delivery</div>
-              <div style={{ fontSize: '18px', fontWeight: '600', color: '#3b82f6' }}>{inDeliveryCount}</div>
-            </Card>
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', padding: '12px 16px', minWidth: '120px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Delivered</div>
-              <div style={{ fontSize: '18px', fontWeight: '600', color: '#22c55e' }}>{deliveredCount}</div>
-            </Card>
+        <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3">
+            {[
+              { label: 'Pending', count: pendingCount, color: '#f59e0b' },
+              { label: 'Assigned', count: assignedCount, color: '#6C63FF' },
+              { label: 'In Delivery', count: inDeliveryCount, color: '#3b82f6' },
+              { label: 'Delivered', count: deliveredCount, color: '#22c55e' }
+            ].map((stat) => (
+              <Card key={stat.label} className="bg-slate-900 border-slate-700 p-4 min-w-[120px]">
+                <div className="text-xs text-slate-400 mb-1">{stat.label}</div>
+                <div className="text-lg font-semibold" style={{ color: stat.color }}>{stat.count}</div>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
@@ -355,19 +337,11 @@ export default function LocalOrdersPage() {
       <MapGrid orders={filteredOrders} selectedId={selectedOrder?.id} onSelectOrder={handleSelectOrder} />
 
       {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px' }}>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
         {/* Left Column - Orders List */}
         <div>
           {/* Filters and Actions */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
+          <div className="flex gap-3 mb-4 flex-wrap items-center">
             <Select value={statusFilter} onChange={(v) => setStatusFilter(v)} style={{ minWidth: '150px' }} options={[
               { value: 'all', label: 'All Statuses' },
               { value: 'pending', label: 'Pending' },
@@ -388,47 +362,42 @@ export default function LocalOrdersPage() {
                 variant="primary"
                 size="sm"
                 onClick={handleBulkAssign}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}
+                className="flex items-center gap-1.5 ml-auto"
               >
                 <Truck size={14} /> Assign {selectedOrderIds.size}
               </Button>
             )}
 
-            <Button variant="ghost" size="sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Button variant="ghost" size="sm" className="flex items-center gap-1.5">
               <Download size={14} /> Export
             </Button>
           </div>
 
           {/* Orders List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex flex-col gap-3">
             {filteredOrders.map((order) => (
               <Card
                 key={order.id}
-                style={{
-                  backgroundColor: selectedOrder?.id === order.id ? '#1a1a24' : '#12121a',
-                  border: selectedOrder?.id === order.id ? '2px solid #6C63FF' : '1px solid #1e293b',
-                  cursor: 'pointer',
-                }}
+                className={cn(
+                  'cursor-pointer transition-all',
+                  selectedOrder?.id === order.id
+                    ? 'bg-slate-800 border-indigo-500 border-2'
+                    : 'bg-slate-900 border-slate-700'
+                )}
                 onClick={() => handleSelectOrder(order.id)}
               >
-                <CardContent style={{ padding: '16px' }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <CardContent className="p-4">
+                  <div className="flex gap-3 items-start">
                     <input
                       type="checkbox"
                       checked={selectedOrderIds.has(order.id)}
                       onChange={() => handleToggleSelect(order.id)}
                       onClick={(e) => e.stopPropagation()}
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        cursor: 'pointer',
-                        marginTop: '2px',
-                        accentColor: '#6C63FF',
-                      }}
+                      className="w-4.5 h-4.5 cursor-pointer mt-0.5 accent-indigo-500"
                     />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <p style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>{order.id}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-sm font-semibold text-slate-100">{order.id}</p>
                         <Badge
                           variant={
                             order.status === 'delivered'
@@ -444,25 +413,25 @@ export default function LocalOrdersPage() {
                         </Badge>
                       </div>
 
-                      <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>{order.customer}</p>
+                      <p className="text-xs text-slate-400 mb-2">{order.customer}</p>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
                           <Clock size={12} /> {order.timeWindow}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
                           <Package size={12} /> {order.items} items
                         </span>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
                           <MapPin size={12} /> {order.address}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#6C63FF', fontWeight: '600' }}>${order.amount.toFixed(2)}</span>
+                        <span className="text-sm font-semibold text-indigo-400">${order.amount.toFixed(2)}</span>
                       </div>
 
                       {order.driver && (
-                        <div style={{ padding: '8px', backgroundColor: '#0a0a0f', borderRadius: '4px', fontSize: '11px' }}>
-                          <p style={{ color: '#6C63FF', fontWeight: '600' }}>Assigned: {order.driver}</p>
-                          {order.eta && <p style={{ color: '#94a3b8', marginTop: '2px' }}>ETA: {order.eta}</p>}
+                        <div className="p-2 bg-slate-950 rounded text-xs">
+                          <p className="text-indigo-400 font-semibold">Assigned: {order.driver}</p>
+                          {order.eta && <p className="text-slate-400 mt-0.5">ETA: {order.eta}</p>}
                         </div>
                       )}
                     </div>
@@ -476,77 +445,77 @@ export default function LocalOrdersPage() {
         {/* Right Sidebar - Order Detail */}
         <div>
           {selectedOrder ? (
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', position: 'sticky', top: '24px' }}>
-              <CardHeader style={{ paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-                <CardTitle style={{ fontSize: '16px' }}>{selectedOrder.id}</CardTitle>
+            <Card className="bg-slate-900 border-slate-700 sticky top-6">
+              <CardHeader className="pb-3 border-b border-slate-700">
+                <CardTitle className="text-base">{selectedOrder.id}</CardTitle>
               </CardHeader>
-              <CardContent style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <CardContent className="p-4 flex flex-col gap-4">
                 {/* Customer Info */}
                 <div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <p className="text-xs text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
                     <User size={14} /> Customer
                   </p>
-                  <p style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: '600' }}>{selectedOrder.customer}</p>
+                  <p className="text-sm font-semibold text-slate-100">{selectedOrder.customer}</p>
                   <a
                     href={`tel:${selectedOrder.phone}`}
-                    style={{ fontSize: '11px', color: '#6C63FF', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
+                    className="text-xs text-indigo-400 flex items-center gap-1 mt-1"
                   >
                     <Phone size={12} /> {selectedOrder.phone}
                   </a>
                   <a
                     href={`mailto:${selectedOrder.email}`}
-                    style={{ fontSize: '11px', color: '#6C63FF', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}
+                    className="text-xs text-indigo-400 flex items-center gap-1 mt-0.5"
                   >
                     <Mail size={12} /> {selectedOrder.email}
                   </a>
                 </div>
 
                 {/* Delivery Details */}
-                <div style={{ borderTop: '1px solid #1e293b', paddingTop: '12px' }}>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div className="border-t border-slate-700 pt-3">
+                  <p className="text-xs text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
-                  <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedOrder.address}</p>
-                  <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <p className="text-xs text-slate-100">{selectedOrder.address}</p>
+                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                     <Calendar size={12} /> {selectedOrder.timeWindow}
                   </p>
                 </div>
 
                 {/* Order Details */}
-                <div style={{ borderTop: '1px solid #1e293b', paddingTop: '12px' }}>
-                  <div style={{ marginBottom: '8px' }}>
-                    <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '2px' }}>Items</p>
-                    <p style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>{selectedOrder.items}</p>
+                <div className="border-t border-slate-700 pt-3">
+                  <div className="mb-2">
+                    <p className="text-xs text-slate-400 mb-0.5">Items</p>
+                    <p className="text-sm font-semibold text-slate-100">{selectedOrder.items}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '2px' }}>Total</p>
-                    <p style={{ fontSize: '16px', fontWeight: '600', color: '#6C63FF' }}>${selectedOrder.amount.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 mb-0.5">Total</p>
+                    <p className="text-base font-semibold text-indigo-400">${selectedOrder.amount.toFixed(2)}</p>
                   </div>
                 </div>
 
                 {/* Driver Assignment */}
                 {selectedOrder.status === 'pending' ? (
-                  <div style={{ borderTop: '1px solid #1e293b', paddingTop: '12px' }}>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>Assign Driver</p>
-                    <div style={{ display: 'grid', gap: '6px' }}>
+                  <div className="border-t border-slate-700 pt-3">
+                    <p className="text-xs text-slate-400 font-semibold mb-2">Assign Driver</p>
+                    <div className="flex flex-col gap-1.5">
                       {['Carlos M.', 'Sofia L.', 'Ahmed K.'].map((driver) => (
                         <Button
                           key={driver}
                           variant="secondary"
                           size="sm"
-                          style={{ fontSize: '11px', justifyContent: 'flex-start' }}
+                          className="text-xs justify-start"
                           onClick={() => handleAssignDriver(selectedOrder.id, driver)}
                         >
-                          <Truck size={12} style={{ marginRight: '6px' }} /> {driver}
+                          <Truck size={12} className="mr-1.5" /> {driver}
                         </Button>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div style={{ borderTop: '1px solid #1e293b', paddingTop: '12px', backgroundColor: '#0a0a0f', borderRadius: '6px', padding: '12px' }}>
-                    <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Assigned Driver</p>
-                    <p style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>{selectedOrder.driver}</p>
-                    {selectedOrder.eta && <p style={{ fontSize: '11px', color: '#6C63FF', marginTop: '4px' }}>ETA: {selectedOrder.eta}</p>}
+                  <div className="border-t border-slate-700 pt-3 bg-slate-950 rounded p-3">
+                    <p className="text-xs text-slate-400 mb-1">Assigned Driver</p>
+                    <p className="text-sm font-semibold text-slate-100">{selectedOrder.driver}</p>
+                    {selectedOrder.eta && <p className="text-xs text-indigo-400 mt-1">ETA: {selectedOrder.eta}</p>}
                   </div>
                 )}
 
@@ -554,17 +523,17 @@ export default function LocalOrdersPage() {
                 <Button
                   variant="primary"
                   size="md"
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  className="w-full flex items-center justify-center gap-1.5"
                 >
                   <ChevronRight size={14} /> View Details
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-              <CardContent style={{ padding: '24px', textAlign: 'center' }}>
-                <AlertCircle size={24} style={{ color: '#94a3b8', margin: '0 auto 12px' }} />
-                <p style={{ color: '#94a3b8', fontSize: '13px' }}>Select an order to view details</p>
+            <Card className="bg-slate-900 border-slate-700">
+              <CardContent className="p-6 text-center">
+                <AlertCircle size={24} className="text-slate-400 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm">Select an order to view details</p>
               </CardContent>
             </Card>
           )}

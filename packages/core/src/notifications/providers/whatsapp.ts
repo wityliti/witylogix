@@ -74,7 +74,7 @@ export class WhatsAppProvider implements NotificationProvider {
         payload = this.buildTextPayload(message);
       }
 
-      // TODO: Make HTTP POST request to Meta Cloud API
+      // Make HTTP POST request to Meta Cloud API
       const response = await this.sendRequest(payload);
 
       return {
@@ -100,10 +100,17 @@ export class WhatsAppProvider implements NotificationProvider {
         return false;
       }
 
-      // TODO: Make test API call to validate token
-      // GET https://graph.facebook.com/v18.0/{phoneNumberId}
-      // Authorization: Bearer {accessToken}
-      return true;
+      // Make test API call to validate token
+      // GET https://graph.facebook.com/v19.0/{phoneNumberId}
+      const url = `https://graph.facebook.com/v19.0/${config.phoneNumberId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${config.accessToken}`,
+        },
+      });
+
+      return response.ok;
     } catch {
       return false;
     }
@@ -121,12 +128,46 @@ export class WhatsAppProvider implements NotificationProvider {
     try {
       const startTime = Date.now();
 
-      // TODO: Make health check request
-      // GET https://graph.facebook.com/v18.0/{phoneNumberId}
+      // Make health check request to get business profile
+      // GET https://graph.facebook.com/v19.0/{phoneNumberId}
+      const url = `https://graph.facebook.com/v19.0/${this.config.phoneNumberId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.config.accessToken}`,
+        },
+      });
+
+      const latency = Date.now() - startTime;
+
+      if (!response.ok) {
+        const status: ProviderStatus = {
+          healthy: false,
+          latency,
+          lastError: `Health check failed with status ${response.status}`,
+        };
+
+        this.lastStatusCheck = {
+          timestamp: Date.now(),
+          status,
+        };
+
+        return status;
+      }
+
+      const data = await response.json() as {
+        quality_rating?: string;
+        messaging_limit_mtc?: number;
+        messaging_limit_mtc_reset_time?: number;
+      };
+
+      // Determine health based on quality rating and messaging limits
+      const healthy = data.quality_rating !== "FLAGGED" && !!(data.messaging_limit_mtc ?? 0) > 0;
+
       const status: ProviderStatus = {
-        healthy: true,
-        latency: Date.now() - startTime,
-        quotaRemaining: undefined,
+        healthy,
+        latency,
+        quotaRemaining: data.messaging_limit_mtc,
       };
 
       this.lastStatusCheck = {
@@ -211,55 +252,70 @@ export class WhatsAppProvider implements NotificationProvider {
 
   /**
    * Send HTTP request to Meta Cloud API.
-   * TODO: Implement actual HTTP call.
+   * POST to https://graph.facebook.com/v19.0/{phoneNumberId}/messages
    */
   private async sendRequest(payload: Record<string, unknown>): Promise<{
     messages?: Array<{ id: string }>;
     contacts?: Array<{ input: string; wa_id: string }>;
   }> {
-    // TODO: Replace with actual fetch call
-    // const url = `https://graph.facebook.com/v18.0/${this.config.phoneNumberId}/messages`;
-    //
-    // const response = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Authorization": `Bearer ${this.config.accessToken}`,
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(payload),
-    // });
-    //
-    // if (!response.ok) {
-    //   const errorData = await response.json() as { error?: { code: number; message: string } };
-    //
-    //   // Handle specific Meta error codes
-    //   if (response.status === 429 || errorData.error?.code === 429) {
-    //     throw new RateLimitError("whatsapp", "Rate limit exceeded");
-    //   }
-    //
-    //   if (response.status === 401) {
-    //     throw new AuthenticationError("whatsapp", "Invalid access token");
-    //   }
-    //
-    //   throw new ProviderError(
-    //     `META_${errorData.error?.code || response.status}`,
-    //     `Meta API error: ${errorData.error?.message || response.statusText}`,
-    //     "whatsapp",
-    //     false,
-    //   );
-    // }
-    //
-    // const data = await response.json() as {
-    //   messages?: Array<{ id: string }>;
-    //   contacts?: Array<{ input: string; wa_id: string }>;
-    // };
-    // return data;
+    const url = `https://graph.facebook.com/v19.0/${this.config.phoneNumberId}/messages`;
 
-    console.log("TODO: Implement Meta Cloud API call", payload);
-    return {
-      messages: [{ id: "wamid.xxx" }],
-      contacts: [{ input: "1234567890", wa_id: "1234567890" }],
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.config.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json() as { error?: { code: number; message: string } };
+
+      // Handle specific Meta error codes
+      if (response.status === 429 || errorData.error?.code === 131047) {
+        throw new RateLimitError(
+          "whatsapp",
+          "Rate limit exceeded",
+          undefined,
+        );
+      }
+
+      // Spam limit error
+      if (errorData.error?.code === 131048) {
+        throw new RateLimitError(
+          "whatsapp",
+          "Spam limit exceeded",
+          undefined,
+        );
+      }
+
+      if (response.status === 401) {
+        throw new AuthenticationError("whatsapp", "Invalid access token");
+      }
+
+      if (response.status === 400) {
+        throw new ProviderError(
+          `META_${errorData.error?.code || 400}`,
+          `Meta API parameter error: ${errorData.error?.message || response.statusText}`,
+          "whatsapp",
+          false,
+        );
+      }
+
+      throw new ProviderError(
+        `META_${errorData.error?.code || response.status}`,
+        `Meta API error: ${errorData.error?.message || response.statusText}`,
+        "whatsapp",
+        false,
+      );
+    }
+
+    const data = await response.json() as {
+      messages?: Array<{ id: string }>;
+      contacts?: Array<{ input: string; wa_id: string }>;
     };
+    return data;
   }
 
   /**

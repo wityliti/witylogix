@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/ca
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Table } from "../../components/ui/table";
+import { cn } from "../../lib/utils";
 import {
   CreditCard,
   TrendingUp,
@@ -198,69 +199,69 @@ export default function BillingPage() {
         subtitle="Manage your subscription plan and payment information"
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Current Plan Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)", background: "linear-gradient(135deg, rgba(245, 166, 35, 0.1) 0%, rgba(245, 166, 35, 0.05) 100%)", borderColor: "var(--wl-primary-500)" }}>
+        <Card className="mb-6 bg-gradient-to-br from-[rgba(245,166,35,0.1)] to-[rgba(245,166,35,0.05)] border-wl-primary-500">
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "var(--wl-space-6)" }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-6">
               {/* Plan Name */}
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", margin: "0 0 var(--wl-space-2) 0" }}>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase m-0 mb-2">
                   Current Plan
                 </p>
-                <h2 style={{ fontSize: "var(--wl-text-3xl)", fontWeight: 700, color: "var(--wl-text-primary)", margin: 0 }}>
+                <h2 className="text-3xl font-bold text-wl-text-primary m-0">
                   {CURRENT_PLAN.name}
                 </h2>
               </div>
 
               {/* Monthly Cost */}
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", margin: "0 0 var(--wl-space-2) 0" }}>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase m-0 mb-2">
                   Monthly Cost
                 </p>
-                <h2 style={{ fontSize: "var(--wl-text-3xl)", fontWeight: 700, color: "var(--wl-text-primary)", margin: 0 }}>
+                <h2 className="text-3xl font-bold text-wl-text-primary m-0">
                   ${CURRENT_PLAN.price.toLocaleString()}
                 </h2>
               </div>
 
               {/* Next Billing Date */}
               <div>
-                <p style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", margin: "0 0 var(--wl-space-2) 0" }}>
+                <p className="text-xs font-semibold text-wl-text-secondary uppercase m-0 mb-2">
                   Next Billing Date
                 </p>
-                <h2 style={{ fontSize: "var(--wl-text-3xl)", fontWeight: 700, color: "var(--wl-text-primary)", margin: 0 }}>
+                <h2 className="text-3xl font-bold text-wl-text-primary m-0">
                   {CURRENT_PLAN.nextBillingDate}
                 </h2>
               </div>
             </div>
 
             {/* Usage Metrics */}
-            <div style={{ marginTop: "var(--wl-space-6)", paddingTop: "var(--wl-space-6)", borderTop: "1px solid var(--wl-border-subtle)" }}>
-              <h3 style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", margin: "0 0 var(--wl-space-4) 0" }}>
+            <div className="mt-6 pt-6 border-t border-wl-border-subtle">
+              <h3 className="text-sm font-semibold text-wl-text-secondary uppercase m-0 mb-4">
                 Usage This Month
               </h3>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+              <div className="flex flex-col gap-4">
                 {QUOTA_RESOURCES.map((resource) => {
                   const percentage = (resource.current / resource.limit) * 100;
                   const quotaColor = getQuotaColor(percentage);
 
                   return (
                     <div key={resource.name}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--wl-space-2)" }}>
-                        <p style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", margin: 0 }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold text-wl-text-primary m-0">
                           {resource.name}
                         </p>
-                        <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
-                          <span style={{ fontSize: "var(--wl-text-sm)", fontFamily: "var(--wl-font-mono)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono font-semibold text-wl-text-primary">
                             {resource.current.toLocaleString()} / {resource.limit.toLocaleString()}
                           </span>
-                          <Badge variant={quotaColor} style={{ minWidth: "50px", textAlign: "center" }}>
+                          <Badge variant={quotaColor} className="min-w-[50px] text-center">
                             {percentage.toFixed(0)}%
                           </Badge>
                         </div>
                       </div>
-                      <div style={{ width: "100%", height: 8, background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-full)", overflow: "hidden" }}>
+                      <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
                         <div
                           style={{
                             height: "100%",
@@ -275,7 +276,7 @@ export default function BillingPage() {
                           }}
                         />
                       </div>
-                      <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", margin: "var(--wl-space-1) 0 0 0" }}>
+                      <p className="text-xs text-wl-text-tertiary m-0 mt-1">
                         {resource.unit}
                       </p>
                     </div>
@@ -285,7 +286,7 @@ export default function BillingPage() {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ marginTop: "var(--wl-space-6)", display: "flex", gap: "var(--wl-space-2)", flexWrap: "wrap" }}>
+            <div className="mt-6 flex gap-2 flex-wrap">
               <Button variant="primary">
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
@@ -301,80 +302,70 @@ export default function BillingPage() {
         </Card>
 
         {/* Plan Comparison Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Plan Comparison</CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--wl-space-4)" }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
               {PRICING_PLANS.map((plan) => (
                 <Card
                   key={plan.id}
                   onClick={() => setExpandedPlan(expandedPlan === plan.id ? null : plan.id)}
-                  style={{
-                    position: "relative",
-                    overflow: "hidden",
-                    border: plan.isCurrent
-                      ? "2px solid var(--wl-primary-500)"
-                      : "1px solid var(--wl-border-subtle)",
-                    cursor: "pointer",
-                    background: plan.isCurrent ? "rgba(245, 166, 35, 0.08)" : "var(--wl-bg-elevated)",
-                    transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                  }}
+                  className={cn(
+                    "relative overflow-hidden cursor-pointer transition-all",
+                    plan.isCurrent
+                      ? "border-2 border-wl-primary-500 bg-[rgba(245,166,35,0.08)]"
+                      : "border border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-primary-500 hover:bg-[rgba(245,166,35,0.04)]"
+                  )}
                   onMouseEnter={(e) => {
                     if (!plan.isCurrent) {
-                      e.currentTarget.style.borderColor = "var(--wl-primary-500)";
-                      e.currentTarget.style.background = "rgba(245, 166, 35, 0.04)";
+                      (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-primary-500)";
+                      (e.currentTarget as HTMLDivElement).style.background = "rgba(245, 166, 35, 0.04)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!plan.isCurrent) {
-                      e.currentTarget.style.borderColor = "var(--wl-border-subtle)";
-                      e.currentTarget.style.background = "var(--wl-bg-elevated)";
+                      (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-border-subtle)";
+                      (e.currentTarget as HTMLDivElement).style.background = "var(--wl-bg-elevated)";
                     }
                   }}
                 >
                   {plan.isCurrent && (
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "var(--wl-primary-500)" }} />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-wl-primary-500" />
                   )}
 
-                  <CardContent style={{ paddingTop: plan.isCurrent ? "var(--wl-space-6)" : "var(--wl-space-5)" }}>
+                  <CardContent className={plan.isCurrent ? "pt-6" : "pt-5"}>
                     {/* Badge */}
                     {plan.isCurrent && (
-                      <Badge variant="primary" style={{ marginBottom: "var(--wl-space-3)" }}>
+                      <Badge variant="primary" className="mb-3">
                         Current Plan
                       </Badge>
                     )}
 
                     {/* Plan Name and Price */}
-                    <h3 style={{ fontSize: "var(--wl-text-lg)", fontWeight: 700, color: "var(--wl-text-primary)", margin: "0 0 var(--wl-space-1) 0" }}>
+                    <h3 className="text-lg font-bold text-wl-text-primary m-0 mb-1">
                       {plan.name}
                     </h3>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: "var(--wl-space-1)", marginBottom: "var(--wl-space-4)" }}>
-                      <span style={{ fontSize: "var(--wl-text-2xl)", fontWeight: 700, color: "var(--wl-text-primary)" }}>
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-2xl font-bold text-wl-text-primary">
                         ${plan.price}
                       </span>
-                      <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+                      <span className="text-sm text-wl-text-secondary">
                         /month
                       </span>
                     </div>
 
                     {/* Features */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-4)" }}>
+                    <div className="flex flex-col gap-2 mb-4">
                       {plan.features.slice(0, expandedPlan === plan.id ? plan.features.length : 3).map((feature, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+                        <div key={idx} className="flex items-center gap-2">
                           {feature.included ? (
-                            <Check className="w-4 h-4" style={{ color: "var(--wl-success-400)", flexShrink: 0 }} />
+                            <Check className="w-4 h-4 text-wl-success-400 flex-shrink-0" />
                           ) : (
-                            <X className="w-4 h-4" style={{ color: "var(--wl-text-tertiary)", flexShrink: 0 }} />
+                            <X className="w-4 h-4 text-wl-text-tertiary flex-shrink-0" />
                           )}
-                          <span
-                            style={{
-                              fontSize: "var(--wl-text-sm)",
-                              color: feature.included ? "var(--wl-text-primary)" : "var(--wl-text-tertiary)",
-                              textDecoration: feature.included ? "none" : "line-through",
-                            }}
-                          >
+                          <span className={cn("text-sm", feature.included ? "text-wl-text-primary" : "text-wl-text-tertiary line-through")}>
                             {feature.name}
                           </span>
                         </div>
@@ -386,17 +377,7 @@ export default function BillingPage() {
                             e.stopPropagation();
                             setExpandedPlan(plan.id);
                           }}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "var(--wl-primary-500)",
-                            cursor: "pointer",
-                            padding: 0,
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 600,
-                            marginTop: "var(--wl-space-2)",
-                            textAlign: "left",
-                          }}
+                          className="bg-none border-none text-wl-primary-500 cursor-pointer p-0 text-sm font-semibold mt-2 text-left"
                         >
                           +{plan.features.length - 3} more features
                         </button>
@@ -405,11 +386,11 @@ export default function BillingPage() {
 
                     {/* Button */}
                     {plan.isCurrent ? (
-                      <Button variant="secondary" disabled style={{ width: "100%" }}>
+                      <Button variant="secondary" disabled className="w-full">
                         Current Plan
                       </Button>
                     ) : (
-                      <Button variant="primary" style={{ width: "100%" }}>
+                      <Button variant="primary" className="w-full">
                         Upgrade
                       </Button>
                     )}
@@ -421,36 +402,25 @@ export default function BillingPage() {
         </Card>
 
         {/* Payment Method Section */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
               Payment Method
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ background: "var(--wl-bg-surface)", borderRadius: "var(--wl-radius-lg)", padding: "var(--wl-space-4)", marginBottom: "var(--wl-space-4)", border: "1px solid var(--wl-border-subtle)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--wl-space-4)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
-                  <div
-                    style={{
-                      width: 48,
-                      height: 32,
-                      background: "linear-gradient(135deg, #1434CB, #0066FF)",
-                      borderRadius: "var(--wl-radius-md)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span style={{ color: "white", fontSize: "10px", fontWeight: 700 }}>VISA</span>
+            <div className="bg-wl-bg-surface rounded-lg p-4 mb-4 border border-wl-border-subtle">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded-md flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[10px] font-bold">VISA</span>
                   </div>
                   <div>
-                    <p style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)", margin: 0 }}>
+                    <p className="text-sm font-semibold text-wl-text-primary m-0">
                       Visa ending in 4242
                     </p>
-                    <p style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", margin: "var(--wl-space-1) 0 0 0" }}>
+                    <p className="text-xs text-wl-text-tertiary m-0 mt-1">
                       Expires 12/27
                     </p>
                   </div>
@@ -458,7 +428,7 @@ export default function BillingPage() {
                 <Badge variant="success">Active</Badge>
               </div>
 
-              <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+              <div className="flex gap-2">
                 <Button variant="secondary" size="sm">
                   Update
                 </Button>
@@ -477,7 +447,7 @@ export default function BillingPage() {
         {/* Invoice History Section */}
         <Card>
           <CardHeader>
-            <CardTitle style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+            <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
               Invoice History
             </CardTitle>
@@ -504,7 +474,7 @@ export default function BillingPage() {
                   align: "right" as const,
                   width: "120px",
                   render: (invoice) => (
-                    <span style={{ fontFamily: "var(--wl-font-mono)", fontWeight: 600 }}>
+                    <span className="font-mono font-semibold">
                       ${invoice.amount.toFixed(2)}
                     </span>
                   ),
@@ -546,19 +516,9 @@ export default function BillingPage() {
         </Card>
 
         {/* Auto-renewal Notice */}
-        <div
-          style={{
-            marginTop: "var(--wl-space-6)",
-            padding: "var(--wl-space-4)",
-            borderRadius: "var(--wl-radius-lg)",
-            border: "1px solid var(--wl-warning-400)",
-            background: "rgba(245, 158, 11, 0.08)",
-            display: "flex",
-            gap: "var(--wl-space-3)",
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", margin: 0 }}>
+        <div className="mt-6 p-4 rounded-lg border border-wl-warning-400 bg-[rgba(245,158,11,0.08)] flex gap-3">
+          <div className="flex-1">
+            <p className="text-sm text-wl-text-secondary m-0">
               Your subscription will automatically renew on <strong>{CURRENT_PLAN.nextBillingDate}</strong> at ${CURRENT_PLAN.price}. You can cancel anytime before the renewal date.
             </p>
           </div>

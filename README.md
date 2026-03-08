@@ -77,7 +77,7 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 - **Outbound webhooks** — HMAC-SHA256 signed deliveries, exponential retry with circuit breaker, background polling processor, type-safe event emission, 10 API endpoints (`packages/core/src/webhooks/`)
 - **Workflow-API integration** — auto-trigger workflows from existing endpoints (order creation, driver assignment, delivery completion) with non-blocking execution via setImmediate (`packages/core/src/workflow-integration/`)
 - **Real-time workflow events** — Socket.io room-based emission with rate limiting (10 events/sec/execution), SSE fallback endpoint, discriminated union payloads (`packages/core/src/realtime/`)
-- **shadcn/ui-inspired design system** — Tailwind CSS migration preserving Witylogix industrial aesthetic, `cn()` utility, 16 migrated/new components (button, card, badge, input, select, modal, table, tabs, toast, stat-card, empty-state, dropdown-menu, skeleton, tooltip), design token bridge, component gallery page, 20 dashboard pages migrated from inline styles to Tailwind classes
+- **shadcn/ui-inspired design system** — Tailwind CSS migration preserving Witylogix industrial aesthetic, `cn()` utility, 16 migrated/new components (button, card, badge, input, select, modal, table, tabs, toast, stat-card, empty-state, dropdown-menu, skeleton, tooltip), design token bridge, component gallery page, 44 dashboard pages migrated from inline styles to Tailwind classes
 - **Extension core** — shared Preact extension package (`@witylogix/extension-core`) with theme token bridge (CSS custom property → extension context), App Bridge wrapper, POS postMessage RPC, and 8 Preact hooks
 - **Checkout UI extension** — Preact-based Shopify checkout extension (< 64KB) with delivery date calendar picker, time slot selector (morning/afternoon/evening with capacity), App Bridge session token auth
 - **File storage** — S3 provider (upload, download, presigned URLs, tenant-scoped keys) + local filesystem fallback for self-hosted deployments, BYOK credential resolution
@@ -592,10 +592,15 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Event-webhook bridge — connects event bus to outbound webhooks
 - [x] Queue consumer DB integration — product, order, driver, scheduler wired with Prisma
 - [x] 20 dashboard pages migrated to Tailwind CSS
+- [x] Notification providers — real HTTP implementations (SendGrid, Twilio, WhatsApp/Meta Cloud, Firebase Push)
+- [x] Carrier adapters — real HTTP APIs (FedEx REST v1, UPS REST)
+- [x] Notification orchestrator — template rendering, provider routing, retry, delivery logging
+- [x] POS UI extension — Preact order lookup + delivery assignment for Shopify POS
+- [x] 44 dashboard pages migrated to Tailwind CSS (Sprint 3.1 + 3.2)
+- [x] 81 test suites across core modules
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] Phase 2: OSRM + OR-Tools advanced route optimization
 - [ ] "Built for Shopify" certification
-- [ ] Preact checkout UI extension
 - [ ] WooCommerce integration plugin
 
 ---
@@ -619,8 +624,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 2.9 | Workflow Engine | Medusa v2-inspired workflow framework, 3 core delivery workflows, BullMQ durable execution, dashboard workflow viewer |
 | 3.0 | Events & Design System | TypedEventBus (Redis Streams), outbound webhooks, workflow-API integration, Socket.io realtime, shadcn/ui-inspired Tailwind migration, Shopify webhook UI |
 | 3.1 | Pages, Consumers & Extensions | 20 dashboard pages → Tailwind, queue consumer DB integration, event-webhook bridge, file storage, push notifications, extension-core package, checkout-ui extension |
+| 3.2 | Providers, Carriers & POS | Notification providers (SendGrid, Twilio, WhatsApp, Firebase Push) → real HTTP, carrier adapters (FedEx, UPS) → real API, notification orchestrator, POS UI extension, 24 more pages → Tailwind |
 
-**Current stats (Sprint 3.1):** 1,671 source files, 195,166+ lines of code, 31 Prisma modules, 60 core modules, extension-core package, checkout-ui extension, 66 dashboard pages (20 migrated to Tailwind), 68 API route files, 75 test suites.
+**Current stats (Sprint 3.2):** ~1,750 source files, ~210,000 lines of code, 31 Prisma modules, 64 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (44 migrated to Tailwind), 68 API route files, 81 test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { cn } from '../../../lib/utils';
 
 interface CSVRow {
   [key: string]: string;
@@ -45,7 +46,6 @@ export default function ImportOrdersPage() {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      // Simulate CSV parsing
       setCSVData(mockCSVData);
       setValidationResults([]);
       setImportComplete(false);
@@ -73,7 +73,6 @@ export default function ImportOrdersPage() {
     csvData.forEach((row, index) => {
       const rowErrors: string[] = [];
 
-      // Validate required fields
       if (!row['Customer Name']?.trim()) {
         rowErrors.push('Customer name is required');
       }
@@ -133,244 +132,36 @@ export default function ImportOrdersPage() {
     setExpandedErrors(newExpanded);
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      backgroundColor: 'var(--wl-bg)',
-      padding: '20px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    header: {
-      marginBottom: '30px'
-    } as React.CSSProperties,
-    title: {
-      fontSize: '32px',
-      fontWeight: '700',
-      marginBottom: '8px'
-    } as React.CSSProperties,
-    subtitle: {
-      fontSize: '14px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    card: {
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '8px',
-      padding: '20px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    sectionTitle: {
-      fontSize: '16px',
-      fontWeight: '600',
-      marginBottom: '15px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    dropZone: {
-      border: '2px dashed var(--wl-border)',
-      borderRadius: '8px',
-      padding: '40px',
-      textAlign: 'center' as const,
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      backgroundColor: 'var(--wl-bg)'
-    } as React.CSSProperties,
-    dropZoneActive: {
-      borderColor: 'var(--wl-primary)',
-      backgroundColor: 'var(--wl-bg)'
-    } as React.CSSProperties,
-    dropIcon: {
-      fontSize: '48px',
-      marginBottom: '10px',
-      color: 'var(--wl-primary)'
-    } as React.CSSProperties,
-    dropText: {
-      fontSize: '14px',
-      fontWeight: '600',
-      marginBottom: '4px'
-    } as React.CSSProperties,
-    dropSubtext: {
-      fontSize: '12px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    hiddenInput: {
-      display: 'none' as const
-    } as React.CSSProperties,
-    button: {
-      padding: '10px 16px',
-      borderRadius: '6px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: '600',
-      transition: 'all 0.2s'
-    } as React.CSSProperties,
-    primaryButton: {
-      backgroundColor: 'var(--wl-primary)',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    secondaryButton: {
-      backgroundColor: 'transparent',
-      color: 'var(--wl-primary)',
-      border: '1px solid var(--wl-primary)'
-    } as React.CSSProperties,
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse' as const,
-      marginTop: '15px'
-    } as React.CSSProperties,
-    tableHeader: {
-      backgroundColor: 'var(--wl-bg)',
-      borderBottom: '1px solid var(--wl-border)',
-      padding: '12px',
-      textAlign: 'left' as const,
-      fontSize: '12px',
-      fontWeight: '600',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    tableCell: {
-      padding: '12px',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    columnMapping: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '15px',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    mappingGroup: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '6px'
-    } as React.CSSProperties,
-    label: {
-      fontSize: '13px',
-      fontWeight: '500',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    select: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    validationStats: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-      gap: '15px',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    statBox: {
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      padding: '15px',
-      textAlign: 'center' as const
-    } as React.CSSProperties,
-    statValue: {
-      fontSize: '24px',
-      fontWeight: '700',
-      color: 'var(--wl-primary)',
-      marginBottom: '4px'
-    } as React.CSSProperties,
-    statLabel: {
-      fontSize: '12px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    errorList: {
-      marginTop: '15px'
-    } as React.CSSProperties,
-    errorItem: {
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      padding: '12px',
-      marginBottom: '10px'
-    } as React.CSSProperties,
-    errorHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      cursor: 'pointer'
-    } as React.CSSProperties,
-    errorRow: {
-      fontSize: '13px',
-      fontWeight: '600',
-      color: '#ff4444'
-    } as React.CSSProperties,
-    errorDetails: {
-      marginTop: '10px',
-      paddingTop: '10px',
-      borderTop: '1px solid var(--wl-border)'
-    } as React.CSSProperties,
-    errorMessage: {
-      fontSize: '12px',
-      color: 'var(--wl-muted)',
-      marginBottom: '4px'
-    } as React.CSSProperties,
-    progressBar: {
-      width: '100%',
-      height: '8px',
-      backgroundColor: 'var(--wl-bg)',
-      borderRadius: '4px',
-      overflow: 'hidden',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    progressFill: {
-      height: '100%',
-      backgroundColor: 'var(--wl-primary)',
-      transition: 'width 0.3s'
-    } as React.CSSProperties,
-    resultBox: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-      gap: '15px',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    checkboxLabel: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      fontSize: '13px',
-      marginBottom: '10px',
-      cursor: 'pointer'
-    } as React.CSSProperties
-  };
-
   const validCount = validationResults.filter(r => r.status === 'valid').length;
   const errorCount = validationResults.filter(r => r.status === 'error').length;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.title}>Import Orders from CSV</div>
-        <div style={styles.subtitle}>Bulk import orders from CSV file with validation and mapping</div>
+    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+      <div className="mb-8">
+        <div className="text-4xl font-bold mb-2">Import Orders from CSV</div>
+        <div className="text-sm text-wl-muted">Bulk import orders from CSV file with validation and mapping</div>
       </div>
 
       {/* File Upload Section */}
-      <div style={styles.card}>
-        <div style={styles.sectionTitle}>Upload CSV File</div>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="text-base font-semibold mb-4">Upload CSV File</div>
         <label
-          style={styles.dropZone}
+          className="border-2 border-dashed border-wl-border rounded p-10 text-center cursor-pointer transition-all bg-wl-bg"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDragDrop}
         >
-          <div style={styles.dropIcon}>📁</div>
-          <div style={styles.dropText}>Drag and drop your CSV file here</div>
-          <div style={styles.dropSubtext}>or click to select from computer</div>
+          <div className="text-5xl mb-2.5 text-wl-primary">📁</div>
+          <div className="text-sm font-semibold mb-1">Drag and drop your CSV file here</div>
+          <div className="text-xs text-wl-muted">or click to select from computer</div>
           <input
             type="file"
             accept=".csv"
             onChange={handleFileUpload}
-            style={styles.hiddenInput}
+            className="hidden"
           />
         </label>
         {file && (
-          <div style={{ marginTop: '15px', padding: '10px', backgroundColor: 'var(--wl-bg)', borderRadius: '6px', fontSize: '13px' }}>
+          <div className="mt-4 p-2.5 bg-wl-bg rounded text-sm">
             File selected: <strong>{file.name}</strong>
           </div>
         )}
@@ -378,13 +169,15 @@ export default function ImportOrdersPage() {
 
       {/* CSV Preview */}
       {csvData.length > 0 && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>CSV Preview (First 5 Rows)</div>
-          <table style={styles.table}>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">CSV Preview (First 5 Rows)</div>
+          <table className="w-full border-collapse mt-4">
             <thead>
               <tr>
                 {mockCSVHeaders.map(header => (
-                  <th key={header} style={styles.tableHeader}>{header}</th>
+                  <th key={header} className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">
+                    {header}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -392,13 +185,13 @@ export default function ImportOrdersPage() {
               {csvData.slice(0, 5).map((row, idx) => (
                 <tr key={idx}>
                   {mockCSVHeaders.map(header => (
-                    <td key={header} style={styles.tableCell}>{row[header]}</td>
+                    <td key={header} className="border-b border-wl-border p-3 text-sm">{row[header]}</td>
                   ))}
                 </tr>
               ))}
             </tbody>
           </table>
-          <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--wl-muted)' }}>
+          <div className="mt-2.5 text-xs text-wl-muted">
             Total rows: {csvData.length}
           </div>
         </div>
@@ -406,9 +199,9 @@ export default function ImportOrdersPage() {
 
       {/* Column Mapping */}
       {csvData.length > 0 && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Column Mapping</div>
-          <div style={styles.columnMapping}>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Column Mapping</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mt-4">
             {[
               { label: 'Customer Name', field: 'customerName' },
               { label: 'Email', field: 'email' },
@@ -421,9 +214,9 @@ export default function ImportOrdersPage() {
               { label: 'Quantity', field: 'quantity' },
               { label: 'Price', field: 'price' }
             ].map(({ label, field }) => (
-              <div key={field} style={styles.mappingGroup}>
-                <label style={styles.label}>{label}</label>
-                <select style={styles.select} defaultValue="Customer Name">
+              <div key={field} className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-wl-text">{label}</label>
+                <select className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border" defaultValue="Customer Name">
                   <option value="">-- Select Column --</option>
                   {mockCSVHeaders.map(header => (
                     <option key={header} value={header}>{header}</option>
@@ -437,41 +230,41 @@ export default function ImportOrdersPage() {
 
       {/* Validation */}
       {csvData.length > 0 && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Validation Results</div>
-          <div style={styles.validationStats}>
-            <div style={styles.statBox}>
-              <div style={styles.statValue}>{csvData.length}</div>
-              <div style={styles.statLabel}>Total Rows</div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Validation Results</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4 mt-4 mb-5">
+            <div className="bg-wl-bg border border-wl-border rounded p-4 text-center">
+              <div className="text-2xl font-bold text-wl-primary mb-1">{csvData.length}</div>
+              <div className="text-xs text-wl-muted">Total Rows</div>
             </div>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#4CAF50' }}>{validCount}</div>
-              <div style={styles.statLabel}>Valid</div>
+            <div className="bg-wl-bg border border-wl-border rounded p-4 text-center">
+              <div className="text-2xl font-bold text-green-500 mb-1">{validCount}</div>
+              <div className="text-xs text-wl-muted">Valid</div>
             </div>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#ff4444' }}>{errorCount}</div>
-              <div style={styles.statLabel}>Errors</div>
+            <div className="bg-wl-bg border border-wl-border rounded p-4 text-center">
+              <div className="text-2xl font-bold text-red-400 mb-1">{errorCount}</div>
+              <div className="text-xs text-wl-muted">Errors</div>
             </div>
           </div>
 
           {errorCount > 0 && (
-            <div style={styles.errorList}>
-              <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px' }}>Error Details:</div>
+            <div className="mt-4">
+              <div className="text-sm font-semibold mb-2.5">Error Details:</div>
               {validationResults.filter(r => r.status === 'error').map(result => (
-                <div key={result.rowNumber} style={styles.errorItem}>
+                <div key={result.rowNumber} className="bg-wl-bg border border-wl-border rounded p-3 mb-2.5">
                   <div
-                    style={styles.errorHeader}
+                    className="flex justify-between items-center cursor-pointer"
                     onClick={() => toggleErrorExpanded(result.rowNumber)}
                   >
-                    <div style={styles.errorRow}>Row {result.rowNumber}: {result.errors.length} error{result.errors.length !== 1 ? 's' : ''}</div>
-                    <div style={{ color: 'var(--wl-muted)' }}>
+                    <div className="text-red-400 text-sm font-semibold">Row {result.rowNumber}: {result.errors.length} error{result.errors.length !== 1 ? 's' : ''}</div>
+                    <div className="text-wl-muted">
                       {expandedErrors.has(result.rowNumber) ? '▼' : '▶'}
                     </div>
                   </div>
                   {expandedErrors.has(result.rowNumber) && (
-                    <div style={styles.errorDetails}>
+                    <div className="mt-2.5 pt-2.5 border-t border-wl-border">
                       {result.errors.map((error, idx) => (
-                        <div key={idx} style={styles.errorMessage}>• {error}</div>
+                        <div key={idx} className="text-xs text-wl-muted mb-1">• {error}</div>
                       ))}
                     </div>
                   )}
@@ -482,7 +275,7 @@ export default function ImportOrdersPage() {
 
           <button
             onClick={validateData}
-            style={{ ...styles.button, ...styles.primaryButton, marginTop: '15px' }}
+            className="px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all mt-4"
           >
             Validate Again
           </button>
@@ -491,43 +284,33 @@ export default function ImportOrdersPage() {
 
       {/* Import Options */}
       {validationResults.length > 0 && !importComplete && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Import Options</div>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={importOptions.skipErrors}
-              onChange={(e) => setImportOptions({ ...importOptions, skipErrors: e.target.checked })}
-            />
-            Skip rows with errors
-          </label>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={importOptions.updateExisting}
-              onChange={(e) => setImportOptions({ ...importOptions, updateExisting: e.target.checked })}
-            />
-            Update existing orders
-          </label>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={importOptions.createNewOnly}
-              onChange={(e) => setImportOptions({ ...importOptions, createNewOnly: e.target.checked })}
-            />
-            Create new orders only
-          </label>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Import Options</div>
+          {[
+            { label: 'Skip rows with errors', key: 'skipErrors' },
+            { label: 'Update existing orders', key: 'updateExisting' },
+            { label: 'Create new orders only', key: 'createNewOnly' }
+          ].map((opt) => (
+            <label key={opt.key} className="flex items-center gap-2 text-sm mb-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={importOptions[opt.key as keyof typeof importOptions]}
+                onChange={(e) => setImportOptions({ ...importOptions, [opt.key]: e.target.checked })}
+              />
+              {opt.label}
+            </label>
+          ))}
         </div>
       )}
 
       {/* Import Progress */}
       {importProgress > 0 && !importComplete && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Import Progress</div>
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${importProgress}%` }} />
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Import Progress</div>
+          <div className="w-full h-2 bg-wl-bg rounded overflow-hidden">
+            <div className="h-full bg-wl-primary transition-all" style={{ width: `${importProgress}%` }} />
           </div>
-          <div style={{ marginTop: '10px', fontSize: '13px', textAlign: 'center' }}>
+          <div className="mt-2.5 text-sm text-center text-wl-muted">
             {importProgress}% Complete
           </div>
         </div>
@@ -535,31 +318,26 @@ export default function ImportOrdersPage() {
 
       {/* Import Results */}
       {importComplete && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Import Complete</div>
-          <div style={styles.resultBox}>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#4CAF50' }}>{importResults.created}</div>
-              <div style={styles.statLabel}>Created</div>
-            </div>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#6C63FF' }}>{importResults.updated}</div>
-              <div style={styles.statLabel}>Updated</div>
-            </div>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#ffa500' }}>{importResults.skipped}</div>
-              <div style={styles.statLabel}>Skipped</div>
-            </div>
-            <div style={styles.statBox}>
-              <div style={{ ...styles.statValue, color: '#ff4444' }}>{importResults.failed}</div>
-              <div style={styles.statLabel}>Failed</div>
-            </div>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Import Complete</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4 mb-5">
+            {[
+              { label: 'Created', value: importResults.created, color: '#4CAF50' },
+              { label: 'Updated', value: importResults.updated, color: '#6C63FF' },
+              { label: 'Skipped', value: importResults.skipped, color: '#ffa500' },
+              { label: 'Failed', value: importResults.failed, color: '#ff4444' }
+            ].map((item) => (
+              <div key={item.label} className="bg-wl-bg border border-wl-border rounded p-4 text-center">
+                <div className="text-2xl font-bold mb-1" style={{ color: item.color }}>{item.value}</div>
+                <div className="text-xs text-wl-muted">{item.label}</div>
+              </div>
+            ))}
           </div>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            <button style={{ ...styles.button, ...styles.primaryButton, flex: 1 }}>
+          <div className="flex gap-2.5">
+            <button className="flex-1 px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all">
               Start New Import
             </button>
-            <button style={{ ...styles.button, ...styles.secondaryButton, flex: 1 }}>
+            <button className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">
               View Created Orders
             </button>
           </div>
@@ -568,14 +346,14 @@ export default function ImportOrdersPage() {
 
       {/* Action Buttons */}
       {validationResults.length > 0 && !importComplete && (
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div className="flex gap-2.5 mb-5">
           <button
             onClick={handleImport}
-            style={{ ...styles.button, ...styles.primaryButton, flex: 1 }}
+            className="flex-1 px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
           >
             Start Import
           </button>
-          <button style={{ ...styles.button, ...styles.secondaryButton, flex: 1 }}>
+          <button className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">
             Cancel
           </button>
         </div>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
+import { cn } from '../../../lib/utils';
 
 interface Order {
   id: string;
@@ -85,12 +86,10 @@ export default function BulkOperationsPage() {
     setShowProgress(true);
     setProgress(0);
 
-    // Simulate progress
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
-          // Simulate results
           setOperationResults({
             success: selectedOrders.size - 1,
             failed: 1,
@@ -136,227 +135,31 @@ export default function BulkOperationsPage() {
     return labels[status] || status;
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      backgroundColor: 'var(--wl-bg)',
-      padding: '20px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    header: {
-      marginBottom: '30px'
-    } as React.CSSProperties,
-    title: {
-      fontSize: '32px',
-      fontWeight: '700',
-      marginBottom: '8px'
-    } as React.CSSProperties,
-    subtitle: {
-      fontSize: '14px',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    card: {
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '8px',
-      padding: '20px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    sectionTitle: {
-      fontSize: '16px',
-      fontWeight: '600',
-      marginBottom: '15px',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    controlsRow: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr 1fr',
-      gap: '15px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    formGroup: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '6px'
-    } as React.CSSProperties,
-    label: {
-      fontSize: '13px',
-      fontWeight: '500',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    input: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    select: {
-      width: '100%',
-      padding: '10px 12px',
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      color: 'var(--wl-text)',
-      fontSize: '13px',
-      boxSizing: 'border-box'
-    } as React.CSSProperties,
-    button: {
-      padding: '10px 16px',
-      borderRadius: '6px',
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: '600',
-      transition: 'all 0.2s'
-    } as React.CSSProperties,
-    primaryButton: {
-      backgroundColor: 'var(--wl-primary)',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    secondaryButton: {
-      backgroundColor: 'transparent',
-      color: 'var(--wl-primary)',
-      border: '1px solid var(--wl-primary)'
-    } as React.CSSProperties,
-    dangerButton: {
-      backgroundColor: '#ff4444',
-      color: '#ffffff'
-    } as React.CSSProperties,
-    actionBar: {
-      display: 'flex',
-      gap: '10px',
-      alignItems: 'center',
-      padding: '15px',
-      backgroundColor: 'var(--wl-bg)',
-      borderRadius: '6px',
-      marginBottom: '20px'
-    } as React.CSSProperties,
-    selectionInfo: {
-      fontSize: '13px',
-      color: 'var(--wl-muted)',
-      flex: 1
-    } as React.CSSProperties,
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse' as const
-    } as React.CSSProperties,
-    tableHeader: {
-      backgroundColor: 'var(--wl-bg)',
-      borderBottom: '1px solid var(--wl-border)',
-      padding: '12px',
-      textAlign: 'left' as const,
-      fontSize: '12px',
-      fontWeight: '600',
-      color: 'var(--wl-muted)'
-    } as React.CSSProperties,
-    tableCell: {
-      padding: '12px',
-      borderBottom: '1px solid var(--wl-border)',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    checkbox: {
-      cursor: 'pointer'
-    } as React.CSSProperties,
-    modal: {
-      position: 'fixed' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    } as React.CSSProperties,
-    modalContent: {
-      backgroundColor: 'var(--wl-surface)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '8px',
-      padding: '30px',
-      maxWidth: '500px',
-      width: '90%',
-      color: 'var(--wl-text)'
-    } as React.CSSProperties,
-    modalTitle: {
-      fontSize: '18px',
-      fontWeight: '700',
-      marginBottom: '15px'
-    } as React.CSSProperties,
-    modalBody: {
-      fontSize: '13px',
-      color: 'var(--wl-muted)',
-      marginBottom: '20px',
-      lineHeight: '1.6'
-    } as React.CSSProperties,
-    modalActions: {
-      display: 'flex',
-      gap: '10px',
-      justifyContent: 'flex-end'
-    } as React.CSSProperties,
-    progressBar: {
-      width: '100%',
-      height: '8px',
-      backgroundColor: 'var(--wl-bg)',
-      borderRadius: '4px',
-      overflow: 'hidden',
-      marginTop: '15px'
-    } as React.CSSProperties,
-    progressFill: {
-      height: '100%',
-      backgroundColor: 'var(--wl-primary)',
-      transition: 'width 0.3s'
-    } as React.CSSProperties,
-    resultsList: {
-      marginTop: '15px'
-    } as React.CSSProperties,
-    resultItem: {
-      backgroundColor: 'var(--wl-bg)',
-      border: '1px solid var(--wl-border)',
-      borderRadius: '6px',
-      padding: '12px',
-      marginBottom: '8px',
-      fontSize: '13px'
-    } as React.CSSProperties,
-    resultSuccess: {
-      borderLeftColor: '#4CAF50',
-      borderLeftWidth: '3px'
-    } as React.CSSProperties,
-    resultFailed: {
-      borderLeftColor: '#ff4444',
-      borderLeftWidth: '3px'
-    } as React.CSSProperties
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.title}>Bulk Operations</div>
-        <div style={styles.subtitle}>Perform bulk actions on multiple orders at once</div>
+    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+      <div className="mb-8">
+        <div className="text-4xl font-bold mb-2">Bulk Operations</div>
+        <div className="text-sm text-wl-muted">Perform bulk actions on multiple orders at once</div>
       </div>
 
       {/* Search and Filter */}
-      <div style={styles.card}>
-        <div style={styles.sectionTitle}>Search & Filter Orders</div>
-        <div style={styles.controlsRow}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Search Order Number or Customer</label>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="text-base font-semibold mb-4">Search & Filter Orders</div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-wl-text">Search Order Number or Customer</label>
             <input
               type="text"
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Filter by Status</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-wl-text">Filter by Status</label>
             <select
-              style={styles.select}
+              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -368,14 +171,14 @@ export default function BulkOperationsPage() {
               <option value="delivered">Delivered</option>
             </select>
           </div>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>&nbsp;</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-wl-text">&nbsp;</label>
             <button
               onClick={() => {
                 setSearchTerm('');
                 setFilterStatus('all');
               }}
-              style={{ ...styles.button, ...styles.secondaryButton }}
+              className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
             >
               Reset Filters
             </button>
@@ -385,8 +188,8 @@ export default function BulkOperationsPage() {
 
       {/* Selection and Bulk Actions */}
       {filteredOrders.length > 0 && (
-        <div style={styles.actionBar}>
-          <div style={styles.selectionInfo}>
+        <div className="bg-wl-bg border border-wl-border rounded p-4 mb-5 flex items-center justify-between">
+          <div className="text-sm text-wl-muted flex-1">
             {selectedOrders.size > 0 ? (
               `${selectedOrders.size} order${selectedOrders.size !== 1 ? 's' : ''} selected`
             ) : (
@@ -395,7 +198,7 @@ export default function BulkOperationsPage() {
           </div>
           <button
             onClick={toggleSelectAll}
-            style={{ ...styles.button, ...styles.secondaryButton }}
+            className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
           >
             {selectedOrders.size === filteredOrders.length && selectedOrders.size > 0 ? 'Deselect All' : 'Select All'}
           </button>
@@ -403,56 +206,56 @@ export default function BulkOperationsPage() {
       )}
 
       {/* Orders Table */}
-      <div style={styles.card}>
-        <div style={styles.sectionTitle}>Orders ({filteredOrders.length})</div>
+      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+        <div className="text-base font-semibold mb-4">Orders ({filteredOrders.length})</div>
         {filteredOrders.length > 0 ? (
-          <table style={styles.table}>
+          <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th style={styles.tableHeader}>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left">
                   <input
                     type="checkbox"
-                    style={styles.checkbox}
+                    className="cursor-pointer"
                     checked={selectedOrders.size === filteredOrders.length && selectedOrders.size > 0}
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th style={styles.tableHeader}>Order Number</th>
-                <th style={styles.tableHeader}>Customer</th>
-                <th style={styles.tableHeader}>Total</th>
-                <th style={styles.tableHeader}>Status</th>
-                <th style={styles.tableHeader}>Date</th>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Order Number</th>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Customer</th>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Total</th>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Status</th>
+                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Date</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map(order => (
                 <tr key={order.id}>
-                  <td style={styles.tableCell}>
+                  <td className="border-b border-wl-border p-3">
                     <input
                       type="checkbox"
-                      style={styles.checkbox}
+                      className="cursor-pointer"
                       checked={selectedOrders.has(order.id)}
                       onChange={() => toggleOrderSelection(order.id)}
                     />
                   </td>
-                  <td style={styles.tableCell}>
+                  <td className="border-b border-wl-border p-3 text-sm">
                     <strong>{order.orderNumber}</strong>
                   </td>
-                  <td style={styles.tableCell}>{order.customer}</td>
-                  <td style={styles.tableCell}>₹{order.total.toLocaleString()}</td>
-                  <td style={styles.tableCell}>
+                  <td className="border-b border-wl-border p-3 text-sm">{order.customer}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">₹{order.total.toLocaleString()}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">
                     <Badge
                       label={getStatusLabel(order.status)}
                       color={statusColors[order.status]}
                     />
                   </td>
-                  <td style={styles.tableCell}>{order.date}</td>
+                  <td className="border-b border-wl-border p-3 text-sm">{order.date}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--wl-muted)' }}>
+          <div className="p-5 text-center text-wl-muted">
             No orders found
           </div>
         )}
@@ -460,13 +263,13 @@ export default function BulkOperationsPage() {
 
       {/* Bulk Actions Section */}
       {selectedOrders.size > 0 && (
-        <div style={styles.card}>
-          <div style={styles.sectionTitle}>Bulk Actions</div>
-          <div style={styles.controlsRow}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Select Action</label>
+        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
+          <div className="text-base font-semibold mb-4">Bulk Actions</div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-wl-text">Select Action</label>
               <select
-                style={styles.select}
+                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value)}
               >
@@ -480,10 +283,10 @@ export default function BulkOperationsPage() {
             </div>
 
             {bulkAction === 'update_status' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>New Status</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-wl-text">New Status</label>
                 <select
-                  style={styles.select}
+                  className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
@@ -496,10 +299,10 @@ export default function BulkOperationsPage() {
             )}
 
             {bulkAction === 'assign_route' && (
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Select Route</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-wl-text">Select Route</label>
                 <select
-                  style={styles.select}
+                  className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
                   value={selectedRoute}
                   onChange={(e) => setSelectedRoute(e.target.value)}
                 >
@@ -511,17 +314,17 @@ export default function BulkOperationsPage() {
               </div>
             )}
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>&nbsp;</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-wl-text">&nbsp;</label>
               <button
                 onClick={handleBulkAction}
                 disabled={!bulkAction || (bulkAction === 'assign_route' && !selectedRoute)}
-                style={{
-                  ...styles.button,
-                  ...styles.primaryButton,
-                  opacity: !bulkAction || (bulkAction === 'assign_route' && !selectedRoute) ? 0.5 : 1,
-                  cursor: !bulkAction || (bulkAction === 'assign_route' && !selectedRoute) ? 'not-allowed' : 'pointer'
-                }}
+                className={cn(
+                  "px-4 py-2.5 rounded font-semibold text-sm transition-all",
+                  !bulkAction || (bulkAction === 'assign_route' && !selectedRoute)
+                    ? "bg-wl-primary text-white opacity-50 cursor-not-allowed"
+                    : "bg-wl-primary text-white cursor-pointer"
+                )}
               >
                 Execute Action
               </button>
@@ -532,14 +335,14 @@ export default function BulkOperationsPage() {
 
       {/* Confirmation Modal */}
       {showConfirmation && (
-        <div style={styles.modal}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalTitle}>Confirm Bulk Action</div>
-            <div style={styles.modalBody}>
-              <div style={{ marginBottom: '10px' }}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
+            <div className="text-lg font-bold mb-4">Confirm Bulk Action</div>
+            <div className="text-sm text-wl-muted mb-5 leading-relaxed">
+              <div className="mb-2.5">
                 Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : 'Execute'}</strong>
               </div>
-              <div style={{ marginBottom: '10px' }}>
+              <div className="mb-2.5">
                 Orders selected: <strong>{selectedOrders.size}</strong>
               </div>
               {bulkAction === 'update_status' && (
@@ -552,20 +355,20 @@ export default function BulkOperationsPage() {
                   Route: <strong>{mockRoutes.find(r => r.id === selectedRoute)?.name}</strong>
                 </div>
               )}
-              <div style={{ marginTop: '15px', color: 'var(--wl-muted)' }}>
+              <div className="mt-4 text-wl-muted">
                 This action will affect all selected orders. Do you want to continue?
               </div>
             </div>
-            <div style={styles.modalActions}>
+            <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setShowConfirmation(false)}
-                style={{ ...styles.button, ...styles.secondaryButton }}
+                className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
-                style={{ ...styles.button, ...styles.primaryButton }}
+                className="px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
               >
                 Confirm
               </button>
@@ -576,13 +379,13 @@ export default function BulkOperationsPage() {
 
       {/* Progress Modal */}
       {showProgress && (
-        <div style={styles.modal}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalTitle}>Processing Orders...</div>
-            <div style={styles.progressBar}>
-              <div style={{ ...styles.progressFill, width: `${progress}%` }} />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
+            <div className="text-lg font-bold mb-4">Processing Orders...</div>
+            <div className="w-full h-2 bg-wl-bg rounded overflow-hidden">
+              <div className="h-full bg-wl-primary transition-all" style={{ width: `${progress}%` }} />
             </div>
-            <div style={{ marginTop: '15px', textAlign: 'center', fontSize: '13px', color: 'var(--wl-muted)' }}>
+            <div className="mt-4 text-center text-sm text-wl-muted">
               {progress}% Complete
             </div>
           </div>
@@ -591,43 +394,43 @@ export default function BulkOperationsPage() {
 
       {/* Results Modal */}
       {operationResults && (
-        <div style={styles.modal}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalTitle}>Operation Complete</div>
-            <div style={styles.modalBody}>
-              <div style={{ marginBottom: '15px' }}>
-                <strong style={{ color: '#4CAF50' }}>{operationResults.success} order{operationResults.success !== 1 ? 's' : ''} processed successfully</strong>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
+            <div className="text-lg font-bold mb-4">Operation Complete</div>
+            <div className="text-sm text-wl-muted mb-5">
+              <div className="mb-2.5 text-green-400">
+                <strong>{operationResults.success} order{operationResults.success !== 1 ? 's' : ''} processed successfully</strong>
               </div>
               {operationResults.failed > 0 && (
-                <div style={{ color: '#ff4444' }}>
+                <div className="text-red-400">
                   <strong>{operationResults.failed} order{operationResults.failed !== 1 ? 's' : ''} failed</strong>
                 </div>
               )}
             </div>
 
             {operationResults.details.length > 0 && (
-              <div style={styles.resultsList}>
+              <div className="mt-4">
                 {operationResults.details.map((detail, idx) => (
                   <div
                     key={idx}
-                    style={{
-                      ...styles.resultItem,
-                      ...detail.message.includes('Successfully') ? styles.resultSuccess : styles.resultFailed
-                    }}
+                    className={cn(
+                      "bg-wl-bg border rounded p-3 mb-2",
+                      detail.message.includes('Successfully')
+                        ? "border-l-4 border-l-green-500"
+                        : "border-l-4 border-l-red-400"
+                    )}
                   >
-                    <div style={{ fontWeight: '600' }}>{detail.orderId}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--wl-muted)', marginTop: '4px' }}>
-                      {detail.message}
-                    </div>
+                    <div className="font-semibold text-sm">{detail.orderId}</div>
+                    <div className="text-xs text-wl-muted mt-1">{detail.message}</div>
                   </div>
                 ))}
               </div>
             )}
 
-            <div style={styles.modalActions}>
+            <div className="flex gap-2.5 justify-end mt-5">
               <button
                 onClick={resetOperations}
-                style={{ ...styles.button, ...styles.primaryButton }}
+                className="px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
               >
                 Done
               </button>

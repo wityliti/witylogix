@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
+import { cn } from "../../../lib/utils";
 
 interface Stop {
   id: string;
@@ -146,219 +147,32 @@ export default function RouteDetailPage() {
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    minHeight: "100vh",
-    backgroundColor: "var(--wl-bg)",
-    padding: "24px",
-  };
-
-  const headerStyle: React.CSSProperties = {
-    marginBottom: "32px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "start",
-  };
-
-  const headerLeftStyle: React.CSSProperties = {
-    flex: 1,
-  };
-
-  const titleStyle: React.CSSProperties = {
-    color: "var(--wl-text)",
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "8px",
-  };
-
-  const metaStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "16px",
-    marginTop: "8px",
-    fontSize: "14px",
-  };
-
-  const metaItemStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
-    gap: "24px",
-    marginBottom: "24px",
-  };
-
-  const mapPlaceholderStyle: React.CSSProperties = {
-    width: "100%",
-    height: "400px",
-    backgroundColor: "var(--wl-surface)",
-    borderRadius: "8px",
-    border: "1px solid var(--wl-border)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    overflow: "hidden",
-  };
-
-  const sidebarStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const statsCardStyle: React.CSSProperties = {
-    padding: "16px",
-    borderRadius: "8px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-  };
-
-  const statsGridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
-  };
-
-  const statItemStyle: React.CSSProperties = {
-    padding: "12px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-bg)",
-    border: "1px solid var(--wl-border)",
-    textAlign: "center",
-  };
-
-  const statValueStyle: React.CSSProperties = {
-    color: "var(--wl-primary)",
-    fontSize: "20px",
-    fontWeight: "700",
-    marginBottom: "4px",
-  };
-
-  const statLabelStyle: React.CSSProperties = {
-    color: "var(--wl-muted)",
-    fontSize: "11px",
-  };
-
-  const driverInfoStyle: React.CSSProperties = {
-    padding: "16px",
-    borderRadius: "8px",
-    backgroundColor: "var(--wl-surface)",
-    border: "1px solid var(--wl-border)",
-  };
-
-  const driverNameStyle: React.CSSProperties = {
-    color: "var(--wl-text)",
-    fontSize: "13px",
-    fontWeight: "600",
-    marginBottom: "8px",
-  };
-
-  const driverDetailsStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    fontSize: "12px",
-    color: "var(--wl-muted)",
-  };
-
-  const stopListStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  };
-
-  const stopItemStyle = (status: string): React.CSSProperties => ({
-    padding: "12px 16px",
-    borderRadius: "6px",
-    backgroundColor: "var(--wl-surface)",
-    border: `1px solid ${status === "ARRIVED" ? "var(--wl-primary)" : "var(--wl-border)"}`,
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    transition: "all 0.2s ease",
-  });
-
-  const statusIndicatorStyle = (status: string): React.CSSProperties => ({
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    backgroundColor: getStatusColor(status),
-    flexShrink: 0,
-  });
-
-  const timelineStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0",
-    position: "relative",
-    padding: "20px 0",
-  };
-
-  const timelineItemStyle = (isLast: boolean): React.CSSProperties => ({
-    paddingLeft: "32px",
-    paddingBottom: "20px",
-    position: "relative",
-  });
-
-  const timelineMarkerStyle = (status: string): React.CSSProperties => ({
-    position: "absolute",
-    left: "0",
-    top: "0",
-    width: "20px",
-    height: "20px",
-    borderRadius: "50%",
-    backgroundColor: getStatusColor(status),
-    border: "3px solid var(--wl-bg)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  });
-
-  const timelineLineStyle: React.CSSProperties = {
-    position: "absolute",
-    left: "8px",
-    top: "20px",
-    width: "3px",
-    height: "calc(100% + 20px)",
-    backgroundColor: "var(--wl-border)",
-  };
-
-  const actionBarStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "12px",
-    marginTop: "24px",
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <div style={headerLeftStyle}>
-          <h1 style={titleStyle}>{route.name}</h1>
-          <div style={metaStyle}>
-            <div style={metaItemStyle}>
+    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+      <div className="mb-8 flex justify-between items-start">
+        <div className="flex-1">
+          <h1 className="text-4xl font-bold text-wl-text mb-2">{route.name}</h1>
+          <div className="flex gap-4 mt-2 text-sm text-wl-muted">
+            <div className="flex items-center gap-1.5">
               <Badge>{route.status}</Badge>
               {route.date}
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="flex gap-3">
           <Button variant="secondary">Edit Route</Button>
           <Button variant="primary">Start Route</Button>
         </div>
       </div>
 
-      <div style={gridStyle}>
+      <div className="grid grid-cols-[2fr_1fr] gap-6 mb-6">
         <div>
           <Card>
             <CardHeader>
               <CardTitle>Route Map</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={mapPlaceholderStyle}>
+              <div className="w-full h-96 bg-wl-surface border border-wl-border rounded-lg flex items-center justify-center relative overflow-hidden">
                 <svg
                   width="100%"
                   height="100%"
@@ -430,47 +244,33 @@ export default function RouteDetailPage() {
                     Driver
                   </text>
                 </svg>
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "16px",
-                    right: "16px",
-                    fontSize: "12px",
-                    color: "var(--wl-muted)",
-                  }}
-                >
+                <div className="absolute bottom-4 right-4 text-xs text-wl-muted">
                   Lat: {route.currentLocation.lat}, Lng: {route.currentLocation.lng}
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ marginTop: "24px" }}>
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Route Progress Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={timelineStyle}>
+              <div className="relative pl-8">
                 {route.stops.map((stop, idx) => (
-                  <div key={stop.id} style={timelineItemStyle(idx === route.stops.length - 1)}>
-                    {idx < route.stops.length - 1 && <div style={timelineLineStyle} />}
-                    <div style={timelineMarkerStyle(stop.status)} />
-                    <div style={{ paddingTop: "4px" }}>
-                      <div style={{ color: "var(--wl-text)", fontSize: "13px", fontWeight: "600" }}>
-                        {stop.orderId}
-                      </div>
-                      <div style={{ color: "var(--wl-muted)", fontSize: "12px", marginTop: "2px" }}>
-                        {stop.address}
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "12px",
-                          marginTop: "4px",
-                          fontSize: "12px",
-                          color: "var(--wl-muted)",
-                        }}
-                      >
+                  <div key={stop.id} className={cn("mb-5 pb-5", idx < route.stops.length - 1 && "border-b border-wl-border")}>
+                    {idx < route.stops.length - 1 && (
+                      <div className="absolute left-2 top-5 w-0.75 h-full bg-wl-border" style={{ width: "3px", height: "calc(100% + 20px)" }} />
+                    )}
+                    <div
+                      className="absolute left-0 top-0 w-5 h-5 rounded-full bg-wl-primary border-4 border-wl-surface flex items-center justify-center"
+                      style={{ backgroundColor: getStatusColor(stop.status) }}
+                    />
+                    <div className="pt-1">
+                      <div className="text-xs text-wl-muted">{stop.eta}</div>
+                      <div className="text-sm font-semibold text-wl-text mt-1">{stop.orderId}</div>
+                      <div className="text-xs text-wl-muted mt-1">{stop.address}</div>
+                      <div className="flex gap-3 mt-1 text-xs text-wl-muted">
                         <span>ETA: {stop.eta}</span>
                         {stop.actualTime && <span>Arrived: {stop.actualTime}</span>}
                         {stop.completedAt && <span>Completed: {stop.completedAt}</span>}
@@ -483,30 +283,30 @@ export default function RouteDetailPage() {
           </Card>
         </div>
 
-        <div style={sidebarStyle}>
+        <div className="flex flex-col gap-4">
           <Card>
             <CardHeader>
               <CardTitle>Route Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={statsGridStyle}>
-                <div style={statItemStyle}>
-                  <div style={statValueStyle}>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
+                  <div className="text-xl font-bold text-wl-primary mb-1">
                     {completedStops}/{totalStops}
                   </div>
-                  <div style={statLabelStyle}>Stops Completed</div>
+                  <div className="text-xs text-wl-muted">Stops Completed</div>
                 </div>
-                <div style={statItemStyle}>
-                  <div style={statValueStyle}>{onTimePercent}%</div>
-                  <div style={statLabelStyle}>On-Time Deliveries</div>
+                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
+                  <div className="text-xl font-bold text-wl-primary mb-1">{onTimePercent}%</div>
+                  <div className="text-xs text-wl-muted">On-Time Deliveries</div>
                 </div>
-                <div style={statItemStyle}>
-                  <div style={statValueStyle}>12min</div>
-                  <div style={statLabelStyle}>Avg Stop Time</div>
+                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
+                  <div className="text-xl font-bold text-wl-primary mb-1">12min</div>
+                  <div className="text-xs text-wl-muted">Avg Stop Time</div>
                 </div>
-                <div style={statItemStyle}>
-                  <div style={statValueStyle}>18.5km</div>
-                  <div style={statLabelStyle}>Total Distance</div>
+                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
+                  <div className="text-xl font-bold text-wl-primary mb-1">18.5km</div>
+                  <div className="text-xs text-wl-muted">Total Distance</div>
                 </div>
               </div>
             </CardContent>
@@ -516,10 +316,10 @@ export default function RouteDetailPage() {
             <CardHeader>
               <CardTitle>Driver Information</CardTitle>
             </CardHeader>
-            <CardContent style={{ padding: 0 }}>
-              <div style={driverInfoStyle}>
-                <div style={driverNameStyle}>{route.driver.name}</div>
-                <div style={driverDetailsStyle}>
+            <CardContent>
+              <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
+                <div className="text-sm font-semibold text-wl-text mb-2">{route.driver.name}</div>
+                <div className="flex flex-col gap-1.5 text-xs text-wl-muted">
                   <div>
                     <strong>Phone:</strong> {route.driver.phone}
                   </div>
@@ -544,17 +344,17 @@ export default function RouteDetailPage() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <Button variant="primary" style={{ width: "100%" }}>
+              <div className="flex flex-col gap-2">
+                <Button variant="primary" className="w-full">
                   Resume Route
                 </Button>
-                <Button variant="secondary" style={{ width: "100%" }}>
+                <Button variant="secondary" className="w-full">
                   Pause
                 </Button>
-                <Button variant="secondary" style={{ width: "100%" }}>
+                <Button variant="secondary" className="w-full">
                   Reassign Driver
                 </Button>
-                <Button variant="secondary" style={{ width: "100%" }}>
+                <Button variant="secondary" className="w-full">
                   Complete Route
                 </Button>
               </div>
@@ -563,36 +363,38 @@ export default function RouteDetailPage() {
         </div>
       </div>
 
-      <Card style={{ marginTop: "24px" }}>
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle>Stop Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={stopListStyle}>
+          <div className="flex flex-col gap-2">
             {route.stops.map((stop, idx) => (
-              <div key={stop.id} style={stopItemStyle(stop.status)}>
-                <div style={statusIndicatorStyle(stop.status)} />
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "start",
-                      marginBottom: "4px",
-                    }}
-                  >
+              <div
+                key={stop.id}
+                className="p-4 rounded-md bg-wl-surface border border-wl-border flex items-center gap-3 transition-all"
+                style={{
+                  borderColor: stop.status === "ARRIVED" ? "var(--wl-primary)" : "var(--wl-border)",
+                }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: getStatusColor(stop.status) }}
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-1">
                     <div>
-                      <span style={{ color: "var(--wl-text)", fontWeight: "600", fontSize: "13px" }}>
+                      <span className="text-wl-text font-semibold text-sm">
                         {idx + 1}. {stop.orderId}
                       </span>
-                      <Badge style={{ marginLeft: "8px" }}>{stop.status}</Badge>
+                      <Badge className="ml-2">{stop.status}</Badge>
                     </div>
                     <Badge>{stop.priority.toUpperCase()}</Badge>
                   </div>
-                  <p style={{ color: "var(--wl-muted)", fontSize: "12px", margin: "4px 0" }}>
+                  <p className="text-wl-muted text-xs my-1">
                     {stop.address}
                   </p>
-                  <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--wl-muted)" }}>
+                  <div className="flex gap-4 text-xs text-wl-muted">
                     <span>Window: {stop.timeWindow.start} - {stop.timeWindow.end}</span>
                     <span>ETA: {stop.eta}</span>
                     {stop.actualTime && <span>Arrived: {stop.actualTime}</span>}
@@ -605,9 +407,9 @@ export default function RouteDetailPage() {
         </CardContent>
       </Card>
 
-      <div style={actionBarStyle}>
+      <div className="flex gap-3 mt-6">
         <Button variant="secondary">Back to Routes</Button>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="flex gap-3 ml-auto">
           <Button variant="secondary">Contact Driver</Button>
           <Button variant="primary">Update Status</Button>
         </div>

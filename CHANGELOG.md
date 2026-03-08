@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.2 — Notification Providers, Carrier APIs & POS Extension (2026-03-08)
+
+#### Added
+
+- **ADR-012** — Notification provider architecture decision record (`docs/adr/ADR-012-notification-provider-architecture.md`)
+- **Notification orchestrator** — template rendering with Mustache interpolation, provider routing, retry with exponential backoff, delivery logging (`packages/core/src/notifications/orchestrator.ts`)
+- **Provider registry** — per-tenant lazy provider initialization, health monitoring, automatic failover (`packages/core/src/notifications/provider-registry.ts`)
+- **POS UI extension** — Preact order lookup + delivery assignment for Shopify POS with driver selection, time slot picker, and label printing via postMessage RPC (`extensions/pos-ui/`)
+- **6 test suites** — SendGrid, Twilio, WhatsApp, Firebase Push provider tests + FedEx, UPS adapter tests (81 total)
+
+#### Changed
+
+- **SendGrid email provider** — replaced TODO stubs with real HTTP POST to `api.sendgrid.com/v3/mail/send`, CC/BCC/template ID support, rate limit handling
+- **Twilio SMS provider** — replaced stubs with real HTTP POST to Twilio Messages API, URL-encoded form data, Twilio error code mapping
+- **WhatsApp provider** — replaced stubs with real Meta Cloud API v19.0 integration, template messages with parameter interpolation, quality rating health checks
+- **Firebase Push provider** — replaced stubs with real FCM HTTP v1 API, JWT-based OAuth2 with RSA-SHA256 signing, token caching with auto-refresh
+- **FedEx carrier adapter** — replaced stubs with real FedEx REST API v1 (OAuth2, rate quotes, shipment/label, void, tracking, pickup, address validation)
+- **UPS carrier adapter** — replaced stubs with real UPS REST API (OAuth2, rating, ship/label, void, tracking, pickup, address validation)
+- **24 dashboard pages migrated to Tailwind CSS** — orders/*, routes/*, delivery/*, shipping-profiles/*, collections, integrations, inventory, locations, analytics, billing, support, profile, notifications, stores (44 total migrated)
+
 ### Sprint 3.1 — Page Migration, Queue Consumers & Extensions (2026-03-08)
 
 #### Added

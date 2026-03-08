@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
@@ -118,62 +119,37 @@ export default function OrdersPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* Filters Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-5)",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex flex-wrap items-center gap-4 mb-5">
           {/* Search */}
-          <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
+          <div className="flex-1 min-w-[300px] max-w-[400px]">
             <input
               type="text"
               placeholder="Search orders, customers, addresses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className="w-full px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans outline-none"
             />
           </div>
 
           {/* Status Filter Pills */}
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className="flex flex-wrap gap-1">
             {STATUS_FILTERS.map((f) => {
               const count = f.key === "ALL" ? ORDERS.length : ORDERS.filter((o) => o.status === f.key).length;
               return (
                 <button
                   key={f.key}
                   onClick={() => setStatusFilter(f.key)}
-                  style={{
-                    padding: "var(--wl-space-1) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-full)",
-                    border: "1px solid",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                    background: statusFilter === f.key ? "var(--wl-primary-500)" : "transparent",
-                    color: statusFilter === f.key ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                    borderColor: statusFilter === f.key ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  }}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
+                    statusFilter === f.key
+                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                  )}
                 >
                   {f.label}
-                  <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
+                  <span className="ml-1 opacity-70">{count}</span>
                 </button>
               );
             })}
@@ -181,43 +157,21 @@ export default function OrdersPage() {
         </div>
 
         {/* Orders Grid + Detail */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: selectedOrder ? "1fr 400px" : "1fr",
-            gap: "var(--wl-space-5)",
-          }}
-        >
+        <div className={cn(
+          "grid gap-5",
+          selectedOrder ? "grid-cols-[1fr_400px]" : "grid-cols-1"
+        )}>
           {/* Orders Table */}
-          <Card style={{ overflow: "hidden", padding: 0 }}>
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "var(--wl-text-sm)",
-                }}
-              >
+          <Card className="overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr>
                     {["Order", "Customer", "Status", "Driver", "Address", "Items", "Amount", "ETA"].map(
                       (h) => (
                         <th
                           key={h}
-                          style={{
-                            textAlign: "left",
-                            padding: "var(--wl-space-3) var(--wl-space-4)",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 600,
-                            color: "var(--wl-text-tertiary)",
-                            letterSpacing: "0.04em",
-                            textTransform: "uppercase",
-                            borderBottom: "1px solid var(--wl-border-subtle)",
-                            background: "var(--wl-bg-surface)",
-                            position: "sticky",
-                            top: 0,
-                            whiteSpace: "nowrap",
-                          }}
+                          className="text-left px-4 py-3 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wide border-b border-wl-border-subtle bg-wl-bg-surface sticky top-0 whitespace-nowrap"
                         >
                           {h}
                         </th>
@@ -230,51 +184,32 @@ export default function OrdersPage() {
                     <tr
                       key={order.id}
                       onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
-                      style={{
-                        borderBottom: "1px solid var(--wl-border-subtle)",
-                        cursor: "pointer",
-                        background:
-                          selectedOrder?.id === order.id
-                            ? "rgba(245, 166, 35, 0.06)"
-                            : "transparent",
-                        transition: `background var(--wl-duration-fast) var(--wl-ease-default)`,
-                      }}
+                      className={cn(
+                        "border-b border-wl-border-subtle cursor-pointer transition-colors",
+                        selectedOrder?.id === order.id
+                          ? "bg-[rgba(245,166,35,0.06)]"
+                          : "bg-transparent"
+                      )}
                     >
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          fontWeight: 600,
-                          color: "var(--wl-primary-400)",
-                          fontSize: "var(--wl-text-xs)",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="px-4 py-3 font-mono font-semibold text-wl-primary-400 text-xs whitespace-nowrap">
                         {order.shopifyOrderNumber}
                         {order.tags.length > 0 && (
-                          <div style={{ display: "flex", gap: 2, marginTop: 2 }}>
+                          <div className="flex gap-0.5 mt-0.5">
                             {order.tags.map((t) => (
                               <span
                                 key={t}
+                                className="text-xs py-0.5 px-1 rounded text-white font-semibold uppercase tracking-wider"
                                 style={{
-                                  fontSize: 9,
-                                  padding: "1px 4px",
-                                  borderRadius: 3,
-                                  background:
-                                    t === "priority"
-                                      ? "var(--wl-danger-bg)"
-                                      : t === "express"
-                                        ? "rgba(245,166,35,0.12)"
-                                        : "var(--wl-info-bg)",
-                                  color:
-                                    t === "priority"
-                                      ? "var(--wl-danger-400)"
-                                      : t === "express"
-                                        ? "var(--wl-primary-400)"
-                                        : "var(--wl-info-400)",
-                                  fontWeight: 600,
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.03em",
+                                  background: t === "priority"
+                                    ? "var(--wl-danger-bg)"
+                                    : t === "express"
+                                      ? "rgba(245,166,35,0.12)"
+                                      : "var(--wl-info-bg)",
+                                  color: t === "priority"
+                                    ? "var(--wl-danger-400)"
+                                    : t === "express"
+                                      ? "var(--wl-primary-400)"
+                                      : "var(--wl-info-400)",
                                 }}
                               >
                                 {t}
@@ -283,71 +218,30 @@ export default function OrdersPage() {
                           </div>
                         )}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-primary)",
-                          fontWeight: 500,
-                        }}
-                      >
+                      <td className="px-4 py-3 text-wl-text-primary font-medium">
                         {order.customer}
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)" }}>
+                      <td className="px-4 py-3">
                         <Badge variant={statusVariant(order.status)} dot>
                           {order.status.replace(/_/g, " ")}
                         </Badge>
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: order.driver ? "var(--wl-text-secondary)" : "var(--wl-text-tertiary)",
-                          fontStyle: order.driver ? "normal" : "italic",
-                        }}
-                      >
+                      <td className={cn(
+                        "px-4 py-3",
+                        order.driver ? "text-wl-text-secondary" : "text-wl-text-tertiary italic"
+                      )}>
                         {order.driver ?? "Unassigned"}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: "var(--wl-text-secondary)",
-                          maxWidth: 200,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          fontSize: "var(--wl-text-xs)",
-                        }}
-                      >
+                      <td className="px-4 py-3 text-wl-text-secondary max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap text-xs">
                         {order.address}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-secondary)",
-                          textAlign: "center",
-                        }}
-                      >
+                      <td className="px-4 py-3 font-mono text-xs text-wl-text-secondary text-center">
                         {order.items}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          fontWeight: 600,
-                          color: "var(--wl-text-primary)",
-                        }}
-                      >
+                      <td className="px-4 py-3 font-mono font-semibold text-wl-text-primary">
                         {formatCurrency(order.amount)}
                       </td>
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          fontSize: "var(--wl-text-xs)",
-                          color: order.eta ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)",
-                        }}
-                      >
+                      <td className="px-4 py-3 font-mono text-xs" style={{ color: order.eta ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}>
                         {order.eta ?? "—"}
                       </td>
                     </tr>
@@ -360,108 +254,92 @@ export default function OrdersPage() {
           {/* Order Detail Panel */}
           {selectedOrder && (
             <Card
-              className="wl-animate-in"
+              className="wl-animate-in sticky overflow-y-auto"
               style={{
-                position: "sticky",
                 top: "calc(var(--wl-header-height) + var(--wl-space-6))",
                 maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
-                overflowY: "auto",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--wl-space-4)" }}>
+              <div className="flex justify-between items-center mb-4">
                 <div>
-                  <span
-                    style={{
-                      fontSize: "var(--wl-text-lg)",
-                      fontWeight: 700,
-                      fontFamily: "var(--wl-font-mono)",
-                      color: "var(--wl-primary-400)",
-                    }}
-                  >
+                  <span className="text-lg font-bold font-mono text-wl-primary-400">
                     {selectedOrder.shopifyOrderNumber}
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--wl-text-tertiary)",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontFamily: "var(--wl-font-sans)",
-                  }}
+                  className="bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans"
                 >
                   ✕
                 </button>
               </div>
 
-              <Badge variant={statusVariant(selectedOrder.status)} dot style={{ marginBottom: "var(--wl-space-4)" }}>
+              <Badge variant={statusVariant(selectedOrder.status)} dot className="mb-4">
                 {selectedOrder.status.replace(/_/g, " ")}
               </Badge>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+              <div className="flex flex-col gap-4">
                 {/* Customer Info */}
                 <div>
-                  <div style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--wl-space-2)" }}>
+                  <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
                     Customer
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-base)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                  <div className="text-base font-semibold text-wl-text-primary">
                     {selectedOrder.customer}
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", marginTop: 2 }}>
+                  <div className="text-xs text-wl-text-secondary mt-0.5">
                     {selectedOrder.email}
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)" }}>
+                  <div className="text-xs text-wl-text-secondary font-mono">
                     {selectedOrder.phone}
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-wl-border-subtle" />
 
                 {/* Delivery Details */}
                 <div>
-                  <div style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--wl-space-2)" }}>
+                  <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
                     Delivery
                   </div>
-                  <div style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)", marginBottom: 4 }}>
+                  <div className="text-sm text-wl-text-secondary mb-1">
                     {selectedOrder.address}
                   </div>
                   {selectedOrder.timeSlot && (
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                    <div className="text-xs text-wl-text-tertiary">
                       Time Slot: {selectedOrder.timeSlot}
                     </div>
                   )}
-                  <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                  <div className="text-xs text-wl-text-tertiary">
                     Driver: {selectedOrder.driver ?? "Unassigned"}
                   </div>
                   {selectedOrder.eta && (
-                    <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-primary-400)", fontFamily: "var(--wl-font-mono)", marginTop: 4 }}>
+                    <div className="text-sm font-semibold text-wl-primary-400 font-mono mt-1">
                       ETA: {selectedOrder.eta}
                     </div>
                   )}
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-wl-border-subtle" />
 
                 {/* Order Info */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wl-space-3)" }}>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>Items</div>
-                    <div style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-text-primary)" }}>
+                    <div className="text-xs text-wl-text-tertiary">Items</div>
+                    <div className="text-base font-bold font-mono text-wl-text-primary">
                       {selectedOrder.items}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>Total</div>
-                    <div style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-success-400)" }}>
+                    <div className="text-xs text-wl-text-tertiary">Total</div>
+                    <div className="text-base font-bold font-mono text-wl-success-400">
                       {formatCurrency(selectedOrder.amount)}
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: "flex", gap: "var(--wl-space-2)", flexWrap: "wrap", marginTop: "var(--wl-space-2)" }}>
+                <div className="flex flex-wrap gap-2 mt-2">
                   <Button variant="primary" size="sm">Assign Driver</Button>
                   <Button variant="secondary" size="sm">Edit Order</Button>
                   <Button variant="ghost" size="sm">View Tracking</Button>

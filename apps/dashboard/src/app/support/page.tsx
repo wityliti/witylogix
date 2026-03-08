@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "../../lib/utils";
 import {
   Card,
   CardContent,
@@ -175,76 +176,48 @@ export default function SupportPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--wl-bg)", padding: "24px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+    <div className="min-h-screen bg-wl-bg p-6">
+      <div className="max-w-[1200px] mx-auto">
         {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: "700", color: "var(--wl-text)", marginBottom: "8px" }}>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-wl-text mb-2">
             Support & Help Center
           </h1>
-          <p style={{ color: "var(--wl-muted)", fontSize: "14px" }}>
+          <p className="text-wl-muted text-sm">
             Get help with Witylogix platform and manage support tickets
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
+        <div className="grid grid-cols-2 gap-6 mb-6">
           {/* FAQ Section */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+          <div className="flex flex-col gap-4">
+            <Card className="bg-wl-card border border-wl-border">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Frequently Asked Questions</CardTitle>
+                <CardTitle className="text-wl-text">Frequently Asked Questions</CardTitle>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <CardContent className="flex flex-col gap-3">
                 {faqs.map((section) => (
-                  <div key={section.category} style={{ marginBottom: "8px" }}>
-                    <h3 style={{ color: "var(--wl-primary)", fontSize: "12px", fontWeight: "600", marginBottom: "8px", textTransform: "uppercase" }}>
+                  <div key={section.category} className="mb-2">
+                    <h3 className="text-wl-primary text-xs font-semibold mb-2 uppercase">
                       {section.category}
                     </h3>
                     {section.items.map((item) => (
-                      <div key={item.id} style={{ marginBottom: "8px" }}>
+                      <div key={item.id} className="mb-2">
                         <button
                           onClick={() => setExpandedFaq(expandedFaq === item.id ? null : item.id)}
-                          style={{
-                            width: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "12px",
-                            backgroundColor: "var(--wl-bg)",
-                            border: "1px solid var(--wl-border)",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            color: "var(--wl-text)",
-                            fontSize: "13px",
-                            fontWeight: "500",
-                            transition: "all 0.2s",
-                          }}
+                          className="w-full flex items-center justify-between p-3 bg-wl-bg border border-wl-border rounded hover:bg-wl-border cursor-pointer text-wl-text text-sm font-medium transition-all"
                           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--wl-border)")}
                           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--wl-bg)")}
                         >
-                          <span style={{ textAlign: "left" }}>{item.q}</span>
+                          <span className="text-left">{item.q}</span>
                           {expandedFaq === item.id ? (
-                            <ChevronUp size={16} style={{ flexShrink: 0, marginLeft: "8px" }} />
+                            <ChevronUp size={16} className="flex-shrink-0 ml-2" />
                           ) : (
-                            <ChevronDown size={16} style={{ flexShrink: 0, marginLeft: "8px" }} />
+                            <ChevronDown size={16} className="flex-shrink-0 ml-2" />
                           )}
                         </button>
                         {expandedFaq === item.id && (
-                          <div
-                            style={{
-                              backgroundColor: "var(--wl-bg)",
-                              borderLeft: `3px solid var(--wl-primary)`,
-                              borderRight: "1px solid var(--wl-border)",
-                              borderBottom: "1px solid var(--wl-border)",
-                              borderBottomLeftRadius: "6px",
-                              borderBottomRightRadius: "6px",
-                              padding: "12px",
-                              marginTop: "-1px",
-                              color: "var(--wl-muted)",
-                              fontSize: "13px",
-                              lineHeight: "1.6",
-                            }}
-                          >
+                          <div className="bg-wl-bg border-l-4 border-l-wl-primary border-r border-r-wl-border border-b border-b-wl-border rounded-bl rounded-br p-3 -mt-0.5 text-wl-muted text-sm leading-relaxed">
                             {item.a}
                           </div>
                         )}
@@ -257,16 +230,16 @@ export default function SupportPage() {
           </div>
 
           {/* Contact Form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+          <div className="flex flex-col gap-4">
+            <Card className="bg-wl-card border border-wl-border">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Contact Support</CardTitle>
-                <CardDescription style={{ color: "var(--wl-muted)" }}>Create a new support ticket</CardDescription>
+                <CardTitle className="text-wl-text">Contact Support</CardTitle>
+                <CardDescription className="text-wl-muted">Create a new support ticket</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-wl-text text-sm font-medium mb-1.5">
                       Full Name
                     </label>
                     <input
@@ -274,20 +247,12 @@ export default function SupportPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-wl-text text-sm font-medium mb-1.5">
                       Email Address
                     </label>
                     <input
@@ -295,20 +260,12 @@ export default function SupportPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-wl-text text-sm font-medium mb-1.5">
                       Subject
                     </label>
                     <input
@@ -316,35 +273,18 @@ export default function SupportPage() {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-wl-text text-sm font-medium mb-1.5">
                       Priority
                     </label>
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                        cursor: "pointer",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm cursor-pointer"
                     >
                       <option value="low">Low</option>
                       <option value="normal">Normal</option>
@@ -354,45 +294,20 @@ export default function SupportPage() {
                   </div>
 
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-wl-text text-sm font-medium mb-1.5">
                       Message
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                        minHeight: "100px",
-                        resize: "vertical",
-                        fontFamily: "sans-serif",
-                      }}
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm min-h-[100px] resize-vertical"
                     />
                   </div>
 
                   <Button
                     type="submit"
-                    style={{
-                      width: "100%",
-                      backgroundColor: "var(--wl-primary)",
-                      color: "white",
-                      border: "none",
-                      padding: "10px",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                    }}
+                    className="w-full bg-wl-primary text-white border-none p-2.5 rounded cursor-pointer text-sm font-medium flex items-center justify-center gap-1.5"
                   >
                     <Plus size={16} />
                     Create Ticket
@@ -404,54 +319,54 @@ export default function SupportPage() {
         </div>
 
         {/* Support Tickets */}
-        <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+        <Card className="bg-wl-card border border-wl-border">
           <CardHeader>
-            <CardTitle style={{ color: "var(--wl-text)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <CardTitle className="text-wl-text flex items-center gap-2">
               <MessageSquare size={20} />
               Your Support Tickets
             </CardTitle>
-            <CardDescription style={{ color: "var(--wl-muted)" }}>Recent tickets and their status</CardDescription>
+            <CardDescription className="text-wl-muted">Recent tickets and their status</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr style={{ borderBottom: "2px solid var(--wl-border)" }}>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                  <tr className="border-b-2 border-b-wl-border">
+                    <th className="p-3 text-left text-wl-muted text-xs font-semibold">
                       Ticket ID
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className="p-3 text-left text-wl-muted text-xs font-semibold">
                       Subject
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className="p-3 text-left text-wl-muted text-xs font-semibold">
                       Status
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className="p-3 text-left text-wl-muted text-xs font-semibold">
                       Created
                     </th>
-                    <th style={{ padding: "12px", textAlign: "left", color: "var(--wl-muted)", fontSize: "12px", fontWeight: "600" }}>
+                    <th className="p-3 text-left text-wl-muted text-xs font-semibold">
                       Updated
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {tickets.map((ticket) => (
-                    <tr key={ticket.id} style={{ borderBottom: "1px solid var(--wl-border)" }}>
-                      <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", fontFamily: "monospace" }}>
+                    <tr key={ticket.id} className="border-b border-b-wl-border">
+                      <td className="p-3 text-wl-text text-sm font-medium font-mono">
                         {ticket.id}
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-text)", fontSize: "13px" }}>
+                      <td className="p-3 text-wl-text text-sm">
                         {ticket.subject}
                       </td>
-                      <td style={{ padding: "12px" }}>
+                      <td className="p-3">
                         <Badge style={{ ...getStatusBadge(ticket.status), padding: "4px 8px", fontSize: "11px", fontWeight: "600" }}>
                           {ticket.status.replace("-", " ").toUpperCase()}
                         </Badge>
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px" }}>
+                      <td className="p-3 text-wl-muted text-xs">
                         {ticket.created}
                       </td>
-                      <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "12px" }}>
+                      <td className="p-3 text-wl-muted text-xs">
                         {ticket.updated}
                       </td>
                     </tr>
