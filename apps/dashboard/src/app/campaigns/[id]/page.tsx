@@ -301,7 +301,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
               <CardTitle>Audience Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-center mb-6" style={{ height: 160 }}>
+              <div className="flex items-center justify-center mb-6 h-40">
                 {/* Simple pie chart using SVG */}
                 <svg
                   width="140"
@@ -339,10 +339,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
 
               <div className="flex flex-col gap-2">
                 {pieChartPercentages.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between"
-                  >
+                  <div key={item.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-sm"
@@ -356,7 +353,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                       <span className="text-sm font-medium">
                         {formatNumber(item.value)}
                       </span>
-                      <span className="text-xs text-wl-text-secondary" style={{ minWidth: "35px", textAlign: "right" }}>
+                      <span className="text-xs text-wl-text-secondary text-right" style={{ minWidth: "35px" }}>
                         {item.percentage}%
                       </span>
                     </div>
@@ -375,10 +372,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
           <CardContent>
             <div className="bg-wl-bg-primary border border-wl-border-subtle rounded-md p-6 overflow-x-auto">
               <div
-                className="bg-white rounded-md overflow-hidden"
-                style={{
-                  minWidth: "400px",
-                }}
+                className="bg-white rounded-md overflow-hidden min-w-[400px]"
                 dangerouslySetInnerHTML={{ __html: campaign.templatePreview }}
               />
             </div>

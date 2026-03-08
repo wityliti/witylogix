@@ -197,7 +197,7 @@ const StatsBar = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 className="p-2 rounded flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: stat.color + "15" }}
               >
-                <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
+                <Icon className="w-5 h-5" style={{ color: stat.color }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-wl-text-secondary text-xs font-semibold uppercase tracking-wide">
@@ -340,10 +340,12 @@ const TimelineView = ({ logs }: { logs: ActivityLogEntry[] }) => {
       {logs.map((log, idx) => (
         <div
           key={log.id}
-          className="cursor-pointer transition-all border-l-2 border-b border-wl-border-subtle p-4 hover:bg-wl-bg-surface hover:translate-x-1"
+          className={cn(
+            "cursor-pointer transition-all border-l-2 border-b border-wl-border-subtle p-4 hover:bg-wl-bg-surface hover:translate-x-1",
+            idx % 2 === 0 ? "bg-wl-bg-base" : "bg-wl-bg-surface"
+          )}
           style={{
             borderLeftColor: getActionColor(log.actionType),
-            backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
           }}
         >
           <div className="flex gap-3 items-start">
@@ -465,10 +467,10 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
           {logs.map((log, idx) => (
             <tr
               key={log.id}
-              className="border-b border-wl-border-subtle transition-all hover:bg-wl-bg-surface"
-              style={{
-                backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-              }}
+              className={cn(
+                "border-b border-wl-border-subtle transition-all hover:bg-wl-bg-surface",
+                idx % 2 === 0 ? "bg-wl-bg-base" : "bg-wl-bg-surface"
+              )}
             >
               <td className="px-3 py-3 text-wl-text-secondary text-xs">
                 {new Date(log.timestamp).toLocaleDateString()}{" "}
@@ -477,7 +479,7 @@ const TableView = ({ logs }: { logs: ActivityLogEntry[] }) => {
                 </span>
               </td>
               <td className="px-3 py-3">
-                <Badge variant="default" style={{ backgroundColor: getActionColor(log.actionType) + "20", color: getActionColor(log.actionType) }}>
+                <Badge variant="default" style={{ backgroundColor: getActionColor(log.actionType) + "20", color: getActionColor(log.actionType) }} className="text-xs">
                   {log.action}
                 </Badge>
               </td>

@@ -177,7 +177,7 @@ export default function RouteDetailPage() {
                   width="100%"
                   height="100%"
                   viewBox="0 0 800 400"
-                  style={{ position: "absolute", top: 0, left: 0 }}
+                  className="absolute top-0 left-0"
                 >
                   <defs>
                     <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -260,7 +260,7 @@ export default function RouteDetailPage() {
                 {route.stops.map((stop, idx) => (
                   <div key={stop.id} className={cn("mb-5 pb-5", idx < route.stops.length - 1 && "border-b border-wl-border")}>
                     {idx < route.stops.length - 1 && (
-                      <div className="absolute left-2 top-5 w-0.75 h-full bg-wl-border" style={{ width: "3px", height: "calc(100% + 20px)" }} />
+                      <div className="absolute left-2 top-5 w-1 bg-wl-border" style={{ height: "calc(100% + 20px)" }} />
                     )}
                     <div
                       className="absolute left-0 top-0 w-5 h-5 rounded-full bg-wl-primary border-4 border-wl-surface flex items-center justify-center"
@@ -372,10 +372,10 @@ export default function RouteDetailPage() {
             {route.stops.map((stop, idx) => (
               <div
                 key={stop.id}
-                className="p-4 rounded-md bg-wl-surface border border-wl-border flex items-center gap-3 transition-all"
-                style={{
-                  borderColor: stop.status === "ARRIVED" ? "var(--wl-primary)" : "var(--wl-border)",
-                }}
+                className={cn(
+                  "p-4 rounded-md bg-wl-surface border flex items-center gap-3 transition-all",
+                  stop.status === "ARRIVED" ? "border-wl-primary" : "border-wl-border"
+                )}
               >
                 <div
                   className="w-2 h-2 rounded-full flex-shrink-0"

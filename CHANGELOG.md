@@ -4,6 +4,22 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.7 — Auth Actions, Core Module Tests & Deep Tailwind (2026-03-08)
+
+#### Added
+
+- **ADR-017** — Dashboard authentication actions architecture (454 lines) with sequence diagrams, token management, and BYOK compatibility (`docs/adr/ADR-017-dashboard-auth-actions.md`)
+- **Dashboard auth actions** — Real login/register/forgot-password implementation with zod validation, API client, httpOnly cookies, structured error responses (`apps/dashboard/src/lib/auth-actions.ts`)
+- **14 core module test suites** — tracking (81 tests), labels (99 tests), monitoring (75 tests), drivers (58 tests), orders (55 tests), routes (53 tests), zones (55 tests), shipping-profiles (55 tests), integrations (81 tests), events (65 tests), push (65 tests), shops (38 tests), migration (79 tests), E2E platform flow (60 tests) — 919 test cases total, 115+ suites
+- **E2E platform adapter flow test** — Full lifecycle validation across all 4 platforms (Shopify→WooCommerce→Magento→Custom) with cross-platform consistency checks and stress tests
+
+#### Changed
+
+- **Shopify app TODO fixes (4→0)** — WebhookEventPicker integration, user ID resolution via shop owner query, pickup location from shop config, order context fetch from database
+- **Dashboard auth TODO fixes (3→0)** — Replaced login/register/forgot-password stubs with real API client implementations
+- **Zero TODOs remaining** across entire non-dist codebase (was 7, now 0)
+- **15 dashboard pages migrated to Tailwind CSS** (118 total) — admin/design-system, widgets, home, drivers, campaigns/[id], (auth)/layout, shipments, (auth)/register, admin/shops/[id], admin, activity, widget-config, routes, routes/[id], orders/local
+
 ### Sprint 3.6 — Magento, Custom Adapter, Tests & Tailwind Finish (2026-03-08)
 
 #### Added

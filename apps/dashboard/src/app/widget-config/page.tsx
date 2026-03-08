@@ -329,7 +329,7 @@ export default function WidgetConfigPage() {
               <CardContent>
                 <div className="bg-wl-bg rounded-lg border border-wl-border p-4 min-h-96 flex items-center justify-center">
                   <div
-                    className="flex flex-col gap-3 overflow-hidden"
+                    className="flex flex-col gap-3 overflow-hidden rounded"
                     style={{
                       width: `${Math.min(parseInt(widgetWidth), 280)}px`,
                       height: `${Math.min(parseInt(widgetHeight), 380)}px`,

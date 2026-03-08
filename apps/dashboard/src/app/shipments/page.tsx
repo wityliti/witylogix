@@ -373,13 +373,10 @@ export default function ShipmentsPage() {
                       onClick={() =>
                         setSelectedShipment(selectedShipment?.id === shipment.id ? null : shipment)
                       }
-                      className="border-b border-wl-border-subtle cursor-pointer transition-all"
-                      style={{
-                        background:
-                          selectedShipment?.id === shipment.id
-                            ? "rgba(245, 166, 35, 0.06)"
-                            : "transparent",
-                      }}
+                      className={cn(
+                        "border-b border-wl-border-subtle cursor-pointer transition-all",
+                        selectedShipment?.id === shipment.id ? "bg-[rgba(245,166,35,0.06)]" : "bg-transparent"
+                      )}
                     >
                       {/* Tracking Number */}
                       <td className="p-4 font-mono font-semibold text-wl-primary-400 text-xs whitespace-nowrap">
@@ -389,21 +386,14 @@ export default function ShipmentsPage() {
                             {shipment.tags.map((t) => (
                               <span
                                 key={t}
-                                className="text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter"
-                                style={{
-                                  background:
-                                    t === "priority"
-                                      ? "var(--wl-danger-bg)"
-                                      : t === "express"
-                                        ? "rgba(245,166,35,0.12)"
-                                        : "var(--wl-info-bg)",
-                                  color:
-                                    t === "priority"
-                                      ? "var(--wl-danger-400)"
-                                      : t === "express"
-                                        ? "var(--wl-primary-400)"
-                                        : "var(--wl-info-400)",
-                                }}
+                                className={cn(
+                                  "text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter",
+                                  t === "priority"
+                                    ? "bg-[var(--wl-danger-bg)] text-[var(--wl-danger-400)]"
+                                    : t === "express"
+                                      ? "bg-[rgba(245,166,35,0.12)] text-[var(--wl-primary-400)]"
+                                      : "bg-[var(--wl-info-bg)] text-[var(--wl-info-400)]"
+                                )}
                               >
                                 {t}
                               </span>
@@ -438,12 +428,12 @@ export default function ShipmentsPage() {
                       </td>
 
                       {/* Driver/Location */}
-                      <td className="p-4 text-xs whitespace-nowrap" style={{
-                        color: shipment.driverName || shipment.locationName
-                          ? "var(--wl-text-secondary)"
-                          : "var(--wl-text-tertiary)",
-                        fontStyle: shipment.driverName || shipment.locationName ? "normal" : "italic",
-                      }}>
+                      <td className={cn(
+                        "p-4 text-xs whitespace-nowrap",
+                        shipment.driverName || shipment.locationName
+                          ? "text-wl-text-secondary"
+                          : "text-wl-text-tertiary italic"
+                      )}>
                         {shipment.driverName ?? shipment.locationName ?? "—"}
                       </td>
 
@@ -458,12 +448,12 @@ export default function ShipmentsPage() {
                       </td>
 
                       {/* ETA */}
-                      <td className="p-4 font-mono text-xs" style={{
-                        color:
-                          shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
-                            ? "var(--wl-primary-400)"
-                            : "var(--wl-text-tertiary)",
-                      }}>
+                      <td className={cn(
+                        "p-4 font-mono text-xs",
+                        shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
+                          ? "text-wl-primary-400"
+                          : "text-wl-text-tertiary"
+                      )}>
                         {shipment.estimatedDelivery
                           ? formatRelativeTime(shipment.estimatedDelivery)
                           : "—"}
@@ -562,34 +552,34 @@ export default function ShipmentsPage() {
                         <div key={step} className="flex gap-2">
                           <div className="flex flex-col items-center">
                             <div
-                              className="w-3 h-3 rounded-full flex-shrink-0"
-                              style={{
-                                background: isCompleted
+                              className={cn(
+                                "w-3 h-3 rounded-full flex-shrink-0",
+                                isCompleted
                                   ? isCurrent
-                                    ? "var(--wl-primary-500)"
-                                    : "var(--wl-success-400)"
-                                  : "var(--wl-border-default)",
-                              }}
+                                    ? "bg-[var(--wl-primary-500)]"
+                                    : "bg-[var(--wl-success-400)]"
+                                  : "bg-[var(--wl-border-default)]"
+                              )}
                             />
                             {idx < statusProgression.length - 1 && (
                               <div
-                                className="w-0.5 h-6"
-                                style={{
-                                  background: isCompleted
-                                    ? "var(--wl-success-400)"
-                                    : "var(--wl-border-default)",
-                                }}
+                                className={cn(
+                                  "w-0.5 h-6",
+                                  isCompleted
+                                    ? "bg-[var(--wl-success-400)]"
+                                    : "bg-[var(--wl-border-default)]"
+                                )}
                               />
                             )}
                           </div>
                           <div
-                            className="text-xs py-0.5"
-                            style={{
-                              color: isCompleted
-                                ? "var(--wl-text-primary)"
-                                : "var(--wl-text-tertiary)",
-                              fontWeight: isCurrent ? 600 : 500,
-                            }}
+                            className={cn(
+                              "text-xs py-0.5",
+                              isCompleted
+                                ? "text-wl-text-primary"
+                                : "text-wl-text-tertiary",
+                              isCurrent ? "font-semibold" : "font-medium"
+                            )}
                           >
                             {step.replace(/_/g, " ")}
                           </div>

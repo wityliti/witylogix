@@ -342,7 +342,7 @@ export default function LocalOrdersPage() {
         <div>
           {/* Filters and Actions */}
           <div className="flex gap-3 mb-4 flex-wrap items-center">
-            <Select value={statusFilter} onChange={(v) => setStatusFilter(v)} style={{ minWidth: '150px' }} options={[
+            <Select value={statusFilter} onChange={(v) => setStatusFilter(v)} className="min-w-[150px]" options={[
               { value: 'all', label: 'All Statuses' },
               { value: 'pending', label: 'Pending' },
               { value: 'assigned', label: 'Assigned' },
@@ -350,7 +350,7 @@ export default function LocalOrdersPage() {
               { value: 'delivered', label: 'Delivered' },
             ]} />
 
-            <Select value={priorityFilter} onChange={(v) => setPriorityFilter(v)} style={{ minWidth: '120px' }} options={[
+            <Select value={priorityFilter} onChange={(v) => setPriorityFilter(v)} className="min-w-[120px]" options={[
               { value: 'all', label: 'All Priorities' },
               { value: 'high', label: 'High' },
               { value: 'normal', label: 'Normal' },

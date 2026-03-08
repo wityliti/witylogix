@@ -266,7 +266,7 @@ const ComponentsShowcase = () => {
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <Button variant="primary" size="md">Primary Button</Button>
             <Button variant="secondary" size="md">Secondary Button</Button>
             <Button variant="ghost" size="md">Ghost Button</Button>
@@ -332,25 +332,25 @@ const ComponentsShowcase = () => {
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             <StatCard
               label="Total Orders"
               value="2,345"
-              icon={<Filter style={{ width: "20px", height: "20px" }} />}
+              icon={<Filter className="w-5 h-5" />}
               trend={{ value: 12.5, direction: "up" as const }}
               color="#f5a623"
             />
             <StatCard
               label="Active Drivers"
               value="128"
-              icon={<CheckCircle2 style={{ width: "20px", height: "20px" }} />}
+              icon={<CheckCircle2 className="w-5 h-5" />}
               trend={{ value: 8.2, direction: "up" as const }}
               color="#10b981"
             />
             <StatCard
               label="Pending Shipments"
               value="43"
-              icon={<AlertCircle style={{ width: "20px", height: "20px" }} />}
+              icon={<AlertCircle className="w-5 h-5" />}
               trend={{ value: 5.1, direction: "down" as const }}
               color="#ef4444"
             />

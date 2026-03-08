@@ -56,7 +56,7 @@ export default function AuthLayout({
                   W
                 </span>
               </div>
-              <h1 className="text-3xl font-bold text-wl-text-primary mb-1" style={{ letterSpacing: "-0.02em" }}>
+              <h1 className="text-3xl font-bold text-wl-text-primary mb-1 tracking-tight">
                 Witylogix
               </h1>
               <p className="text-sm text-wl-text-tertiary">

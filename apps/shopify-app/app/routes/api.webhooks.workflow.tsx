@@ -352,18 +352,35 @@ async function triggerCreateDeliveryOrderWorkflow(
     // In a real app, this would be injected or retrieved from a singleton
     const queue = getWorkflowQueue();
 
+    // Fetch shop's owner user ID from Prisma
+    const { PrismaClient } = require("@witylogix/db");
+    const prisma = new PrismaClient();
+
+    const shop = await (prisma as any).shop.findUnique({
+      where: { id: shopId },
+      select: { ownerId: true },
+    });
+    const userId = shop?.ownerId ?? shopId;
+
+    // Fetch default pickup location from shop config
+    const shopConfig = await (prisma as any).shopConfig.findUnique({
+      where: { shopId },
+      select: { defaultPickupLocationId: true },
+    });
+    const pickupLocationId = shopConfig?.defaultPickupLocationId ?? "default";
+
     // Enqueue the workflow
     const jobId = await queue.enqueue(
       "createDeliveryOrder",
       {
         shopId,
-        userId: shopId, // TODO: Map to actual user ID
+        userId,
         shopifyOrderId: String(payload.id),
         shopifyOrderNumber: String(payload.order_number || ""),
         customerName,
         customerEmail,
         customerPhone,
-        pickupLocationId: "default", // TODO: Get from shop config
+        pickupLocationId,
         deliveryAddressLine1: shippingAddress.address1,
         deliveryAddressLine2: shippingAddress.address2,
         deliveryCity: shippingAddress.city,
@@ -425,28 +442,82 @@ async function triggerCompleteDeliveryWorkflow(
   logEntry: WebhookDeliveryLog
 ): Promise<boolean> {
   try {
-    // In a real implementation, fetch order details from database
-    // to get driver ID, actual delivery time, etc.
     const orderId = String(payload.order_id);
 
-    // TODO: Fetch order from database to get:
-    // - assignedDriverId
-    // - customerEmail, customerPhone, customerName
-    // - totalPrice
-    // - other required fields
+    // Fetch order from database by external order ID and source
+    const { PrismaClient } = require("@witylogix/db");
+    const prisma = new PrismaClient();
 
-    console.log("completeDelivery workflow would be triggered", {
+    const order = await (prisma as any).order.findFirst({
+      where: {
+        externalOrderId: orderId,
+        source: "shopify",
+        shopId,
+      },
+      select: {
+        id: true,
+        assignedDriverId: true,
+        customerEmail: true,
+        customerPhone: true,
+        customerName: true,
+        totalPrice: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    if (!order) {
+      console.warn("Order not found in database", {
+        orderId,
+        shopId,
+      });
+      logEntry.responseBody = {
+        workflowName: "completeDelivery",
+        note: "Order not found in database",
+      };
+      return false;
+    }
+
+    const queue = getWorkflowQueue();
+
+    const jobId = await queue.enqueue(
+      "completeDelivery",
+      {
+        shopId,
+        orderId: order.id,
+        externalOrderId: orderId,
+        assignedDriverId: order.assignedDriverId,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        customerName: order.customerName,
+        totalPrice: order.totalPrice,
+        completedAt: new Date().toISOString(),
+        tags: ["shopify", "webhook", "fulfillment"],
+        metadata: {
+          shopifyOrderId: payload.id,
+          fulfillmentId: payload.id,
+          webhookId: logEntry.id,
+          triggeredAt: new Date().toISOString(),
+        },
+      },
+      {
+        userId: shopId,
+        tenantId: shopId,
+        transactionId: `webhook:${logEntry.id}`,
+        metadata: {
+          event: "orders/fulfilled",
+          source: "shopify_webhook",
+        },
+      }
+    );
+
+    console.log("completeDelivery workflow triggered", {
+      jobId,
       orderId,
       shopId,
     });
 
-    logEntry.responseBody = {
-      workflowName: "completeDelivery",
-      note: "Requires order context from database",
-    };
-
-    // For now, just log that we'd trigger it
-    // In production, fetch full order context and enqueue workflow
+    logEntry.responseBody = { jobId, workflowName: "completeDelivery" };
     return true;
   } catch (error) {
     console.error("Failed to trigger completeDelivery workflow", {

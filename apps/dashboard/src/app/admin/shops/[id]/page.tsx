@@ -434,10 +434,9 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
               <div className="flex-1">
                 <div className="h-2 bg-wl-bg-root rounded overflow-hidden mb-2">
                   <div
-                    className="h-full rounded transition-all duration-300"
+                    className="h-full rounded transition-all duration-300 bg-[var(--wl-primary-500)]"
                     style={{
                       width: `${(mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100}%`,
-                      background: "var(--wl-primary-500)",
                     }}
                   />
                 </div>

@@ -71,7 +71,7 @@ export default function RoutesPage() {
               className="wl-animate-in relative overflow-hidden"
               style={{ animationDelay: `${i * 60}ms`, opacity: 0 }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: stat.color }} />
+              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
               <div className="text-xs text-wl-text-tertiary mb-2 font-semibold uppercase tracking-wider">
                 {stat.label}
               </div>
@@ -116,7 +116,7 @@ export default function RoutesPage() {
                   </div>
 
                   {/* Progress bar */}
-                  <div style={{ width: 200, flexShrink: 0 }}>
+                  <div className="w-52 flex-shrink-0">
                     <div className="flex justify-between mb-1">
                       <span className="text-xs text-wl-text-tertiary">Progress</span>
                       <span className="text-xs font-mono text-wl-text-secondary">

@@ -110,7 +110,7 @@ export default function DashboardPage() {
       <div className="p-6">
         {/* ═══ KPI Stats Grid ═══ */}
         <div
-          className="grid gap-4 mb-6 auto-fill"
+          className="grid gap-4 mb-6"
           style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}
         >
           {STATS.map((stat, i) => (
@@ -140,9 +140,7 @@ export default function DashboardPage() {
                   Today&apos;s hourly distribution
                 </span>
               </CardHeader>
-              <div
-                className="flex items-end gap-1.5 h-35 pt-2"
-              >
+              <div className="flex items-end gap-1.5 h-35 pt-2">
                 {DELIVERY_TIMELINE.map((d, i) => {
                   const height = (d.count / maxCount) * 100;
                   const isCurrent = i === 6; // 12pm highlight
@@ -279,12 +277,8 @@ export default function DashboardPage() {
 
                     {/* Zone name + bar */}
                     <div className="flex-1 min-w-0">
-                      <div
-                        className="flex justify-between mb-1"
-                      >
-                        <span
-                          className="text-sm font-semibold text-wl-text-primary"
-                        >
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-semibold text-wl-text-primary">
                           {zone.zone}
                         </span>
                         <span
@@ -297,9 +291,7 @@ export default function DashboardPage() {
                           {zone.trend}%
                         </span>
                       </div>
-                      <div
-                        className="h-1 bg-wl-bg-overlay rounded-full overflow-hidden"
-                      >
+                      <div className="h-1 bg-wl-bg-overlay rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full"
                           style={{
@@ -311,42 +303,28 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Stats */}
-                    <div
-                      className="flex gap-5 flex-shrink-0"
-                    >
+                    <div className="flex gap-5 flex-shrink-0">
                       <div className="text-right">
-                        <div
-                          className="text-xs text-wl-text-tertiary"
-                        >
+                        <div className="text-xs text-wl-text-tertiary">
                           Orders
                         </div>
-                        <div
-                          className="text-sm font-bold font-mono text-wl-text-primary"
-                        >
+                        <div className="text-sm font-bold font-mono text-wl-text-primary">
                           {zone.orders}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div
-                          className="text-xs text-wl-text-tertiary"
-                        >
+                        <div className="text-xs text-wl-text-tertiary">
                           Avg Time
                         </div>
-                        <div
-                          className="text-sm font-semibold font-mono text-wl-text-secondary"
-                        >
+                        <div className="text-sm font-semibold font-mono text-wl-text-secondary">
                           {zone.avgTime}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div
-                          className="text-xs text-wl-text-tertiary"
-                        >
+                        <div className="text-xs text-wl-text-tertiary">
                           Revenue
                         </div>
-                        <div
-                          className="text-sm font-semibold font-mono text-wl-success-400"
-                        >
+                        <div className="text-sm font-semibold font-mono text-wl-success-400">
                           {formatCurrency(zone.revenue)}
                         </div>
                       </div>
@@ -377,9 +355,7 @@ export default function DashboardPage() {
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Avatar */}
-                    <div
-                      className="w-9 h-9 rounded-md bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary relative flex-shrink-0"
-                    >
+                    <div className="w-9 h-9 rounded-md bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary relative flex-shrink-0">
                       {driver.name.split(" ").map((w) => w[0]).join("")}
                       <span
                         className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-wl-bg-elevated"
@@ -388,14 +364,10 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div
-                        className="text-sm font-semibold text-wl-text-primary"
-                      >
+                      <div className="text-sm font-semibold text-wl-text-primary">
                         {driver.name}
                       </div>
-                      <div
-                        className="text-xs text-wl-text-tertiary"
-                      >
+                      <div className="text-xs text-wl-text-tertiary">
                         {driver.vehicle} · {driver.completed} done
                       </div>
                     </div>
@@ -429,9 +401,7 @@ export default function DashboardPage() {
                     key={action.label}
                     className="flex items-center gap-3 p-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm cursor-pointer font-sans transition-all w-full text-left"
                   >
-                    <span
-                      className="w-7 h-7 rounded text-sm flex items-center justify-center bg-wl-bg-overlay flex-shrink-0"
-                    >
+                    <span className="w-7 h-7 rounded text-sm flex items-center justify-center bg-wl-bg-overlay flex-shrink-0">
                       {action.icon}
                     </span>
                     {action.label}
@@ -458,26 +428,17 @@ export default function DashboardPage() {
                   { name: "Routing Provider", status: "Healthy", latency: "89ms" },
                   { name: "Notifications", status: "Degraded", latency: "340ms" },
                 ].map((service) => (
-                  <div
-                    key={service.name}
-                    className="flex items-center justify-between"
-                  >
-                    <div
-                      className="flex items-center gap-2"
-                    >
+                  <div key={service.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <span
                         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                         style={{ background: statusColor(service.status === "Healthy" ? "HEALTHY" : "DEGRADED") }}
                       />
-                      <span
-                        className="text-sm text-wl-text-secondary"
-                      >
+                      <span className="text-sm text-wl-text-secondary">
                         {service.name}
                       </span>
                     </div>
-                    <span
-                      className="text-xs font-mono text-wl-text-tertiary"
-                    >
+                    <span className="text-xs font-mono text-wl-text-tertiary">
                       {service.latency}
                     </span>
                   </div>

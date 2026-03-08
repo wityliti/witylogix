@@ -639,7 +639,6 @@ export default function DriversPage() {
 
                   {/* Total Deliveries */}
                   <div className="p-2 bg-slate-800 rounded-md text-center">
-                    <div className="text-xs text-slate-400 mb-1">Total</div>
                     <div className="text-lg font-bold text-blue-400 font-mono">
                       {driver.totalDeliveries}
                     </div>
@@ -680,7 +679,7 @@ export default function DriversPage() {
                 </span>
                 <button
                   onClick={() => setSelectedDriver(null)}
-                  className="bg-none border-none text-slate-400 cursor-pointer text-xl font-light hover:text-slate-200 transition-colors"
+                  className="text-slate-400 cursor-pointer text-xl font-light hover:text-slate-200 transition-colors"
                 >
                   ✕
                 </button>

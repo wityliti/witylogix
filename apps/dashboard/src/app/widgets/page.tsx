@@ -189,7 +189,7 @@ export default function WidgetsPage() {
             Active Widgets
           </h2>
           <div
-            className="grid gap-4 auto-fill"
+            className="grid gap-4"
             style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
           >
             {activeWidgets.map((widget, idx) => (
@@ -222,8 +222,8 @@ export default function WidgetsPage() {
 
                   {/* Widget Preview Placeholder */}
                   <div
-                    className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary"
-                    style={{ background: getWidgetColor(idx), height: "120px" }}
+                    className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary h-30"
+                    style={{ background: getWidgetColor(idx) }}
                   >
                     Widget Preview
                   </div>
@@ -258,7 +258,7 @@ export default function WidgetsPage() {
               Widget Gallery
             </h2>
             <div
-              className="grid gap-4 auto-fill"
+              className="grid gap-4"
               style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
             >
               {AVAILABLE_WIDGETS.map((widget, idx) => (
@@ -284,8 +284,8 @@ export default function WidgetsPage() {
 
                     {/* Preview Placeholder */}
                     <div
-                      className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary"
-                      style={{ background: getWidgetColor(idx), height: "100px" }}
+                      className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary h-25"
+                      style={{ background: getWidgetColor(idx) }}
                     >
                       Preview
                     </div>
@@ -354,7 +354,7 @@ export default function WidgetsPage() {
           {/* Grid Legend */}
           <div className="mt-4 p-4 bg-wl-bg-overlay rounded-md">
             <p className="text-sm text-wl-text-secondary m-0 mb-2">
-              Grid: 4 columns x 3 rows · Widget sizes: 1x1, 2x1, 1x2, 2x2
+              Grid: 4 columns x 3 rows - Widget sizes: 1x1, 2x1, 1x2, 2x2
             </p>
             <p className="text-xs text-wl-text-tertiary m-0">
               Drag widgets to reorder. Colors indicate different widget types.

@@ -255,10 +255,10 @@ const SystemHealth = () => {
             return (
               <div key={idx} className="flex gap-3 items-start">
                 <div
-                  className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: metric.status === "healthy" ? "#10b98115" : "#f59e0b15",
-                  }}
+                  className={cn(
+                    "p-2 rounded-md flex items-center justify-center flex-shrink-0",
+                    metric.status === "healthy" ? "bg-[#10b98115]" : "bg-[#f59e0b15]"
+                  )}
                 >
 
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />

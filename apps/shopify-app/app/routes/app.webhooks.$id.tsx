@@ -392,20 +392,26 @@ export default function WebhookDetailPage() {
               </Text>
               {isEditing && (
                 <div style={{ marginTop: 12 }}>
-                  {/* TODO: Integrate WebhookEventPicker here */}
-                  <div
-                    style={{
-                      padding: 12,
-                      borderRadius: 8,
-                      backgroundColor: "var(--p-color-bg-surface-secondary)",
-                    }}
-                  >
-                    <Text as="p" variant="bodySm">
-                      {events.map((e) => (
-                        <Badge key={e}>{e}</Badge>
-                      ))}
-                    </Text>
-                  </div>
+                  <WebhookEventPicker
+                    selected={events}
+                    onChange={setEvents}
+                  />
+                </div>
+              )}
+              {!isEditing && (
+                <div
+                  style={{
+                    padding: 12,
+                    borderRadius: 8,
+                    backgroundColor: "var(--p-color-bg-surface-secondary)",
+                    marginTop: 12,
+                  }}
+                >
+                  <Text as="p" variant="bodySm">
+                    {events.map((e) => (
+                      <Badge key={e}>{e}</Badge>
+                    ))}
+                  </Text>
                 </div>
               )}
             </div>

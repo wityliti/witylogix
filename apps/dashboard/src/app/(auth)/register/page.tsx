@@ -440,11 +440,9 @@ export default function RegisterPage() {
                   : confirmPassword && password === confirmPassword
                     ? "border-wl-success-500"
                     : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
+                confirmPassword && password === confirmPassword ? "pr-11" : "pr-3"
               )}
-              style={{
-                paddingRight: confirmPassword && password === confirmPassword ? 44 : "var(--wl-space-3)",
-              }}
 
               onFocus={(e) => {
                 if (!isLoading) {
@@ -487,10 +485,12 @@ export default function RegisterPage() {
                 setTermsError("");
               }}
               disabled={isLoading}
-              className="w-4 h-4 mt-0.5 flex-shrink-0"
+              className={cn(
+                "w-4 h-4 mt-0.5 flex-shrink-0",
+                isLoading ? "cursor-not-allowed" : "cursor-pointer"
+              )}
               style={{
                 accentColor: "var(--wl-primary-500)",
-                cursor: isLoading ? "not-allowed" : "pointer",
               }}
             />
 
@@ -582,16 +582,6 @@ export default function RegisterPage() {
             "text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300",
             isLoading && "opacity-60 pointer-events-none"
           )}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading) {
-              (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
-            }
-          }}
         >
           Sign in
         </Link>
