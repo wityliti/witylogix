@@ -246,16 +246,9 @@ export default function WorkflowExecutionsPage() {
         }
       />
 
-      <div className="p-6" >
+      <div className="p-6">
         {/* Stats Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Runs"
             value={totalRuns}
@@ -290,15 +283,7 @@ export default function WorkflowExecutionsPage() {
         </div>
 
         {/* Filter Tabs */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-2)",
-            marginBottom: "var(--wl-space-5)",
-            borderBottom: "1px solid var(--wl-border-subtle)",
-            paddingBottom: "var(--wl-space-4)",
-          }}
-        >
+        <div className="flex gap-2 mb-5 border-b border-wl-border-subtle pb-4">
           {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
             const count =
               tab === "all"
@@ -310,92 +295,54 @@ export default function WorkflowExecutionsPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "var(--wl-space-2) var(--wl-space-3)",
-                  fontSize: "var(--wl-text-sm)",
-                  fontWeight: isActive ? 600 : 500,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  color: isActive ? "var(--wl-text-primary)" : "var(--wl-text-tertiary)",
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: isActive ? "2px solid var(--wl-accent)" : "2px solid transparent",
-                  transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                  textTransform: "capitalize",
-                }}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
+                  isActive
+                    ? "text-wl-text-primary border-b-wl-accent"
+                    : "text-wl-text-tertiary border-b-transparent"
+                )}
               >
                 {tab === "all" ? "All" : tab}
-                <span style={{ marginLeft: 6, opacity: 0.6 }}>({count})</span>
+                <span className="ml-1.5 opacity-60">({count})</span>
               </button>
             );
           })}
         </div>
 
         {/* Search Bar */}
-        <div className="mb-5" >
+        <div className="mb-5">
           <input
             type="text"
             placeholder="Search workflow name or execution ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: "100%",
-              maxWidth: 400,
-              padding: "var(--wl-space-2) var(--wl-space-4)",
-              background: "var(--wl-bg-elevated)",
-              border: "1px solid var(--wl-border-subtle)",
-              borderRadius: "var(--wl-radius-md)",
-              color: "var(--wl-text-primary)",
-              fontSize: "var(--wl-text-sm)",
-              fontFamily: "var(--wl-font-sans)",
-              outline: "none",
-              transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-            }}
-            onFocus={(e) => {
-              (e.target as HTMLInputElement).style.borderColor = "var(--wl-accent)";
-              (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(108, 92, 231, 0.1)";
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLInputElement).style.borderColor = "var(--wl-border-subtle)";
-              (e.target as HTMLInputElement).style.boxShadow = "none";
-            }}
+            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none transition-all focus:border-wl-accent focus:ring-3 focus:ring-wl-accent/10"
           />
         </div>
 
         {/* Executions Table */}
         {filtered.length > 0 ? (
-          <Card style={{ overflow: "hidden", padding: 0 }}>
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "var(--wl-text-sm)",
-                }}
-              >
+          <Card className="overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr
-                    style={{
-                      borderBottom: "1px solid var(--wl-border-subtle)",
-                      background: "var(--wl-bg-overlay)",
-                    }}
-                  >
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                  <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                       Workflow Name
                     </th>
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Status
                     </th>
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Steps
                     </th>
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "left", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                       Started
                     </th>
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Duration
                     </th>
-                    <th style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                       Actions
                     </th>
                   </tr>
@@ -404,32 +351,30 @@ export default function WorkflowExecutionsPage() {
                   {filtered.map((execution, idx) => (
                     <tr
                       key={execution.id}
+                      className="border-b border-wl-border-subtle transition-colors cursor-pointer"
                       style={{
-                        borderBottom: "1px solid var(--wl-border-subtle)",
                         background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
-                        transition: "background var(--wl-duration-fast)",
-                        cursor: "pointer",
                       }}
                       onClick={() => router.push(`/admin/workflows/${execution.id}`)}
                     >
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                      <td className="p-3 px-4 text-wl-text-primary font-medium">
                         {execution.workflowName}
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
+                      <td className="p-3 px-4 text-center">
                         <Badge variant={getStatusBadgeVariant(execution.status)} dot>
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                      <td className="p-3 px-4 text-center text-wl-text-primary font-medium">
                         {execution.completedSteps}/{execution.totalSteps}
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", color: "var(--wl-text-secondary)" }}>
+                      <td className="p-3 px-4 text-wl-text-secondary">
                         {formatDateTime(execution.startedAt)}
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center", color: "var(--wl-text-secondary)" }}>
+                      <td className="p-3 px-4 text-center text-wl-text-secondary">
                         {execution.duration}
                       </td>
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)", textAlign: "center" }}>
+                      <td className="p-3 px-4 text-center">
                         <Button variant="ghost" size="sm" onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/admin/workflows/${execution.id}`);
@@ -445,13 +390,13 @@ export default function WorkflowExecutionsPage() {
             </div>
           </Card>
         ) : (
-          <Card style={{ textAlign: "center", padding: "var(--wl-space-8)" }}>
-            <div className="text-wl-text-secondary" >
-              <Activity size={40} style={{ margin: "0 auto var(--wl-space-3)", opacity: 0.5 }} />
-              <h3 style={{ fontSize: "var(--wl-text-base)", fontWeight: 600, margin: "0 0 var(--wl-space-2) 0" }}>
+          <Card className="text-center p-8">
+            <div className="text-wl-text-secondary">
+              <Activity size={40} className="mx-auto mb-3 opacity-50" />
+              <h3 className="text-base font-semibold m-0 mb-2">
                 No executions found
               </h3>
-              <p style={{ fontSize: "var(--wl-text-sm)", margin: 0, color: "var(--wl-text-tertiary)" }}>
+              <p className="text-sm m-0 text-wl-text-tertiary">
                 {search ? "Try adjusting your search criteria" : "Start a new workflow to see executions here"}
               </p>
             </div>

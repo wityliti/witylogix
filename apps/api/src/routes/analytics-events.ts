@@ -120,21 +120,12 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const { from, to } = parseDateRange(query.from, query.to);
         const tenantId = request.tenantId as string;
 
-        // TODO: Inject dashboard provider from container
-        // const provider = fastify.diContainer.get("dashboardDataProvider");
-        // const dashboard = await provider.getDashboardSummary(tenantId, {
-        //   from,
-        //   to,
-        // });
-
-        const dashboard = {
-          id: `dashboard_${tenantId}_${Date.now()}`,
-          tenantId,
-          timeRange: { from, to },
-          widgets: [],
-          generatedAt: new Date().toISOString(),
-          generationTimeMs: 0,
-        };
+        // Inject dashboard provider from container
+        const provider = fastify.diContainer.get("dashboardDataProvider");
+        const dashboard = await provider.getDashboardSummary(tenantId, {
+          from,
+          to,
+        });
 
         reply.code(200).send(dashboard);
       } catch (err) {
@@ -175,18 +166,15 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const query = eventStreamQuerySchema.parse(request.query);
         const tenantId = request.tenantId as string;
 
-        // TODO: Inject event repository from container
-        // const repo = fastify.diContainer.get("analyticsEventRepository");
-        // const { events, totalCount } = await repo.findEvents({
-        //   tenantId,
-        //   eventType: query.eventType,
-        //   userId: query.userId,
-        //   limit: query.limit,
-        //   offset: query.offset,
-        // });
-
-        const events: any[] = [];
-        const totalCount = 0;
+        // Inject event repository from container
+        const repo = fastify.diContainer.get("analyticsEventRepository");
+        const { events, totalCount } = await repo.findEvents({
+          tenantId,
+          eventType: query.eventType,
+          userId: query.userId,
+          limit: query.limit,
+          offset: query.offset,
+        });
 
         reply.code(200).send({
           events,
@@ -255,33 +243,19 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
           }
         }
 
-        // TODO: Inject aggregator from container
-        // const aggregator = fastify.diContainer.get("analyticsAggregator");
-        // const result = await aggregator.aggregate({
-        //   id: metricId,
-        //   name: metricId,
-        //   eventTypes: [], // Map metric ID to event types
-        //   aggregations: ["count"],
-        //   timeRange: { from, to },
-        //   granularity: query.granularity,
-        //   groupBy,
-        //   filters,
-        //   tenantId,
-        // });
-
-        const result = {
-          metric: {
-            id: metricId,
-            name: metricId,
-            eventTypes: [],
-            aggregations: ["count"],
-            timeRange: { from, to },
-            granularity: query.granularity,
-          },
-          dataPoints: [],
-          eventCount: 0,
-          executionTimeMs: 0,
-        };
+        // Inject aggregator from container
+        const aggregator = fastify.diContainer.get("analyticsAggregator");
+        const result = await aggregator.aggregate({
+          id: metricId,
+          name: metricId,
+          eventTypes: [], // Map metric ID to event types
+          aggregations: ["count"],
+          timeRange: { from, to },
+          granularity: query.granularity,
+          groupBy,
+          filters,
+          tenantId,
+        });
 
         reply.code(200).send(result);
       } catch (err) {
@@ -324,20 +298,22 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const { from, to } = parseDateRange(query.from, query.to);
         const tenantId = request.tenantId as string;
 
-        // TODO: Inject aggregator from container
-        // const aggregator = fastify.diContainer.get("analyticsAggregator");
-        // const result = await aggregator.comparePeriods(metricDef, query.previousPeriodDays);
-
-        const result = {
-          metric: query.metric,
-          current: 0,
-          previous: 0,
-          change: 0,
-          percentChange: 0,
-          trend: "neutral" as const,
+        // Inject aggregator from container
+        const aggregator = fastify.diContainer.get("analyticsAggregator");
+        const metricDef = {
+          id: query.metric,
+          name: query.metric,
+          eventTypes: [],
+          aggregations: ["count"],
+          timeRange: { from, to },
+          tenantId,
         };
+        const result = await aggregator.comparePeriods(metricDef, query.previousPeriodDays);
 
-        reply.code(200).send(result);
+        reply.code(200).send({
+          metric: query.metric,
+          ...result,
+        });
       } catch (err) {
         if (err instanceof z.ZodError) {
           reply.code(400).send(errorResponse(err.message, 400));
@@ -373,14 +349,13 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const { from, to } = parseDateRange(query.from, query.to);
         const tenantId = request.tenantId as string;
 
-        // TODO: Implement export logic
-        // const aggregator = fastify.diContainer.get("analyticsAggregator");
-        // const data = await aggregator.export({
-        //   metric: query.metric,
-        //   timeRange: { from, to },
-        //   limit: query.limit,
-        //   tenantId,
-        // });
+        // Implement export logic via event repository
+        const repo = fastify.diContainer.get("analyticsEventRepository");
+        const events = await repo.findEventsForExport({
+          tenantId,
+          timeRange: { from, to },
+          limit: query.limit,
+        });
 
         const timestamp = new Date().toISOString().split("T")[0];
         const filename = `analytics_${query.metric}_${timestamp}.${query.format}`;
@@ -392,10 +367,35 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
 
         if (query.format === "csv") {
           reply.header("Content-Type", "text/csv");
-          reply.send("metric,timestamp,value\n");
+
+          // CSV headers
+          const headers = ["id", "type", "timestamp", "userId", "correlationId", "metadata", "statusCode", "durationMs", "errorMessage"];
+          let csv = headers.join(",") + "\n";
+
+          // CSV rows
+          for (const event of events) {
+            const row = [
+              event.id,
+              event.type,
+              event.timestamp,
+              event.userId || "",
+              event.correlationId || "",
+              JSON.stringify(event.metadata || {}),
+              event.statusCode || "",
+              event.durationMs || "",
+              event.errorMessage || "",
+            ];
+            csv += row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
+          }
+
+          reply.send(csv);
         } else {
           reply.header("Content-Type", "application/json");
-          reply.send({ data: [] });
+          reply.send({
+            data: events,
+            totalRows: events.length,
+            generatedAt: new Date().toISOString(),
+          });
         }
       } catch (err) {
         if (err instanceof z.ZodError) {

@@ -272,62 +272,28 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
   };
 
   return (
-    <div style={{ background: "var(--wl-bg-root)" }}>
+    <div className="bg-wl-bg-root">
       {/* Header */}
-      <div
-        style={{
-          padding: "24px",
-          borderBottom: "1px solid var(--wl-border)",
-          display: "flex",
-          gap: "16px",
-          alignItems: "center",
-        }}
-      >
+      <div className="px-6 py-6 border-b border-wl-border flex gap-4 items-center">
         <Link
           href="/admin"
-          style={{
-            color: "var(--wl-primary-500)",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
+          className="text-wl-primary-500 no-underline flex items-center gap-2 hover:opacity-80"
         >
-          <ArrowLeft  />
+          <ArrowLeft size={20} />
           Back to Shops
         </Link>
       </div>
 
       <div className="p-6">
         {/* Shop Header Card */}
-        <Card
-          style={{
-            background: "var(--wl-bg-surface)",
-            border: "1px solid var(--wl-border)",
-            marginBottom: "24px",
-          }}
-        >
+        <Card className="bg-wl-bg-surface border border-wl-border mb-6">
           <CardContent className="p-6">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "20px",
-              }}
-            >
+            <div className="flex justify-between items-start mb-5">
               <div>
-                <h1
-                  style={{
-                    fontSize: "28px",
-                    fontWeight: "700",
-                    color: "var(--wl-text-primary)",
-                    margin: "0 0 8px 0",
-                  }}
-                >
+                <h1 className="text-2xl font-bold text-wl-text-primary mb-2">
                   {mockShopDetail.name}
                 </h1>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "14px" }}>
+                <p className="text-wl-text-secondary text-sm">
                   {mockShopDetail.domain}
                 </p>
               </div>
@@ -354,44 +320,36 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             </div>
 
             {/* Owner Info */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "16px",
-                paddingTop: "16px",
-                borderTop: "1px solid var(--wl-border)",
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border">
               <div>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p className="text-wl-text-secondary mb-1 text-xs">
                   Owner Name
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p className="text-wl-text-primary text-sm font-medium">
                   {mockShopDetail.owner.name}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p className="text-wl-text-secondary mb-1 text-xs">
                   Email
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p className="text-wl-text-primary text-sm font-medium">
                   {mockShopDetail.owner.email}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p className="text-wl-text-secondary mb-1 text-xs">
                   Phone
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p className="text-wl-text-primary text-sm font-medium">
                   {mockShopDetail.owner.phone}
                 </p>
               </div>
               <div>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                <p className="text-wl-text-secondary mb-1 text-xs">
                   Member Since
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                <p className="text-wl-text-primary text-sm font-medium">
                   {new Date(mockShopDetail.owner.joinDate).toLocaleDateString()}
                 </p>
               </div>
@@ -400,102 +358,81 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         </Card>
 
         {/* Usage Statistics */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            marginBottom: "24px",
-          }}
-        >
-          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-wl-bg-surface border border-wl-border">
             <CardContent className="p-4">
-              <div className="flex justify-between items-start" >
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
                     Total Orders
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {mockShopDetail.usage.orders.toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart style={{ width: "24px", height: "24px", color: "var(--wl-primary-500)" }} />
+                <ShoppingCart size={24} className="text-wl-primary-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+          <Card className="bg-wl-bg-surface border border-wl-border">
             <CardContent className="p-4">
-              <div className="flex justify-between items-start" >
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
                     Shipments
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {mockShopDetail.usage.shipments.toLocaleString()}
                   </p>
                 </div>
-                <Truck style={{ width: "24px", height: "24px", color: "#8b5cf6" }} />
+                <Truck size={24} className="text-purple-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+          <Card className="bg-wl-bg-surface border border-wl-border">
             <CardContent className="p-4">
-              <div className="flex justify-between items-start" >
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
                     Drivers
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {mockShopDetail.usage.drivers}
                   </p>
                 </div>
-                <Users style={{ width: "24px", height: "24px", color: "#3b82f6" }} />
+                <Users size={24} className="text-blue-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+          <Card className="bg-wl-bg-surface border border-wl-border">
             <CardContent className="p-4">
-              <div className="flex justify-between items-start" >
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-2 text-xs">
                     API Uptime
                   </p>
-                  <p style={{ fontSize: "24px", fontWeight: "700", color: "var(--wl-text-primary)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {mockShopDetail.uptime}%
                   </p>
                 </div>
-                <Activity style={{ width: "24px", height: "24px", color: "var(--wl-success-400)" }} />
+                <Activity size={24} className="text-wl-success-400" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* API Usage */}
-        <Card
-          style={{
-            background: "var(--wl-bg-surface)",
-            border: "1px solid var(--wl-border)",
-            marginBottom: "24px",
-          }}
-        >
+        <Card className="bg-wl-bg-surface border border-wl-border mb-6">
           <CardContent className="p-5">
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-4">
               API Usage
             </h3>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div className="flex-1" >
-                <div
-                  style={{
-                    height: "8px",
-                    background: "var(--wl-bg-root)",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                    marginBottom: "8px",
-                  }}
-                >
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="h-2 bg-wl-bg-root rounded overflow-hidden mb-2">
                   <div
                     style={{
                       height: "100%",
@@ -505,13 +442,13 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                     }}
                   />
                 </div>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "12px" }}>
+                <p className="text-wl-text-secondary text-xs">
                   {mockShopDetail.usage.apiCalls.toLocaleString()} /{" "}
                   {mockShopDetail.usage.apiCallsLimit.toLocaleString()} calls
                 </p>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
+              <div className="text-right">
+                <p className="text-wl-text-primary text-sm font-semibold">
                   {((mockShopDetail.usage.apiCalls / mockShopDetail.usage.apiCallsLimit) * 100).toFixed(1)}%
                 </p>
               </div>
@@ -520,53 +457,40 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         </Card>
 
         {/* Billing Section */}
-        <Card
-          style={{
-            background: "var(--wl-bg-surface)",
-            border: "1px solid var(--wl-border)",
-            marginBottom: "24px",
-          }}
-        >
+        <Card className="bg-wl-bg-surface border border-wl-border mb-6">
           <CardContent className="p-5">
-            <div style={{ marginBottom: "20px" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
+            <div className="mb-5">
+              <h3 className="text-base font-semibold text-wl-text-primary mb-4">
                 Current Billing
               </h3>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "16px",
-                  marginBottom: "20px",
-                }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-1 text-xs">
                     Current Plan
                   </p>
-                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p className="text-wl-text-primary text-sm font-medium">
                     {mockShopDetail.billing.currentPlan}
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-1 text-xs">
                     Monthly Fee
                   </p>
-                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p className="text-wl-text-primary text-sm font-medium">
                     ${mockShopDetail.billing.monthlyFee}/month
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-1 text-xs">
                     Next Billing Date
                   </p>
-                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "500" }}>
+                  <p className="text-wl-text-primary text-sm font-medium">
                     {new Date(mockShopDetail.billing.nextBillingDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "12px" }}>
+                  <p className="text-wl-text-secondary mb-1 text-xs">
                     Status
                   </p>
                   <Badge
@@ -583,32 +507,26 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             </div>
 
             {/* Billing History */}
-            <div style={{ borderTop: "1px solid var(--wl-border)", paddingTop: "20px" }}>
-              <h4 style={{ fontSize: "14px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 12px 0" }}>
+            <div className="border-t border-wl-border pt-5">
+              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                 Billing History
               </h4>
-              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              <div className="max-h-80 overflow-y-auto">
                 {mockBillingHistory.map((record, index) => (
                   <div
                     key={record.id}
-                    style={{
-                      padding: "12px 0",
-                      borderBottom: index < mockBillingHistory.length - 1 ? "1px solid var(--wl-border)" : "none",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
+                    className={cn("py-3 flex justify-between items-center", index < mockBillingHistory.length - 1 && "border-b border-wl-border")}
                   >
                     <div>
-                      <p style={{ color: "var(--wl-text-primary)", margin: "0 0 4px 0", fontSize: "14px" }}>
+                      <p className="text-wl-text-primary mb-1 text-sm">
                         {record.description}
                       </p>
-                      <p style={{ color: "var(--wl-text-secondary)", margin: "0", fontSize: "12px" }}>
+                      <p className="text-wl-text-secondary text-xs">
                         {new Date(record.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px", fontWeight: "600" }}>
+                    <div className="flex items-center gap-3">
+                      <p className="text-wl-text-primary text-sm font-semibold">
                         ${record.amount}
                       </p>
                       <Badge
@@ -630,93 +548,35 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         </Card>
 
         {/* Admin Actions */}
-        <Card
-          style={{
-            background: "var(--wl-bg-surface)",
-            border: "1px solid var(--wl-border)",
-            marginBottom: "24px",
-          }}
-        >
+        <Card className="bg-wl-bg-surface border border-wl-border mb-6">
           <CardContent className="p-5">
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-4">
               Admin Actions
             </h3>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              <Button
-                style={{
-                  background: "var(--wl-primary-500)",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <Crown  />
+            <div className="flex gap-3 flex-wrap">
+              <Button className="bg-wl-primary-500 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90">
+                <Crown size={16} />
                 Upgrade Plan
               </Button>
 
               <button
                 onClick={() => setShowSuspendConfirm(!showSuspendConfirm)}
-                style={{
-                  background: "var(--wl-warning-400)",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
+                className="bg-wl-warning-400 text-white border-none px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-90"
               >
-                <Lock  />
+                <Lock size={16} />
                 Suspend Shop
               </button>
 
-              <Button
-                style={{
-                  background: "rgba(108, 99, 255, 0.1)",
-                  color: "var(--wl-primary-500)",
-                  border: "1px solid var(--wl-primary)",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <Zap  />
+              <Button className="bg-wl-primary bg-opacity-10 text-wl-primary-500 border border-wl-primary px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80">
+                <Zap size={16} />
                 Impersonate
               </Button>
 
               <button
                 onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                style={{
-                  background: "rgba(239, 68, 68, 0.1)",
-                  color: "var(--wl-danger-400)",
-                  border: "1px solid var(--wl-danger)",
-                  padding: "10px 16px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
+                className="bg-red-500 bg-opacity-10 text-wl-danger-400 border border-wl-danger px-4 py-2 rounded text-sm font-medium cursor-pointer flex items-center gap-2 hover:opacity-80"
               >
-                <Trash2  />
+                <Trash2 size={16} />
                 Delete Account
               </button>
             </div>
@@ -724,37 +584,19 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
             {/* Confirmation Dialogs */}
             {showSuspendConfirm && (
               <div className="mt-4 p-3 bg-wl-bg-root rounded">
-                <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "12px" }}>
-                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-warning-400)", flexShrink: 0 }} />
-                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px" }}>
+                <div className="flex gap-2 items-start mb-3">
+                  <AlertTriangle size={16} className="text-wl-warning-400 flex-shrink-0" />
+                  <p className="text-wl-text-primary m-0 text-sm">
                     Suspending this shop will disable all access and API calls. This action can be reversed.
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    style={{
-                      background: "var(--wl-warning-400)",
-                      color: "white",
-                      border: "none",
-                      padding: "8px 16px",
-                      borderRadius: "4px",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
-                  >
+                  <button className="bg-wl-warning-400 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
                     Confirm Suspension
                   </button>
                   <button
                     onClick={() => setShowSuspendConfirm(false)}
-                    style={{
-                      background: "var(--wl-border-subtle)",
-                      color: "var(--wl-text-primary)",
-                      border: "none",
-                      padding: "8px 16px",
-                      borderRadius: "4px",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
+                    className="bg-wl-border-subtle text-wl-text-primary border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
                   </button>
@@ -764,37 +606,19 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
 
             {showDeleteConfirm && (
               <div className="mt-4 p-3 bg-wl-bg-root rounded">
-                <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "12px" }}>
-                  <AlertTriangle style={{ width: "16px", height: "16px", color: "var(--wl-danger-400)", flexShrink: 0 }} />
-                  <p style={{ color: "var(--wl-text-primary)", margin: "0", fontSize: "14px" }}>
+                <div className="flex gap-2 items-start mb-3">
+                  <AlertTriangle size={16} className="text-wl-danger-400 flex-shrink-0" />
+                  <p className="text-wl-text-primary m-0 text-sm">
                     Deleting this account is permanent and cannot be undone. All data will be lost.
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    style={{
-                      background: "var(--wl-danger-400)",
-                      color: "white",
-                      border: "none",
-                      padding: "8px 16px",
-                      borderRadius: "4px",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
-                  >
+                  <button className="bg-wl-danger-400 text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90">
                     Confirm Delete
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    style={{
-                      background: "var(--wl-border-subtle)",
-                      color: "var(--wl-text-primary)",
-                      border: "none",
-                      padding: "8px 16px",
-                      borderRadius: "4px",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
+                    className="bg-wl-border-subtle text-wl-text-primary border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
                   </button>
@@ -805,21 +629,16 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
         </Card>
 
         {/* Activity Log */}
-        <Card style={{ background: "var(--wl-bg-surface)", border: "1px solid var(--wl-border)" }}>
+        <Card className="bg-wl-bg-surface border border-wl-border">
           <CardContent className="p-5">
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text-primary)", margin: "0 0 16px 0" }}>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-4">
               Activity Log
             </h3>
-            <div style={{ maxHeight: "500px", overflowY: "auto" }}>
+            <div className="max-h-96 overflow-y-auto">
               {mockActivityLog.map((log, index) => (
                 <div
                   key={log.id}
-                  style={{
-                    padding: "12px 0",
-                    borderBottom: index < mockActivityLog.length - 1 ? "1px solid var(--wl-border)" : "none",
-                    display: "flex",
-                    gap: "12px",
-                  }}
+                  className={cn("py-3 flex gap-3", index < mockActivityLog.length - 1 && "border-b border-wl-border")}
                 >
                   <div
                     style={{
@@ -831,16 +650,16 @@ export default function AdminShopDetail({ params }: { params: { id: string } }) 
                       flexShrink: 0,
                     }}
                   />
-                  <div style={{ flex: 1, minWidth: "0" }}>
-                    <p style={{ color: "var(--wl-text-primary)", margin: "0 0 4px 0", fontSize: "14px" }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-wl-text-primary mb-1 text-sm">
                       {log.action}
                     </p>
-                    <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 4px 0", fontSize: "13px" }}>
+                    <p className="text-wl-text-secondary mb-1 text-xs">
                       {log.details}
                     </p>
                     <div className="flex gap-3 items-center">
-                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "12px" }}>By: {log.user}</span>
-                      <span style={{ color: "var(--wl-text-secondary)", fontSize: "12px" }}>{log.timestamp}</span>
+                      <span className="text-wl-text-secondary text-xs">By: {log.user}</span>
+                      <span className="text-wl-text-secondary text-xs">{log.timestamp}</span>
                     </div>
                   </div>
                 </div>

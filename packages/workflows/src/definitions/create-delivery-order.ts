@@ -380,8 +380,8 @@ const createOrderRecordStep: WorkflowStep = {
       const order = await (ctx.tenantDb as any).order.create({
         data: {
           shopId: ctx.shopId,
-          shopifyOrderId: input.validatedInput.shopifyOrderId,
-          shopifyOrderNumber: input.validatedInput.shopifyOrderNumber,
+          externalOrderId: input.validatedInput.externalOrderId,
+          externalOrderNumber: input.validatedInput.externalOrderNumber,
           status: "PENDING",
 
           // Customer snapshot
@@ -883,7 +883,7 @@ const emitOrderCreatedEventStep: WorkflowStep = {
       const event: OrderCreatedEvent = {
         orderId: input.orderId,
         shopId: ctx.shopId,
-        customerId: input.validatedInput.shopifyOrderId,
+        customerId: input.validatedInput.externalOrderId,
         customerEmail: input.validatedInput.customerEmail,
         customerName: input.validatedInput.customerName,
         totalPrice: Number(input.validatedInput.totalPrice),
@@ -1109,7 +1109,7 @@ export async function executeCreateDeliveryOrderWorkflow(
       orderCreatedEvent: {
         orderId: accumulator.orderRecord!.orderId,
         shopId,
-        customerId: input.shopifyOrderId,
+        customerId: input.externalOrderId,
         customerEmail: input.customerEmail,
         customerName: input.customerName,
         totalPrice: Number(input.totalPrice),

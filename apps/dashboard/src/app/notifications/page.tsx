@@ -10,6 +10,7 @@ import { formatRelativeTime, cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    NOTIFICATION TEMPLATES PAGE — Template management + preview
+   MIGRATION STATUS: Inline styles → Tailwind CSS (COMPLETE)
    ═══════════════════════════════════════════════════════════ */
 
 type NotificationChannel = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH" | "WEBHOOK";
@@ -374,7 +375,7 @@ export default function NotificationsPage() {
     return parts.map((part, idx) => {
       if (part.match(/({{[^}]+}})/)) {
         return (
-          <span key={idx} style={{ color: "var(--wl-primary-400)" }}>
+          <span key={idx} className="text-wl-primary-400">
             {part}
           </span>
         );
@@ -395,16 +396,9 @@ export default function NotificationsPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className="p-6">
         {/* KPI Stats Row */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
           <StatCard label="Total Templates" value={stats.total} accentColor="var(--wl-primary-500)" index={0} />
           <StatCard label="Active Templates" value={stats.active} accentColor="var(--wl-success-400)" index={1} />
           <StatCard label="Channels Used" value={stats.channels} accentColor="var(--wl-info-400)" index={2} />
@@ -412,58 +406,40 @@ export default function NotificationsPage() {
         </div>
 
         {/* Channel Filter Pills */}
-        <div style={{ display: "flex", gap: 4, marginBottom: "var(--wl-space-5)", flexWrap: "wrap" }}>
+        <div className="flex gap-1 mb-5 flex-wrap">
           {(["ALL", "EMAIL", "SMS", "WHATSAPP", "PUSH", "WEBHOOK"] as const).map((c) => {
             const count = c === "ALL" ? TEMPLATES.length : TEMPLATES.filter((t) => t.channel === c).length;
             return (
               <button
                 key={c}
                 onClick={() => setChannelFilter(c)}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-full)",
-                  border: "1px solid",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                  background: channelFilter === c ? "var(--wl-primary-500)" : "transparent",
-                  color: channelFilter === c ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  borderColor: channelFilter === c ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                }}
+                className={cn(
+                  "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
+                  channelFilter === c
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                )}
               >
-                {c === "ALL" ? "All Channels" : c} <span style={{ marginLeft: 4, opacity: 0.7 }}>({count})</span>
+                {c === "ALL" ? "All Channels" : c} <span className="ml-1 opacity-70">({count})</span>
               </button>
             );
           })}
         </div>
 
         {/* Templates Grid + Detail Panel */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: selectedTemplate ? "1fr 480px" : "1fr",
-            gap: "var(--wl-space-5)",
-          }}
-        >
+        <div className={cn(
+          "grid gap-5",
+          selectedTemplate ? "grid-cols-[1fr_480px]" : "grid-cols-1"
+        )}>
           {/* Templates Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gap: "var(--wl-space-4)",
-            }}
-          >
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
             {filtered.map((template, i) => (
               <Card
                 key={template.id}
                 hover
                 onClick={() => setSelectedTemplate(selectedTemplate?.id === template.id ? null : template)}
+                className="cursor-pointer relative overflow-hidden"
                 style={{
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
                   opacity: 0,
                   borderColor: selectedTemplate?.id === template.id ? "var(--wl-primary-500)" : undefined,
@@ -471,56 +447,26 @@ export default function NotificationsPage() {
               >
                 {/* Active indicator line */}
                 <div
+                  className="absolute top-0 left-0 right-0 h-0.5"
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
                     background: template.isActive ? "var(--wl-success-400)" : "var(--wl-border-subtle)",
                   }}
                 />
 
                 {/* Template Name and Status */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
-                        color: "var(--wl-text-primary)",
-                        marginBottom: "var(--wl-space-1)",
-                      }}
-                    >
+                    <div className="text-base font-bold text-wl-text-primary mb-1">
                       {template.name}
                     </div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
-                        fontFamily: "var(--wl-font-mono)",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary font-mono">
                       {template.slug}
                     </div>
                   </div>
                   <div
+                    className="flex items-center justify-center w-6 h-6 rounded-full text-xs"
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
                       background: template.isActive ? "var(--wl-success-bg)" : "var(--wl-border-subtle)",
-                      fontSize: "12px",
                       color: template.isActive ? "var(--wl-success-400)" : "var(--wl-text-tertiary)",
                     }}
                   >
@@ -529,98 +475,46 @@ export default function NotificationsPage() {
                 </div>
 
                 {/* Channel Badge and Event Type */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-2)",
-                    marginBottom: "var(--wl-space-3)",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div className="flex gap-2 mb-3 items-center flex-wrap">
                   <Badge variant={channelVariant(template.channel)}>
-                    <span style={{ marginRight: 4 }}>{channelIcon[template.channel]}</span>
+                    <span className="mr-1">{channelIcon[template.channel]}</span>
                     {template.channel}
                   </Badge>
-                  <span
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      padding: "2px 8px",
-                      borderRadius: "var(--wl-radius-sm)",
-                      background: "var(--wl-info-bg)",
-                      color: "var(--wl-info-400)",
-                      fontFamily: "var(--wl-font-mono)",
-                    }}
-                  >
+                  <span className="text-xs px-2 py-0.5 rounded bg-wl-info-bg text-wl-info-400 font-mono">
                     {template.eventType}
                   </span>
                 </div>
 
                 {/* Version */}
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-tertiary)",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
+                <div className="text-xs text-wl-text-tertiary mb-3">
                   Version {template.version}
                 </div>
 
                 {/* Body Preview */}
-                <div
-                  style={{
-                    background: "var(--wl-bg-overlay)",
-                    padding: "var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    marginBottom: "var(--wl-space-3)",
-                    borderLeft: "2px solid var(--wl-primary-400)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontFamily: "var(--wl-font-mono)",
-                      color: "var(--wl-text-secondary)",
-                      lineHeight: 1.5,
-                      maxHeight: 80,
-                      overflow: "hidden",
-                    }}
-                  >
+                <div className="bg-wl-bg-overlay p-3 rounded-md mb-3 border-l-2 border-wl-primary-400">
+                  <div className="text-xs font-mono text-wl-text-secondary line-clamp-5">
                     {highlightVariables(truncateText(template.bodyTemplate, 100))}
                   </div>
                 </div>
 
                 {/* Last Updated */}
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-tertiary)",
-                    marginBottom: "var(--wl-space-4)",
-                  }}
-                >
+                <div className="text-xs text-wl-text-tertiary mb-4">
                   Updated {formatRelativeTime(template.lastUpdated)}
                 </div>
 
                 {/* Action Buttons */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-2)",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Button variant="secondary" size="sm" style={{ flex: "1 1 auto" }}>
+                <div className="flex gap-2 flex-wrap">
+                  <Button variant="secondary" size="sm" className="flex-1">
                     Edit
                   </Button>
-                  <Button variant="secondary" size="sm" style={{ flex: "1 1 auto" }}>
+                  <Button variant="secondary" size="sm" className="flex-1">
                     Preview
                   </Button>
-                  <Button variant="ghost" size="sm" style={{ flex: "1 1 auto" }}>
+                  <Button variant="ghost" size="sm" className="flex-1">
                     Duplicate
                   </Button>
                   {template.isActive && (
-                    <Button variant="ghost" size="sm" style={{ flex: "1 1 auto" }}>
+                    <Button variant="ghost" size="sm" className="flex-1">
                       Deactivate
                     </Button>
                   )}
@@ -631,67 +525,27 @@ export default function NotificationsPage() {
 
           {/* Template Detail Panel */}
           {selectedTemplate && (
-            <Card
-              className="wl-animate-in"
-              style={{
-                position: "sticky",
-                top: "calc(var(--wl-header-height) + var(--wl-space-6))",
-                maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
-                overflowY: "auto",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "var(--wl-space-4)",
-                }}
-              >
+            <Card className="sticky top-24 max-h-[calc(100vh-var(--wl-header-height)-var(--wl-space-12))] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
                 <div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-lg)",
-                      fontWeight: 700,
-                      color: "var(--wl-text-primary)",
-                    }}
-                  >
+                  <div className="text-lg font-bold text-wl-text-primary">
                     {selectedTemplate.name}
                   </div>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      color: "var(--wl-text-tertiary)",
-                      marginTop: 2,
-                    }}
-                  >
+                  <div className="text-xs text-wl-text-tertiary mt-0.5">
                     {selectedTemplate.slug}
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedTemplate(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--wl-text-tertiary)",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontFamily: "var(--wl-font-sans)",
-                  }}
+                  className="bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans"
                 >
                   ✕
                 </button>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "var(--wl-space-2)",
-                  marginBottom: "var(--wl-space-4)",
-                }}
-              >
+              <div className="flex gap-2 mb-4">
                 <Badge variant={channelVariant(selectedTemplate.channel)}>
-                  <span style={{ marginRight: 4 }}>{channelIcon[selectedTemplate.channel]}</span>
+                  <span className="mr-1">{channelIcon[selectedTemplate.channel]}</span>
                   {selectedTemplate.channel}
                 </Badge>
                 <Badge variant="info">{selectedTemplate.eventType}</Badge>
@@ -699,154 +553,58 @@ export default function NotificationsPage() {
                 {!selectedTemplate.isActive && <Badge variant="default">Inactive</Badge>}
               </div>
 
-              <div style={{ height: 1, background: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-4)" }} />
+              <div className="h-px bg-wl-border-subtle mb-4" />
 
               {/* Template Body (Code Editor Look) */}
-              <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    color: "var(--wl-text-tertiary)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wider">
                   Template Body
                 </div>
-                <div
-                  style={{
-                    background: "var(--wl-bg-overlay)",
-                    padding: "var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border-subtle)",
-                    fontFamily: "var(--wl-font-mono)",
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-secondary)",
-                    lineHeight: 1.6,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    maxHeight: 200,
-                    overflowY: "auto",
-                  }}
-                >
+                <div className="bg-wl-bg-overlay p-3 rounded-md border border-wl-border-subtle font-mono text-xs text-wl-text-secondary line-height-6 max-h-48 overflow-y-auto whitespace-pre-wrap break-words">
                   {highlightVariables(selectedTemplate.bodyTemplate)}
                 </div>
               </div>
 
               {/* Subject if exists */}
               {selectedTemplate.subject && (
-                <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                  <div
-                    style={{
-                      fontSize: "var(--wl-text-xs)",
-                      fontWeight: 600,
-                      color: "var(--wl-text-tertiary)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "var(--wl-space-2)",
-                    }}
-                  >
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wider">
                     Subject
                   </div>
-                  <div
-                    style={{
-                      background: "var(--wl-bg-surface)",
-                      padding: "var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      fontSize: "var(--wl-text-sm)",
-                      color: "var(--wl-text-secondary)",
-                      fontFamily: "var(--wl-font-mono)",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                    }}
-                  >
+                  <div className="bg-wl-bg-surface p-3 rounded-md text-sm text-wl-text-secondary font-mono whitespace-pre-wrap break-words">
                     {highlightVariables(selectedTemplate.subject)}
                   </div>
                 </div>
               )}
 
-              <div style={{ height: 1, background: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-4)" }} />
+              <div className="h-px bg-wl-border-subtle mb-4" />
 
               {/* Variables */}
-              <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                <div
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    color: "var(--wl-text-tertiary)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                    marginBottom: "var(--wl-space-3)",
-                  }}
-                >
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-3 tracking-wider">
                   Variables ({selectedTemplate.variables.length})
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+                <div className="flex flex-col gap-2">
                   {selectedTemplate.variables.map((v) => (
                     <div
                       key={v.name}
-                      style={{
-                        padding: "var(--wl-space-2) var(--wl-space-3)",
-                        background: "var(--wl-bg-surface)",
-                        borderRadius: "var(--wl-radius-md)",
-                        border: "1px solid var(--wl-border-subtle)",
-                      }}
+                      className="p-2 bg-wl-bg-surface rounded-md border border-wl-border-subtle"
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          marginBottom: 4,
-                        }}
-                      >
-                        <code
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 600,
-                            color: "var(--wl-primary-400)",
-                            fontFamily: "var(--wl-font-mono)",
-                          }}
-                        >
+                      <div className="flex justify-between items-start mb-1">
+                        <code className="text-xs font-semibold text-wl-primary-400 font-mono">
                           {`{{${v.name}}}`}
                         </code>
                         {v.required ? (
-                          <span
-                            style={{
-                              fontSize: "var(--wl-text-xs)",
-                              padding: "2px 6px",
-                              borderRadius: "var(--wl-radius-sm)",
-                              background: "var(--wl-danger-bg)",
-                              color: "var(--wl-danger-400)",
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-wl-danger-bg text-wl-danger-400 font-semibold">
                             Required
                           </span>
                         ) : (
-                          <span
-                            style={{
-                              fontSize: "var(--wl-text-xs)",
-                              padding: "2px 6px",
-                              borderRadius: "var(--wl-radius-sm)",
-                              background: "var(--wl-info-bg)",
-                              color: "var(--wl-info-400)",
-                              fontWeight: 500,
-                            }}
-                          >
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-wl-info-bg text-wl-info-400 font-medium">
                             Optional
                           </span>
                         )}
                       </div>
-                      <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-tertiary)",
-                          lineHeight: 1.4,
-                        }}
-                      >
+                      <div className="text-xs text-wl-text-tertiary line-clamp-2">
                         {v.description}
                       </div>
                     </div>
@@ -854,85 +612,50 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              <div style={{ height: 1, background: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-4)" }} />
+              <div className="h-px bg-wl-border-subtle mb-4" />
 
               {/* Version Info */}
-              <div style={{ marginBottom: "var(--wl-space-4)" }}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "var(--wl-space-3)",
-                  }}
-                >
+              <div className="mb-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary">
                       Version
                     </div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-base)",
-                        fontWeight: 700,
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-primary)",
-                      }}
-                    >
+                    <div className="text-base font-bold font-mono text-wl-text-primary">
                       v{selectedTemplate.version}
                     </div>
                   </div>
                   <div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-xs)",
-                        color: "var(--wl-text-tertiary)",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary">
                       Last Updated
                     </div>
-                    <div
-                      style={{
-                        fontSize: "var(--wl-text-sm)",
-                        fontWeight: 600,
-                        color: "var(--wl-text-secondary)",
-                      }}
-                    >
+                    <div className="text-sm font-semibold text-wl-text-secondary">
                       {formatRelativeTime(selectedTemplate.lastUpdated)}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ height: 1, background: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-4)" }} />
+              <div className="h-px bg-wl-border-subtle mb-4" />
 
               {/* Action Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "var(--wl-space-2)",
-                }}
-              >
-                <Button variant="primary" size="sm" style={{ width: "100%" }}>
+              <div className="flex flex-col gap-2">
+                <Button variant="primary" size="sm" className="w-full">
                   Edit Template
                 </Button>
-                <Button variant="secondary" size="sm" style={{ width: "100%" }}>
+                <Button variant="secondary" size="sm" className="w-full">
                   Preview
                 </Button>
-                <Button variant="secondary" size="sm" style={{ width: "100%" }}>
+                <Button variant="secondary" size="sm" className="w-full">
                   Duplicate
                 </Button>
                 {selectedTemplate.isActive && (
-                  <Button variant="ghost" size="sm" style={{ width: "100%" }}>
+                  <Button variant="ghost" size="sm" className="w-full">
                     Deactivate
                   </Button>
                 )}
                 {!selectedTemplate.isActive && (
-                  <Button variant="ghost" size="sm" style={{ width: "100%" }}>
+                  <Button variant="ghost" size="sm" className="w-full">
                     Activate
                   </Button>
                 )}

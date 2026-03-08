@@ -8,8 +8,8 @@ import type { WorkflowStep, StepResult, WorkflowContext } from "../types.js";
 
 export interface CreateOrderRecordInput {
   shopId: string;
-  shopifyOrderId: string;
-  shopifyOrderNumber?: string;
+  externalOrderId: string;
+  externalOrderNumber?: string;
   customerId: string;
   customerName?: string;
   customerEmail?: string;
@@ -34,7 +34,7 @@ export interface CreateOrderRecordInput {
 
 export interface CreateOrderRecordOutput {
   orderId: string;
-  shopifyOrderId: string;
+  externalOrderId: string;
   status: string;
   createdAt: Date;
   trackingToken: string;
@@ -53,7 +53,7 @@ export const createOrderRecordStep: WorkflowStep<
   ): Promise<StepResult<CreateOrderRecordOutput>> {
     const logger = context.logger;
     logger?.info("Creating order record", {
-      shopifyOrderId: input.shopifyOrderId,
+      externalOrderId: input.externalOrderId,
       shopId: input.shopId,
     });
 
@@ -63,9 +63,9 @@ export const createOrderRecordStep: WorkflowStep<
       // Check for duplicate
       const existingOrder = await prisma.order.findUnique({
         where: {
-          shopId_shopifyOrderId: {
+          shopId_externalOrderId: {
             shopId: input.shopId,
-            shopifyOrderId: input.shopifyOrderId,
+            externalOrderId: input.externalOrderId,
           },
         },
       });
@@ -73,7 +73,7 @@ export const createOrderRecordStep: WorkflowStep<
       if (existingOrder) {
         logger?.warn("Order already exists", {
           orderId: existingOrder.id,
-          shopifyOrderId: input.shopifyOrderId,
+          externalOrderId: input.externalOrderId,
         });
         return {
           success: false,
@@ -89,8 +89,8 @@ export const createOrderRecordStep: WorkflowStep<
       const order = await prisma.order.create({
         data: {
           shopId: input.shopId,
-          shopifyOrderId: input.shopifyOrderId,
-          shopifyOrderNumber: input.shopifyOrderNumber,
+          externalOrderId: input.externalOrderId,
+          externalOrderNumber: input.externalOrderNumber,
           status: "PENDING",
           customerName: input.customerName,
           customerEmail: input.customerEmail,
@@ -131,7 +131,7 @@ export const createOrderRecordStep: WorkflowStep<
         success: true,
         data: {
           orderId: order.id,
-          shopifyOrderId: order.shopifyOrderId,
+          externalOrderId: order.externalOrderId,
           status: order.status,
           createdAt: order.createdAt,
           trackingToken,
@@ -154,7 +154,7 @@ export const createOrderRecordStep: WorkflowStep<
   ): Promise<void> {
     const logger = context.logger;
     logger?.info("Compensating order creation", {
-      shopifyOrderId: input.shopifyOrderId,
+      externalOrderId: input.externalOrderId,
     });
 
     try {
@@ -163,9 +163,9 @@ export const createOrderRecordStep: WorkflowStep<
       // Find and soft-delete the order
       const order = await prisma.order.findUnique({
         where: {
-          shopId_shopifyOrderId: {
+          shopId_externalOrderId: {
             shopId: input.shopId,
-            shopifyOrderId: input.shopifyOrderId,
+            externalOrderId: input.externalOrderId,
           },
         },
       });

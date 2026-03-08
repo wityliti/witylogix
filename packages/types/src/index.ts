@@ -3,6 +3,22 @@
  * JIT package: consuming apps transpile directly from src/
  */
 
+// ─── Platform Abstraction Types ──────────────────────────────
+// See ADR-014: Platform Source Abstraction
+
+export {
+  PlatformSource,
+  isPlatformSource,
+  getAllPlatforms,
+  getPlatformName,
+  assertPlatform,
+  getPlatformMetadata,
+  type ExternalReference,
+  type PlatformMetadata,
+  type PlatformDiscriminatedReference,
+  type PlatformWebhookConfig,
+} from "./platform";
+
 // ─── Shopify Types ──────────────────────────────────────────
 
 export interface ShopifyRateRequest {

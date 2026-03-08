@@ -186,40 +186,14 @@ export default function CalendarPage() {
   };
 
   return (
-    <div
-      style={{
-        className="min-h-screen bg-wl-bg-root"
-        className="text-wl-text-primary",
-        paddingBottom: 40,
-      }}
-    >
+    <div className="min-h-screen bg-wl-bg-root text-wl-text-primary pb-10">
       {/* Header */}
       <Header title="Calendar & Availability" />
 
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "0 auto",
-          padding: "24px 24px",
-        }}
-      >
+      <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Top action bar */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 32,
-          }}
-        >
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 600,
-              margin: 0,
-              className="text-wl-text-primary",
-            }}
-          >
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-semibold m-0 text-wl-text-primary">
             Calendar & Availability
           </h1>
           <Button variant="primary" size="md">
@@ -228,14 +202,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Stats Row */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-            gap: 16,
-            marginBottom: 32,
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
           <StatCard
             label="Active Rules"
             value={activeRules.toString()}
@@ -266,59 +233,26 @@ export default function CalendarPage() {
           />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: selectedDay ? "1fr 380px" : "1fr",
-            gap: 24,
-          }}
-        >
+        <div className={cn(
+          "grid gap-6",
+          selectedDay ? "grid-cols-[1fr_380px]" : "grid-cols-1"
+        )}>
           {/* Main Content */}
           <div>
             {/* Calendar Grid */}
-            <Card
-              style={{
-                padding: 24,
-                marginBottom: 24,
-              }}
-            >
-              <div
-                style={{
-                  marginBottom: 24,
-                }}
-              >
-                <h2
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 600,
-                    margin: "0 0 16px 0",
-                    className="text-wl-text-primary",
-                  }}
-                >
+            <Card className="p-6 mb-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold m-0 mb-4 text-wl-text-primary">
                   March 2026
                 </h2>
 
                 {/* Day headers */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(7, 1fr)",
-                    gap: 1,
-                    marginBottom: 12,
-                  }}
-                >
+                <div className="grid grid-cols-7 gap-px mb-3">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                       <div
                         key={day}
-                        style={{
-                          textAlign: "center",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          className="text-wl-text-secondary",
-                          padding: 8,
-                          textTransform: "uppercase",
-                        }}
+                        className="text-center text-xs font-semibold text-wl-text-secondary p-2 uppercase"
                       >
                         {day}
                       </div>
@@ -328,13 +262,7 @@ export default function CalendarPage() {
 
                 {/* Calendar grid */}
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(7, 1fr)",
-                    gap: 1,
-                    backgroundColor: "var(--wl-border)",
-                    padding: 1,
-                  }}
+                  className="grid grid-cols-7 gap-px bg-wl-border p-px"
                 >
                   {calendarDays.map((day, idx) => (
                     <div
@@ -343,60 +271,47 @@ export default function CalendarPage() {
                       style={{
                         aspectRatio: "1",
                         backgroundColor: getDayBackgroundColor(day),
-                        border:
-                          day && day.date.getTime() === today.getTime()
-                            ? `2px solid var(--wl-accent)`
-                            : `1px solid var(--wl-border)`,
+                        borderColor: day && day.date.getTime() === today.getTime()
+                          ? `var(--wl-accent)`
+                          : `var(--wl-border)`,
                         cursor: day ? "pointer" : "default",
-                        padding: 8,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        transition: "all 0.2s ease",
                         opacity: day ? 1 : 0.4,
                       }}
+                      className={cn(
+                        "p-2 flex flex-col justify-between transition-all",
+                        day && day.date.getTime() === today.getTime()
+                          ? "border-2"
+                          : "border",
+                      )}
                       onMouseEnter={(e) => {
                         if (day) {
                           const elem = e.currentTarget as HTMLElement;
-                          elem.style.backgroundColor = getDayBackgroundColor(
-                            day
-                          );
+                          elem.style.backgroundColor = getDayBackgroundColor(day);
                           elem.style.transform = "scale(0.98)";
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (day) {
                           const elem = e.currentTarget as HTMLElement;
-                          elem.style.backgroundColor =
-                            getDayBackgroundColor(day);
+                          elem.style.backgroundColor = getDayBackgroundColor(day);
                           elem.style.transform = "scale(1)";
                         }
                       }}
                     >
                       {day && (
                         <>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color:
-                                day.isBlackout || day.isHoliday
-                                  ? "white"
-                                  : "var(--wl-text-primary)",
-                            }}
-                          >
+                          <div className="text-xs font-semibold" style={{
+                            color: day.isBlackout || day.isHoliday
+                              ? "white"
+                              : "var(--wl-text-primary)",
+                          }}>
                             {day.date.getDate()}
                           </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 500,
-                              color:
-                                day.isBlackout || day.isHoliday
-                                  ? "rgba(255,255,255,0.8)"
-                                  : "var(--wl-text-secondary)",
-                            }}
-                          >
+                          <div className="text-xs font-medium" style={{
+                            color: day.isBlackout || day.isHoliday
+                              ? "rgba(255,255,255,0.8)"
+                              : "var(--wl-text-secondary)",
+                          }}>
                             {day.isBlackout
                               ? "Blocked"
                               : day.isHoliday
@@ -411,55 +326,21 @@ export default function CalendarPage() {
               </div>
 
               {/* Legend */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: 16,
-                  flexWrap: "wrap",
-                  paddingTop: 16,
-                  borderTop: `1px solid var(--wl-border)`,
-                  fontSize: 12,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      backgroundColor: "var(--wl-bg-secondary)",
-                      border: `1px solid var(--wl-border)`,
-                    }}
-                  />
+              <div className="flex gap-4 flex-wrap pt-4 border-t border-wl-border text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-wl-bg-secondary border border-wl-border" />
                   <span>Normal Capacity</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      backgroundColor: "var(--wl-warning)",
-                    }}
-                  />
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-wl-warning" />
                   <span>Reduced Capacity</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      backgroundColor: "var(--wl-info)",
-                    }}
-                  />
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-wl-info" />
                   <span>Holiday</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      backgroundColor: "var(--wl-danger)",
-                    }}
-                  />
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-wl-danger" />
                   <span>Blackout</span>
                 </div>
               </div>
@@ -467,55 +348,22 @@ export default function CalendarPage() {
 
             {/* Rules List */}
             <div>
-              <h2
-                style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  marginBottom: 16,
-                  className="text-wl-text-primary",
-                }}
-              >
+              <h2 className="text-xl font-semibold mb-4 text-wl-text-primary">
                 Calendar Rules
               </h2>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: 12,
-                }}
-              >
+              <div className="grid gap-3">
                 {mockRules.map((rule) => (
                   <Card
                     key={rule.id}
-                    style={{
-                      padding: 16,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      opacity: rule.isActive ? 1 : 0.6,
-                    }}
+                    className={cn(
+                      "p-4 flex justify-between items-center",
+                      !rule.isActive && "opacity-60"
+                    )}
                   >
-                    <div
-                      style={{
-                        flex: 1,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          marginBottom: 8,
-                        }}
-                      >
-                        <h3
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 600,
-                            margin: 0,
-                            className="text-wl-text-primary",
-                          }}
-                        >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-sm font-semibold m-0 text-wl-text-primary">
                           {rule.name}
                         </h3>
                         <Badge
@@ -536,30 +384,18 @@ export default function CalendarPage() {
                         )}
                       </div>
 
-                      <div
-                        style={{
-                          fontSize: 12,
-                          className="text-wl-text-secondary",
-                          marginBottom: 8,
-                        }}
-                      >
+                      <div className="text-xs text-wl-text-secondary mb-2">
                         {rule.recurrencePattern
                           ? rule.recurrencePattern
                           : `${rule.startDate.toLocaleDateString()} - ${rule.endDate.toLocaleDateString()}`}
                         {rule.capacity && (
-                          <span style={{ marginLeft: 12 }}>
+                          <span className="ml-3">
                             • Capacity: {rule.capacity} slots
                           </span>
                         )}
                       </div>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          flexWrap: "wrap",
-                        }}
-                      >
+                      <div className="flex gap-2 flex-wrap">
                         {rule.zones.map((zone) => (
                           <Badge key={zone} variant="primary">
                             {zone}
@@ -568,13 +404,7 @@ export default function CalendarPage() {
                       </div>
                     </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 8,
-                        marginLeft: 16,
-                      }}
-                    >
+                    <div className="flex gap-2 ml-4">
                       <Button variant="ghost" size="sm">
                         Edit
                       </Button>
@@ -590,45 +420,17 @@ export default function CalendarPage() {
 
           {/* Side Panel */}
           {selectedDay && (
-            <div
-              style={{
-                position: "sticky",
-                top: 24,
-              }}
-            >
-              <Card
-                style={{
-                  padding: 20,
-                }}
-              >
-                <div
-                  style={{
-                    marginBottom: 24,
-                    paddingBottom: 16,
-                    borderBottom: `1px solid var(--wl-border)`,
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 600,
-                      margin: "0 0 8px 0",
-                      className="text-wl-text-primary",
-                    }}
-                  >
+            <div className="sticky top-6">
+              <Card className="p-5">
+                <div className="mb-6 pb-4 border-b border-wl-border">
+                  <h3 className="text-base font-semibold m-0 mb-2 text-wl-text-primary">
                     {selectedDay.date.toLocaleDateString("en-US", {
                       weekday: "long",
                       month: "long",
                       day: "numeric",
                     })}
                   </h3>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 12,
-                      className="text-wl-text-secondary",
-                    }}
-                  >
+                  <p className="m-0 text-xs text-wl-text-secondary">
                     {selectedDay.isBlackout
                       ? "Blackout Day"
                       : selectedDay.isHoliday
@@ -638,97 +440,39 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Capacity Details */}
-                <div
-                  style={{
-                    marginBottom: 20,
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      margin: "0 0 12px 0",
-                      className="text-wl-text-secondary",
-                      textTransform: "uppercase",
-                    }}
-                  >
+                <div className="mb-5">
+                  <h4 className="text-xs font-semibold m-0 mb-3 text-wl-text-secondary uppercase">
                     Capacity Details
                   </h4>
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: 8,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: 13,
-                      }}
-                    >
-                      <span style={{ className="text-wl-text-secondary" }}>
+                  <div className="grid gap-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-wl-text-secondary">
                         Total Slots
                       </span>
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          className="text-wl-text-primary",
-                        }}
-                      >
+                      <span className="font-semibold text-wl-text-primary">
                         {selectedDay.totalSlots}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: 13,
-                      }}
-                    >
-                      <span style={{ className="text-wl-text-secondary" }}>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-wl-text-secondary">
                         Booked
                       </span>
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color: "var(--wl-warning)",
-                        }}
-                      >
+                      <span className="font-semibold text-wl-warning">
                         {selectedDay.booked}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: 13,
-                      }}
-                    >
-                      <span style={{ className="text-wl-text-secondary" }}>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-wl-text-secondary">
                         Available
                       </span>
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color: "var(--wl-success)",
-                        }}
-                      >
+                      <span className="font-semibold text-wl-success">
                         {selectedDay.available}
                       </span>
                     </div>
                   </div>
 
                   {/* Capacity bar */}
-                  <div
-                    style={{
-                      marginTop: 12,
-                      height: 6,
-                      backgroundColor: "var(--wl-bg-secondary)",
-                      borderRadius: 3,
-                      overflow: "hidden",
-                    }}
-                  >
+                  <div className="mt-3 h-1.5 bg-wl-bg-secondary rounded-full overflow-hidden">
                     <div
                       style={{
                         height: "100%",
@@ -741,45 +485,17 @@ export default function CalendarPage() {
 
                 {/* Active Rules */}
                 {selectedDay.rules.length > 0 && (
-                  <div
-                    style={{
-                      marginBottom: 20,
-                    }}
-                  >
-                    <h4
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        margin: "0 0 12px 0",
-                        className="text-wl-text-secondary",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                  <div className="mb-5">
+                    <h4 className="text-xs font-semibold m-0 mb-3 text-wl-text-secondary uppercase">
                       Active Rules
                     </h4>
-                    <div
-                      style={{
-                        display: "grid",
-                        gap: 8,
-                      }}
-                    >
+                    <div className="grid gap-2">
                       {selectedDay.rules.map((rule) => (
                         <div
                           key={rule.id}
-                          style={{
-                            padding: 10,
-                            backgroundColor: "var(--wl-bg-secondary)",
-                            borderRadius: 6,
-                            fontSize: 12,
-                          }}
+                          className="p-2.5 bg-wl-bg-secondary rounded text-xs"
                         >
-                          <div
-                            style={{
-                              fontWeight: 600,
-                              className="text-wl-text-primary",
-                              marginBottom: 4,
-                            }}
-                          >
+                          <div className="font-semibold text-wl-text-primary mb-1">
                             {rule.name}
                           </div>
                           <Badge
@@ -802,54 +518,21 @@ export default function CalendarPage() {
                 )}
 
                 {/* Time Slots */}
-                <div
-                  style={{
-                    marginBottom: 20,
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      margin: "0 0 12px 0",
-                      className="text-wl-text-secondary",
-                      textTransform: "uppercase",
-                    }}
-                  >
+                <div className="mb-5">
+                  <h4 className="text-xs font-semibold m-0 mb-3 text-wl-text-secondary uppercase">
                     Time Slots
                   </h4>
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: 6,
-                    }}
-                  >
+                  <div className="grid gap-1.5">
                     {["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"].map(
                       (time, idx) => (
                         <div
                           key={time}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            padding: 8,
-                            backgroundColor: "var(--wl-bg-secondary)",
-                            borderRadius: 4,
-                            fontSize: 12,
-                          }}
+                          className="flex justify-between p-2 bg-wl-bg-secondary rounded text-xs"
                         >
-                          <span
-                            style={{
-                              className="text-wl-text-primary",
-                              fontWeight: 500,
-                            }}
-                          >
+                          <span className="text-wl-text-primary font-medium">
                             {time}
                           </span>
-                          <span
-                            style={{
-                              className="text-wl-text-secondary",
-                            }}
-                          >
+                          <span className="text-wl-text-secondary">
                             {idx < 3 ? "3/5" : "2/5"} slots
                           </span>
                         </div>
@@ -859,12 +542,7 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Quick Actions */}
-                <div
-                  style={{
-                    display: "grid",
-                    gap: 8,
-                  }}
-                >
+                <div className="grid gap-2 mb-3">
                   <Button variant="primary" size="md">
                     Adjust Capacity
                   </Button>
@@ -876,17 +554,7 @@ export default function CalendarPage() {
                 {/* Close button */}
                 <button
                   onClick={() => setSelectedDay(null)}
-                  style={{
-                    width: "100%",
-                    marginTop: 12,
-                    padding: 8,
-                    backgroundColor: "transparent",
-                    className="text-wl-text-secondary",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 12,
-                    fontWeight: 500,
-                  }}
+                  className="w-full mt-3 p-2 bg-transparent text-wl-text-secondary border-none cursor-pointer text-xs font-medium"
                 >
                   Close Panel
                 </button>

@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.4 — Platform Source Abstraction & Competitive Intelligence (2026-03-08)
+
+#### Added
+
+- **ADR-014** — Platform source abstraction decision record (`docs/adr/ADR-014-platform-source-abstraction.md`)
+- **Platform types** — `PlatformSource` enum (SHOPIFY, WOOCOMMERCE, MAGENTO, CUSTOM), `ExternalReference` interface, `isPlatformSource()` helper (`packages/types/src/platform.ts`)
+- **Collection platform adapter** — `CollectionPlatformAdapter` interface with Shopify GraphQL adapter for multi-platform collection sync (`packages/core/src/collections/adapters/`)
+- **Fleetbase competitive analysis** — 840-line strategic brief covering positioning, features, architecture, go-to-market, and differentiation (`docs/competitive/fleetbase-analysis.md`)
+- **Analytics DI routes** — 5 analytics event route handlers with DI container injection (`apps/api/src/routes/analytics-events.ts`)
+- **Billing routes** — subscription status, recurring charges, cancellation endpoints (`apps/api/src/routes/billing.ts`)
+- **4 test suites** — platform-abstraction (queue, workflows, types, collections) — 89+ total
+
+#### Changed
+
+- **Prisma schema** — `shopifyOrderId` → `externalOrderId`, `shopifyProductId` → `externalProductId`, `shopifyCustomerId` → `externalCustomerId`, added `source String @default("SHOPIFY")` field, updated unique constraints to `@@unique([shopId, externalOrderId, source])`
+- **Queue types & consumers** — generic `externalOrderId`/`externalProductId` + `source` field replacing Shopify-specific identifiers
+- **Workflow steps & definitions** — `shopifyOrderId` → `externalOrderId` throughout delivery order workflows
+- **Collection manager** — refactored to generic `externalCollectionId` + `source` with adapter pattern
+- **16 dashboard pages migrated to Tailwind CSS** (77 total migrated) — stores, tracking-config, admin/shops/[id], profile, activity, calendar, notifications, admin/customers, shipments, drivers, admin/workflows/[id], widget-config, shipping-profiles, admin/workflows, locations, admin/users
+
 ### Sprint 3.3 — Worker Wiring, Auth OAuth2, OSRM Routing & Final Page Migration (2026-03-08)
 
 #### Added

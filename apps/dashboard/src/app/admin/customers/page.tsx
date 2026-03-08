@@ -210,7 +210,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Customer Details: ${customer.name}`}>
-      <div className="flex flex-col gap-4" >
+      <div className="flex flex-col gap-4">
         {/* Overview Section */}
         <div className="border-b border-wl-border-subtle pb-3">
           <button
@@ -221,26 +221,15 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "overview"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("overview") ? <ChevronUp  /> : <ChevronDown  />}
+            {expandedSections.includes("overview") ? <ChevronUp /> : <ChevronDown />}
             Overview
           </button>
           {expandedSections.includes("overview") && (
             <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Name
                 </p>
                 <p className="text-wl-text-primary text-sm font-medium m-0">
@@ -248,23 +237,23 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Status
                 </p>
-                <Badge variant={getStatusBadgeVariant(customer.status)} style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
+                <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
                   {customer.status}
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Email
                 </p>
-                <a href={`mailto:${customer.email}`} style={{ color: "var(--wl-brand-primary)", textDecoration: "none", fontSize: "var(--wl-text-sm)", fontWeight: 500 }}>
+                <a href={`mailto:${customer.email}`} className="text-wl-brand-primary no-underline text-sm font-medium">
                   {customer.email}
                 </a>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Phone
                 </p>
                 <p className="text-wl-text-primary text-sm font-medium m-0">
@@ -272,7 +261,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Store
                 </p>
                 <p className="text-wl-text-primary text-sm font-medium m-0">
@@ -280,7 +269,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Joined
                 </p>
                 <p className="text-wl-text-primary text-sm font-medium m-0">
@@ -301,42 +290,31 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "orders"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("orders") ? <ChevronUp  /> : <ChevronDown  />}
+            {expandedSections.includes("orders") ? <ChevronUp /> : <ChevronDown />}
             Order History
           </button>
           {expandedSections.includes("orders") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--wl-space-4)", marginTop: "var(--wl-space-3)" }}>
+            <div className="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Orders
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: 0 }}>
+                <p className="text-wl-text-primary text-lg font-bold m-0">
                   {customer.ordersCount}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Spent
                 </p>
-                <p style={{ color: "var(--wl-brand-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: 0 }}>
+                <p className="text-wl-brand-primary text-lg font-bold m-0">
                   ${customer.totalSpent.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Last Order
                 </p>
                 <p className="text-wl-text-primary text-sm font-medium m-0">
@@ -357,38 +335,22 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "addresses"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("addresses") ? <ChevronUp  /> : <ChevronDown  />}
+            {expandedSections.includes("addresses") ? <ChevronUp /> : <ChevronDown />}
             Addresses ({customer.addresses.length})
           </button>
           {expandedSections.includes("addresses") && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)", marginTop: "var(--wl-space-3)" }}>
+            <div className="flex flex-col gap-3 mt-3">
               {customer.addresses.map((addr, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    padding: "var(--wl-space-3)",
-                    backgroundColor: "var(--wl-bg-base)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border-subtle)",
-                  }}
+                  className="p-3 bg-wl-bg-base rounded-md border border-wl-border-subtle"
                 >
-                  <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase" className="mb-1">
+                  <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                     {addr.type}
                   </p>
-                  <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)", margin: 0 }}>
+                  <p className="text-wl-text-primary text-sm m-0">
                     {addr.address}
                   </p>
                 </div>
@@ -407,26 +369,15 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "tags"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("tags") ? <ChevronUp  /> : <ChevronDown  />}
+            {expandedSections.includes("tags") ? <ChevronUp /> : <ChevronDown />}
             Tags ({customer.tags.length})
           </button>
           {expandedSections.includes("tags") && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--wl-space-2)", marginTop: "var(--wl-space-3)" }}>
+            <div className="flex flex-wrap gap-2 mt-3">
               {customer.tags.map((tag) => (
-                <Badge key={tag} variant="info" style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
+                <Badge key={tag} variant="info" className="text-xs capitalize">
                   {tag}
                 </Badge>
               ))}
@@ -444,39 +395,20 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "notes"]
               )
             }
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--wl-text-primary)",
-              fontWeight: 600,
-              fontSize: "var(--wl-text-sm)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              padding: "var(--wl-space-2) 0",
-            }}
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
-            {expandedSections.includes("notes") ? <ChevronUp  /> : <ChevronDown  />}
+            {expandedSections.includes("notes") ? <ChevronUp /> : <ChevronDown />}
             Notes
           </button>
           {expandedSections.includes("notes") && (
-            <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-sm)", margin: "var(--wl-space-2) 0 0 0", padding: "var(--wl-space-3)", backgroundColor: "var(--wl-bg-base)", borderRadius: "var(--wl-radius-md)", border: "1px solid var(--wl-border-subtle)" }}>
+            <p className="text-wl-text-secondary text-sm m-2 p-3 bg-wl-bg-base rounded-md border border-wl-border-subtle">
               {customer.notes}
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--wl-space-2)",
-            marginTop: "var(--wl-space-4)",
-            borderTop: "1px solid var(--wl-border-subtle)",
-            paddingTop: "var(--wl-space-4)",
-          }}
-        >
+        <div className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4">
           <Button variant="secondary" size="sm">
             <FileText style={{ width: "14px", height: "14px", marginRight: "4px" }} />
             Add Note
@@ -499,14 +431,7 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
   const avgOrders = Math.round(customers.reduce((sum, c) => sum + c.ordersCount, 0) / customers.length);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: "var(--wl-space-4)",
-        marginBottom: "var(--wl-space-6)",
-      }}
-    >
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 mb-6">
       {[
         { label: "Total Customers", value: customers.length.toString(), icon: Users, color: "#6366f1" },
         { label: "Active", value: activeCustomers.toString(), icon: TrendingUp, color: "#10b981" },
@@ -517,31 +442,25 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
         return (
           <Card
             key={idx}
+            className="bg-wl-bg-surface border-wl-border-subtle"
             style={{
-              backgroundColor: "var(--wl-bg-surface)",
-              borderColor: "var(--wl-border-subtle)",
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
           >
-            <CardContent style={{ padding: "var(--wl-space-4)", display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+            <CardContent className="p-4 flex gap-3 items-start">
               <div
+                className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
                 style={{
-                  padding: "var(--wl-space-2)",
-                  borderRadius: "var(--wl-radius-md)",
                   backgroundColor: stat.color + "15",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
                 }}
               >
                 <Icon style={{ color: stat.color, width: "20px", height: "20px" }} />
               </div>
-              <div className="flex-1" >
-                <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)", fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div className="flex-1">
+                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wide">
                   {stat.label}
                 </p>
-                <p style={{ color: "var(--wl-text-primary)", fontSize: "var(--wl-text-lg)", fontWeight: 700, margin: "var(--wl-space-1) 0 0 0" }}>
+                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
                   {stat.value}
                 </p>
               </div>
@@ -597,7 +516,7 @@ export default function AdminCustomersPage() {
   };
 
   return (
-    <div className="bg-wl-bg-base" >
+    <div className="bg-wl-bg-base">
       <Header
         title="Customer Management"
         subtitle="Manage all customers across all stores"
@@ -609,51 +528,35 @@ export default function AdminCustomersPage() {
         }
       />
 
-      <main style={{ flex: 1, padding: "var(--wl-space-6)", maxWidth: "1400px", margin: "0 auto" }}>
+      <main className="flex-1 p-6 max-w-7xl mx-auto">
         <StatsBar customers={mockCustomers} />
 
-        <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-          <CardContent className="p-4" >
+        <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+          <CardContent className="p-4">
             {/* Search */}
-            <div style={{ marginBottom: "var(--wl-space-4)", position: "relative" }}>
+            <div className="mb-4 relative">
               <input
                 type="text"
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "var(--wl-space-2) var(--wl-space-3) var(--wl-space-2) var(--wl-space-8)",
-                  backgroundColor: "var(--wl-bg-base)",
-                  color: "var(--wl-text-primary)",
-                  border: "1px solid var(--wl-border-subtle)",
-                  borderRadius: "var(--wl-radius-md)",
-                  fontSize: "var(--wl-text-sm)",
-                }}
+                className="w-full p-2 pl-8 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
               />
               <Search style={{ position: "absolute", left: "var(--wl-space-2)", top: "50%", transform: "translateY(-50%)", width: "16px", height: "16px", color: "var(--wl-text-secondary)", pointerEvents: "none" }} />
             </div>
 
             {/* Filters */}
-            <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap", marginBottom: "var(--wl-space-4)" }}>
-              <div className="flex items-center gap-2" >
+            <div className="flex gap-3 flex-wrap mb-4">
+              <div className="flex items-center gap-2">
                 <Filter style={{ width: "16px", height: "16px", color: "var(--wl-text-secondary)" }} />
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
+                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
                   Store:
                 </span>
               </div>
               <select
                 value={storeFilter}
                 onChange={(e) => setStoreFilter(e.target.value)}
-                style={{
-                  padding: "4px 12px",
-                  background: "var(--wl-bg-base)",
-                  color: "var(--wl-text-primary)",
-                  border: "1px solid var(--wl-border-subtle)",
-                  borderRadius: "var(--wl-radius-md)",
-                  fontSize: "var(--wl-text-xs)",
-                  cursor: "pointer",
-                }}
+                className="px-3 py-1 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-xs cursor-pointer"
               >
                 {stores.map((store) => (
                   <option key={store} value={store}>
@@ -663,9 +566,9 @@ export default function AdminCustomersPage() {
               </select>
             </div>
 
-            <div style={{ display: "flex", gap: "var(--wl-space-3)", flexWrap: "wrap" }}>
-              <div className="flex items-center gap-2" >
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontWeight: 600, textTransform: "uppercase" }}>
+            <div className="flex gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
                   Status:
                 </span>
               </div>
@@ -673,18 +576,12 @@ export default function AdminCustomersPage() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  style={{
-                    padding: "4px 12px",
-                    background: statusFilter === status ? "var(--wl-brand-primary)" : "var(--wl-bg-base)",
-                    color: statusFilter === status ? "white" : "var(--wl-text-primary)",
-                    border: `1px solid ${statusFilter === status ? "var(--wl-brand-primary)" : "var(--wl-border-subtle)"}`,
-                    borderRadius: "var(--wl-radius-md)",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textTransform: "capitalize",
-                  }}
+                  className={cn(
+                    "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
+                    statusFilter === status
+                      ? "bg-wl-brand-primary text-white border-wl-brand-primary"
+                      : "bg-wl-bg-base text-wl-text-primary border-wl-border-subtle"
+                  )}
                 >
                   {status === "all" ? "All" : status}
                 </button>
@@ -694,41 +591,23 @@ export default function AdminCustomersPage() {
         </Card>
 
         {/* Customers Table */}
-        <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
+        <Card className="bg-wl-bg-surface border-wl-border-subtle">
           {filteredCustomers.length > 0 ? (
             <>
-              <div
-                style={{
-                  padding: "var(--wl-space-3) var(--wl-space-4)",
-                  borderBottom: "1px solid var(--wl-border-subtle)",
-                  fontSize: "var(--wl-text-xs)",
-                  color: "var(--wl-text-secondary)",
-                }}
-              >
+              <div className="p-3 border-b border-wl-border-subtle text-xs text-wl-text-secondary">
                 Showing {filteredCustomers.length} of {mockCustomers.length} customers
               </div>
-              <CardContent style={{ padding: 0 }}>
-                <div style={{ overflowX: "auto" }}>
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      fontSize: "var(--wl-text-sm)",
-                    }}
-                  >
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr style={{ borderBottom: "1px solid var(--wl-border-subtle)", backgroundColor: "var(--wl-bg-base)" }}>
+                      <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
                         {["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status", "Actions"].map((header) => (
                           <th
                             key={header}
+                            className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide"
                             style={{
-                              padding: "var(--wl-space-3)",
                               textAlign: header === "Actions" ? "center" : "left",
-                              color: "var(--wl-text-secondary)",
-                              fontWeight: 600,
-                              fontSize: "var(--wl-text-xs)",
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
                             }}
                           >
                             {header}
@@ -740,11 +619,9 @@ export default function AdminCustomersPage() {
                       {filteredCustomers.map((customer, idx) => (
                         <tr
                           key={customer.id}
+                          className="border-b border-wl-border-subtle transition-all cursor-pointer"
                           style={{
-                            borderBottom: "1px solid var(--wl-border-subtle)",
                             backgroundColor: idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)",
-                            transition: "all 0.2s",
-                            cursor: "pointer",
                           }}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
@@ -754,59 +631,38 @@ export default function AdminCustomersPage() {
                           }}
                           onClick={() => handleCustomerClick(customer)}
                         >
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                          <td className="p-3 text-wl-text-primary font-medium">
                             {customer.name}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.email}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.phone}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontSize: "var(--wl-text-sm)" }}>
+                          <td className="p-3 text-wl-text-primary text-sm">
                             {customer.store}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-primary)", fontWeight: 500 }}>
+                          <td className="p-3 text-wl-text-primary font-medium">
                             {customer.ordersCount}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-brand-primary)", fontWeight: 600 }}>
+                          <td className="p-3 text-wl-brand-primary font-semibold">
                             ${customer.totalSpent.toLocaleString()}
                           </td>
-                          <td style={{ padding: "var(--wl-space-3)", color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-xs)" }}>
+                          <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.lastOrder}
                           </td>
-                          <td className="p-3" >
-                            <Badge variant={getStatusBadgeVariant(customer.status)} style={{ fontSize: "var(--wl-text-xs)", textTransform: "capitalize" }}>
+                          <td className="p-3">
+                            <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
                               {customer.status}
                             </Badge>
                           </td>
                           <td
-                            style={{
-                              padding: "var(--wl-space-3)",
-                              textAlign: "center",
-                            }}
+                            className="p-3 text-center"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: "var(--wl-text-secondary)",
-                                cursor: "pointer",
-                                padding: "4px",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.2s",
-                              }}
-                              onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-primary)";
-                              }}
-                              onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLButtonElement).style.color = "var(--wl-text-secondary)";
-                              }}
-                            >
-                              <MoreVertical  />
+                            <button className="bg-transparent border-none text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all hover:text-wl-text-primary">
+                              <MoreVertical />
                             </button>
                           </td>
                         </tr>
@@ -817,21 +673,12 @@ export default function AdminCustomersPage() {
               </CardContent>
             </>
           ) : (
-            <CardContent
-              style={{
-                padding: "var(--wl-space-12)",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+            <CardContent className="p-12 text-center flex flex-col items-center justify-center">
               <AlertCircle style={{ width: "48px", height: "48px", color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-3)", opacity: 0.3 }} />
-              <p style={{ color: "var(--wl-text-primary)", fontWeight: 500, margin: 0, marginBottom: "4px" }}>
+              <p className="text-wl-text-primary font-medium m-0 mb-1">
                 No customers found
               </p>
-              <p style={{ color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-sm)", margin: 0 }}>
+              <p className="text-wl-text-secondary text-sm m-0">
                 Try adjusting your filters
               </p>
             </CardContent>

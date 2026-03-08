@@ -37,11 +37,13 @@ export interface CollectionRule {
 
 /**
  * Collection interface (database representation)
+ * Supports multiple platforms via source and externalId
  */
 export interface Collection {
   id: string;
   shopId: string;
   externalId?: string;
+  source?: string; // Platform source (e.g., "SHOPIFY", "WOO", "CUSTOM")
   title: string;
   description?: string;
   type: CollectionType;
@@ -116,17 +118,25 @@ export interface ReorderProductsRequest {
 }
 
 /**
- * Shopify collection sync data
+ * Platform-agnostic collection sync data
+ * Used for syncing collections from external platforms
  */
-export interface ShopifyCollectionData {
-  id: string;
+export interface PlatformCollectionData {
+  externalId: string; // Platform-specific ID
   title: string;
-  handle: string;
+  handle?: string;
   description?: string;
   image?: {
     src: string;
   };
   rules?: CollectionRule[];
+}
+
+/**
+ * Shopify collection sync data (legacy, use PlatformCollectionData instead)
+ */
+export interface ShopifyCollectionData extends PlatformCollectionData {
+  id: string; // Maps to externalId for backward compatibility
 }
 
 /**
@@ -145,4 +155,39 @@ export interface CollectionListResponse {
   total: number;
   limit: number;
   offset: number;
+}
+
+/**
+ * Platform adapter interface for collection operations
+ */
+export interface CollectionPlatformAdapter {
+  /**
+   * Sync a collection from the platform
+   */
+  syncCollection(shopId: string, externalCollectionId: string): Promise<Collection>;
+
+  /**
+   * Fetch products from a collection on the platform
+   */
+  fetchProducts(externalCollectionId: string, limit?: number, cursor?: string): Promise<{
+    products: Array<{
+      externalId: string;
+      title: string;
+    }>;
+    nextCursor?: string;
+  }>;
+
+  /**
+   * Push collection rules to the platform
+   */
+  pushRules(externalCollectionId: string, rules: CollectionRule[]): Promise<void>;
+
+  /**
+   * Get rate limit info from platform
+   */
+  getRateLimitInfo?(): Promise<{
+    used: number;
+    remaining: number;
+    resetAt: Date;
+  }>;
 }

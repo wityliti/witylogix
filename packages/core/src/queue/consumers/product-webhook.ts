@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Product webhook consumer — processes Shopify product sync events.
+ * Product webhook consumer — processes external product sync events from any platform.
  *
  * Flow:
  *   1. Validate product payload
@@ -59,9 +59,9 @@ export class ProductWebhookConsumer extends QueueConsumer {
     };
 
     // Validate required fields
-    if (!data.shopId || !data.shopifyProductId) {
+    if (!data.shopId || !data.externalProductId) {
       throw new QueueValidationError(
-        "Product webhook missing shopId or shopifyProductId",
+        "Product webhook missing shopId or externalProductId",
       );
     }
 
@@ -119,7 +119,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
 
     try {
       console.log(
-        `[ProductWebhookConsumer] Processing ${action} product ${data.shopifyProductId} for shop ${shopId}`,
+        `[ProductWebhookConsumer] Processing ${action} product ${data.externalProductId} for shop ${shopId}`,
       );
 
       // Route to appropriate handler based on action
@@ -135,7 +135,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
           break;
 
         case "delete":
-          await this.deleteProduct(shopId, data.shopifyProductId);
+          await this.deleteProduct(shopId, data.externalProductId);
           break;
 
         default:
@@ -143,7 +143,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
       }
 
       // Emit change event
-      await this.emitProductChangeEvent(shopId, data.shopifyProductId, action);
+      await this.emitProductChangeEvent(shopId, data.externalProductId, action);
 
       // Calculate processing time
       const processingTimeMs = Date.now() - metadata.processingStartedAt!;
@@ -153,7 +153,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
         jobId,
         processingTimeMs,
         data: {
-          productId: data.shopifyProductId,
+          productId: data.externalProductId,
           shopId,
           action,
           variantCount: payload?.variants.length || 0,
@@ -163,7 +163,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
       if (error instanceof QueueValidationError) {
         throw new QueuePermanentError(
           `Invalid product payload: ${error.message}`,
-          { productId: data.shopifyProductId },
+          { productId: data.externalProductId },
         );
       }
 
@@ -173,13 +173,13 @@ export class ProductWebhookConsumer extends QueueConsumer {
       ) {
         throw new QueueTransientError(
           `Database error processing product: ${error.message}`,
-          { productId: data.shopifyProductId },
+          { productId: data.externalProductId },
         );
       }
 
       throw new QueueTransientError(
         `Error processing product: ${error instanceof Error ? error.message : String(error)}`,
-        { productId: data.shopifyProductId },
+        { productId: data.externalProductId },
       );
     }
   }
@@ -202,7 +202,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
       const productData = {
         id: payload.id,
         shopId,
-        shopifyProductId: payload.id,
+        externalProductId: payload.id,
         title: payload.title,
         vendor: payload.vendor,
         productType: payload.product_type,
@@ -214,7 +214,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
 
       // Upsert into database using tenant-aware Prisma
       await (dbPrisma as any).product.upsert({
-        where: { shopifyProductId: payload.id },
+        where: { externalProductId: payload.id },
         create: productData,
         update: {
           title: productData.title,
@@ -340,7 +340,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
 
       // Soft delete product using tenant-aware Prisma
       await (dbPrisma as any).product.update({
-        where: { shopifyProductId: productId },
+        where: { externalProductId: productId },
         data: { deletedAt: new Date() },
       });
 

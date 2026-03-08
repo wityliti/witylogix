@@ -101,1087 +101,347 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleChangePassword = () => {
-    if (
-      passwordForm.new &&
-      passwordForm.new === passwordForm.confirm &&
-      passwordForm.current
-    ) {
-      // In real app, would send to backend
-      console.log("Password changed");
-      setPasswordForm({ current: "", new: "", confirm: "" });
-    }
-  };
-
-  const handleRevokeSession = (sessionId: string) => {
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-  };
-
-  const handleRevokeAllSessions = () => {
-    setSessions((prev) => [prev[0]]); // Keep only current session
-  };
-
-  const getInitials = () => {
-    return `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase();
-  };
-
-  const cardStyle: CSSProperties = {
-    marginBottom: "var(--wl-space-6)",
+  const handleLogoutSession = (id: string) => {
+    setSessions(sessions.filter((s) => s.id !== id));
   };
 
   return (
-    <div>
-      <Header
-        title="Profile Settings"
-        subtitle="Manage your account and security preferences"
-      />
+    <div className="bg-wl-bg min-h-screen">
+      <Header title="Profile Settings" subtitle="Manage your account and security settings" />
 
-      <div
-        style={{
-          maxWidth: "1000px",
-          margin: "0 auto",
-          padding: "var(--wl-space-6)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--wl-space-6)",
-        }}
-      >
-        {/* Profile Card */}
-        <Card style={cardStyle}>
+      <main className="flex-1 p-6 max-w-4xl mx-auto">
+        {/* Personal Information */}
+        <Card className="bg-wl-card border border-wl-border mb-6">
           <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              style={{
-                display: "flex",
-                gap: "var(--wl-space-6)",
-                marginBottom: "var(--wl-space-6)",
-              }}
-            >
-              {/* Avatar */}
-              <div>
-                <div
-                  style={{
-                    width: "100px",
-                    height: "100px",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, var(--wl-primary), #8b7dff)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--wl-text-inverse)",
-                    fontSize: "var(--wl-text-3xl)",
-                    fontWeight: 700,
-                    boxShadow: "0 8px 24px rgba(108, 99, 255, 0.2)",
-                  }}
-                >
-                  {getInitials()}
-                </div>
+            <CardTitle className="text-wl-text flex items-center justify-between">
+              Personal Information
+              {!isEditing && (
                 <button
-                  style={{
-                    marginTop: "var(--wl-space-3)",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "transparent",
-                    color: "var(--wl-text-muted)",
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                  }}
+                  onClick={() => setIsEditing(true)}
+                  className="text-sm font-medium text-wl-primary bg-wl-primary bg-opacity-10 px-3 py-1.5 rounded hover:opacity-80"
                 >
-                  Change Avatar
+                  Edit
                 </button>
-              </div>
-
-              {/* Profile Info */}
-              <div style={{ flex: 1 }}>
-                {!isEditing ? (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "var(--wl-space-3)",
-                        marginBottom: "var(--wl-space-4)",
-                      }}
-                    >
-                      <div>
-                        <h2
-                          style={{
-                            margin: "0 0 var(--wl-space-1) 0",
-                            fontSize: "var(--wl-text-lg)",
-                            fontWeight: 700,
-                            color: "var(--wl-text)",
-                          }}
-                        >
-                          {profile.firstName} {profile.lastName}
-                        </h2>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: "var(--wl-text-sm)",
-                            color: "var(--wl-text-muted)",
-                          }}
-                        >
-                          {profile.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "var(--wl-space-3)",
-                        marginBottom: "var(--wl-space-4)",
-                      }}
-                    >
-                      <Badge
-                        style={{
-                          background: "rgba(108, 99, 255, 0.1)",
-                          color: "var(--wl-primary)",
-                        }}
-                      >
-                        {profile.role}
-                      </Badge>
-                      <Badge
-                        style={{
-                          background: "rgba(34, 197, 94, 0.1)",
-                          color: "#22c55e",
-                        }}
-                      >
-                        Active
-                      </Badge>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "var(--wl-space-4)",
-                        fontSize: "var(--wl-text-xs)",
-                        marginBottom: "var(--wl-space-4)",
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: "0 0 var(--wl-space-1) 0",
-                            color: "var(--wl-text-muted)",
-                          }}
-                        >
-                          Phone
-                        </p>
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "var(--wl-text)",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {profile.phone}
-                        </p>
-                      </div>
-                      <div>
-                        <p
-                          style={{
-                            margin: "0 0 var(--wl-space-1) 0",
-                            color: "var(--wl-text-muted)",
-                          }}
-                        >
-                          Timezone
-                        </p>
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "var(--wl-text)",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {profile.timezone}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setEditForm(profile);
-                        setIsEditing(true);
-                      }}
-                      style={{
-                        padding: "var(--wl-space-2) var(--wl-space-4)",
-                        borderRadius: "var(--wl-radius-md)",
-                        border: "1px solid var(--wl-primary)",
-                        background: "transparent",
-                        color: "var(--wl-primary)",
-                        fontSize: "var(--wl-text-sm)",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Edit Profile
-                    </button>
-                  </div>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  First Name
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editForm.firstName}
+                    onChange={(e) => handleEditChange("firstName", e.target.value)}
+                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                  />
                 ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--wl-space-3)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "var(--wl-space-3)",
-                      }}
-                    >
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 500,
-                            color: "var(--wl-text-muted)",
-                            marginBottom: "var(--wl-space-1)",
-                          }}
-                        >
-                          First Name
-                        </label>
-                        <input
-                          type="text"
-                          value={editForm.firstName}
-                          onChange={(e) =>
-                            handleEditChange("firstName", e.target.value)
-                          }
-                          style={{
-                            width: "100%",
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            borderRadius: "var(--wl-radius-md)",
-                            border: "1px solid var(--wl-border)",
-                            background: "var(--wl-surface)",
-                            color: "var(--wl-text)",
-                            fontSize: "var(--wl-text-sm)",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 500,
-                            color: "var(--wl-text-muted)",
-                            marginBottom: "var(--wl-space-1)",
-                          }}
-                        >
-                          Last Name
-                        </label>
-                        <input
-                          type="text"
-                          value={editForm.lastName}
-                          onChange={(e) =>
-                            handleEditChange("lastName", e.target.value)
-                          }
-                          style={{
-                            width: "100%",
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            borderRadius: "var(--wl-radius-md)",
-                            border: "1px solid var(--wl-border)",
-                            background: "var(--wl-surface)",
-                            color: "var(--wl-text)",
-                            fontSize: "var(--wl-text-sm)",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 500,
-                          color: "var(--wl-text-muted)",
-                          marginBottom: "var(--wl-space-1)",
-                        }}
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={editForm.email}
-                        onChange={(e) =>
-                          handleEditChange("email", e.target.value)
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "var(--wl-space-2) var(--wl-space-3)",
-                          borderRadius: "var(--wl-radius-md)",
-                          border: "1px solid var(--wl-border)",
-                          background: "var(--wl-surface)",
-                          color: "var(--wl-text)",
-                          fontSize: "var(--wl-text-sm)",
-                          boxSizing: "border-box",
-                        }}
-                      />
-                    </div>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "var(--wl-space-3)",
-                      }}
-                    >
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 500,
-                            color: "var(--wl-text-muted)",
-                            marginBottom: "var(--wl-space-1)",
-                          }}
-                        >
-                          Phone
-                        </label>
-                        <input
-                          type="tel"
-                          value={editForm.phone}
-                          onChange={(e) =>
-                            handleEditChange("phone", e.target.value)
-                          }
-                          style={{
-                            width: "100%",
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            borderRadius: "var(--wl-radius-md)",
-                            border: "1px solid var(--wl-border)",
-                            background: "var(--wl-surface)",
-                            color: "var(--wl-text)",
-                            fontSize: "var(--wl-text-sm)",
-                            boxSizing: "border-box",
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 500,
-                            color: "var(--wl-text-muted)",
-                            marginBottom: "var(--wl-space-1)",
-                          }}
-                        >
-                          Timezone
-                        </label>
-                        <select
-                          value={editForm.timezone}
-                          onChange={(e) =>
-                            handleEditChange("timezone", e.target.value)
-                          }
-                          style={{
-                            width: "100%",
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            borderRadius: "var(--wl-radius-md)",
-                            border: "1px solid var(--wl-border)",
-                            background: "var(--wl-surface)",
-                            color: "var(--wl-text)",
-                            fontSize: "var(--wl-text-sm)",
-                            boxSizing: "border-box",
-                          }}
-                        >
-                          <option value="America/New_York">Eastern Time</option>
-                          <option value="America/Chicago">Central Time</option>
-                          <option value="America/Denver">Mountain Time</option>
-                          <option value="America/Los_Angeles">
-                            Pacific Time
-                          </option>
-                          <option value="Europe/London">GMT</option>
-                          <option value="Europe/Paris">CET</option>
-                          <option value="Asia/Tokyo">JST</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "var(--wl-space-3)",
-                        marginTop: "var(--wl-space-3)",
-                      }}
-                    >
-                      <button
-                        onClick={handleSaveProfile}
-                        style={{
-                          padding: "var(--wl-space-2) var(--wl-space-4)",
-                          borderRadius: "var(--wl-radius-md)",
-                          border: "1px solid var(--wl-primary)",
-                          background:
-                            "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))",
-                          color: "var(--wl-text-inverse)",
-                          fontSize: "var(--wl-text-sm)",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        style={{
-                          padding: "var(--wl-space-2) var(--wl-space-4)",
-                          borderRadius: "var(--wl-radius-md)",
-                          border: "1px solid var(--wl-border)",
-                          background: "transparent",
-                          color: "var(--wl-text)",
-                          fontSize: "var(--wl-text-sm)",
-                          fontWeight: 500,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+                  <p className="text-wl-text">{profile.firstName}</p>
                 )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Change Password Card */}
-        <Card style={cardStyle}>
-          <CardHeader>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
-            >
-              <Lock size={20} style={{ color: "var(--wl-primary)" }} />
-              <CardTitle>Change Password</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-4)",
-              }}
-            >
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
-                  Current Password
-                </label>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your current password"
-                    value={passwordForm.current}
-                    onChange={(e) =>
-                      setPasswordForm((prev) => ({
-                        ...prev,
-                        current: e.target.value,
-                      }))
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      paddingRight: "var(--wl-space-5)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border)",
-                      background: "var(--wl-surface)",
-                      color: "var(--wl-text)",
-                      fontSize: "var(--wl-text-sm)",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      right: "var(--wl-space-3)",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--wl-text-muted)",
-                      padding: 0,
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
 
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
-                  New Password
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  Last Name
                 </label>
-                <div style={{ position: "relative" }}>
+                {isEditing ? (
                   <input
-                    type={showNewPassword ? "text" : "password"}
-                    placeholder="Enter new password"
-                    value={passwordForm.new}
-                    onChange={(e) =>
-                      setPasswordForm((prev) => ({
-                        ...prev,
-                        new: e.target.value,
-                      }))
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      paddingRight: "var(--wl-space-5)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border)",
-                      background: "var(--wl-surface)",
-                      color: "var(--wl-text)",
-                      fontSize: "var(--wl-text-sm)",
-                      boxSizing: "border-box",
-                    }}
+                    type="text"
+                    value={editForm.lastName}
+                    onChange={(e) => handleEditChange("lastName", e.target.value)}
+                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
                   />
-                  <button
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    style={{
-                      position: "absolute",
-                      right: "var(--wl-space-3)",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--wl-text-muted)",
-                      padding: 0,
-                    }}
-                  >
-                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
-                  Confirm Password
-                </label>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm new password"
-                    value={passwordForm.confirm}
-                    onChange={(e) =>
-                      setPasswordForm((prev) => ({
-                        ...prev,
-                        confirm: e.target.value,
-                      }))
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      paddingRight: "var(--wl-space-5)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border)",
-                      background: "var(--wl-surface)",
-                      color: "var(--wl-text)",
-                      fontSize: "var(--wl-text-sm)",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                  <button
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={{
-                      position: "absolute",
-                      right: "var(--wl-space-3)",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      color: "var(--wl-text-muted)",
-                      padding: 0,
-                    }}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {passwordForm.new &&
-                passwordForm.confirm &&
-                passwordForm.new !== passwordForm.confirm && (
-                  <div
-                    style={{
-                      padding: "var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      background: "rgba(239, 68, 68, 0.05)",
-                      color: "#ef4444",
-                      fontSize: "var(--wl-text-xs)",
-                    }}
-                  >
-                    Passwords do not match
-                  </div>
+                ) : (
+                  <p className="text-wl-text">{profile.lastName}</p>
                 )}
-
-              <button
-                onClick={handleChangePassword}
-                disabled={
-                  !passwordForm.current ||
-                  !passwordForm.new ||
-                  passwordForm.new !== passwordForm.confirm
-                }
-                style={{
-                  padding: "var(--wl-space-2) var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  border: "1px solid var(--wl-primary)",
-                  background:
-                    passwordForm.current &&
-                    passwordForm.new &&
-                    passwordForm.new === passwordForm.confirm
-                      ? "linear-gradient(135deg, var(--wl-primary-500), var(--wl-primary-600))"
-                      : "var(--wl-surface)",
-                  color:
-                    passwordForm.current &&
-                    passwordForm.new &&
-                    passwordForm.new === passwordForm.confirm
-                      ? "var(--wl-text-inverse)"
-                      : "var(--wl-text-muted)",
-                  fontSize: "var(--wl-text-sm)",
-                  fontWeight: 600,
-                  cursor:
-                    passwordForm.current &&
-                    passwordForm.new &&
-                    passwordForm.new === passwordForm.confirm
-                      ? "pointer"
-                      : "not-allowed",
-                  opacity:
-                    passwordForm.current &&
-                    passwordForm.new &&
-                    passwordForm.new === passwordForm.confirm
-                      ? 1
-                      : 0.5,
-                }}
-              >
-                Update Password
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Two-Factor Authentication Card */}
-        <Card style={cardStyle}>
-          <CardHeader>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
-            >
-              <Smartphone size={20} style={{ color: "var(--wl-primary)" }} />
-              <CardTitle>Two-Factor Authentication</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "var(--wl-space-4)",
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    margin: "0 0 var(--wl-space-1) 0",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                  }}
-                >
-                  Two-Factor Authentication
-                </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                  }}
-                >
-                  Add an extra layer of security to your account
-                </p>
               </div>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={twoFAEnabled}
-                  onChange={(e) => setTwoFAEnabled(e.target.checked)}
-                  style={{
-                    appearance: "none",
-                    width: "44px",
-                    height: "24px",
-                    borderRadius: "12px",
-                    border: "1px solid var(--wl-border)",
-                    background: twoFAEnabled
-                      ? "var(--wl-primary)"
-                      : "var(--wl-surface)",
-                    cursor: "pointer",
-                    position: "relative",
-                    transition: "background 0.2s",
-                  }}
-                />
-              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  Email
+                </label>
+                {isEditing ? (
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => handleEditChange("email", e.target.value)}
+                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                  />
+                ) : (
+                  <p className="text-wl-text">{profile.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  Phone
+                </label>
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    value={editForm.phone}
+                    onChange={(e) => handleEditChange("phone", e.target.value)}
+                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                  />
+                ) : (
+                  <p className="text-wl-text">{profile.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  Timezone
+                </label>
+                {isEditing ? (
+                  <select
+                    value={editForm.timezone}
+                    onChange={(e) => handleEditChange("timezone", e.target.value)}
+                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                  >
+                    <option>America/New_York</option>
+                    <option>America/Chicago</option>
+                    <option>America/Denver</option>
+                    <option>America/Los_Angeles</option>
+                  </select>
+                ) : (
+                  <p className="text-wl-text">{profile.timezone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-wl-text mb-2">
+                  Role
+                </label>
+                <p className="text-wl-text">{profile.role}</p>
+              </div>
             </div>
 
-            {twoFAEnabled && (
-              <div
-                style={{
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "rgba(108, 99, 255, 0.05)",
-                  borderLeft: "3px solid var(--wl-primary)",
-                }}
-              >
-                <p
-                  style={{
-                    margin: "0 0 var(--wl-space-2) 0",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                  }}
+            {isEditing && (
+              <div className="flex gap-3 pt-4 border-t border-wl-border">
+                <button
+                  onClick={handleSaveProfile}
+                  className="px-4 py-2 bg-wl-primary text-white rounded text-sm font-medium cursor-pointer hover:opacity-90"
                 >
-                  Authenticator App
-                </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                    lineHeight: 1.5,
-                  }}
+                  Save Changes
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 bg-wl-border text-wl-text rounded text-sm font-medium cursor-pointer hover:opacity-90"
                 >
-                  Use an authenticator app like Google Authenticator or Microsoft
-                  Authenticator to generate verification codes.
-                </p>
+                  Cancel
+                </button>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Active Sessions Card */}
-        <Card style={cardStyle}>
+        {/* Security Settings */}
+        <Card className="bg-wl-card border border-wl-border mb-6">
           <CardHeader>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--wl-space-2)",
-                }}
-              >
-                <Globe size={20} style={{ color: "var(--wl-primary)" }} />
-                <CardTitle>Active Sessions</CardTitle>
+            <CardTitle className="text-wl-text flex items-center gap-2">
+              <Shield size={20} />
+              Security Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Change Password */}
+            <div>
+              <h4 className="text-base font-semibold text-wl-text mb-3">
+                Change Password
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-wl-text mb-2">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={passwordForm.current}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                    />
+                    <button
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-wl-text mb-2">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      value={passwordForm.new}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                    />
+                    <button
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                    >
+                      {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-wl-text mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={passwordForm.confirm}
+                      onChange={(e) =>
+                        setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                    />
+                    <button
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={handleRevokeAllSessions}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-sm)",
-                  border: "1px solid var(--wl-border)",
-                  background: "transparent",
-                  color: "var(--wl-text-muted)",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
-                Sign out all
+              <button className="mt-4 px-4 py-2 bg-wl-primary text-white rounded text-sm font-medium cursor-pointer hover:opacity-90">
+                Update Password
               </button>
             </div>
+
+            <div className="border-t border-wl-border pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-base font-semibold text-wl-text mb-1">
+                    Two-Factor Authentication
+                  </h4>
+                  <p className="text-wl-muted text-sm">
+                    {twoFAEnabled
+                      ? "Your account is protected with 2FA"
+                      : "Add an extra layer of security to your account"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTwoFAEnabled(!twoFAEnabled)}
+                  className={cn(
+                    "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
+                    twoFAEnabled ? "bg-wl-success" : "bg-wl-border"
+                  )}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Active Sessions */}
+        <Card className="bg-wl-card border border-wl-border mb-6">
+          <CardHeader>
+            <CardTitle className="text-wl-text flex items-center gap-2">
+              <Globe size={20} />
+              Active Sessions
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-4)",
-              }}
-            >
-              {sessions.map((session) => (
+            <div className="space-y-3">
+              {sessions.map((session, index) => (
                 <div
                   key={session.id}
-                  style={{
-                    padding: "var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: session.current ? "rgba(108, 99, 255, 0.05)" : "var(--wl-surface)",
-                  }}
+                  className={cn(
+                    "flex items-center justify-between p-4 bg-wl-bg rounded border border-wl-border",
+                    index !== sessions.length - 1 && "mb-2"
+                  )}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "var(--wl-space-3)",
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "var(--wl-space-2)",
-                          marginBottom: "var(--wl-space-2)",
-                        }}
-                      >
-                        <h4
-                          style={{
-                            margin: 0,
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 600,
-                            color: "var(--wl-text)",
-                          }}
-                        >
+                  <div className="flex items-center gap-4 flex-1">
+                    <Smartphone size={20} className="text-wl-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm font-medium text-wl-text">
                           {session.browser} on {session.platform}
-                        </h4>
+                        </p>
                         {session.current && (
-                          <Badge
-                            style={{
-                              background: "rgba(108, 99, 255, 0.15)",
-                              color: "var(--wl-primary)",
-                              fontSize: "var(--wl-text-xs)",
-                            }}
-                          >
+                          <Badge className="bg-wl-success text-white text-xs">
                             Current
                           </Badge>
                         )}
                       </div>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        {session.location}
+                      <p className="text-xs text-wl-muted">
+                        {session.location} • {session.ip}
                       </p>
-                      <p
-                        style={{
-                          margin: "0 0 var(--wl-space-1) 0",
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
-                        IP: {session.ip}
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-muted)",
-                        }}
-                      >
+                      <p className="text-xs text-wl-muted">
                         Last active: {session.lastActive}
                       </p>
                     </div>
-                    {!session.current && (
-                      <button
-                        onClick={() => handleRevokeSession(session.id)}
-                        style={{
-                          padding: "var(--wl-space-2) var(--wl-space-3)",
-                          borderRadius: "var(--wl-radius-sm)",
-                          border: "1px solid var(--wl-border)",
-                          background: "transparent",
-                          color: "var(--wl-text-muted)",
-                          fontSize: "var(--wl-text-xs)",
-                          fontWeight: 500,
-                          cursor: "pointer",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <LogOut size={14} style={{ marginRight: "var(--wl-space-1)" }} />
-                        Revoke
-                      </button>
-                    )}
                   </div>
+                  {!session.current && (
+                    <button
+                      onClick={() => handleLogoutSession(session.id)}
+                      className="text-wl-danger text-xs font-medium hover:opacity-70 cursor-pointer"
+                    >
+                      Log Out
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Danger Zone */}
-        <Card
-          style={{
-            ...cardStyle,
-            borderColor: "#ef4444",
-            borderWidth: "1px",
-          }}
-        >
+        {/* Delete Account */}
+        <Card className="bg-wl-card border border-wl-border">
           <CardHeader>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
-            >
-              <AlertTriangle size={20} style={{ color: "#ef4444" }} />
-              <CardTitle style={{ color: "#ef4444" }}>Danger Zone</CardTitle>
-            </div>
+            <CardTitle className="text-wl-text flex items-center gap-2">
+              <AlertTriangle size={20} className="text-wl-danger" />
+              Delete Account
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {!showDeleteConfirm ? (
-              <div>
-                <p
-                  style={{
-                    margin: "0 0 var(--wl-space-3) 0",
-                    fontSize: "var(--wl-text-sm)",
-                    color: "var(--wl-text-muted)",
-                  }}
-                >
-                  Once you delete your account, there is no going back. Please
-                  be certain.
-                </p>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  style={{
-                    padding: "var(--wl-space-2) var(--wl-space-4)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid #ef4444",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    color: "#ef4444",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete Account
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{
-                  padding: "var(--wl-space-4)",
-                  borderRadius: "var(--wl-radius-md)",
-                  background: "rgba(239, 68, 68, 0.05)",
-                  borderLeft: "3px solid #ef4444",
-                }}
+            <p className="text-wl-muted text-sm mb-4">
+              Once you delete your account, there is no going back. Please be certain.
+            </p>
+            {!showDeleteConfirm && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-4 py-2 bg-wl-danger text-white rounded text-sm font-medium cursor-pointer hover:opacity-90"
               >
-                <p
-                  style={{
-                    margin: "0 0 var(--wl-space-3) 0",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 600,
-                    color: "#ef4444",
-                  }}
-                >
-                  Are you absolutely sure?
+                Delete Account
+              </button>
+            )}
+            {showDeleteConfirm && (
+              <div className="p-4 bg-wl-bg rounded border border-wl-danger border-opacity-30">
+                <p className="text-wl-text text-sm mb-4">
+                  Are you absolutely sure? This action cannot be undone.
                 </p>
-                <p
-                  style={{
-                    margin: "0 0 var(--wl-space-4) 0",
-                    fontSize: "var(--wl-text-xs)",
-                    color: "var(--wl-text-muted)",
-                  }}
-                >
-                  This action cannot be undone. Your account and all associated
-                  data will be permanently deleted.
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-3)",
-                  }}
-                >
-                  <button
-                    onClick={() => {
-                      console.log("Account deleted");
-                      setShowDeleteConfirm(false);
-                    }}
-                    style={{
-                      padding: "var(--wl-space-2) var(--wl-space-4)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid #ef4444",
-                      background: "#ef4444",
-                      color: "white",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Yes, Delete My Account
-                  </button>
+                <div className="flex gap-3">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    style={{
-                      padding: "var(--wl-space-2) var(--wl-space-4)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border)",
-                      background: "transparent",
-                      color: "var(--wl-text)",
-                      fontSize: "var(--wl-text-sm)",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
+                    className="px-4 py-2 bg-wl-border text-wl-text rounded text-sm font-medium cursor-pointer hover:opacity-90"
                   >
                     Cancel
+                  </button>
+                  <button className="px-4 py-2 bg-wl-danger text-white rounded text-sm font-medium cursor-pointer hover:opacity-90">
+                    Delete My Account
                   </button>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 }

@@ -254,88 +254,61 @@ export default function WidgetConfigPage() {
               </CardHeader>
               <CardContent className="flex flex-col gap-4">&nbsp;
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "8px" }}>
+                  <label className="block text-wl-text text-xs font-medium mb-2">
                     Primary Color
                   </label>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <div className="flex gap-2 items-center">
                     <input
                       type="color"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      style={{ width: "48px", height: "40px", borderRadius: "6px", border: "1px solid var(--wl-border)", cursor: "pointer" }}
+                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
                     />
                     <input
                       type="text"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      style={{
-                        flex: 1,
-                        padding: "6px 10px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "4px",
-                        color: "var(--wl-text)",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                      }}
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "8px" }}>
+                  <label className="block text-wl-text text-xs font-medium mb-2">
                     Background Color
                   </label>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <div className="flex gap-2 items-center">
                     <input
                       type="color"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      style={{ width: "48px", height: "40px", borderRadius: "6px", border: "1px solid var(--wl-border)", cursor: "pointer" }}
+                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
                     />
                     <input
                       type="text"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      style={{
-                        flex: 1,
-                        padding: "6px 10px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "4px",
-                        color: "var(--wl-text)",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                      }}
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "8px" }}>
+                  <label className="block text-wl-text text-xs font-medium mb-2">
                     Text Color
                   </label>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <div className="flex gap-2 items-center">
                     <input
                       type="color"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      style={{ width: "48px", height: "40px", borderRadius: "6px", border: "1px solid var(--wl-border)", cursor: "pointer" }}
+                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
                     />
                     <input
                       type="text"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      style={{
-                        flex: 1,
-                        padding: "6px 10px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "4px",
-                        color: "var(--wl-text)",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                      }}
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -354,19 +327,9 @@ export default function WidgetConfigPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  style={{
-                    backgroundColor: "var(--wl-bg)",
-                    borderRadius: "8px",
-                    border: "1px solid var(--wl-border)",
-                    padding: "16px",
-                    minHeight: "400px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <div className="bg-wl-bg rounded-lg border border-wl-border p-4 min-h-96 flex items-center justify-center">
                   <div
+                    className="flex flex-col gap-3 overflow-hidden"
                     style={{
                       width: `${Math.min(parseInt(widgetWidth), 280)}px`,
                       height: `${Math.min(parseInt(widgetHeight), 380)}px`,
@@ -375,26 +338,16 @@ export default function WidgetConfigPage() {
                       border: `1px solid ${primaryColor}`,
                       padding: "16px",
                       boxShadow: shadowEnabled ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "12px",
-                      overflow: "hidden",
                     }}
                   >
-                    <div style={{ color: textColor, fontWeight: "600", fontSize: "14px" }}>
+                    <div className="font-semibold text-sm" style={{ color: textColor }}>
                       Witylogix Widget
                     </div>
 
                     {cartSelectorEnabled && (
                       <div
-                        style={{
-                          padding: "10px",
-                          backgroundColor: primaryColor,
-                          borderRadius: "4px",
-                          color: "white",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                        }}
+                        className="p-2.5 rounded text-white text-xs font-medium"
+                        style={{ backgroundColor: primaryColor }}
                       >
                         Select Delivery
                       </div>
@@ -402,20 +355,14 @@ export default function WidgetConfigPage() {
 
                     {shippingCalcEnabled && (
                       <div
-                        style={{
-                          padding: "10px",
-                          backgroundColor: primaryColor,
-                          borderRadius: "4px",
-                          color: "white",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                        }}
+                        className="p-2.5 rounded text-white text-xs font-medium"
+                        style={{ backgroundColor: primaryColor }}
                       >
                         Calculate Shipping
                       </div>
                     )}
 
-                    <p style={{ color: textColor, fontSize: "11px", flex: 1, marginTop: "auto" }}>
+                    <p className="text-xs flex-1 mt-auto" style={{ color: textColor }}>
                       Widget configured with {language} language
                     </p>
                   </div>
@@ -432,48 +379,15 @@ export default function WidgetConfigPage() {
                 </CardTitle>
                 <CardDescription className="text-slate-400">Copy and paste to your website</CardDescription>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div
-                  style={{
-                    backgroundColor: "var(--wl-bg)",
-                    borderRadius: "6px",
-                    border: "1px solid var(--wl-border)",
-                    padding: "12px",
-                    maxHeight: "250px",
-                    overflowY: "auto",
-                  }}
-                >
-                  <pre
-                    style={{
-                      color: "var(--wl-primary)",
-                      fontSize: "11px",
-                      fontFamily: "monospace",
-                      margin: "0",
-                      lineHeight: "1.5",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                    }}
-                  >
+              <CardContent className="flex flex-col gap-3">
+                <div className="bg-wl-bg rounded border border-wl-border p-3 max-h-64 overflow-y-auto">
+                  <pre className="text-wl-primary text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
                     {embedCode}
                   </pre>
                 </div>
                 <button
                   onClick={handleCopyCode}
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    backgroundColor: "var(--wl-primary)",
-                    border: "none",
-                    borderRadius: "6px",
-                    color: "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
+                  className="w-full px-2 py-2 bg-wl-primary border-none rounded text-white cursor-pointer flex items-center justify-center gap-1.5 text-sm font-medium"
                 >
                   {copiedCode ? <Check size={16} /> : <Copy size={16} />}
                   {copiedCode ? "Copied!" : "Copy Code"}
@@ -486,34 +400,22 @@ export default function WidgetConfigPage() {
               <CardHeader>
                 <CardTitle className="text-slate-100">Installation</CardTitle>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <CardContent className="flex flex-col gap-2.5">
                 <div>
-                  <p style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", marginBottom: "4px" }}>
+                  <p className="text-wl-text text-xs font-medium mb-1">
                     1. Copy the embed code above
                   </p>
-                  <p style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", marginBottom: "4px" }}>
+                  <p className="text-wl-text text-xs font-medium mb-1">
                     2. Paste before closing &lt;/body&gt; tag
                   </p>
-                  <p style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "500", marginBottom: "4px" }}>
+                  <p className="text-wl-text text-xs font-medium mb-1">
                     3. Replace 'your-api-key-here' with your API key
                   </p>
-                  <p style={{ color: "var(--wl-text)", fontSize: "12px", fontWeight: "500" }}>
+                  <p className="text-wl-text text-xs font-medium">
                     4. Test on your website
                   </p>
                 </div>
-                <Button
-                  style={{
-                    width: "100%",
-                    backgroundColor: "var(--wl-primary)",
-                    color: "white",
-                    border: "none",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                >
+                <Button className="w-full bg-wl-primary text-white border-none px-2 py-2 rounded cursor-pointer text-sm font-medium">
                   View Full Documentation
                 </Button>
               </CardContent>

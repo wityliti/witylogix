@@ -366,7 +366,7 @@ export default function LocationsPage() {
                   )}
                 >
                   {t === "ALL" ? "All Types" : typeLabel(t as LocationType)}
-                  <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
+                  <span className="ml-1 opacity-70">{count}</span>
                 </button>
               );
             })}
@@ -375,6 +375,7 @@ export default function LocationsPage() {
 
         {/* Locations Grid + Detail */}
         <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
+
           {/* Locations Grid */}
           <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
             {filtered.map((location, i) => (
@@ -549,7 +550,7 @@ export default function LocationsPage() {
               <div className={cn("flex flex-col gap-4 flex-1")}>
                 {/* Address Info */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2")} style={{ letterSpacing: "0.04em" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wider")}>
                     Address
                   </div>
                   <div className={cn("text-sm text-wl-text-primary font-medium")}>
@@ -567,7 +568,7 @@ export default function LocationsPage() {
 
                 {/* Contact Info */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2")} style={{ letterSpacing: "0.04em" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-2 tracking-wider")}>
                     Contact
                   </div>
                   {selectedLocation.phone && (
@@ -586,7 +587,7 @@ export default function LocationsPage() {
 
                 {/* Performance Stats */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3 tracking-wider")}>
                     Performance
                   </div>
                   <div className={cn("grid grid-cols-2 gap-3")}>
@@ -634,7 +635,7 @@ export default function LocationsPage() {
                 {/* Operating Hours */}
                 {selectedLocation.operatingHours && (
                   <div>
-                    <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
+                    <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3 tracking-wider")}>
                       Operating Hours
                     </div>
                     <div className={cn("text-xs overflow-x-auto")}>
@@ -671,7 +672,7 @@ export default function LocationsPage() {
 
                 {/* Map Placeholder */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3")} style={{ letterSpacing: "0.04em" }}>
+                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase mb-3 tracking-wider")}>
                     Location
                   </div>
                   <div

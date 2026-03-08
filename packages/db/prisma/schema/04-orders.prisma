@@ -1,13 +1,14 @@
 // ─── ORDERS ─────────────────────────────────────────────────
-// Always shop-scoped. Orders come from a specific Shopify store
+// Always shop-scoped. Orders come from any e-commerce platform
 // and must stay within that shop's data boundary. Org users can
 // VIEW orders across shops but each order belongs to one shop.
 
 model Order {
   id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   shopId             String      @map("shop_id") @db.Uuid
-  shopifyOrderId     String      @map("shopify_order_id")
-  shopifyOrderNumber String?     @map("shopify_order_number")
+  externalOrderId    String      @map("external_order_id")
+  externalOrderNumber String?    @map("external_order_number")
+  source             String      @default("SHOPIFY") @map("source")
   status             OrderStatus @default(PENDING)
 
   // Customer info (snapshot at creation)
@@ -59,7 +60,7 @@ model Order {
   paymentTransactions PaymentTransaction[]
   codcollections      CODCollection[]
 
-  @@unique([shopId, shopifyOrderId])
+  @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])
   @@index([shopId, driverId])
   @@index([shopId, deliveryDate])

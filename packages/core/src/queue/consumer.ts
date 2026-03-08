@@ -125,9 +125,9 @@ export abstract class QueueConsumer {
     // Basic type-specific validations
     switch (job.type) {
       case "order_webhook":
-        if (!job.data.shopId || !job.data.shopifyOrderId) {
+        if (!job.data.shopId || !job.data.externalOrderId) {
           throw new QueueValidationError(
-            "OrderWebhookJob missing shopId or shopifyOrderId",
+            "OrderWebhookJob missing shopId or externalOrderId",
           );
         }
         break;
@@ -413,9 +413,9 @@ export abstract class QueueConsumer {
   private extractJobId(job: QueueJobPayload): string {
     switch (job.type) {
       case "order_webhook":
-        return `order_${job.data.shopifyOrderId}`;
+        return `order_${job.data.externalOrderId}`;
       case "product_webhook":
-        return `product_${job.data.shopifyProductId}`;
+        return `product_${job.data.externalProductId}`;
       case "driver_tracking":
         return `driver_${job.data.driverId}_${Date.now()}`;
       case "notification":

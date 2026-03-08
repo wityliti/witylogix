@@ -18,9 +18,9 @@ export interface CreateDeliveryOrderInput {
   shopId: string;
   userId: string;
 
-  // Order identification
-  shopifyOrderId: string;
-  shopifyOrderNumber?: string;
+  // Order identification (external platform agnostic)
+  externalOrderId: string;
+  externalOrderNumber?: string;
 
   // Customer information
   customerName: string;

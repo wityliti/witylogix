@@ -6,11 +6,13 @@
  */
 
 /**
- * Shopify order webhook payload — triggers order sync, fulfillment processing.
+ * External order webhook payload — triggers order sync, fulfillment processing.
+ * Default source is SHOPIFY, but supports any e-commerce platform.
  */
 export interface OrderWebhookJob {
   shopId: string;
-  shopifyOrderId: string;
+  externalOrderId: string;
+  source?: string; // Defaults to "SHOPIFY"
   payload: {
     id: string;
     created_at: string;
@@ -46,11 +48,13 @@ export interface OrderWebhookJob {
 }
 
 /**
- * Product data sync webhook — updates product catalog, collections.
+ * External product data sync webhook — updates product catalog, collections.
+ * Default source is SHOPIFY, but supports any e-commerce platform.
  */
 export interface ProductWebhookJob {
   shopId: string;
-  shopifyProductId: string;
+  externalProductId: string;
+  source?: string; // Defaults to "SHOPIFY"
   action: "create" | "update" | "delete";
   payload?: {
     id: string;

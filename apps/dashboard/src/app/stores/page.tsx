@@ -222,7 +222,7 @@ export default function StoresManagement() {
   };
 
   return (
-    <div style={{ background: "var(--wl-bg)" }}>
+    <div className="bg-wl-bg">
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -231,121 +231,87 @@ export default function StoresManagement() {
       `}</style>
 
       {/* Header */}
-      <div
-        style={{
-          padding: "32px 24px",
-          borderBottom: "1px solid var(--wl-border)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div className="px-6 py-8 border-b border-wl-border flex justify-between items-center">
         <div>
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: "var(--wl-text)",
-              margin: "0 0 8px 0",
-            }}
-          >
+          <h1 className="text-2xl font-bold text-wl-text mb-2">
             Connected Stores
           </h1>
-          <p style={{ color: "var(--wl-muted)", margin: "0", fontSize: "14px" }}>
+          <p className="text-wl-muted text-sm">
             Manage all your connected e-commerce stores in one place
           </p>
         </div>
         <button
           onClick={() => setShowAddStoreModal(!showAddStoreModal)}
-          style={{
-            background: "var(--wl-primary)",
-            color: "white",
-            border: "none",
-            padding: "10px 16px",
-            borderRadius: "6px",
-            fontSize: "14px",
-            fontWeight: "500",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
+          className="bg-wl-primary text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 cursor-pointer hover:opacity-90"
         >
-          <Plus style={{ width: "16px", height: "16px" }} />
+          <Plus size={16} />
           Add Store
         </button>
       </div>
 
-      <div style={{ padding: "24px" }}>
+      <div className="p-6">
         {/* Summary Stats */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            marginBottom: "32px",
-          }}
-        >
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-wl-card border border-wl-border">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-muted mb-2 text-xs">
                     Connected Stores
                   </p>
-                  <p style={{ fontSize: "28px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text">
                     {mockStores.filter((s) => s.status !== "disconnected").length}
                   </p>
                 </div>
-                <Store style={{ width: "28px", height: "28px", color: "var(--wl-primary)" }} />
+                <Store size={28} className="text-wl-primary" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card className="bg-wl-card border border-wl-border">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-muted mb-2 text-xs">
                     Total Products
                   </p>
-                  <p style={{ fontSize: "28px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text">
                     {mockStores.reduce((sum, s) => sum + s.productCount, 0).toLocaleString()}
                   </p>
                 </div>
-                <Package style={{ width: "28px", height: "28px", color: "#8b5cf6" }} />
+                <Package size={28} className="text-purple-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card className="bg-wl-card border border-wl-border">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-muted mb-2 text-xs">
                     Total Orders
                   </p>
-                  <p style={{ fontSize: "28px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text">
                     {mockStores.reduce((sum, s) => sum + s.orderCount, 0).toLocaleString()}
                   </p>
                 </div>
-                <ShoppingCart style={{ width: "28px", height: "28px", color: "#3b82f6" }} />
+                <ShoppingCart size={28} className="text-blue-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-            <CardContent style={{ padding: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Card className="bg-wl-card border border-wl-border">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
                 <div>
-                  <p style={{ color: "var(--wl-muted)", margin: "0 0 8px 0", fontSize: "12px" }}>
+                  <p className="text-wl-muted mb-2 text-xs">
                     Active Webhooks
                   </p>
-                  <p style={{ fontSize: "28px", fontWeight: "700", color: "var(--wl-text)", margin: "0" }}>
+                  <p className="text-2xl font-bold text-wl-text">
                     {mockStores.reduce((sum, s) => sum + s.webhooksActive, 0)}
                   </p>
                 </div>
-                <Zap style={{ width: "28px", height: "28px", color: "var(--wl-success)" }} />
+                <Zap size={28} className="text-wl-success" />
               </div>
             </CardContent>
           </Card>
@@ -353,126 +319,38 @@ export default function StoresManagement() {
 
         {/* Add Store Modal */}
         {showAddStoreModal && (
-          <Card
-            style={{
-              background: "var(--wl-card)",
-              border: "1px solid var(--wl-border)",
-              marginBottom: "24px",
-            }}
-          >
-            <CardContent style={{ padding: "20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "16px",
-                }}
-              >
-                <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0" }}>
+          <Card className="bg-wl-card border border-wl-border mb-6">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold text-wl-text">
                   Connect New Store
                 </h3>
                 <button
                   onClick={() => setShowAddStoreModal(false)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "var(--wl-muted)",
-                    cursor: "pointer",
-                    fontSize: "20px",
-                  }}
+                  className="bg-transparent border-none text-wl-muted cursor-pointer text-xl hover:opacity-70"
                 >
                   ✕
                 </button>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "12px",
-                }}
-              >
-                <button
-                  style={{
-                    padding: "16px",
-                    background: "var(--wl-bg)",
-                    border: "1px solid var(--wl-border)",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "8px",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(108, 99, 255, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg)";
-                  }}
-                >
-                  <Store style={{ width: "24px", height: "24px", color: "var(--wl-primary)" }} />
-                  <span style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "500" }}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
+                  <Store size={24} className="text-wl-primary" />
+                  <span className="text-wl-text text-sm font-medium">
                     Connect Shopify
                   </span>
                 </button>
 
-                <button
-                  style={{
-                    padding: "16px",
-                    background: "var(--wl-bg)",
-                    border: "1px solid var(--wl-border)",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "8px",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(108, 99, 255, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg)";
-                  }}
-                >
-                  <Globe style={{ width: "24px", height: "24px", color: "var(--wl-primary)" }} />
-                  <span style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "500" }}>
+                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
+                  <Globe size={24} className="text-wl-primary" />
+                  <span className="text-wl-text text-sm font-medium">
                     Connect WooCommerce
                   </span>
                 </button>
 
-                <button
-                  style={{
-                    padding: "16px",
-                    background: "var(--wl-bg)",
-                    border: "1px solid var(--wl-border)",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "8px",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(108, 99, 255, 0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border)";
-                    (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg)";
-                  }}
-                >
-                  <Zap style={{ width: "24px", height: "24px", color: "var(--wl-primary)" }} />
-                  <span style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "500" }}>
+                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
+                  <Zap size={24} className="text-wl-primary" />
+                  <span className="text-wl-text text-sm font-medium">
                     Custom API
                   </span>
                 </button>
@@ -482,74 +360,34 @@ export default function StoresManagement() {
         )}
 
         {/* Store Cards Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-            gap: "16px",
-            marginBottom: "32px",
-          }}
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
           {mockStores.map((store) => (
             <Card
               key={store.id}
-              style={{
-                background: "var(--wl-card)",
-                border: "1px solid var(--wl-border)",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-primary)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-border)";
-              }}
+              className="bg-wl-card border border-wl-border cursor-pointer transition-all hover:border-wl-primary"
             >
-              <CardContent style={{ padding: "20px" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: "12px",
-                  }}
-                >
+              <CardContent className="p-5">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "600",
-                        color: "var(--wl-text)",
-                        margin: "0 0 4px 0",
-                      }}
-                    >
+                    <h3 className="text-base font-semibold text-wl-text mb-1">
                       {store.name}
                     </h3>
-                    <p style={{ color: "var(--wl-muted)", margin: "0", fontSize: "12px" }}>
+                    <p className="text-wl-muted text-xs">
                       {getPlatformIcon(store.platform)}
                     </p>
                   </div>
-                  <button
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--wl-muted)",
-                      cursor: "pointer",
-                      padding: "4px",
-                    }}
-                  >
-                    <MoreVertical style={{ width: "16px", height: "16px" }} />
+                  <button className="bg-transparent border-none text-wl-muted cursor-pointer p-1 hover:opacity-70">
+                    <MoreVertical size={16} />
                   </button>
                 </div>
 
-                <p style={{ color: "var(--wl-muted)", margin: "0 0 16px 0", fontSize: "12px", wordBreak: "break-all" }}>
+                <p className="text-wl-muted mb-4 text-xs break-all">
                   {store.domain}
                 </p>
 
                 {/* Status and Sync */}
-                <div style={{ marginBottom: "16px" }}>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                <div className="mb-4">
+                  <div className="flex gap-2 items-center mb-2">
                     <Badge
                       style={{
                         background: getStatusColor(store.status) + "20",
@@ -561,9 +399,9 @@ export default function StoresManagement() {
                     </Badge>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div className="flex items-center gap-1.5">
                     {getSyncIcon(store.syncStatus)}
-                    <span style={{ fontSize: "12px", color: "var(--wl-muted)" }}>
+                    <span className="text-xs text-wl-muted">
                       {store.syncStatus === "syncing"
                         ? "Syncing..."
                         : store.syncStatus === "error"
@@ -574,90 +412,49 @@ export default function StoresManagement() {
                 </div>
 
                 {/* Stats */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
-                    marginBottom: "16px",
-                    paddingBottom: "16px",
-                    borderBottom: "1px solid var(--wl-border)",
-                  }}
-                >
+                <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-wl-border">
                   <div>
-                    <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "11px" }}>
+                    <p className="text-wl-muted mb-1 text-xs">
                       Products
                     </p>
-                    <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "16px", fontWeight: "600" }}>
+                    <p className="text-wl-text font-semibold">
                       {store.productCount.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "11px" }}>
+                    <p className="text-wl-muted mb-1 text-xs">
                       Orders
                     </p>
-                    <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "16px", fontWeight: "600" }}>
+                    <p className="text-wl-text font-semibold">
                       {store.orderCount.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "11px" }}>
+                    <p className="text-wl-muted mb-1 text-xs">
                       Webhooks
                     </p>
-                    <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "16px", fontWeight: "600" }}>
+                    <p className="text-wl-text font-semibold">
                       {store.webhooksActive}
                     </p>
                   </div>
                   <div>
-                    <p style={{ color: "var(--wl-muted)", margin: "0 0 4px 0", fontSize: "11px" }}>
+                    <p className="text-wl-muted mb-1 text-xs">
                       Last Sync
                     </p>
-                    <p style={{ color: "var(--wl-text)", margin: "0", fontSize: "16px", fontWeight: "600" }}>
+                    <p className="text-wl-text font-semibold">
                       {store.lastSyncDuration}
                     </p>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      background: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "4px",
-                      color: "var(--wl-text)",
-                      fontSize: "12px",
-                      fontWeight: "500",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <RefreshCw style={{ width: "12px", height: "12px" }} />
+                <div className="flex gap-2">
+                  <button className="flex-1 px-2 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-medium cursor-pointer flex items-center justify-center gap-1 hover:opacity-80">
+                    <RefreshCw size={12} />
                     Sync Now
                   </button>
-                  <button
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      background: "rgba(108, 99, 255, 0.1)",
-                      border: "1px solid var(--wl-primary)",
-                      borderRadius: "4px",
-                      color: "var(--wl-primary)",
-                      fontSize: "12px",
-                      fontWeight: "500",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <Settings style={{ width: "12px", height: "12px" }} />
+                  <button className="flex-1 px-2 py-2 bg-wl-primary bg-opacity-10 border border-wl-primary rounded text-wl-primary text-xs font-medium cursor-pointer flex items-center justify-center gap-1 hover:opacity-80">
+                    <Settings size={12} />
                     Settings
                   </button>
                 </div>
@@ -667,92 +464,32 @@ export default function StoresManagement() {
         </div>
 
         {/* Sync History */}
-        <Card style={{ background: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
-          <CardContent style={{ padding: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--wl-text)", margin: "0 0 16px 0" }}>
+        <Card className="bg-wl-card border border-wl-border">
+          <CardContent className="p-5">
+            <h3 className="text-base font-semibold text-wl-text mb-4">
               Recent Sync Activity
             </h3>
 
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "14px",
-                }}
-              >
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr style={{ borderBottom: "1px solid var(--wl-border)" }}>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "left",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                  <tr className="border-b border-wl-border">
+                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
                       Store
                     </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "left",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
                       Time
                     </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "center",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <th className="px-3 py-3 text-center text-wl-muted font-medium text-xs uppercase">
                       Status
                     </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <th className="px-3 py-3 text-right text-wl-muted font-medium text-xs uppercase">
                       Items
                     </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "right",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <th className="px-3 py-3 text-right text-wl-muted font-medium text-xs uppercase">
                       Duration
                     </th>
-                    <th
-                      style={{
-                        padding: "12px",
-                        textAlign: "left",
-                        color: "var(--wl-muted)",
-                        fontWeight: "500",
-                        fontSize: "12px",
-                        textTransform: "uppercase",
-                      }}
-                    >
+                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
                       Message
                     </th>
                   </tr>
@@ -765,24 +502,15 @@ export default function StoresManagement() {
                     return (
                       <tr
                         key={history.id}
-                        style={{
-                          borderBottom: "1px solid var(--wl-border)",
-                          transition: "background 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLTableRowElement).style.background = "rgba(108, 99, 255, 0.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLTableRowElement).style.background = "transparent";
-                        }}
+                        className="border-b border-wl-border transition-all hover:bg-wl-primary hover:bg-opacity-5"
                       >
-                        <td style={{ padding: "12px", color: "var(--wl-text)" }}>
-                          <span style={{ fontWeight: "500" }}>{store?.name}</span>
+                        <td className="px-3 py-3 text-wl-text font-medium">
+                          {store?.name}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "13px" }}>
+                        <td className="px-3 py-3 text-wl-muted text-sm">
                           {new Date(history.timestamp).toLocaleString()}
                         </td>
-                        <td style={{ padding: "12px", textAlign: "center" }}>
+                        <td className="px-3 py-3 text-center">
                           <Badge
                             style={{
                               background: statusColor + "20",
@@ -793,13 +521,13 @@ export default function StoresManagement() {
                             {history.status.charAt(0).toUpperCase() + history.status.slice(1)}
                           </Badge>
                         </td>
-                        <td style={{ padding: "12px", textAlign: "right", color: "var(--wl-text)" }}>
+                        <td className="px-3 py-3 text-right text-wl-text">
                           {history.itemsSynced.toLocaleString()}
                         </td>
-                        <td style={{ padding: "12px", textAlign: "right", color: "var(--wl-muted)", fontSize: "13px" }}>
+                        <td className="px-3 py-3 text-right text-wl-muted text-sm">
                           {history.duration}
                         </td>
-                        <td style={{ padding: "12px", color: "var(--wl-muted)", fontSize: "13px" }}>
+                        <td className="px-3 py-3 text-wl-muted text-sm">
                           {history.message}
                         </td>
                       </tr>

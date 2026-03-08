@@ -221,13 +221,31 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/customers/data_request", async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = request.body as any;
+    const customerId = payload.customer?.id;
+    const customerEmail = payload.customer?.email;
+
     request.log.info(
-      { shopDomain: payload.shop_domain, customerId: payload.customer?.id },
+      { shopDomain: payload.shop_domain, customerId },
       "GDPR: customers/data_request",
     );
 
-    // TODO: Queue job to compile customer data for export
+    // Queue job to compile customer data for export
     // This is required for Shopify app certification
+    const notificationQueue = getNotificationQueue();
+    await notificationQueue.add(
+      'gdpr.customer_data_request',
+      {
+        type: 'gdpr_data_export',
+        data: {
+          shopId: request.shopId,
+          customerId,
+          customerEmail,
+          requestedAt: new Date().toISOString(),
+          shopDomain: payload.shop_domain,
+        },
+      },
+      { priority: 'high' }
+    );
 
     return { status: "acknowledged" };
   });
@@ -263,13 +281,38 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/shop/redact", async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = request.body as any;
+    const shopDomain = payload.shop_domain;
+    const shopId = request.shopId;
+
     request.log.warn(
-      { shopDomain: payload.shop_domain },
+      { shopDomain },
       "GDPR: shop/redact — full tenant deletion requested",
     );
 
-    // TODO: Queue cascading tenant data deletion job
+    // Queue cascading tenant data deletion job
     // This must delete ALL tenant data within 48 hours (Shopify requirement)
+    const notificationQueue = getNotificationQueue();
+    await notificationQueue.add(
+      'gdpr.shop_redact',
+      {
+        type: 'gdpr_shop_deletion',
+        data: {
+          shopId,
+          shopDomain,
+          requestedAt: new Date().toISOString(),
+          cascadeDelete: true,
+        },
+      },
+      {
+        priority: 'high',
+        // Ensure deletion happens within 48 hours
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 5000,
+        }
+      }
+    );
 
     return { status: "acknowledged" };
   });

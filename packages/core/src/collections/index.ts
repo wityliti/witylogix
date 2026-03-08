@@ -15,7 +15,9 @@ export type {
   UpdateCollectionRequest,
   AddProductsRequest,
   ReorderProductsRequest,
+  PlatformCollectionData,
   ShopifyCollectionData,
   PaginationOptions,
   CollectionListResponse,
+  CollectionPlatformAdapter,
 } from './types';

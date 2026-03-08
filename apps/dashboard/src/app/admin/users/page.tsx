@@ -190,7 +190,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
             }
             className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("overview") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("overview") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Overview
           </button>
           {expandedSections.includes("overview") && (
@@ -251,7 +251,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
             }
             className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("activity") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("activity") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Activity
           </button>
           {expandedSections.includes("activity") && (
@@ -288,7 +288,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
             }
             className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("permissions") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("permissions") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Permissions ({user.permissions.length})
           </button>
           {expandedSections.includes("permissions") && (
@@ -314,7 +314,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
             }
             className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("auth") ? <ChevronUp style={{ width: "16px", height: "16px" }} /> : <ChevronDown style={{ width: "16px", height: "16px" }} />}
+            {expandedSections.includes("auth") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Auth Providers ({user.authProviders.length})
           </button>
           {expandedSections.includes("auth") && (
@@ -380,7 +380,7 @@ export default function AdminUsersPage() {
         subtitle="Manage platform users, roles, and permissions"
         actions={
           <Button variant="primary" size="md">
-            <Plus style={{ width: "16px", height: "16px", marginRight: "6px" }} />
+            <Plus className="w-4 h-4 mr-1.5" />
             Add User
           </Button>
         }
@@ -388,7 +388,7 @@ export default function AdminUsersPage() {
 
       <div className="p-6">
         {/* Stats */}
-        <div className="grid gap-4 mb-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
           <Card className="bg-wl-bg-surface border-wl-border-subtle">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
@@ -400,7 +400,7 @@ export default function AdminUsersPage() {
                     {mockUsers.length}
                   </p>
                 </div>
-                <Users style={{ width: "24px", height: "24px", color: "var(--wl-primary-500)" }} />
+                <Users className="w-6 h-6 text-wl-primary-500" />
               </div>
             </CardContent>
           </Card>
@@ -416,7 +416,7 @@ export default function AdminUsersPage() {
                     {mockUsers.filter((u) => u.status === "active").length}
                   </p>
                 </div>
-                <UserCheck style={{ width: "24px", height: "24px", color: "#10b981" }} />
+                <UserCheck className="w-6 h-6 text-green-500" />
               </div>
             </CardContent>
           </Card>
@@ -432,7 +432,7 @@ export default function AdminUsersPage() {
                     {mockUsers.filter((u) => u.role === "admin").length}
                   </p>
                 </div>
-                <Shield style={{ width: "24px", height: "24px", color: "#ef4444" }} />
+                <Shield className="w-6 h-6 text-red-500" />
               </div>
             </CardContent>
           </Card>
@@ -448,7 +448,7 @@ export default function AdminUsersPage() {
                     {mockUsers.filter((u) => u.status === "invited").length}
                   </p>
                 </div>
-                <Mail style={{ width: "24px", height: "24px", color: "#f59e0b" }} />
+                <Mail className="w-6 h-6 text-amber-500" />
               </div>
             </CardContent>
           </Card>
@@ -467,10 +467,10 @@ export default function AdminUsersPage() {
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
           </div>
           <Button variant="secondary" size="sm">
-            <Filter style={{ width: "16px", height: "16px" }} />
+            <Filter className="w-4 h-4" />
           </Button>
           <Button variant="secondary" size="sm">
-            <Download style={{ width: "16px", height: "16px" }} />
+            <Download className="w-4 h-4" />
           </Button>
         </div>
 
@@ -561,7 +561,7 @@ export default function AdminUsersPage() {
                           handleUserClick(user);
                         }}
                       >
-                        <MoreVertical style={{ width: "16px", height: "16px" }} />
+                        <MoreVertical className="w-4 h-4" />
                       </Button>
                     </td>
                   </tr>

@@ -10,6 +10,7 @@ import { cn } from "../../lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    DRIVERS PAGE — Enhanced fleet management with detail panel
+   MIGRATION STATUS: Inline styles → Tailwind CSS (COMPLETE)
    ═══════════════════════════════════════════════════════════ */
 
 type DriverStatus = "ACTIVE" | "ON_DELIVERY" | "ON_BREAK" | "OFFLINE";

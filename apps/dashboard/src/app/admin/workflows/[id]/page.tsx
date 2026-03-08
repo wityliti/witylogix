@@ -154,13 +154,13 @@ const MOCK_EXECUTION: WorkflowExecutionDetail = {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "completed":
-      return <CheckCircle2 size={20} style={{ color: "var(--wl-success-400)" }} />;
+      return <CheckCircle2 size={20} className="text-wl-success-400" />;
     case "failed":
-      return <AlertCircle size={20} style={{ color: "var(--wl-danger-400)" }} />;
+      return <AlertCircle size={20} className="text-wl-danger-400" />;
     case "running":
-      return <Loader2 size={20} style={{ color: "var(--wl-info-400)", animation: "spin 1s linear infinite" }} />;
+      return <Loader2 size={20} className="text-wl-info-400 animate-spin" />;
     case "compensating":
-      return <RotateCcw size={20} style={{ color: "var(--wl-warning-400)" }} />;
+      return <RotateCcw size={20} className="text-wl-warning-400" />;
     default:
       return null;
   }
@@ -197,19 +197,7 @@ const formatDateTime = (isoStr: string): string => {
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
-    <pre
-      style={{
-        background: "var(--wl-bg-overlay)",
-        border: "1px solid var(--wl-border-subtle)",
-        borderRadius: "var(--wl-radius-md)",
-        padding: "var(--wl-space-3)",
-        fontSize: "var(--wl-text-xs)",
-        color: "var(--wl-text-secondary)",
-        overflow: "auto",
-        fontFamily: "var(--wl-font-mono)",
-        lineHeight: 1.5,
-      }}
-    >
+    <pre className="bg-wl-bg-overlay border border-wl-border-subtle rounded-lg p-3 text-xs text-wl-text-secondary overflow-auto font-mono leading-relaxed">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -219,53 +207,20 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        paddingLeft: "var(--wl-space-6)",
-      }}
-    >
+    <div className="relative pl-6">
       {/* Vertical line */}
-      <div
-        style={{
-          position: "absolute",
-          left: "8px",
-          top: "var(--wl-space-4)",
-          bottom: 0,
-          width: "2px",
-          background: "var(--wl-border-subtle)",
-        }}
-      />
+      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-wl-border-subtle" />
 
       {steps.map((step, idx) => (
         <div
           key={step.id}
-          style={{
-            marginBottom: idx < steps.length - 1 ? "var(--wl-space-5)" : 0,
-            position: "relative",
-          }}
+          className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}
         >
           {/* Timeline dot */}
-          <div
-            style={{
-              position: "absolute",
-              left: "-20px",
-              top: "var(--wl-space-2)",
-              width: "18px",
-              height: "18px",
-              borderRadius: "50%",
-              background: "var(--wl-bg-primary)",
-              border: "3px solid var(--wl-border-subtle)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-wl-bg-primary border-4 border-wl-border-subtle flex items-center justify-center">
             <div
+              className="w-2 h-2 rounded-full"
               style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
                 background:
                   step.status === "completed"
                     ? "var(--wl-success-400)"
@@ -281,39 +236,24 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
           {/* Step card */}
           <Card
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
+            className="cursor-pointer transition-all"
             style={{
-              cursor: "pointer",
-              transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-              border: expandedStep === step.id ? "1px solid var(--wl-accent)" : "1px solid var(--wl-border-subtle)",
+              borderColor: expandedStep === step.id ? "var(--wl-accent)" : undefined,
               background:
                 expandedStep === step.id ? "var(--wl-bg-tertiary)" : "var(--wl-bg-elevated)",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "var(--wl-space-4)",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)", flex: 1 }}>
-                <div className="flex items-center gap-2" >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-2">
                   {getStatusIcon(step.status)}
                 </div>
-                <div className="flex-1" >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-2)",
-                      marginBottom: "var(--wl-space-1)",
-                    }}
-                  >
-                    <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", fontWeight: 600 }}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-wl-text-tertiary font-semibold">
                       Step {step.number}
                     </span>
-                    <h4 style={{ margin: 0, fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-primary)" }}>
+                    <h4 className="m-0 text-sm font-semibold text-wl-text-primary">
                       {step.name}
                     </h4>
                     <Badge
@@ -330,19 +270,13 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                       {step.status}
                     </Badge>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                  <span className="text-xs text-wl-text-tertiary">
                     Duration: {step.duration}
                   </span>
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--wl-space-2)",
-                }}
-              >
+              <div className="flex items-center gap-2">
                 {expandedStep === step.id ? (
                   <ChevronUp size={18} className="text-wl-text-tertiary"  />
                 ) : (
@@ -353,16 +287,10 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
             {/* Expanded content */}
             {expandedStep === step.id && (
-              <div
-                style={{
-                  marginTop: "var(--wl-space-4)",
-                  paddingTop: "var(--wl-space-4)",
-                  borderTop: "1px solid var(--wl-border-subtle)",
-                }}
-              >
+              <div className="mt-4 pt-4 border-t border-wl-border-subtle">
                 {step.input && (
-                  <div className="mb-4" >
-                    <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
+                  <div className="mb-4">
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
                       Input
                     </h5>
                     <JsonViewer data={step.input} />
@@ -370,8 +298,8 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
 
                 {step.output && (
-                  <div className="mb-4" >
-                    <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
+                  <div className="mb-4">
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
                       Output
                     </h5>
                     <JsonViewer data={step.output} />
@@ -379,33 +307,16 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 )}
 
                 {step.error && (
-                  <div className="mb-4" >
-                    <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-danger-400)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
+                  <div className="mb-4">
+                    <h5 className="text-xs font-semibold text-wl-danger-400 uppercase mb-2 tracking-wider">
                       Error Details
                     </h5>
-                    <div
-                      style={{
-                        background: "rgba(239, 68, 68, 0.1)",
-                        border: "1px solid rgba(239, 68, 68, 0.2)",
-                        borderRadius: "var(--wl-radius-md)",
-                        padding: "var(--wl-space-3)",
-                      }}
-                    >
-                      <p style={{ margin: "0 0 var(--wl-space-2) 0", color: "var(--wl-danger-400)", fontSize: "var(--wl-text-sm)", fontWeight: 500 }}>
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                      <p className="m-0 mb-2 text-wl-danger-400 text-sm font-medium">
                         {step.error.message}
                       </p>
                       {step.error.stack && (
-                        <pre
-                          style={{
-                            margin: 0,
-                            fontSize: "var(--wl-text-xs)",
-                            color: "var(--wl-text-tertiary)",
-                            fontFamily: "var(--wl-font-mono)",
-                            overflow: "auto",
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                          }}
-                        >
+                        <pre className="m-0 text-xs text-wl-text-tertiary font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
                         </pre>
                       )}
@@ -415,7 +326,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
                 {step.compensationStatus && (
                   <div>
-                    <h5 style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", marginBottom: "var(--wl-space-2)", letterSpacing: "0.04em" }}>
+                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
                       Compensation Status
                     </h5>
                     <Badge
@@ -445,21 +356,8 @@ export default function WorkflowExecutionDetailPage({
   return (
     <div>
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "var(--wl-space-5) var(--wl-space-6)",
-          borderBottom: "1px solid var(--wl-border-subtle)",
-          background: "var(--wl-bg-surface)",
-          backdropFilter: "blur(12px)",
-          position: "sticky",
-          top: 0,
-          zIndex: 40,
-        }}
-      >
-        <div className="flex items-center gap-4" >
+      <div className="flex items-center justify-between p-5 px-6 border-b border-wl-border-subtle bg-wl-bg-surface backdrop-blur-sm sticky top-0 z-40">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -470,31 +368,17 @@ export default function WorkflowExecutionDetailPage({
             Back
           </Button>
           <div>
-            <h1
-              style={{
-                fontSize: "var(--wl-text-xl)",
-                fontWeight: 700,
-                color: "var(--wl-text-primary)",
-                margin: 0,
-                letterSpacing: "-0.02em",
-              }}
-            >
+            <h1 className="text-xl font-bold text-wl-text-primary m-0 tracking-tight">
               {execution.workflowName}
             </h1>
-            <p
-              style={{
-                fontSize: "var(--wl-text-sm)",
-                color: "var(--wl-text-tertiary)",
-                margin: "2px 0 0 0",
-              }}
-            >
+            <p className="text-sm text-wl-text-tertiary m-0 mt-0.5">
               {execution.executionId}
             </p>
           </div>
           <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
         </div>
 
-        <div className="flex gap-2" >
+        <div className="flex gap-2">
           {execution.status === "running" && (
             <>
               <Button variant="secondary" size="sm">
@@ -512,16 +396,9 @@ export default function WorkflowExecutionDetailPage({
         </div>
       </div>
 
-      <div className="p-6" >
+      <div className="p-6">
         {/* Stats Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Steps"
             value={execution.totalSteps}
@@ -559,14 +436,7 @@ export default function WorkflowExecutionDetailPage({
         </Card>
 
         {/* Execution Metadata */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
           {/* Input Data */}
           <Card>
             <CardHeader>
@@ -583,13 +453,13 @@ export default function WorkflowExecutionDetailPage({
               <CardTitle>Execution Context</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3" >
+              <div className="flex flex-col gap-3">
                 {Object.entries(execution.context).map(([key, value]) => (
-                  <div key={key} className="flex gap-2" >
-                    <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", minWidth: 80, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  <div key={key} className="flex gap-2">
+                    <span className="text-xs font-semibold text-wl-text-secondary min-w-20 uppercase tracking-wider">
                       {key}
                     </span>
-                    <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", fontFamily: "var(--wl-font-mono)" }}>
+                    <span className="text-sm text-wl-text-primary font-mono">
                       {value}
                     </span>
                   </div>
@@ -604,50 +474,50 @@ export default function WorkflowExecutionDetailPage({
               <CardTitle>Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3" >
+              <div className="flex flex-col gap-3">
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <Calendar size={14} className="text-wl-text-tertiary"  />
-                    <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar size={14} className="text-wl-text-tertiary" />
+                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
                       Started
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", display: "block", marginLeft: 20 }}>
+                  <span className="text-sm text-wl-text-primary block ml-5">
                     {formatDateTime(execution.startedAt)}
                   </span>
                 </div>
                 {execution.completedAt && (
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                      <CheckCircle2 size={14} style={{ color: "var(--wl-success-400)" }} />
-                      <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle2 size={14} className="text-wl-success-400" />
+                      <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
                         Completed
                       </span>
                     </div>
-                    <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", display: "block", marginLeft: 20 }}>
+                    <span className="text-sm text-wl-text-primary block ml-5">
                       {formatDateTime(execution.completedAt)}
                     </span>
                   </div>
                 )}
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <User size={14} className="text-wl-text-tertiary"  />
-                    <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <User size={14} className="text-wl-text-tertiary" />
+                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
                       Created By
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", display: "block", marginLeft: 20, textTransform: "capitalize" }}>
+                  <span className="text-sm text-wl-text-primary block ml-5 capitalize">
                     {execution.createdBy}
                   </span>
                 </div>
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)", marginBottom: "var(--wl-space-1)" }}>
-                    <RotateCcw size={14} className="text-wl-text-tertiary"  />
-                    <span style={{ fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <RotateCcw size={14} className="text-wl-text-tertiary" />
+                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
                       Retry Count
                     </span>
                   </div>
-                  <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-primary)", display: "block", marginLeft: 20 }}>
+                  <span className="text-sm text-wl-text-primary block ml-5">
                     {execution.retryCount}
                   </span>
                 </div>
@@ -659,16 +529,11 @@ export default function WorkflowExecutionDetailPage({
         {/* Error Details Card (if failed) */}
         {execution.status === "failed" && execution.steps.some((s) => s.error) && (
           <Card
-            style={{
-              borderColor: "var(--wl-danger-400)",
-              borderLeftWidth: 4,
-              borderLeftStyle: "solid",
-              marginBottom: "var(--wl-space-6)",
-            }}
+            className="border-l-4 border-l-wl-danger-400 mb-6"
           >
             <CardHeader>
-              <div className="flex items-center gap-2" >
-                <AlertCircle size={20} style={{ color: "var(--wl-danger-400)" }} />
+              <div className="flex items-center gap-2">
+                <AlertCircle size={20} className="text-wl-danger-400" />
                 <CardTitle>Error Summary</CardTitle>
               </div>
             </CardHeader>
@@ -676,11 +541,11 @@ export default function WorkflowExecutionDetailPage({
               {execution.steps
                 .filter((s) => s.error)
                 .map((step) => (
-                  <div key={step.id} className="mb-3" >
-                    <p style={{ margin: "0 0 var(--wl-space-1) 0", color: "var(--wl-danger-400)", fontSize: "var(--wl-text-sm)", fontWeight: 600 }}>
+                  <div key={step.id} className="mb-3">
+                    <p className="m-0 mb-1 text-wl-danger-400 text-sm font-semibold">
                       Step {step.number}: {step.name}
                     </p>
-                    <p style={{ margin: 0, color: "var(--wl-text-secondary)", fontSize: "var(--wl-text-sm)" }}>
+                    <p className="m-0 text-wl-text-secondary text-sm">
                       {step.error?.message}
                     </p>
                   </div>

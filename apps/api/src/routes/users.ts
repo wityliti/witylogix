@@ -259,13 +259,27 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
       });
     }
 
-    // TODO: Send welcome/invite email via notification queue
-    // await notificationQueue.add('user-invited', {
-    //   shopId: request.auth.shopId,
-    //   email: user.email,
-    //   name: user.name,
-    //   tempPassword: body.password,
-    // });
+    // Send welcome/invite email via notification queue
+    try {
+      const shop = await (prisma as any).shop.findUnique({
+        where: { id: request.auth.shopId },
+        select: { name: true },
+      });
+
+      const notificationQueue = (context.notificationQueue as any);
+      if (notificationQueue) {
+        await notificationQueue.add('send-notification', {
+          channel: 'EMAIL',
+          templateId: 'welcome-email',
+          to: user.email,
+          variables: { name: user.name, shopName: shop?.name || 'Your Shop' },
+          shopId: request.auth.shopId,
+        });
+      }
+    } catch (emailError) {
+      // Log but don't fail the user creation if notification queue is unavailable
+      console.warn('Failed to queue welcome email:', emailError);
+    }
 
     reply.status(201);
     return { data: user };

@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * Order webhook consumer — processes Shopify order events.
+ * Order webhook consumer — processes external order events from any platform.
  *
  * Flow:
  *   1. Validate incoming order payload
@@ -205,7 +205,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
   /**
    * Normalize and enrich order payload for database storage.
    *
-   * @param payload Shopify order payload
+   * @param payload External order payload
    * @param shopId Shop identifier
    * @returns Normalized order object
    */
@@ -216,7 +216,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
     return {
       id: payload.id,
       shopId,
-      shopifyOrderId: payload.id,
+      externalOrderId: payload.id,
       email: payload.email,
       currency: payload.currency,
       totalPrice: parseFloat(payload.total_price),
@@ -266,7 +266,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
 
       // Upsert order using tenant-aware Prisma
       await (dbPrisma as any).order.upsert({
-        where: { shopifyOrderId: order.id as string },
+        where: { externalOrderId: order.id as string },
         create: order,
         update: {
           email: order.email,

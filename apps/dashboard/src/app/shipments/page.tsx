@@ -10,6 +10,7 @@ import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    SHIPMENTS PAGE — Full shipment management with filtering + detail
+   MIGRATION STATUS: Inline styles → Tailwind CSS (COMPLETE)
    ═══════════════════════════════════════════════════════════ */
 
 type ShipmentStatus =
@@ -238,9 +239,7 @@ export default function ShipmentsPage() {
 
       <div className="p-6">
         {/* KPI Stats Row */}
-        <div
-          className="grid mb-6"
-        >
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Shipments"
             value={stats.total}
@@ -280,9 +279,7 @@ export default function ShipmentsPage() {
         </div>
 
         {/* Filters Bar */}
-        <div
-          className="flex flex-wrap items-center mb-5"
-        >
+        <div className="flex flex-wrap items-center mb-5 gap-4">
           {/* Search */}
           <div style={{ flex: "1 1 300px", maxWidth: 400 }}>
             <input
@@ -290,17 +287,7 @@ export default function ShipmentsPage() {
               placeholder="Search shipments, tracking, recipient..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "var(--wl-space-2) var(--wl-space-4)",
-                background: "var(--wl-bg-elevated)",
-                border: "1px solid var(--wl-border-default)",
-                borderRadius: "var(--wl-radius-md)",
-                className="text-wl-text-primary",
-                className="text-sm",
-                fontFamily: "var(--wl-font-sans)",
-                outline: "none",
-              }}
+              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
             />
           </div>
 
@@ -315,22 +302,15 @@ export default function ShipmentsPage() {
                 <button
                   key={f.key}
                   onClick={() => setStatusFilter(f.key)}
-                  style={{
-                    padding: "var(--wl-space-1) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-full)",
-                    border: "1px solid",
-                    className="text-xs",
-                    className="font-600",
-                    cursor: "pointer",
-                    fontFamily: "var(--wl-font-sans)",
-                    transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                    background: statusFilter === f.key ? "var(--wl-primary-500)" : "transparent",
-                    color: statusFilter === f.key ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                    borderColor: statusFilter === f.key ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  }}
+                  className={cn(
+                    "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
+                    statusFilter === f.key
+                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                  )}
                 >
                   {f.label}
-                  <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
+                  <span className="ml-1 opacity-70">{count}</span>
                 </button>
               );
             })}
@@ -338,9 +318,7 @@ export default function ShipmentsPage() {
         </div>
 
         {/* Delivery Method Tabs */}
-        <div
-          className="flex mb-5"
-        >
+        <div className="flex mb-5 gap-4 flex-wrap">
           {DELIVERY_METHODS.map((m) => {
             const count =
               m.key === "ALL"
@@ -350,50 +328,37 @@ export default function ShipmentsPage() {
               <button
                 key={m.key}
                 onClick={() => setMethodFilter(m.key)}
-                className="flex items-center"
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition-all",
+                  methodFilter === m.key
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                )}
               >
                 <span>{m.icon}</span>
                 {m.label}
-                <span style={{ className="text-xs", opacity: 0.7 }}>({count})</span>
+                <span className="text-xs opacity-70">({count})</span>
               </button>
             );
           })}
         </div>
 
         {/* Shipments Table + Detail */}
-        <div
-          className="grid"
-        >
+        <div className={cn(
+          "grid gap-5",
+          selectedShipment ? "grid-cols-[1fr_400px]" : "grid-cols-1"
+        )}>
           {/* Shipments Table */}
-          <Card style={{ overflow: "hidden", padding: 0 }}>
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  className="text-sm",
-                }}
-              >
+          <Card className="overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr>
                     {["Tracking#", "Order", "Recipient", "Status", "Method", "Driver/Location", "Items", "Cost", "ETA"].map(
                       (h) => (
                         <th
                           key={h}
-                          style={{
-                            textAlign: "left",
-                            padding: "var(--wl-space-3) var(--wl-space-4)",
-                            className="text-xs",
-                            className="font-600",
-                            className="text-wl-text-tertiary",
-                            letterSpacing: "0.04em",
-                            textTransform: "uppercase",
-                            borderBottom: "1px solid var(--wl-border-subtle)",
-                            background: "var(--wl-bg-surface)",
-                            position: "sticky",
-                            top: 0,
-                            whiteSpace: "nowrap",
-                          }}
+                          className="text-left p-4 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider border-b border-wl-border-subtle bg-wl-bg-surface sticky top-0 whitespace-nowrap"
                         >
                           {h}
                         </th>
@@ -408,37 +373,24 @@ export default function ShipmentsPage() {
                       onClick={() =>
                         setSelectedShipment(selectedShipment?.id === shipment.id ? null : shipment)
                       }
+                      className="border-b border-wl-border-subtle cursor-pointer transition-all"
                       style={{
-                        borderBottom: "1px solid var(--wl-border-subtle)",
-                        cursor: "pointer",
                         background:
                           selectedShipment?.id === shipment.id
                             ? "rgba(245, 166, 35, 0.06)"
                             : "transparent",
-                        transition: `background var(--wl-duration-fast) var(--wl-ease-default)`,
                       }}
                     >
                       {/* Tracking Number */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          className="font-600",
-                          color: "var(--wl-primary-400)",
-                          className="text-xs",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="p-4 font-mono font-semibold text-wl-primary-400 text-xs whitespace-nowrap">
                         {shipment.trackingNumber ?? "—"}
                         {shipment.tags.length > 0 && (
-                          <div className="flex">
+                          <div className="flex gap-1 mt-1">
                             {shipment.tags.map((t) => (
                               <span
                                 key={t}
+                                className="text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter"
                                 style={{
-                                  fontSize: 9,
-                                  padding: "1px 4px",
-                                  borderRadius: 3,
                                   background:
                                     t === "priority"
                                       ? "var(--wl-danger-bg)"
@@ -451,9 +403,6 @@ export default function ShipmentsPage() {
                                       : t === "express"
                                         ? "var(--wl-primary-400)"
                                         : "var(--wl-info-400)",
-                                  className="font-600",
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.03em",
                                 }}
                               >
                                 {t}
@@ -464,106 +413,57 @@ export default function ShipmentsPage() {
                       </td>
 
                       {/* Order Number */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          className="font-500",
-                          className="text-wl-text-primary",
-                        }}
-                      >
+                      <td className="p-4 font-mono font-medium text-wl-text-primary">
                         {shipment.orderNumber}
                       </td>
 
                       {/* Recipient Name */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          className="text-wl-text-primary",
-                          className="font-500",
-                          maxWidth: 150,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="p-4 text-wl-text-primary font-medium max-w-40 truncate">
                         {shipment.recipientName}
                       </td>
 
                       {/* Status */}
-                      <td style={{ padding: "var(--wl-space-3) var(--wl-space-4)" }}>
-                        <Badge variant={statusVariant(shipment.status)} dot>
+                      <td className="p-4">
+                        <Badge variant={statusVariant(shipment.status)}>
                           {shipment.status.replace(/_/g, " ")}
                         </Badge>
                       </td>
 
                       {/* Method */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          className="text-wl-text-secondary",
-                          className="text-sm",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <span style={{ marginRight: "var(--wl-space-1)" }}>
+                      <td className="p-4 text-wl-text-secondary text-sm whitespace-nowrap">
+                        <span className="mr-1">
                           {deliveryMethodIcon(shipment.deliveryMethod)}
                         </span>
                         {shipment.deliveryMethod.replace(/_/g, " ")}
                       </td>
 
                       {/* Driver/Location */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          color: shipment.driverName || shipment.locationName
-                            ? "var(--wl-text-secondary)"
-                            : "var(--wl-text-tertiary)",
-                          fontStyle: shipment.driverName || shipment.locationName ? "normal" : "italic",
-                          className="text-xs",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="p-4 text-xs whitespace-nowrap" style={{
+                        color: shipment.driverName || shipment.locationName
+                          ? "var(--wl-text-secondary)"
+                          : "var(--wl-text-tertiary)",
+                        fontStyle: shipment.driverName || shipment.locationName ? "normal" : "italic",
+                      }}>
                         {shipment.driverName ?? shipment.locationName ?? "—"}
                       </td>
 
                       {/* Items */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          className="text-xs",
-                          className="text-wl-text-secondary",
-                          textAlign: "center",
-                        }}
-                      >
+                      <td className="p-4 font-mono text-xs text-wl-text-secondary text-center">
                         {shipment.itemCount}
                       </td>
 
                       {/* Cost */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          className="font-600",
-                          className="text-wl-text-primary",
-                        }}
-                      >
+                      <td className="p-4 font-mono font-semibold text-wl-text-primary">
                         {formatCurrency(shipment.shippingCost)}
                       </td>
 
                       {/* ETA */}
-                      <td
-                        style={{
-                          padding: "var(--wl-space-3) var(--wl-space-4)",
-                          fontFamily: "var(--wl-font-mono)",
-                          className="text-xs",
-                          color:
-                            shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
-                              ? "var(--wl-primary-400)"
-                              : "var(--wl-text-tertiary)",
-                        }}
-                      >
+                      <td className="p-4 font-mono text-xs" style={{
+                        color:
+                          shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
+                            ? "var(--wl-primary-400)"
+                            : "var(--wl-text-tertiary)",
+                      }}>
                         {shipment.estimatedDelivery
                           ? formatRelativeTime(shipment.estimatedDelivery)
                           : "—"}
@@ -577,40 +477,16 @@ export default function ShipmentsPage() {
 
           {/* Shipment Detail Panel */}
           {selectedShipment && (
-            <Card
-              className="wl-animate-in"
-              style={{
-                position: "sticky",
-                top: "calc(var(--wl-header-height) + var(--wl-space-6))",
-                maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
-                overflowY: "auto",
-              }}
-            >
-              <div
-                className="flex items-center justify-between mb-4"
-              >
+            <Card className="sticky top-24 max-h-[calc(100vh-var(--wl-header-height)-var(--wl-space-12))] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <span
-                    style={{
-                      className="text-lg",
-                      className="font-700",
-                      fontFamily: "var(--wl-font-mono)",
-                      color: "var(--wl-primary-400)",
-                    }}
-                  >
+                  <span className="text-lg font-bold font-mono text-wl-primary-400">
                     {selectedShipment.trackingNumber}
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedShipment(null)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    className="text-wl-text-tertiary",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontFamily: "var(--wl-font-sans)",
-                  }}
+                  className="bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans"
                 >
                   ✕
                 </button>
@@ -618,153 +494,101 @@ export default function ShipmentsPage() {
 
               <Badge
                 variant={statusVariant(selectedShipment.status)}
-                dot
                 className="mb-4"
               >
                 {selectedShipment.status.replace(/_/g, " ")}
               </Badge>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col gap-4">
                 {/* Recipient Info */}
                 <div>
-                  <div
-                    className="mb-2"
-                  >
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Recipient
                   </div>
-                  <div
-                    style={{
-                      className="text-base",
-                      className="font-600",
-                      className="text-wl-text-primary",
-                    }}
-                  >
+                  <div className="text-base font-semibold text-wl-text-primary">
                     {selectedShipment.recipientName}
                   </div>
-                  <div
-                    style={{
-                      className="text-xs",
-                      className="text-wl-text-secondary",
-                      marginTop: 2,
-                    }}
-                  >
+                  <div className="text-xs text-wl-text-secondary mt-0.5">
                     {selectedShipment.recipientEmail}
                   </div>
-                  <div
-                    style={{
-                      className="text-xs",
-                      className="text-wl-text-secondary",
-                      fontFamily: "var(--wl-font-mono)",
-                    }}
-                  >
+                  <div className="text-xs text-wl-text-secondary font-mono">
                     {selectedShipment.recipientPhone}
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-wl-border-subtle" />
 
                 {/* Delivery Details */}
                 <div>
-                  <div
-                    className="mb-2"
-                  >
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Delivery Address
                   </div>
-                  <div
-                    style={{
-                      className="text-sm",
-                      className="text-wl-text-secondary",
-                      marginBottom: 4,
-                      lineHeight: 1.4,
-                    }}
-                  >
+                  <div className="text-sm text-wl-text-secondary mb-1 leading-snug">
                     {selectedShipment.addressLine1}
                     <br />
                     {selectedShipment.city}, {selectedShipment.province}{" "}
                     {selectedShipment.postalCode}
                   </div>
-                  <div
-                    className="flex items-center mt-2"
-                  >
+                  <div className="flex items-center gap-1 text-sm mt-2">
                     <span>{deliveryMethodIcon(selectedShipment.deliveryMethod)}</span>
                     {selectedShipment.deliveryMethod.replace(/_/g, " ")}
                   </div>
                   {(selectedShipment.driverName || selectedShipment.locationName) && (
-                    <div
-                      style={{
-                        className="text-xs",
-                        className="text-wl-text-tertiary",
-                        marginTop: 4,
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary mt-1">
                       {selectedShipment.driverName && `Driver: ${selectedShipment.driverName}`}
                       {selectedShipment.locationName && `Location: ${selectedShipment.locationName}`}
                     </div>
                   )}
                   {selectedShipment.estimatedDelivery && (
-                    <div
-                      className="mt-2"
-                    >
+                    <div className="text-xs text-wl-text-secondary mt-2">
                       ETA: {formatRelativeTime(selectedShipment.estimatedDelivery)}
                     </div>
                   )}
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-wl-border-subtle" />
 
                 {/* Status Timeline */}
                 <div>
-                  <div
-                    className="mb-3"
-                  >
+                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-3">
                     Progress
                   </div>
-                  <div
-                    className="flex flex-col"
-                  >
+                  <div className="flex flex-col gap-0">
                     {statusProgression.map((step, idx) => {
                       const isCompleted =
                         statusProgression.indexOf(selectedShipment.status) >= idx;
                       const isCurrent = selectedShipment.status === step;
                       return (
-                        <div key={step} className="flex">
-                          <div
-                            className="flex flex-col items-center"
-                          >
+                        <div key={step} className="flex gap-2">
+                          <div className="flex flex-col items-center">
                             <div
+                              className="w-3 h-3 rounded-full flex-shrink-0"
                               style={{
-                                width: "12px",
-                                height: "12px",
-                                borderRadius: "50%",
                                 background: isCompleted
                                   ? isCurrent
                                     ? "var(--wl-primary-500)"
                                     : "var(--wl-success-400)"
                                   : "var(--wl-border-default)",
-                                flexShrink: 0,
                               }}
                             />
                             {idx < statusProgression.length - 1 && (
                               <div
+                                className="w-0.5 h-6"
                                 style={{
-                                  width: "2px",
-                                  height: "24px",
                                   background: isCompleted
                                     ? "var(--wl-success-400)"
                                     : "var(--wl-border-default)",
-                                  marginTop: "4px",
                                 }}
                               />
                             )}
                           </div>
                           <div
+                            className="text-xs py-0.5"
                             style={{
-                              className="text-xs",
                               color: isCompleted
                                 ? "var(--wl-text-primary)"
                                 : "var(--wl-text-tertiary)",
                               fontWeight: isCurrent ? 600 : 500,
-                              paddingTop: "2px",
                             }}
                           >
                             {step.replace(/_/g, " ")}
@@ -775,90 +599,40 @@ export default function ShipmentsPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                <div className="h-px bg-wl-border-subtle" />
 
                 {/* Shipment Info */}
-                <div
-                  className="grid"
-                >
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <div
-                      style={{
-                        className="text-xs",
-                        className="text-wl-text-tertiary",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary">
                       Items
                     </div>
-                    <div
-                      style={{
-                        className="text-base",
-                        className="font-700",
-                        fontFamily: "var(--wl-font-mono)",
-                        className="text-wl-text-primary",
-                      }}
-                    >
+                    <div className="text-base font-bold font-mono text-wl-text-primary">
                       {selectedShipment.itemCount}
                     </div>
                   </div>
                   <div>
-                    <div
-                      style={{
-                        className="text-xs",
-                        className="text-wl-text-tertiary",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary">
                       Weight
                     </div>
-                    <div
-                      style={{
-                        className="text-base",
-                        className="font-700",
-                        fontFamily: "var(--wl-font-mono)",
-                        className="text-wl-text-secondary",
-                      }}
-                    >
+                    <div className="text-base font-bold font-mono text-wl-text-secondary">
                       {selectedShipment.weight ? `${selectedShipment.weight} kg` : "—"}
                     </div>
                   </div>
                   <div>
-                    <div
-                      style={{
-                        className="text-xs",
-                        className="text-wl-text-tertiary",
-                      }}
-                    >
+                    <div className="text-xs text-wl-text-tertiary">
                       Shipping Cost
                     </div>
-                    <div
-                      style={{
-                        className="text-base",
-                        className="font-700",
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-success-400)",
-                      }}
-                    >
+                    <div className="text-base font-bold font-mono text-wl-success-400">
                       {formatCurrency(selectedShipment.shippingCost)}
                     </div>
                   </div>
                   {selectedShipment.codAmount && (
-                    <div>
-                      <div
-                        style={{
-                          className="text-xs",
-                          className="text-wl-text-tertiary",
-                        }}
-                      >
+                    <div className="col-span-3">
+                      <div className="text-xs text-wl-text-tertiary">
                         COD Amount
                       </div>
-                      <div
-                        style={{
-                          className="text-base",
-                          className="font-700",
-                          fontFamily: "var(--wl-font-mono)",
-                          color: "var(--wl-warning-400)",
-                        }}
-                      >
+                      <div className="text-base font-bold font-mono text-wl-warning-400">
                         {formatCurrency(selectedShipment.codAmount)}
                       </div>
                     </div>
@@ -868,14 +642,12 @@ export default function ShipmentsPage() {
                 {/* Tags */}
                 {selectedShipment.tags.length > 0 && (
                   <>
-                    <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                    <div className="h-px bg-wl-border-subtle" />
                     <div>
-                      <div
-                        className="mb-2"
-                      >
+                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         Tags
                       </div>
-                      <div className="flex flex-wrap">
+                      <div className="flex flex-wrap gap-2">
                         {selectedShipment.tags.map((t) => (
                           <Badge
                             key={t}
@@ -898,20 +670,12 @@ export default function ShipmentsPage() {
                 {/* Notes */}
                 {selectedShipment.notes && (
                   <>
-                    <div style={{ height: 1, background: "var(--wl-border-subtle)" }} />
+                    <div className="h-px bg-wl-border-subtle" />
                     <div>
-                      <div
-                        className="mb-2"
-                      >
+                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                         Notes
                       </div>
-                      <div
-                        style={{
-                          className="text-xs",
-                          className="text-wl-text-secondary",
-                          fontStyle: "italic",
-                        }}
-                      >
+                      <div className="text-xs text-wl-text-secondary italic">
                         {selectedShipment.notes}
                       </div>
                     </div>
@@ -919,16 +683,14 @@ export default function ShipmentsPage() {
                 )}
 
                 {/* Actions */}
-                <div
-                  className="flex flex-wrap mt-2"
-                >
-                  <Button variant="primary" size="sm">
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Button variant="primary" size="sm" className="flex-1">
                     Assign Driver
                   </Button>
-                  <Button variant="secondary" size="sm">
+                  <Button variant="secondary" size="sm" className="flex-1">
                     Edit Details
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="flex-1">
                     View Tracking
                   </Button>
                 </div>

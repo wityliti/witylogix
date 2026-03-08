@@ -271,7 +271,7 @@ export default function ShippingProfilesPage() {
                   }}
                 >
                   {m === "ALL" ? "All Methods" : deliveryMethodLabel(m as DeliveryMethod).split(" ")[0]}
-                  <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
+                  <span className="ml-1 opacity-70">{count}</span>
                 </button>
               );
             })}
@@ -295,7 +295,7 @@ export default function ShippingProfilesPage() {
                 }}
               >
                 {r === "ALL" ? "All Rate Types" : rateTypeLabel(r as RateType).split(" ")[0]}
-                <span style={{ marginLeft: 4, opacity: 0.7 }}>{count}</span>
+                <span className="ml-1 opacity-70">{count}</span>
               </button>
             );
           })}
@@ -303,6 +303,7 @@ export default function ShippingProfilesPage() {
 
         {/* Profiles Grid + Detail */}
         <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedProfile ? "1fr 420px" : "1fr" }}>
+
           {/* Profiles Grid */}
           <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4")}>
             {filtered.map((profile, i) => (
@@ -364,7 +365,7 @@ export default function ShippingProfilesPage() {
                 {/* Rate & Thresholds */}
                 <div className={cn("grid grid-cols-2 gap-3 p-3 bg-wl-bg-surface rounded-lg mb-3")}>
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Flat Rate</div>
+                      <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Flat Rate</div>
                     <div className={cn("text-base font-bold")} style={{ fontFamily: "var(--wl-font-mono)", color: profile.flatRate && profile.flatRate > 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}>
                       {profile.flatRate !== null ? (profile.flatRate > 0 ? formatCurrency(profile.flatRate) : "FREE") : "—"}
                     </div>
