@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
 function LoginPageInner() {
@@ -87,23 +88,8 @@ function LoginPageInner() {
 
   if (authLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          background: "var(--wl-bg)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "var(--wl-space-4)",
-          }}
-        >
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg">
+        <div className="flex flex-col items-center gap-4">
           <div
             style={{
               width: 48,
@@ -114,68 +100,38 @@ function LoginPageInner() {
               animation: "spin 1s linear infinite",
             }}
           />
-          <p style={{ color: "var(--wl-text)" }}>Loading...</p>
+          <p className="text-wl-text">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-6)" }}>
+    <div className="flex flex-col gap-6">
       {/* Heading */}
       <div>
-        <h2
-          style={{
-            fontSize: "var(--wl-text-2xl)",
-            fontWeight: 700,
-            color: "var(--wl-text-primary)",
-            marginBottom: "var(--wl-space-1)",
-            fontFamily: "var(--wl-font-sans)",
-          }}
-        >
+        <h2 className="text-2xl font-bold text-wl-text-primary mb-1">
           Welcome back
         </h2>
-        <p
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            color: "var(--wl-text-tertiary)",
-            fontFamily: "var(--wl-font-sans)",
-          }}
-        >
+        <p className="text-sm text-wl-text-tertiary">
           Sign in to your Witylogix account
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Email Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="email"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Email address
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Mail
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="email"
@@ -187,17 +143,13 @@ function LoginPageInner() {
                 setEmailError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                emailError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: emailError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -215,46 +167,24 @@ function LoginPageInner() {
             />
           </div>
           {emailError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {emailError}
             </span>
           )}
         </div>
 
         {/* Password Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="password"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Password
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Lock
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="password"
@@ -266,17 +196,13 @@ function LoginPageInner() {
                 setPasswordError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                passwordError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: passwordError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -294,37 +220,19 @@ function LoginPageInner() {
             />
           </div>
           {passwordError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {passwordError}
             </span>
           )}
         </div>
 
         {/* Remember Me & Forgot Password */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            fontSize: "var(--wl-text-sm)",
-          }}
-        >
+        <div className="flex items-center justify-between text-sm">
           <label
+            className="flex items-center gap-2 cursor-pointer text-wl-text-secondary select-none"
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--wl-space-2)",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              color: "var(--wl-text-secondary)",
-              fontFamily: "var(--wl-font-sans)",
-              userSelect: "none",
               opacity: isLoading ? 0.6 : 1,
+              pointerEvents: isLoading ? "none" : "auto",
             }}
           >
             <input
@@ -343,11 +251,8 @@ function LoginPageInner() {
           </label>
           <Link
             href="/forgot-password"
+            className="text-wl-primary-400 no-underline transition-colors"
             style={{
-              color: "var(--wl-primary-400)",
-              textDecoration: "none",
-              transition: "color var(--wl-duration-fast) var(--wl-ease-default)",
-              fontFamily: "var(--wl-font-sans)",
               pointerEvents: isLoading ? "none" : "auto",
               opacity: isLoading ? 0.6 : 1,
             }}
@@ -369,14 +274,8 @@ function LoginPageInner() {
         {/* Error Message */}
         {error && (
           <div
+            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
             style={{
-              padding: "var(--wl-space-3)",
-              borderRadius: "var(--wl-radius-lg)",
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-danger-400)",
-              fontFamily: "var(--wl-font-sans)",
               animation: "wl-fade-in 300ms var(--wl-ease-default) both",
             }}
           >
@@ -388,23 +287,12 @@ function LoginPageInner() {
         <button
           type="submit"
           disabled={isLoading}
+          className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            padding: "var(--wl-space-3) var(--wl-space-4)",
-            borderRadius: "var(--wl-radius-lg)",
-            border: "none",
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            color: "var(--wl-text-inverse)",
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 600,
-            fontFamily: "var(--wl-font-sans)",
             cursor: isLoading ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "var(--wl-space-2)",
-            transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
             opacity: isLoading ? 0.8 : 1,
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
@@ -436,38 +324,17 @@ function LoginPageInner() {
       </form>
 
       {/* Demo Credentials Hint */}
-      <div
-        style={{
-          padding: "var(--wl-space-3)",
-          borderRadius: "var(--wl-radius-lg)",
-          background: "rgba(59, 130, 246, 0.05)",
-          border: "1px solid rgba(59, 130, 246, 0.15)",
-          fontSize: "var(--wl-text-xs)",
-          color: "var(--wl-text-tertiary)",
-          fontFamily: "var(--wl-font-sans)",
-          lineHeight: 1.6,
-        }}
-      >
-        Demo credentials: <span style={{ color: "var(--wl-text-secondary)", fontWeight: 600 }}>demo@witylogix.com</span> / <span style={{ color: "var(--wl-text-secondary)", fontWeight: 600 }}>demo123</span>
+      <div className="p-3 rounded-lg bg-opacity-5 border border-opacity-15 text-xs text-wl-text-tertiary bg-blue-400 border-blue-400" style={{ lineHeight: 1.6 }}>
+        Demo credentials: <span className="text-wl-text-secondary font-semibold">demo@witylogix.com</span> / <span className="text-wl-text-secondary font-semibold">demo123</span>
       </div>
 
       {/* Sign Up Link */}
-      <div
-        style={{
-          textAlign: "center",
-          fontSize: "var(--wl-text-sm)",
-          color: "var(--wl-text-tertiary)",
-          fontFamily: "var(--wl-font-sans)",
-        }}
-      >
+      <div className="text-center text-sm text-wl-text-tertiary">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
+          className="text-wl-primary-400 no-underline font-semibold transition-colors"
           style={{
-            color: "var(--wl-primary-400)",
-            textDecoration: "none",
-            fontWeight: 600,
-            transition: "color var(--wl-duration-fast) var(--wl-ease-default)",
             pointerEvents: isLoading ? "none" : "auto",
             opacity: isLoading ? 0.6 : 1,
           }}
@@ -491,7 +358,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "var(--wl-bg, #0a0a0f)" }}><Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "var(--wl-primary, #6C63FF)" }} /></div>}>
       <LoginPageInner />
     </Suspense>
   );

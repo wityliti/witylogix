@@ -1,24 +1,29 @@
 /**
- * Notification Worker — multi-provider, BYOK-aware notification processing.
+ * Notification Worker — BullMQ job handler with orchestrator delegation.
  *
- * Architecture mirrors the routing optimization worker:
- *   1. Receive job with shopId + channels + recipient
- *   2. Load tenant's notification config from shop.settings.notifications
- *   3. Resolve provider per channel (tenant → deployer fallback + metering)
- *   4. Dispatch to the resolved provider
- *   5. Log result to notification_logs table
+ * Architecture:
+ *   1. Dequeue job from BullMQ with NotificationJobData
+ *   2. Extract and validate payload (shopId, channel, templateId, recipient, variables)
+ *   3. Call orchestrator.sendNotification() for each channel
+ *   4. Log result (success or failure) with job metadata
+ *   5. Handle errors appropriately:
+ *      - Retryable (RateLimitError, network timeout) → re-throw for BullMQ
+ *      - Permanent (ProviderError, AuthenticationError) → log to DLQ
  *
- * Multi-provider support:
- *   When NOTIFICATIONS_BYOK=true, the worker reads the tenant's chosen
- *   provider + credentials from shop.settings.notifications.<channel>.
- *   If the tenant hasn't configured anything, falls back to the deployer's
- *   default provider and metering kicks in automatically.
+ * Key Principles:
+ *   - Worker owns queue orchestration (dequeue, validate, retry)
+ *   - Orchestrator owns delivery orchestration (template, routing, retry)
+ *   - Clear error classification (retryable vs. permanent)
+ *   - Per-tenant provider resolution via TenantProviderRegistry
+ *   - Comprehensive logging for audit and debugging
  *
- * Channels:
- *   - Email:    SendGrid (available), Mailgun, SES, Postmark, Resend, SMTP
- *   - SMS:      Twilio (available), Vonage, SNS, MessageBird, Plivo
- *   - WhatsApp: Meta Cloud API (available), Twilio WhatsApp, 360dialog
- *   - Push:     Firebase FCM (available), OneSignal, Expo Push
+ * Dependencies:
+ *   - BullMQ: Job queue for reliable, durable notification processing
+ *   - NotificationOrchestrator: Centralized template, routing, delivery logic
+ *   - Prisma: Database for logging delivery attempts
+ *   - Tenant context (forTenant): Per-shop database isolation
+ *
+ * Related ADR: ADR-013 (Worker-Orchestrator Integration)
  */
 
 import { Worker, type Job } from "bullmq";
@@ -27,261 +32,466 @@ import { getConfig } from "../lib/config.js";
 import type { NotificationJobData } from "../lib/queue.js";
 import { registerWorker } from "../lib/queue.js";
 import {
-  resolveNotificationProvider,
-  type NotificationChannel,
-  type TenantNotificationConfig,
-  type ChannelCredentials,
-  type ResolvedNotificationProvider,
+  getNotificationOrchestrator,
+  type NotificationResult,
 } from "@witylogix/core/notifications";
 
-// ─── Channel Dispatchers ────────────────────────────────────
-//
-// Each dispatcher receives the resolved provider info and uses the
-// appropriate SDK/API. Phase 1 implementations are stubs that log
-// the call; concrete SDK integrations follow one-by-one.
+// ──────────────────────────────────────────────────────────────────
+// Error Classification Helpers
+// ──────────────────────────────────────────────────────────────────
 
-async function sendEmail(
-  resolved: ResolvedNotificationProvider,
+/**
+ * Determine if error is retryable (transient).
+ * Retryable errors will be re-thrown to BullMQ for retry.
+ * Permanent errors will be logged to DLQ.
+ */
+function isRetryableError(error: string): boolean {
+  if (!error) return true;
+
+  const retryablePatterns = [
+    /rate.?limit/i,
+    /timeout/i,
+    /temporarily/i,
+    /try.?again/i,
+    /connection.?reset/i,
+    /econnrefused/i,
+    /econnaborted/i,
+    /econnreset/i,
+    /etimedout/i,
+    /5\d{2}/i, // 5xx HTTP status codes
+    /unavailable/i,
+    /service.?error/i,
+  ];
+
+  return retryablePatterns.some((pattern) => pattern.test(error));
+}
+
+/**
+ * Determine if error is due to invalid recipient.
+ * Invalid recipient errors should not be retried.
+ */
+function isInvalidRecipientError(error: string): boolean {
+  const recipientPatterns = [
+    /invalid.*(email|phone|address|token)/i,
+    /malformed.*(email|phone)/i,
+    /invalid.?recipient/i,
+    /bad.?email/i,
+    /invalid.?phone/i,
+    /unsubscribed/i,
+    /bounced/i,
+  ];
+
+  return recipientPatterns.some((pattern) => pattern.test(error));
+}
+
+/**
+ * Determine if error is due to authentication/credentials.
+ * Authentication errors should not be retried until credentials rotate.
+ */
+function isAuthenticationError(error: string): boolean {
+  const authPatterns = [
+    /authentication/i,
+    /unauthorized/i,
+    /credentials?/i,
+    /api.?key/i,
+    /invalid.?key/i,
+    /expired.?token/i,
+    /401/i, // HTTP 401 Unauthorized
+    /403/i, // HTTP 403 Forbidden
+  ];
+
+  return authPatterns.some((pattern) => pattern.test(error));
+}
+
+/**
+ * Determine if error is permanent (should not retry).
+ */
+function isPermanentError(error: string): boolean {
+  return (
+    isInvalidRecipientError(error) || isAuthenticationError(error)
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Logging Helpers
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Log notification delivery attempt to database.
+ * Uses Prisma (as any) pattern for typed table access.
+ */
+async function logDeliveryAttempt(
+  shopId: string,
+  channel: string,
+  templateId: string,
   recipient: string,
-  eventType: string,
-  templateData: Record<string, unknown>,
-): Promise<{ providerId?: string }> {
-  if (!resolved.available) {
-    console.warn(
-      `[notification-worker] Email not configured (provider: ${resolved.provider}), skipping`,
+  result: NotificationResult,
+): Promise<void> {
+  try {
+    const db = forTenant(shopId);
+
+    await (db as any).notificationLog.create({
+      data: {
+        shopId,
+        channel,
+        templateId,
+        recipient,
+        providerName: "", // TODO: track provider name from result metadata
+        messageId: result.messageId,
+        status: result.success ? "SENT" : "FAILED",
+        error: result.error,
+        sentAt: result.success ? new Date() : undefined,
+        createdAt: new Date(),
+      },
+    });
+  } catch (error) {
+    // Don't throw — logging failure shouldn't block notification flow
+    console.error(
+      `[notification-worker] Failed to log delivery attempt for ${shopId}/${templateId}/${recipient}:`,
+      error,
     );
-    return {};
-  }
-
-  switch (resolved.provider) {
-    case "sendgrid": {
-      const apiKey = resolved.credentials.SENDGRID_API_KEY ??
-        resolved.credentials.apiKey;
-      if (!apiKey) {
-        console.warn("[notification-worker] SendGrid API key missing, skipping email");
-        return {};
-      }
-      // TODO: Implement SendGrid integration
-      // const sgMail = require('@sendgrid/mail');
-      // sgMail.setApiKey(apiKey as string);
-      // const result = await sgMail.send({ to: recipient, ... });
-      // return { providerId: result[0]?.headers['x-message-id'] };
-      console.info(
-        `[notification-worker] Email via SendGrid to ${recipient}: ${eventType}` +
-          (resolved.usedFallback ? " [FALLBACK]" : ""),
-      );
-      return { providerId: `sg_${Date.now()}` };
-    }
-
-    case "mailgun": {
-      // TODO: Implement Mailgun
-      console.info(`[notification-worker] Email via Mailgun to ${recipient}: ${eventType}`);
-      return { providerId: `mg_${Date.now()}` };
-    }
-
-    case "postmark": {
-      // TODO: Implement Postmark
-      console.info(`[notification-worker] Email via Postmark to ${recipient}: ${eventType}`);
-      return { providerId: `pm_${Date.now()}` };
-    }
-
-    case "resend": {
-      // TODO: Implement Resend
-      console.info(`[notification-worker] Email via Resend to ${recipient}: ${eventType}`);
-      return { providerId: `re_${Date.now()}` };
-    }
-
-    case "aws_ses": {
-      // TODO: Implement AWS SES
-      console.info(`[notification-worker] Email via AWS SES to ${recipient}: ${eventType}`);
-      return { providerId: `ses_${Date.now()}` };
-    }
-
-    case "smtp": {
-      // TODO: Implement SMTP (nodemailer)
-      console.info(`[notification-worker] Email via SMTP to ${recipient}: ${eventType}`);
-      return { providerId: `smtp_${Date.now()}` };
-    }
-
-    default:
-      console.warn(`[notification-worker] Unknown email provider: ${resolved.provider}`);
-      return {};
   }
 }
 
-async function sendSMS(
-  resolved: ResolvedNotificationProvider,
-  recipient: string,
-  eventType: string,
-  templateData: Record<string, unknown>,
-): Promise<{ providerId?: string }> {
-  if (!resolved.available) {
-    console.warn(
-      `[notification-worker] SMS not configured (provider: ${resolved.provider}), skipping`,
+/**
+ * Log dead-letter entry for permanently failed notification.
+ */
+async function logDeadLetterEntry(
+  shopId: string,
+  jobData: NotificationJobData,
+  jobId: string | undefined,
+  error: string,
+  attemptCount: number,
+): Promise<void> {
+  try {
+    console.error(
+      `[notification-worker] DEAD_LETTER: job=${jobId} shopId=${shopId} ` +
+      `channels=${jobData.channels.join(",")} recipient=${jobData.recipient.email || jobData.recipient.phone} ` +
+      `error="${error}" attempts=${attemptCount}`,
     );
-    return {};
-  }
 
-  switch (resolved.provider) {
-    case "twilio": {
-      const accountSid = resolved.credentials.TWILIO_ACCOUNT_SID ??
-        resolved.credentials.accountSid;
-      const authToken = resolved.credentials.TWILIO_AUTH_TOKEN ??
-        resolved.credentials.authToken;
-      if (!accountSid || !authToken) {
-        console.warn("[notification-worker] Twilio credentials missing, skipping SMS");
-        return {};
-      }
-      // TODO: Implement Twilio SMS
-      // const client = require('twilio')(accountSid, authToken);
-      // const message = await client.messages.create({ ... });
-      // return { providerId: message.sid };
-      console.info(
-        `[notification-worker] SMS via Twilio to ${recipient}: ${eventType}` +
-          (resolved.usedFallback ? " [FALLBACK]" : ""),
-      );
-      return { providerId: `tw_${Date.now()}` };
-    }
-
-    case "vonage": {
-      // TODO: Implement Vonage
-      console.info(`[notification-worker] SMS via Vonage to ${recipient}: ${eventType}`);
-      return { providerId: `vn_${Date.now()}` };
-    }
-
-    case "aws_sns": {
-      // TODO: Implement AWS SNS
-      console.info(`[notification-worker] SMS via AWS SNS to ${recipient}: ${eventType}`);
-      return { providerId: `sns_${Date.now()}` };
-    }
-
-    case "messagebird": {
-      // TODO: Implement MessageBird
-      console.info(`[notification-worker] SMS via MessageBird to ${recipient}: ${eventType}`);
-      return { providerId: `mb_${Date.now()}` };
-    }
-
-    case "plivo": {
-      // TODO: Implement Plivo
-      console.info(`[notification-worker] SMS via Plivo to ${recipient}: ${eventType}`);
-      return { providerId: `pv_${Date.now()}` };
-    }
-
-    default:
-      console.warn(`[notification-worker] Unknown SMS provider: ${resolved.provider}`);
-      return {};
+    // Optional: Store to DLQ table for ops investigation
+    // await storeToDLQTable({
+    //   jobId,
+    //   shopId,
+    //   jobData,
+    //   error,
+    //   attempts: attemptCount,
+    //   createdAt: new Date(),
+    // });
+  } catch (err) {
+    console.error(`[notification-worker] Failed to log DLQ entry:`, err);
   }
 }
 
-async function sendWhatsApp(
-  resolved: ResolvedNotificationProvider,
-  recipient: string,
-  eventType: string,
-  templateData: Record<string, unknown>,
-): Promise<{ providerId?: string }> {
-  if (!resolved.available) {
-    console.warn(
-      `[notification-worker] WhatsApp not configured (provider: ${resolved.provider}), skipping`,
-    );
-    return {};
+// ──────────────────────────────────────────────────────────────────
+// Validation Helpers
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Validate required fields in job payload.
+ * Throws if validation fails.
+ */
+function validateJobPayload(data: NotificationJobData): void {
+  if (!data.shopId || typeof data.shopId !== "string") {
+    throw new Error("Missing or invalid shopId");
   }
 
-  switch (resolved.provider) {
-    case "meta_cloud": {
-      const token = resolved.credentials.WHATSAPP_TOKEN ??
-        resolved.credentials.accessToken;
-      const phoneId = resolved.credentials.WHATSAPP_PHONE_NUMBER_ID ??
-        resolved.credentials.phoneNumberId;
-      if (!token || !phoneId) {
-        console.warn("[notification-worker] WhatsApp Cloud API credentials missing, skipping");
-        return {};
-      }
-      // TODO: Implement Meta Cloud API WhatsApp
-      // const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, { ... });
-      console.info(
-        `[notification-worker] WhatsApp via Meta Cloud to ${recipient}: ${eventType}` +
-          (resolved.usedFallback ? " [FALLBACK]" : ""),
-      );
-      return { providerId: `wa_${Date.now()}` };
-    }
+  if (!data.templateId || typeof data.templateId !== "string") {
+    throw new Error("Missing or invalid templateId");
+  }
 
-    case "twilio_whatsapp": {
-      // TODO: Implement Twilio WhatsApp
-      console.info(`[notification-worker] WhatsApp via Twilio to ${recipient}: ${eventType}`);
-      return { providerId: `twa_${Date.now()}` };
-    }
+  if (!Array.isArray(data.channels) || data.channels.length === 0) {
+    throw new Error("Missing or empty channels array");
+  }
 
-    case "360dialog": {
-      // TODO: Implement 360dialog
-      console.info(`[notification-worker] WhatsApp via 360dialog to ${recipient}: ${eventType}`);
-      return { providerId: `d360_${Date.now()}` };
+  // Validate each channel
+  const validChannels = ["EMAIL", "SMS", "WHATSAPP", "PUSH"];
+  for (const channel of data.channels) {
+    if (!validChannels.includes(channel)) {
+      throw new Error(`Invalid channel: ${channel}`);
     }
+  }
 
-    default:
-      console.warn(`[notification-worker] Unknown WhatsApp provider: ${resolved.provider}`);
-      return {};
+  // Validate recipient has at least one address
+  if (
+    !data.recipient ||
+    (typeof data.recipient !== "object" ||
+      !data.recipient.email &&
+      !data.recipient.phone &&
+      !data.recipient.fcmToken)
+  ) {
+    throw new Error(
+      "Recipient must have at least one of: email, phone, or fcmToken",
+    );
+  }
+
+  // Validate recipient format matches channels
+  if (data.channels.includes("EMAIL") && !data.recipient.email) {
+    throw new Error("EMAIL channel requires recipient.email");
+  }
+
+  if (
+    (data.channels.includes("SMS") || data.channels.includes("WHATSAPP")) &&
+    !data.recipient.phone
+  ) {
+    throw new Error("SMS/WHATSAPP channels require recipient.phone");
+  }
+
+  if (data.channels.includes("PUSH") && !data.recipient.fcmToken) {
+    throw new Error("PUSH channel requires recipient.fcmToken");
   }
 }
 
-async function sendPush(
-  resolved: ResolvedNotificationProvider,
-  fcmToken: string,
-  eventType: string,
-  templateData: Record<string, unknown>,
-): Promise<{ providerId?: string }> {
-  if (!resolved.available) {
-    console.warn(
-      `[notification-worker] Push not configured (provider: ${resolved.provider}), skipping`,
-    );
-    return {};
+/**
+ * Map channel string to proper case for orchestrator.
+ */
+function normalizeChannel(
+  channel: string,
+): "EMAIL" | "SMS" | "WHATSAPP" | "PUSH" {
+  const normalized = channel.toUpperCase();
+  if (!["EMAIL", "SMS", "WHATSAPP", "PUSH"].includes(normalized)) {
+    throw new Error(`Invalid channel: ${channel}`);
   }
+  return normalized as "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
+}
 
-  switch (resolved.provider) {
-    case "firebase": {
-      const projectId = resolved.credentials.FIREBASE_PROJECT_ID ??
-        resolved.credentials.projectId;
-      if (!projectId) {
-        console.warn("[notification-worker] Firebase project ID missing, skipping push");
-        return {};
+// ──────────────────────────────────────────────────────────────────
+// Recipient Extraction Helpers
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Get recipient address for a specific channel.
+ */
+function getRecipientForChannel(
+  recipient: {
+    email?: string;
+    phone?: string;
+    fcmToken?: string;
+  },
+  channel: "EMAIL" | "SMS" | "WHATSAPP" | "PUSH",
+): string {
+  switch (channel) {
+    case "EMAIL":
+      if (!recipient.email) {
+        throw new Error("Email recipient required for EMAIL channel");
       }
-      // TODO: Implement Firebase Cloud Messaging
-      // const admin = require('firebase-admin');
-      console.info(
-        `[notification-worker] Push via Firebase to token: ${eventType}` +
-          (resolved.usedFallback ? " [FALLBACK]" : ""),
-      );
-      return { providerId: `fcm_${Date.now()}` };
-    }
-
-    case "onesignal": {
-      // TODO: Implement OneSignal
-      console.info(`[notification-worker] Push via OneSignal: ${eventType}`);
-      return { providerId: `os_${Date.now()}` };
-    }
-
-    case "expo_push": {
-      // TODO: Implement Expo Push
-      console.info(`[notification-worker] Push via Expo: ${eventType}`);
-      return { providerId: `expo_${Date.now()}` };
-    }
-
+      return recipient.email;
+    case "SMS":
+    case "WHATSAPP":
+      if (!recipient.phone) {
+        throw new Error(
+          `Phone recipient required for ${channel} channel`,
+        );
+      }
+      return recipient.phone;
+    case "PUSH":
+      if (!recipient.fcmToken) {
+        throw new Error("FCM token required for PUSH channel");
+      }
+      return recipient.fcmToken;
     default:
-      console.warn(`[notification-worker] Unknown push provider: ${resolved.provider}`);
-      return {};
+      throw new Error(`Unknown channel: ${channel}`);
   }
 }
 
-// ─── Channel→NotificationChannel mapper ─────────────────────
+// ──────────────────────────────────────────────────────────────────
+// Main Worker Handler
+// ──────────────────────────────────────────────────────────────────
 
-const CHANNEL_MAP: Record<string, NotificationChannel> = {
-  EMAIL: "email",
-  SMS: "sms",
-  WHATSAPP: "whatsapp",
-  PUSH: "push",
-};
+/**
+ * Process a single notification job.
+ *
+ * Flow:
+ *   1. Validate payload
+ *   2. For each channel:
+ *      a. Get orchestrator
+ *      b. Extract recipient for channel
+ *      c. Call orchestrator.sendNotification()
+ *      d. Log result
+ *   3. Return results
+ *   4. On error: classify and re-throw (for BullMQ retry) or log to DLQ
+ */
+async function notificationHandler(
+  job: Job<NotificationJobData>,
+): Promise<
+  Array<{
+    channel: string;
+    success: boolean;
+    messageId?: string;
+    error?: string;
+  }>
+> {
+  const { shopId, templateId, channels, recipient, variables } = job.data;
 
-// ─── Worker ─────────────────────────────────────────────────
+  // ─── Step 1: Validate payload ──────────────────────────────
+  try {
+    validateJobPayload(job.data);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(
+      `[notification-worker] Job ${job.id} validation failed: ${errorMessage}`,
+    );
+    // Validation errors are permanent — move to DLQ immediately
+    await logDeadLetterEntry(
+      shopId,
+      job.data,
+      job.id,
+      `Validation failed: ${errorMessage}`,
+      job.attemptsMade,
+    );
+    throw error;
+  }
 
+  // ─── Step 2: Get orchestrator ──────────────────────────────
+  const orchestrator = getNotificationOrchestrator();
+
+  // ─── Step 3: Process each channel ──────────────────────────
+  const results: Array<{
+    channel: string;
+    success: boolean;
+    messageId?: string;
+    error?: string;
+  }> = [];
+
+  let anyRetryableFailure = false;
+  let anyPermanentFailure = false;
+
+  for (const channelStr of channels) {
+    try {
+      const channel = normalizeChannel(channelStr);
+      const to = getRecipientForChannel(recipient, channel);
+
+      console.info(
+        `[notification-worker] Job ${job.id} sending ${channel} via orchestrator to ${to}`,
+      );
+
+      // Call orchestrator to send notification
+      const result = await orchestrator.sendNotification(
+        shopId,
+        channel,
+        to,
+        templateId,
+        variables,
+      );
+
+      // Log delivery attempt
+      await logDeliveryAttempt(shopId, channel, templateId, to, result);
+
+      if (result.success) {
+        console.info(
+          `[notification-worker] Job ${job.id} ${channel} sent: ${result.messageId}`,
+        );
+        results.push({
+          channel,
+          success: true,
+          messageId: result.messageId,
+        });
+      } else {
+        // Orchestrator returned failure
+        const error = result.error || "Unknown error";
+
+        if (isRetryableError(error)) {
+          // Retryable — will re-throw below
+          anyRetryableFailure = true;
+        } else if (isPermanentError(error)) {
+          // Permanent — will log to DLQ below
+          anyPermanentFailure = true;
+        } else {
+          // Default to retryable if unsure
+          anyRetryableFailure = true;
+        }
+
+        console.warn(
+          `[notification-worker] Job ${job.id} ${channel} failed ` +
+          `(${isRetryableError(error) ? "retryable" : "permanent"}): ${error}`,
+        );
+
+        results.push({
+          channel,
+          success: false,
+          error,
+        });
+      }
+    } catch (error) {
+      // Orchestrator threw an exception (not just failed result)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      const isRetryable =
+        error instanceof Error &&
+        (error.name === "RateLimitError" ||
+          isRetryableError(errorMessage) ||
+          errorMessage.includes("timeout") ||
+          errorMessage.includes("ECONNRESET"));
+
+      if (isRetryable) {
+        anyRetryableFailure = true;
+      } else {
+        anyPermanentFailure = true;
+      }
+
+      console.error(
+        `[notification-worker] Job ${job.id} ${channelStr} exception ` +
+        `(${isRetryable ? "retryable" : "permanent"}): ${errorMessage}`,
+      );
+
+      results.push({
+        channel: channelStr,
+        success: false,
+        error: errorMessage,
+      });
+    }
+  }
+
+  // ─── Step 4: Handle results ────────────────────────────────
+  // If any channel is still pending or has retryable failure, let BullMQ retry
+  if (anyRetryableFailure && !anyPermanentFailure) {
+    const failures = results.filter((r) => !r.success);
+    console.warn(
+      `[notification-worker] Job ${job.id} has retryable failures, will be retried by BullMQ: ` +
+      failures.map((f) => `${f.channel}: ${f.error}`).join("; "),
+    );
+    throw new Error(
+      `Retryable failures: ${failures.map((f) => `${f.channel}: ${f.error}`).join("; ")}`,
+    );
+  }
+
+  // If any permanent failure, log to DLQ and fail job
+  if (anyPermanentFailure) {
+    const failures = results.filter((r) => !r.success);
+    const errorSummary = failures.map((f) => `${f.channel}: ${f.error}`).join("; ");
+
+    await logDeadLetterEntry(
+      shopId,
+      job.data,
+      job.id,
+      errorSummary,
+      job.attemptsMade,
+    );
+
+    throw new Error(`Permanent failures (DLQ): ${errorSummary}`);
+  }
+
+  // All channels succeeded
+  console.info(
+    `[notification-worker] Job ${job.id} completed successfully for all channels`,
+  );
+  return results;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Worker Setup and Configuration
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Start the notification worker.
+ *
+ * Configuration:
+ *   - Concurrency: 10 (tunable based on CPU/memory)
+ *   - Rate limiting: 100 jobs per minute per worker
+ *   - Retry: 3 attempts with exponential backoff (configured by BullMQ)
+ *   - Dead-letter: Failed jobs kept for inspection
+ */
 export function startNotificationWorker(): Worker {
   const config = getConfig();
   const connection = {
@@ -291,166 +501,57 @@ export function startNotificationWorker(): Worker {
 
   const worker = new Worker<NotificationJobData>(
     "notifications",
-    async (job: Job<NotificationJobData>) => {
-      const { shopId, orderId, eventType, channels, recipient, templateData } = job.data;
-      const db = forTenant(shopId);
-
-      // ── Load tenant notification config ─────────────────
-      let tenantNotifConfig: TenantNotificationConfig | undefined;
-
-      if (config.NOTIFICATIONS_BYOK) {
-        const shop = await db.shop.findUnique({
-          where: { id: shopId },
-          select: { settings: true },
-        });
-        const settings = (shop?.settings ?? {}) as Record<string, unknown>;
-        const notifications = settings.notifications as TenantNotificationConfig | undefined;
-        if (notifications) {
-          tenantNotifConfig = notifications;
-        }
-      }
-
-      // ── Process each channel ────────────────────────────
-      const results: Array<{
-        channel: string;
-        provider: string;
-        usedFallback: boolean;
-        status: "SENT" | "FAILED" | "SKIPPED";
-        providerId?: string;
-        error?: string;
-      }> = [];
-
-      for (const channel of channels) {
-        const notifChannel = CHANNEL_MAP[channel];
-        if (!notifChannel) {
-          results.push({
-            channel,
-            provider: "unknown",
-            usedFallback: false,
-            status: "FAILED",
-            error: `Unknown channel: ${channel}`,
-          });
-          continue;
-        }
-
-        // Resolve provider for this channel
-        const channelCreds = tenantNotifConfig?.[notifChannel] as
-          | ChannelCredentials
-          | undefined;
-        const resolved = resolveNotificationProvider(
-          notifChannel,
-          channelCreds,
-          shopId,
-        );
-
-        if (!resolved.available) {
-          results.push({
-            channel,
-            provider: resolved.provider,
-            usedFallback: resolved.usedFallback,
-            status: "SKIPPED",
-            error: `${notifChannel} provider not configured`,
-          });
-          continue;
-        }
-
-        try {
-          let result: { providerId?: string } = {};
-
-          switch (notifChannel) {
-            case "email":
-              if (recipient.email) {
-                result = await sendEmail(resolved, recipient.email, eventType, templateData);
-              }
-              break;
-            case "sms":
-              if (recipient.phone) {
-                result = await sendSMS(resolved, recipient.phone, eventType, templateData);
-              }
-              break;
-            case "whatsapp":
-              if (recipient.phone) {
-                result = await sendWhatsApp(resolved, recipient.phone, eventType, templateData);
-              }
-              break;
-            case "push":
-              if (recipient.fcmToken) {
-                result = await sendPush(resolved, recipient.fcmToken, eventType, templateData);
-              }
-              break;
-          }
-
-          // Log success
-          await db.notificationLog.create({
-            data: {
-              shopId,
-              orderId,
-              channel,
-              eventType,
-              recipient: recipient.email || recipient.phone || "unknown",
-              status: "SENT",
-              providerMsgId: result.providerId,
-              sentAt: new Date(),
-            },
-          });
-
-          results.push({
-            channel,
-            provider: resolved.provider,
-            usedFallback: resolved.usedFallback,
-            status: "SENT",
-            providerId: result.providerId,
-          });
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error";
-
-          // Log failure
-          await db.notificationLog.create({
-            data: {
-              shopId,
-              orderId,
-              channel,
-              eventType,
-              recipient: recipient.email || recipient.phone || "unknown",
-              status: "FAILED",
-              errorMessage,
-            },
-          });
-
-          results.push({
-            channel,
-            provider: resolved.provider,
-            usedFallback: resolved.usedFallback,
-            status: "FAILED",
-            error: errorMessage,
-          });
-        }
-      }
-
-      return results;
-    },
+    notificationHandler,
     {
       connection,
-      concurrency: 10,
+      concurrency: 10, // Process 10 jobs concurrently
       limiter: {
         max: 100,
-        duration: 60000, // 100 per minute per worker
+        duration: 60000, // 100 jobs per minute per worker
       },
+      // Note: Retry configuration is typically set on the queue, not the worker.
+      // Default BullMQ retry is typically 1 attempt (no retries).
+      // Use Queue.addJob(..., { attempts: 3, backoff: {...} }) to configure.
     },
   );
 
-  worker.on("failed", (job, err) => {
-    console.error(
-      `[notification-worker] Job ${job?.id} failed:`,
-      err.message,
-    );
-  });
-
+  // Event handlers for monitoring
   worker.on("completed", (job) => {
     console.info(`[notification-worker] Job ${job.id} completed`);
   });
 
+  worker.on("failed", (job, error) => {
+    if (!job) {
+      console.error(`[notification-worker] Worker failed without job:`, error);
+      return;
+    }
+
+    console.error(
+      `[notification-worker] Job ${job.id} failed after ${job.attemptsMade} attempts:`,
+      error.message,
+    );
+
+    // Log to DLQ for ops investigation
+    if (job.data) {
+      logDeadLetterEntry(
+        job.data.shopId,
+        job.data,
+        job.id,
+        error.message,
+        job.attemptsMade,
+      ).catch((err) => {
+        console.error(`[notification-worker] Failed to log DLQ for job ${job.id}:`, err);
+      });
+    }
+  });
+
+  worker.on("error", (error) => {
+    console.error(`[notification-worker] Worker error:`, error);
+  });
+
+  // Register worker for graceful shutdown
   registerWorker(worker);
+
   console.info("[notification-worker] Started");
   return worker;
 }

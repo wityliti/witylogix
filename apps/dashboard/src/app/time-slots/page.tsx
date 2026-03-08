@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +28,8 @@ export default function TimeSlotsPage() {
         actions={<Button variant="primary" size="md">+ Create Slot</Button>}
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+      <div className="p-6">
+        <div className="flex flex-col gap-4">&nbsp;
           {SLOTS.map((slot, i) => {
             const usage = (slot.currentBookings / slot.maxCapacity) * 100;
             const usageColor = usage > 85 ? "var(--wl-danger-400)" : usage > 60 ? "var(--wl-warning-400)" : "var(--wl-success-400)";
@@ -42,56 +43,40 @@ export default function TimeSlotsPage() {
                   animationDelay: `${i * 50}ms`,
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-5)" }}>
+                <div className="flex items-center gap-5">&nbsp;
                   {/* Time display */}
-                  <div
-                    style={{
-                      width: 100,
-                      textAlign: "center",
-                      padding: "var(--wl-space-2) var(--wl-space-3)",
-                      background: "var(--wl-bg-surface)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border-subtle)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-primary-400)" }}>
+                  <div className="w-24 text-center p-1 bg-slate-900 rounded border border-slate-700 shrink-0">
+                    <div className="text-xs font-bold font-mono text-indigo-400">
                       {slot.start}
                     </div>
-                    <div style={{ fontSize: 9, color: "var(--wl-text-tertiary)", margin: "2px 0" }}>to</div>
-                    <div style={{ fontSize: "var(--wl-text-sm)", fontWeight: 700, fontFamily: "var(--wl-font-mono)", color: "var(--wl-primary-400)" }}>
+                    <div className="text-xs text-slate-500 my-0.5">to</div>
+                    <div className="text-xs font-bold font-mono text-indigo-400">
                       {slot.end}
                     </div>
                   </div>
 
                   {/* Details */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)", marginBottom: "var(--wl-space-2)" }}>
-                      <span style={{ fontSize: "var(--wl-text-base)", fontWeight: 700, color: "var(--wl-text-primary)" }}>{slot.name}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-base font-bold text-slate-100">{slot.name}</span>
                       <Badge variant={slot.isActive ? "success" : "default"} dot>{slot.isActive ? "Active" : "Inactive"}</Badge>
                       {slot.surcharge > 0 && <Badge variant="primary">{formatCurrency(slot.surcharge)} surcharge</Badge>}
                     </div>
 
                     {/* Days */}
-                    <div style={{ display: "flex", gap: 4, marginBottom: "var(--wl-space-2)" }}>
+                    <div className="flex gap-1 mb-2">&nbsp;
                       {DAYS.map((day, di) => {
                         const dayNum = di === 6 ? 0 : di + 1;
                         const active = slot.days.includes(dayNum);
                         return (
                           <span
                             key={day}
-                            style={{
-                              width: 28,
-                              height: 22,
-                              borderRadius: "var(--wl-radius-sm)",
-                              background: active ? "rgba(245, 166, 35, 0.12)" : "var(--wl-bg-surface)",
-                              color: active ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)",
-                              fontSize: 10,
-                              fontWeight: 600,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
+                            className={cn(
+                              'w-7 h-5.5 rounded-sm text-xs font-semibold flex items-center justify-center',
+                              active
+                                ? 'bg-amber-500/10 text-amber-400'
+                                : 'bg-slate-900 text-slate-500'
+                            )}
                           >
                             {day}
                           </span>
@@ -99,25 +84,23 @@ export default function TimeSlotsPage() {
                       })}
                     </div>
 
-                    <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>{slot.zone}</span>
+                    <span className="text-xs text-slate-500">{slot.zone}</span>
                   </div>
 
                   {/* Capacity bar */}
-                  <div style={{ width: 160, flexShrink: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontSize: 10, color: "var(--wl-text-tertiary)" }}>Capacity</span>
-                      <span style={{ fontSize: 10, fontFamily: "var(--wl-font-mono)", color: usageColor }}>
+                  <div className="w-40 shrink-0">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-slate-500">Capacity</span>
+                      <span className="text-xs font-mono" style={{ color: usageColor }}>
                         {slot.currentBookings}/{slot.maxCapacity}
                       </span>
                     </div>
-                    <div style={{ height: 6, background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-full)", overflow: "hidden" }}>
+                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                       <div
+                        className="h-full rounded-full transition-all"
                         style={{
                           width: `${usage}%`,
-                          height: "100%",
-                          background: usageColor,
-                          borderRadius: "var(--wl-radius-full)",
-                          transition: `width var(--wl-duration-slow) var(--wl-ease-spring)`,
+                          backgroundColor: usageColor,
                         }}
                       />
                     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { cn } from '../../lib/utils';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -109,12 +110,8 @@ const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: any) => {
     <svg
       width={canvasSize}
       height={canvasSize}
-      style={{
-        backgroundColor: '#0f0f15',
-        border: '1px solid #1e293b',
-        borderRadius: '8px',
-        cursor: 'crosshair',
-      }}
+      className="bg-slate-950 border border-slate-700 rounded-lg"
+      style={{ cursor: 'crosshair' }}
     >
       {/* Grid background */}
       {Array.from({ length: 13 }).map((_, i) => (
@@ -131,7 +128,7 @@ const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: any) => {
         const isSelected = item.id === selectedId;
 
         return (
-          <g key={item.id} onClick={() => onItemClick(item.id)} style={{ cursor: 'pointer' }}>
+          <g key={item.id} onClick={() => onItemClick(item.id)} style={{ cursor: 'pointer', pointerEvents: 'auto' }}>
             {/* Selection ring */}
             {isSelected && (
               <circle cx={x} cy={y} r={18} fill="none" stroke={color} strokeWidth="2" opacity="0.5" />
@@ -195,11 +192,11 @@ export default function MapView() {
   const items = getItems();
 
   return (
-    <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
+    <div className="p-6 min-h-screen bg-slate-950">
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>Map View</h1>
-        <p style={{ color: '#94a3b8' }}>Real-time location tracking for orders, shipments, routes, and drivers</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-100 mb-2">Map View</h1>
+        <p className="text-slate-400">Real-time location tracking for orders, shipments, routes, and drivers</p>
       </div>
 
       {/* Tab Selector */}
@@ -213,128 +210,108 @@ export default function MapView() {
         activeTab={activeTab}
         onChange={(value) => { setActiveTab(value as ViewTab); setSelectedId(null); }}
         variant="segment"
-        style={{ marginBottom: '24px' }}
+        className="mb-6"
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px' }}>
+      <div className="grid grid-cols-[1fr_350px] gap-6">
             {/* Main Map Area */}
-            <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-              <CardContent style={{ padding: '24px' }}>
-                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Card className="bg-slate-900 border border-slate-700">
+              <CardContent className="p-6">
+                <div className="mb-4 flex justify-between items-center">
                   <div>
-                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#e2e8f0', marginBottom: '8px' }}>
+                    <h2 className="text-lg font-semibold text-slate-100 mb-2">
                       {activeTab === 'orders' && 'Orders Map'}
                       {activeTab === 'shipments' && 'Shipments Map'}
                       {activeTab === 'routes' && 'Routes Map'}
                       {activeTab === 'drivers' && 'Drivers Map'}
                     </h2>
-                    <p style={{ color: '#94a3b8', fontSize: '14px' }}>{items.length} items on map</p>
+                    <p className="text-slate-400 text-sm">{items.length} items on map</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="flex gap-2">&nbsp;
                     <Button
                       onClick={() => setZoom(Math.min(200, zoom + 20))}
-                      style={{
-                        backgroundColor: '#1e293b',
-                        border: '1px solid #334155',
-                        color: '#e2e8f0',
-                        width: '40px',
-                        height: '40px',
-                        padding: '0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
+                      className="bg-slate-700 border border-slate-600 text-slate-100 w-10 h-10 p-0 flex items-center justify-center hover:bg-slate-600"
                     >
                       <ZoomIn size={18} />
                     </Button>
                     <Button
                       onClick={() => setZoom(Math.max(50, zoom - 20))}
-                      style={{
-                        backgroundColor: '#1e293b',
-                        border: '1px solid #334155',
-                        color: '#e2e8f0',
-                        width: '40px',
-                        height: '40px',
-                        padding: '0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
+                      className="bg-slate-700 border border-slate-600 text-slate-100 w-10 h-10 p-0 flex items-center justify-center hover:bg-slate-600"
                     >
                       <ZoomOut size={18} />
                     </Button>
-                    <div style={{ color: '#94a3b8', fontSize: '12px', paddingLeft: '8px', display: 'flex', alignItems: 'center' }}>
+                    <div className="text-slate-400 text-xs pl-2 flex items-center">
                       {zoom}%
                     </div>
                   </div>
                 </div>
 
                 {/* Map Canvas */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <div className="flex justify-center mb-4">
                   <MapCanvas items={items} selectedId={selectedId} onItemClick={setSelectedId} zoom={zoom} mapType={activeTab} />
                 </div>
 
                 {/* Legend */}
-                <div style={{ borderTop: '1px solid #1e293b', paddingTop: '16px' }}>
-                  <p style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '12px' }}>LEGEND</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="border-t border-slate-700 pt-4">
+                  <p className="text-xs font-semibold text-slate-400 mb-3">LEGEND</p>
+                  <div className="grid grid-cols-2 gap-3">&nbsp;
                     {activeTab === 'orders' && (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Pending</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-amber-500" />
+                          <span className="text-xs text-slate-400">Pending</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>In Transit</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span className="text-xs text-slate-400">In Transit</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Delivered</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          <span className="text-xs text-slate-400">Delivered</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Failed</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-red-500" />
+                          <span className="text-xs text-slate-400">Failed</span>
                         </div>
                       </>
                     )}
                     {activeTab === 'shipments' && (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Pending</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-amber-500" />
+                          <span className="text-xs text-slate-400">Pending</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>In Transit</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span className="text-xs text-slate-400">In Transit</span>
                         </div>
                       </>
                     )}
                     {activeTab === 'routes' && (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#6C63FF' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Active</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                          <span className="text-xs text-slate-400">Active</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Completed</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          <span className="text-xs text-slate-400">Completed</span>
                         </div>
                       </>
                     )}
                     {activeTab === 'drivers' && (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>On Duty</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span className="text-xs text-slate-400">On Duty</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>On Break</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-amber-500" />
+                          <span className="text-xs text-slate-400">On Break</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#94a3b8' }} />
-                          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Off Duty</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-slate-400" />
+                          <span className="text-xs text-slate-400">Off Duty</span>
                         </div>
                       </>
                     )}
@@ -344,31 +321,25 @@ export default function MapView() {
             </Card>
 
             {/* Sidebar - Items List & Details */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="flex flex-col gap-4">
               {/* Filter Card */}
-              <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-                <CardContent style={{ padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <Filter size={16} style={{ color: '#94a3b8' }} />
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: '#e2e8f0' }}>Filter by Status</p>
+              <Card className="bg-slate-900 border border-slate-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Filter size={16} className="text-slate-400" />
+                    <p className="text-sm font-semibold text-slate-100">Filter by Status</p>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="flex flex-col gap-2">&nbsp;
                     {getStatusOptions().map((status) => (
                       <button
                         key={status}
                         onClick={() => setStatusFilter(status as StatusFilter)}
-                        style={{
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: statusFilter === status ? '1px solid #6C63FF' : '1px solid #334155',
-                          backgroundColor: statusFilter === status ? '#1a1a2e' : 'transparent',
-                          color: statusFilter === status ? '#6C63FF' : '#94a3b8',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          fontWeight: statusFilter === status ? '600' : '400',
-                          textTransform: 'capitalize',
-                          transition: 'all 0.2s',
-                        }}
+                        className={cn(
+                          'px-3 py-2 rounded text-xs font-medium cursor-pointer transition-all capitalize',
+                          statusFilter === status
+                            ? 'border border-indigo-500 bg-slate-800 text-indigo-400 font-semibold'
+                            : 'border border-slate-600 bg-transparent text-slate-400 font-normal'
+                        )}
                       >
                         {status === 'all' ? 'All Items' : status.replace('-', ' ')}
                       </button>
@@ -378,41 +349,38 @@ export default function MapView() {
               </Card>
 
               {/* Items List */}
-              <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <CardContent style={{ padding: '16px', flex: 1, overflowY: 'auto', maxHeight: '500px' }}>
-                  <p style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0', marginBottom: '12px' }}>ITEMS ({items.length})</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Card className="bg-slate-900 border border-slate-700 flex-1 overflow-hidden flex flex-col">
+                <CardContent className="p-4 flex-1 overflow-y-auto max-h-96">
+                  <p className="text-xs font-semibold text-slate-100 mb-3">ITEMS ({items.length})</p>
+                  <div className="flex flex-col gap-2">&nbsp;
                     {items.map((item: any) => (
                       <button
                         key={item.id}
                         onClick={() => setSelectedId(item.id)}
-                        style={{
-                          padding: '12px',
-                          borderRadius: '6px',
-                          border: selectedId === item.id ? '1px solid #6C63FF' : '1px solid #1e293b',
-                          backgroundColor: selectedId === item.id ? '#1a1a2e' : 'transparent',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s',
-                        }}
+                        className={cn(
+                          'p-3 rounded text-left transition-all',
+                          selectedId === item.id
+                            ? 'border border-indigo-500 bg-slate-800'
+                            : 'border border-slate-700 bg-transparent'
+                        )}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>{item.id}</span>
-                          <Badge style={{ fontSize: '10px', padding: '2px 6px' }}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-semibold text-slate-100">{item.id}</span>
+                          <Badge className="text-xs py-0 px-1.5">
                             {item.status.replace('-', ' ')}
                           </Badge>
                         </div>
                         {activeTab === 'orders' && (
-                          <p style={{ fontSize: '11px', color: '#94a3b8' }}>{item.address}</p>
+                          <p className="text-xs text-slate-400">{item.address}</p>
                         )}
                         {activeTab === 'shipments' && (
-                          <p style={{ fontSize: '11px', color: '#94a3b8' }}>ETA: {item.eta}</p>
+                          <p className="text-xs text-slate-400">ETA: {item.eta}</p>
                         )}
                         {activeTab === 'routes' && (
-                          <p style={{ fontSize: '11px', color: '#94a3b8' }}>{item.stops} stops</p>
+                          <p className="text-xs text-slate-400">{item.stops} stops</p>
                         )}
                         {activeTab === 'drivers' && (
-                          <p style={{ fontSize: '11px', color: '#94a3b8' }}>{item.speed} km/h</p>
+                          <p className="text-xs text-slate-400">{item.speed} km/h</p>
                         )}
                       </button>
                     ))}
@@ -422,86 +390,86 @@ export default function MapView() {
 
               {/* Detail Panel */}
               {selectedItem && (
-                <Card style={{ backgroundColor: '#12121a', border: '1px solid #6C63FF' }}>
-                  <CardContent style={{ padding: '16px' }}>
-                    <p style={{ fontSize: '12px', fontWeight: '600', color: '#6C63FF', marginBottom: '12px' }}>DETAILS</p>
+                <Card className="bg-slate-900 border border-indigo-500">
+                  <CardContent className="p-4">
+                    <p className="text-xs font-semibold text-indigo-400 mb-3">DETAILS</p>
                     {activeTab === 'orders' && (
                       <>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>ID</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.id}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">ID</p>
+                          <p className="text-xs text-slate-100">{selectedItem.id}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Customer</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.customer}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Customer</p>
+                          <p className="text-xs text-slate-100">{selectedItem.customer}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Address</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.address}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Address</p>
+                          <p className="text-xs text-slate-100">{selectedItem.address}</p>
                         </div>
                         <div>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Coordinates</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
+                          <p className="text-xs text-slate-400 mb-1">Coordinates</p>
+                          <p className="text-xs text-slate-100">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
                         </div>
                       </>
                     )}
                     {activeTab === 'shipments' && (
                       <>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>ID</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.id}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">ID</p>
+                          <p className="text-xs text-slate-100">{selectedItem.id}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Carrier</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.carrier}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Carrier</p>
+                          <p className="text-xs text-slate-100">{selectedItem.carrier}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>ETA</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.eta}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">ETA</p>
+                          <p className="text-xs text-slate-100">{selectedItem.eta}</p>
                         </div>
                         <div>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Location</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
+                          <p className="text-xs text-slate-400 mb-1">Location</p>
+                          <p className="text-xs text-slate-100">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
                         </div>
                       </>
                     )}
                     {activeTab === 'routes' && (
                       <>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Route</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.name}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Route</p>
+                          <p className="text-xs text-slate-100">{selectedItem.name}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Driver</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.driver}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Driver</p>
+                          <p className="text-xs text-slate-100">{selectedItem.driver}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Stops</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.stops}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Stops</p>
+                          <p className="text-xs text-slate-100">{selectedItem.stops}</p>
                         </div>
                         <div>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Current Location</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
+                          <p className="text-xs text-slate-400 mb-1">Current Location</p>
+                          <p className="text-xs text-slate-100">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
                         </div>
                       </>
                     )}
                     {activeTab === 'drivers' && (
                       <>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Name</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.name}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Name</p>
+                          <p className="text-xs text-slate-100">{selectedItem.name}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Destination</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.destination}</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Destination</p>
+                          <p className="text-xs text-slate-100">{selectedItem.destination}</p>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Speed</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.speed} km/h</p>
+                        <div className="mb-3">
+                          <p className="text-xs text-slate-400 mb-1">Speed</p>
+                          <p className="text-xs text-slate-100">{selectedItem.speed} km/h</p>
                         </div>
                         <div>
-                          <p style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>Location</p>
-                          <p style={{ fontSize: '12px', color: '#e2e8f0' }}>{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
+                          <p className="text-xs text-slate-400 mb-1">Location</p>
+                          <p className="text-xs text-slate-100">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
                         </div>
                       </>
                     )}

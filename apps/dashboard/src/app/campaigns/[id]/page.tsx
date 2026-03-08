@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../../../c
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { StatCard } from "../../../components/ui/stat-card";
-import { formatNumber, formatRelativeTime } from "../../../lib/utils";
+import { cn, formatNumber, formatRelativeTime } from "../../../lib/utils";
 import {
   Edit,
   Copy,
@@ -180,32 +180,25 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--wl-bg-primary)" }}>
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header
         title={campaign.name}
         description={`${campaign.type} campaign • Created ${formatRelativeTime(campaign.createdAt)}`}
       />
 
-      <div style={{ padding: "var(--wl-space-8)", maxWidth: "100%", margin: "0 auto" }}>
+      <div className="p-8 w-full mx-auto">
         {/* Header with Status */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
             <Badge variant={typeVariant(campaign.type)}>{campaign.type}</Badge>
             <Badge variant={statusVariant(campaign.status)}>{campaign.status}</Badge>
             {campaign.sentAt && (
-              <span style={{ fontSize: "var(--wl-text-sm)", color: "var(--wl-text-secondary)" }}>
+              <span className="text-sm text-wl-text-secondary">
                 Sent {formatRelativeTime(campaign.sentAt)}
               </span>
             )}
           </div>
-          <div style={{ display: "flex", gap: "var(--wl-space-2)" }}>
+          <div className="flex gap-2">
             <Button variant="secondary" size="md">
               <Edit size={16} />
               Edit
@@ -222,14 +215,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
         </div>
 
         {/* Performance Stats */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-8)",
-          }}
-        >
+        <div className="grid grid-cols-auto-fit gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
           <StatCard
             label="Sent"
             value={formatNumber(campaign.stats.sent)}
@@ -271,27 +257,19 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
           />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "var(--wl-space-6)",
-            marginBottom: "var(--wl-space-6)",
-          }}
-        >
+        <div className="grid grid-cols-2 gap-6 mb-6">
           {/* Timeline */}
           <Card>
             <CardHeader>
               <CardTitle>Campaign Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className="flex flex-col gap-3">
                 {campaign.timeline.map((event, idx) => (
                   <div
                     key={idx}
+                    className="flex gap-3"
                     style={{
-                      display: "flex",
-                      gap: "var(--wl-space-3)",
                       paddingBottom: idx < campaign.timeline.length - 1 ? "var(--wl-space-3)" : 0,
                       borderBottom:
                         idx < campaign.timeline.length - 1
@@ -300,37 +278,19 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                     }}
                   >
                     <div
+                      className="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
                         background: "rgba(245, 166, 35, 0.12)",
                         color: "var(--wl-primary-400)",
-                        flexShrink: 0,
                       }}
                     >
                       {eventTypeIcon(event.type)}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: "var(--wl-text-sm)",
-                          fontWeight: 500,
-                          color: "var(--wl-text-primary)",
-                          marginBottom: "2px",
-                        }}
-                      >
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-wl-text-primary mb-0.5">
                         {event.description}
                       </div>
-                      <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-secondary)",
-                        }}
-                      >
+                      <div className="text-xs text-wl-text-secondary">
                         {formatRelativeTime(event.timestamp)} • {formatNumber(event.count)} events
                       </div>
                     </div>
@@ -346,15 +306,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
               <CardTitle>Audience Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: "var(--wl-space-6)",
-                  height: 160,
-                }}
-              >
+              <div className="flex items-center justify-center mb-6" style={{ height: 160 }}>
                 {/* Simple pie chart using SVG */}
                 <svg
                   width="140"
@@ -390,38 +342,28 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
                 </svg>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+              <div className="flex flex-col gap-2">
                 {pieChartPercentages.map((item) => (
                   <div
                     key={item.label}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
+                    className="flex items-center justify-between"
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+                    <div className="flex items-center gap-2">
                       <div
+                        className="w-3 h-3 rounded-sm"
                         style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: "2px",
                           background: item.color,
                         }}
                       />
-                      <span style={{ fontSize: "var(--wl-text-sm)" }}>{item.label}</span>
+                      <span className="text-sm">{item.label}</span>
                     </div>
-                    <div style={{ display: "flex", gap: "var(--wl-space-3)", alignItems: "center" }}>
-                      <span style={{ fontSize: "var(--wl-text-sm)", fontWeight: 500 }}>
+                    <div className="flex gap-3 items-center">
+                      <span className="text-sm font-medium">
                         {formatNumber(item.value)}
                       </span>
                       <span
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-secondary)",
-                          minWidth: "35px",
-                          textAlign: "right",
-                        }}
+                        className="text-xs text-wl-text-secondary"
+                        style={{ minWidth: "35px", textAlign: "right" }}
                       >
                         {item.percentage}%
                       </span>
@@ -439,20 +381,10 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
             <CardTitle>Template Preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-              style={{
-                background: "var(--wl-bg-primary)",
-                border: "1px solid var(--wl-border-subtle)",
-                borderRadius: "var(--wl-radius-md)",
-                padding: "var(--wl-space-6)",
-                overflowX: "auto",
-              }}
-            >
+            <div className="bg-wl-bg-primary border border-wl-border-subtle rounded-md p-6 overflow-x-auto">
               <div
+                className="bg-white rounded-md overflow-hidden"
                 style={{
-                  background: "white",
-                  borderRadius: "var(--wl-radius-md)",
-                  overflow: "hidden",
                   minWidth: "400px",
                 }}
                 dangerouslySetInnerHTML={{ __html: campaign.templatePreview }}

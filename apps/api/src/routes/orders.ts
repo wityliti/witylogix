@@ -27,6 +27,7 @@ import {
   emitOrderCreated,
   emitOrderStatusChanged,
 } from "../lib/events.js";
+import { getNotificationQueue } from "../lib/queue.js";
 
 // ─── Valid Status Transitions ───────────────────────────────
 
@@ -197,6 +198,37 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       createdAt: order.createdAt.toISOString(),
     } as any);
 
+    // Enqueue notification job
+    try {
+      const notificationQueue = getNotificationQueue();
+      await notificationQueue.add(
+        "order-created",
+        {
+          type: "order.created",
+          tenantId: request.shopId,
+          orderId: order.id,
+          orderNumber: order.shopifyOrderNumber,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          customerPhone: order.customerPhone,
+          channel: "EMAIL",
+          totalPrice: order.totalPrice,
+          deliveryDate: order.deliveryDate?.toISOString(),
+        },
+        {
+          jobId: `order-created-${order.id}`,
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+        },
+      );
+    } catch (err) {
+      request.log.warn(
+        { orderId: order.id, error: err },
+        "Failed to enqueue order creation notification",
+      );
+      // Continue anyway - order was created successfully
+    }
+
     reply.status(201);
     return { data: order };
   });
@@ -313,10 +345,37 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       changedAt: new Date().toISOString(),
     } as any);
 
-    // TODO: Enqueue notification job (BullMQ)
-    // await notificationQueue.add('order-status-change', {
-    //   shopId: request.shopId, orderId: id, status: newStatus
-    // });
+    // Enqueue notification job for status change
+    try {
+      const notificationQueue = getNotificationQueue();
+      await notificationQueue.add(
+        "order-status-changed",
+        {
+          type: "order.status_changed",
+          tenantId: request.shopId,
+          orderId: id,
+          orderNumber: updated.shopifyOrderNumber,
+          customerName: updated.customerName,
+          customerEmail: updated.customerEmail,
+          customerPhone: updated.customerPhone,
+          previousStatus: order.status,
+          newStatus: newStatus,
+          channel: "EMAIL",
+          notes: notes || undefined,
+        },
+        {
+          jobId: `order-status-${id}-${newStatus}`,
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+        },
+      );
+    } catch (err) {
+      request.log.warn(
+        { orderId: id, status: newStatus, error: err },
+        "Failed to enqueue order status change notification",
+      );
+      // Continue anyway - status was updated successfully
+    }
 
     return { data: updated };
   });
@@ -351,6 +410,69 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     await request.tenantRedis.invalidateGroup("orders");
+
+    // Enqueue notification job for driver assignment
+    try {
+      const notificationQueue = getNotificationQueue();
+
+      // Notify driver
+      if (driver.fcmToken) {
+        await notificationQueue.add(
+          "driver-assignment",
+          {
+            type: "driver.order_assigned",
+            tenantId: request.shopId,
+            driverId,
+            driverName: driver.name,
+            fcmToken: driver.fcmToken,
+            orderId: id,
+            orderNumber: updated.shopifyOrderNumber,
+            customerName: updated.customerName,
+            customerPhone: updated.customerPhone,
+            deliveryAddress: `${updated.addressLine1}${updated.addressLine2 ? ", " + updated.addressLine2 : ""}`,
+            city: updated.city,
+            channel: "PUSH",
+          },
+          {
+            jobId: `order-driver-assignment-${id}-${driverId}`,
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+          },
+        );
+      }
+
+      // Notify customer that driver is assigned
+      if (updated.customerEmail) {
+        await notificationQueue.add(
+          "customer-driver-assigned",
+          {
+            type: "customer.driver_assigned",
+            tenantId: request.shopId,
+            orderId: id,
+            orderNumber: updated.shopifyOrderNumber,
+            customerName: updated.customerName,
+            customerEmail: updated.customerEmail,
+            customerPhone: updated.customerPhone,
+            driverName: driver.name,
+            driverPhone: driver.phone,
+            estimatedArrival: updated.estimatedArrival?.toISOString(),
+            channel: "EMAIL",
+          },
+          {
+            jobId: `customer-driver-assigned-${id}`,
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+          },
+        );
+      }
+    } catch (err) {
+      request.log.warn(
+        { orderId: id, driverId, error: err },
+        "Failed to enqueue driver assignment notification",
+      );
+      // Continue anyway - assignment was successful
+    }
+
     return { data: updated };
   });
 

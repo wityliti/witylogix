@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, CSSProperties } from "react";
+import { cn } from "../../lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -169,26 +170,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "900px",
-        margin: "0 auto",
-      }}
-    >
+    <div className="w-full max-w-2xl mx-auto">
       {/* Progress Bar */}
-      <div
-        style={{
-          marginBottom: "var(--wl-space-8)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "var(--wl-space-4)",
-          }}
-        >
+      <div className="mb-8">
+        <div className="flex justify-between mb-4">&nbsp;
           {stepConfig.map((step) => {
             const isCompleted = step.number < currentStep;
             const isActive = step.number === currentStep;
@@ -196,36 +181,20 @@ export default function OnboardingPage() {
             return (
               <div
                 key={step.number}
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  marginRight: step.number < 5 ? "var(--wl-space-3)" : 0,
-                }}
+                className={cn(
+                  'flex-1 flex flex-col items-center',
+                  step.number < 5 ? 'mr-3' : ''
+                )}
               >
                 <div
+                  className={cn(
+                    'w-11 h-11 rounded-full flex items-center justify-center mb-2 font-semibold',
+                    isCompleted || isActive
+                      ? 'bg-indigo-500 text-slate-50'
+                      : 'bg-slate-700 text-slate-400 border border-slate-600'
+                  )}
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: "var(--wl-space-2)",
-                    background: isCompleted
-                      ? "var(--wl-primary)"
-                      : isActive
-                        ? "var(--wl-primary)"
-                        : "var(--wl-surface)",
-                    border: isActive
-                      ? "2px solid var(--wl-primary)"
-                      : isCompleted
-                        ? "none"
-                        : "1px solid var(--wl-border)",
-                    color: isCompleted || isActive ? "var(--wl-text-inverse)" : "var(--wl-text-muted)",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 600,
+                    ...(isActive && !isCompleted ? { borderWidth: '2px', borderColor: '#6366f1' } : {})
                   }}
                 >
                   {isCompleted ? (
@@ -235,12 +204,10 @@ export default function OnboardingPage() {
                   )}
                 </div>
                 <div
-                  style={{
-                    fontSize: "var(--wl-text-xs)",
-                    fontWeight: 500,
-                    color: isActive ? "var(--wl-text)" : "var(--wl-text-muted)",
-                    textAlign: "center",
-                  }}
+                  className={cn(
+                    'text-xs font-medium text-center',
+                    isActive ? 'text-slate-100' : 'text-slate-500'
+                  )}
                 >
                   {step.title}
                 </div>
@@ -250,61 +217,30 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress Line */}
-        <div
-          style={{
-            width: "100%",
-            height: "2px",
-            background: "var(--wl-border)",
-            borderRadius: "1px",
-            overflow: "hidden",
-          }}
-        >
+        <div className="w-full h-0.5 bg-slate-700 rounded overflow-hidden">
           <div
+            className="h-full bg-indigo-500 transition-all"
             style={{
-              height: "100%",
-              background: "var(--wl-primary)",
               width: `${((currentStep - 1) / 4) * 100}%`,
-              transition: "width 0.3s ease-out",
             }}
           />
         </div>
       </div>
 
       {/* Step Content */}
-      <Card style={containerStyle}>
+      <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle style={{ fontSize: "var(--wl-text-xl)" }}>
+          <CardTitle className="text-xl">
             {stepConfig[currentStep - 1].subtitle}
           </CardTitle>
         </CardHeader>
 
-        <CardContent
-          style={{
-            minHeight: "400px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        <CardContent className="min-h-96 flex flex-col">&nbsp;
           {/* Step 1: Business Info */}
           {currentStep === 1 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--wl-space-5)",
-                flex: 1,
-              }}
-            >
+            <div className="flex flex-col gap-5 flex-1">
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Company Name
                 </label>
                 <input
@@ -312,44 +248,18 @@ export default function OnboardingPage() {
                   placeholder="Enter your company name"
                   value={data.companyName}
                   onChange={(e) => updateData("companyName", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "var(--wl-surface)",
-                    color: "var(--wl-text)",
-                    fontSize: "var(--wl-text-sm)",
-                    boxSizing: "border-box",
-                  }}
+                  className="w-full px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                 />
               </div>
 
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "var(--wl-text-sm)",
-                    fontWeight: 500,
-                    color: "var(--wl-text)",
-                    marginBottom: "var(--wl-space-2)",
-                  }}
-                >
+                <label className="block text-sm font-medium text-slate-100 mb-2">
                   Industry
                 </label>
                 <select
                   value={data.industry}
                   onChange={(e) => updateData("industry", e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "var(--wl-space-2) var(--wl-space-3)",
-                    borderRadius: "var(--wl-radius-md)",
-                    border: "1px solid var(--wl-border)",
-                    background: "var(--wl-surface)",
-                    color: "var(--wl-text)",
-                    fontSize: "var(--wl-text-sm)",
-                    boxSizing: "border-box",
-                  }}
+                  className="w-full px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
                 >
                   <option value="">Select industry</option>
                   <option value="ecommerce">E-Commerce</option>
@@ -373,35 +283,17 @@ export default function OnboardingPage() {
                 >
                   Business Size
                 </label>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "var(--wl-space-3)",
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div className="flex gap-3 flex-wrap">
                   {["startup", "small", "medium", "enterprise"].map((size) => (
                     <button
                       key={size}
                       onClick={() => updateData("businessSize", size)}
-                      style={{
-                        padding: "var(--wl-space-2) var(--wl-space-4)",
-                        borderRadius: "var(--wl-radius-md)",
-                        border:
-                          data.businessSize === size
-                            ? "2px solid var(--wl-primary)"
-                            : "1px solid var(--wl-border)",
-                        background:
-                          data.businessSize === size
-                            ? "rgba(108, 99, 255, 0.1)"
-                            : "var(--wl-surface)",
-                        color: "var(--wl-text)",
-                        fontSize: "var(--wl-text-sm)",
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                        textTransform: "capitalize",
-                      }}
+                      className={cn(
+                        'px-4 py-2 rounded text-sm font-medium cursor-pointer transition-all capitalize',
+                        data.businessSize === size
+                          ? 'border-2 border-indigo-500 bg-indigo-500/10 text-indigo-400'
+                          : 'border border-slate-700 bg-slate-900 text-slate-400'
+                      )}
                     >
                       {size}
                     </button>

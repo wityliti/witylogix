@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "../../lib/utils";
 import {
   Card,
   CardContent,
@@ -65,101 +66,82 @@ export default function WidgetConfigPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--wl-bg)", padding: "24px" }}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <div className="min-h-screen bg-slate-950 p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: "700", color: "var(--wl-text)", marginBottom: "8px" }}>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-100 mb-2">
             Widget Configuration
           </h1>
-          <p style={{ color: "var(--wl-muted)", fontSize: "14px" }}>
+          <p className="text-slate-400 text-sm">
             Configure and customize your storefront widget
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
+        <div className="grid grid-cols-2 gap-6 mb-6">&nbsp;
           {/* Left Column - Settings */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="flex flex-col gap-6">
             {/* Widget Features */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Widget Features</CardTitle>
-                <CardDescription style={{ color: "var(--wl-muted)" }}>Enable widget features</CardDescription>
+                <CardTitle className="text-slate-100">Widget Features</CardTitle>
+                <CardDescription className="text-slate-400">Enable widget features</CardDescription>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <CardContent className="flex flex-col gap-4">&nbsp;
                 {/* Cart Selector Toggle */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px", backgroundColor: "var(--wl-bg)", borderRadius: "8px", border: "1px solid var(--wl-border)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Settings size={18} style={{ color: "var(--wl-primary)" }} />
+                <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-700">
+                  <div className="flex items-center gap-3">
+                    <Settings size={18} className="text-indigo-400" />
                     <div>
-                      <p style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "500" }}>Cart Delivery Selector</p>
-                      <p style={{ color: "var(--wl-muted)", fontSize: "12px" }}>Show delivery options</p>
+                      <p className="text-slate-100 text-sm font-medium">Cart Delivery Selector</p>
+                      <p className="text-slate-400 text-xs">Show delivery options</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCartSelectorEnabled(!cartSelectorEnabled)}
-                    style={{
-                      width: "48px",
-                      height: "28px",
-                      borderRadius: "14px",
-                      border: "none",
-                      backgroundColor: cartSelectorEnabled ? "var(--wl-primary)" : "var(--wl-border)",
-                      cursor: "pointer",
-                      transition: "background-color 0.2s",
-                    }}
+                    className={cn(
+                      'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
+                      cartSelectorEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                    )}
                   />
                 </div>
 
                 {/* Shipping Calculator Toggle */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px", backgroundColor: "var(--wl-bg)", borderRadius: "8px", border: "1px solid var(--wl-border)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Globe size={18} style={{ color: "var(--wl-primary)" }} />
+                <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-700">
+                  <div className="flex items-center gap-3">
+                    <Globe size={18} className="text-indigo-400" />
                     <div>
-                      <p style={{ color: "var(--wl-text)", fontSize: "14px", fontWeight: "500" }}>Shipping Calculator</p>
-                      <p style={{ color: "var(--wl-muted)", fontSize: "12px" }}>Calculate shipping costs</p>
+                      <p className="text-slate-100 text-sm font-medium">Shipping Calculator</p>
+                      <p className="text-slate-400 text-xs">Calculate shipping costs</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShippingCalcEnabled(!shippingCalcEnabled)}
-                    style={{
-                      width: "48px",
-                      height: "28px",
-                      borderRadius: "14px",
-                      border: "none",
-                      backgroundColor: shippingCalcEnabled ? "var(--wl-primary)" : "var(--wl-border)",
-                      cursor: "pointer",
-                      transition: "background-color 0.2s",
-                    }}
+                    className={cn(
+                      'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
+                      shippingCalcEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                    )}
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Widget Appearance */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Appearance</CardTitle>
-                <CardDescription style={{ color: "var(--wl-muted)" }}>Customize widget look and feel</CardDescription>
+                <CardTitle className="text-slate-100">Appearance</CardTitle>
+                <CardDescription className="text-slate-400">Customize widget look and feel</CardDescription>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <CardContent className="flex flex-col gap-4">&nbsp;
                 {/* Position */}
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
                     Position
                   </label>
                   <select
                     value={widgetPosition}
                     onChange={(e) => setWidgetPosition(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      backgroundColor: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "6px",
-                      color: "var(--wl-text)",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer hover:border-slate-600"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -169,9 +151,9 @@ export default function WidgetConfigPage() {
                 </div>
 
                 {/* Dimensions */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-slate-100 text-xs font-medium mb-1.5">
                       Width (px)
                     </label>
                     <input
@@ -180,19 +162,11 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetWidth(e.target.value)}
                       min="250"
                       max="600"
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                      }}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs"
                     />
                   </div>
                   <div>
-                    <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                    <label className="block text-slate-100 text-xs font-medium mb-1.5">
                       Height (px)
                     </label>
                     <input
@@ -201,22 +175,14 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetHeight(e.target.value)}
                       min="400"
                       max="900"
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--wl-bg)",
-                        border: "1px solid var(--wl-border)",
-                        borderRadius: "6px",
-                        color: "var(--wl-text)",
-                        fontSize: "13px",
-                      }}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs"
                     />
                   </div>
                 </div>
 
                 {/* Border Radius */}
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
                     Border Radius: {borderRadius}px
                   </label>
                   <input
@@ -225,45 +191,31 @@ export default function WidgetConfigPage() {
                     onChange={(e) => setBorderRadius(e.target.value)}
                     min="0"
                     max="20"
-                    style={{ width: "100%", cursor: "pointer" }}
+                    className="w-full cursor-pointer"
                   />
                 </div>
 
                 {/* Shadow Toggle */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px", backgroundColor: "var(--wl-bg)", borderRadius: "6px" }}>
-                  <span style={{ color: "var(--wl-text)", fontSize: "13px" }}>Drop Shadow</span>
+                <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded">
+                  <span className="text-slate-100 text-xs">Drop Shadow</span>
                   <button
                     onClick={() => setShadowEnabled(!shadowEnabled)}
-                    style={{
-                      width: "44px",
-                      height: "24px",
-                      borderRadius: "12px",
-                      border: "none",
-                      backgroundColor: shadowEnabled ? "var(--wl-primary)" : "var(--wl-border)",
-                      cursor: "pointer",
-                      transition: "background-color 0.2s",
-                    }}
+                    className={cn(
+                      'w-11 h-6 rounded-full border-none cursor-pointer transition-colors',
+                      shadowEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                    )}
                   />
                 </div>
 
                 {/* Font */}
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
                     Font Family
                   </label>
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      backgroundColor: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "6px",
-                      color: "var(--wl-text)",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer"
                   >
                     <option value="system">System Default</option>
                     <option value="inter">Inter</option>
@@ -274,22 +226,13 @@ export default function WidgetConfigPage() {
 
                 {/* Language */}
                 <div>
-                  <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "6px" }}>
+                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
                     Language
                   </label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      backgroundColor: "var(--wl-bg)",
-                      border: "1px solid var(--wl-border)",
-                      borderRadius: "6px",
-                      color: "var(--wl-text)",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer"
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -302,14 +245,14 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Color Scheme */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <CardTitle className="text-slate-100 flex items-center gap-2">
                   <Palette size={18} />
                   Colors
                 </CardTitle>
               </CardHeader>
-              <CardContent style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <CardContent className="flex flex-col gap-4">&nbsp;
                 <div>
                   <label style={{ display: "block", color: "var(--wl-text)", fontSize: "13px", fontWeight: "500", marginBottom: "8px" }}>
                     Primary Color
@@ -401,11 +344,11 @@ export default function WidgetConfigPage() {
           </div>
 
           {/* Right Column - Preview & Code */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="flex flex-col gap-6">
             {/* Widget Preview */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <CardTitle className="text-slate-100 flex items-center gap-2">
                   <Eye size={18} />
                   Widget Preview
                 </CardTitle>
@@ -481,13 +424,13 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Embed Code */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <CardTitle className="text-slate-100 flex items-center gap-2">
                   <Code size={18} />
                   Embed Code
                 </CardTitle>
-                <CardDescription style={{ color: "var(--wl-muted)" }}>Copy and paste to your website</CardDescription>
+                <CardDescription className="text-slate-400">Copy and paste to your website</CardDescription>
               </CardHeader>
               <CardContent style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div
@@ -539,9 +482,9 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Documentation */}
-            <Card style={{ backgroundColor: "var(--wl-card)", border: "1px solid var(--wl-border)" }}>
+            <Card className="bg-slate-900 border border-slate-700">
               <CardHeader>
-                <CardTitle style={{ color: "var(--wl-text)" }}>Installation</CardTitle>
+                <CardTitle className="text-slate-100">Installation</CardTitle>
               </CardHeader>
               <CardContent style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div>
@@ -579,32 +522,14 @@ export default function WidgetConfigPage() {
         </div>
 
         {/* Save Button */}
-        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+        <div className="flex gap-3 justify-end">
           <Button
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "var(--wl-border)",
-              color: "var(--wl-text)",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-            }}
+            className="px-5 py-2 bg-slate-700 text-slate-100 border-none rounded cursor-pointer text-sm font-medium hover:bg-slate-600"
           >
             Discard
           </Button>
           <Button
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "var(--wl-primary)",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-            }}
+            className="px-5 py-2 bg-indigo-500 text-white border-none rounded cursor-pointer text-sm font-medium hover:bg-indigo-600"
           >
             Save Configuration
           </Button>

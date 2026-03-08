@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, User, Building2, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
 export default function RegisterPage() {
@@ -136,23 +137,8 @@ export default function RegisterPage() {
 
   if (authLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          background: "var(--wl-bg)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "var(--wl-space-4)",
-          }}
-        >
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg">
+        <div className="flex flex-col items-center gap-4">
           <div
             style={{
               width: 48,
@@ -163,68 +149,38 @@ export default function RegisterPage() {
               animation: "spin 1s linear infinite",
             }}
           />
-          <p style={{ color: "var(--wl-text)" }}>Loading...</p>
+          <p className="text-wl-text">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-6)" }}>
+    <div className="flex flex-col gap-6">
       {/* Heading */}
       <div>
-        <h2
-          style={{
-            fontSize: "var(--wl-text-2xl)",
-            fontWeight: 700,
-            color: "var(--wl-text-primary)",
-            marginBottom: "var(--wl-space-1)",
-            fontFamily: "var(--wl-font-sans)",
-          }}
-        >
+        <h2 className="text-2xl font-bold text-wl-text-primary mb-1">
           Create account
         </h2>
-        <p
-          style={{
-            fontSize: "var(--wl-text-sm)",
-            color: "var(--wl-text-tertiary)",
-            fontFamily: "var(--wl-font-sans)",
-          }}
-        >
+        <p className="text-sm text-wl-text-tertiary">
           Join Witylogix and start managing deliveries
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Name Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="name"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Full name
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <User
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="name"
@@ -236,17 +192,13 @@ export default function RegisterPage() {
                 setNameError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                nameError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: nameError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -264,46 +216,24 @@ export default function RegisterPage() {
             />
           </div>
           {nameError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {nameError}
             </span>
           )}
         </div>
 
         {/* Email Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="email"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Email address
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Mail
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="email"
@@ -315,17 +245,13 @@ export default function RegisterPage() {
                 setEmailError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                emailError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: emailError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -343,46 +269,24 @@ export default function RegisterPage() {
             />
           </div>
           {emailError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {emailError}
             </span>
           )}
         </div>
 
         {/* Company Name Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="company"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Company name
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Building2
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="company"
@@ -394,17 +298,13 @@ export default function RegisterPage() {
                 setCompanyError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                companyError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: companyError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -422,46 +322,24 @@ export default function RegisterPage() {
             />
           </div>
           {companyError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {companyError}
             </span>
           )}
         </div>
 
         {/* Password Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="password"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Password
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Lock
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             <input
               id="password"
@@ -473,17 +351,13 @@ export default function RegisterPage() {
                 setPasswordError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                passwordError
+                  ? "border-wl-danger-500 border-1.5"
+                  : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border: passwordError ? "1.5px solid var(--wl-danger-500)" : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
               }}
               onFocus={(e) => {
@@ -501,40 +375,29 @@ export default function RegisterPage() {
             />
           </div>
           {passwordError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {passwordError}
             </span>
           )}
 
           {/* Password Strength Indicator */}
           {password && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
-              <div style={{ display: "flex", gap: 4 }}>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <div
                     key={i}
+                    className="flex-1 h-1 rounded-full transition-all"
                     style={{
-                      flex: 1,
-                      height: 4,
-                      borderRadius: "var(--wl-radius-full)",
                       background: i < strength.score ? strength.color : "var(--wl-border)",
-                      transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
                     }}
                   />
                 ))}
               </div>
               <span
+                className="text-xs font-medium"
                 style={{
-                  fontSize: "var(--wl-text-xs)",
                   color: strength.color,
-                  fontFamily: "var(--wl-font-sans)",
-                  fontWeight: 500,
                 }}
               >
                 {strength.label} password
@@ -544,43 +407,22 @@ export default function RegisterPage() {
         </div>
 
         {/* Confirm Password Field */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
             htmlFor="confirmPassword"
-            style={{
-              fontSize: "var(--wl-text-sm)",
-              fontWeight: 500,
-              color: "var(--wl-text-primary)",
-              fontFamily: "var(--wl-font-sans)",
-            }}
+            className="text-sm font-medium text-wl-text-primary"
           >
             Confirm password
           </label>
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <div className="relative flex items-center">
             <Lock
               size={18}
-              style={{
-                position: "absolute",
-                left: "var(--wl-space-3)",
-                color: "var(--wl-text-tertiary)",
-                pointerEvents: "none",
-              }}
+              className="absolute left-3 text-wl-text-tertiary pointer-events-none"
             />
             {confirmPassword && password === confirmPassword && (
               <CheckCircle2
                 size={18}
-                style={{
-                  position: "absolute",
-                  right: "var(--wl-space-3)",
-                  color: "var(--wl-success-500)",
-                  pointerEvents: "none",
-                }}
+                className="absolute right-3 text-wl-success-500 pointer-events-none"
               />
             )}
             <input
@@ -593,22 +435,15 @@ export default function RegisterPage() {
                 setConfirmError("");
               }}
               disabled={isLoading}
+              className={cn(
+                "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
+                confirmError || (confirmPassword && password !== confirmPassword)
+                  ? "border-wl-danger-500 border-1.5"
+                  : confirmPassword && password === confirmPassword
+                    ? "border-wl-success-500"
+                    : "border-wl-border-default"
+              )}
               style={{
-                width: "100%",
-                padding: "var(--wl-space-3) var(--wl-space-3) var(--wl-space-3) 44px",
-                borderRadius: "var(--wl-radius-lg)",
-                border:
-                  confirmError || (confirmPassword && password !== confirmPassword)
-                    ? "1.5px solid var(--wl-danger-500)"
-                    : confirmPassword && password === confirmPassword
-                      ? "1px solid var(--wl-success-500)"
-                      : "1px solid var(--wl-border-default)",
-                background: "var(--wl-bg-surface)",
-                color: "var(--wl-text-primary)",
-                fontSize: "var(--wl-text-sm)",
-                fontFamily: "var(--wl-font-sans)",
-                transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
-                outline: "none",
                 opacity: isLoading ? 0.6 : 1,
                 paddingRight: confirmPassword && password === confirmPassword ? 44 : "var(--wl-space-3)",
               }}
@@ -630,30 +465,18 @@ export default function RegisterPage() {
             />
           </div>
           {confirmError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400">
               {confirmError}
             </span>
           )}
         </div>
 
         {/* Terms & Conditions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+        <div className="flex flex-col gap-2">
           <label
+            className="flex items-start gap-2 text-sm text-wl-text-secondary select-none"
             style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "var(--wl-space-2)",
               cursor: isLoading ? "not-allowed" : "pointer",
-              color: "var(--wl-text-secondary)",
-              fontFamily: "var(--wl-font-sans)",
-              fontSize: "var(--wl-text-sm)",
-              userSelect: "none",
               opacity: isLoading ? 0.6 : 1,
             }}
           >
@@ -678,34 +501,21 @@ export default function RegisterPage() {
               I agree to the{" "}
               <a
                 href="#"
-                style={{
-                  color: "var(--wl-primary-400)",
-                  textDecoration: "none",
-                }}
+                className="text-wl-primary-400 no-underline"
               >
                 Terms & Conditions
               </a>{" "}
               and{" "}
               <a
                 href="#"
-                style={{
-                  color: "var(--wl-primary-400)",
-                  textDecoration: "none",
-                }}
+                className="text-wl-primary-400 no-underline"
               >
                 Privacy Policy
               </a>
             </span>
           </label>
           {termsError && (
-            <span
-              style={{
-                fontSize: "var(--wl-text-xs)",
-                color: "var(--wl-danger-400)",
-                fontFamily: "var(--wl-font-sans)",
-                marginTop: "-var(--wl-space-1)",
-              }}
-            >
+            <span className="text-xs text-wl-danger-400" style={{ marginTop: "-var(--wl-space-1)" }}>
               {termsError}
             </span>
           )}
@@ -714,14 +524,8 @@ export default function RegisterPage() {
         {/* Error Message */}
         {error && (
           <div
+            className="p-3 rounded-lg bg-opacity-10 border border-opacity-20 text-sm text-wl-danger-400 bg-wl-danger-400 border-wl-danger-400"
             style={{
-              padding: "var(--wl-space-3)",
-              borderRadius: "var(--wl-radius-lg)",
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-              fontSize: "var(--wl-text-sm)",
-              color: "var(--wl-danger-400)",
-              fontFamily: "var(--wl-font-sans)",
               animation: "wl-fade-in 300ms var(--wl-ease-default) both",
             }}
           >
@@ -733,23 +537,12 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
+          className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            padding: "var(--wl-space-3) var(--wl-space-4)",
-            borderRadius: "var(--wl-radius-lg)",
-            border: "none",
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            color: "var(--wl-text-inverse)",
-            fontSize: "var(--wl-text-sm)",
-            fontWeight: 600,
-            fontFamily: "var(--wl-font-sans)",
             cursor: isLoading ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "var(--wl-space-2)",
-            transition: "all var(--wl-duration-fast) var(--wl-ease-default)",
             opacity: isLoading ? 0.8 : 1,
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
@@ -781,22 +574,12 @@ export default function RegisterPage() {
       </form>
 
       {/* Sign In Link */}
-      <div
-        style={{
-          textAlign: "center",
-          fontSize: "var(--wl-text-sm)",
-          color: "var(--wl-text-tertiary)",
-          fontFamily: "var(--wl-font-sans)",
-        }}
-      >
+      <div className="text-center text-sm text-wl-text-tertiary">
         Already have an account?{" "}
         <Link
           href="/login"
+          className="text-wl-primary-400 no-underline font-semibold transition-colors"
           style={{
-            color: "var(--wl-primary-400)",
-            textDecoration: "none",
-            fontWeight: 600,
-            transition: "color var(--wl-duration-fast) var(--wl-ease-default)",
             pointerEvents: isLoading ? "none" : "auto",
             opacity: isLoading ? 0.6 : 1,
           }}

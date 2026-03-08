@@ -9,6 +9,8 @@ import { componentStyles, colors, spacing } from './styles';
 interface DeliveryDatePickerProps {
   shopId: string;
   cartItems?: CartItem[];
+  blackoutDates?: string[]; // ISO dates that can't be selected
+  minimumLeadTime?: number; // Minutes before current time to allow booking
   onSelectionChange?: (selection: {
     date: string;
     slotId: string;
@@ -26,6 +28,8 @@ interface DeliveryDatePickerProps {
 export function DeliveryDatePicker({
   shopId,
   cartItems = [],
+  blackoutDates = [],
+  minimumLeadTime = 240, // Default: 4 hours
   onSelectionChange
 }: DeliveryDatePickerProps) {
   const [dates, setDates] = useState<DeliveryDate[]>([]);
@@ -107,11 +111,56 @@ export function DeliveryDatePicker({
     loadSlots();
   }, [selectedDate, shopId]);
 
+  // Check if date is blackout or before minimum lead time
+  const isDateSelectable = (dateStr: string): boolean => {
+    // Check blackout dates
+    if (blackoutDates.includes(dateStr)) {
+      return false;
+    }
+
+    // Check minimum lead time for today
+    const today = new Date();
+    const selectedDate = new Date(dateStr);
+    const isSameDay =
+      today.getFullYear() === selectedDate.getFullYear() &&
+      today.getMonth() === selectedDate.getMonth() &&
+      today.getDate() === selectedDate.getDate();
+
+    if (isSameDay) {
+      const timeUntilMidnight = new Date(today);
+      timeUntilMidnight.setHours(24, 0, 0, 0);
+      const minutesUntilMidnight = (timeUntilMidnight.getTime() - today.getTime()) / (1000 * 60);
+      return minutesUntilMidnight >= minimumLeadTime;
+    }
+
+    return selectedDate > today;
+  };
+
   // Handle date selection
   const handleDateSelect = (date: DeliveryDate) => {
-    if (date.available) {
+    if (date.available && isDateSelectable(date.date)) {
       setSelectedDate(date.date);
     }
+  };
+
+  // Format date with locale support
+  const formatDateWithLocale = (dateStr: string): string => {
+    try {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat(
+        Intl.DateTimeFormat().resolvedOptions().locale,
+        { weekday: 'short', month: 'short', day: 'numeric' }
+      ).format(date);
+    } catch {
+      return formatDateLabel(dateStr);
+    }
+  };
+
+  // Get capacity level for a date
+  const getCapacityLevel = (date: DeliveryDate): 'available' | 'limited' | 'full' => {
+    if (!date.available) return 'full';
+    if (date.slotCount <= 2) return 'limited';
+    return 'available';
   };
 
   // Handle time slot selection
@@ -212,46 +261,73 @@ export function DeliveryDatePicker({
             gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
             gap: spacing.sm
           }}>
-            {dates.map((date) => (
-              <button
-                key={date.date}
-                onClick={() => handleDateSelect(date)}
-                disabled={!date.available}
-                style={{
-                  ...componentStyles.dateButton as any,
-                  backgroundColor: selectedDate === date.date
-                    ? colors.primary
-                    : date.available
-                    ? colors.neutral100
-                    : colors.disabled,
-                  borderColor: selectedDate === date.date
-                    ? colors.primary
-                    : date.available
-                    ? colors.neutral300
-                    : colors.neutral300,
-                  color: selectedDate === date.date
-                    ? colors.neutral100
-                    : colors.neutral900,
-                  fontWeight: selectedDate === date.date ? 600 : 400,
-                  cursor: date.available ? 'pointer' : 'not-allowed',
-                  opacity: date.available ? 1 : 0.6,
-                  transition: 'all 0.2s ease'
-                }}
-                aria-label={`${formatDateLabel(date.date)} - ${date.slotCount} slots available`}
-                aria-pressed={selectedDate === date.date}
-              >
-                <div style={{ fontWeight: 600 }}>
-                  {formatDateLabel(date.date)}
-                </div>
-                <div style={{
-                  fontSize: '11px',
-                  marginTop: '4px',
-                  opacity: 0.8
-                }}>
-                  {date.slotCount} {date.slotCount === 1 ? 'slot' : 'slots'}
-                </div>
-              </button>
-            ))}
+            {dates.map((date) => {
+              const isSelectable = isDateSelectable(date.date);
+              const isBlackedOut = blackoutDates.includes(date.date);
+              const capacityLevel = getCapacityLevel(date);
+
+              return (
+                <button
+                  key={date.date}
+                  onClick={() => handleDateSelect(date)}
+                  disabled={!isSelectable || !date.available}
+                  onKeyDown={(e) => {
+                    // Keyboard navigation support
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleDateSelect(date);
+                    }
+                  }}
+                  style={{
+                    ...componentStyles.dateButton as any,
+                    backgroundColor: selectedDate === date.date
+                      ? colors.primary
+                      : !isSelectable
+                      ? colors.disabled
+                      : date.available
+                      ? colors.neutral100
+                      : colors.disabled,
+                    borderColor: selectedDate === date.date
+                      ? colors.primary
+                      : date.available && isSelectable
+                      ? colors.neutral300
+                      : colors.neutral300,
+                    color: selectedDate === date.date
+                      ? colors.neutral100
+                      : colors.neutral900,
+                    fontWeight: selectedDate === date.date ? 600 : 400,
+                    cursor: isSelectable && date.available ? 'pointer' : 'not-allowed',
+                    opacity: isSelectable && date.available ? 1 : 0.6,
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                  aria-label={`${formatDateWithLocale(date.date)} - ${date.slotCount} slots - ${
+                    isBlackedOut ? 'Blackout date' :
+                    !isSelectable ? 'Not available yet' :
+                    capacityLevel === 'limited' ? 'Limited capacity' :
+                    'Available'
+                  }`}
+                  aria-pressed={selectedDate === date.date}
+                  aria-disabled={!isSelectable || !date.available}
+                >
+                  <div style={{ fontWeight: 600 }}>
+                    {formatDateWithLocale(date.date)}
+                  </div>
+                  <div style={{
+                    fontSize: '11px',
+                    marginTop: '4px',
+                    opacity: 0.8
+                  }}>
+                    {isBlackedOut ? (
+                      <span style={{ color: colors.warning }}>Holiday</span>
+                    ) : capacityLevel === 'limited' ? (
+                      <span style={{ color: colors.warning }}>Limited</span>
+                    ) : (
+                      `${date.slotCount} ${date.slotCount === 1 ? 'slot' : 'slots'}`
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -302,6 +378,28 @@ export function DeliveryDatePicker({
         </div>
       )}
 
+      {/* Capacity legend */}
+      <div style={{
+        marginTop: spacing.lg,
+        padding: spacing.md,
+        backgroundColor: colors.neutral200,
+        borderRadius: '6px',
+        fontSize: '12px'
+      }}>
+        <div style={{ marginBottom: spacing.sm, fontWeight: 500 }}>
+          Availability Legend:
+        </div>
+        <div style={{ marginBottom: spacing.xs }}>
+          <span style={{ color: colors.success }}>Available</span> - Plenty of slots
+        </div>
+        <div style={{ marginBottom: spacing.xs }}>
+          <span style={{ color: colors.warning }}>Limited</span> - 2 or fewer slots remaining
+        </div>
+        <div>
+          <span style={{ color: colors.warning }}>Holiday</span> - Blackout date
+        </div>
+      </div>
+
       {/* Help text */}
       <div style={{
         ...componentStyles.helpText as any,
@@ -309,7 +407,7 @@ export function DeliveryDatePicker({
         fontSize: '12px',
         color: colors.neutral500
       }}>
-        You can change your delivery date and time at any point before checkout.
+        You can change your delivery date and time at any point before checkout. Use arrow keys to navigate dates.
       </div>
     </div>
   );

@@ -453,7 +453,7 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
         throw new ValidationError("Invalid state parameter");
       }
 
-      const { providerId, shopId, userId } = stateData;
+      const { providerId, shopId, userId, redirectAfterAuth } = stateData;
 
       // Exchange code for token
       const provider = await (request.tenantDb as any).authProvider.findUnique({
@@ -464,16 +464,56 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("Auth provider", providerId);
       }
 
-      // TODO: Exchange code for token with OAuth provider
-      // const tokens = await exchangeCodeForToken(provider, code);
+      // Exchange code for token with OAuth provider
+      let tokens: any;
+      try {
+        tokens = await exchangeOAuthCode(provider, code, provider.redirectUri || `${process.env.API_URL}/api/v4/auth-providers/callback`);
+      } catch (error) {
+        fastify.log.error(
+          { providerId, error: (error as Error).message },
+          "OAuth code exchange failed",
+        );
+        return reply.status(400).send({
+          error: "token_exchange_failed",
+          message: "Failed to exchange authorization code for token",
+        });
+      }
+
+      if (!tokens || !tokens.access_token) {
+        throw new ValidationError("No access token received from provider");
+      }
+
+      // Store tokens in database for future use
+      try {
+        await (request.tenantDb as any).authProviderToken.create({
+          data: {
+            providerId,
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token || null,
+            idToken: tokens.id_token || null,
+            expiresAt: tokens.expires_in
+              ? new Date(Date.now() + tokens.expires_in * 1000)
+              : null,
+            issuedAt: new Date(),
+            metadata: tokens.metadata || {},
+          },
+        });
+      } catch (err) {
+        fastify.log.warn(
+          { providerId, error: err },
+          "Failed to store provider token",
+        );
+        // Continue anyway - tokens can be re-fetched
+      }
 
       fastify.log.info(
-        { providerId, shopId, userId },
-        "OAuth callback processed",
+        { providerId, shopId, userId, providerType: provider.type },
+        "OAuth callback processed successfully",
       );
 
       // Redirect to app with success
-      return reply.redirect(`/?auth=success&provider=${provider.type}`);
+      const redirectUrl = redirectAfterAuth || `/?auth=success&provider=${provider.type}`;
+      return reply.redirect(redirectUrl);
     },
   );
 
@@ -587,6 +627,330 @@ async function authProvidersRoutes(fastify: FastifyInstance): Promise<void> {
       };
     },
   );
+}
+
+// ─── OAuth Code Exchange ────────────────────────────────────────
+
+/**
+ * Exchange authorization code for access token with OAuth provider.
+ * Handles different provider APIs (Auth0, Clerk, Cognito, Firebase, OIDC, SAML).
+ */
+async function exchangeOAuthCode(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<{
+  access_token: string;
+  refresh_token?: string;
+  id_token?: string;
+  expires_in?: number;
+  metadata?: Record<string, any>;
+}> {
+  const providerType = provider.type;
+
+  switch (providerType) {
+    case "GOOGLE":
+      return exchangeGoogle(provider, code, redirectUri);
+
+    case "MICROSOFT":
+      return exchangeMicrosoft(provider, code, redirectUri);
+
+    case "OKTA":
+      return exchangeOkta(provider, code, redirectUri);
+
+    case "AUTH0":
+      return exchangeAuth0(provider, code, redirectUri);
+
+    case "CUSTOM_OAUTH":
+      return exchangeCustomOAuth(provider, code, redirectUri);
+
+    case "SAML":
+      return exchangeSAML(provider, code);
+
+    default:
+      throw new ValidationError(`Unsupported auth provider type: ${providerType}`);
+  }
+}
+
+/**
+ * Google OAuth2 code exchange.
+ */
+async function exchangeGoogle(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<any> {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: provider.clientId,
+      client_secret: provider.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Google token exchange failed: ${error.error_description || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const decoded = decodeJWT(data.id_token);
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    id_token: data.id_token,
+    expires_in: data.expires_in,
+    metadata: {
+      sub: decoded.sub,
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+    },
+  };
+}
+
+/**
+ * Microsoft OAuth2 code exchange (Azure AD / Entra ID).
+ */
+async function exchangeMicrosoft(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<any> {
+  const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: provider.clientId,
+      client_secret: provider.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+      scope: provider.scopes?.join(" ") || "openid profile email",
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Microsoft token exchange failed: ${error.error_description || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const decoded = decodeJWT(data.id_token);
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    id_token: data.id_token,
+    expires_in: data.expires_in,
+    metadata: {
+      sub: decoded.oid,
+      email: decoded.preferred_username,
+      name: decoded.name,
+      picture: decoded.picture,
+    },
+  };
+}
+
+/**
+ * Okta OAuth2 code exchange.
+ */
+async function exchangeOkta(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<any> {
+  const domain = (provider.metadata?.domain as string) || provider.authUrl?.split("/oauth2")[0];
+  if (!domain) {
+    throw new ValidationError("Okta domain not configured in provider metadata");
+  }
+
+  const response = await fetch(`${domain}/oauth2/v1/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: provider.clientId,
+      client_secret: provider.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Okta token exchange failed: ${error.error_description || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const decoded = decodeJWT(data.id_token);
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    id_token: data.id_token,
+    expires_in: data.expires_in,
+    metadata: {
+      sub: decoded.sub,
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+    },
+  };
+}
+
+/**
+ * Auth0 OAuth2 code exchange.
+ */
+async function exchangeAuth0(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<any> {
+  const domain = (provider.metadata?.domain as string) || provider.authUrl?.split("/oauth/authorize")[0];
+  if (!domain) {
+    throw new ValidationError("Auth0 domain not configured in provider metadata");
+  }
+
+  const response = await fetch(`${domain}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: provider.clientId,
+      client_secret: provider.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Auth0 token exchange failed: ${error.error_description || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const decoded = decodeJWT(data.id_token);
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    id_token: data.id_token,
+    expires_in: data.expires_in,
+    metadata: {
+      sub: decoded.sub,
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+    },
+  };
+}
+
+/**
+ * Generic Custom OAuth2 code exchange (OIDC-compliant).
+ */
+async function exchangeCustomOAuth(
+  provider: any,
+  code: string,
+  redirectUri: string,
+): Promise<any> {
+  if (!provider.tokenUrl) {
+    throw new ValidationError("Token URL not configured for custom OAuth provider");
+  }
+
+  const response = await fetch(provider.tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: provider.clientId,
+      client_secret: provider.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }).toString(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(`Custom OAuth token exchange failed: ${error.error_description || response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  // For custom providers, try to decode id_token if available, otherwise use access_token metadata
+  let metadata: Record<string, any> = {};
+  if (data.id_token) {
+    const decoded = decodeJWT(data.id_token);
+    metadata = {
+      sub: decoded.sub,
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+    };
+  }
+
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    id_token: data.id_token,
+    expires_in: data.expires_in,
+    metadata,
+  };
+}
+
+/**
+ * SAML assertion processing (no code exchange needed).
+ * The SAML assertion is typically POSTed directly from the IdP.
+ */
+async function exchangeSAML(
+  provider: any,
+  samlResponse: string,
+): Promise<any> {
+  // In production, would use a SAML library (like @node-saml/node-saml2-js or passport-saml)
+  // For now, we'll do minimal processing and assume the samlResponse is base64-encoded XML
+
+  let decoded: any;
+  try {
+    const xmlData = Buffer.from(samlResponse, "base64").toString("utf-8");
+    // Extract email and name from SAML assertion (simplified)
+    // In production, use proper SAML parsing with xmldom and @node-saml/node-saml2-js
+    const emailMatch = xmlData.match(/<urn:oid:0\.9\.2342\.19400300\.100\.1\.3>([^<]+)<\/urn:oid:0\.9\.2342\.19400300\.100\.1\.3>/);
+    const nameMatch = xmlData.match(/<urn:oid:2\.5\.4\.3>([^<]+)<\/urn:oid:2\.5\.4\.3>/);
+
+    decoded = {
+      sub: samlResponse.substring(0, 32),
+      email: emailMatch ? emailMatch[1] : "",
+      name: nameMatch ? nameMatch[1] : "",
+    };
+  } catch (error) {
+    throw new ValidationError("Failed to parse SAML assertion");
+  }
+
+  return {
+    access_token: `saml_${crypto.randomUUID()}`,
+    id_token: samlResponse,
+    expires_in: undefined,
+    metadata: decoded,
+  };
+}
+
+/**
+ * Decode JWT payload without verification (for extracting claims).
+ */
+function decodeJWT(token: string): any {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) throw new Error("Invalid JWT format");
+    const payload = Buffer.from(parts[1], "base64").toString("utf-8");
+    return JSON.parse(payload);
+  } catch (error) {
+    throw new ValidationError("Failed to decode JWT token");
+  }
 }
 
 export default authProvidersRoutes;

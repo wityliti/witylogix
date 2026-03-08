@@ -26,6 +26,7 @@ import { prisma } from "@witylogix/db";
 import { UnauthorizedError, NotFoundError, ValidationError } from "../lib/errors.js";
 import { getConfig } from "../lib/config.js";
 import { getRedis } from "../lib/redis.js";
+import { getNotificationQueue } from "../lib/queue.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -355,10 +356,31 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
         3600, // 1 hour
       );
 
-      // TODO: Enqueue email notification with reset link
-      // await notificationQueue.add('password-reset', {
-      //   shopId: shop.id, email: user.email, resetToken
-      // });
+      // Enqueue email notification with reset link
+      const notificationQueue = getNotificationQueue();
+      await notificationQueue.add(
+        'auth.password_reset',
+        {
+          type: 'notification',
+          data: {
+            shopId: shop.id,
+            notificationId: `password-reset-${resetHash}`,
+            channel: 'email',
+            payload: {
+              templateId: 'password-reset-email',
+              recipientId: user.id,
+              recipientAddress: user.email,
+              templateData: {
+                resetLink: `${getConfig().DASHBOARD_URL}/reset-password?token=${resetToken}`,
+                email: user.email,
+              },
+              priority: 'high',
+              ttl: 3600, // 1 hour to match reset token TTL
+            },
+          },
+        },
+        { priority: 'high' }
+      );
     }
 
     return { data: { message: "If the email exists, a reset link has been sent" } };

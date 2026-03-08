@@ -10,7 +10,7 @@ import { Table } from "../../components/ui/table";
 import { Modal } from "../../components/ui/modal";
 import { Input } from "../../components/ui/input";
 import { Select } from "../../components/ui/select";
-import { formatRelativeTime, formatNumber } from "../../lib/utils";
+import { cn, formatRelativeTime, formatNumber } from "../../lib/utils";
 import {
   Mail,
   MessageSquare,
@@ -233,19 +233,12 @@ export default function CampaignsPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--wl-bg-primary)" }}>
+    <div className="min-h-screen bg-wl-bg-primary">
       <Header title="Campaigns" description="Create and manage marketing campaigns" />
 
-      <div style={{ padding: "var(--wl-space-8)", maxWidth: "100%", margin: "0 auto" }}>
+      <div className="p-8 w-full mx-auto">
         {/* Stats Row */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-8)",
-          }}
-        >
+        <div className="grid grid-cols-auto-fit gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
           <StatCard
             label="Active Campaigns"
             value={stats.active}
@@ -277,29 +270,19 @@ export default function CampaignsPage() {
         </div>
 
         {/* Controls Card */}
-        <Card style={{ marginBottom: "var(--wl-space-6)" }}>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Filters & Actions</CardTitle>
             <Button
               onClick={() => setIsCreateOpen(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--wl-space-2)",
-              }}
+              className="flex items-center gap-2"
             >
               <Plus size={16} />
               New Campaign
             </Button>
           </CardHeader>
           <CardContent>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "var(--wl-space-4)",
-              }}
-            >
+            <div className="grid grid-cols-auto-fit gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
               <Select
                 label="Campaign Type"
                 value={filterType}
@@ -340,7 +323,7 @@ export default function CampaignsPage() {
                   key: "name",
                   header: "Campaign Name",
                   render: (c: Campaign) => (
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-2)" }}>
+                    <div className="flex items-center gap-2">
                       <span>{c.name}</span>
                     </div>
                   ),
@@ -350,7 +333,7 @@ export default function CampaignsPage() {
                   key: "type",
                   header: "Type",
                   render: (c: Campaign) => (
-                    <Badge variant={typeVariant(c.type)} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <Badge variant={typeVariant(c.type)} className="inline-flex items-center gap-1">
                       {typeIcon(c.type)}
                       {c.type}
                     </Badge>
@@ -408,12 +391,12 @@ export default function CampaignsPage() {
                   key: "actions",
                   header: "Actions",
                   render: (c: Campaign) => (
-                    <div style={{ display: "flex", gap: "var(--wl-space-2)", justifyContent: "flex-end" }}>
+                    <div className="flex gap-2 justify-end">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDuplicate(c)}
-                        style={{ padding: "4px 8px" }}
+                        className="px-2 py-1"
                       >
                         <Copy size={14} />
                       </Button>
@@ -422,7 +405,7 @@ export default function CampaignsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handlePause(c)}
-                          style={{ padding: "4px 8px" }}
+                          className="px-2 py-1"
                         >
                           <Pause size={14} />
                         </Button>
@@ -432,7 +415,7 @@ export default function CampaignsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(c)}
-                          style={{ padding: "4px 8px", color: "var(--wl-danger-400)" }}
+                          className="px-2 py-1 text-wl-danger-400"
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -459,25 +442,25 @@ export default function CampaignsPage() {
         title="Create New Campaign"
         size="md"
         footer={
-          <div style={{ display: "flex", gap: "var(--wl-space-3)" }}>
+          <div className="flex gap-3">
             <Button
               variant="secondary"
               onClick={() => setIsCreateOpen(false)}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               Cancel
             </Button>
             <Button
               onClick={handleCreateCampaign}
               disabled={!newCampaignName.trim()}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               Create Campaign
             </Button>
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-4)" }}>
+        <div className="flex flex-col gap-4">
           <Input
             label="Campaign Name"
             placeholder="e.g., Spring Sale 2026"

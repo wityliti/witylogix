@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Header } from "@/components/layout/header";
+import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,24 +90,15 @@ export default function DashboardPage() {
         title="Dashboard"
         subtitle="Friday, March 6, 2026"
         actions={
-          <div style={{ display: "flex", gap: "var(--wl-space-1)", background: "var(--wl-bg-overlay)", borderRadius: "var(--wl-radius-md)", padding: 2 }}>
+          <div className={cn("flex gap-1 bg-wl-bg-overlay rounded-md p-0.5")}>
             {(["today", "week", "month"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeRange(t)}
-                style={{
-                  padding: "var(--wl-space-1) var(--wl-space-3)",
-                  borderRadius: "var(--wl-radius-sm)",
-                  border: "none",
-                  fontSize: "var(--wl-text-xs)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "var(--wl-font-sans)",
-                  textTransform: "capitalize",
-                  background: timeRange === t ? "var(--wl-primary-500)" : "transparent",
-                  color: timeRange === t ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                }}
+                className={cn("px-3 py-1 rounded text-xs font-semibold cursor-pointer font-sans capitalize transition-all", {
+                  "bg-wl-primary-500 text-wl-text-inverse": timeRange === t,
+                  "bg-transparent text-wl-text-tertiary": timeRange !== t,
+                })}
               >
                 {t}
               </button>
@@ -115,15 +107,11 @@ export default function DashboardPage() {
         }
       />
 
-      <div style={{ padding: "var(--wl-space-6)" }}>
+      <div className={cn("p-6")}>
         {/* ═══ KPI Stats Grid ═══ */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "var(--wl-space-4)",
-            marginBottom: "var(--wl-space-6)",
-          }}
+          className={cn("grid gap-4 mb-6 auto-fill")}
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}
         >
           {STATS.map((stat, i) => (
             <StatCard
@@ -139,30 +127,21 @@ export default function DashboardPage() {
 
         {/* ═══ Main Content Grid ═══ */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 380px",
-            gap: "var(--wl-space-5)",
-          }}
+          className={cn("grid gap-5")}
+          style={{ gridTemplateColumns: "1fr 380px" }}
         >
           {/* Left Column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-5)" }}>
+          <div className={cn("flex flex-col gap-5")}>
             {/* Delivery Volume Bar Chart */}
             <Card>
               <CardHeader>
                 <CardTitle>Delivery Volume</CardTitle>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <span className={cn("text-xs text-wl-text-tertiary")}>
                   Today&apos;s hourly distribution
                 </span>
               </CardHeader>
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-end",
-                  gap: 6,
-                  height: 140,
-                  paddingTop: "var(--wl-space-2)",
-                }}
+                className={cn("flex items-end gap-1.5 h-35 pt-2")}
               >
                 {DELIVERY_TIMELINE.map((d, i) => {
                   const height = (d.count / maxCount) * 100;
@@ -170,45 +149,30 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={d.hour}
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
+                      className={cn("flex-1 flex flex-col items-center gap-1")}
                     >
                       <span
-                        style={{
-                          fontSize: 10,
-                          fontFamily: "var(--wl-font-mono)",
-                          color: isCurrent ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)",
-                          fontWeight: isCurrent ? 600 : 400,
-                        }}
+                        className={cn("text-2xs font-mono", {
+                          "text-wl-primary-400 font-semibold": isCurrent,
+                          "text-wl-text-tertiary font-normal": !isCurrent,
+                        })}
                       >
                         {d.count}
                       </span>
                       <div
-                        className="wl-animate-in"
+                        className={cn("wl-animate-in w-full min-h-1 rounded-t", {
+                          "bg-gradient-to-b from-wl-primary-400 to-wl-primary-600": isCurrent,
+                          "bg-gradient-to-b from-wl-neutral-600 to-wl-neutral-800": !isCurrent,
+                        })}
                         style={{
-                          width: "100%",
                           height: `${height}%`,
-                          minHeight: 4,
-                          borderRadius: "var(--wl-radius-sm) var(--wl-radius-sm) 0 0",
-                          background: isCurrent
-                            ? "linear-gradient(180deg, var(--wl-primary-400), var(--wl-primary-600))"
-                            : "linear-gradient(180deg, var(--wl-neutral-600), var(--wl-neutral-800))",
                           boxShadow: isCurrent ? "var(--wl-shadow-glow)" : "none",
                           animationDelay: `${i * 50}ms`,
                           transition: `height var(--wl-duration-slow) var(--wl-ease-spring)`,
                         }}
                       />
                       <span
-                        style={{
-                          fontSize: 9,
-                          color: "var(--wl-text-tertiary)",
-                          fontFamily: "var(--wl-font-mono)",
-                        }}
+                        className={cn("text-2xs text-wl-text-tertiary font-mono")}
                       >
                         {d.hour}
                       </span>
@@ -226,29 +190,16 @@ export default function DashboardPage() {
                   View all →
                 </Button>
               </CardHeader>
-              <div style={{ overflowX: "auto" }}>
+              <div className={cn("overflow-x-auto")}>
                 <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "var(--wl-text-sm)",
-                  }}
+                  className={cn("w-full border-collapse text-sm")}
                 >
                   <thead>
                     <tr>
                       {["Order", "Customer", "Status", "Driver", "ETA", "Amount"].map((h) => (
                         <th
                           key={h}
-                          style={{
-                            textAlign: "left",
-                            padding: "var(--wl-space-2) var(--wl-space-3)",
-                            fontSize: "var(--wl-text-xs)",
-                            fontWeight: 600,
-                            color: "var(--wl-text-tertiary)",
-                            letterSpacing: "0.04em",
-                            textTransform: "uppercase",
-                            borderBottom: "1px solid var(--wl-border-subtle)",
-                          }}
+                          className={cn("text-left p-2 p-3 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wide border-b border-wl-border-subtle")}
                         >
                           {h}
                         </th>
@@ -259,59 +210,38 @@ export default function DashboardPage() {
                     {RECENT_ORDERS.map((order) => (
                       <tr
                         key={order.id}
-                        style={{
-                          borderBottom: "1px solid var(--wl-border-subtle)",
-                        }}
+                        className={cn("border-b border-wl-border-subtle")}
                       >
                         <td
-                          style={{
-                            padding: "var(--wl-space-3)",
-                            fontFamily: "var(--wl-font-mono)",
-                            fontWeight: 600,
-                            color: "var(--wl-primary-400)",
-                            fontSize: "var(--wl-text-xs)",
-                          }}
+                          className={cn("p-3 font-mono font-semibold text-wl-primary-400 text-xs")}
                         >
                           {order.id}
                         </td>
                         <td
-                          style={{
-                            padding: "var(--wl-space-3)",
-                            color: "var(--wl-text-primary)",
-                          }}
+                          className={cn("p-3 text-wl-text-primary")}
                         >
                           {order.customer}
                         </td>
-                        <td style={{ padding: "var(--wl-space-3)" }}>
+                        <td className={cn("p-3")}>
                           <Badge variant={statusVariant(order.status)} dot>
                             {order.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
                         <td
-                          style={{
-                            padding: "var(--wl-space-3)",
-                            color: "var(--wl-text-secondary)",
-                          }}
+                          className={cn("p-3 text-wl-text-secondary")}
                         >
                           {order.driver}
                         </td>
                         <td
-                          style={{
-                            padding: "var(--wl-space-3)",
-                            fontFamily: "var(--wl-font-mono)",
-                            fontSize: "var(--wl-text-xs)",
-                            color: order.eta === "—" ? "var(--wl-text-tertiary)" : "var(--wl-text-secondary)",
-                          }}
+                          className={cn("p-3 font-mono text-xs", {
+                            "text-wl-text-tertiary": order.eta === "—",
+                            "text-wl-text-secondary": order.eta !== "—",
+                          })}
                         >
                           {order.eta}
                         </td>
                         <td
-                          style={{
-                            padding: "var(--wl-space-3)",
-                            fontFamily: "var(--wl-font-mono)",
-                            fontWeight: 600,
-                            color: "var(--wl-text-primary)",
-                          }}
+                          className={cn("p-3 font-mono font-semibold text-wl-text-primary")}
                         >
                           {formatCurrency(order.amount)}
                         </td>
@@ -326,88 +256,54 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Zone Performance</CardTitle>
-                <span style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <span className={cn("text-xs text-wl-text-tertiary")}>
                   Delivery metrics by zone
                 </span>
               </CardHeader>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className={cn("flex flex-col gap-3")}>
                 {ZONE_PERFORMANCE.map((zone, i) => (
                   <div
                     key={zone.zone}
-                    className="wl-animate-in"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-4)",
-                      padding: "var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      background: "var(--wl-bg-surface)",
-                      animationDelay: `${i * 60}ms`,
-                    }}
+                    className={cn("wl-animate-in flex items-center gap-4 p-3 rounded-md bg-wl-bg-surface")}
+                    style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Zone rank */}
                     <span
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: "var(--wl-radius-sm)",
-                        background: i === 0 ? "rgba(245, 166, 35, 0.12)" : "var(--wl-bg-overlay)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "var(--wl-text-xs)",
-                        fontWeight: 700,
-                        fontFamily: "var(--wl-font-mono)",
-                        color: i === 0 ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)",
-                        flexShrink: 0,
-                      }}
+                      className={cn("w-7 h-7 rounded text-xs font-bold font-mono flex-shrink-0 flex items-center justify-center", {
+                        "bg-orange-100 text-wl-primary-400": i === 0,
+                        "bg-wl-bg-overlay text-wl-text-tertiary": i !== 0,
+                      })}
                     >
                       {i + 1}
                     </span>
 
                     {/* Zone name + bar */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className={cn("flex-1 min-w-0")}>
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 4,
-                        }}
+                        className={cn("flex justify-between mb-1")}
                       >
                         <span
-                          style={{
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 600,
-                            color: "var(--wl-text-primary)",
-                          }}
+                          className={cn("text-sm font-semibold text-wl-text-primary")}
                         >
                           {zone.zone}
                         </span>
                         <span
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            fontFamily: "var(--wl-font-mono)",
-                            color: zone.trend >= 0 ? "var(--wl-success-400)" : "var(--wl-danger-400)",
-                          }}
+                          className={cn("text-xs font-mono", {
+                            "text-wl-success-400": zone.trend >= 0,
+                            "text-wl-danger-400": zone.trend < 0,
+                          })}
                         >
                           {zone.trend >= 0 ? "+" : ""}
                           {zone.trend}%
                         </span>
                       </div>
                       <div
-                        style={{
-                          height: 4,
-                          background: "var(--wl-bg-overlay)",
-                          borderRadius: "var(--wl-radius-full)",
-                          overflow: "hidden",
-                        }}
+                        className={cn("h-1 bg-wl-bg-overlay rounded-full overflow-hidden")}
                       >
                         <div
+                          className={cn("h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full")}
                           style={{
                             width: `${(zone.orders / 45) * 100}%`,
-                            height: "100%",
-                            background: `linear-gradient(90deg, var(--wl-primary-500), var(--wl-primary-400))`,
-                            borderRadius: "var(--wl-radius-full)",
                             transition: `width var(--wl-duration-slow) var(--wl-ease-spring)`,
                           }}
                         />
@@ -416,68 +312,40 @@ export default function DashboardPage() {
 
                     {/* Stats */}
                     <div
-                      style={{
-                        display: "flex",
-                        gap: "var(--wl-space-5)",
-                        flexShrink: 0,
-                      }}
+                      className={cn("flex gap-5 flex-shrink-0")}
                     >
-                      <div style={{ textAlign: "right" }}>
+                      <div className={cn("text-right")}>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            color: "var(--wl-text-tertiary)",
-                          }}
+                          className={cn("text-xs text-wl-text-tertiary")}
                         >
                           Orders
                         </div>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 700,
-                            fontFamily: "var(--wl-font-mono)",
-                            color: "var(--wl-text-primary)",
-                          }}
+                          className={cn("text-sm font-bold font-mono text-wl-text-primary")}
                         >
                           {zone.orders}
                         </div>
                       </div>
-                      <div style={{ textAlign: "right" }}>
+                      <div className={cn("text-right")}>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            color: "var(--wl-text-tertiary)",
-                          }}
+                          className={cn("text-xs text-wl-text-tertiary")}
                         >
                           Avg Time
                         </div>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 600,
-                            fontFamily: "var(--wl-font-mono)",
-                            color: "var(--wl-text-secondary)",
-                          }}
+                          className={cn("text-sm font-semibold font-mono text-wl-text-secondary")}
                         >
                           {zone.avgTime}
                         </div>
                       </div>
-                      <div style={{ textAlign: "right" }}>
+                      <div className={cn("text-right")}>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-xs)",
-                            color: "var(--wl-text-tertiary)",
-                          }}
+                          className={cn("text-xs text-wl-text-tertiary")}
                         >
                           Revenue
                         </div>
                         <div
-                          style={{
-                            fontSize: "var(--wl-text-sm)",
-                            fontWeight: 600,
-                            fontFamily: "var(--wl-font-mono)",
-                            color: "var(--wl-success-400)",
-                          }}
+                          className={cn("text-sm font-semibold font-mono text-wl-success-400")}
                         >
                           {formatCurrency(zone.revenue)}
                         </div>
@@ -490,7 +358,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Column — Sidebar Panels */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-5)" }}>
+          <div className={cn("flex flex-col gap-5")}>
             {/* Active Drivers Panel */}
             <Card>
               <CardHeader>
@@ -499,76 +367,40 @@ export default function DashboardPage() {
                   {ACTIVE_DRIVERS.filter((d) => d.status !== "OFFLINE").length} online
                 </Badge>
               </CardHeader>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className={cn("flex flex-col gap-3")}>
                 {ACTIVE_DRIVERS.map((driver, i) => (
                   <div
                     key={driver.name}
-                    className="wl-animate-in"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-3)",
-                      padding: "var(--wl-space-2) 0",
-                      borderBottom:
-                        i < ACTIVE_DRIVERS.length - 1
-                          ? "1px solid var(--wl-border-subtle)"
-                          : "none",
-                      animationDelay: `${i * 60}ms`,
-                    }}
+                    className={cn("wl-animate-in flex items-center gap-3 py-2", {
+                      "border-b border-wl-border-subtle": i < ACTIVE_DRIVERS.length - 1,
+                    })}
+                    style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Avatar */}
                     <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: "var(--wl-radius-md)",
-                        background: "var(--wl-bg-overlay)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "var(--wl-text-xs)",
-                        fontWeight: 700,
-                        color: "var(--wl-text-secondary)",
-                        position: "relative",
-                        flexShrink: 0,
-                      }}
+                      className={cn("w-9 h-9 rounded-md bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary relative flex-shrink-0")}
                     >
                       {driver.name.split(" ").map((w) => w[0]).join("")}
                       <span
-                        style={{
-                          position: "absolute",
-                          bottom: -1,
-                          right: -1,
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          background: statusColor(driver.status),
-                          border: "2px solid var(--wl-bg-elevated)",
-                        }}
+                        className={cn("absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-wl-bg-elevated")}
+                        style={{ background: statusColor(driver.status) }}
                       />
                     </div>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className={cn("flex-1 min-w-0")}>
                       <div
-                        style={{
-                          fontSize: "var(--wl-text-sm)",
-                          fontWeight: 600,
-                          color: "var(--wl-text-primary)",
-                        }}
+                        className={cn("text-sm font-semibold text-wl-text-primary")}
                       >
                         {driver.name}
                       </div>
                       <div
-                        style={{
-                          fontSize: "var(--wl-text-xs)",
-                          color: "var(--wl-text-tertiary)",
-                        }}
+                        className={cn("text-xs text-wl-text-tertiary")}
                       >
                         {driver.vehicle} · {driver.completed} done
                       </div>
                     </div>
 
-                    <div style={{ textAlign: "right" }}>
+                    <div className={cn("text-right")}>
                       <Badge variant={statusVariant(driver.status)}>
                         {driver.status === "ON_ROUTE"
                           ? `${driver.orders} active`
@@ -585,7 +417,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-2)" }}>
+              <div className={cn("flex flex-col gap-2")}>
                 {[
                   { label: "Create New Order", icon: "+" },
                   { label: "Optimize Routes", icon: "⟳" },
@@ -595,35 +427,10 @@ export default function DashboardPage() {
                 ].map((action) => (
                   <button
                     key={action.label}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "var(--wl-space-3)",
-                      padding: "var(--wl-space-3) var(--wl-space-3)",
-                      borderRadius: "var(--wl-radius-md)",
-                      border: "1px solid var(--wl-border-subtle)",
-                      background: "var(--wl-bg-surface)",
-                      color: "var(--wl-text-secondary)",
-                      fontSize: "var(--wl-text-sm)",
-                      cursor: "pointer",
-                      fontFamily: "var(--wl-font-sans)",
-                      transition: `all var(--wl-duration-fast) var(--wl-ease-default)`,
-                      width: "100%",
-                      textAlign: "left",
-                    }}
+                    className={cn("flex items-center gap-3 p-3 rounded-md border border-wl-border-subtle bg-wl-bg-surface text-wl-text-secondary text-sm cursor-pointer font-sans transition-all w-full text-left")}
                   >
                     <span
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: "var(--wl-radius-sm)",
-                        background: "var(--wl-bg-overlay)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 14,
-                        flexShrink: 0,
-                      }}
+                      className={cn("w-7 h-7 rounded text-sm flex items-center justify-center bg-wl-bg-overlay flex-shrink-0")}
                     >
                       {action.icon}
                     </span>
@@ -635,9 +442,7 @@ export default function DashboardPage() {
 
             {/* System Health */}
             <Card
-              style={{
-                background: "linear-gradient(135deg, var(--wl-bg-elevated), var(--wl-bg-overlay))",
-              }}
+              className={cn("bg-gradient-to-br from-wl-bg-elevated to-wl-bg-overlay")}
             >
               <CardHeader>
                 <CardTitle>System Status</CardTitle>
@@ -645,7 +450,7 @@ export default function DashboardPage() {
                   Operational
                 </Badge>
               </CardHeader>
-              <div style={{ display: "flex", flexDirection: "column", gap: "var(--wl-space-3)" }}>
+              <div className={cn("flex flex-col gap-3")}>
                 {[
                   { name: "API", status: "Healthy", latency: "12ms" },
                   { name: "Database", status: "Healthy", latency: "3ms" },
@@ -655,43 +460,23 @@ export default function DashboardPage() {
                 ].map((service) => (
                   <div
                     key={service.name}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
+                    className={cn("flex items-center justify-between")}
                   >
                     <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "var(--wl-space-2)",
-                      }}
+                      className={cn("flex items-center gap-2")}
                     >
                       <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: statusColor(service.status === "Healthy" ? "HEALTHY" : "DEGRADED"),
-                          flexShrink: 0,
-                        }}
+                        className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0")}
+                        style={{ background: statusColor(service.status === "Healthy" ? "HEALTHY" : "DEGRADED") }}
                       />
                       <span
-                        style={{
-                          fontSize: "var(--wl-text-sm)",
-                          color: "var(--wl-text-secondary)",
-                        }}
+                        className={cn("text-sm text-wl-text-secondary")}
                       >
                         {service.name}
                       </span>
                     </div>
                     <span
-                      style={{
-                        fontSize: "var(--wl-text-xs)",
-                        fontFamily: "var(--wl-font-mono)",
-                        color: "var(--wl-text-tertiary)",
-                      }}
+                      className={cn("text-xs font-mono text-wl-text-tertiary")}
                     >
                       {service.latency}
                     </span>

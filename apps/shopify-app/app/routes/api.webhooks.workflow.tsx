@@ -282,7 +282,8 @@ async function triggerWorkflowForEvent(
     }
   } finally {
     logEntry.duration = Date.now() - startTime;
-    // TODO: Persist webhook delivery log to database
+    // Persist webhook delivery log to database
+    await persistWebhookEvent(logEntry);
     console.log("Webhook processed", {
       webhookId: logEntry.id,
       event: logEntry.event,
@@ -306,12 +307,13 @@ async function triggerCreateDeliveryOrderWorkflow(
     const orderId = String(payload.id);
     const workflowKey = `order:${shopId}:${orderId}`;
 
-    // TODO: Check idempotency store (Redis/database) for existing workflow
-    // const existingWorkflow = await getWorkflowExecution(workflowKey);
-    // if (existingWorkflow) {
-    //   console.log("Order already has workflow in progress", { orderId, shopId });
-    //   return true; // Consider it "triggered" since it was already started
-    // }
+    // Check idempotency store (Redis/database) for existing workflow
+    const idempotencyKey = `order:${shopId}:${orderId}`;
+    const cachedWebhook = await checkIdempotency(idempotencyKey);
+    if (cachedWebhook) {
+      console.log("Order already processed (idempotent check)", { orderId, shopId, cachedWebhookId: cachedWebhook });
+      return true; // Consider it "triggered" since it was already started
+    }
 
     // Map Shopify order to CreateDeliveryOrderInput
     const customerName = payload.customer
@@ -394,6 +396,9 @@ async function triggerCreateDeliveryOrderWorkflow(
       orderId,
       shopId,
     });
+
+    // Store idempotency key
+    await storeIdempotencyKey(workflowKey, logEntry.id);
 
     logEntry.responseBody = { jobId, workflowName: "createDeliveryOrder" };
     return true;
@@ -480,4 +485,156 @@ function getWorkflowQueue() {
   });
 
   return queue;
+}
+
+// ─── Persistence & Idempotency Helpers ─────────────────────────
+
+/**
+ * Check if webhook has already been processed (idempotency check).
+ * Uses Redis cache with 24h TTL.
+ * @param idempotencyKey Unique key for this webhook
+ * @returns Cached webhook ID if exists, null otherwise
+ */
+async function checkIdempotency(idempotencyKey: string): Promise<string | null> {
+  try {
+    // Import Redis client dynamically
+    const redis = require("@witylogix/framework").getRedisClient?.();
+    if (!redis) {
+      console.warn("Redis client not available for idempotency check");
+      return null;
+    }
+
+    const cached = await redis.get(idempotencyKey);
+    return cached ? String(cached) : null;
+  } catch (error) {
+    console.error("Idempotency check failed", { error, idempotencyKey });
+    return null;
+  }
+}
+
+/**
+ * Store idempotency key in Redis with 24h TTL.
+ * @param idempotencyKey Unique key for this webhook
+ * @param webhookId Shopify webhook ID to store
+ */
+async function storeIdempotencyKey(idempotencyKey: string, webhookId: string): Promise<void> {
+  try {
+    const redis = require("@witylogix/framework").getRedisClient?.();
+    if (!redis) {
+      console.warn("Redis client not available for idempotency storage");
+      return;
+    }
+
+    // Store with 24-hour TTL (86400 seconds)
+    await redis.setex(idempotencyKey, 86400, webhookId);
+  } catch (error) {
+    console.error("Failed to store idempotency key", { error, idempotencyKey });
+    // Non-blocking error - continue processing
+  }
+}
+
+/**
+ * Persist webhook event to database for audit trail and replay capability.
+ * @param logEntry Webhook event details
+ */
+async function persistWebhookEvent(logEntry: WebhookDeliveryLog): Promise<void> {
+  try {
+    // Import Prisma dynamically
+    const { PrismaClient } = require("@witylogix/db");
+    const prisma = new PrismaClient();
+
+    await (prisma as any).webhookEvent.create({
+      data: {
+        id: logEntry.id,
+        shopId: logEntry.shopId,
+        event: logEntry.event,
+        endpoint: logEntry.endpoint,
+        statusCode: logEntry.statusCode,
+        duration: logEntry.duration,
+        timestamp: logEntry.timestamp,
+        requestBody: logEntry.requestBody ? JSON.stringify(logEntry.requestBody) : null,
+        responseBody: logEntry.responseBody ? JSON.stringify(logEntry.responseBody) : null,
+      },
+    });
+
+    console.log("Webhook event persisted", { webhookId: logEntry.id });
+  } catch (error) {
+    console.error("Failed to persist webhook event", {
+      error: error instanceof Error ? error.message : String(error),
+      webhookId: logEntry.id,
+    });
+    // Non-blocking error - don't fail the webhook processing
+  }
+}
+
+/**
+ * Map Shopify customer ID to internal user ID.
+ * Queries the database for user mapping or creates a new mapping.
+ * @param shopId Shopify shop ID
+ * @param shopifyCustomerId Shopify customer ID
+ * @returns Internal user ID
+ */
+async function mapCustomerToUser(shopId: string, shopifyCustomerId: string): Promise<string> {
+  try {
+    const { PrismaClient } = require("@witylogix/db");
+    const prisma = new PrismaClient();
+
+    // Look up existing mapping
+    const mapping = await (prisma as any).shopifyCustomerMapping.findUnique({
+      where: {
+        shopifyCustomerId,
+      },
+    });
+
+    if (mapping) {
+      return mapping.userId;
+    }
+
+    // Create new mapping if not found
+    const newMapping = await (prisma as any).shopifyCustomerMapping.create({
+      data: {
+        shopifyCustomerId,
+        shopId,
+        userId: `user:${shopId}:${shopifyCustomerId}`,
+      },
+    });
+
+    return newMapping.userId;
+  } catch (error) {
+    console.error("Failed to map customer to user", { error, shopId, shopifyCustomerId });
+    // Fallback: generate a consistent ID
+    return `user:${shopId}:${shopifyCustomerId}`;
+  }
+}
+
+/**
+ * Map Shopify location ID to internal location ID.
+ * Queries the database for location mapping.
+ * @param shopId Shopify shop ID
+ * @param shopifyLocationId Shopify location ID
+ * @returns Internal location ID
+ */
+async function mapLocationToInternal(shopId: string, shopifyLocationId: string): Promise<string> {
+  try {
+    const { PrismaClient } = require("@witylogix/db");
+    const prisma = new PrismaClient();
+
+    // Look up location mapping
+    const mapping = await (prisma as any).shopifyLocationMapping.findUnique({
+      where: {
+        shopifyLocationId,
+      },
+    });
+
+    if (mapping) {
+      return mapping.locationId;
+    }
+
+    // Fallback: generate a consistent ID
+    return `location:${shopId}:${shopifyLocationId}`;
+  } catch (error) {
+    console.error("Failed to map location", { error, shopId, shopifyLocationId });
+    // Fallback: generate a consistent ID
+    return `location:${shopId}:${shopifyLocationId}`;
+  }
 }

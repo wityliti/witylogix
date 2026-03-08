@@ -15,6 +15,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { verifyShopifyWebhook } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
+import { getNotificationQueue } from "../lib/queue.js";
 
 // ─── Route Plugin ───────────────────────────────────────────
 
@@ -97,8 +98,32 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
     // Invalidate order cache
     await request.tenantRedis.invalidateGroup("orders");
 
-    // TODO: Enqueue notification job
-    // await notificationQueue.add('new-order', { shopId: request.shopId, orderId: order.id });
+    // Enqueue notification job for new order
+    const notificationQueue = getNotificationQueue();
+    await notificationQueue.add(
+      'webhook.new_order',
+      {
+        type: 'notification',
+        data: {
+          shopId: request.shopId,
+          notificationId: `new-order-${order.id}`,
+          channel: 'email',
+          payload: {
+            templateId: 'new-order-confirmation',
+            recipientId: order.id,
+            recipientAddress: order.customerEmail || '',
+            templateData: {
+              orderId: order.shopifyOrderNumber || order.shopifyOrderId,
+              customerName: order.customerName,
+              totalPrice: order.totalPrice,
+              itemCount: order.itemCount,
+            },
+            priority: 'high',
+          },
+        },
+      },
+      { priority: 'high' }
+    );
 
     request.log.info({ orderId: order.id, shopifyOrderId }, "Order created from webhook");
     reply.status(201);

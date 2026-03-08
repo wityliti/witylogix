@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import {
   Button,
@@ -126,23 +127,13 @@ const CopyToken = ({ token }: { token: string }) => {
   return (
     <button
       onClick={handleCopy}
-      style={{
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        padding: "4px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "var(--wl-text-secondary)",
-        transition: "all 0.2s",
-      }}
+      className={cn("bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-wl-text-secondary transition-all")}
       title="Copy token"
     >
       {copied ? (
-        <Check style={{ width: "16px", height: "16px", color: "var(--wl-success-500)" }} />
+        <Check className={cn("w-4 h-4 text-wl-success-500")} />
       ) : (
-        <Copy style={{ width: "16px", height: "16px" }} />
+        <Copy className={cn("w-4 h-4")} />
       )}
     </button>
   );
@@ -151,36 +142,30 @@ const CopyToken = ({ token }: { token: string }) => {
 // Color Palette Section
 const ColorPaletteSection = () => {
   return (
-    <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)", display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
-        <Palette style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
+    <Card className={cn("bg-wl-bg-surface border-wl-border-subtle mb-6")}>
+      <CardHeader className={cn("pb-3 flex items-center gap-3")}>
+        <Palette className={cn("w-5 h-5 text-wl-text-secondary")} />
         <CardTitle>Color Palette</CardTitle>
       </CardHeader>
       <CardContent>
-        <div style={{ display: "grid", gap: "var(--wl-space-6)" }}>
+        <div className={cn("grid gap-6")}>
           {Object.entries(COLOR_TOKENS).map(([categoryName, colors]) => (
             <div key={categoryName}>
-              <h4 style={{ fontSize: "var(--wl-text-sm)", fontWeight: 600, color: "var(--wl-text-secondary)", marginBottom: "var(--wl-space-3)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <h4 className={cn("text-sm font-semibold text-wl-text-secondary mb-3 uppercase tracking-widest")}>
                 {categoryName}
               </h4>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "var(--wl-space-4)" }}>
+              <div className={cn("grid gap-4 auto-fill")} style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
                 {Object.entries(colors).map(([tokenName, hexValue]) => (
-                  <div key={tokenName} style={{ display: "flex", gap: "var(--wl-space-3)", alignItems: "flex-start" }}>
+                  <div key={tokenName} className={cn("flex gap-3 items-start")}>
                     <div
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        borderRadius: "var(--wl-radius-md)",
-                        backgroundColor: hexValue,
-                        border: "1px solid var(--wl-border-default)",
-                        flexShrink: 0,
-                      }}
+                      className={cn("w-15 h-15 rounded-md border border-wl-border-default flex-shrink-0")}
+                      style={{ backgroundColor: hexValue }}
                     />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-primary)", marginBottom: "2px" }}>
+                    <div className={cn("flex-1 min-w-0")}>
+                      <p className={cn("m-0 text-xs font-semibold text-wl-text-primary mb-0.5")}>
                         {tokenName}
                       </p>
-                      <code style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)", display: "flex", alignItems: "center", gap: "4px", justifyContent: "space-between" }}>
+                      <code className={cn("text-xs text-wl-text-secondary font-mono flex items-center gap-1 justify-between")}>
                         <span>{hexValue}</span>
                         <CopyToken token={hexValue} />
                       </code>
@@ -199,25 +184,25 @@ const ColorPaletteSection = () => {
 // Typography Section
 const TypographySection = () => {
   return (
-    <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)", display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
-        <Type style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
+    <Card className={cn("bg-wl-bg-surface border-wl-border-subtle mb-6")}>
+      <CardHeader className={cn("pb-3 flex items-center gap-3")}>
+        <Type className={cn("w-5 h-5 text-wl-text-secondary")} />
         <CardTitle>Typography</CardTitle>
       </CardHeader>
       <CardContent>
-        <div style={{ display: "grid", gap: "var(--wl-space-4)" }}>
+        <div className={cn("grid gap-4")}>
           {TYPOGRAPHY_SAMPLES.map((sample, idx) => (
-            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-4)", paddingBottom: "var(--wl-space-4)", borderBottom: idx < TYPOGRAPHY_SAMPLES.length - 1 ? "1px solid var(--wl-border-subtle)" : "none" }}>
-              <div style={{ minWidth: "80px" }}>
-                <p style={{ margin: 0, fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-wl-border-subtle": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
+              <div className={cn("min-w-20")}>
+                <p className={cn("m-0 text-xs font-semibold text-wl-text-secondary uppercase tracking-widest")}>
                   {sample.name}
                 </p>
-                <code style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)", fontFamily: "var(--wl-font-mono)" }}>
+                <code className={cn("text-xs text-wl-text-tertiary font-mono")}>
                   {sample.size} / {sample.weight}
                 </code>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any, color: "var(--wl-text-primary)", fontFamily: "var(--wl-font-sans)" }}>
+              <div className={cn("flex-1")}>
+                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className={cn("text-wl-text-primary font-sans")}>
                   {sample.text}
                 </div>
               </div>
@@ -232,33 +217,31 @@ const TypographySection = () => {
 // Spacing Section
 const SpacingSection = () => {
   return (
-    <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)", marginBottom: "var(--wl-space-6)" }}>
-      <CardHeader style={{ paddingBottom: "var(--wl-space-3)", display: "flex", alignItems: "center", gap: "var(--wl-space-3)" }}>
-        <Layout style={{ width: "20px", height: "20px", color: "var(--wl-text-secondary)" }} />
+    <Card className={cn("bg-wl-bg-surface border-wl-border-subtle mb-6")}>
+      <CardHeader className={cn("pb-3 flex items-center gap-3")}>
+        <Layout className={cn("w-5 h-5 text-wl-text-secondary")} />
         <CardTitle>Spacing Scale</CardTitle>
       </CardHeader>
       <CardContent>
-        <div style={{ display: "grid", gap: "var(--wl-space-4)" }}>
+        <div className={cn("grid gap-4")}>
           {SPACING_SCALE.map((space) => (
-            <div key={space.name} style={{ display: "flex", alignItems: "center", gap: "var(--wl-space-4)" }}>
-              <div style={{ minWidth: "60px" }}>
-                <p style={{ margin: 0, fontSize: "var(--wl-text-xs)", fontWeight: 600, color: "var(--wl-text-secondary)" }}>
+            <div key={space.name} className={cn("flex items-center gap-4")}>
+              <div className={cn("min-w-16")}>
+                <p className={cn("m-0 text-xs font-semibold text-wl-text-secondary")}>
                   --wl-space-{space.name}
                 </p>
-                <p style={{ margin: "2px 0 0 0", fontSize: "var(--wl-text-xs)", color: "var(--wl-text-tertiary)" }}>
+                <p className={cn("m-0 mt-0.5 text-xs text-wl-text-tertiary")}>
                   {space.label || "0"}
                 </p>
               </div>
               <div
+                className={cn("h-0.5 bg-wl-primary-500 rounded")}
                 style={{
-                  height: "2px",
-                  backgroundColor: "var(--wl-primary-500)",
                   width: `${Math.max(space.value, 4)}px`,
-                  borderRadius: "1px",
                 }}
               />
-              <div style={{ minWidth: "40px", textAlign: "right" }}>
-                <code style={{ fontSize: "var(--wl-text-xs)", color: "var(--wl-text-secondary)", fontFamily: "var(--wl-font-mono)" }}>
+              <div className={cn("min-w-10 text-right")}>
+                <code className={cn("text-xs text-wl-text-secondary font-mono")}>
                   {space.value}px
                 </code>
               </div>
@@ -276,14 +259,14 @@ const ComponentsShowcase = () => {
   const [selectedBadge, setSelectedBadge] = useState<"success" | "warning" | "danger" | "info">("success");
 
   return (
-    <div style={{ display: "grid", gap: "var(--wl-space-6)" }}>
+    <div className={cn("grid gap-6")}>
       {/* Buttons */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "var(--wl-space-4)" }}>
+          <div className={cn("grid gap-4 auto-fit")} style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <Button variant="primary" size="md">Primary Button</Button>
             <Button variant="secondary" size="md">Secondary Button</Button>
             <Button variant="ghost" size="md">Ghost Button</Button>
@@ -296,12 +279,12 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Badges */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Badges</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--wl-space-3)" }}>
+          <div className={cn("flex flex-wrap gap-3")}>
             <Badge variant="default">Default Badge</Badge>
             <Badge variant="success">Success Badge</Badge>
             <Badge variant="warning">Warning Badge</Badge>
@@ -313,20 +296,20 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Inputs & Selects */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Form Elements</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: "grid", gap: "var(--wl-space-4)", maxWidth: "400px" }}>
+          <div className={cn("grid gap-4 max-w-md")}>
             <div>
-              <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 500, color: "var(--wl-text-primary)", display: "block", marginBottom: "var(--wl-space-2)" }}>
+              <label className={cn("text-sm font-medium text-wl-text-primary block mb-2")}>
                 Input Field
               </label>
               <Input placeholder="Enter text..." />
             </div>
             <div>
-              <label style={{ fontSize: "var(--wl-text-sm)", fontWeight: 500, color: "var(--wl-text-primary)", display: "block", marginBottom: "var(--wl-space-2)" }}>
+              <label className={cn("text-sm font-medium text-wl-text-primary block mb-2")}>
                 Select Field
               </label>
               <Select
@@ -344,12 +327,12 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Stat Cards */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--wl-space-4)" }}>
+          <div className={cn("grid gap-4 auto-fit")} style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             <StatCard
               label="Total Orders"
               value="2,345"
@@ -376,8 +359,8 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Tabs */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Tabs</CardTitle>
         </CardHeader>
         <CardContent>
@@ -396,8 +379,8 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Modal Trigger */}
-      <Card style={{ backgroundColor: "var(--wl-bg-surface)", borderColor: "var(--wl-border-subtle)" }}>
-        <CardHeader style={{ paddingBottom: "var(--wl-space-3)" }}>
+      <Card className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+        <CardHeader className={cn("pb-3")}>
           <CardTitle>Modal</CardTitle>
         </CardHeader>
         <CardContent>
@@ -406,14 +389,14 @@ const ComponentsShowcase = () => {
           </Button>
           {modalOpen && (
             <Modal onClose={() => setModalOpen(false)}>
-              <div style={{ padding: "var(--wl-space-6)" }}>
-                <h2 style={{ fontSize: "var(--wl-text-xl)", fontWeight: 700, color: "var(--wl-text-primary)", margin: "0 0 var(--wl-space-3) 0" }}>
+              <div className={cn("p-6")}>
+                <h2 className={cn("text-xl font-bold text-wl-text-primary m-0 mb-3")}>
                   Modal Example
                 </h2>
-                <p style={{ color: "var(--wl-text-secondary)", margin: "0 0 var(--wl-space-4) 0" }}>
+                <p className={cn("text-wl-text-secondary m-0 mb-4")}>
                   This is a sample modal dialog showing component usage in the design system.
                 </p>
-                <div style={{ display: "flex", gap: "var(--wl-space-3)", justifyContent: "flex-end" }}>
+                <div className={cn("flex gap-3 justify-end")}>
                   <Button variant="secondary" onClick={() => setModalOpen(false)}>
                     Cancel
                   </Button>
@@ -435,21 +418,21 @@ export default function DesignSystemPage() {
   const [activeTab, setActiveTab] = useState("colors");
 
   return (
-    <div style={{ backgroundColor: "var(--wl-bg-root)" }}>
+    <div className={cn("bg-wl-bg-root")}>
       <Header
         title="Design System"
         subtitle="Comprehensive guide to colors, typography, spacing, and components"
       />
 
-      <main style={{ padding: "var(--wl-space-6)", maxWidth: "1400px", margin: "0 auto" }}>
+      <main className={cn("p-6 max-w-6xl mx-auto")}>
         {/* Navigation Tabs */}
-        <div style={{ marginBottom: "var(--wl-space-8)" }}>
+        <div className={cn("mb-8")}>
           <Tabs
             tabs={[
-              { id: "colors", label: "Colors", icon: <Palette style={{ width: "16px", height: "16px" }} /> },
-              { id: "typography", label: "Typography", icon: <Type style={{ width: "16px", height: "16px" }} /> },
-              { id: "spacing", label: "Spacing", icon: <Layout style={{ width: "16px", height: "16px" }} /> },
-              { id: "components", label: "Components", icon: <Bell style={{ width: "16px", height: "16px" }} /> },
+              { id: "colors", label: "Colors", icon: <Palette className={cn("w-4 h-4")} /> },
+              { id: "typography", label: "Typography", icon: <Type className={cn("w-4 h-4")} /> },
+              { id: "spacing", label: "Spacing", icon: <Layout className={cn("w-4 h-4")} /> },
+              { id: "components", label: "Components", icon: <Bell className={cn("w-4 h-4")} /> },
             ]}
             activeTab={activeTab}
             onChange={setActiveTab}

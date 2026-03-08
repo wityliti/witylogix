@@ -1,58 +1,27 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { cn } from "../../lib/utils";
 
 export default function OnboardingLayout({ children }: { children: ReactNode }) {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "var(--wl-bg)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className={cn("min-h-screen bg-wl-bg flex flex-col")}>
       {/* Header with Logo */}
-      <div
-        style={{
-          padding: "var(--wl-space-5) var(--wl-space-6)",
-          borderBottom: "1px solid var(--wl-border)",
-          background: "var(--wl-surface)",
-        }}
-      >
+      <div className={cn("p-5 p-6 border-b border-wl-border bg-wl-surface")}>
         <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--wl-space-3)",
-          }}
+          className={cn("max-w-5xl mx-auto flex items-center gap-3")}
         >
           <div
+            className={cn("w-10 h-10 rounded-md flex items-center justify-center font-bold text-wl-text-inverse text-base")}
             style={{
-              width: "40px",
-              height: "40px",
               background: "linear-gradient(135deg, var(--wl-primary), #8b7dff)",
-              borderRadius: "var(--wl-radius-md)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: "bold",
-              color: "var(--wl-text-inverse)",
-              fontSize: "var(--wl-text-base)",
             }}
           >
             W
           </div>
           <div>
             <h1
-              style={{
-                fontSize: "var(--wl-text-lg)",
-                fontWeight: 700,
-                color: "var(--wl-text)",
-                margin: 0,
-              }}
+              className={cn("text-lg font-bold text-wl-text m-0")}
             >
               Witylogix
             </h1>
@@ -62,13 +31,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
 
       {/* Main Content */}
       <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "var(--wl-space-6)",
-        }}
+        className={cn("flex-1 flex items-center justify-center p-6")}
       >
         {children}
       </div>

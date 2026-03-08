@@ -24,6 +24,8 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
 import { updateDriverGeo, findNearbyDriversGeo, removeDriverGeo } from "../lib/redis.js";
+import { getSocketInstance, emitToShop } from "../lib/socket.js";
+import { getNotificationQueue } from "../lib/queue.js";
 
 // ─── Query Schemas ──────────────────────────────────────────
 
@@ -236,8 +238,33 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
       updateDriverGeo(id, location.longitude, location.latitude),
     ]);
 
-    // TODO: Publish to Socket.io for real-time tracking
-    // fastify.io.to(`shop:${request.shopId}`).emit('driver:location', { driverId: id, ...location });
+    // Fetch updated driver info for Socket.io emission
+    const driver = await request.tenantDb.driver.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        _count: { select: { orders: { where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"] } } } } },
+      },
+    });
+
+    // Emit to Socket.io for real-time tracking to all connected clients in this shop
+    if (driver) {
+      emitToShop(`shop:${request.shopId}`, "driver:location_updated", {
+        id: driver.id,
+        shopId: request.shopId,
+        driverId: driver.id,
+        driverName: driver.name,
+        status: driver.status,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy,
+        heading: location.heading,
+        timestamp: new Date().toISOString(),
+        assignedShipments: driver._count.orders,
+      });
+    }
 
     return { status: "ok" };
   });

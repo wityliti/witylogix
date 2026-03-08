@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '../../../../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -113,87 +114,80 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
   const stopsUsed = (mockRoute.currentStops + assignedShipments.length) / mockRoute.maxStops;
 
   return (
-    <div style={{ padding: '24px', minHeight: '100vh', backgroundColor: '#0a0a0f' }}>
+    <div className={cn("p-6 min-h-screen bg-wl-bg-root")}>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>{mockRoute.name}</h1>
-        <p style={{ color: '#94a3b8', marginBottom: '16px' }}>Assign shipments to this route</p>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className={cn("mb-6")}>
+        <h1 className={cn("text-4xl font-bold text-wl-text-primary mb-2")}>{mockRoute.name}</h1>
+        <p className={cn("text-wl-text-secondary mb-4")}>Assign shipments to this route</p>
+        <div className={cn("flex gap-3 items-center flex-wrap")}>
           <Badge variant="success">ACTIVE</Badge>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Driver: {mockRoute.driver.name}</span>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>Vehicle: {mockRoute.driver.vehicle}</span>
-          <span style={{ fontSize: '12px', color: '#94a3b8' }}>ETA: {mockRoute.eta}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>Driver: {mockRoute.driver.name}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>Vehicle: {mockRoute.driver.vehicle}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>ETA: {mockRoute.eta}</span>
         </div>
       </div>
 
       {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '24px' }}>
+      <div className={cn("grid gap-6")} style={{ gridTemplateColumns: '1fr 400px' }}>
         {/* Left Column - Unassigned Shipments */}
         <div>
           {/* Search Bar */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', marginBottom: '24px' }}>
-            <CardContent style={{ padding: '16px' }}>
-              <div style={{ position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6C63FF' }} />
+          <Card className={cn("bg-wl-bg-elevated border border-wl-border-default mb-6")}>
+            <CardContent className={cn("p-4")}>
+              <div className={cn("relative")}>
+                <Search size={16} className={cn("absolute left-3 top-1/2 -translate-y-1/2 text-wl-primary-500")} />
                 <Input
                   placeholder="Search shipments..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    paddingLeft: '36px',
-                    width: '100%',
-                    backgroundColor: '#0a0a0f',
-                    border: '1px solid #1e293b',
-                  }}
+                  className={cn("pl-9 w-full bg-wl-bg-root border border-wl-border-default")}
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Shipment List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className={cn("flex flex-col gap-3")}>
             {filteredShipments.length > 0 ? (
               filteredShipments.map((shipment) => (
                 <Card
                   key={shipment.id}
-                  style={{
-                    backgroundColor: selectedShipment?.id === shipment.id ? '#1a1a24' : '#12121a',
-                    border: selectedShipment?.id === shipment.id ? '2px solid #6C63FF' : '1px solid #1e293b',
-                    cursor: 'pointer',
-                    transition: 'all 200ms ease',
-                  }}
+                  className={cn("cursor-pointer transition-all", {
+                    "bg-wl-bg-elevated border-2 border-wl-primary-500": selectedShipment?.id === shipment.id,
+                    "bg-wl-bg-surface border border-wl-border-default": selectedShipment?.id !== shipment.id,
+                  })}
                   onClick={() => setSelectedShipment(selectedShipment?.id === shipment.id ? null : shipment)}
                 >
-                  <CardContent style={{ padding: '16px' }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginTop: '2px' }}>
-                        <Package size={16} style={{ color: '#6C63FF' }} />
+                  <CardContent className={cn("p-4")}>
+                    <div className={cn("flex gap-3 items-start")}>
+                      <div className={cn("flex items-center mt-0.5")}>
+                        <Package size={16} className={cn("text-wl-primary-500")} />
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <p style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>{shipment.id}</p>
+                      <div className={cn("flex-1 min-w-0")}>
+                        <div className={cn("flex justify-between items-center mb-1")}>
+                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>{shipment.id}</p>
                           <Badge variant={getPriorityColor(shipment.priority)}>{shipment.priority.toUpperCase()}</Badge>
                         </div>
-                        <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>{shipment.customer}</p>
-                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <p className={cn("text-xs text-wl-text-secondary mb-2")}>{shipment.customer}</p>
+                        <div className={cn("flex gap-4 flex-wrap")}>
+                          <span className={cn("text-xs text-wl-text-secondary flex items-center gap-1")}>
                             <MapPin size={12} /> {shipment.address}
                           </span>
-                          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span className={cn("text-xs text-wl-text-secondary flex items-center gap-1")}>
                             <Weight size={12} /> {shipment.weight} kg
                           </span>
-                          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span className={cn("text-xs text-wl-text-secondary flex items-center gap-1")}>
                             <Clock size={12} /> {shipment.eta}
                           </span>
                         </div>
                       </div>
                     </div>
                     {selectedShipment?.id === shipment.id && (
-                      <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #1e293b' }}>
+                      <div className={cn("mt-3 pt-3 border-t border-wl-border-default")}>
                         <Button
                           variant="primary"
                           size="sm"
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                          className={cn("w-full flex items-center justify-center gap-1.5")}
                           onClick={() => handleAssign(shipment)}
                         >
                           <ChevronRight size={14} /> Assign to Route
@@ -204,9 +198,9 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
                 </Card>
               ))
             ) : (
-              <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-                <CardContent style={{ padding: '24px', textAlign: 'center' }}>
-                  <p style={{ color: '#94a3b8' }}>No unassigned shipments found</p>
+              <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
+                <CardContent className={cn("p-6 text-center")}>
+                  <p className={cn("text-wl-text-secondary")}>No unassigned shipments found</p>
                 </CardContent>
               </Card>
             )}
@@ -214,63 +208,57 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
         </div>
 
         {/* Right Sidebar - Route Details & Assigned Shipments */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className={cn("flex flex-col gap-4")}>
           {/* Capacity Meter */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-            <CardHeader style={{ paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-              <CardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Truck size={16} style={{ color: '#6C63FF' }} /> Route Capacity
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
+            <CardHeader className={cn("pb-3 border-b border-wl-border-default")}>
+              <CardTitle className={cn("text-base flex items-center gap-1.5")}>
+                <Truck size={16} className={cn("text-wl-primary-500")} /> Route Capacity
               </CardTitle>
             </CardHeader>
-            <CardContent style={{ padding: '16px' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Stops</span>
-                  <span style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>
+            <CardContent className={cn("p-4")}>
+              <div className={cn("mb-4")}>
+                <div className={cn("flex justify-between mb-1.5")}>
+                  <span className={cn("text-xs text-wl-text-secondary")}>Stops</span>
+                  <span className={cn("text-xs font-semibold text-wl-text-primary")}>
                     {mockRoute.currentStops + assignedShipments.length}/{mockRoute.maxStops}
                   </span>
                 </div>
                 <div
-                  style={{
-                    width: '100%',
-                    height: '6px',
-                    backgroundColor: '#0a0a0f',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                  }}
+                  className={cn("w-full h-1.5 bg-wl-bg-root rounded overflow-hidden")}
                 >
                   <div
+                    className={cn({
+                      "bg-wl-danger-500": stopsUsed > 0.8,
+                      "bg-wl-warning-500": stopsUsed > 0.5 && stopsUsed <= 0.8,
+                      "bg-wl-primary-500": stopsUsed <= 0.5,
+                    })}
                     style={{
                       width: `${(stopsUsed * 100).toFixed(1)}%`,
-                      height: '100%',
-                      backgroundColor: stopsUsed > 0.8 ? '#ef4444' : stopsUsed > 0.5 ? '#f59e0b' : '#6C63FF',
                       transition: 'width 200ms ease',
                     }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>Weight</span>
-                  <span style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>
+              <div className={cn("mb-4")}>
+                <div className={cn("flex justify-between mb-1.5")}>
+                  <span className={cn("text-xs text-wl-text-secondary")}>Weight</span>
+                  <span className={cn("text-xs font-semibold text-wl-text-primary")}>
                     {(mockRoute.currentWeight + totalAssignedWeight).toFixed(1)}/{mockRoute.maxWeight} kg
                   </span>
                 </div>
                 <div
-                  style={{
-                    width: '100%',
-                    height: '6px',
-                    backgroundColor: '#0a0a0f',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                  }}
+                  className={cn("w-full h-1.5 bg-wl-bg-root rounded overflow-hidden")}
                 >
                   <div
+                    className={cn({
+                      "bg-wl-danger-500": capacityUsed > 80,
+                      "bg-wl-warning-500": capacityUsed > 50 && capacityUsed <= 80,
+                      "bg-wl-primary-500": capacityUsed <= 50,
+                    })}
                     style={{
                       width: `${capacityUsed.toFixed(1)}%`,
-                      height: '100%',
-                      backgroundColor: capacityUsed > 80 ? '#ef4444' : capacityUsed > 50 ? '#f59e0b' : '#6C63FF',
                       transition: 'width 200ms ease',
                     }}
                   />
@@ -278,108 +266,82 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
               </div>
 
               <div
-                style={{
-                  padding: '12px',
-                  backgroundColor: '#0a0a0f',
-                  borderRadius: '6px',
-                  border: '1px solid #1e293b',
-                }}
+                className={cn("p-3 bg-wl-bg-root rounded border border-wl-border-default")}
               >
-                <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Remaining Capacity</p>
-                <p style={{ fontSize: '14px', fontWeight: '600', color: '#6C63FF' }}>{currentCapacity} slots</p>
+                <p className={cn("text-xs text-wl-text-secondary mb-1")}>Remaining Capacity</p>
+                <p className={cn("text-sm font-semibold text-wl-primary-500")}>{currentCapacity} slots</p>
               </div>
             </CardContent>
           </Card>
 
           {/* ETA Preview */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b' }}>
-            <CardHeader style={{ paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-              <CardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={16} style={{ color: '#6C63FF' }} /> ETA Preview
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default")}>
+            <CardHeader className={cn("pb-3 border-b border-wl-border-default")}>
+              <CardTitle className={cn("text-base flex items-center gap-1.5")}>
+                <Clock size={16} className={cn("text-wl-primary-500")} /> ETA Preview
               </CardTitle>
             </CardHeader>
-            <CardContent style={{ padding: '16px' }}>
+            <CardContent className={cn("p-4")}>
               <div
-                style={{
-                  padding: '12px',
-                  backgroundColor: '#0a0a0f',
-                  borderRadius: '6px',
-                  border: '1px solid #1e293b',
-                }}
+                className={cn("p-3 bg-wl-bg-root rounded border border-wl-border-default")}
               >
-                <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Current Route ETA</p>
-                <p style={{ fontSize: '16px', fontWeight: '600', color: '#22c55e' }}>{mockRoute.eta}</p>
-                <p style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px' }}>+{assignedShipments.length * 8} min estimated</p>
+                <p className={cn("text-xs text-wl-text-secondary mb-1")}>Current Route ETA</p>
+                <p className={cn("text-base font-semibold text-wl-success-500")}>{mockRoute.eta}</p>
+                <p className={cn("text-xs text-wl-text-secondary mt-1.5")}>+{assignedShipments.length * 8} min estimated</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Assigned Shipments List */}
-          <Card style={{ backgroundColor: '#12121a', border: '1px solid #1e293b', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <CardHeader style={{ paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-              <CardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <CheckCircle size={16} style={{ color: '#22c55e' }} /> Assigned ({assignedShipments.length})
+          <Card className={cn("bg-wl-bg-surface border border-wl-border-default flex-1 flex flex-col")}>
+            <CardHeader className={cn("pb-3 border-b border-wl-border-default")}>
+              <CardTitle className={cn("text-base flex items-center justify-between")}>
+                <span className={cn("flex items-center gap-1.5")}>
+                  <CheckCircle size={16} className={cn("text-wl-success-500")} /> Assigned ({assignedShipments.length})
                 </span>
                 {assignedShipments.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={handleOptimize} style={{ fontSize: '11px' }}>
+                  <Button variant="ghost" size="sm" onClick={handleOptimize} className={cn("text-xs")}>
                     <Zap size={12} /> Optimize
                   </Button>
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent style={{ padding: '12px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <CardContent className={cn("p-3 flex-1 overflow-y-auto flex flex-col gap-2")}>
               {assignedShipments.length > 0 ? (
                 assignedShipments.map((shipment, idx) => (
                   <div
                     key={shipment.id}
-                    style={{
-                      padding: '10px',
-                      backgroundColor: '#0a0a0f',
-                      borderRadius: '6px',
-                      border: '1px solid #1e293b',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '8px',
-                    }}
+                    className={cn("p-2.5 bg-wl-bg-root rounded border border-wl-border-default flex items-start gap-2")}
                   >
-                    <GripVertical size={14} style={{ color: '#6C63FF', marginTop: '2px', flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                        <p style={{ fontSize: '11px', fontWeight: '600', color: '#e2e8f0' }}>{idx + 1}. {shipment.id}</p>
+                    <GripVertical size={14} className={cn("text-wl-primary-500 mt-0.5 flex-shrink-0")} />
+                    <div className={cn("flex-1 min-w-0")}>
+                      <div className={cn("flex justify-between items-center mb-0.5")}>
+                        <p className={cn("text-xs font-semibold text-wl-text-primary")}>{idx + 1}. {shipment.id}</p>
                         <button
                           onClick={() => handleUnassign(shipment)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            fontSize: '10px',
-                            fontWeight: '600',
-                            padding: '0',
-                          }}
+                          className={cn("bg-none border-none text-wl-danger-500 cursor-pointer text-xs font-semibold p-0")}
                         >
                           Remove
                         </button>
                       </div>
-                      <p style={{ fontSize: '10px', color: '#94a3b8' }}>{shipment.weight} kg</p>
+                      <p className={cn("text-xs text-wl-text-secondary")}>{shipment.weight} kg</p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <p style={{ fontSize: '12px', color: '#94a3b8' }}>No shipments assigned yet</p>
+                <div className={cn("text-center py-5")}>
+                  <p className={cn("text-xs text-wl-text-secondary")}>No shipments assigned yet</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Action Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <Button variant="secondary" size="md" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <div className={cn("grid grid-cols-2 gap-2")}>
+            <Button variant="secondary" size="md" className={cn("flex items-center justify-center gap-1.5")}>
               <AlertCircle size={14} /> Review
             </Button>
-            <Button variant="primary" size="md" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Button variant="primary" size="md" className={cn("flex items-center justify-center gap-1.5")}>
               <CheckCircle size={14} /> Confirm Route
             </Button>
           </div>

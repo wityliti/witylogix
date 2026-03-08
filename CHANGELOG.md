@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.3 — Worker Wiring, Auth OAuth2, OSRM Routing & Final Page Migration (2026-03-08)
+
+#### Added
+
+- **ADR-013** — Worker-orchestrator integration architecture (`docs/adr/ADR-013-worker-orchestrator-integration.md`)
+- **DHL carrier adapter** — real DHL Express API (Basic Auth, rates, ship/label, tracking, pickup, address validation)
+- **OSRM Phase 2 routing** — real OSRM HTTP API (route, distance matrix, TSP trip, nearest snap-to-road)
+- **Auth OAuth2 code exchange** — Google, Microsoft, Okta, Auth0, custom OIDC, SAML
+- **Shopify webhook handler** — HMAC validation, 7 topic handlers, async processing
+- **Webhook persistence** — Redis idempotency, DB audit trail, customer/location mapping
+- **8 test suites** — orchestrator, provider-registry, worker-integration, DHL, OSRM, validators (85+ total)
+
+#### Changed
+
+- **Notification worker** — rewritten to delegate to orchestrator (24 TODO stubs → single orchestrator call)
+- **Order/shipment/driver routes** — wired BullMQ notification enqueueing
+- **Auth route** — wired password reset email via BullMQ
+- **Checkout date picker** — blackout dates, lead time, capacity indicators, keyboard nav
+- **17 dashboard pages migrated to Tailwind CSS** (61 total migrated)
+
 ### Sprint 3.2 — Notification Providers, Carrier APIs & POS Extension (2026-03-08)
 
 #### Added

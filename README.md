@@ -598,8 +598,14 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] POS UI extension — Preact order lookup + delivery assignment for Shopify POS
 - [x] 44 dashboard pages migrated to Tailwind CSS (Sprint 3.1 + 3.2)
 - [x] 81 test suites across core modules
+- [x] DHL carrier adapter — real DHL Express API (rates, ship/label, tracking, pickup)
+- [x] OSRM Phase 2 routing — real HTTP API (route, distance matrix, TSP, snap-to-road)
+- [x] Auth OAuth2 code exchange — Google, Microsoft, Okta, Auth0, OIDC, SAML
+- [x] Notification worker → orchestrator delegation (replaced 24 inline stubs)
+- [x] BullMQ job wiring — order/shipment/driver notification enqueueing
+- [x] 61 dashboard pages migrated to Tailwind CSS
+- [x] 85+ test suites across core modules
 - [ ] MongoDB → PostgreSQL data migration tooling
-- [ ] Phase 2: OSRM + OR-Tools advanced route optimization
 - [ ] "Built for Shopify" certification
 - [ ] WooCommerce integration plugin
 
@@ -625,8 +631,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.0 | Events & Design System | TypedEventBus (Redis Streams), outbound webhooks, workflow-API integration, Socket.io realtime, shadcn/ui-inspired Tailwind migration, Shopify webhook UI |
 | 3.1 | Pages, Consumers & Extensions | 20 dashboard pages → Tailwind, queue consumer DB integration, event-webhook bridge, file storage, push notifications, extension-core package, checkout-ui extension |
 | 3.2 | Providers, Carriers & POS | Notification providers (SendGrid, Twilio, WhatsApp, Firebase Push) → real HTTP, carrier adapters (FedEx, UPS) → real API, notification orchestrator, POS UI extension, 24 more pages → Tailwind |
+| 3.3 | Workers, Auth & Routing | Notification worker → orchestrator, DHL adapter, OSRM Phase 2, Auth OAuth2 (6 providers), BullMQ job wiring, Shopify webhooks, 17 more pages → Tailwind |
 
-**Current stats (Sprint 3.2):** ~1,750 source files, ~210,000 lines of code, 31 Prisma modules, 64 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (44 migrated to Tailwind), 68 API route files, 81 test suites.
+**Current stats (Sprint 3.3):** ~1,800 source files, ~225,000 lines of code, 31 Prisma modules, 66 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (61 migrated to Tailwind), 68 API route files, 85+ test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

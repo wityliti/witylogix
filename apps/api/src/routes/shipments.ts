@@ -28,6 +28,7 @@ import {
   emitShipmentStatusChanged,
   emitShipmentAssigned,
 } from "../lib/events.js";
+import { getNotificationQueue } from "../lib/queue.js";
 
 // ─── Valid Status Transitions ───────────────────────────────
 
@@ -231,6 +232,37 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
       updatedAt: shipment.updatedAt.toISOString(),
     });
 
+    // Enqueue notification job for shipment creation
+    try {
+      const notificationQueue = getNotificationQueue();
+      await notificationQueue.add(
+        "shipment-created",
+        {
+          type: "shipment.created",
+          tenantId: request.shopId,
+          shipmentId: shipment.id,
+          shipmentNumber: shipment.shipmentNumber,
+          orderId: shipment.orderId,
+          recipientName: shipment.recipientName,
+          recipientEmail: shipment.recipientEmail,
+          recipientPhone: shipment.recipientPhone,
+          channel: "EMAIL",
+          deliveryDate: shipment.deliveryDate?.toISOString(),
+        },
+        {
+          jobId: `shipment-created-${shipment.id}`,
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+        },
+      );
+    } catch (err) {
+      request.log.warn(
+        { shipmentId: shipment.id, error: err },
+        "Failed to enqueue shipment creation notification",
+      );
+      // Continue anyway - shipment was created successfully
+    }
+
     reply.status(201);
     return { data: shipment };
   });
@@ -358,10 +390,39 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
       reason: failureReason,
     });
 
-    // TODO: Enqueue notification job (BullMQ)
-    // await notificationQueue.add('shipment-status-change', {
-    //   shopId: request.shopId, shipmentId: id, status: newStatus
-    // });
+    // Enqueue notification job for shipment status change
+    try {
+      const notificationQueue = getNotificationQueue();
+      await notificationQueue.add(
+        "shipment-status-changed",
+        {
+          type: "shipment.status_changed",
+          tenantId: request.shopId,
+          shipmentId: id,
+          shipmentNumber: updated.shipmentNumber,
+          orderId: updated.orderId,
+          recipientName: updated.recipientName,
+          recipientEmail: updated.recipientEmail,
+          recipientPhone: updated.recipientPhone,
+          previousStatus: shipment.status,
+          newStatus: newStatus,
+          channel: "EMAIL",
+          failureReason: failureReason || undefined,
+          notes: notes || undefined,
+        },
+        {
+          jobId: `shipment-status-${id}-${newStatus}`,
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+        },
+      );
+    } catch (err) {
+      request.log.warn(
+        { shipmentId: id, status: newStatus, error: err },
+        "Failed to enqueue shipment status change notification",
+      );
+      // Continue anyway - status was updated successfully
+    }
 
     return { data: updated };
   });
@@ -410,6 +471,44 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
       updatedAt: updated.updatedAt.toISOString(),
       assignedAt: new Date().toISOString(),
     });
+
+    // Enqueue notification job for driver assignment
+    try {
+      const notificationQueue = getNotificationQueue();
+
+      // Notify driver
+      if (driver.fcmToken) {
+        await notificationQueue.add(
+          "driver-assignment",
+          {
+            type: "driver.shipment_assigned",
+            tenantId: request.shopId,
+            driverId,
+            driverName: driver.name,
+            fcmToken: driver.fcmToken,
+            shipmentId: id,
+            shipmentNumber: updated.shipmentNumber,
+            orderId: updated.orderId,
+            recipientName: updated.recipientName,
+            recipientPhone: updated.recipientPhone,
+            deliveryAddress: `${updated.addressLine1}${updated.addressLine2 ? ", " + updated.addressLine2 : ""}`,
+            city: updated.city,
+            channel: "PUSH",
+          },
+          {
+            jobId: `driver-assignment-${id}-${driverId}`,
+            attempts: 3,
+            backoff: { type: "exponential", delay: 2000 },
+          },
+        );
+      }
+    } catch (err) {
+      request.log.warn(
+        { shipmentId: id, driverId, error: err },
+        "Failed to enqueue driver assignment notification",
+      );
+      // Continue anyway - assignment was successful
+    }
 
     return { data: updated };
   });
