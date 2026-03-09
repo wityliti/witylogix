@@ -269,6 +269,7 @@ export default function CalendarPage() {
                       key={idx}
                       onClick={() => day && setSelectedDay(day)}
                       style={{
+                        // Intentional inline: dynamic styles based on day data
                         aspectRatio: "1",
                         backgroundColor: getDayBackgroundColor(day),
                         borderColor: day && day.date.getTime() === today.getTime()
@@ -300,18 +301,26 @@ export default function CalendarPage() {
                     >
                       {day && (
                         <>
-                          <div className="text-xs font-semibold" style={{
-                            color: day.isBlackout || day.isHoliday
-                              ? "white"
-                              : "var(--wl-text-primary)",
-                          }}>
+                          <div
+                            className="text-xs font-semibold"
+                            style={{
+                              // Intentional inline: dynamic text color based on day status
+                              color: day.isBlackout || day.isHoliday
+                                ? "white"
+                                : "var(--wl-text-primary)",
+                            }}
+                          >
                             {day.date.getDate()}
                           </div>
-                          <div className="text-xs font-medium" style={{
-                            color: day.isBlackout || day.isHoliday
-                              ? "rgba(255,255,255,0.8)"
-                              : "var(--wl-text-secondary)",
-                          }}>
+                          <div
+                            className="text-xs font-medium"
+                            style={{
+                              // Intentional inline: dynamic text color based on day status
+                              color: day.isBlackout || day.isHoliday
+                                ? "rgba(255,255,255,0.8)"
+                                : "var(--wl-text-secondary)",
+                            }}
+                          >
                             {day.isBlackout
                               ? "Blocked"
                               : day.isHoliday
@@ -475,6 +484,7 @@ export default function CalendarPage() {
                   <div className="mt-3 h-1.5 bg-wl-bg-secondary rounded-full overflow-hidden">
                     <div
                       style={{
+                        // Intentional inline: dynamic width calculation
                         height: "100%",
                         backgroundColor: "var(--wl-warning)",
                         width: `${(selectedDay.booked / selectedDay.totalSlots) * 100}%`,

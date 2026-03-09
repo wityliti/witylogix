@@ -25,12 +25,13 @@ interface ApiKey {
   status: "active" | "revoked" | "expired";
 }
 
+// Demo data — uses sk_example_ prefix to avoid secret scanner false positives
 const mockApiKeys: ApiKey[] = [
   {
     id: "key-001",
     name: "Production Integration",
-    key: "wl_live_xxxxxxxxxxxxxxxxxxxxxxxx",
-    masked: "wl_live_****...xxxx",
+    key: "sk_example_xxxxxxxxxxxxxxxxxxxxxxxx",
+    masked: "sk_example_****...xxxx",
     created: "2024-01-15",
     lastUsed: "2026-03-06",
     expiresAt: null,
@@ -40,8 +41,8 @@ const mockApiKeys: ApiKey[] = [
   {
     id: "key-002",
     name: "Staging Testing",
-    key: "wl_test_xxxxxxxxxxxxxxxxxxxxxxxx",
-    masked: "wl_test_****...xxxx",
+    key: "sk_example_xxxxxxxxxxxxxxxxxxxxxxxx",
+    masked: "sk_example_****...xxxx",
     created: "2024-02-20",
     lastUsed: "2026-02-28",
     expiresAt: "2026-08-20",
@@ -51,8 +52,8 @@ const mockApiKeys: ApiKey[] = [
   {
     id: "key-003",
     name: "Mobile App Integration",
-    key: "wl_live_yyyyyyyyyyyyyyyyyyyyyyyy",
-    masked: "wl_live_****...yyyy",
+    key: "sk_example_yyyyyyyyyyyyyyyyyyyyyyyy",
+    masked: "sk_example_****...yyyy",
     created: "2024-03-10",
     lastUsed: "2024-06-15",
     expiresAt: "2025-12-31",

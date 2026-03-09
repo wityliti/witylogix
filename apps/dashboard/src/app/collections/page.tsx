@@ -279,13 +279,12 @@ export default function CollectionsPage() {
                   setTypeFilter(type);
                   setCurrentPage(1);
                 }}
-                className={cn("px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all")}
-                style={{
-                  background: typeFilter === type ? "var(--wl-primary-500)" : "transparent",
-                  color: typeFilter === type ? "var(--wl-text-inverse)" : "var(--wl-text-tertiary)",
-                  borderColor: typeFilter === type ? "var(--wl-primary-500)" : "var(--wl-border-default)",
-                  textTransform: "capitalize",
-                }}
+                className={cn(
+                  "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all capitalize",
+                  typeFilter === type
+                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
+                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                )}
               >
                 {type === "all" ? "All Types" : type}
               </button>
@@ -325,7 +324,7 @@ export default function CollectionsPage() {
               <tbody>
                 {paginatedItems.map((collection, idx) => (
                   <tbody key={collection.id}>
-                    <tr className={cn("border-b border-wl-border-subtle")} style={{ background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)" }}>
+                    <tr className={cn("border-b border-wl-border-subtle", idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay")}>
                       <td className={cn("p-3 px-4 text-center cursor-pointer")} onClick={() => setExpandedCollection(expandedCollection === collection.id ? null : collection.id)}>
                         {expandedCollection === collection.id ? (
                           <ChevronUp size={18} />
@@ -355,7 +354,7 @@ export default function CollectionsPage() {
                       <tr className={cn("border-b border-wl-border-subtle bg-wl-bg-overlay")}>
                         <td colSpan={7} className={cn("p-0")}>
                           <div className={cn("p-4")}>
-                            <div className={cn("grid gap-6")} style={{ gridTemplateColumns: "200px 1fr" }}>
+                            <div className={cn("grid gap-6 grid-cols-[200px_1fr]")}>
                               {/* Collection Image & Meta */}
                               <div>
                                 <div className={cn("bg-wl-bg-elevated border border-dashed border-wl-border-default rounded-lg h-45 flex items-center justify-center mb-3 text-wl-text-secondary")}>

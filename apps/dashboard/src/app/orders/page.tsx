@@ -198,19 +198,14 @@ export default function OrdersPage() {
                             {order.tags.map((t) => (
                               <span
                                 key={t}
-                                className="text-xs py-0.5 px-1 rounded text-white font-semibold uppercase tracking-wider"
-                                style={{
-                                  background: t === "priority"
-                                    ? "var(--wl-danger-bg)"
+                                className={cn(
+                                  "text-xs py-0.5 px-1 rounded font-semibold uppercase tracking-wider",
+                                  t === "priority"
+                                    ? "bg-[var(--wl-danger-bg)] text-wl-danger-400"
                                     : t === "express"
-                                      ? "rgba(245,166,35,0.12)"
-                                      : "var(--wl-info-bg)",
-                                  color: t === "priority"
-                                    ? "var(--wl-danger-400)"
-                                    : t === "express"
-                                      ? "var(--wl-primary-400)"
-                                      : "var(--wl-info-400)",
-                                }}
+                                      ? "bg-[rgba(245,166,35,0.12)] text-wl-primary-400"
+                                      : "bg-[var(--wl-info-bg)] text-wl-info-400"
+                                )}
                               >
                                 {t}
                               </span>
@@ -241,7 +236,7 @@ export default function OrdersPage() {
                       <td className="px-4 py-3 font-mono font-semibold text-wl-text-primary">
                         {formatCurrency(order.amount)}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs" style={{ color: order.eta ? "var(--wl-primary-400)" : "var(--wl-text-tertiary)" }}>
+                      <td className={cn("px-4 py-3 font-mono text-xs", order.eta ? "text-wl-primary-400" : "text-wl-text-tertiary")}>
                         {order.eta ?? "—"}
                       </td>
                     </tr>
@@ -256,6 +251,7 @@ export default function OrdersPage() {
             <Card
               className="wl-animate-in sticky overflow-y-auto"
               style={{
+                {/* Intentional inline: dynamic positioning and sizing */}
                 top: "calc(var(--wl-header-height) + var(--wl-space-6))",
                 maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
               }}

@@ -99,19 +99,19 @@ const statusCards = [
     label: "Account Status",
     value: "Active",
     description: "Pro plan active since Jan 2025",
-    icon: <CheckCircle className="w-5 h-5" style={{ color: "var(--wl-success)" }} />,
+    icon: <CheckCircle className="w-5 h-5 text-[var(--wl-success)]" />,
   },
   {
     label: "API Usage",
     value: "2.4M / 10M",
     description: "24% of monthly quota",
-    icon: <AlertCircle className="w-5 h-5" style={{ color: "var(--wl-warning)" }} />,
+    icon: <AlertCircle className="w-5 h-5 text-[var(--wl-warning)]" />,
   },
   {
     label: "Team Members",
     value: "5 / 10",
     description: "2 pending invitations",
-    icon: <Users className="w-5 h-5" style={{ color: "var(--wl-primary)" }} />,
+    icon: <Users className="w-5 h-5 text-[var(--wl-primary)]" />,
   },
 ];
 
@@ -165,6 +165,7 @@ export default function SettingsHub() {
                   expandedSection === section.id && "border-[var(--wl-primary)] shadow-lg"
                 )}
                 style={{
+                  // Intentional inline: dynamic boxShadow value
                   boxShadow: expandedSection === section.id ? "0 10px 30px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.05)",
                 }}
                 onMouseEnter={() => setExpandedSection(section.id)}

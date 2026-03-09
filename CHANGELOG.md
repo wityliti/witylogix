@@ -4,6 +4,20 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.8 — Security, Error Boundaries, Route Tests & Tailwind Final (2026-03-09)
+
+#### Added
+
+- **ADR-018** — Error handling & resilience patterns (869 lines) with RFC 7807, circuit breakers, retry/backoff, DLQ handling, client-side error reporting, Prometheus metrics (`docs/adr/ADR-018-error-handling-resilience.md`)
+- **`.gitleaks.toml`** — Secret scanner configuration with `sk_example_*` allowlist, detection rules for Stripe/AWS/DB/OAuth/JWT/PEM keys
+- **Next.js error boundaries** — Root `error.tsx`, `not-found.tsx`, `loading.tsx`, auth-specific `error.tsx`/`loading.tsx`, reusable `ErrorBoundary` class component with `componentDidCatch` and monitoring hooks
+- **15 API route test suites** — auth (51), billing (61), campaigns (87), shipments (47), collections (49), integrations (46), customers (48), payments (51), locations (55), products (62), users (76), shops (95), analytics (42), admin (43), support-tickets (53) — 771 test cases total, 130+ suites
+
+#### Changed
+
+- **Security: demo API key fix** — Replaced all `sk_live_*`/`sk_test_*` with `sk_example_*` prefix in settings/api-keys and stores pages to prevent GitHub secret scanner false positives
+- **14 dashboard pages migrated to Tailwind CSS** (132 total) — settings, routes, routes/create, locations, delivery, calendar, (auth)/login, zones, time-slots, shipping-profiles, orders, notifications, collections, billing
+
 ### Sprint 3.7 — Auth Actions, Core Module Tests & Deep Tailwind (2026-03-08)
 
 #### Added

@@ -333,6 +333,7 @@ export default function CreateRoutePage() {
                         key={stop.id}
                         className="p-3 rounded-md bg-wl-surface border border-wl-border flex items-center gap-3 cursor-grab transition-all"
                         style={{
+                          // Intentional inline: dynamic backgroundColor, borderColor, and opacity
                           backgroundColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-surface)",
                           borderColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-border)",
                           opacity: draggedStop === idx ? 0.7 : 1,
@@ -396,7 +397,7 @@ export default function CreateRoutePage() {
                   width="100%"
                   height="100%"
                   viewBox="0 0 800 400"
-                  style={{ position: "absolute", top: 0, left: 0 }}
+                  className="absolute top-0 left-0"
                 >
                   <defs>
                     <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -461,12 +462,16 @@ export default function CreateRoutePage() {
                       key={stop.id}
                       className="p-4 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center"
                       style={{
+                        // Intentional inline: dynamic grid template columns
                         gridTemplateColumns: "30px 1fr auto",
                       }}
                     >
                       <div
                         className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: getPriorityColor(stop.priority) }}
+                        style={{
+                          // Intentional inline: dynamic background color
+                          backgroundColor: getPriorityColor(stop.priority)
+                        }}
                       >
                         {idx + 1}
                       </div>

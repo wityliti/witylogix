@@ -438,19 +438,19 @@ export default function NotificationsPage() {
                 key={template.id}
                 hover
                 onClick={() => setSelectedTemplate(selectedTemplate?.id === template.id ? null : template)}
-                className="cursor-pointer relative overflow-hidden"
+                className="cursor-pointer relative overflow-hidden opacity-0"
                 style={{
+                  {/* Intentional inline: dynamic animation delay and borderColor */}
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                  opacity: 0,
                   borderColor: selectedTemplate?.id === template.id ? "var(--wl-primary-500)" : undefined,
                 }}
               >
                 {/* Active indicator line */}
                 <div
-                  className="absolute top-0 left-0 right-0 h-0.5"
-                  style={{
-                    background: template.isActive ? "var(--wl-success-400)" : "var(--wl-border-subtle)",
-                  }}
+                  className={cn(
+                    "absolute top-0 left-0 right-0 h-0.5",
+                    template.isActive ? "bg-wl-success-400" : "bg-wl-border-subtle"
+                  )}
                 />
 
                 {/* Template Name and Status */}
@@ -464,11 +464,10 @@ export default function NotificationsPage() {
                     </div>
                   </div>
                   <div
-                    className="flex items-center justify-center w-6 h-6 rounded-full text-xs"
-                    style={{
-                      background: template.isActive ? "var(--wl-success-bg)" : "var(--wl-border-subtle)",
-                      color: template.isActive ? "var(--wl-success-400)" : "var(--wl-text-tertiary)",
-                    }}
+                    className={cn(
+                      "flex items-center justify-center w-6 h-6 rounded-full text-xs",
+                      template.isActive ? "bg-wl-success-bg text-wl-success-400" : "bg-wl-border-subtle text-wl-text-tertiary"
+                    )}
                   >
                     {template.isActive ? "●" : "○"}
                   </div>

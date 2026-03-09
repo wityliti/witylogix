@@ -302,7 +302,7 @@ export default function ShippingProfilesPage() {
         </div>
 
         {/* Profiles Grid + Detail */}
-        <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedProfile ? "1fr 420px" : "1fr" }}>
+        <div className={cn("grid gap-5", selectedProfile ? "grid-cols-[1fr_420px]" : "grid-cols-1")}>
 
 
           {/* Profiles Grid */}
@@ -312,10 +312,10 @@ export default function ShippingProfilesPage() {
                 key={profile.id}
                 hover
                 onClick={() => setSelectedProfile(selectedProfile?.id === profile.id ? null : profile)}
-                className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
+                className={cn("cursor-pointer relative overflow-hidden flex flex-col opacity-0")}
                 style={{
+                  {/* Intentional inline: dynamic animation delay and borderColor */}
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                  opacity: 0,
                   borderColor: selectedProfile?.id === profile.id ? "var(--wl-primary-500)" : undefined,
                 }}
               >
@@ -442,14 +442,11 @@ export default function ShippingProfilesPage() {
           {/* Profile Detail Panel */}
           {selectedProfile && (
             <Card
-              className="wl-animate-in"
+              className="wl-animate-in sticky flex flex-col overflow-y-auto"
               style={{
-                position: "sticky",
+                {/* Intentional inline: dynamic positioning and sizing */}
                 top: "calc(var(--wl-header-height) + var(--wl-space-6))",
                 maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
               }}
             >
               <div className={cn("flex justify-between items-start mb-4")}>

@@ -666,8 +666,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.5 | WooCommerce, TODO Cleanup & Tailwind | ADR-015 WooCommerce integration, platform adapter system (Shopify + WooCommerce), webhook consumer, TODO cleanup (10→2), platform abstraction Phase 2, 11 more pages → Tailwind |
 | 3.6 | Magento, Custom Adapter, Tests & Tailwind Finish | ADR-016 Magento integration, Magento + Custom platform adapters, API route tests (213 cases), platform adapter tests (197 cases), 0 TODOs remaining, 15 more pages → Tailwind |
 | 3.7 | Auth Actions, Core Tests & Deep Tailwind | ADR-017 dashboard auth actions, real auth implementation, 14 core module test suites (900+ cases), Shopify app TODO fixes, 15 more pages → Tailwind |
+| 3.8 | Security, Error Boundaries, Route Tests & Tailwind Final | ADR-018 error handling, .gitleaks.toml, security key fix, 15 API route test suites (771 cases), Next.js error boundaries + loading states, 14 more pages → Tailwind |
 
-**Current stats (Sprint 3.7):** ~2,000 source files, ~280,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (118 migrated to Tailwind), 73 API route files, 115+ test suites.
+**Current stats (Sprint 3.8):** ~2,050 source files, ~298,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (132 migrated to Tailwind), 73 API route files, 130+ test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

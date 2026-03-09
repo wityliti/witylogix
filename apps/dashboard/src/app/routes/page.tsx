@@ -69,9 +69,19 @@ export default function RoutesPage() {
             <Card
               key={stat.label}
               className="wl-animate-in relative overflow-hidden"
-              style={{ animationDelay: `${i * 60}ms`, opacity: 0 }}
+              style={{
+                // Intentional inline: dynamic animationDelay
+                animationDelay: `${i * 60}ms`,
+                opacity: 0
+              }}
             >
-              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
+              <div
+                className="absolute top-0 left-0 right-0 h-0.5"
+                style={{
+                  // Intentional inline: dynamic background color
+                  background: stat.color
+                }}
+              />
               <div className="text-xs text-wl-text-tertiary mb-2 font-semibold uppercase tracking-wider">
                 {stat.label}
               </div>
@@ -92,6 +102,7 @@ export default function RoutesPage() {
                 key={route.id}
                 className="wl-animate-in"
                 style={{
+                  // Intentional inline: dynamic animationDelay
                   animationDelay: `${(i + 4) * 60}ms`,
                   opacity: 0,
                 }}
@@ -127,6 +138,7 @@ export default function RoutesPage() {
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
+                          // Intentional inline: dynamic width, background gradient, and transition
                           width: `${progress}%`,
                           background: progress === 100
                             ? "var(--wl-success-400)"

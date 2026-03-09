@@ -143,6 +143,7 @@ function LoginPageInner() {
               )}
               onFocus={(e) => {
                 if (!isLoading) {
+                  // Intentional inline: dynamic border and shadow on focus
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
@@ -150,6 +151,7 @@ function LoginPageInner() {
                 }
               }}
               onBlur={(e) => {
+                // Intentional inline: remove border and shadow on blur
                 e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -194,6 +196,7 @@ function LoginPageInner() {
               )}
               onFocus={(e) => {
                 if (!isLoading) {
+                  // Intentional inline: dynamic border and shadow on focus
                   e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
@@ -201,6 +204,7 @@ function LoginPageInner() {
                 }
               }}
               onBlur={(e) => {
+                // Intentional inline: remove border and shadow on blur
                 e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -228,6 +232,7 @@ function LoginPageInner() {
               disabled={isLoading}
               className={cn(isLoading && "cursor-not-allowed")}
               style={{
+                // Intentional inline: custom accent color for checkbox
                 accentColor: "var(--wl-primary-500)",
               }}
             />
@@ -241,11 +246,13 @@ function LoginPageInner() {
             )}
             onMouseEnter={(e) => {
               if (!isLoading) {
+                // Intentional inline: dynamic hover color
                 (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
               }
             }}
             onMouseLeave={(e) => {
               if (!isLoading) {
+                // Intentional inline: reset hover color
                 (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
               }
             }}
@@ -270,6 +277,7 @@ function LoginPageInner() {
             isLoading && "opacity-80 cursor-not-allowed"
           )}
           style={{
+            // Intentional inline: dynamic gradient and shadow
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
@@ -277,12 +285,14 @@ function LoginPageInner() {
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
+              // Intentional inline: dynamic hover effect
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
+              // Intentional inline: reset hover effect
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
             }
@@ -318,11 +328,13 @@ function LoginPageInner() {
           )}
           onMouseEnter={(e) => {
             if (!isLoading) {
+              // Intentional inline: dynamic hover color
               (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
+              // Intentional inline: reset hover color
               (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
             }
           }}

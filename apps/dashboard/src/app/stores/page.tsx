@@ -48,6 +48,7 @@ interface SyncHistory {
   message: string;
 }
 
+// Demo data — uses sk_example_ prefix to avoid secret scanner false positives
 const mockStores: Store[] = [
   {
     id: "store_001",
@@ -59,7 +60,7 @@ const mockStores: Store[] = [
     orderCount: 8945,
     productCount: 3421,
     syncStatus: "success",
-    apiKey: "sk_live_****5k8j",
+    apiKey: "sk_example_****5k8j",
     webhooksActive: 12,
     lastSyncDuration: "4m 32s",
   },
@@ -73,7 +74,7 @@ const mockStores: Store[] = [
     orderCount: 5234,
     productCount: 2156,
     syncStatus: "success",
-    apiKey: "wc_live_****9k2m",
+    apiKey: "sk_example_****9k2m",
     webhooksActive: 8,
     lastSyncDuration: "3m 15s",
   },
@@ -87,7 +88,7 @@ const mockStores: Store[] = [
     orderCount: 3421,
     productCount: 1245,
     syncStatus: "success",
-    apiKey: "sk_live_****8m4p",
+    apiKey: "sk_example_****8m4p",
     webhooksActive: 10,
     lastSyncDuration: "2m 48s",
   },
@@ -101,7 +102,7 @@ const mockStores: Store[] = [
     orderCount: 1567,
     productCount: 45,
     syncStatus: "syncing",
-    apiKey: "api_custom_****4n6q",
+    apiKey: "api_example_****4n6q",
     webhooksActive: 5,
     lastSyncDuration: "45s",
   },
@@ -115,7 +116,7 @@ const mockStores: Store[] = [
     orderCount: 2789,
     productCount: 5678,
     syncStatus: "success",
-    apiKey: "wc_live_****3d7r",
+    apiKey: "sk_example_****3d7r",
     webhooksActive: 7,
     lastSyncDuration: "6m 22s",
   },
@@ -129,7 +130,7 @@ const mockStores: Store[] = [
     orderCount: 1234,
     productCount: 987,
     syncStatus: "error",
-    apiKey: "sk_live_****7p2w",
+    apiKey: "sk_example_****7p2w",
     webhooksActive: 0,
     lastSyncDuration: "5m 10s",
   },

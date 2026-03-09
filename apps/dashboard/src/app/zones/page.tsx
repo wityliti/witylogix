@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "../../lib/utils";
 import { Header } from "../../components/layout/header";
 import { Card, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
@@ -34,9 +35,9 @@ export default function ZonesPage() {
             <Card
               key={zone.id}
               hover
-              className="wl-animate-in relative overflow-hidden"
+              className={cn("wl-animate-in relative overflow-hidden", zone.isActive ? "opacity-100" : "opacity-60")}
               style={{
-                opacity: zone.isActive ? 1 : 0.6,
+                {/* Intentional inline: dynamic animation delay */}
                 animationDelay: `${i * 60}ms`,
               }}
             >

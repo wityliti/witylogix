@@ -374,7 +374,13 @@ export default function LocationsPage() {
         </div>
 
         {/* Locations Grid + Detail */}
-        <div className={cn("grid gap-5")} style={{ gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr" }}>
+        <div
+          className={cn("grid gap-5")}
+          style={{
+            // Intentional inline: dynamic grid layout
+            gridTemplateColumns: selectedLocation ? "1fr 420px" : "1fr"
+          }}
+        >
 
           {/* Locations Grid */}
           <div className={cn("grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4")}>
@@ -385,6 +391,7 @@ export default function LocationsPage() {
                 onClick={() => setSelectedLocation(selectedLocation?.id === location.id ? null : location)}
                 className={cn("cursor-pointer relative overflow-hidden flex flex-col")}
                 style={{
+                  // Intentional inline: dynamic animation, opacity, and borderColor
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
                   opacity: 0,
                   borderColor: selectedLocation?.id === location.id ? "var(--wl-primary-500)" : undefined,
@@ -499,14 +506,12 @@ export default function LocationsPage() {
           {/* Location Detail Panel */}
           {selectedLocation && (
             <Card
-              className="wl-animate-in"
+              className={cn("wl-animate-in sticky flex flex-col")}
               style={{
-                position: "sticky",
+                // Intentional inline: dynamic top and maxHeight calculations
                 top: "calc(var(--wl-header-height) + var(--wl-space-6))",
                 maxHeight: "calc(100vh - var(--wl-header-height) - var(--wl-space-12))",
                 overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
               }}
             >
               <div className={cn("flex justify-between items-start mb-4")}>

@@ -263,16 +263,17 @@ export default function BillingPage() {
                       </div>
                       <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
                         <div
+                          className={cn(
+                            "h-full transition-[width] duration-300",
+                            quotaColor === "danger"
+                              ? "bg-wl-danger-400"
+                              : quotaColor === "warning"
+                                ? "bg-wl-warning-400"
+                                : "bg-wl-success-400"
+                          )}
                           style={{
-                            height: "100%",
+                            {/* Intentional inline: dynamic width calculation */}
                             width: `${Math.min(percentage, 100)}%`,
-                            background:
-                              quotaColor === "danger"
-                                ? "var(--wl-danger-400)"
-                                : quotaColor === "warning"
-                                  ? "var(--wl-warning-400)"
-                                  : "var(--wl-success-400)",
-                            transition: "width 0.3s ease",
                           }}
                         />
                       </div>
@@ -294,7 +295,7 @@ export default function BillingPage() {
               <Button variant="secondary">
                 Downgrade Plan
               </Button>
-              <Button variant="ghost" style={{ color: "var(--wl-danger-400)" }}>
+              <Button variant="ghost" className="text-wl-danger-400">
                 Cancel Subscription
               </Button>
             </div>
@@ -319,12 +320,14 @@ export default function BillingPage() {
                       : "border border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-primary-500 hover:bg-[rgba(245,166,35,0.04)]"
                   )}
                   onMouseEnter={(e) => {
+                    {/* Intentional inline: dynamic hover state from user interaction */}
                     if (!plan.isCurrent) {
                       (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-primary-500)";
                       (e.currentTarget as HTMLDivElement).style.background = "rgba(245, 166, 35, 0.04)";
                     }
                   }}
                   onMouseLeave={(e) => {
+                    {/* Intentional inline: dynamic hover state from user interaction */}
                     if (!plan.isCurrent) {
                       (e.currentTarget as HTMLDivElement).style.borderColor = "var(--wl-border-subtle)";
                       (e.currentTarget as HTMLDivElement).style.background = "var(--wl-bg-elevated)";
@@ -432,7 +435,7 @@ export default function BillingPage() {
                 <Button variant="secondary" size="sm">
                   Update
                 </Button>
-                <Button variant="ghost" size="sm" style={{ color: "var(--wl-danger-400)" }}>
+                <Button variant="ghost" size="sm" className="text-wl-danger-400">
                   Remove
                 </Button>
               </div>

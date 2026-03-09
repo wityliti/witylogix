@@ -412,7 +412,13 @@ export default function DeliveryPage() {
 
             {/* Batch Actions */}
             {selectedOrders.size > 0 && (
-              <Card className={cn("bg-[rgba(245,166,35,0.08)]")} style={{ borderColor: "var(--wl-primary-500)" }}>
+              <Card
+                className={cn("bg-[rgba(245,166,35,0.08)]")}
+                style={{
+                  // Intentional inline: dynamic border color
+                  borderColor: "var(--wl-primary-500)"
+                }}
+              >
                 <CardContent>
                   <div className={cn("flex items-center justify-between")}>
                     <span className="text-wl-text-secondary">
@@ -531,6 +537,7 @@ export default function DeliveryPage() {
                 hover
                 className="animate-in"
                 style={{
+                  // Intentional inline: dynamic animationDelay
                   animationDelay: `${i * 60}ms`,
                 }}
               >
@@ -578,6 +585,7 @@ export default function DeliveryPage() {
                       <div
                         className={cn("h-full bg-wl-success-400")}
                         style={{
+                          // Intentional inline: dynamic width calculation
                           width: `${(delivery.stopsCompleted / delivery.stopsTotal) * 100}%`,
                         }}
                       />
@@ -688,7 +696,12 @@ export default function DeliveryPage() {
                       align: "center" as const,
                       width: "80px",
                       render: (delivery) => (
-                        <span style={{ color: delivery.rating > 0 ? "var(--wl-success-400)" : "var(--wl-text-tertiary)" }}>
+                        <span
+                          style={{
+                            // Intentional inline: dynamic color based on rating
+                            color: delivery.rating > 0 ? "var(--wl-success-400)" : "var(--wl-text-tertiary)"
+                          }}
+                        >
                           {delivery.rating > 0 ? `⭐ ${delivery.rating}` : "—"}
                         </span>
                       ),

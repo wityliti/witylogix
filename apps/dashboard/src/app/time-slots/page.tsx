@@ -37,9 +37,9 @@ export default function TimeSlotsPage() {
             return (
               <Card
                 key={slot.id}
-                className="wl-animate-in"
+                className={cn("wl-animate-in", slot.isActive ? "opacity-100" : "opacity-50")}
                 style={{
-                  opacity: slot.isActive ? 1 : 0.5,
+                  {/* Intentional inline: dynamic animation delay */}
                   animationDelay: `${i * 50}ms`,
                 }}
               >
@@ -99,6 +99,7 @@ export default function TimeSlotsPage() {
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
+                          {/* Intentional inline: dynamic width and backgroundColor from runtime calculation */}
                           width: `${usage}%`,
                           backgroundColor: usageColor,
                         }}
