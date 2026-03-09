@@ -179,10 +179,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
   const activeSubscriptions = stores.filter((s) => s.planTier !== "free").length;
 
   return (
-    <div
-      className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]"
-    >
-
+    <div className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
       {[
         { label: "Total Stores", value: totalStores.toString(), icon: ShoppingCart, color: "#6366f1" },
         { label: "Active Stores", value: activeStores.toString(), icon: CheckCircle2, color: "#10b981" },
@@ -199,7 +196,6 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
           >
-
             <CardContent className="p-4 flex gap-3 items-start">
               <div
                 className="p-2 rounded-md flex items-center justify-center flex-shrink-0"
@@ -207,7 +203,6 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
                   backgroundColor: metric.color + "15",
                 }}
               >
-
                 <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
               </div>
               <div className="flex-1">
@@ -236,9 +231,7 @@ const SystemHealth = () => {
   ];
 
   return (
-    <Card
-      className="bg-wl-bg-surface border-wl-border-subtle mb-6"
-    >
+    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Server className="w-5 h-5 text-wl-text-secondary" />
@@ -246,10 +239,7 @@ const SystemHealth = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]"
-        >
-
+        <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
           {metrics.map((metric, idx) => {
             const Icon = metric.icon;
             return (
@@ -260,7 +250,6 @@ const SystemHealth = () => {
                     metric.status === "healthy" ? "bg-[#10b98115]" : "bg-[#f59e0b15]"
                   )}
                 >
-
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
                 </div>
                 <div>
@@ -283,9 +272,7 @@ const SystemHealth = () => {
 // Quick Actions
 const QuickActions = () => {
   return (
-    <Card
-      className="bg-wl-bg-surface border-wl-border-subtle mb-6"
-    >
+    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-wl-text-secondary" />
@@ -334,9 +321,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
   }, [stores, searchTerm]);
 
   return (
-    <Card
-      className="bg-wl-bg-surface border-wl-border-subtle"
-    >
+    <Card className="bg-wl-bg-surface border-wl-border-subtle">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle>Store Health</CardTitle>
@@ -355,9 +340,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
 
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table
-            className="w-full border-collapse text-sm"
-          >
+          <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
                 {["Store", "Plan", "Orders (30d)", "Revenue", "Users", "Status", "Last Active", "Actions"].map((header) => (
@@ -379,7 +362,6 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                     "bg-wl-bg-surface": idx % 2 !== 0,
                   })}
                 >
-
                   <td className="p-3">
                     <Link
                       href={`/admin/shops/${store.id}`}
@@ -401,7 +383,6 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >
-
                       {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
                     </Badge>
                   </td>
@@ -426,10 +407,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                     {store.lastActive}
                   </td>
                   <td className="p-3 text-center">
-                    <button
-                      className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary"
-                    >
-
+                    <button className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>

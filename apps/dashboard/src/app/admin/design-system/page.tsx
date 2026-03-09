@@ -266,7 +266,7 @@ const ComponentsShowcase = () => {
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
+          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <Button variant="primary" size="md">Primary Button</Button>
             <Button variant="secondary" size="md">Secondary Button</Button>
             <Button variant="ghost" size="md">Ghost Button</Button>
@@ -332,7 +332,7 @@ const ComponentsShowcase = () => {
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             <StatCard
               label="Total Orders"
               value="2,345"

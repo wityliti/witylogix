@@ -1,41 +1,88 @@
-# Dependencies
-node_modules/
-pnpm-lock.yaml
-
-# Build outputs
-dist/
-.next/
-.turbo/
-
-# Version control
-.git/
+# Version Control
+.git
 .gitignore
+.gitattributes
 
 # Documentation
-*.md
-CONTRIBUTING.md
 README.md
+CONTRIBUTING.md
 LICENSE
+docs/
+.github/
 
-# Environment files (NEVER include secrets in image)
+# Development
 .env
 .env.local
 .env.*.local
-
-# IDE and OS files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
 
-# Testing
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs (will be rebuilt)
+dist/
+.next/
+build/
+.turbo/
+
+# Package manager
+pnpm-debug.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Test files and coverage
 coverage/
 .nyc_output/
+*.test.ts
+*.spec.ts
+__tests__/
+__mocks__/
 
-# Miscellaneous
-.pnpm-store/
+# IDE temporary files
+*.tmp
+*.bak
+.cache/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+docker/
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Temporary files
+.temp/
+tmp/
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+
+# Environment
+.env.*
+!.env.example
+
+# Logs
 logs/
 *.log
-tmp/
+
+# Node specific
+.npm
+.eslintcache
+.node_repl_history
+*.tsbuildinfo

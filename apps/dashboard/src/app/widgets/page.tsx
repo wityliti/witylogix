@@ -188,10 +188,7 @@ export default function WidgetsPage() {
           <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
             Active Widgets
           </h2>
-          <div
-            className="grid gap-4"
-            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
-          >
+          <div className="grid gap-4 auto-fill" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
             {activeWidgets.map((widget, idx) => (
               <Card key={widget.id} className="flex flex-col">
                 <CardHeader className="pb-3">
@@ -257,10 +254,7 @@ export default function WidgetsPage() {
             <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Widget Gallery
             </h2>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
-            >
+            <div className="grid gap-4 auto-fill" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
               {AVAILABLE_WIDGETS.map((widget, idx) => (
                 <Card key={widget.id} className="flex flex-col">
                   <CardHeader className="pb-3">

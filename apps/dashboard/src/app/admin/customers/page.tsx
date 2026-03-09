@@ -628,7 +628,7 @@ export default function AdminCustomersPage() {
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
-                          }}>
+                          }}
                           onClick={() => handleCustomerClick(customer)}
                         >
                           <td className="p-3 text-wl-text-primary font-medium">

@@ -4,6 +4,20 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 3.9 — Route Tests Deep, Docker, CONTRIBUTING & UI Components (2026-03-09)
+
+#### Added
+
+- **CONTRIBUTING.md** — Comprehensive open-source contribution guide (536 lines) with getting started, project structure, development workflow, code style, testing, commit conventions, PR guidelines, and architecture notes
+- **Docker Compose setup** — `docker-compose.yml` with PostgreSQL 16, Redis 7, API, and Dashboard services; multi-stage `Dockerfile` (node:20-alpine, turbo build, minimal runner); `.dockerignore` for build optimization
+- **25 API route test suites** — activity-logs (43), analytics-events (52), audit (42), carriers (54), tracking (50), orgs (53), routes-api (57), permissions (53), time-slots (48), zones (49), shipping-profiles (40), calendar-rules (37), notification-templates (42), messages (38), saved-views (54), woocommerce-webhooks (48), magento-webhooks (40), custom-webhooks (43), outbound-webhooks (43), workflow-orders (53), workflow-delivery (60), workflow-drivers (63), workflow-executions (64), pos (74), widget-config (74) — 1,274 test cases total, 155+ suites
+- **DatePicker component** — Calendar dropdown with month/year navigation, day grid, today/selected highlighting, min/max date range, click-outside close, keyboard support, dark theme (`apps/dashboard/src/components/ui/date-picker.tsx`)
+- **Pagination component** — Previous/Next/First/Last navigation, smart page number display with ellipsis, "Showing X-Y of Z" text, optional page size selector, dark theme (`apps/dashboard/src/components/ui/pagination.tsx`)
+
+#### Changed
+
+- **12 dashboard pages migrated to Tailwind CSS** (144 total) — widgets, admin, activity, widget-config, integrations, admin/users, admin/customers, admin/design-system, campaigns/[id], analytics + more
+
 ### Sprint 3.8 — Security, Error Boundaries, Route Tests & Tailwind Final (2026-03-09)
 
 #### Added

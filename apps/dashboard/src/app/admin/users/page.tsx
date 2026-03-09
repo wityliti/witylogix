@@ -335,9 +335,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
         </div>
 
         {/* Actions */}
-        <div
-          className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4"
-        >
+        <div className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4">
           <Button variant="secondary" size="sm">
             Reset Password
           </Button>

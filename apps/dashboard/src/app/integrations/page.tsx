@@ -166,7 +166,7 @@ export default function IntegrationsPage() {
                         {integ.name}
                       </span>
                       {integ.popular && (
-                        <span className={cn("text-xs px-1 rounded text-wl-primary-400 font-bold uppercase tracking-wider")} style={{ background: "rgba(245,166,35,0.12)" }}>
+                        <span className={cn("text-xs px-1 rounded text-wl-primary-400 font-bold uppercase tracking-wider bg-[rgba(245,166,35,0.12)]")}>
                           Popular
                         </span>
                       )}
@@ -200,8 +200,7 @@ export default function IntegrationsPage() {
                   {integ.capabilities.map((cap) => (
                     <span
                       key={cap}
-                      className={cn("text-xs px-1.5 py-1 rounded border border-wl-border-subtle text-wl-text-tertiary")}
-                      style={{ background: "rgba(255,255,255,0.04)" }}
+                      className={cn("text-xs px-1.5 py-1 rounded border border-wl-border-subtle text-wl-text-tertiary bg-[rgba(255,255,255,0.04)]")}
                     >
                       {cap}
                     </span>

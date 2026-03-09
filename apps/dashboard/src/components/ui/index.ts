@@ -71,3 +71,9 @@ export {
   TooltipTrigger,
   TooltipContent,
 } from "./tooltip";
+
+// Date Picker
+export { DatePicker } from "./date-picker";
+
+// Pagination
+export { Pagination } from "./pagination";

@@ -78,7 +78,7 @@ export default function WidgetConfigPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-6">&nbsp;
+        <div className="grid grid-cols-2 gap-6 mb-6">
           {/* Left Column - Settings */}
           <div className="flex flex-col gap-6">
             {/* Widget Features */}
@@ -87,7 +87,7 @@ export default function WidgetConfigPage() {
                 <CardTitle className="text-slate-100">Widget Features</CardTitle>
                 <CardDescription className="text-slate-400">Enable widget features</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4">&nbsp;
+              <CardContent className="flex flex-col gap-4">
                 {/* Cart Selector Toggle */}
                 <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-700">
                   <div className="flex items-center gap-3">
@@ -132,7 +132,7 @@ export default function WidgetConfigPage() {
                 <CardTitle className="text-slate-100">Appearance</CardTitle>
                 <CardDescription className="text-slate-400">Customize widget look and feel</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4">&nbsp;
+              <CardContent className="flex flex-col gap-4">
                 {/* Position */}
                 <div>
                   <label className="block text-slate-100 text-xs font-medium mb-1.5">
@@ -252,7 +252,7 @@ export default function WidgetConfigPage() {
                   Colors
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-4">&nbsp;
+              <CardContent className="flex flex-col gap-4">
                 <div>
                   <label className="block text-wl-text text-xs font-medium mb-2">
                     Primary Color

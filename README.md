@@ -633,7 +633,10 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Core module test coverage — tracking, labels, monitoring, drivers, orders, routes, zones, shipping-profiles, integrations, events, push, shops, migration, E2E platform flow (14 suites, 900+ cases)
 - [x] Shopify app TODO fixes — user ID mapping, shop config pickup, order DB fetch
 - [x] 118 dashboard pages migrated to Tailwind CSS (15 more pages)
-- [x] 115+ test suites across core modules
+- [x] 155+ test suites across core + API routes
+- [x] CONTRIBUTING.md open-source contribution guide
+- [x] Docker Compose + Dockerfile for local development
+- [x] DatePicker and Pagination UI components
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] "Built for Shopify" certification
 - [x] WooCommerce integration plugin (Phase 1 — adapter + webhooks)
@@ -667,8 +670,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.6 | Magento, Custom Adapter, Tests & Tailwind Finish | ADR-016 Magento integration, Magento + Custom platform adapters, API route tests (213 cases), platform adapter tests (197 cases), 0 TODOs remaining, 15 more pages → Tailwind |
 | 3.7 | Auth Actions, Core Tests & Deep Tailwind | ADR-017 dashboard auth actions, real auth implementation, 14 core module test suites (900+ cases), Shopify app TODO fixes, 15 more pages → Tailwind |
 | 3.8 | Security, Error Boundaries, Route Tests & Tailwind Final | ADR-018 error handling, .gitleaks.toml, security key fix, 15 API route test suites (771 cases), Next.js error boundaries + loading states, 14 more pages → Tailwind |
+| 3.9 | Route Tests Deep, Docker, CONTRIBUTING & UI Components | CONTRIBUTING.md, Docker Compose + Dockerfile, 25 API route test suites (1,274 cases), DatePicker + Pagination components, 12 more pages → Tailwind |
 
-**Current stats (Sprint 3.8):** ~2,050 source files, ~298,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (132 migrated to Tailwind), 73 API route files, 130+ test suites.
+**Current stats (Sprint 3.9):** ~2,100 source files, ~320,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (144 migrated to Tailwind), 73 API route files, 155+ test suites.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 
