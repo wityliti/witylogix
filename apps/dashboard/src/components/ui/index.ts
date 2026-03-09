@@ -77,3 +77,26 @@ export { DatePicker } from "./date-picker";
 
 // Pagination
 export { Pagination } from "./pagination";
+
+// Breadcrumb
+export {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "./breadcrumb";
+
+// Avatar
+export { Avatar, AvatarImage, AvatarFallback } from "./avatar";
+
+// Switch
+export { Switch } from "./switch";
+
+// Checkbox
+export { Checkbox } from "./checkbox";
+
+// Alert
+export { Alert } from "./alert";
+
+// Progress
+export { Progress } from "./progress";

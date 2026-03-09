@@ -657,8 +657,7 @@ export default function LocationsPage() {
                     Location
                   </div>
                   <div
-                    className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-md p-4 flex flex-col items-center justify-center text-center")}
-                    style={{ minHeight: 140 }}
+                    className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-md p-4 flex flex-col items-center justify-center text-center min-h-[140px]")}
                   >
                     <div className={cn("text-2xl mb-2 opacity-50")}>⊙</div>
 

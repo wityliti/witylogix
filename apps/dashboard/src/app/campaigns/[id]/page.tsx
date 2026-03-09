@@ -215,7 +215,7 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
         </div>
 
         {/* Performance Stats */}
-        <div className="grid gap-4 mb-8 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+        <div className="grid gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
           <StatCard
             label="Sent"
             value={formatNumber(campaign.stats.sent)}

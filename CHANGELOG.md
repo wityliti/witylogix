@@ -4,6 +4,24 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.0 — Full Coverage, CI Harden, UI Polish & Integration Tests (2026-03-10)
+
+#### Added
+
+- **ADR-019** — CI/CD pipeline & release strategy (391 lines) with pipeline stages, Docker build, coverage thresholds, deploy preview, ASCII diagrams (`docs/adr/ADR-019-cicd-pipeline-release.md`)
+- **LICENSE** — AGPL-3.0 license file with commercial licensing clause
+- **CI hardening** — Docker build step, Prisma generate caching, test coverage output in GitHub Actions CI workflow
+- **4 final API route test suites** — auth-providers (55), billing-subscriptions (52), feature-requests (48), payment-methods (56) — 211 test cases, 100% API route coverage
+- **4 integration test suites** — order-lifecycle (20 cases), auth-flow (25 cases), billing-flow (20 cases), webhook-chain (22 cases) — 87 multi-step E2E flow tests
+- **4 Shopify app route test suites** — app-index (29), app-settings (64), app-webhooks (62), app-orders (82) — 237 test cases for React Router v7 loaders/actions
+- **4 platform webhook E2E test suites** — Shopify (36), WooCommerce (35), Magento (40), cross-platform (22) — 133 full webhook chain tests
+- **9 dashboard component unit test suites** — button, card, badge, input, modal, table, date-picker, pagination, error-boundary — 200+ test cases with @testing-library/react
+- **6 new UI components** — Breadcrumb (nav trail), Avatar (initials fallback), Switch (toggle), Checkbox (indeterminate), Alert (4 variants with auto-icons), Progress (bar with label) — all dark theme, Tailwind, `cn()`
+
+#### Changed
+
+- **Tailwind final push** (Batches 26-27) — drivers, widgets, campaigns/[id], design-system, register, routes, locations, delivery, calendar, login, orders/local, routes/[id], routes/create — remaining static inline styles converted
+
 ### Sprint 3.9 — Route Tests Deep, Docker, CONTRIBUTING & UI Components (2026-03-09)
 
 #### Added

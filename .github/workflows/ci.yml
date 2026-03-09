@@ -181,11 +181,27 @@ jobs:
           DATABASE_URL: postgresql://witylogix:witylogix_test@localhost:5432/witylogix_test
         run: pnpm --filter @witylogix/db db:generate
 
-      - name: Run tests
+      - name: Cache Prisma Client
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.prisma
+          key: ${{ runner.os }}-prisma-${{ hashFiles('packages/db/prisma/schema.prisma') }}
+          restore-keys: |
+            ${{ runner.os }}-prisma-
+
+      - name: Run tests with coverage
         env:
           DATABASE_URL: postgresql://witylogix:witylogix_test@localhost:5432/witylogix_test
           REDIS_URL: redis://localhost:6379
-        run: pnpm test --run
+        run: pnpm test --run --coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
 
   # ───────────────────────────────────────────────────────────────────────────
   # Job: Build (Turbo)
@@ -246,3 +262,33 @@ jobs:
 
       - name: Build applications
         run: pnpm build
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Docker Build (requires test to pass)
+  # ───────────────────────────────────────────────────────────────────────────
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: witylogix-platform:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image build
+        run: |
+          docker image inspect witylogix-platform:ci-${{ github.sha }} || exit 1
+          echo "Docker image built successfully: witylogix-platform:ci-${{ github.sha }}"

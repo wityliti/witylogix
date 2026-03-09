@@ -154,7 +154,7 @@ const ColorPaletteSection = () => {
               <h4 className="text-sm font-semibold text-wl-text-secondary mb-3 uppercase tracking-widest">
                 {categoryName}
               </h4>
-              <div className="grid gap-4 auto-fill" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
+              <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
                 {Object.entries(colors).map(([tokenName, hexValue]) => (
                   <div key={tokenName} className="flex gap-3 items-start">
                     <div
@@ -202,7 +202,7 @@ const TypographySection = () => {
                 </code>
               </div>
               <div className="flex-1">
-                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-wl-text-primary font-sans">
+                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-wl-text-primary">
                   {sample.text}
                 </div>
               </div>
@@ -266,7 +266,7 @@ const ComponentsShowcase = () => {
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <Button variant="primary" size="md">Primary Button</Button>
             <Button variant="secondary" size="md">Secondary Button</Button>
             <Button variant="ghost" size="md">Ghost Button</Button>
@@ -332,7 +332,7 @@ const ComponentsShowcase = () => {
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 auto-fit" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             <StatCard
               label="Total Orders"
               value="2,345"

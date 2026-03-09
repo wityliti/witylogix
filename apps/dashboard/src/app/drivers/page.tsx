@@ -542,12 +542,11 @@ export default function DriversPage() {
                 hover
                 onClick={() => setSelectedDriver(selectedDriver?.id === driver.id ? null : driver)}
                 className={cn(
-                  "relative overflow-hidden cursor-pointer transition-all",
+                  "relative overflow-hidden cursor-pointer transition-all opacity-0",
                   selectedDriver?.id === driver.id && "border-indigo-500"
                 )}
                 style={{
                   animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
-                  opacity: 0,
                 }}
               >
                 {/* Status indicator line */}
@@ -664,12 +663,10 @@ export default function DriversPage() {
           {/* Detail Panel */}
           {selectedDriver && (
             <Card
-              className="wl-animate-in"
+              className="wl-animate-in sticky overflow-y-auto"
               style={{
-                position: "sticky",
                 top: "calc(var(--wl-header-height) + 24px)",
                 maxHeight: "calc(100vh - var(--wl-header-height) - 48px)",
-                overflowY: "auto",
               }}
             >
               {/* Header with close button */}

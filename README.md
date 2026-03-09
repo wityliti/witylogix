@@ -633,10 +633,11 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Core module test coverage — tracking, labels, monitoring, drivers, orders, routes, zones, shipping-profiles, integrations, events, push, shops, migration, E2E platform flow (14 suites, 900+ cases)
 - [x] Shopify app TODO fixes — user ID mapping, shop config pickup, order DB fetch
 - [x] 118 dashboard pages migrated to Tailwind CSS (15 more pages)
-- [x] 155+ test suites across core + API routes
+- [x] 180+ test suites across core, API routes, integration, components
 - [x] CONTRIBUTING.md open-source contribution guide
 - [x] Docker Compose + Dockerfile for local development
-- [x] DatePicker and Pagination UI components
+- [x] 23 UI components (Button, Card, Badge, Input, Select, Modal, Table, Tabs, Toast, StatCard, EmptyState, DropdownMenu, Skeleton, Tooltip, DatePicker, Pagination, Breadcrumb, Avatar, Switch, Checkbox, Alert, Progress, ErrorBoundary)
+- [x] LICENSE (AGPL-3.0) + CI/CD Docker build step
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] "Built for Shopify" certification
 - [x] WooCommerce integration plugin (Phase 1 — adapter + webhooks)
@@ -671,8 +672,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.7 | Auth Actions, Core Tests & Deep Tailwind | ADR-017 dashboard auth actions, real auth implementation, 14 core module test suites (900+ cases), Shopify app TODO fixes, 15 more pages → Tailwind |
 | 3.8 | Security, Error Boundaries, Route Tests & Tailwind Final | ADR-018 error handling, .gitleaks.toml, security key fix, 15 API route test suites (771 cases), Next.js error boundaries + loading states, 14 more pages → Tailwind |
 | 3.9 | Route Tests Deep, Docker, CONTRIBUTING & UI Components | CONTRIBUTING.md, Docker Compose + Dockerfile, 25 API route test suites (1,274 cases), DatePicker + Pagination components, 12 more pages → Tailwind |
+| 4.0 | Full Coverage, CI Harden, UI Polish & Integration Tests | ADR-019 CI/CD pipeline, LICENSE (AGPL-3.0), CI Docker build step, 4 final route tests (211 cases), 4 integration test suites (87 cases), 4 Shopify app test suites (237 cases), 4 webhook E2E suites (133 cases), 9 component unit tests, 6 new UI components, Tailwind final push |
 
-**Current stats (Sprint 3.9):** ~2,100 source files, ~320,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (144 migrated to Tailwind), 73 API route files, 155+ test suites.
+**Current stats (Sprint 4.0):** ~2,200 source files, ~350,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (150+ migrated to Tailwind), 73 API route files, 180+ test suites, 23 UI components.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 
