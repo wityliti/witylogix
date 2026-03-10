@@ -6,8 +6,13 @@
     "woocommerce-integration",
     "magento-integration",
     "custom-platform",
-    "workflows",
+    "---",
+    "webhooks",
+    "events",
     "notifications",
-    "billing"
+    "---",
+    "workflows",
+    "billing",
+    "rbac"
   ]
 }

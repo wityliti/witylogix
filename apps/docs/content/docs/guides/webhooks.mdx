@@ -3,6 +3,8 @@ title: Webhooks
 description: Set up real-time event notifications for your application
 ---
 
+import { CodeTabs } from '@/app/components/code-tabs';
+
 # Webhooks
 
 Webhooks allow you to receive real-time notifications about shipment events. Instead of polling the API, we'll push updates directly to your application.
@@ -18,77 +20,273 @@ Webhooks allow you to receive real-time notifications about shipment events. Ins
 
 Available events:
 
-- `shipment.created` - Shipment was created
-- `shipment.picked_up` - Shipment was picked up
-- `shipment.in_transit` - Shipment is in transit
-- `shipment.delivered` - Shipment was delivered
-- `shipment.failed` - Delivery attempt failed
-- `shipment.cancelled` - Shipment was cancelled
+| Event | Description |
+|---|---|
+| `shipment.created` | Shipment was created |
+| `shipment.picked_up` | Shipment was picked up by driver |
+| `shipment.in_transit` | Shipment is in transit |
+| `shipment.delivered` | Shipment was delivered |
+| `shipment.failed` | Delivery attempt failed |
+| `shipment.cancelled` | Shipment was cancelled |
+
+## Webhook Payload
+
+Every webhook POST includes a JSON body with the event type, timestamp, and event-specific data:
+
+```json
+{
+  "id": "evt_2xK9mN4pQ7",
+  "event": "shipment.delivered",
+  "created_at": "2026-03-10T14:32:00Z",
+  "data": {
+    "shipment_id": "shp_8vL3nR2wM5",
+    "status": "delivered",
+    "delivered_at": "2026-03-10T14:31:45Z",
+    "recipient": "Jane Doe",
+    "proof_of_delivery": "https://cdn.witylogix.com/pod/shp_8vL3nR2wM5.jpg"
+  }
+}
+```
 
 ## Registering a Webhook
 
-1. Go to Settings → Webhooks in your dashboard
-2. Click "Add Webhook"
+1. Go to **Settings → Webhooks** in your dashboard
+2. Click **Add Webhook**
 3. Enter your endpoint URL (must be HTTPS)
 4. Select events to subscribe to
-5. Click "Create"
+5. Click **Create**
+
+Or register programmatically via the API:
+
+<CodeTabs tabs={[
+  {
+    label: "Node.js",
+    icon: "🟢",
+    filename: "register-webhook.ts",
+    code: `import { WitylogixClient } from '@witylogix/sdk';
+
+const client = new WitylogixClient({
+  apiKey: process.env.WITYLOGIX_API_KEY,
+});
+
+const webhook = await client.webhooks.create({
+  url: 'https://yourapp.com/api/webhooks/witylogix',
+  events: [
+    'shipment.created',
+    'shipment.delivered',
+    'shipment.failed',
+  ],
+  secret: 'whsec_your_signing_secret',
+});
+
+console.log('Webhook registered:', webhook.id);`
+  },
+  {
+    label: "Python",
+    icon: "🐍",
+    filename: "register_webhook.py",
+    code: `from witylogix import WitylogixClient
+
+client = WitylogixClient(
+    api_key=os.environ["WITYLOGIX_API_KEY"]
+)
+
+webhook = client.webhooks.create(
+    url="https://yourapp.com/api/webhooks/witylogix",
+    events=[
+        "shipment.created",
+        "shipment.delivered",
+        "shipment.failed",
+    ],
+    secret="whsec_your_signing_secret",
+)
+
+print(f"Webhook registered: {webhook.id}")`
+  }
+]} />
 
 ## Example Webhook Handler
 
-```javascript
-// pages/api/webhooks/witylogix.js
-export default async function handler(req, res) {
+<CodeTabs tabs={[
+  {
+    label: "Node.js",
+    icon: "🟢",
+    filename: "api/webhooks/witylogix.ts",
+    code: `import type { NextApiRequest, NextApiResponse } from 'next';
+import { verifyWebhookSignature } from '@witylogix/sdk';
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== 'POST') {
     return res.status(405).end();
+  }
+
+  // Verify the webhook signature
+  const signature = req.headers['x-witylogix-signature'] as string;
+  const isValid = verifyWebhookSignature(
+    JSON.stringify(req.body),
+    signature,
+    process.env.WEBHOOK_SECRET!
+  );
+
+  if (!isValid) {
+    return res.status(401).json({ error: 'Invalid signature' });
   }
 
   const { event, data } = req.body;
 
   switch (event) {
-    case 'shipment.delivered':
-      console.log(`Shipment ${data.id} delivered!`);
-      // Update your database
+    case 'shipment.created':
+      await db.orders.update(data.shipment_id, {
+        status: 'processing',
+      });
       break;
-    case 'shipment.in_transit':
-      console.log(`Shipment ${data.id} is on the way`);
+
+    case 'shipment.delivered':
+      await db.orders.update(data.shipment_id, {
+        status: 'delivered',
+        delivered_at: data.delivered_at,
+      });
+      await sendDeliveryEmail(data);
+      break;
+
+    case 'shipment.failed':
+      await db.orders.update(data.shipment_id, {
+        status: 'failed',
+        failure_reason: data.reason,
+      });
+      await alertOpsTeam(data);
       break;
   }
 
   res.status(200).json({ ok: true });
-}
-```
+}`
+  },
+  {
+    label: "Python",
+    icon: "🐍",
+    filename: "webhooks/witylogix.py",
+    code: `from flask import Flask, request, jsonify
+from witylogix import verify_webhook_signature
+
+app = Flask(__name__)
+
+@app.route("/api/webhooks/witylogix", methods=["POST"])
+def handle_webhook():
+    # Verify the webhook signature
+    signature = request.headers.get("X-Witylogix-Signature")
+    is_valid = verify_webhook_signature(
+        request.data,
+        signature,
+        os.environ["WEBHOOK_SECRET"],
+    )
+
+    if not is_valid:
+        return jsonify({"error": "Invalid signature"}), 401
+
+    payload = request.json
+    event = payload["event"]
+    data = payload["data"]
+
+    if event == "shipment.created":
+        db.orders.update(
+            data["shipment_id"],
+            {"status": "processing"},
+        )
+
+    elif event == "shipment.delivered":
+        db.orders.update(
+            data["shipment_id"],
+            {
+                "status": "delivered",
+                "delivered_at": data["delivered_at"],
+            },
+        )
+        send_delivery_email(data)
+
+    elif event == "shipment.failed":
+        db.orders.update(
+            data["shipment_id"],
+            {
+                "status": "failed",
+                "failure_reason": data["reason"],
+            },
+        )
+        alert_ops_team(data)
+
+    return jsonify({"ok": True}), 200`
+  }
+]} />
 
 ## Webhook Signature Verification
 
-We sign all webhooks. Verify the signature:
+We sign all webhooks using HMAC-SHA256. Always verify the signature before processing events.
 
-```javascript
-import crypto from 'crypto';
+<CodeTabs tabs={[
+  {
+    label: "Node.js",
+    icon: "🟢",
+    filename: "verify.ts",
+    code: `import crypto from 'crypto';
 
-function verifyWebhook(body, signature, secret) {
-  const hash = crypto
+function verifyWebhookSignature(
+  body: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expected = crypto
     .createHmac('sha256', secret)
     .update(body)
     .digest('hex');
-  return hash === signature;
-}
-```
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}`
+  },
+  {
+    label: "Python",
+    icon: "🐍",
+    filename: "verify.py",
+    code: `import hmac
+import hashlib
+
+def verify_webhook_signature(
+    body: bytes,
+    signature: str,
+    secret: str,
+) -> bool:
+    expected = hmac.new(
+        secret.encode(),
+        body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected)`
+  }
+]} />
 
 ## Retries
 
 We retry failed webhooks with exponential backoff:
-- 1st attempt: immediately
-- 2nd attempt: 5 minutes
-- 3rd attempt: 30 minutes
-- 4th attempt: 2 hours
-- 5th attempt: 24 hours
 
-Respond with HTTP 200 to prevent retries.
+| Attempt | Delay |
+|---|---|
+| 1st | Immediately |
+| 2nd | 5 minutes |
+| 3rd | 30 minutes |
+| 4th | 2 hours |
+| 5th | 24 hours |
+
+Respond with HTTP 200 to prevent retries. After 5 failed attempts, the webhook is marked as **disabled** and you'll receive an email notification.
 
 ## Best Practices
 
-1. Respond quickly (< 5 seconds)
-2. Return HTTP 200 as soon as possible
-3. Process events asynchronously
-4. Verify webhook signatures
-5. Handle duplicate events
+1. **Respond quickly** — Return HTTP 200 within 5 seconds. Queue heavy processing for async handling.
+2. **Verify signatures** — Always validate `X-Witylogix-Signature` before trusting the payload.
+3. **Handle duplicates** — Use the `id` field to deduplicate events. We guarantee at-least-once delivery.
+4. **Process asynchronously** — Offload database writes and email sends to a background queue.
+5. **Monitor failures** — Set up alerts for webhook delivery failures in your dashboard.
