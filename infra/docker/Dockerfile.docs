@@ -1,0 +1,68 @@
+# infra/docker/Dockerfile.docs
+# Multi-stage build for Next.js 15 documentation site
+# Produces minimal production image using standalone output mode
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Dependencies installation
+# ─────────────────────────────────────────────────────────────────────────────
+# Install Node.js tooling and application dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Install pnpm package manager for faster installs
+RUN npm install -g pnpm@9.15.0
+
+# Add libc6-compat for compatibility with Alpine Linux
+RUN apk add --no-cache libc6-compat
+
+# Copy workspace configuration (pnpm monorepo setup)
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy package definitions for dependency resolution
+COPY packages/ ./packages/
+COPY apps/docs/ ./apps/docs/
+
+# Install all dependencies in frozen mode (reproducible, secure)
+RUN pnpm install --frozen-lockfile
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Build Next.js application
+# ─────────────────────────────────────────────────────────────────────────────
+# Compile TypeScript and prepare production output
+FROM deps AS build
+
+# Build shared package dependencies first
+RUN pnpm --filter "@witylogix/types" build
+RUN pnpm --filter "@witylogix/core" build
+
+# Build documentation site with Next.js standalone output
+# Standalone output creates a self-contained bundle with minimal dependencies
+RUN pnpm --filter "@witylogix/docs" build
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Production runtime
+# ─────────────────────────────────────────────────────────────────────────────
+# Lean production image with only necessary files
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Copy standalone Next.js output (self-contained runtime, no node_modules needed)
+COPY --from=build /app/apps/docs/.next/standalone ./
+
+# Copy static assets (CSS, JavaScript bundles, images)
+COPY --from=build /app/apps/docs/.next/static ./.next/static/
+
+# Copy public folder assets (favicons, robots.txt, etc.)
+COPY --from=build /app/apps/docs/public ./public/
+
+# Expose documentation port
+EXPOSE 3003
+
+# Health check: verify Next.js server is responding and healthy
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3003/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start Next.js server using Node.js
+# The standalone output mode provides a production server via server.js
+CMD ["node", "server.js"]

@@ -192,6 +192,9 @@ jobs:
       - name: Smoke Test
         run: bash scripts/smoke-test.sh
 
+      - name: CLI Tests
+        run: bash infra/cli/__tests__/test-cli.sh
+
       - name: Validate Docs
         run: npx tsx scripts/validate-docs.ts
 

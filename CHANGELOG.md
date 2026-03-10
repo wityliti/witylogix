@@ -4,6 +4,40 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.3 — CLI Deployment Tool, AI Diagnostics & Production Docker Compose (2026-03-10)
+
+#### Added
+
+- **ADR-022** — CLI deployment tool architecture (670 lines) covering bash-only design, Caddy selection, subcommand structure, AI diagnostics rationale (`docs/adr/ADR-022-cli-deployment-tool.md`)
+- **`witylogix` CLI entrypoint** (`infra/cli/witylogix`, 355 lines) — Main CLI with subcommand routing, ASCII banner, color logging, `--yes`/`--verbose`/`--quiet` global flags, version/help, 15 subcommands
+- **Shared CLI library** (`infra/cli/lib/common.sh`, 423 lines) — require_root, require_docker, wait_for_healthy, spinner, table output, config read/write, detect_os/arch
+- **install command** (376 lines) — Docker bootstrap, directory creation, image pull, secret generation
+- **deploy command** (310 lines) — Fresh install vs update detection, rolling restart, health wait
+- **upgrade command** (394 lines) — Version check, auto-backup before upgrade, rolling restart with rollback
+- **backup command** (286 lines) — pg_dump + compression + S3 upload + rotation
+- **restore command** (369 lines) — Backup validation, service stop, pg_restore, restart
+- **ssl command** (395 lines) — Caddy config generation, DNS validation, cert status/renewal
+- **env command** (532 lines) — Interactive .env configurator with show/set/validate/export subcommands
+- **status command** (370 lines) — HTTP probes, Docker stats table, `--json` and `--watch` flags
+- **doctor command** (531 lines) — System/network/Docker/app checks, aggregate health score, `--fix` flag
+- **dev command** (491 lines) — Local dev orchestrator with pre-flight checks, infra boot, turbo start, graceful shutdown
+- **init command** (463 lines) — Contributor setup: deps, env, prisma, seed, smoke test
+- **logs command** (284 lines) — Color-coded multi-service log tailing with `--since`, `--search`, `--export`
+- **scale command** (320 lines) — Docker Compose scale wrapper with recommended limits
+- **destroy command** (400 lines) — Requires "type DESTROY to confirm", `--keep-data`/`--volumes`/`--images`/`--all`/`--force` flags
+- **ai command** (657 lines) — `ai setup` (API key config), `ai diagnose` (Claude-powered log analysis), `ai optimize` (performance recommendations via Claude claude-sonnet-4-5-20250929)
+- **Caddy templates** — Production Caddyfile (163 lines) with security headers, gzip, rate limiting + Caddyfile.template (146 lines) with `{{DOMAIN}}`/`{{ACME_EMAIL}}` placeholders
+- **Production env template** (`infra/cli/templates/env.template`, 219 lines) — 16 sections covering all platform vars
+- **AI prompt templates** — `ai-diagnose-prompt.txt` (48 lines, DevOps expert system prompt) + `ai-optimize-prompt.txt` (65 lines, performance expert system prompt)
+- **CLI test harness** (`infra/cli/__tests__/test-cli.sh`, 486 lines) — Comprehensive tests for all subcommands
+- **Production Docker Compose** (`infra/docker-compose.prod.yml`, 374 lines) — 6 services + worker, resource limits, healthchecks, restart policies, Caddy reverse proxy
+- **Dockerfile.docs** (`infra/docker/Dockerfile.docs`, 68 lines) — Multi-stage Next.js docs build
+- **Docker Compose dev override** (`infra/docker-compose.override.example.yml`, 157 lines) — pgAdmin, Mailhog, Redis Commander
+
+#### Changed
+
+- **CI workflow** — Added CLI tests step with ShellCheck linting and test harness execution
+
 ### Sprint 4.2 — DX Polish, SDK Tests, Seed Data & Driver App Build-Out (2026-03-10)
 
 #### Added

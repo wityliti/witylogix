@@ -1,0 +1,146 @@
+# Witylogix Caddy Configuration
+# Template for reverse proxy with TLS, routing, and security headers
+# Placeholders: {{DOMAIN}}, {{ACME_EMAIL}}
+
+(security_headers) {
+  header X-Frame-Options "SAMEORIGIN"
+  header X-Content-Type-Options "nosniff"
+  header X-XSS-Protection "1; mode=block"
+  header Referrer-Policy "strict-origin-when-cross-origin"
+  header Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+}
+
+(compression) {
+  encode gzip
+  encode zstd
+}
+
+(rate_limiting) {
+  rate-limit /api/* 100r/m
+}
+
+# API subdomain → :3001
+api.{{DOMAIN}} {
+  tls {{ACME_EMAIL}}
+
+  import security_headers
+  import compression
+
+  # Rate limiting for API
+  import rate_limiting
+
+  # Reverse proxy to API service
+  reverse_proxy localhost:3001 {
+    header_uri Host {{DOMAIN}}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Real-IP {http.request.remote.host}
+  }
+
+  log {
+    output file /var/log/caddy/api.log {
+      roll_size 100mb
+      roll_keep 10
+      roll_keep_for 720h
+    }
+    format json
+    level info
+  }
+}
+
+# App subdomain → :3002
+app.{{DOMAIN}} {
+  tls {{ACME_EMAIL}}
+
+  import security_headers
+  import compression
+
+  # Reverse proxy to app service
+  reverse_proxy localhost:3002 {
+    header_uri Host {{DOMAIN}}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Real-IP {http.request.remote.host}
+  }
+
+  # Cache static assets
+  @static {
+    path /_next/static/*
+    path /static/*
+    path *.{js,css,svg,png,jpg,jpeg,gif,webp,ico,woff,woff2}
+  }
+  header @static Cache-Control "public, max-age=31536000, immutable"
+
+  log {
+    output file /var/log/caddy/app.log {
+      roll_size 100mb
+      roll_keep 10
+      roll_keep_for 720h
+    }
+    format json
+    level info
+  }
+}
+
+# Docs subdomain → :3003
+docs.{{DOMAIN}} {
+  tls {{ACME_EMAIL}}
+
+  import security_headers
+  import compression
+
+  # Reverse proxy to docs service
+  reverse_proxy localhost:3003 {
+    header_uri Host {{DOMAIN}}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Real-IP {http.request.remote.host}
+  }
+
+  # Cache static content
+  @static {
+    path /_next/static/*
+    path /static/*
+    path *.{js,css,svg,png,jpg,jpeg,gif,webp,ico,woff,woff2}
+  }
+  header @static Cache-Control "public, max-age=31536000, immutable"
+
+  log {
+    output file /var/log/caddy/docs.log {
+      roll_size 100mb
+      roll_keep 10
+      roll_keep_for 720h
+    }
+    format json
+    level info
+  }
+}
+
+# Base domain → app subdomain
+{{DOMAIN}} {
+  tls {{ACME_EMAIL}}
+
+  import security_headers
+  import compression
+
+  # Redirect to app subdomain
+  redir /api/* https://api.{{DOMAIN}}{uri} permanent
+  redir /docs* https://docs.{{DOMAIN}}{uri} permanent
+  reverse_proxy localhost:3002 {
+    header_uri Host {{DOMAIN}}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Real-IP {http.request.remote.host}
+  }
+
+  log {
+    output file /var/log/caddy/root.log {
+      roll_size 100mb
+      roll_keep 10
+      roll_keep_for 720h
+    }
+    format json
+    level info
+  }
+}
