@@ -1,0 +1,88 @@
+---
+title: Status Badge
+description: Delivery status badge with icons and animations
+---
+
+# Status Badge
+
+A specialized badge component for displaying delivery and order statuses with appropriate icons, colors, and animations.
+
+## Import
+
+```typescript
+import { StatusBadge } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<StatusBadge status="in_transit" />
+<StatusBadge status="delivered" size="lg" />
+<StatusBadge status="failed" size="sm" />
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `status` | string | - | Delivery status |
+| `size` | "sm" \| "md" \| "lg" | "md" | Badge size |
+
+## Status Types
+
+| Status | Color | Icon | Animated |
+|--------|-------|------|----------|
+| `pending` | Warning | Clock | No |
+| `assigned` | Info | Package | No |
+| `picking_up` | Primary | Package | No |
+| `in_transit` | Primary | Truck | Yes |
+| `out_for_delivery` | Primary | MapPin | Yes |
+| `delivered` | Success | CheckCircle | No |
+| `failed` | Danger | XCircle | No |
+| `cancelled` | Neutral | AlertCircle | No |
+| `returned` | Warning | RotateCw | No |
+
+## Examples
+
+### Order Status Flow
+
+```tsx
+import { StatusBadge } from "@/components/ui"
+
+export default function OrderStatus() {
+  return (
+    <div className="space-y-2">
+      <StatusBadge status="pending" />
+      <StatusBadge status="assigned" />
+      <StatusBadge status="in_transit" />
+      <StatusBadge status="out_for_delivery" />
+      <StatusBadge status="delivered" />
+    </div>
+  )
+}
+```
+
+### Size Variants
+
+```tsx
+<StatusBadge status="in_transit" size="sm" />
+<StatusBadge status="in_transit" size="md" />
+<StatusBadge status="in_transit" size="lg" />
+```
+
+### Error States
+
+```tsx
+<StatusBadge status="failed" />
+<StatusBadge status="cancelled" />
+<StatusBadge status="returned" />
+```
+
+## Features
+
+- Delivery-specific status labels
+- Color-coded by status type
+- Animated dot for active statuses
+- Multiple size variants (sm, md, lg)
+- Built-in icons from lucide-react
+- Accessible with proper semantic markup

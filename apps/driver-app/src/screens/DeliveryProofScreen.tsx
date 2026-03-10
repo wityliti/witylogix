@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { api } from '../services/api';
@@ -34,14 +35,12 @@ export const DeliveryProofScreen = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const handleCapturePhoto = () => {
-    // Placeholder for camera integration (react-native-camera)
-    // In production, this would open the camera and capture a photo
-    Alert.alert('Camera', 'Opening camera for package photo...', [
+    Alert.alert('Camera', 'Simulated camera capture', [
       {
-        text: 'Photo Taken',
+        text: 'Capture Photo',
         onPress: () => {
           setPhotoTaken(true);
-          Alert.alert('Success', 'Package photo captured');
+          Alert.alert('Success', 'Package photo captured successfully');
         },
       },
       { text: 'Cancel', onPress: () => {}, style: 'cancel' },
@@ -49,14 +48,12 @@ export const DeliveryProofScreen = () => {
   };
 
   const handleCaptureSignature = () => {
-    // Placeholder for signature pad integration
-    // In production, this would open a signature pad UI
-    Alert.alert('Signature', 'Opening signature pad...', [
+    Alert.alert('Signature Capture', 'Simulated signature pad', [
       {
-        text: 'Signed',
+        text: 'Capture Signature',
         onPress: () => {
           setSignatureCaptured(true);
-          Alert.alert('Success', 'Signature captured');
+          Alert.alert('Success', 'Signature captured successfully');
         },
       },
       { text: 'Cancel', onPress: () => {}, style: 'cancel' },
@@ -64,19 +61,18 @@ export const DeliveryProofScreen = () => {
   };
 
   const handleSubmitProof = async () => {
-    // Validation
     if (!proof.recipientName.trim()) {
-      Alert.alert('Error', 'Please enter recipient name');
+      Alert.alert('Validation Error', 'Please enter recipient name');
       return;
     }
 
     if (!photoTaken) {
-      Alert.alert('Error', 'Please capture a package photo');
+      Alert.alert('Validation Error', 'Please capture a package photo');
       return;
     }
 
     if (!signatureCaptured) {
-      Alert.alert('Error', 'Please capture signature');
+      Alert.alert('Validation Error', 'Please capture signature');
       return;
     }
 
@@ -85,15 +81,13 @@ export const DeliveryProofScreen = () => {
       const proofPayload = {
         recipientName: proof.recipientName,
         notes: proof.notes,
-        // In production, photoPath and signaturePath would be uploaded to storage
-        // and URLs would be sent in the payload
         photoPath: proof.photoPath || 'placeholder_photo_url',
         signaturePath: proof.signaturePath || 'placeholder_signature_url',
       };
 
       await api.post(`/api/v4/shipments/${shipmentId}/proof`, proofPayload);
 
-      Alert.alert('Success', 'Delivery proof submitted', [
+      Alert.alert('Success', 'Delivery proof submitted successfully', [
         {
           text: 'OK',
           onPress: () => {
@@ -119,95 +113,217 @@ export const DeliveryProofScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Delivery Proof</Text>
+          <Text style={styles.headerTitle}>Delivery Proof of Delivery</Text>
+          <Text style={styles.headerSubtitle}>Complete all required fields</Text>
         </View>
 
         {/* Photo Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Package Photo</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>📷</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>Package Photo</Text>
+              <Text style={styles.sectionRequired}>Required</Text>
+            </View>
+          </View>
+
           <TouchableOpacity
-            style={[styles.captureButton, photoTaken && styles.captureButtonActive]}
+            style={[
+              styles.captureButton,
+              photoTaken && styles.captureButtonSuccess,
+            ]}
             onPress={handleCapturePhoto}
+            disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>📷</Text>
-            <Text style={styles.captureButtonText}>
-              {photoTaken ? 'Photo Captured ✓' : 'Capture Package Photo'}
+            <Text style={styles.captureButtonIcon}>
+              {photoTaken ? '✓' : '📱'}
             </Text>
+            <Text style={styles.captureButtonText}>
+              {photoTaken ? 'Photo Captured' : 'Tap to Capture Package Photo'}
+            </Text>
+            {photoTaken && (
+              <Text style={styles.captureButtonSubtext}>Clear photo of package</Text>
+            )}
           </TouchableOpacity>
+
           {photoTaken && (
             <View style={styles.photoPreviewPlaceholder}>
-              <Text style={styles.photoPreviewText}>📸 Photo Preview</Text>
+              <Text style={styles.previewIcon}>📸</Text>
+              <Text style={styles.previewText}>Photo Captured</Text>
+              <Text style={styles.previewSubtext}>Ready to submit</Text>
             </View>
           )}
         </View>
 
         {/* Signature Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Signature</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>✍</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>Recipient Signature</Text>
+              <Text style={styles.sectionRequired}>Required</Text>
+            </View>
+          </View>
+
           <TouchableOpacity
-            style={[styles.captureButton, signatureCaptured && styles.captureButtonActive]}
+            style={[
+              styles.captureButton,
+              signatureCaptured && styles.captureButtonSuccess,
+            ]}
             onPress={handleCaptureSignature}
+            disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>✍️</Text>
-            <Text style={styles.captureButtonText}>
-              {signatureCaptured ? 'Signature Captured ✓' : 'Capture Signature'}
+            <Text style={styles.captureButtonIcon}>
+              {signatureCaptured ? '✓' : '✏'}
             </Text>
+            <Text style={styles.captureButtonText}>
+              {signatureCaptured ? 'Signature Captured' : 'Tap to Capture Signature'}
+            </Text>
+            {signatureCaptured && (
+              <Text style={styles.captureButtonSubtext}>Customer has signed</Text>
+            )}
           </TouchableOpacity>
+
           {signatureCaptured && (
             <View style={styles.signaturePreviewPlaceholder}>
-              <Text style={styles.signaturePreviewText}>✍️ Signature Preview</Text>
+              <Text style={styles.previewIcon}>✍️</Text>
+              <Text style={styles.previewText}>Signature Captured</Text>
+              <Text style={styles.previewSubtext}>Ready to submit</Text>
             </View>
           )}
         </View>
 
         {/* Recipient Name */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recipient Name</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>👤</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>Recipient Name</Text>
+              <Text style={styles.sectionRequired}>Required</Text>
+            </View>
+          </View>
           <TextInput
-            style={styles.textInput}
-            placeholder="Enter recipient name"
-            placeholderTextColor="#999"
+            style={[
+              styles.textInput,
+              proof.recipientName.trim() && styles.textInputFilled,
+            ]}
+            placeholder="Full name of recipient"
+            placeholderTextColor="#64748b"
             value={proof.recipientName}
             onChangeText={handleRecipientNameChange}
             editable={!submitting}
+            maxLength={100}
           />
+          <Text style={styles.inputHint}>
+            {proof.recipientName.length}/100 characters
+          </Text>
         </View>
 
         {/* Delivery Notes */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Notes</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>📝</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>Delivery Notes</Text>
+              <Text style={styles.sectionOptional}>Optional</Text>
+            </View>
+          </View>
           <TextInput
-            style={[styles.textInput, styles.textInputMultiline]}
-            placeholder="Any issues or special notes (optional)"
-            placeholderTextColor="#999"
+            style={[
+              styles.textInput,
+              styles.textInputMultiline,
+              proof.notes.trim() && styles.textInputFilled,
+            ]}
+            placeholder="Any issues, special instructions, or notes about this delivery..."
+            placeholderTextColor="#64748b"
             value={proof.notes}
             onChangeText={handleNotesChange}
             multiline
             numberOfLines={4}
             editable={!submitting}
+            maxLength={500}
           />
+          <Text style={styles.inputHint}>
+            {proof.notes.length}/500 characters
+          </Text>
         </View>
 
-        {/* Submit Button */}
-        <View style={styles.section}>
+        {/* Validation Summary */}
+        <View style={styles.validationContainer}>
+          <View style={styles.validationItem}>
+            <Text style={[
+              styles.validationIcon,
+              photoTaken ? styles.validationIconSuccess : styles.validationIconPending,
+            ]}>
+              {photoTaken ? '✓' : '○'}
+            </Text>
+            <Text style={[
+              styles.validationText,
+              photoTaken && styles.validationTextSuccess,
+            ]}>
+              Package Photo
+            </Text>
+          </View>
+          <View style={styles.validationItem}>
+            <Text style={[
+              styles.validationIcon,
+              signatureCaptured ? styles.validationIconSuccess : styles.validationIconPending,
+            ]}>
+              {signatureCaptured ? '✓' : '○'}
+            </Text>
+            <Text style={[
+              styles.validationText,
+              signatureCaptured && styles.validationTextSuccess,
+            ]}>
+              Recipient Signature
+            </Text>
+          </View>
+          <View style={styles.validationItem}>
+            <Text style={[
+              styles.validationIcon,
+              proof.recipientName.trim() ? styles.validationIconSuccess : styles.validationIconPending,
+            ]}>
+              {proof.recipientName.trim() ? '✓' : '○'}
+            </Text>
+            <Text style={[
+              styles.validationText,
+              proof.recipientName.trim() && styles.validationTextSuccess,
+            ]}>
+              Recipient Name
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionContainer}>
           <TouchableOpacity
-            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton,
+              (!photoTaken || !signatureCaptured || !proof.recipientName.trim()) &&
+                styles.submitButtonDisabled,
+              submitting && styles.submitButtonDisabled,
+            ]}
             onPress={handleSubmitProof}
-            disabled={submitting}
+            disabled={
+              submitting ||
+              !photoTaken ||
+              !signatureCaptured ||
+              !proof.recipientName.trim()
+            }
           >
             {submitting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>Submit Proof</Text>
+              <>
+                <Text style={styles.submitButtonText}>Submit Proof</Text>
+                <Text style={styles.submitButtonIcon}>→</Text>
+              </>
             )}
           </TouchableOpacity>
-        </View>
 
-        {/* Cancel Button */}
-        <View style={[styles.section, styles.lastSection]}>
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => navigation.goBack()}
@@ -224,51 +340,87 @@ export const DeliveryProofScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#0f172a',
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1a2332',
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#334155',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
-    color: '#000',
+    color: '#e2e8f0',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '500',
   },
   section: {
-    marginHorizontal: 16,
-    marginVertical: 12,
+    marginHorizontal: 12,
+    marginVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#1e293b',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  lastSection: {
-    marginBottom: 32,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionIcon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  sectionHeaderText: {
+    flex: 1,
   },
   sectionTitle: {
     fontSize: 14,
+    fontWeight: '700',
+    color: '#e2e8f0',
+    marginBottom: 2,
+  },
+  sectionRequired: {
+    fontSize: 11,
+    color: '#ef4444',
     fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
     textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  sectionOptional: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   captureButton: {
-    backgroundColor: '#E8E8E8',
-    borderRadius: 8,
-    paddingVertical: 16,
+    backgroundColor: '#2d3748',
+    borderRadius: 10,
+    paddingVertical: 18,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#D0D0D0',
+    borderColor: '#475569',
     borderStyle: 'dashed',
+    marginBottom: 12,
   },
-  captureButtonActive: {
-    borderColor: '#28A745',
-    backgroundColor: '#F0FFF4',
+  captureButtonSuccess: {
+    borderColor: '#22c55e',
+    backgroundColor: '#1a3f2a',
+    borderStyle: 'solid',
   },
   captureButtonIcon: {
     fontSize: 32,
@@ -276,85 +428,153 @@ const styles = StyleSheet.create({
   },
   captureButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#e2e8f0',
     textAlign: 'center',
+    marginBottom: 4,
   },
-  photoPreviewPlaceholder: {
-    marginTop: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  photoPreviewText: {
-    fontSize: 14,
-    color: '#666',
+  captureButtonSubtext: {
+    fontSize: 11,
+    color: '#22c55e',
     fontWeight: '500',
   },
-  signaturePreviewPlaceholder: {
-    marginTop: 12,
-    backgroundColor: '#FFFFFF',
+  photoPreviewPlaceholder: {
+    backgroundColor: '#2d3748',
     borderRadius: 8,
-    padding: 20,
+    padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 100,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#334155',
   },
-  signaturePreviewText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+  signaturePreviewPlaceholder: {
+    backgroundColor: '#2d3748',
+    borderRadius: 8,
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 80,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  previewIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  previewText: {
+    fontSize: 12,
+    color: '#cbd5e1',
+    fontWeight: '700',
+  },
+  previewSubtext: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2,
   },
   textInput: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2d3748',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D0D0D0',
+    borderColor: '#475569',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 11,
     fontSize: 14,
-    color: '#000',
+    color: '#e2e8f0',
+    marginBottom: 6,
+  },
+  textInputFilled: {
+    borderColor: '#3b82f6',
+    backgroundColor: '#1e293b',
   },
   textInputMultiline: {
     textAlignVertical: 'top',
-    paddingVertical: 10,
+    paddingVertical: 11,
+    minHeight: 80,
+  },
+  inputHint: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  validationContainer: {
+    marginHorizontal: 12,
+    marginVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#2d3748',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  validationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 6,
+  },
+  validationIcon: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginRight: 10,
+    minWidth: 20,
+  },
+  validationIconSuccess: {
+    color: '#22c55e',
+  },
+  validationIconPending: {
+    color: '#64748b',
+  },
+  validationText: {
+    fontSize: 13,
+    color: '#cbd5e1',
+    fontWeight: '600',
+  },
+  validationTextSuccess: {
+    color: '#22c55e',
+  },
+  actionContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
   },
   submitButton: {
-    backgroundColor: '#28A745',
+    backgroundColor: '#3b82f6',
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 10,
   },
   submitButtonDisabled: {
-    backgroundColor: '#A0A0A0',
+    backgroundColor: '#475569',
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#ffffff',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
+  submitButtonIcon: {
+    color: '#ffffff',
+    fontSize: 16,
+    marginLeft: 8,
   },
   cancelButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2d3748',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#D0D0D0',
+    borderColor: '#475569',
   },
   cancelButtonText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#cbd5e1',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

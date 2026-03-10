@@ -100,3 +100,18 @@ export { Alert } from "./alert";
 
 // Progress
 export { Progress } from "./progress";
+
+// File Upload
+export { FileUpload } from "./file-upload";
+
+// Combobox
+export { Combobox } from "./combobox";
+
+// Timeline
+export { Timeline } from "./timeline";
+
+// Status Badge
+export { StatusBadge } from "./status-badge";
+
+// Command Palette
+export { CommandPalette } from "./command-palette";

@@ -1,0 +1,112 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import {
+  Settings,
+  Bell,
+  Key,
+  CreditCard,
+  Zap,
+  Building2,
+  ChevronRight,
+} from "lucide-react";
+
+interface SettingsSidebarLink {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  description?: string;
+}
+
+const SIDEBAR_LINKS: SettingsSidebarLink[] = [
+  {
+    href: "/settings",
+    label: "Profile",
+    icon: <Settings className="w-4 h-4" />,
+    description: "Account & organization settings",
+  },
+  {
+    href: "/settings/notifications",
+    label: "Notifications",
+    icon: <Bell className="w-4 h-4" />,
+    description: "Manage notification preferences",
+  },
+  {
+    href: "/settings/api-keys",
+    label: "API Keys",
+    icon: <Key className="w-4 h-4" />,
+    description: "Manage API credentials",
+  },
+  {
+    href: "/settings/billing",
+    label: "Billing",
+    icon: <CreditCard className="w-4 h-4" />,
+    description: "Plans and usage",
+  },
+];
+
+export default function SettingsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <div className="flex gap-6 min-h-screen bg-[var(--wl-bg-primary)]">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 flex-col gap-2 p-6 border-r border-[var(--wl-border)]">
+        <div className="mb-8">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--wl-text-secondary)] px-3">
+            Settings
+          </h3>
+        </div>
+
+        <nav className="space-y-1">
+          {SIDEBAR_LINKS.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-all no-underline",
+                  isActive
+                    ? "bg-[var(--wl-primary)] bg-opacity-10 text-[var(--wl-primary)] border border-[var(--wl-primary)] border-opacity-30"
+                    : "text-[var(--wl-text-secondary)] hover:bg-[var(--wl-bg-secondary)] hover:text-[var(--wl-text-primary)]"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={cn(
+                    "p-2 rounded-lg",
+                    isActive
+                      ? "bg-[var(--wl-primary)] text-white"
+                      : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-secondary)]"
+                  )}>
+                    {link.icon}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold">{link.label}</p>
+                    {link.description && (
+                      <p className="text-xs text-[var(--wl-text-tertiary)]">
+                        {link.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
+  );
+}

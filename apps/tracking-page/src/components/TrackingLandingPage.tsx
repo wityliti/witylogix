@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 
-const BRAND_BLUE = '#005bd3'
-const BG_COLOR = '#f6f6f7'
+const BRAND_BLUE = '#3b82f6'
+const BG_COLOR = '#f8fafc'
+const DARK_TEXT = '#1f2937'
+const LIGHT_TEXT = '#6b7280'
 
 interface TrackingLandingPageProps {
   onNavigate: (path: string) => void
@@ -18,6 +20,7 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const [recentTrackings, setRecentTrackings] = useState<RecentTracking[]>([])
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,7 +30,7 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Load recent trackings from memory (in-memory simulation)
+  // Load recent trackings from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem('witylogix_recent_trackings')
     if (stored) {
@@ -64,11 +67,20 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
     setRecentTrackings(updated)
 
     setError('')
-    onNavigate(`/track/${cleaned}`)
+    setIsLoading(true)
+    // Simulate delay before navigation
+    setTimeout(() => {
+      setIsLoading(false)
+      onNavigate(`/track/${cleaned}`)
+    }, 300)
   }
 
   const handleRecentClick = (trackingNumber: string) => {
-    onNavigate(`/track/${trackingNumber}`)
+    setIsLoading(true)
+    setTimeout(() => {
+      setIsLoading(false)
+      onNavigate(`/track/${trackingNumber}`)
+    }, 300)
   }
 
   return (
@@ -84,18 +96,64 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
         padding: isMobile ? '20px' : '40px',
       }}
     >
+      <style>
+        {`
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.5;
+            }
+          }
+          .landing-header {
+            animation: fadeInDown 0.6s ease-out;
+          }
+          .landing-card {
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+          }
+          .search-button:hover {
+            transform: translateY(-2px);
+          }
+          .search-button {
+            transition: all 0.3s ease;
+          }
+        `}
+      </style>
+
       {/* Header */}
       <div
+        className="landing-header"
         style={{
           textAlign: 'center',
-          marginBottom: isMobile ? '32px' : '48px',
+          marginBottom: isMobile ? '40px' : '56px',
           maxWidth: '600px',
         }}
       >
         {/* Logo placeholder */}
         <div
           style={{
-            fontSize: '48px',
+            fontSize: isMobile ? '56px' : '64px',
             marginBottom: '24px',
             color: BRAND_BLUE,
           }}
@@ -105,11 +163,12 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
 
         <h1
           style={{
-            fontSize: isMobile ? '28px' : '36px',
-            fontWeight: '700',
-            color: '#1f2937',
-            margin: '0 0 12px 0',
+            fontSize: isMobile ? '32px' : '40px',
+            fontWeight: '800',
+            color: DARK_TEXT,
+            margin: '0 0 16px 0',
             lineHeight: '1.2',
+            letterSpacing: '-0.5px',
           }}
         >
           Track Your Delivery
@@ -117,10 +176,11 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
 
         <p
           style={{
-            fontSize: isMobile ? '14px' : '16px',
-            color: '#6b7280',
+            fontSize: isMobile ? '16px' : '18px',
+            color: LIGHT_TEXT,
             margin: '0',
-            lineHeight: '1.5',
+            lineHeight: '1.6',
+            fontWeight: '500',
           }}
         >
           Real-time tracking of your shipments with Witylogix
@@ -129,34 +189,37 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
 
       {/* Main Card */}
       <div
+        className="landing-card"
         style={{
           width: '100%',
-          maxWidth: '500px',
+          maxWidth: '520px',
           backgroundColor: 'white',
-          borderRadius: '16px',
-          padding: isMobile ? '24px' : '32px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          borderRadius: '20px',
+          padding: isMobile ? '28px' : '40px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
         }}
       >
         {/* Search Form */}
-        <form onSubmit={handleSearch} style={{ marginBottom: '32px' }}>
+        <form onSubmit={handleSearch} style={{ marginBottom: '36px' }}>
           <label
             style={{
               display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1f2937',
+              fontSize: '13px',
+              fontWeight: '700',
+              color: DARK_TEXT,
               marginBottom: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
             }}
           >
-            Enter Tracking Number
+            Tracking Number
           </label>
 
           <div
             style={{
               display: 'flex',
-              gap: '12px',
-              marginBottom: error ? '8px' : '0',
+              gap: '10px',
+              marginBottom: error ? '10px' : '0',
             }}
           >
             <input
@@ -164,49 +227,58 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
               placeholder="e.g., TRK123456789"
               value={trackingNumber}
               onChange={(e) => {
-                setTrackingNumber(e.target.value)
+                setTrackingNumber(e.target.value.toUpperCase())
                 setError('')
               }}
+              disabled={isLoading}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                fontSize: '14px',
-                border: error ? `2px solid #dc2626` : `1px solid #e5e7eb`,
-                borderRadius: '8px',
+                padding: '14px 16px',
+                fontSize: '16px',
+                border: error ? `2px solid #ef4444` : `2px solid #e5e7eb`,
+                borderRadius: '12px',
                 fontFamily: 'monospace',
                 transition: 'all 0.2s ease',
                 boxSizing: 'border-box',
+                backgroundColor: error ? '#fef2f2' : '#f9fafb',
+                color: DARK_TEXT,
+              }}
+              onFocus={(e) => {
+                if (!error) {
+                  (e.currentTarget as HTMLInputElement).style.borderColor =
+                    BRAND_BLUE
+                }
+              }}
+              onBlur={(e) => {
+                if (!error) {
+                  (e.currentTarget as HTMLInputElement).style.borderColor =
+                    '#e5e7eb'
+                }
               }}
             />
             <button
               type="submit"
+              disabled={isLoading}
+              className="search-button"
               style={{
-                backgroundColor: BRAND_BLUE,
+                backgroundColor: isLoading ? '#9ca3af' : BRAND_BLUE,
                 color: 'white',
-                padding: '12px 24px',
+                padding: '14px 28px',
                 border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                transition: 'background-color 0.2s ease',
+                borderRadius: '12px',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                fontSize: '16px',
+                fontWeight: '700',
                 whiteSpace: 'nowrap',
-              }}
-              onMouseOver={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  '#004ba3'
-              }}
-              onMouseOut={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  BRAND_BLUE
+                opacity: isLoading ? 0.7 : 1,
               }}
             >
-              Search
+              {isLoading ? '⏳' : 'Search'}
             </button>
           </div>
 
           {error && (
-            <p style={{ fontSize: '12px', color: '#dc2626', margin: '8px 0 0 0' }}>
+            <p style={{ fontSize: '13px', color: '#ef4444', margin: '10px 0 0 0', fontWeight: '500' }}>
               {error}
             </p>
           )}
@@ -217,7 +289,7 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
           style={{
             height: '1px',
             backgroundColor: '#e5e7eb',
-            margin: '24px 0',
+            margin: '28px 0',
           }}
         />
 
@@ -225,29 +297,49 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
         <div
           style={{
             textAlign: 'center',
-            padding: '24px',
-            backgroundColor: BG_COLOR,
-            borderRadius: '8px',
-            marginBottom: '24px',
+            padding: '28px',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '12px',
+            marginBottom: '28px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            border: '2px dashed #d1d5db',
+          }}
+          onMouseOver={(e) => {
+            (e.currentTarget as HTMLDivElement).style.borderColor = BRAND_BLUE
+            ;(e.currentTarget as HTMLDivElement).style.backgroundColor = '#eff6ff'
+          }}
+          onMouseOut={(e) => {
+            (e.currentTarget as HTMLDivElement).style.borderColor = '#d1d5db'
+            ;(e.currentTarget as HTMLDivElement).style.backgroundColor = '#f3f4f6'
           }}
         >
           <div
             style={{
-              fontSize: '32px',
-              marginBottom: '8px',
+              fontSize: '40px',
+              marginBottom: '12px',
             }}
           >
             📷
           </div>
           <p
             style={{
-              fontSize: '13px',
-              color: '#6b7280',
+              fontSize: '14px',
+              color: DARK_TEXT,
               margin: '0',
-              fontWeight: '500',
+              fontWeight: '600',
             }}
           >
-            Or scan your tracking QR code
+            Scan QR Code
+          </p>
+          <p
+            style={{
+              fontSize: '12px',
+              color: LIGHT_TEXT,
+              margin: '4px 0 0 0',
+            }}
+          >
+            Or use your phone camera
           </p>
         </div>
 
@@ -256,21 +348,21 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
           style={{
             height: '1px',
             backgroundColor: '#e5e7eb',
-            margin: '24px 0',
+            margin: '28px 0',
           }}
         />
 
         {/* Recent Trackings */}
         {recentTrackings.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '0' }}>
             <h3
               style={{
                 fontSize: '12px',
-                fontWeight: '600',
-                color: '#1f2937',
+                fontWeight: '700',
+                color: DARK_TEXT,
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                margin: '0 0 12px 0',
+                margin: '0 0 14px 0',
               }}
             >
               Recent Trackings
@@ -287,27 +379,33 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
                 <button
                   key={index}
                   onClick={() => handleRecentClick(item.trackingNumber)}
+                  disabled={isLoading}
                   style={{
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#f9fafb',
                     border: `1px solid #e5e7eb`,
-                    padding: '12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
+                    padding: '13px 14px',
+                    borderRadius: '10px',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
                     textAlign: 'left',
                     fontSize: '14px',
                     transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.6 : 1,
                   }}
                   onMouseOver={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                      BG_COLOR
-                    ;(e.currentTarget as HTMLButtonElement).style.borderColor =
-                      BRAND_BLUE
+                    if (!isLoading) {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                        '#f3f4f6'
+                      ;(e.currentTarget as HTMLButtonElement).style.borderColor =
+                        BRAND_BLUE
+                    }
                   }}
                   onMouseOut={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                      'transparent'
-                    ;(e.currentTarget as HTMLButtonElement).style.borderColor =
-                      '#e5e7eb'
+                    if (!isLoading) {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                        '#f9fafb'
+                      ;(e.currentTarget as HTMLButtonElement).style.borderColor =
+                        '#e5e7eb'
+                    }
                   }}
                 >
                   <div
@@ -322,7 +420,7 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
                         style={{
                           fontSize: '13px',
                           fontWeight: '600',
-                          color: '#1f2937',
+                          color: DARK_TEXT,
                           margin: '0',
                           fontFamily: 'monospace',
                         }}
@@ -332,14 +430,17 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
                       <p
                         style={{
                           fontSize: '12px',
-                          color: '#9ca3af',
+                          color: LIGHT_TEXT,
                           margin: '4px 0 0 0',
                         }}
                       >
-                        {new Date(item.timestamp).toLocaleDateString()}
+                        {new Date(item.timestamp).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
                       </p>
                     </div>
-                    <span style={{ fontSize: '16px', color: BRAND_BLUE }}>
+                    <span style={{ fontSize: '16px', color: BRAND_BLUE, fontWeight: 'bold' }}>
                       →
                     </span>
                   </div>
@@ -353,10 +454,10 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
       {/* Footer Info */}
       <div
         style={{
-          marginTop: isMobile ? '32px' : '48px',
+          marginTop: isMobile ? '40px' : '56px',
           textAlign: 'center',
-          color: '#6b7280',
-          fontSize: '12px',
+          color: LIGHT_TEXT,
+          fontSize: '13px',
           maxWidth: '500px',
         }}
       >
@@ -367,7 +468,16 @@ export function TrackingLandingPage({ onNavigate }: TrackingLandingPageProps) {
             style={{
               color: BRAND_BLUE,
               textDecoration: 'none',
-              fontWeight: '600',
+              fontWeight: '700',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseOver={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.textDecoration =
+                'underline'
+            }}
+            onMouseOut={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.textDecoration =
+                'none'
             }}
           >
             Contact Support

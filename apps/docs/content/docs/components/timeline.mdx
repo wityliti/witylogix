@@ -1,0 +1,122 @@
+---
+title: Timeline
+description: Vertical timeline component with status indicators
+---
+
+# Timeline
+
+A vertical timeline component that displays a sequence of events with status indicators, descriptions, and timestamps.
+
+## Import
+
+```typescript
+import { Timeline } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+const items = [
+  {
+    title: "Order Placed",
+    status: "completed",
+    timestamp: "Mar 10, 2:30 PM",
+  },
+  {
+    title: "Order Processing",
+    status: "active",
+    timestamp: "Mar 10, 3:15 PM",
+  },
+  {
+    title: "Ready to Ship",
+    status: "pending",
+    timestamp: "Mar 11",
+  },
+]
+
+<Timeline items={items} />
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | array | - | Array of timeline items |
+| `compact` | boolean | false | Compact display mode |
+
+## Item Properties
+
+Each item in the `items` array:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `title` | string | Item title |
+| `description` | string | Optional item description |
+| `timestamp` | string | Optional timestamp display |
+| `status` | string | Status: "completed", "active", "pending", "error" |
+| `icon` | ReactNode | Optional custom icon |
+
+## Examples
+
+### Order Timeline
+
+```tsx
+import { Timeline } from "@/components/ui"
+
+export default function OrderTimeline() {
+  const items = [
+    {
+      title: "Order Confirmed",
+      status: "completed",
+      timestamp: "Today, 10:00 AM",
+      description: "Your order has been confirmed",
+    },
+    {
+      title: "Processing",
+      status: "active",
+      timestamp: "Today, 10:30 AM",
+      description: "We're preparing your items",
+    },
+    {
+      title: "Shipped",
+      status: "pending",
+      timestamp: "Tomorrow",
+      description: "Awaiting shipment",
+    },
+  ]
+
+  return <Timeline items={items} />
+}
+```
+
+### Compact Timeline
+
+```tsx
+<Timeline items={items} compact />
+```
+
+### With Error Status
+
+```tsx
+const items = [
+  {
+    title: "Payment Attempted",
+    status: "completed",
+  },
+  {
+    title: "Payment Failed",
+    status: "error",
+    timestamp: "Mar 10, 2:30 PM",
+    description: "Card was declined",
+  },
+]
+
+<Timeline items={items} />
+```
+
+## Status Variants
+
+- **completed**: Green indicator for completed steps
+- **active**: Blue pulsing indicator for current/active steps
+- **pending**: Gray indicator for upcoming steps
+- **error**: Red indicator for failed steps
