@@ -1,0 +1,249 @@
+/**
+ * Witylogix Checkout Widget Styles
+ * CSS variables and base styles for the checkout widget
+ */
+
+:root {
+  /* Light mode colors */
+  --wl-foreground: 0 0% 3%;
+  --wl-background: 0 0% 100%;
+  --wl-muted: 0 0% 96%;
+  --wl-muted-foreground: 0 0% 40%;
+  --wl-border: 0 0% 89%;
+  --wl-accent: 200 100% 50%;
+  --wl-success: 142 72% 29%;
+  --wl-warning: 38 92% 50%;
+  --wl-destructive: 0 84% 60%;
+  --wl-blue: 217 91% 60%;
+
+  /* Spacing */
+  --wl-spacing-xs: 0.25rem;
+  --wl-spacing-sm: 0.5rem;
+  --wl-spacing-md: 1rem;
+  --wl-spacing-lg: 1.5rem;
+  --wl-spacing-xl: 2rem;
+  --wl-spacing-2xl: 3rem;
+
+  /* Border radius */
+  --wl-radius-sm: 0.375rem;
+  --wl-radius-md: 0.5rem;
+  --wl-radius-lg: 0.75rem;
+  --wl-radius-xl: 1rem;
+
+  /* Shadows */
+  --wl-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --wl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --wl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --wl-transition-fast: 150ms ease-in-out;
+  --wl-transition-base: 200ms ease-in-out;
+  --wl-transition-slow: 300ms ease-in-out;
+
+  /* Z-index */
+  --wl-z-dropdown: 1000;
+  --wl-z-sticky: 500;
+  --wl-z-fixed: 1000;
+  --wl-z-modal: 1050;
+}
+
+/* Dark mode */
+.wl-dark {
+  --wl-foreground: 0 0% 98%;
+  --wl-background: 0 0% 8%;
+  --wl-muted: 0 0% 15%;
+  --wl-muted-foreground: 0 0% 64%;
+  --wl-border: 0 0% 20%;
+  --wl-accent: 200 100% 60%;
+  --wl-success: 142 72% 55%;
+  --wl-warning: 38 92% 60%;
+  --wl-destructive: 0 84% 70%;
+  --wl-blue: 217 91% 70%;
+}
+
+/* Base styles */
+.wl-box-border {
+  box-sizing: border-box;
+}
+
+/* Animations */
+@keyframes wl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.wl-animate-spin {
+  animation: wl-spin 1s linear infinite;
+}
+
+.wl-animate-pulse {
+  animation: wl-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Utilities */
+.wl-no-scroll {
+  overflow: hidden;
+}
+
+.wl-scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.wl-scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Focus styles for accessibility */
+.wl-focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--wl-accent));
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+.wl-scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .wl-sm\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .wl-md\:hidden {
+    display: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .wl-no-print {
+    display: none;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.wl-light) {
+    color-scheme: dark;
+  }
+}
+
+/* Form styles */
+input[type='text'],
+input[type='email'],
+input[type='tel'],
+input[type='number'],
+input[type='date'],
+input[type='time'],
+select,
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Button reset */
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Link styles */
+a {
+  color: hsl(var(--wl-accent));
+  text-decoration: none;
+  transition: color var(--wl-transition-fast);
+}
+
+a:hover {
+  color: hsl(var(--wl-accent) / 0.8);
+}
+
+a:active {
+  color: hsl(var(--wl-accent) / 0.9);
+}
+
+/* Selection */
+::selection {
+  background-color: hsl(var(--wl-accent) / 0.25);
+  color: hsl(var(--wl-foreground));
+}
+
+::-moz-selection {
+  background-color: hsl(var(--wl-accent) / 0.25);
+  color: hsl(var(--wl-foreground));
+}
+
+/* Scrollbar (WebKit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--wl-muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--wl-muted-foreground) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--wl-muted-foreground) / 0.7);
+}
+
+/* Placeholder text */
+::placeholder {
+  color: hsl(var(--wl-muted-foreground));
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: hsl(var(--wl-muted-foreground));
+}
+
+::-ms-input-placeholder {
+  color: hsl(var(--wl-muted-foreground));
+}

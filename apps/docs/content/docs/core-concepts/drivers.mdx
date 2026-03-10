@@ -1,0 +1,67 @@
+---
+title: Drivers
+description: Delivery personnel — onboarding, assignments, availability, and performance tracking.
+---
+
+# Drivers
+
+A **Driver** represents a delivery person in the Witylogix platform. Drivers are assigned to [routes](/docs/core-concepts/routes), carry [shipments](/docs/core-concepts/shipments), and belong to [fleets](/docs/core-concepts/fleets).
+
+## Driver Status
+
+| Status | Description |
+|--------|-------------|
+| `active` | Available for assignments |
+| `on_delivery` | Currently executing a route |
+| `offline` | Not available (end of shift, break) |
+| `suspended` | Temporarily disabled by admin |
+
+## Onboarding
+
+Drivers go through a verification flow before becoming active:
+
+1. **Registration** — basic profile (name, phone, email)
+2. **Document upload** — license, insurance, vehicle registration
+3. **Background check** — automated verification via partner API
+4. **Training** — complete the driver app onboarding tutorial
+5. **Activation** — admin approves and driver becomes `active`
+
+## Assignment
+
+Drivers are assigned to routes either manually or via auto-dispatch:
+
+```typescript
+// Manual assignment
+await client.routes.assign('route_abc', {
+  driverId: 'driver_123',
+});
+
+// Auto-dispatch finds the best available driver
+await client.routes.autoDispatch('route_abc', {
+  strategy: 'nearest', // nearest | least_busy | round_robin
+});
+```
+
+## Real-time Location
+
+When on delivery, driver location is streamed in real-time:
+
+```typescript
+const location = await client.drivers.getLocation('driver_123');
+// { lat: 30.2672, lng: -97.7431, heading: 180, speed: 35, updatedAt: '...' }
+```
+
+## Performance Metrics
+
+Track driver performance across key dimensions:
+
+- **On-time rate** — percentage of deliveries completed within the scheduled window
+- **Success rate** — deliveries completed vs failed attempts
+- **Average delivery time** — from pickup to dropoff
+- **Customer rating** — average recipient rating (1-5)
+
+## Related
+
+- [Vehicles](/docs/core-concepts/vehicles) — the vehicle a driver operates
+- [Fleets](/docs/core-concepts/fleets) — team grouping for drivers
+- [Routes](/docs/core-concepts/routes) — delivery routes assigned to drivers

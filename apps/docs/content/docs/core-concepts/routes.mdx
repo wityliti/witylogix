@@ -1,0 +1,73 @@
+---
+title: Routes
+description: Optimized delivery routes — multi-stop planning, ETAs, distance calculations, and resequencing.
+---
+
+# Routes
+
+A **Route** is a sequence of stops (pickups and deliveries) assigned to a [driver](/docs/core-concepts/drivers) and [vehicle](/docs/core-concepts/vehicles). Witylogix optimizes routes to minimize distance, time, and cost.
+
+## Route Lifecycle
+
+```
+planned → optimized → assigned → in_progress → completed
+```
+
+| Status | Description |
+|--------|-------------|
+| `planned` | Stops added, not yet optimized |
+| `optimized` | Stop sequence optimized by the engine |
+| `assigned` | Driver and vehicle assigned |
+| `in_progress` | Driver has started the route |
+| `completed` | All stops visited |
+
+## Route Optimization
+
+The optimization engine considers:
+
+- **Traffic conditions** — real-time and historical patterns
+- **Time windows** — customer-specified delivery windows
+- **Vehicle capacity** — weight and volume constraints
+- **Driver hours** — shift limits and break requirements
+- **Priority** — express orders are delivered first
+
+```typescript
+const optimized = await client.routes.optimize({
+  stops: [
+    { orderId: 'order_1', type: 'pickup', address: '...' },
+    { orderId: 'order_1', type: 'delivery', address: '...' },
+    { orderId: 'order_2', type: 'pickup', address: '...' },
+    { orderId: 'order_2', type: 'delivery', address: '...' },
+  ],
+  vehicleId: 'veh_456',
+  optimizeFor: 'time', // time | distance | cost
+});
+// Returns reordered stops with ETAs
+```
+
+## Live Resequencing
+
+Routes can be resequenced on the fly when conditions change (new urgent order, road closure, failed delivery):
+
+```typescript
+await client.routes.resequence('route_abc', {
+  addStop: { orderId: 'order_urgent', afterStop: 2 },
+});
+```
+
+## Route Metrics
+
+Each completed route records:
+
+- **Total distance** — kilometers traveled
+- **Total time** — start to finish
+- **Stops completed** — successful vs failed
+- **Fuel estimate** — based on distance and vehicle type
+- **Deviation** — actual vs planned comparison
+
+## Related
+
+- [Orders](/docs/core-concepts/orders) — orders grouped into routes
+- [Drivers](/docs/core-concepts/drivers) — who executes the route
+- [Vehicles](/docs/core-concepts/vehicles) — what vehicle is used
+- [Places](/docs/core-concepts/places) — stop locations and geocoding

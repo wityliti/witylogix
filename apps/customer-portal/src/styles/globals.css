@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOMER PORTAL GLOBAL STYLES
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--wl-font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--wl-bg-root);
+  color: var(--wl-text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wl-neutral-700);
+  border-radius: var(--wl-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wl-neutral-600);
+}
+
+/* ─── Selection ─────────────────────────────── */
+::selection {
+  background: rgba(245, 166, 35, 0.25);
+  color: var(--wl-text-primary);
+}
+
+/* ─── Focus Ring ────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--wl-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Links ─────────────────────────────────── */
+a {
+  color: var(--wl-primary-400);
+  text-decoration: none;
+  transition: color var(--wl-duration-fast) var(--wl-ease-default);
+}
+
+a:hover {
+  color: var(--wl-primary-300);
+}
+
+/* ─── Utility: Animations ────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
+  50%      { box-shadow: 0 0 16px rgba(245, 166, 35, 0.15); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Utility Classes ────────────────────────── */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in-left 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}

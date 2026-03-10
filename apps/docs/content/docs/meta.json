@@ -2,6 +2,7 @@
   "title": "Documentation",
   "pages": [
     "getting-started",
+    "core-concepts",
     "architecture",
     "api",
     "api-reference",

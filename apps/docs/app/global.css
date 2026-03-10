@@ -144,9 +144,14 @@
 /* ============================================
    FUMADOCS OVERRIDES — minimal color theming only
    ============================================ */
-[data-fd-sidebar] a[data-active='true'],
-[data-fd-sidebar] a[aria-current='page'] {
-  color: var(--teal) !important;
+#nd-sidebar a,
+#nd-sidebar button {
+  color: var(--sand-muted) !important;
+}
+#nd-sidebar a[data-active='true'],
+#nd-sidebar a[aria-current='page'] {
+  color: var(--sand) !important;
+  font-weight: 600;
 }
 
 [data-fd-toc] a[data-active='true'] {
