@@ -11,7 +11,9 @@
     "db:migrate": "prisma migrate dev --schema=./prisma/schema",
     "db:migrate:deploy": "prisma migrate deploy --schema=./prisma/schema",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio --schema=./prisma/schema"
+    "db:studio": "prisma studio --schema=./prisma/schema",
+    "seed": "tsx src/seed.ts",
+    "validate-env": "tsx src/validate-env.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0"

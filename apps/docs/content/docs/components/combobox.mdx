@@ -1,0 +1,105 @@
+---
+title: Combobox
+description: Searchable dropdown select component with keyboard navigation
+---
+
+# Combobox
+
+An accessible searchable dropdown component with fuzzy search, keyboard navigation, and clearing functionality.
+
+## Import
+
+```typescript
+import { Combobox } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+const options = [
+  { value: "opt1", label: "Option 1" },
+  { value: "opt2", label: "Option 2" },
+]
+
+<Combobox
+  options={options}
+  value={selected}
+  onChange={setSelected}
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `options` | array | - | Array of {value, label} objects |
+| `value` | string | - | Currently selected value |
+| `onChange` | function | - | Change handler |
+| `placeholder` | string | "Select an option..." | Placeholder text |
+| `searchable` | boolean | true | Enable search filtering |
+| `clearable` | boolean | true | Show clear button |
+| `emptyMessage` | string | "No options found" | Empty state message |
+| `disabled` | boolean | false | Disable the combobox |
+
+## Examples
+
+### Basic Combobox
+
+```tsx
+import { useState } from "react"
+import { Combobox } from "@/components/ui"
+
+export default function ComboboxExample() {
+  const [value, setValue] = useState("")
+
+  const options = [
+    { value: "pending", label: "Pending" },
+    { value: "active", label: "Active" },
+    { value: "completed", label: "Completed" },
+  ]
+
+  return (
+    <Combobox
+      options={options}
+      value={value}
+      onChange={setValue}
+      placeholder="Select status"
+    />
+  )
+}
+```
+
+### With Clearable
+
+```tsx
+<Combobox
+  options={countries}
+  value={selectedCountry}
+  onChange={setSelectedCountry}
+  clearable={true}
+  placeholder="Choose a country"
+/>
+```
+
+### Disabled State
+
+```tsx
+<Combobox
+  options={options}
+  value={value}
+  onChange={setValue}
+  disabled
+/>
+```
+
+## Features
+
+- Fuzzy search filtering
+- Keyboard navigation (arrow keys, enter, escape)
+- Click outside to close
+- Clear button to reset selection
+- Accessible with proper ARIA labels
+- Custom empty message
+- Disabled state support
+- Highlighted navigation
+- Smooth animations

@@ -1,0 +1,142 @@
+---
+title: Command Palette
+description: CMD+K command palette modal with search and grouping
+---
+
+# Command Palette
+
+A modal command palette accessible via CMD+K (or CTRL+K) with fuzzy search, command grouping, and keyboard navigation.
+
+## Import
+
+```typescript
+import { CommandPalette } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+const commands = [
+  {
+    group: "Pages",
+    label: "Dashboard",
+    icon: <Dashboard />,
+    shortcut: "D",
+    action: () => navigate("/dashboard"),
+  },
+  {
+    group: "Actions",
+    label: "Create Order",
+    icon: <Plus />,
+    shortcut: "N",
+    action: () => openCreateModal(),
+  },
+]
+
+<CommandPalette commands={commands} />
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `commands` | array | - | Array of command objects |
+| `open` | boolean | - | Controlled open state |
+| `onOpenChange` | function | - | Open state change callback |
+
+## Command Object
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `group` | string | Command group (Pages, Actions, Recent) |
+| `label` | string | Command display label |
+| `icon` | ReactNode | Optional icon element |
+| `shortcut` | string | Optional keyboard shortcut hint |
+| `description` | string | Optional command description |
+| `action` | function | Callback when command is selected |
+
+## Examples
+
+### Full Command Palette
+
+```tsx
+import { useState } from "react"
+import { CommandPalette } from "@/components/ui"
+import {
+  Dashboard,
+  Settings,
+  Plus,
+  Search,
+  LogOut,
+} from "lucide-react"
+
+export default function App() {
+  const [open, setOpen] = useState(false)
+
+  const commands = [
+    {
+      group: "Pages",
+      label: "Dashboard",
+      icon: <Dashboard className="w-4 h-4" />,
+      shortcut: "D",
+      description: "Go to dashboard",
+      action: () => navigate("/dashboard"),
+    },
+    {
+      group: "Pages",
+      label: "Settings",
+      icon: <Settings className="w-4 h-4" />,
+      description: "Manage settings",
+      action: () => navigate("/settings"),
+    },
+    {
+      group: "Actions",
+      label: "Create Order",
+      icon: <Plus className="w-4 h-4" />,
+      shortcut: "N",
+      action: () => openCreateModal(),
+    },
+    {
+      group: "Recent",
+      label: "Last Search",
+      icon: <Search className="w-4 h-4" />,
+      action: () => executeSearch(),
+    },
+  ]
+
+  return <CommandPalette commands={commands} open={open} onOpenChange={setOpen} />
+}
+```
+
+### Simple Commands
+
+```tsx
+const commands = [
+  {
+    group: "Pages",
+    label: "Home",
+    action: () => navigate("/"),
+  },
+  {
+    group: "Pages",
+    label: "About",
+    action: () => navigate("/about"),
+  },
+]
+
+<CommandPalette commands={commands} />
+```
+
+## Features
+
+- Open with CMD+K (or CTRL+K on Windows/Linux)
+- Fuzzy search filtering
+- Command grouping (Pages, Actions, Recent)
+- Keyboard navigation (arrow keys)
+- Enter to execute, Escape to close
+- Click outside to close
+- Shortcut hints
+- Command descriptions
+- Icons for visual recognition
+- Responsive design
+- Smooth transitions

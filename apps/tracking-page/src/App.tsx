@@ -13,8 +13,8 @@ import { TrackingLandingPage } from './components/TrackingLandingPage'
 import { TrackingResultPage } from './components/TrackingResultPage'
 import { DeliveryPreferencesPage } from './components/DeliveryPreferencesPage'
 
-const BRAND_BLUE = '#005bd3'
-const BG_COLOR = '#f6f6f7'
+const BRAND_BLUE = '#3b82f6'
+const BG_COLOR = '#f8fafc'
 
 interface RouteState {
   view: 'landing' | 'tracking' | 'preferences'

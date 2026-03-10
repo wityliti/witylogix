@@ -8,14 +8,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../services/api';
 
 interface DeliveryStats {
   ordersRemaining: number;
   completed: number;
-  successRate: number;
+  distanceCovered: number;
+  avgDeliveryTime: number;
+  earnings: number;
 }
 
 interface ActiveDelivery {
@@ -30,11 +33,14 @@ const HomeScreen: React.FC = () => {
   const [stats, setStats] = useState<DeliveryStats | null>(null);
   const [activeDelivery, setActiveDelivery] = useState<ActiveDelivery | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation<any>();
 
-  useEffect(() => {
-    fetchTodayData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchTodayData();
+    }, [])
+  );
 
   const fetchTodayData = async () => {
     try {
@@ -53,7 +59,13 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const handleStartDelivery = async () => {
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchTodayData();
+    setRefreshing(false);
+  };
+
+  const handleStartRoute = () => {
     if (activeDelivery) {
       navigation.navigate('Delivery', { deliveryId: activeDelivery.id });
     } else {
@@ -61,11 +73,19 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  const handleViewSchedule = () => {
+    navigation.navigate('Routes');
+  };
+
+  const handleScanPackage = () => {
+    Alert.alert('Scan Package', 'Package scanning feature coming soon');
+  };
+
+  if (isLoading && !stats) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#005bd3" />
+          <ActivityIndicator size="large" color="#3b82f6" />
         </View>
       </SafeAreaView>
     );
@@ -73,68 +93,141 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#3b82f6']}
+            tintColor="#3b82f6"
+          />
+        }
+      >
         <View style={styles.header}>
-          <Text style={styles.headerText}>Today's Summary</Text>
+          <Text style={styles.headerTitle}>Today's Deliveries</Text>
+          <Text style={styles.headerSubtitle}>Dashboard</Text>
         </View>
 
+        {/* Stats Grid */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats?.ordersRemaining || 0}</Text>
-            <Text style={styles.statLabel}>Remaining</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats?.completed || 0}</Text>
             <Text style={styles.statLabel}>Completed</Text>
+            <Text style={styles.statNumber}>{stats?.completed || 0}</Text>
+            <Text style={styles.statSubtext}>of {(stats?.completed || 0) + (stats?.ordersRemaining || 0)}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats?.successRate || 0}%</Text>
-            <Text style={styles.statLabel}>Success Rate</Text>
+            <Text style={styles.statLabel}>Distance</Text>
+            <Text style={styles.statNumber}>{stats?.distanceCovered || 0}</Text>
+            <Text style={styles.statSubtext}>km</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Avg Time</Text>
+            <Text style={styles.statNumber}>{stats?.avgDeliveryTime || 0}</Text>
+            <Text style={styles.statSubtext}>min</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Earnings</Text>
+            <Text style={styles.statNumber}>${stats?.earnings || 0}</Text>
+            <Text style={styles.statSubtext}>today</Text>
           </View>
         </View>
 
+        {/* Active Delivery Card */}
         {activeDelivery && (
           <View style={styles.activeDeliveryCard}>
-            <Text style={styles.cardTitle}>Active Delivery</Text>
-            <View style={styles.cardContent}>
-              <Text style={styles.customerName}>{activeDelivery.customerName}</Text>
-              <Text style={styles.address}>{activeDelivery.address}</Text>
-              <View style={styles.statusRow}>
-                <View style={[styles.statusBadge, { backgroundColor: '#008060' }]}>
-                  <Text style={styles.statusText}>{activeDelivery.status}</Text>
-                </View>
-                <Text style={styles.eta}>ETA: {activeDelivery.eta}</Text>
+            <View style={styles.deliveryHeader}>
+              <View>
+                <Text style={styles.deliveryLabel}>Active Delivery</Text>
+                <Text style={styles.deliveryCustomer}>{activeDelivery.customerName}</Text>
+              </View>
+              <View style={[styles.statusBadge, getStatusColor(activeDelivery.status)]}>
+                <Text style={styles.statusText}>{activeDelivery.status}</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.startButton} onPress={handleStartDelivery}>
-              <Text style={styles.startButtonText}>Start Delivery</Text>
+
+            <View style={styles.divider} />
+
+            <View style={styles.deliveryContent}>
+              <View style={styles.addressRow}>
+                <Text style={styles.addressLabel}>📍 Address</Text>
+                <Text style={styles.address}>{activeDelivery.address}</Text>
+              </View>
+
+              <View style={styles.etaRow}>
+                <Text style={styles.etaLabel}>⏱ ETA: {activeDelivery.eta}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.startButton} onPress={handleStartRoute}>
+              <Text style={styles.startButtonText}>Start Route</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Break</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]}>
-            <Text style={styles.actionButtonTextSecondary}>End Shift</Text>
-          </TouchableOpacity>
+        {/* Quick Actions */}
+        <View style={styles.actionsSection}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={handleStartRoute}
+            >
+              <Text style={styles.actionIcon}>🚚</Text>
+              <Text style={styles.actionText}>Start Route</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={handleViewSchedule}
+            >
+              <Text style={styles.actionIcon}>📅</Text>
+              <Text style={styles.actionText}>View Schedule</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={handleScanPackage}
+            >
+              <Text style={styles.actionIcon}>📦</Text>
+              <Text style={styles.actionText}>Scan Package</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.refreshContainer}>
-          <TouchableOpacity onPress={fetchTodayData}>
-            <Text style={styles.refreshText}>Refresh Data</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Empty State */}
+        {!activeDelivery && (
+          <View style={styles.emptyStateCard}>
+            <Text style={styles.emptyIcon}>📭</Text>
+            <Text style={styles.emptyTitle}>No Active Deliveries</Text>
+            <Text style={styles.emptySubtitle}>Check your schedule for upcoming deliveries</Text>
+            <TouchableOpacity style={styles.viewScheduleButton} onPress={handleViewSchedule}>
+              <Text style={styles.viewScheduleButtonText}>View Schedule</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.spacing} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
+const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'in_transit':
+      return { backgroundColor: '#3b82f6' };
+    case 'out_for_delivery':
+      return { backgroundColor: '#f59e0b' };
+    case 'pending':
+      return { backgroundColor: '#6b7280' };
+    default:
+      return { backgroundColor: '#3b82f6' };
+  }
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0f172a',
   },
   centerContent: {
     flex: 1,
@@ -143,142 +236,218 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
+    paddingVertical: 20,
+    backgroundColor: '#1a2332',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#334155',
   },
-  headerText: {
-    fontSize: 24,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: '700',
-    color: '#202223',
+    color: '#e2e8f0',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
-    padding: 16,
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingVertical: 16,
     gap: 12,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    minWidth: '48%',
+    backgroundColor: '#1e293b',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#005bd3',
-    marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statNumber: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#3b82f6',
+    marginBottom: 4,
+  },
+  statSubtext: {
+    fontSize: 11,
+    color: '#64748b',
     fontWeight: '500',
   },
   activeDeliveryCard: {
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     marginVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#202223',
-    marginBottom: 12,
-  },
-  cardContent: {
-    marginBottom: 16,
-  },
-  customerName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#202223',
-    marginBottom: 4,
-  },
-  address: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  statusRow: {
+  deliveryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  deliveryLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  deliveryCustomer: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#e2e8f0',
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    backgroundColor: '#3b82f6',
   },
   statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+    color: '#e2e8f0',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
-  eta: {
-    fontSize: 14,
-    color: '#666',
-  },
-  startButton: {
-    backgroundColor: '#005bd3',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 12,
+  divider: {
+    height: 1,
+    backgroundColor: '#334155',
     marginVertical: 12,
   },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#005bd3',
+  deliveryContent: {
+    marginBottom: 14,
+  },
+  addressRow: {
+    marginBottom: 10,
+  },
+  addressLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  address: {
+    fontSize: 14,
+    color: '#cbd5e1',
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  etaRow: {
+    marginTop: 8,
+  },
+  etaLabel: {
+    fontSize: 13,
+    color: '#60a5fa',
+    fontWeight: '600',
+  },
+  startButton: {
+    backgroundColor: '#3b82f6',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
+    marginTop: 4,
   },
-  actionButtonSecondary: {
-    backgroundColor: '#f0f0f0',
+  startButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '700',
   },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  actionButtonTextSecondary: {
-    color: '#202223',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  refreshContainer: {
+  actionsSection: {
     paddingHorizontal: 16,
-    marginVertical: 20,
+    marginVertical: 16,
   },
-  refreshText: {
-    color: '#005bd3',
-    fontSize: 14,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#e2e8f0',
+    marginBottom: 12,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionCard: {
+    flex: 1,
+    backgroundColor: '#1e293b',
+    borderRadius: 10,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  actionIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  actionText: {
+    fontSize: 12,
+    color: '#cbd5e1',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  emptyStateCard: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+    borderStyle: 'dashed',
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#e2e8f0',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontWeight: '500',
+  },
+  viewScheduleButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  viewScheduleButtonText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  spacing: {
+    height: 20,
   },
 });
 

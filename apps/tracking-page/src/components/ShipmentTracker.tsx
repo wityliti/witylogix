@@ -34,9 +34,11 @@ export interface ShipmentData {
   }>
 }
 
-const BRAND_BLUE = '#005bd3'
-const BRAND_GREEN = '#008060'
-const BG_COLOR = '#f6f6f7'
+const BRAND_BLUE = '#3b82f6'
+const BRAND_GREEN = '#10b981'
+const BG_COLOR = '#f8fafc'
+const DARK_TEXT = '#1f2937'
+const LIGHT_TEXT = '#6b7280'
 
 export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerProps) {
   const [shipmentData, setShipmentData] = useState<ShipmentData | null>(null)
@@ -193,16 +195,29 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
     <div
       style={{
         backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: isMobile ? '16px' : '24px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        borderRadius: '16px',
+        padding: isMobile ? '20px' : '28px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
         display: 'flex',
         flexDirection: 'column',
-        gap: isMobile ? '16px' : '20px',
+        gap: isMobile ? '18px' : '24px',
       }}
     >
+      <style>
+        {`
+          @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .shipment-header {
+            animation: fadeInDown 0.5s ease-out;
+          }
+        `}
+      </style>
+
       {/* Carrier Info */}
       <div
+        className="shipment-header"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -214,10 +229,11 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
         <div>
           <h2
             style={{
-              fontSize: isMobile ? '18px' : '20px',
-              fontWeight: '700',
-              color: '#1f2937',
-              margin: '0 0 8px 0',
+              fontSize: isMobile ? '20px' : '24px',
+              fontWeight: '800',
+              color: DARK_TEXT,
+              margin: '0 0 12px 0',
+              letterSpacing: '-0.5px',
             }}
           >
             {shipmentData.carrier}
@@ -226,18 +242,19 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '10px',
               flexWrap: 'wrap',
             }}
           >
             <code
               style={{
-                backgroundColor: BG_COLOR,
-                padding: '6px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
+                backgroundColor: '#f3f4f6',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
                 fontFamily: 'monospace',
-                color: '#374151',
+                color: DARK_TEXT,
+                fontWeight: '600',
                 flex: isMobile ? '1 1 auto' : '0 0 auto',
               }}
             >
@@ -247,13 +264,13 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
               onClick={handleCopyTracking}
               style={{
                 backgroundColor: 'transparent',
-                border: `1px solid ${BRAND_BLUE}`,
+                border: `2px solid ${BRAND_BLUE}`,
                 color: BRAND_BLUE,
-                padding: '6px 12px',
-                borderRadius: '6px',
+                padding: '6px 14px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '12px',
-                fontWeight: '600',
+                fontWeight: '700',
                 transition: 'all 0.2s ease',
               }}
               onMouseOver={(e) => {
@@ -278,10 +295,13 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
             display: 'inline-block',
             backgroundColor: getCarrierColor(shipmentData.carrier),
             color: 'white',
-            padding: '8px 12px',
-            borderRadius: '6px',
+            padding: '10px 16px',
+            borderRadius: '10px',
             fontSize: '12px',
-            fontWeight: '600',
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           }}
         >
           {shipmentData.deliveryMethod}
@@ -292,10 +312,10 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
       <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
 
       {/* Current Status with Icon */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
         <div
           style={{
-            fontSize: '48px',
+            fontSize: '56px',
             animation: shipmentData.isLive
               ? 'pulse 2s ease-in-out infinite'
               : 'none',
@@ -307,24 +327,50 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
           <p
             style={{
               fontSize: '12px',
-              color: '#6b7280',
-              margin: '0 0 4px 0',
+              color: LIGHT_TEXT,
+              margin: '0 0 6px 0',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
+              fontWeight: '700',
             }}
           >
             Current Status
           </p>
           <h3
             style={{
-              fontSize: isMobile ? '16px' : '18px',
-              fontWeight: '700',
-              color: '#1f2937',
+              fontSize: isMobile ? '18px' : '22px',
+              fontWeight: '800',
+              color: DARK_TEXT,
               margin: '0',
+              letterSpacing: '-0.5px',
             }}
           >
             {shipmentData.status}
           </h3>
+          {shipmentData.isLive && (
+            <div
+              style={{
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: BRAND_GREEN,
+                fontWeight: '600',
+              }}
+            >
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: BRAND_GREEN,
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              />
+              Live tracking active
+            </div>
+          )}
         </div>
       </div>
 
@@ -357,14 +403,54 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
       {/* Divider */}
       <div style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
 
+      {/* Map Section */}
+      <div
+        style={{
+          backgroundColor: '#f3f4f6',
+          borderRadius: '12px',
+          padding: '40px 20px',
+          textAlign: 'center',
+          border: '2px dashed #d1d5db',
+          minHeight: '300px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+        }}
+      >
+        <div style={{ fontSize: '48px' }}>🗺️</div>
+        <h4
+          style={{
+            fontSize: '14px',
+            fontWeight: '700',
+            color: DARK_TEXT,
+            margin: '0 0 4px 0',
+          }}
+        >
+          Live Tracking Map
+        </h4>
+        <p
+          style={{
+            fontSize: '13px',
+            color: LIGHT_TEXT,
+            margin: '0',
+          }}
+        >
+          Real-time delivery route visualization
+        </p>
+      </div>
+
       {/* Package Details */}
       <div>
         <h3
           style={{
             fontSize: '14px',
-            fontWeight: '600',
-            color: '#1f2937',
-            margin: '0 0 12px 0',
+            fontWeight: '700',
+            color: DARK_TEXT,
+            margin: '0 0 14px 0',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
           Package Details
@@ -374,33 +460,35 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
           style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-            gap: '12px',
+            gap: '14px',
           }}
         >
           {shipmentData.weight && (
             <div
               style={{
-                backgroundColor: BG_COLOR,
-                padding: '12px',
-                borderRadius: '8px',
+                backgroundColor: '#f9fafb',
+                padding: '14px',
+                borderRadius: '10px',
+                border: '1px solid #e5e7eb',
               }}
             >
               <p
                 style={{
-                  fontSize: '12px',
-                  color: '#6b7280',
-                  margin: '0 0 4px 0',
+                  fontSize: '11px',
+                  color: LIGHT_TEXT,
+                  margin: '0 0 6px 0',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
+                  fontWeight: '700',
                 }}
               >
                 Weight
               </p>
               <p
                 style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#1f2937',
+                  fontSize: '15px',
+                  fontWeight: '700',
+                  color: DARK_TEXT,
                   margin: '0',
                 }}
               >
@@ -412,31 +500,33 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
           {shipmentData.dimensions && (
             <div
               style={{
-                backgroundColor: BG_COLOR,
-                padding: '12px',
-                borderRadius: '8px',
+                backgroundColor: '#f9fafb',
+                padding: '14px',
+                borderRadius: '10px',
+                border: '1px solid #e5e7eb',
               }}
             >
               <p
                 style={{
-                  fontSize: '12px',
-                  color: '#6b7280',
-                  margin: '0 0 4px 0',
+                  fontSize: '11px',
+                  color: LIGHT_TEXT,
+                  margin: '0 0 6px 0',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
+                  fontWeight: '700',
                 }}
               >
                 Dimensions
               </p>
               <p
                 style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#1f2937',
+                  fontSize: '15px',
+                  fontWeight: '700',
+                  color: DARK_TEXT,
                   margin: '0',
                 }}
               >
-                {shipmentData.dimensions.length} × {shipmentData.dimensions.width} ×{' '}
+                {shipmentData.dimensions.length}×{shipmentData.dimensions.width}×
                 {shipmentData.dimensions.height} {shipmentData.dimensions.unit}
               </p>
             </div>
@@ -454,26 +544,34 @@ export function ShipmentTracker({ shipmentId, trackingNumber }: ShipmentTrackerP
             <h3
               style={{
                 fontSize: '14px',
-                fontWeight: '600',
-                color: '#1f2937',
-                margin: '0 0 8px 0',
+                fontWeight: '700',
+                color: DARK_TEXT,
+                margin: '0 0 12px 0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
               }}
             >
               Delivery Instructions
             </h3>
-            <p
+            <div
               style={{
-                fontSize: '14px',
-                color: '#374151',
-                margin: '0',
-                lineHeight: '1.5',
-                backgroundColor: BG_COLOR,
-                padding: '12px',
-                borderRadius: '8px',
+                backgroundColor: '#fffbeb',
+                padding: '14px',
+                borderRadius: '10px',
+                borderLeft: `4px solid #fbbf24`,
               }}
             >
-              {shipmentData.deliveryInstructions}
-            </p>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#92400e',
+                  margin: '0',
+                  lineHeight: '1.6',
+                }}
+              >
+                {shipmentData.deliveryInstructions}
+              </p>
+            </div>
           </div>
         </>
       )}

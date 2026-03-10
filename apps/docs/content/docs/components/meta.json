@@ -12,6 +12,11 @@
     "date-picker",
     "pagination",
     "data-display",
-    "form-controls"
+    "form-controls",
+    "file-upload",
+    "combobox",
+    "timeline",
+    "status-badge",
+    "command-palette"
   ]
 }

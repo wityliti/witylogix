@@ -4,6 +4,37 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.2 — DX Polish, SDK Tests, Seed Data & Driver App Build-Out (2026-03-10)
+
+#### Added
+
+- **ADR-021** — Developer experience & monorepo bootability (555 lines) with turbo pipeline design, workspace conventions, port assignments, env management (`docs/adr/ADR-021-developer-experience-monorepo.md`)
+- **Database seed script** (`packages/db/src/seed.ts`, 1,063 lines) — Idempotent demo data: 3 orgs, 10 users, 5 zones, 20 drivers, 50 orders, 30 shipments, notification templates, webhook configs, 3 billing plans
+- **Environment validator** (`packages/db/src/validate-env.ts`, 211 lines) — Validates required/optional env vars against .env.example
+- **SDK test suite** (7 test files, 3,381 lines, 141 test cases) — client, orders, drivers, zones, shipments, errors, integration tests with mock HTTP server
+- **SDK publish config** — tsup.config.ts for dual CJS/ESM build, package.json exports field, proper main/module/types
+- **5 new UI components** (963 lines) — FileUpload (drag & drop), Combobox (searchable select), Timeline (vertical event timeline), StatusBadge (delivery-specific with 9 statuses), CommandPalette (CMD+K overlay)
+- **Settings page** (642 lines) — 5 tabs: Profile, Organization, Billing, Integrations, API Keys
+- **Notification preferences page** (393 lines) — 4 channels (email, SMS, WhatsApp, push) with per-type toggles and quiet hours
+- **Real-time activity feed** (487 lines) — Live event stream with filtering, auto-scroll, pulsing live indicator
+- **Webhook delivery dashboard** (710 lines) — Delivery log table with filters, retry, payload viewer, stats
+- **Integration health page** (383 lines) — 8 integration cards with status, uptime, response time, check-now
+- **Webhook deliveries API** (327 lines) — List, detail, retry, health stats endpoints with Zod validation
+- **Webhook deliveries tests** (477 lines) — Full route test coverage
+- **Docs config tests** (450 lines) — MDX validation, meta.json checks, link verification
+- **Smoke test script** (`scripts/smoke-test.sh`, 256 lines) — Platform validation (tools, env, workspaces, TypeScript)
+- **Docs validator** (`scripts/validate-docs.ts`, 332 lines) — MDX content and meta.json validation
+- **Workspace validator** (`scripts/validate-workspace.ts`, 252 lines) — Package script and dependency checks
+- **5 component gallery MDX pages** (545 lines) — Documentation for all new UI components
+
+#### Changed
+
+- **turbo.json** — Enhanced pipeline with proper inputs/outputs/env, added db:generate, db:push, globalPassThroughEnv for CI
+- **Driver app screens** — HomeScreen (stats dashboard), ShipmentListScreen (filterable list), RouteDetailScreen (stop list + navigation), DeliveryProofScreen (photo + signature + validation)
+- **Tracking page** — TrackingLandingPage (animations, loading state), ShipmentTracker (live tracking indicator, map placeholder), DriverCard (avatar, rating, ETA countdown)
+- **CI workflow** — Added smoke test, docs validation, and SDK test steps
+- **.env.example** — Comprehensive audit with all platform vars documented
+
 ### Sprint 4.1 — Documentation Engine, TypeScript SDK & OpenAPI (2026-03-10)
 
 #### Added
