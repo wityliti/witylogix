@@ -1,0 +1,157 @@
+# infra/docker-compose.override.example.yml
+#
+# Example Docker Compose override file for local development
+# This file shows common customizations for development environments
+#
+# To use this file:
+# 1. Copy to docker-compose.override.yml (git-ignored):
+#    cp infra/docker-compose.override.example.yml docker-compose.override.yml
+#
+# 2. Customize for your local environment
+#
+# 3. Run: docker compose up
+#    (Docker Compose automatically merges override.yml with base compose file)
+#
+# See: https://docs.docker.com/compose/extends/
+
+version: "3.8"
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # API Service Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  api:
+    # Mount local source code for live development (no rebuild needed)
+    volumes:
+      # Mount entire apps/api directory to see live changes
+      - ./apps/api:/app/apps/api
+      # Mount shared packages for instant dependency updates
+      - ./packages:/app/packages
+
+    # Override environment variables for local development
+    environment:
+      LOG_LEVEL: debug
+      NODE_ENV: development
+      JWT_SECRET: local-dev-secret-change-in-production
+
+    # Change port if 3001 is already in use
+    ports:
+      - "3001:3001"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Dashboard Service Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  dashboard:
+    # Mount local source code for live Next.js development
+    volumes:
+      - ./apps/dashboard:/app/apps/dashboard
+      - ./packages:/app/packages
+
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+
+    # Use Next.js dev server for hot reload
+    # Uncomment if you want to run dev server instead of production build
+    # command: pnpm dev
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Documentation Service Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  docs:
+    # Mount local source code for live documentation development
+    volumes:
+      - ./apps/docs:/app/apps/docs
+      - ./packages:/app/packages
+
+    environment:
+      NODE_ENV: development
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    # Expose PostgreSQL port on host for direct client connections
+    # (for psql, DBeaver, TablePlus, etc.)
+    ports:
+      - "5432:5432"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Redis Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    # Expose Redis port on host for direct client connections
+    # (for redis-cli, GUI clients, etc.)
+    ports:
+      - "6379:6379"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Caddy Reverse Proxy Customizations
+  # ─────────────────────────────────────────────────────────────────────────────
+  caddy:
+    # Use local Caddyfile (allows hot reload of configuration)
+    volumes:
+      - ./infra/cli/templates/Caddyfile:/etc/caddy/Caddyfile
+
+    # For development, you may want different certificate settings
+    environment:
+      # Skip HTTPS enforcement during development
+      # Caddy will serve HTTP only or use self-signed certs
+      CADDY_SKIP_INSTALL: "true"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Additional Services (Optional - uncomment to enable)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  # pgAdmin: PostgreSQL web management interface
+  # Access at http://localhost:5050 (default: admin@pgadmin.org / admin)
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: witylogix-pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   networks:
+  #     - witylogix
+  #   depends_on:
+  #     - postgres
+
+  # Mailhog: Local SMTP server for email testing
+  # SMTP: localhost:1025 | Web UI: http://localhost:8025
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   container_name: witylogix-mailhog
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1025:1025"
+  #     - "8025:8025"
+  #   networks:
+  #     - witylogix
+
+  # Redis Commander: Redis web management interface
+  # Access at http://localhost:8081
+  # redis-commander:
+  #   image: rediscommander/redis-commander:latest
+  #   container_name: witylogix-redis-commander
+  #   restart: unless-stopped
+  #   environment:
+  #     REDIS_HOSTS: local:redis:6379
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - witylogix
+  #   depends_on:
+  #     - redis
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Volume Configuration for Optional Services
+# ─────────────────────────────────────────────────────────────────────────────
+# volumes:
+#   pgadmin_data:
+#     driver: local
