@@ -52,6 +52,37 @@ export {
 
 export { AuthProviderRegistry, getAuthProviderRegistry, resetAuthProviderRegistry } from "./provider-registry.js";
 
+// ─── SESSION MANAGER ────────────────────────────────────────
+
+export {
+  SessionManager,
+  getSessionManager,
+  resetSessionManager,
+  type CreateSessionInput,
+  type SessionInfo,
+  type SessionValidationResult,
+} from "./session-manager.js";
+
+// ─── TOKEN SERVICE ──────────────────────────────────────────
+
+export {
+  TokenService,
+  getTokenService,
+  resetTokenService,
+  type TokenClaims,
+  type SignedToken,
+  type VerifiedToken,
+  type TokenRotationResult,
+} from "./token-service.js";
+
+// ─── BASE PROVIDER ──────────────────────────────────────────
+
+export {
+  AuthProviderBase,
+  parseProviderError,
+  mergeUserInfo,
+} from "./providers/base.js";
+
 // ─── PROVIDERS ───────────────────────────────────────────────
 
 export { LocalAuthProvider } from "./providers/local.js";

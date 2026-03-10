@@ -3,12 +3,29 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./steps": "./src/steps/index.ts",
-    "./definitions": "./src/definitions/index.ts"
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./steps": {
+      "import": "./dist/steps/index.mjs",
+      "require": "./dist/steps/index.cjs",
+      "types": "./dist/steps/index.d.ts"
+    },
+    "./definitions": {
+      "import": "./dist/definitions/index.mjs",
+      "require": "./dist/definitions/index.cjs",
+      "types": "./dist/definitions/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@witylogix/db": "workspace:*",
@@ -16,6 +33,8 @@
     "@witylogix/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
   }
 }

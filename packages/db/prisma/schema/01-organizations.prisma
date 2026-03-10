@@ -20,6 +20,8 @@ model Organization {
   drivers       Driver[] // Org-level drivers (shared across shops)
   deliveryZones DeliveryZone[] // Org-level zones (shared across shops)
   locations     Location[] // Org-level locations (shared across shops)
+  authProviders AuthProvider[] // org-level auth providers
+  posConfigs    PosConfig[] // org-level POS configurations
 
   @@map("organizations")
 }

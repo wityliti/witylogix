@@ -1,0 +1,15 @@
+# Test artifacts
+results/
+test-results/
+screenshots/
+videos/
+traces/
+
+# Auth state
+auth.json
+
+# Dependencies
+node_modules/
+
+# Environment
+.env.test.local

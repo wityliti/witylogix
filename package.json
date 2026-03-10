@@ -13,6 +13,10 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rm -rf node_modules",
     "db:generate": "turbo db:generate",
@@ -33,6 +37,7 @@
     "deploy:domain": "./infra/deploy-scripts/railway.sh domain"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/node": "^22.0.0",
     "prettier": "^3.4.0",
     "turbo": "^2.3.0",

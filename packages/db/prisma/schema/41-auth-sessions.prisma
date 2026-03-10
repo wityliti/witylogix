@@ -1,0 +1,49 @@
+// ─── ORG-LEVEL AUTH PROVIDERS ────────────────────────────────────
+// Multi-provider authentication at organization level.
+// Allows each org to configure its own auth providers for SSO, OIDC, etc.
+// Distinct from shop-level AuthProvider in 39-auth-providers.prisma
+
+model AuthProvider {
+  id            String   @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name          String   // e.g. "Google", "Auth0", "Clerk"
+  type          String   // "oauth2" | "saml" | "oidc" | "custom"
+  clientId      String?
+  clientSecret  String?  // encrypted
+  issuerUrl     String?
+  callbackUrl   String?
+  scopes        String[] @default([])
+  metadata      Json     @default("{}")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions      AuthSession[]
+
+  @@map("auth_providers")
+  @@index([orgId])
+}
+
+// ─── AUTH SESSIONS ───────────────────────────────────────────────
+// Tracks user sessions with specific auth providers.
+// Stores encrypted tokens for multi-provider authentication flow.
+
+model AuthSession {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerId    String
+  provider      AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  accessToken   String?  // encrypted
+  refreshToken  String?  // encrypted
+  expiresAt     DateTime?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  revokedAt     DateTime?
+
+  @@map("auth_sessions")
+  @@index([userId])
+  @@index([providerId])
+}
