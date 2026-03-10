@@ -115,3 +115,22 @@ export { StatusBadge } from "./status-badge";
 
 // Command Palette
 export { CommandPalette } from "./command-palette";
+
+// Status Timeline
+export {
+  StatusTimeline,
+  type TimelineOrientation,
+  type TimelineStepStatus,
+  type TimelineStep,
+  type StatusTimelineProps,
+} from "./status-timeline";
+
+// Metric Card
+export { MetricCard, type MetricCardProps } from "./metric-card";
+
+// Color Legend
+export {
+  ColorLegend,
+  type RouteColor,
+  type ColorLegendProps,
+} from "./color-legend";

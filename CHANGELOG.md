@@ -4,6 +4,34 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.5 — Customer Experience & Checkout Enhancement (2026-03-11)
+
+#### Added
+
+- **ADR-024** — Dispatch dashboard architecture (`docs/adr/ADR-024-dispatch-dashboard.md`)
+- **Competitive Intelligence Report** — Deep-dive analysis of 6 competitors (Fleetbase, ScrollEngine, Zapiet, Route4Me, Routific, Pickeasy) across 48 features in 7 categories (`docs/competitive-intelligence-report.docx`)
+- **Route Timeline Dispatcher Dashboard** (`apps/dashboard/src/app/(dashboard)/dispatch/`, 15 files, 3,802 lines) — Real-time map view, color-coded route timeline bar, driver cards with status, stop detail panel, stats bar, dispatch service with batch operations
+- **Embeddable Checkout Widget** (`packages/checkout-widget/`, 27 files, 3,307 lines) — 5-step checkout flow (address → date → time → options → confirm), date picker, time slot grid, zone rate display, address input with validation, delivery options, hooks for slot availability/zone rates/address validation, tsup build config
+- **Customer Self-Service Portal** (`apps/customer-portal/`, 27 files) — Next.js app with order list/detail, delivery tracking with mini-map, reschedule flow, delivery rating, notification preferences, sidebar nav, responsive layout
+- **Slot Engine API** (`packages/core/src/slots/`, 16 files, 4,500+ lines) — Atomic slot reservation with double-booking prevention, real-time capacity manager with AI hook, zone rate calculator (5 methods: flat, per-km, per-mile, weight, cart-value), order deadline engine, blackout manager (one-time + recurring), 8 Prisma models (`packages/db/prisma/schema/43-delivery-slots.prisma`), checkout API routes
+- **POD v2** (`packages/core/src/pod/`, 14 files, 3,514+ lines) — Photo capture with EXIF/geolocation/thumbnail, signature capture (SVG paths, PNG rendering), QR + 6 barcode format scanner, delivery timeline (9 events, status transitions), storage adapter (S3, R2, local), 7 API endpoints with multipart upload, Prisma schema (`packages/db/prisma/schema/44-pod-timeline.prisma`)
+- **Notification Engine v2** (`packages/core/src/notifications-v2/`, 20 files, 5,798 lines) — Multi-channel dispatcher (email, SMS, WhatsApp, push), 7 event templates × 4 channels, customer preference manager, per-channel rate limiter, URL shortener, webhook delivery, 15 API endpoints
+- **13 new UI components** (`apps/dashboard/src/components/`) — Dispatch: route-timeline-bar, driver-avatar, stop-marker, route-stats-badge, dispatch-filter-bar; Checkout: calendar-day, time-slot-card, delivery-method-card, zone-map-mini, address-suggestion-item; Shared: status-timeline, metric-card, color-legend
+- **73 E2E tests** (`tests/e2e/`, 12 files, 5,087 lines) — 5 spec suites (dispatch dashboard 14 tests, checkout widget 18, customer portal 18, POD capture 12, notification delivery 11), page objects, fixtures, mock API helpers
+- **Shopify checkout extension** (`extensions/checkout-ui/src/DeliveryDatePicker.tsx`) — Date/time picker for Shopify checkout, Witylogix API client
+- **Google Maps + Calendar integration** (`packages/core/src/integrations/google/`, 15 files, ~3,200 lines) — Geocoding, distance matrix, zone detection, Calendar OAuth2 (event CRUD, sync), zone visualizer (GeoJSON, KML, static maps), Shopify checkout + Google API routes
+- **AI Slot Recommender** (`packages/core/src/ai-slots/`, 22 files, 4,180+ lines) — 5-factor scoring (demand, availability, preferences, efficiency, urgency), demand predictor, driver availability analyzer
+- **ML ETA Engine** (`packages/core/src/ai-eta/`) — 4 prediction models (time-of-day, distance, historical, traffic), weighted model ensemble with dynamic confidence, API endpoints for slot recommendations and ETA predictions
+
+#### Changed
+
+- **packages/core/package.json** — Added exports for dispatch, ai-slots, ai-eta modules
+- **packages/core/src/dispatch/index.ts** — Added route dispatch exports (DispatchService, route colors, types)
+- **apps/dashboard/src/components/ui/index.ts** — Added StatusTimeline, MetricCard, ColorLegend exports
+- **extensions/checkout-ui/package.json** — Added zod dependency for checkout validation
+- **Competitive Gap Tracker** — Added to sprint tracker with 15 gaps (G-01 through G-15, P0-P3)
+- **Priority Roadmap** — Extended with 18 entries for Sprint 4.5-5.0
+
 ### Sprint 4.4 — E2E Testing, Event Bus, Platform Admin & Gap Closure (2026-03-10)
 
 #### Added

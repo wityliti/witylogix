@@ -56,7 +56,10 @@
     "./widgets": "./src/widgets/index.ts",
     "./auth": "./src/auth/index.ts",
     "./pos": "./src/pos/index.ts",
-    "./api-hardening": "./src/api-hardening/index.ts"
+    "./api-hardening": "./src/api-hardening/index.ts",
+    "./dispatch": "./src/dispatch/index.ts",
+    "./ai-slots": "./src/ai-slots/index.ts",
+    "./ai-eta": "./src/ai-eta/index.ts"
   },
   "scripts": {
     "build": "tsc",

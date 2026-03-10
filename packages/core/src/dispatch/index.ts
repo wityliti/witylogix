@@ -276,3 +276,42 @@ export type {
   SmsMessage,
   SmsResult,
 };
+
+// ─── ROUTE DISPATCH EXPORTS ─────────────────────────────────────────
+// Route dispatch service for the Route Timeline Dispatcher Dashboard
+export { DispatchService, createDispatchService } from "./dispatch-service.js";
+export type {
+  Route,
+  Stop,
+  Driver,
+  DispatchStats,
+  OptimizeRoutesRequest,
+  OptimizeRoutesResult,
+  ReassignStopRequest,
+  ReassignStopResult,
+  RouteUpdate,
+  StopUpdate,
+  DriverLocationUpdate,
+  BatchRouteOperation,
+  BatchOperationResult,
+  RouteFilterOptions,
+  PaginatedRoutes,
+  RouteStatus,
+  StopStatus,
+  StopType,
+  DriverStatus,
+  VehicleType,
+} from "./types.js";
+
+export {
+  ROUTE_COLORS,
+  getRouteColor,
+  getAllRouteColors,
+  getColorIndexForIdentifier,
+  getRouteColorForIdentifier,
+  lightenColor,
+  darkenColor,
+  hexToRgb,
+  hexToRgbString,
+} from "./route-colors.js";
+export type { RouteColorIndex } from "./route-colors.js";

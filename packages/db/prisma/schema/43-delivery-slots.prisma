@@ -1,0 +1,175 @@
+// ─── DELIVERY SLOTS ──────────────────────────────────────────────
+// Enhanced slot management with capacity tracking and reservations
+
+model DeliverySlot {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId      String   @map("location_id") @db.Uuid
+  zoneId          String?  @map("zone_id") @db.Uuid
+  date            DateTime @map("date") @db.Date
+  startTime       String   @map("start_time") // HH:mm
+  endTime         String   @map("end_time")   // HH:mm
+  maxCapacity     Int      @default(50) @map("max_capacity")
+  currentBookings Int      @default(0) @map("current_bookings")
+  price           Decimal  @default(0) @db.Decimal(10, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  zone         DeliveryZone?      @relation(fields: [zoneId], references: [id])
+  location     Location           @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  reservations SlotReservation[]
+
+  @@unique([locationId, date, startTime, endTime])
+  @@index([locationId, date, isActive])
+  @@index([zoneId, date])
+  @@map("delivery_slots")
+}
+
+// ─── SLOT RESERVATIONS ──────────────────────────────────────────
+
+model SlotReservation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slotId    String   @map("slot_id") @db.Uuid
+  orderId   String   @map("order_id")
+  status    String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, EXPIRED
+  expiresAt DateTime @map("expires_at")
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  slot DeliverySlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@unique([slotId, orderId])
+  @@index([orderId, status])
+  @@index([status, expiresAt])
+  @@map("slot_reservations")
+}
+
+// ─── CAPACITY CONFIGURATION ─────────────────────────────────────
+
+model CapacityConfig {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId    String   @map("location_id") @db.Uuid
+  date          DateTime @map("date") @db.Date
+  maxOrders     Int      @map("max_orders")
+  currentOrders Int      @default(0) @map("current_orders")
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, date])
+  @@index([locationId, date])
+  @@map("capacity_configs")
+}
+
+// ─── BLACKOUT DATES ─────────────────────────────────────────────
+
+model BlackoutDate {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId  String   @map("location_id") @db.Uuid
+  date        DateTime @map("date") @db.Date
+  reason      String
+  isRecurring Boolean  @default(false) @map("is_recurring")
+  dayOfWeek   Int?     @map("day_of_week") // 0-6 for recurring (Sun-Sat)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, date, isRecurring])
+  @@index([locationId, date])
+  @@index([locationId, dayOfWeek, isRecurring])
+  @@map("blackout_dates")
+}
+
+// ─── DEADLINE CONFIGURATION ────────────────────────────────────
+
+model DeadlineConfig {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId          String   @unique @map("location_id") @db.Uuid
+  prepTimeMinutes     Int      @default(120) @map("prep_time_minutes")
+  cutoffHours         Int      @default(24) @map("cutoff_hours")
+  cutoffTime          String   @default("00:00") @map("cutoff_time") // HH:mm
+  allowExtendedOrders Boolean  @default(false) @map("allow_extended_orders")
+  metadata            Json     @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@map("deadline_configs")
+}
+
+// ─── DELIVERY ZONES (ENHANCED) ────────────────────────────────
+
+model DeliveryZone {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  shopId    String?  @map("shop_id") @db.Uuid
+  name      String
+  boundary  Json?    @map("boundary") // GeoJSON polygon
+  baseRate  Decimal  @default(0) @map("base_rate") @db.Decimal(10, 2)
+  perKmRate Decimal  @default(0) @map("per_km_rate") @db.Decimal(10, 2)
+  minOrder  Decimal  @default(0) @map("min_order") @db.Decimal(10, 2)
+  freeAbove Decimal? @map("free_above") @db.Decimal(10, 2)
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization?      @relation(fields: [orgId], references: [id])
+  shop         Shop?              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  slots        DeliverySlot[]
+  timeSlots    TimeSlot[]
+  locationLinks LocationZoneLink[]
+
+  @@index([orgId, isActive])
+  @@index([shopId, isActive])
+  @@map("delivery_zones")
+}
+
+// ─── LOCATION-ZONE LINKS ────────────────────────────────────────
+
+model LocationZoneLink {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId String  @map("location_id") @db.Uuid
+  zoneId    String   @map("zone_id") @db.Uuid
+  priority  Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  location Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  zone     DeliveryZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, zoneId])
+  @@index([locationId, isActive])
+  @@map("location_zone_links")
+}
+
+// ─── RATE SURGE PRICING (AI-DRIVEN) ────────────────────────────
+
+model SurgePrice {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId   String   @map("location_id") @db.Uuid
+  date         DateTime @map("date") @db.Date
+  startTime    String   @map("start_time") // HH:mm
+  endTime      String   @map("end_time")   // HH:mm
+  surgePercent Decimal  @map("surge_percent") @db.Decimal(5, 2)
+  reason       String
+  isActive     Boolean  @default(true) @map("is_active")
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId, date])
+  @@map("surge_prices")
+}

@@ -1,0 +1,73 @@
+---
+title: Contacts
+description: Customers and recipients — profiles, communication preferences, and delivery history.
+---
+
+# Contacts
+
+A **Contact** represents a person or business involved in deliveries — typically the sender (merchant) or receiver (customer). Contacts store personal details, communication preferences, and delivery history.
+
+## Contact Types
+
+| Type | Description |
+|------|-------------|
+| `customer` | End recipient of a delivery |
+| `merchant` | Business that creates orders |
+| `vendor` | Third-party supplier or partner |
+
+## Contact Properties
+
+- **Name** — full name or business name
+- **Phone** — primary phone number for SMS/WhatsApp notifications
+- **Email** — for email notifications and receipts
+- **Addresses** — one or more saved [places](/docs/core-concepts/places)
+- **Preferences** — notification channel, delivery instructions, language
+
+```typescript
+const contact = await client.contacts.create({
+  type: 'customer',
+  name: 'Jane Smith',
+  phone: '+1-512-555-0123',
+  email: 'jane@example.com',
+  addresses: [
+    {
+      label: 'Home',
+      street: '456 Oak Ave',
+      city: 'Austin',
+      state: 'TX',
+      postalCode: '78702',
+    },
+  ],
+  preferences: {
+    notifications: ['sms', 'email'],
+    language: 'en',
+    deliveryInstructions: 'Leave at front door',
+  },
+});
+```
+
+## Delivery History
+
+View a contact's complete delivery history:
+
+```typescript
+const history = await client.contacts.getDeliveryHistory('contact_abc', {
+  limit: 20,
+  sort: 'desc',
+});
+// Returns list of past orders with statuses and ratings
+```
+
+## Communication
+
+When an order is in transit, the platform can automatically notify the contact via their preferred channels:
+
+- **SMS** — tracking link and ETA updates via [Twilio](/docs/guides/webhooks)
+- **Email** — order confirmation, out-for-delivery, delivered via [SendGrid](/docs/guides/webhooks)
+- **WhatsApp** — real-time updates via WhatsApp Business API
+
+## Related
+
+- [Orders](/docs/core-concepts/orders) — contacts are linked to orders as sender or recipient
+- [Places](/docs/core-concepts/places) — contacts have saved addresses
+- [Fleets](/docs/core-concepts/fleets) — merchants may manage their own fleet
