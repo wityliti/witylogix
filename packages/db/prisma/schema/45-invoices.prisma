@@ -1,0 +1,211 @@
+// ─── INVOICES ───────────────────────────────────────────────────────
+// Automated invoicing system for delivery operations.
+// Supports creation from deliveries/routes, multi-currency, tax by jurisdiction,
+// discounts, payment tracking, and audit trail (void/modification history).
+
+model Invoice {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String    @map("tenant_id") @db.Uuid
+  invoiceNumber    String    @map("invoice_number") // Format: {PREFIX}-{YYYY}-{NNNNN}
+  customerId       String?   @map("customer_id") @db.Uuid // If from Route/Delivery, link to route's organization/customer
+
+  status           InvoiceStatus @default(DRAFT) // draft | finalized | sent | paid | overdue | voided
+
+  // Amounts
+  subtotal         Decimal   @db.Decimal(14, 2) // Sum of line items
+  discountTotal    Decimal   @default(0) @map("discount_total") @db.Decimal(14, 2)
+  taxTotal         Decimal   @default(0) @map("tax_total") @db.Decimal(14, 2)
+  total            Decimal   @db.Decimal(14, 2) // subtotal - discountTotal + taxTotal
+
+  currency         String    @default("USD") // ISO 4217 code
+
+  // Dates
+  issuedAt         DateTime  @map("issued_at") // When the invoice was finalized
+  dueAt            DateTime  @map("due_at") // Payment due date
+  paidAt           DateTime? @map("paid_at") // When full payment was received
+  voidedAt         DateTime? @map("voided_at") // When voided
+
+  // Audit
+  voidReason       String?   @map("void_reason") // Why invoice was voided
+  notes            String?   // Additional invoice notes/memo
+  metadata         Json      @default("{}") // Custom fields, route/delivery references
+
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lineItems        InvoiceLineItem[]
+  discounts        InvoiceDiscount[]
+  taxes            InvoiceTax[]
+  payments         InvoicePayment[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, status])
+  @@index([tenantId, issuedAt(sort: Desc)])
+  @@index([tenantId, dueAt])
+  @@index([customerId])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+
+  description     String    // e.g., "Delivery from A to B", "Fuel Surcharge"
+  deliveryId      String?   @map("delivery_id") @db.Uuid // Reference to order/route stop if applicable
+
+  quantity        Decimal   @db.Decimal(10, 2)
+  unitPrice       Decimal   @map("unit_price") @db.Decimal(14, 2)
+  amount          Decimal   @db.Decimal(14, 2) // quantity * unitPrice
+
+  metadata        Json      @default("{}") // Cost breakdown details, distance, weight, etc.
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+model InvoiceDiscount {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+
+  description     String    // e.g., "Early Payment Discount", "Volume Discount"
+  type            DiscountType // 'percentage' | 'fixed'
+  value           Decimal   @db.Decimal(10, 2) // Percentage (e.g., 10.00) or fixed amount
+  amount          Decimal   @db.Decimal(14, 2) // Calculated discount amount applied
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_discounts")
+}
+
+model InvoiceTax {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+
+  description     String    // e.g., "Sales Tax (CA)", "VAT (UK)"
+  rate            Decimal   @db.Decimal(10, 4) // Tax rate percentage, e.g., 7.5000
+  amount          Decimal   @db.Decimal(14, 2) // Calculated tax amount
+  jurisdiction    String?   // State/country code for audit
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_taxes")
+}
+
+model InvoicePayment {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+
+  amount          Decimal   @db.Decimal(14, 2)
+  method          String    // 'credit_card', 'bank_transfer', 'check', 'cash', 'other'
+  reference       String?   // Transaction ID, check number, etc.
+  paidAt          DateTime  @map("paid_at")
+
+  metadata        Json      @default("{}") // Payment processor details, etc.
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([invoiceId, paidAt])
+  @@map("invoice_payments")
+}
+
+// ─── RATE CARDS ─────────────────────────────────────────────────────
+// Pricing structure for cost calculations. Supports tiered rates by distance/weight
+// and time-of-day surcharges. Each tenant can have multiple rate cards (active one marked isDefault).
+
+model RateCard {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+
+  name                String    // e.g., "Standard Rates", "Peak Season"
+  baseRate            Decimal   @map("base_rate") @db.Decimal(10, 2) // Minimum charge per delivery
+
+  perKmRate           Decimal   @map("per_km_rate") @db.Decimal(10, 3) // Base rate per km
+  perKgRate           Decimal   @map("per_kg_rate") @db.Decimal(10, 3) // Base rate per kg
+
+  // Distance tiers (multipliers on perKmRate)
+  distanceTierJson    Json      @default("[]") @map("distance_tier_json") // [{ min_km, max_km, rate_multiplier }]
+
+  // Weight tiers (multipliers on perKgRate)
+  weightTierJson      Json      @default("[]") @map("weight_tier_json") // [{ min_kg, max_kg, rate_per_kg }]
+
+  // Surcharges
+  peakSurchargePct    Decimal   @map("peak_surcharge_pct") @db.Decimal(6, 2) // e.g., 20.00 for 20%
+  fuelSurchargePct    Decimal   @map("fuel_surcharge_pct") @db.Decimal(6, 2) // e.g., 10.00 for 10%
+
+  // Special handling surcharges (applied as fixed amounts or percentages)
+  specialHandlingJson Json      @default("{}") @map("special_handling_json") // { fragile, refrigerated, oversized }
+
+  minimumCharge       Decimal   @map("minimum_charge") @db.Decimal(10, 2) // Minimum charge per delivery
+
+  isDefault           Boolean   @default(false) @map("is_default")
+  effectiveFrom       DateTime  @map("effective_from") // When this rate card becomes effective
+  effectiveTo         DateTime? @map("effective_to") // When this rate card expires
+
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, isDefault])
+  @@index([tenantId, effectiveFrom])
+  @@map("rate_cards")
+}
+
+// ─── INVOICE NUMBER COUNTER ─────────────────────────────────────────
+// Atomic counter per tenant for generating unique invoice numbers without gaps.
+// Ensures thread-safe, sequential numbering (INV-2026-00001, etc.)
+
+model InvoiceNumberCounter {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @unique @map("tenant_id") @db.Uuid
+
+  prefix            String    @default("INV") // Configurable prefix
+  year              Int       // Current year for counter
+  currentNumber     Int       @default(0) @map("current_number") // Increments atomically
+
+  lastResetAt       DateTime? @map("last_reset_at") // When counter was last reset (annually)
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_number_counters")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────────────
+
+enum InvoiceStatus {
+  DRAFT       // Initial state, editable
+  FINALIZED   // Invoice number assigned, locked from editing
+  SENT        // Invoice sent to customer
+  PAID        // Payment fully received
+  OVERDUE     // Past due date without payment
+  VOIDED      // Cancelled, no longer valid
+}
+
+enum DiscountType {
+  PERCENTAGE  // value is percentage (e.g., 10.00)
+  FIXED       // value is fixed amount in invoice currency
+}

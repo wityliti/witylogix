@@ -4,6 +4,31 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.6 — Integrations, Analytics & Platform Maturity (2026-03-11)
+
+#### Added
+
+- **ADR-025** — Route analytics architecture (`docs/adr/ADR-025-route-analytics.md`)
+- **Route Analytics Dashboard** (`apps/dashboard/src/app/(dashboard)/analytics/route-performance/`, 6 components) — Planned-vs-actual chart, driver leaderboard, efficiency heatmap, CO2 tracker, SLA compliance panel, route performance API (6 endpoints)
+- **Customer Portal v2** — Real-time delivery tracking via WebSocket/Socket.io (`apps/customer-portal/src/app/track/[id]/`), canvas-based live map, ETA countdown, 6-step delivery timeline, driver info card, mobile bottom sheet (3 snap points), delivery history page, enhanced rating flow
+- **Google Maps Native Components** (`apps/dashboard/src/components/maps/`, 8 files, 3,230+ lines) — GoogleMapsProvider with lazy API loading, address autocomplete with keyboard nav, zone polygon editor (GeoJSON import/export), route polyline viewer, delivery heatmap layer, place search, maps settings page, 23+ tests
+- **WooCommerce REST API Adapter** (`packages/core/src/integrations/woocommerce/`, 8 files, 2,897 lines) — OAuth 1.0a client with HMAC-SHA256, rate limiting, retry, order sync (14 status mappings), product + variation sync, customer sync (guest merge), webhook consumer (HMAC verification, idempotency), 7 API endpoints, 90+ tests
+- **Notification Preferences UI + WhatsApp Templates** (`apps/dashboard/src/app/(dashboard)/settings/notifications/`, 4,900+ lines) — Per-channel notification config, template listing + editor with live preview, WhatsApp template CRUD (Meta Business API), notification log table, stats widget, 7 preference API endpoints, 59 tests
+- **Pure SVG Analytics Charts** (`apps/dashboard/src/components/analytics/`, 14 components, ~2,967 lines) — Zero-dependency chart library: line chart (multi-series, bezier curves), bar chart (grouped/stacked/horizontal), donut/pie (sweep animation), heatmap, sparkline, KPI card, comparison card, sortable data table, chart tooltip, date range picker, demo page
+- **Invoice Engine Foundation** (`packages/core/src/invoicing/`, 3,200+ lines) — Invoice service (create/finalize/void/payment), cost calculator (multi-tier distance/weight pricing, surcharges), pdfkit A4 PDF generator, atomic invoice numbering (INV-YYYY-NNNNN), 20+ interfaces, 7 Prisma models (Invoice, InvoiceLineItem, InvoiceDiscount, InvoiceTax, InvoicePayment, RateCard), 12 API endpoints with Zod validation, 70+ tests
+- **WooCommerce Checkout Block** (`extensions/woocommerce-block/`, ~7,000 lines) — React-based WC Checkout Block (date picker, time slots, rate display, delivery notes), WC-native CSS (582 lines), WordPress plugin scaffold (PHP), webpack build config
+- **Platform Bridge** (`packages/core/src/integrations/platform-bridge/`) — Multi-platform data normalizer (Shopify + WooCommerce + Magento + Custom), webhook normalizer (unified event types), UnifiedOrder/UnifiedProduct/UnifiedCustomer types
+- **Route Analytics ML** (`packages/core/src/ai-analytics/`, 5,458 lines) — Route efficiency scorer (5-component score 0-100), driver scorer (weighted composite with trend analysis), delivery predictor (3-model ensemble with auto-calibration), anomaly detector (5 types with severity), CO2 calculator (4 vehicle profiles with terrain), 7 API endpoints, 240+ tests
+- **182+ integration/unit tests** (`tests/integration/`, `tests/unit/`) — WooCommerce client (46), order sync (21), webhook consumer (22), route performance (24), invoice service (18), notification preferences (20), POD service (31)
+- **2 Prisma schemas** — `45-invoices.prisma` (7 models), `45-woocommerce.prisma` (4 models: WooCommerceConnection, SyncRecord, RegisteredWebhook, WebhookLog)
+
+#### Changed
+
+- **apps/customer-portal/src/types/index.ts** — Added 6 real-time tracking types (DeliveryStep, DriverLocation, DeliveryTracking)
+- **apps/customer-portal/src/app/orders/[id]/rate/page.tsx** — Enhanced 4-step rating flow
+- **apps/dashboard/src/app/(dashboard)/settings/notifications/page.tsx** — Expanded with per-channel configuration
+- **packages/core/src/analytics/index.ts** — Added route analytics exports (6 functions, 15+ types)
+
 ### Sprint 4.5 — Customer Experience & Checkout Enhancement (2026-03-11)
 
 #### Added

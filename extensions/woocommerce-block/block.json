@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schemas.wp.org/wp/6.4/block.json",
+  "apiVersion": 3,
+  "name": "witylogix/delivery-scheduler",
+  "version": "1.0.0",
+  "title": "Delivery Scheduler",
+  "category": "woocommerce",
+  "description": "WooCommerce checkout block for delivery date, time slot, and address-based rate selection",
+  "textdomain": "witylogix-delivery",
+  "keywords": [
+    "woocommerce",
+    "checkout",
+    "delivery",
+    "scheduling",
+    "shipping",
+    "rates"
+  ],
+  "attributes": {
+    "apiUrl": {
+      "type": "string",
+      "default": "https://api.witylogix.app"
+    },
+    "merchantId": {
+      "type": "string",
+      "default": ""
+    },
+    "defaultView": {
+      "type": "string",
+      "enum": ["calendar", "list"],
+      "default": "calendar"
+    },
+    "enableDeliveryNotes": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "align": ["wide", "full"],
+    "color": {
+      "background": true,
+      "text": true
+    }
+  },
+  "editorScript": "file:./src/index.tsx",
+  "script": "file:./build/index.js",
+  "style": "file:./src/styles/block.css"
+}

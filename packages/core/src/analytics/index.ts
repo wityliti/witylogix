@@ -43,3 +43,49 @@ export { AnalyticsAggregator } from "./aggregator.js";
 // ─── Dashboard Data Provider ─────────────────────────────────────────
 
 export { DashboardDataProvider } from "./dashboard-data.js";
+
+// ─── Route Analytics ─────────────────────────────────────────────────
+
+export type {
+  RouteData,
+  DeliveryStop,
+  PlannedVsActual,
+  DriverScorecard,
+  CO2Estimates,
+  ServiceLevelMetrics,
+  RouteEfficiency,
+} from "./route-analytics.js";
+
+export {
+  calculateOnTimePercentage,
+  calculatePlannedVsActual,
+  calculateDriverScorecard,
+  calculateCO2Estimates,
+  calculateServiceLevelMetrics,
+  calculateRouteEfficiency,
+} from "./route-analytics.js";
+
+// ─── Route Analytics Types ──────────────────────────────────────────
+
+export type {
+  RoutePerformanceSummary,
+  PlannedVsActualDataPoint,
+  DriverLeaderboardEntry,
+  EfficiencyHeatmapCell,
+  CO2TrackerData,
+  SLAComplianceData,
+  RoutePerformanceFilters,
+  RoutePerformanceSummaryResponse,
+  PlannedVsActualResponse,
+  DriverLeaderboardResponse,
+  EfficiencyHeatmapResponse,
+  CO2TrackerResponse,
+  SLAComplianceResponse,
+  AnalyticsQueryParams,
+  PlannedActualChartProps,
+  DriverLeaderboardProps,
+  EfficiencyHeatmapProps,
+  CO2TrackerProps,
+  SLAComplianceProps,
+  StatisticsCard,
+} from "./route-analytics-types.js";

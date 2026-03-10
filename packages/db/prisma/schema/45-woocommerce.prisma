@@ -1,0 +1,148 @@
+// ─── WOOCOMMERCE INTEGRATION ──────────────────────────────────
+// Deep integration with WooCommerce stores: order sync,
+// product inventory, customer management, and webhook handling.
+
+model WooCommerceConnection {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  storeUrl          String    @map("store_url") // e.g., https://mystore.com
+  consumerKey       String    @map("consumer_key") // OAuth 1.0a consumer key
+  consumerSecret    String    @map("consumer_secret") // OAuth 1.0a consumer secret (encrypted)
+  webhookSecret     String?   @map("webhook_secret") // For HMAC verification (encrypted)
+  lastSyncAt        DateTime? @map("last_sync_at")
+  lastHealthCheckAt DateTime? @map("last_health_check_at")
+  status            String    @default("active") // active, paused, error
+  syncEnabled       Boolean   @default(true) @map("sync_enabled")
+  ordersSync        Boolean   @default(true) @map("orders_sync")
+  productsSync      Boolean   @default(true) @map("products_sync")
+  customersSync     Boolean   @default(true) @map("customers_sync")
+  webhooksEnabled   Boolean   @default(true) @map("webhooks_enabled")
+  config            Json      @default("{}") // Additional configuration
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant                   Shop                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  syncs                    WooCommerceSyncRecord[]
+  webhookLogs              WooCommerceWebhookLog[]
+  registeredWebhooks       WooCommerceRegisteredWebhook[]
+
+  @@unique([tenantId, storeUrl])
+  @@index([tenantId])
+  @@index([status])
+  @@map("woocommerce_connections")
+}
+
+// ─── SYNC TRACKING ────────────────────────────────────────────
+// Track bidirectional sync of orders, products, customers
+// Last-write-wins conflict resolution with timestamps
+
+model WooCommerceSyncRecord {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId    String   @map("connection_id") @db.Uuid
+  entityType      String   @map("entity_type") // order, product, customer
+  wcId            String   @map("wc_id") // WooCommerce entity ID
+  wlId            String   @map("wl_id") // Witylogix entity ID
+  syncDirection   String   @map("sync_direction") // wc_to_wl, wl_to_wc, bidirectional
+  lastSyncedAt    DateTime @map("last_synced_at")
+  wcModifiedAt    DateTime @map("wc_modified_at") // Track WC modification time
+  wlModifiedAt    DateTime @map("wl_modified_at") // Track WL modification time
+  status          String   @default("success") // success, pending, failed
+  errorMessage    String?  @map("error_message")
+  metadata        Json     @default("{}") // Entity-specific sync metadata
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, entityType, wcId])
+  @@index([connectionId, entityType])
+  @@index([connectionId, status])
+  @@index([lastSyncedAt])
+  @@map("woocommerce_sync_records")
+}
+
+// ─── WEBHOOK MANAGEMENT ───────────────────────────────────────
+// Track registered webhooks on WooCommerce store
+
+model WooCommerceRegisteredWebhook {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId  String   @map("connection_id") @db.Uuid
+  wcWebhookId   String   @map("wc_webhook_id") // ID from WooCommerce
+  topic         String   // e.g., "order.created", "product.updated"
+  deliveryUrl   String   @map("delivery_url")
+  status        String   @default("active") // active, paused, disabled
+  secret        String   @map("secret") // For verification (encrypted)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, wcWebhookId])
+  @@index([connectionId, topic])
+  @@map("woocommerce_registered_webhooks")
+}
+
+// ─── WEBHOOK DELIVERY LOG ─────────────────────────────────────
+// Audit trail for webhook deliveries with idempotency tracking
+
+model WooCommerceWebhookLog {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId  String   @map("connection_id") @db.Uuid
+  deliveryId    String   @map("delivery_id") // Unique delivery identifier (idempotency key)
+  topic         String   // e.g., "order.created"
+  resource      String   // e.g., "order", "product"
+  event         String   // e.g., "created", "updated"
+  payload       Json     // Full webhook payload
+  signature     String?  // Received signature for audit
+  verified      Boolean  @default(false) // Signature verification result
+  processed     Boolean  @default(false)
+  status        String   @default("pending") // pending, processed, failed, skipped
+  errorMessage  String?  @map("error_message")
+  processedAt   DateTime? @map("processed_at")
+  receivedAt    DateTime @default(now()) @map("received_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, deliveryId]) // Idempotency constraint
+  @@index([connectionId, topic])
+  @@index([connectionId, status])
+  @@index([processedAt])
+  @@map("woocommerce_webhook_logs")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────
+
+enum WooCommerceOrderStatus {
+  PENDING
+  PROCESSING
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  FAILED
+
+  @@map("woocommerce_order_status")
+}
+
+enum WooCommerceProductType {
+  SIMPLE
+  VARIABLE
+  GROUPED
+  EXTERNAL
+  BUNDLE
+
+  @@map("woocommerce_product_type")
+}
+
+enum WooCommerceSyncDirection {
+  WC_TO_WL
+  WL_TO_WC
+  BIDIRECTIONAL
+
+  @@map("woocommerce_sync_direction")
+}

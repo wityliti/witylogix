@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import {
   Card,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Mail,
@@ -21,85 +21,165 @@ import {
   Smartphone,
   Check,
   AlertCircle,
+  Eye,
+  EyeOff,
+  Save,
+  X,
 } from "lucide-react";
 
-interface NotificationChannel {
+type Provider = "smtp" | "sendgrid" | "ses" | "twilio" | "vonage" | "meta" | "firebase" | "onesignal";
+
+interface ChannelConfig {
   id: string;
   name: string;
   icon: React.ReactNode;
   enabled: boolean;
-  types: NotificationType[];
+  provider: Provider | null;
+  credentials: Record<string, string>;
+  rateLimit: {
+    perMinute: number;
+    perHour: number;
+    perDay: number;
+  };
 }
 
-interface NotificationType {
-  id: string;
-  label: string;
-  enabled: boolean;
+interface NotificationSettings {
+  defaultSender: {
+    fromEmail: string;
+    fromPhone: string;
+    businessName: string;
+  };
+  quietHours: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+    timezone: string;
+  };
+  channels: Record<string, ChannelConfig>;
 }
 
-const DEFAULT_NOTIFICATIONS: NotificationChannel[] = [
-  {
-    id: "email",
-    name: "Email",
-    icon: <Mail className="w-5 h-5" />,
+const INITIAL_SETTINGS: NotificationSettings = {
+  defaultSender: {
+    fromEmail: "noreply@example.com",
+    fromPhone: "+1234567890",
+    businessName: "Witylogix",
+  },
+  quietHours: {
     enabled: true,
-    types: [
-      { id: "order-updates", label: "Order Updates", enabled: true },
-      { id: "driver-alerts", label: "Driver Alerts", enabled: true },
-      { id: "billing", label: "Billing & Invoices", enabled: true },
-      { id: "system", label: "System Notifications", enabled: false },
-    ],
+    startTime: "22:00",
+    endTime: "08:00",
+    timezone: "UTC",
   },
-  {
-    id: "sms",
-    name: "SMS",
-    icon: <MessageSquare className="w-5 h-5" />,
-    enabled: true,
-    types: [
-      { id: "order-updates", label: "Order Updates", enabled: true },
-      { id: "driver-alerts", label: "Driver Alerts", enabled: true },
-      { id: "billing", label: "Billing & Invoices", enabled: false },
-      { id: "system", label: "System Notifications", enabled: false },
-    ],
+  channels: {
+    email: {
+      id: "email",
+      name: "Email",
+      icon: <Mail className="w-5 h-5" />,
+      enabled: true,
+      provider: "sendgrid",
+      credentials: {
+        apiKey: "****************************",
+        senderEmail: "noreply@example.com",
+      },
+      rateLimit: { perMinute: 100, perHour: 5000, perDay: 50000 },
+    },
+    sms: {
+      id: "sms",
+      name: "SMS",
+      icon: <MessageSquare className="w-5 h-5" />,
+      enabled: true,
+      provider: "twilio",
+      credentials: {
+        accountSid: "****************************",
+        authToken: "****************************",
+        fromNumber: "+1234567890",
+      },
+      rateLimit: { perMinute: 10, perHour: 500, perDay: 5000 },
+    },
+    whatsapp: {
+      id: "whatsapp",
+      name: "WhatsApp",
+      icon: <MessageSquare className="w-5 h-5" />,
+      enabled: false,
+      provider: "meta",
+      credentials: {
+        businessAccountId: "",
+        phoneNumberId: "",
+        accessToken: "****************************",
+      },
+      rateLimit: { perMinute: 5, perHour: 100, perDay: 1000 },
+    },
+    push: {
+      id: "push",
+      name: "Push Notifications",
+      icon: <Bell className="w-5 h-5" />,
+      enabled: true,
+      provider: "firebase",
+      credentials: {
+        projectId: "",
+        privateKey: "****************************",
+        clientEmail: "",
+      },
+      rateLimit: { perMinute: 200, perHour: 10000, perDay: 100000 },
+    },
   },
-  {
-    id: "whatsapp",
-    name: "WhatsApp",
-    icon: <MessageSquare className="w-5 h-5" />,
-    enabled: false,
-    types: [
-      { id: "order-updates", label: "Order Updates", enabled: false },
-      { id: "driver-alerts", label: "Driver Alerts", enabled: false },
-      { id: "billing", label: "Billing & Invoices", enabled: false },
-      { id: "system", label: "System Notifications", enabled: false },
-    ],
-  },
-  {
-    id: "push",
-    name: "Push Notifications",
-    icon: <Bell className="w-5 h-5" />,
-    enabled: true,
-    types: [
-      { id: "order-updates", label: "Order Updates", enabled: true },
-      { id: "driver-alerts", label: "Driver Alerts", enabled: true },
-      { id: "billing", label: "Billing & Invoices", enabled: false },
-      { id: "system", label: "System Notifications", enabled: true },
-    ],
-  },
-];
+};
 
-// Notification Channel Component
-const NotificationChannelCard = ({
+interface RevealedCredentials {
+  [key: string]: boolean;
+}
+
+interface UnsavedChanges {
+  [key: string]: boolean;
+}
+
+const ChannelConfigCard = ({
   channel,
-  onChannelToggle,
-  onTypeToggle,
-  onTestNotification,
+  onChannelUpdate,
+  onTestSend,
+  revealedCredentials,
+  onToggleReveal,
 }: {
-  channel: NotificationChannel;
-  onChannelToggle: (channelId: string, enabled: boolean) => void;
-  onTypeToggle: (channelId: string, typeId: string, enabled: boolean) => void;
-  onTestNotification: (channelId: string) => void;
+  channel: ChannelConfig;
+  onChannelUpdate: (channelId: string, updates: Partial<ChannelConfig>) => void;
+  onTestSend: (channelId: string) => void;
+  revealedCredentials: RevealedCredentials;
+  onToggleReveal: (key: string) => void;
 }) => {
+  const providers: Record<string, Provider[]> = {
+    email: ["smtp", "sendgrid", "ses"],
+    sms: ["twilio", "vonage"],
+    whatsapp: ["meta", "twilio"],
+    push: ["firebase", "onesignal"],
+  };
+
+  const getProviderLabel = (provider: Provider) => {
+    const labels: Record<Provider, string> = {
+      smtp: "SMTP",
+      sendgrid: "SendGrid",
+      ses: "AWS SES",
+      twilio: "Twilio",
+      vonage: "Vonage",
+      meta: "Meta (WhatsApp Business)",
+      firebase: "Firebase Cloud Messaging",
+      onesignal: "OneSignal",
+    };
+    return labels[provider];
+  };
+
+  const credentialFields: Record<Provider, string[]> = {
+    smtp: ["host", "port", "username", "password"],
+    sendgrid: ["apiKey"],
+    ses: ["accessKeyId", "secretAccessKey", "region"],
+    twilio: ["accountSid", "authToken", "fromNumber"],
+    vonage: ["apiKey", "apiSecret", "fromNumber"],
+    meta: ["businessAccountId", "phoneNumberId", "accessToken"],
+    firebase: ["projectId", "privateKey", "clientEmail"],
+    onesignal: ["appId", "apiKey"],
+  };
+
+  const availableProviders = providers[channel.id] || [];
+
   return (
     <Card className="border border-[var(--wl-border)]">
       <CardHeader>
@@ -111,38 +191,162 @@ const NotificationChannelCard = ({
             <div>
               <CardTitle className="text-lg">{channel.name}</CardTitle>
               <CardDescription>
-                Manage {channel.name.toLowerCase()} notification settings
+                Configure {channel.name.toLowerCase()} settings and credentials
               </CardDescription>
             </div>
           </div>
           <Switch
             checked={channel.enabled}
-            onChange={(checked) => onChannelToggle(channel.id, checked)}
+            onChange={(checked) =>
+              onChannelUpdate(channel.id, { enabled: checked })
+            }
             size="md"
           />
         </div>
       </CardHeader>
 
-      <CardContent className={cn(
-        "space-y-4 transition-opacity",
-        !channel.enabled && "opacity-50 pointer-events-none"
-      )}>
-        <div className="space-y-3">
-          {channel.types.map((type) => (
-            <label
-              key={type.id}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <Checkbox
-                checked={type.enabled && channel.enabled}
-                onChange={(checked) => onTypeToggle(channel.id, type.id, checked as boolean)}
-                disabled={!channel.enabled}
+      <CardContent
+        className={cn(
+          "space-y-6 transition-opacity",
+          !channel.enabled && "opacity-50 pointer-events-none"
+        )}
+      >
+        {/* Provider Selection */}
+        <div>
+          <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+            Provider
+          </label>
+          <select
+            value={channel.provider || ""}
+            onChange={(e) =>
+              onChannelUpdate(channel.id, {
+                provider: e.target.value as Provider,
+              })
+            }
+            disabled={!channel.enabled}
+            className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="">Select a provider</option>
+            {availableProviders.map((provider) => (
+              <option key={provider} value={provider}>
+                {getProviderLabel(provider)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Credentials */}
+        {channel.provider && (
+          <div className="space-y-3 p-4 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
+            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide">
+              Credentials
+            </p>
+            {(credentialFields[channel.provider] || []).map((field) => {
+              const credKey = `${channel.id}_${field}`;
+              const isRevealed = revealedCredentials[credKey];
+              const value = channel.credentials[field] || "";
+
+              return (
+                <div key={field}>
+                  <label className="text-xs text-[var(--wl-text-secondary)] block mb-1">
+                    {field
+                      .split(/(?=[A-Z])/)
+                      .join(" ")
+                      .replace(/^\w/, (c) => c.toUpperCase())}
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={isRevealed ? "text" : "password"}
+                      value={value}
+                      onChange={(e) =>
+                        onChannelUpdate(channel.id, {
+                          credentials: {
+                            ...channel.credentials,
+                            [field]: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder={`Enter ${field}`}
+                      className="pr-10"
+                    />
+                    <button
+                      onClick={() => onToggleReveal(credKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+                    >
+                      {isRevealed ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Rate Limits */}
+        <div className="space-y-3 p-4 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
+          <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide">
+            Rate Limits
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-[var(--wl-text-secondary)] block mb-1">
+                Per Minute
+              </label>
+              <Input
+                type="number"
+                value={channel.rateLimit.perMinute}
+                onChange={(e) =>
+                  onChannelUpdate(channel.id, {
+                    rateLimit: {
+                      ...channel.rateLimit,
+                      perMinute: parseInt(e.target.value) || 0,
+                    },
+                  })
+                }
+                min="1"
               />
-              <span className="text-sm text-[var(--wl-text-primary)] group-hover:text-[var(--wl-text-primary)]">
-                {type.label}
-              </span>
-            </label>
-          ))}
+            </div>
+            <div>
+              <label className="text-xs text-[var(--wl-text-secondary)] block mb-1">
+                Per Hour
+              </label>
+              <Input
+                type="number"
+                value={channel.rateLimit.perHour}
+                onChange={(e) =>
+                  onChannelUpdate(channel.id, {
+                    rateLimit: {
+                      ...channel.rateLimit,
+                      perHour: parseInt(e.target.value) || 0,
+                    },
+                  })
+                }
+                min="1"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--wl-text-secondary)] block mb-1">
+                Per Day
+              </label>
+              <Input
+                type="number"
+                value={channel.rateLimit.perDay}
+                onChange={(e) =>
+                  onChannelUpdate(channel.id, {
+                    rateLimit: {
+                      ...channel.rateLimit,
+                      perDay: parseInt(e.target.value) || 0,
+                    },
+                  })
+                }
+                min="1"
+              />
+            </div>
+          </div>
         </div>
       </CardContent>
 
@@ -150,188 +354,272 @@ const NotificationChannelCard = ({
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => onTestNotification(channel.id)}
-          disabled={!channel.enabled}
+          onClick={() => onTestSend(channel.id)}
+          disabled={!channel.enabled || !channel.provider}
         >
           <AlertCircle className="w-4 h-4 mr-2" />
-          Send Test
+          Test Send
         </Button>
       </CardFooter>
     </Card>
   );
 };
 
-// Quiet Hours Component
-const QuietHoursSection = ({
-  quietHours,
-  onQuietHoursChange,
-}: {
-  quietHours: { start: string; end: string; enabled: boolean };
-  onQuietHoursChange: (hours: { start: string; end: string; enabled: boolean }) => void;
-}) => {
-  return (
-    <Card className="border border-[var(--wl-border)]">
-      <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg">Quiet Hours</CardTitle>
-            <CardDescription>
-              Disable notifications during specific hours
-            </CardDescription>
-          </div>
-          <Switch
-            checked={quietHours.enabled}
-            onChange={(checked) =>
-              onQuietHoursChange({ ...quietHours, enabled: checked })
-            }
-            size="md"
-          />
-        </div>
-      </CardHeader>
-
-      <CardContent className={cn(
-        "space-y-4 transition-opacity",
-        !quietHours.enabled && "opacity-50 pointer-events-none"
-      )}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
-              Start Time
-            </label>
-            <input
-              type="time"
-              value={quietHours.start}
-              onChange={(e) =>
-                onQuietHoursChange({ ...quietHours, start: e.target.value })
-              }
-              disabled={!quietHours.enabled}
-              className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <p className="text-xs text-[var(--wl-text-secondary)] mt-2">
-              No notifications before this time
-            </p>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
-              End Time
-            </label>
-            <input
-              type="time"
-              value={quietHours.end}
-              onChange={(e) =>
-                onQuietHoursChange({ ...quietHours, end: e.target.value })
-              }
-              disabled={!quietHours.enabled}
-              className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <p className="text-xs text-[var(--wl-text-secondary)] mt-2">
-              Resume notifications after this time
-            </p>
-          </div>
-        </div>
-
-        {quietHours.enabled && (
-          <div className="p-3 bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] rounded-lg flex items-start gap-3">
-            <Check className="w-4 h-4 text-[var(--wl-success)] flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-[var(--wl-text-secondary)]">
-              Quiet hours active from {quietHours.start} to {quietHours.end} daily
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-// Main Notification Preferences Page
-export default function NotificationPreferencesPage() {
-  const [channels, setChannels] = useState<NotificationChannel[]>(DEFAULT_NOTIFICATIONS);
-  const [quietHours, setQuietHours] = useState({
-    start: "22:00",
-    end: "08:00",
-    enabled: true,
-  });
+export default function NotificationSettingsPage() {
+  const [settings, setSettings] = useState<NotificationSettings>(INITIAL_SETTINGS);
+  const [revealedCredentials, setRevealedCredentials] = useState<RevealedCredentials>({});
+  const [unsavedChanges, setUnsavedChanges] = useState<UnsavedChanges>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [testingSendChannel, setTestingSendChannel] = useState<string | null>(null);
 
-  const handleChannelToggle = (channelId: string, enabled: boolean) => {
-    setChannels((prev) =>
-      prev.map((ch) =>
-        ch.id === channelId ? { ...ch, enabled } : ch
-      )
-    );
+  const hasUnsavedChanges = Object.values(unsavedChanges).some((v) => v);
+
+  const handleChannelUpdate = (
+    channelId: string,
+    updates: Partial<ChannelConfig>
+  ) => {
+    setSettings((prev) => ({
+      ...prev,
+      channels: {
+        ...prev.channels,
+        [channelId]: {
+          ...prev.channels[channelId],
+          ...updates,
+        },
+      },
+    }));
+    setUnsavedChanges((prev) => ({ ...prev, [channelId]: true }));
   };
 
-  const handleTypeToggle = (channelId: string, typeId: string, enabled: boolean) => {
-    setChannels((prev) =>
-      prev.map((ch) =>
-        ch.id === channelId
-          ? {
-              ...ch,
-              types: ch.types.map((t) =>
-                t.id === typeId ? { ...t, enabled } : t
-              ),
-            }
-          : ch
-      )
-    );
-  };
-
-  const handleTestNotification = (channelId: string) => {
-    setTestingSendChannel(channelId);
-    setTimeout(() => setTestingSendChannel(null), 2000);
-  };
-
-  const handleSavePreferences = async () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    // Simulate save
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      const response = await fetch("/api/notification-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      if (response.ok) {
+        setUnsavedChanges({});
+      }
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setSettings(INITIAL_SETTINGS);
+    setUnsavedChanges({});
   };
 
   return (
     <div className="min-h-screen bg-[var(--wl-bg-primary)]">
       <Header
-        title="Notification Preferences"
-        subtitle="Configure how and when you receive notifications"
+        title="Notification Settings"
+        subtitle="Configure notification channels and delivery settings"
       />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Notification Channels */}
-        <div className="mb-12">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Unsaved Changes Warning */}
+        {hasUnsavedChanges && (
+          <div className="mb-6 p-4 bg-[var(--wl-warning)]/10 border border-[var(--wl-warning)]/30 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-[var(--wl-warning)] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
+                Unsaved Changes
+              </p>
+              <p className="text-xs text-[var(--wl-text-secondary)]">
+                You have unsaved changes. Click save to apply them.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Default Sender Config */}
+        <Card className="border border-[var(--wl-border)] mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Default Sender Configuration</CardTitle>
+            <CardDescription>Set default sender information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                From Email
+              </label>
+              <Input
+                value={settings.defaultSender.fromEmail}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    defaultSender: {
+                      ...prev.defaultSender,
+                      fromEmail: e.target.value,
+                    },
+                  }))
+                }
+                placeholder="noreply@example.com"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                From Phone
+              </label>
+              <Input
+                value={settings.defaultSender.fromPhone}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    defaultSender: {
+                      ...prev.defaultSender,
+                      fromPhone: e.target.value,
+                    },
+                  }))
+                }
+                placeholder="+1234567890"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                Business Name
+              </label>
+              <Input
+                value={settings.defaultSender.businessName}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    defaultSender: {
+                      ...prev.defaultSender,
+                      businessName: e.target.value,
+                    },
+                  }))
+                }
+                placeholder="Your Business Name"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quiet Hours Config */}
+        <Card className="border border-[var(--wl-border)] mb-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Quiet Hours</CardTitle>
+                <CardDescription>
+                  Suspend notifications during specific hours
+                </CardDescription>
+              </div>
+              <Switch
+                checked={settings.quietHours.enabled}
+                onChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    quietHours: { ...prev.quietHours, enabled: checked },
+                  }))
+                }
+              />
+            </div>
+          </CardHeader>
+          <CardContent
+            className={cn(
+              "space-y-4 transition-opacity",
+              !settings.quietHours.enabled && "opacity-50 pointer-events-none"
+            )}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  Start Time
+                </label>
+                <Input
+                  type="time"
+                  value={settings.quietHours.startTime}
+                  onChange={(e) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      quietHours: {
+                        ...prev.quietHours,
+                        startTime: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  End Time
+                </label>
+                <Input
+                  type="time"
+                  value={settings.quietHours.endTime}
+                  onChange={(e) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      quietHours: {
+                        ...prev.quietHours,
+                        endTime: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  Timezone
+                </label>
+                <Input
+                  value={settings.quietHours.timezone}
+                  onChange={(e) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      quietHours: {
+                        ...prev.quietHours,
+                        timezone: e.target.value,
+                      },
+                    }))
+                  }
+                  placeholder="UTC"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Channel Configuration */}
+        <div className="mb-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-[var(--wl-text-primary)] mb-2">
               Notification Channels
             </h2>
             <p className="text-[var(--wl-text-secondary)]">
-              Choose which channels to receive notifications through
+              Configure providers, credentials, and rate limits for each channel
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {channels.map((channel) => (
-              <NotificationChannelCard
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {Object.values(settings.channels).map((channel) => (
+              <ChannelConfigCard
                 key={channel.id}
                 channel={channel}
-                onChannelToggle={handleChannelToggle}
-                onTypeToggle={handleTypeToggle}
-                onTestNotification={handleTestNotification}
+                onChannelUpdate={handleChannelUpdate}
+                onTestSend={(channelId) => {
+                  console.log("Test send:", channelId);
+                }}
+                revealedCredentials={revealedCredentials}
+                onToggleReveal={(key) => {
+                  setRevealedCredentials((prev) => ({
+                    ...prev,
+                    [key]: !prev[key],
+                  }));
+                }}
               />
             ))}
           </div>
         </div>
 
-        {/* Quiet Hours */}
-        <div className="mb-12">
-          <QuietHoursSection
-            quietHours={quietHours}
-            onQuietHoursChange={setQuietHours}
-          />
-        </div>
-
-        {/* Summary Card */}
-        <Card className="border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)]">
+        {/* Summary Stats */}
+        <Card className="border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] mb-8">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
@@ -339,35 +627,41 @@ export default function NotificationPreferencesPage() {
                   Active Channels
                 </p>
                 <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
-                  {channels.filter((c) => c.enabled).length}
+                  {
+                    Object.values(settings.channels).filter((c) => c.enabled)
+                      .length
+                  }
                 </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
-                  Total Notifications
+                  Configured Providers
                 </p>
                 <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
-                  {channels.reduce(
-                    (acc, ch) =>
-                      acc + ch.types.filter((t) => t.enabled && ch.enabled).length,
-                    0
-                  )}
+                  {
+                    Object.values(settings.channels).filter(
+                      (c) => c.provider
+                    ).length
+                  }
                 </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
                   Quiet Hours
                 </p>
-                <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
-                  {quietHours.enabled ? quietHours.start : "Disabled"}
+                <p className="text-sm text-[var(--wl-text-primary)]">
+                  {settings.quietHours.enabled
+                    ? `${settings.quietHours.startTime} - ${settings.quietHours.endTime}`
+                    : "Disabled"}
                 </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
-                  Last Updated
+                  Status
                 </p>
-                <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
-                  Now
+                <p className="inline-flex items-center gap-2 text-sm">
+                  <span className="w-2 h-2 rounded-full bg-[var(--wl-success)]" />
+                  Connected
                 </p>
               </div>
             </div>
@@ -375,16 +669,22 @@ export default function NotificationPreferencesPage() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-8 justify-end">
-          <Button variant="secondary">
-            Reset to Default
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="secondary"
+            onClick={handleDiscard}
+            disabled={!hasUnsavedChanges || isSaving}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Discard Changes
           </Button>
           <Button
             variant="primary"
-            onClick={handleSavePreferences}
-            disabled={isSaving}
+            onClick={handleSave}
+            disabled={!hasUnsavedChanges || isSaving}
           >
-            {isSaving ? "Saving..." : "Save Preferences"}
+            <Save className="w-4 h-4 mr-2" />
+            {isSaving ? "Saving..." : "Save Settings"}
           </Button>
         </div>
       </main>

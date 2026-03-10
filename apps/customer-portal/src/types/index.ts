@@ -112,3 +112,56 @@ export interface RescheduleRequest {
   timeSlot: string;
   reason?: string;
 }
+
+// Sprint 4.6 Real-time Tracking Types
+export type DeliveryStep = 'ordered' | 'confirmed' | 'dispatched' | 'out-for-delivery' | 'nearby' | 'delivered';
+
+export interface DeliveryStepDetail {
+  step: DeliveryStep;
+  status: 'pending' | 'completed' | 'current';
+  timestamp?: Date;
+  details?: string;
+  expandedInfo?: {
+    driverAssigned?: string;
+    estimatedTime?: Date;
+    proofOfDelivery?: {
+      photo?: string;
+      signature?: string;
+    };
+  };
+}
+
+export interface DriverLocation {
+  latitude: number;
+  longitude: number;
+  bearing?: number; // degrees (0-360)
+  speed?: number; // km/h
+  timestamp: Date;
+}
+
+export interface DeliveryTracking {
+  orderId: string;
+  driverId: string;
+  driver: Driver;
+  driverPosition: DriverLocation;
+  deliveryStatus: DeliveryStep;
+  eta: Date;
+  route?: DriverLocation[]; // completed route points
+  remainingRoute?: DriverLocation[]; // remaining route points
+  destinationLatitude: number;
+  destinationLongitude: number;
+  isConnected: boolean;
+  error?: string;
+  lastUpdated: Date;
+}
+
+export interface RatingCategory {
+  driver: number;
+  timeliness: number;
+  condition: number;
+}
+
+export interface EnhancedOrderRating extends OrderRating {
+  categories?: RatingCategory;
+  wouldOrderAgain?: boolean;
+}

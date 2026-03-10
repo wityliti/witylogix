@@ -7,17 +7,23 @@ import { ArrowLeft, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RatingStars } from '@/components/rating-stars';
 
-type RatingStep = 'rating' | 'feedback' | 'success';
+type RatingStep = 'rating' | 'categories' | 'feedback' | 'success';
 
 export default function RatePage({ params }: { params: { id: string } }) {
   const [step, setStep] = useState<RatingStep>('rating');
   const [driverRating, setDriverRating] = useState(0);
   const [experienceRating, setExperienceRating] = useState(0);
+  const [driverCategoryRating, setDriverCategoryRating] = useState(0);
+  const [timelinessCategoryRating, setTimelinessCategoryRating] = useState(0);
+  const [conditionCategoryRating, setConditionCategoryRating] = useState(0);
   const [feedback, setFeedback] = useState('');
+  const [wouldOrderAgain, setWouldOrderAgain] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
 
   const handleNext = () => {
     if (step === 'rating' && driverRating > 0 && experienceRating > 0) {
+      setStep('categories');
+    } else if (step === 'categories' && driverCategoryRating > 0 && timelinessCategoryRating > 0 && conditionCategoryRating > 0) {
       setStep('feedback');
     } else if (step === 'feedback') {
       setStep('success');
@@ -35,6 +41,8 @@ export default function RatePage({ params }: { params: { id: string } }) {
 
   const canProceed = step === 'rating'
     ? driverRating > 0 && experienceRating > 0
+    : step === 'categories'
+    ? driverCategoryRating > 0 && timelinessCategoryRating > 0 && conditionCategoryRating > 0
     : true;
 
   return (
@@ -69,12 +77,12 @@ export default function RatePage({ params }: { params: { id: string } }) {
       {/* Progress Bar */}
       <div className="w-full max-w-2xl">
         <div className="flex gap-2">
-          {(['rating', 'feedback', 'success'] as const).map((s, i) => (
+          {(['rating', 'categories', 'feedback', 'success'] as const).map((s, i) => (
             <div
               key={s}
               className={cn(
                 'flex-1 h-2 rounded-full transition-colors duration-fast',
-                (['rating', 'feedback', 'success'].indexOf(step) >= i)
+                (['rating', 'categories', 'feedback', 'success'].indexOf(step) >= i)
                   ? 'bg-wl-primary-500'
                   : 'bg-wl-neutral-700'
               )}
@@ -150,22 +158,118 @@ export default function RatePage({ params }: { params: { id: string } }) {
           </div>
         )}
 
+        {step === 'categories' && (
+          <div className={cn(
+            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6',
+            'space-y-8'
+          )}>
+            {/* Summary of Initial Ratings */}
+            <div className={cn(
+              'p-4 rounded-lg bg-wl-bg-elevated'
+            )}>
+              <p className="text-sm text-wl-text-secondary font-medium mb-3">
+                <strong>Your Ratings:</strong>
+              </p>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-wl-text-secondary">Driver:</span>
+                <RatingStars value={driverRating} readonly size="sm" />
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-wl-text-secondary">Experience:</span>
+                <RatingStars value={experienceRating} readonly size="sm" />
+              </div>
+            </div>
+
+            {/* Driver Category Rating */}
+            <div>
+              <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+                Rate the Driver
+              </h2>
+              <p className="text-sm text-wl-text-secondary mb-6">
+                How professional and courteous was the driver?
+              </p>
+              <div className="flex justify-center mb-4">
+                <RatingStars
+                  value={driverCategoryRating}
+                  onChange={setDriverCategoryRating}
+                  size="lg"
+                />
+              </div>
+            </div>
+
+            {/* Timeliness Category Rating */}
+            <div className={cn(
+              'pt-8 border-t border-wl-border-subtle'
+            )}>
+              <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+                Rate Timeliness
+              </h2>
+              <p className="text-sm text-wl-text-secondary mb-6">
+                Was the delivery on time?
+              </p>
+              <div className="flex justify-center mb-4">
+                <RatingStars
+                  value={timelinessCategoryRating}
+                  onChange={setTimelinessCategoryRating}
+                  size="lg"
+                />
+              </div>
+            </div>
+
+            {/* Condition Category Rating */}
+            <div className={cn(
+              'pt-8 border-t border-wl-border-subtle'
+            )}>
+              <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+                Rate Item Condition
+              </h2>
+              <p className="text-sm text-wl-text-secondary mb-6">
+                Were the items delivered in good condition?
+              </p>
+              <div className="flex justify-center mb-4">
+                <RatingStars
+                  value={conditionCategoryRating}
+                  onChange={setConditionCategoryRating}
+                  size="lg"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {step === 'feedback' && (
           <div className={cn(
             'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6',
             'space-y-6'
           )}>
-            {/* Summary of Ratings */}
+            {/* Summary of All Ratings */}
             <div className={cn(
               'p-4 rounded-lg bg-wl-bg-elevated'
             )}>
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-wl-text-secondary">Driver Rating:</span>
-                <RatingStars value={driverRating} readonly size="sm" />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-wl-text-secondary">Experience Rating:</span>
-                <RatingStars value={experienceRating} readonly size="sm" />
+              <p className="text-sm text-wl-text-secondary font-medium mb-3">
+                <strong>Your Ratings:</strong>
+              </p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Driver:</span>
+                  <RatingStars value={driverRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Experience:</span>
+                  <RatingStars value={experienceRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Professionalism:</span>
+                  <RatingStars value={driverCategoryRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Timeliness:</span>
+                  <RatingStars value={timelinessCategoryRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Item Condition:</span>
+                  <RatingStars value={conditionCategoryRating} readonly size="sm" />
+                </div>
               </div>
             </div>
 
@@ -191,8 +295,43 @@ export default function RatePage({ params }: { params: { id: string } }) {
               />
             </div>
 
+            {/* Would You Order Again */}
+            <div className={cn(
+              'pt-6 border-t border-wl-border-subtle'
+            )}>
+              <label className="block text-wl-text-primary font-medium mb-4">
+                Would you order from us again?
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setWouldOrderAgain(true)}
+                  className={cn(
+                    'flex-1 px-4 py-3 rounded-lg font-medium transition-colors',
+                    wouldOrderAgain
+                      ? 'bg-wl-success-500 text-white'
+                      : 'bg-wl-bg-elevated border border-wl-border-subtle text-wl-text-secondary hover:border-wl-success-500'
+                  )}
+                >
+                  ✓ Yes
+                </button>
+                <button
+                  onClick={() => setWouldOrderAgain(false)}
+                  className={cn(
+                    'flex-1 px-4 py-3 rounded-lg font-medium transition-colors',
+                    !wouldOrderAgain
+                      ? 'bg-wl-danger-500 text-white'
+                      : 'bg-wl-bg-elevated border border-wl-border-subtle text-wl-text-secondary hover:border-wl-danger-500'
+                  )}
+                >
+                  ✗ No
+                </button>
+              </div>
+            </div>
+
             {/* Photo Upload */}
-            <div>
+            <div className={cn(
+              'pt-6 border-t border-wl-border-subtle'
+            )}>
               <label className="block text-wl-text-primary font-medium mb-2">
                 Add Photos (Optional)
               </label>
@@ -268,15 +407,50 @@ export default function RatePage({ params }: { params: { id: string } }) {
 
             <div className={cn(
               'bg-wl-success-500/10 border border-wl-success-500/30',
-              'rounded-lg p-4 mb-8 text-left'
+              'rounded-lg p-4 mb-8 text-left space-y-3'
             )}>
-              <p className="text-sm text-wl-text-secondary mb-2">
-                <strong>Your Ratings:</strong>
+              <p className="text-sm text-wl-text-secondary font-medium">
+                <strong>Your Ratings & Feedback:</strong>
               </p>
-              <div className="space-y-2 text-sm text-wl-text-primary">
-                <p>Driver Rating: <RatingStars value={driverRating} readonly size="sm" /></p>
-                <p>Experience Rating: <RatingStars value={experienceRating} readonly size="sm" /></p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Driver:</span>
+                  <RatingStars value={driverRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Experience:</span>
+                  <RatingStars value={experienceRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Professionalism:</span>
+                  <RatingStars value={driverCategoryRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Timeliness:</span>
+                  <RatingStars value={timelinessCategoryRating} readonly size="sm" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-wl-text-secondary">Condition:</span>
+                  <RatingStars value={conditionCategoryRating} readonly size="sm" />
+                </div>
               </div>
+              <div className={cn(
+                'pt-3 border-t border-wl-success-500/20'
+              )}>
+                <p className="text-sm text-wl-text-secondary">
+                  <strong>Order Again:</strong> {wouldOrderAgain ? '✓ Yes' : '✗ No'}
+                </p>
+              </div>
+              {feedback && (
+                <div className={cn(
+                  'pt-3 border-t border-wl-success-500/20'
+                )}>
+                  <p className="text-xs text-wl-text-secondary mb-1">
+                    <strong>Feedback:</strong>
+                  </p>
+                  <p className="text-sm text-wl-text-primary italic">"{feedback}"</p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -308,9 +482,9 @@ export default function RatePage({ params }: { params: { id: string } }) {
       {/* Action Buttons */}
       {step !== 'success' && (
         <div className="flex gap-3 max-w-2xl">
-          {step === 'feedback' && (
+          {(step === 'feedback' || step === 'categories') && (
             <button
-              onClick={() => setStep('rating')}
+              onClick={() => setStep(step === 'feedback' ? 'categories' : 'rating')}
               className={cn(
                 'px-6 py-3 rounded-lg font-medium',
                 'bg-wl-neutral-700 text-wl-text-primary',
