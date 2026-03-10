@@ -1,0 +1,599 @@
+---
+title: Docker Deep Dive
+description: Understand the Dockerfile, docker-compose configuration, and containerization strategy.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Multi-Stage Docker Build
+
+Witylogix uses a three-stage Docker build pattern to create optimized production images with minimal size and security overhead.
+
+### Stage 1: Dependencies (Builder Dependencies)
+
+```dockerfile
+FROM node:20-alpine AS deps
+
+# Install pnpm
+RUN npm install -g pnpm@9.15.0
+
+WORKDIR /app
+
+# Copy workspace and package files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+
+# Install dependencies (only production)
+RUN pnpm install --frozen-lockfile --prod
+
+# Prune unused dependencies
+RUN pnpm prune --prod
+```
+
+**Purpose:** Install and cache production dependencies separately from build artifacts.
+
+**Key Points:**
+- Alpine Linux reduces base image size (40MB vs 300MB+)
+- `--frozen-lockfile` ensures reproducible builds
+- `--prod` excludes dev dependencies
+- `pnpm prune --prod` removes any unnecessary packages
+
+**Output:** `/app/node_modules` with production dependencies only
+
+### Stage 2: Builder (Source Code Compilation)
+
+```dockerfile
+FROM node:20-alpine AS builder
+
+RUN npm install -g pnpm@9.15.0
+
+WORKDIR /app
+
+# Copy all source files
+COPY . .
+
+# Copy pre-built dependencies from stage 1
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.pnpm-store ./.pnpm-store
+
+# Build arguments for configuration
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Set environment variables for build
+ENV NODE_ENV=production \
+    NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Generate Prisma client
+RUN pnpm db:generate
+
+# Build all packages and applications
+RUN pnpm build
+```
+
+**Purpose:** Compile TypeScript, bundle applications, and generate build artifacts.
+
+**Key Points:**
+- Reuses dependencies from stage 1 to save build time
+- `db:generate` creates Prisma client with latest schema
+- `pnpm build` runs Turborepo task graph for parallel compilation
+- Environment variables baked into Next.js static exports
+
+**Output:**
+- `/app/apps/api/dist` — Compiled Fastify server
+- `/app/apps/dashboard/.next` — Next.js production bundle
+- `/app/packages/*/dist` — Compiled package bundles
+
+### Stage 3: Runtime (Production Image)
+
+```dockerfile
+FROM node:20-alpine AS runner
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init curl
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Set environment
+ENV NODE_ENV=production
+
+# Copy minimal artifacts from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# Copy Prisma schema and generated client
+COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Copy built applications
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/apps/dashboard/.next ./apps/dashboard/.next
+COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
+COPY --from=builder /app/apps/dashboard/package.json ./apps/dashboard/
+
+# Copy built packages
+COPY --from=builder /app/packages/core/dist ./packages/core/dist
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+# ... other packages ...
+
+# Change ownership to non-root user
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose ports
+EXPOSE 3000 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "apps/api/dist/server.js"]
+```
+
+**Purpose:** Create minimal, secure production image with only runtime dependencies.
+
+**Key Points:**
+- Only copies built artifacts and runtime dependencies (not source code)
+- Uses non-root user (`nextjs:1001`) for security
+- `dumb-init` handles PID 1 signal forwarding properly
+- Health check validates API availability
+- Final image size: ~200-300MB (vs 1.5GB+ with all build tools)
+
+## Docker Compose Configuration
+
+### Service Definitions
+
+#### PostgreSQL Database
+
+```yaml
+postgres:
+  image: postgres:16-alpine
+  container_name: witylogix-postgres
+  restart: unless-stopped
+  ports:
+    - "5432:5432"
+  environment:
+    POSTGRES_USER: ${POSTGRES_USER:-witylogix}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_dev_password}
+    POSTGRES_DB: ${POSTGRES_DB:-witylogix_dev}
+    PGDATA: /var/lib/postgresql/data/pgdata
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-witylogix} -d ${POSTGRES_DB:-witylogix_dev}"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+  networks:
+    - witylogix-network
+```
+
+**Configuration Breakdown:**
+- **Image:** Alpine PostgreSQL 16 for small footprint
+- **Health Check:** `pg_isready` verifies database is accepting connections
+- **Volumes:** `postgres_data` persists database files between restarts
+- **Networks:** Custom bridge network for service communication
+
+#### Redis Cache
+
+```yaml
+redis:
+  image: redis:7-alpine
+  container_name: witylogix-redis
+  restart: unless-stopped
+  ports:
+    - "6379:6379"
+  command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+  volumes:
+    - redis_data:/data
+  healthcheck:
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+  networks:
+    - witylogix-network
+```
+
+**Key Features:**
+- **AOF Persistence:** `--appendonly yes` enables append-only file for durability
+- **Password Protection:** Optional `--requirepass` in production
+- **Health Check:** `redis-cli ping` validates connectivity
+- **Data Volume:** `redis_data` persists cache between restarts
+
+#### API Server
+
+```yaml
+api:
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runner
+    args:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+  container_name: witylogix-api
+  restart: unless-stopped
+  ports:
+    - "3001:3001"
+  environment:
+    NODE_ENV: ${NODE_ENV:-development}
+    DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_dev_password}@postgres:5432/${POSTGRES_DB:-witylogix_dev}
+    REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+    API_PORT: 3001
+    API_HOST: 0.0.0.0
+    SHOPIFY_API_KEY: ${SHOPIFY_API_KEY:-}
+    SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET:-}
+    LOG_LEVEL: ${LOG_LEVEL:-info}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+  networks:
+    - witylogix-network
+  volumes:
+    - ./apps/api:/app/apps/api
+    - ./packages:/app/packages
+```
+
+**Key Points:**
+- **Build Target:** Specifies `runner` stage for production-optimized image
+- **Depends On:** Waits for database and Redis health checks before starting
+- **Volume Mounts:** Enables hot reload in development (commented out for production)
+- **Health Check:** Curl to `/health` endpoint validates API is running
+
+#### Dashboard
+
+```yaml
+dashboard:
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runner
+    args:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+  container_name: witylogix-dashboard
+  restart: unless-stopped
+  ports:
+    - "3000:3000"
+  environment:
+    NODE_ENV: ${NODE_ENV:-development}
+    NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_dev_password}@postgres:5432/${POSTGRES_DB:-witylogix_dev}
+  depends_on:
+    postgres:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+  networks:
+    - witylogix-network
+  volumes:
+    - ./apps/dashboard:/app/apps/dashboard
+    - ./packages:/app/packages
+```
+
+**Configuration:**
+- Connects to same PostgreSQL for data access
+- Serves on port 3000
+- Health check validates home page loads
+
+### Networking
+
+```yaml
+networks:
+  witylogix-network:
+    driver: bridge
+```
+
+**Purpose:** Custom bridge network allows service-to-service communication using container names:
+- `api` can resolve to `http://api:3001` internally
+- Isolates Witylogix from other Docker networks
+- Enables network-level security policies
+
+### Volumes
+
+```yaml
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+```
+
+**Purpose:** Named volumes persist data between container restarts and upgrades.
+
+**Where Data Goes:**
+- `postgres_data`: `/var/lib/postgresql/data` inside container
+- `redis_data`: `/data` inside container
+
+**Backup:** Copy volumes before upgrades:
+
+```bash
+# Backup PostgreSQL data
+docker run --rm -v postgres_data:/source -v $(pwd):/backup \
+  alpine tar czf /backup/postgres_backup.tar.gz -C /source .
+
+# Backup Redis data
+docker run --rm -v redis_data:/source -v $(pwd):/backup \
+  alpine tar czf /backup/redis_backup.tar.gz -C /source .
+```
+
+## Environment Variable Expansion
+
+Docker Compose substitutes variables from `.env` file:
+
+```env
+# .env
+POSTGRES_USER=witylogix
+POSTGRES_PASSWORD=secure_password_123
+NEXT_PUBLIC_API_URL=http://localhost:3001
+LOG_LEVEL=debug
+```
+
+In `docker-compose.yml`:
+
+```yaml
+environment:
+  POSTGRES_USER: ${POSTGRES_USER:-default_user}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-default_password}
+```
+
+**Syntax:**
+- `${VAR_NAME}` — Use value from environment
+- `${VAR_NAME:-default}` — Use default if not set
+
+## Common Operations
+
+### Rebuild Image After Code Changes
+
+```bash
+# Rebuild without cache (recommended for fresh build)
+docker compose build --no-cache
+
+# Rebuild and restart services
+docker compose up -d --build
+```
+
+### View Running Services
+
+```bash
+docker compose ps
+
+# Output:
+# NAME                COMMAND             STATUS              PORTS
+# witylogix-postgres  postgres            Up 2 minutes        5432/tcp
+# witylogix-redis     redis-server        Up 2 minutes        6379/tcp
+# witylogix-api       node apps/api/...   Up 1 minute         3001/tcp
+# witylogix-dashboard next start          Up 1 minute         3000/tcp
+```
+
+### Check Service Logs
+
+```bash
+# View all logs
+docker compose logs -f
+
+# View specific service logs
+docker compose logs -f api
+
+# View last 100 lines
+docker compose logs -f --tail 100 api
+
+# View logs with timestamps
+docker compose logs -f -t api
+```
+
+### Execute Commands in Container
+
+```bash
+# Run one-off command
+docker compose exec api pnpm db:migrate:deploy
+
+# Open shell inside container
+docker compose exec api sh
+
+# Run as root
+docker compose exec -u root api apk add curl
+```
+
+### Clean Up
+
+```bash
+# Stop containers (keep volumes)
+docker compose down
+
+# Stop containers and remove volumes
+docker compose down -v
+
+# Remove unused images/networks
+docker system prune -a
+
+# Remove all Docker data (WARNING: destructive)
+docker system prune -a --volumes
+```
+
+## Performance Optimization
+
+### Reduce Image Size
+
+**Current layers to optimize:**
+1. Remove unnecessary dependencies (check `pnpm prune --prod`)
+2. Use multi-stage build (already implemented)
+3. Alpine Linux base (already implemented)
+
+**Check image size:**
+
+```bash
+docker images witylogix
+
+# Output:
+# REPOSITORY  TAG       IMAGE ID       SIZE
+# witylogix   latest    abc123def456   287MB
+```
+
+### Reduce Build Time
+
+```bash
+# Build without cache (slower, useful for CI)
+docker compose build --no-cache
+
+# Build with cache (fast, uses previous layers)
+docker compose build
+
+# Check build cache
+docker system df
+
+# Prune unused layers
+docker system prune -a
+```
+
+### Network Performance
+
+Use `host` network on Linux for faster local development (not available on Docker Desktop):
+
+```yaml
+api:
+  network_mode: "host"
+  # Note: ports config ignored with host network
+```
+
+### Disk Usage
+
+```bash
+# Check Docker disk usage
+docker system df
+
+# Remove unused images
+docker image prune -a
+
+# Remove unused networks
+docker network prune
+
+# Remove unused volumes
+docker volume prune
+```
+
+## Troubleshooting
+
+### Service health check failing
+
+```bash
+# Check why health check fails
+docker compose logs postgres
+
+# Manual health check
+docker compose exec postgres pg_isready -U witylogix -d witylogix_dev
+
+# For Redis
+docker compose exec redis redis-cli ping
+```
+
+### Can't connect between services
+
+```bash
+# Check network
+docker network ls
+docker network inspect witylogix-network
+
+# Test DNS from inside API container
+docker compose exec api getent hosts postgres
+
+# Test connectivity
+docker compose exec api nc -zv postgres 5432
+```
+
+### Out of disk space
+
+```bash
+# Check Docker disk usage
+docker system df
+
+# Clean up
+docker system prune -a --volumes
+
+# Remove specific volume
+docker volume rm postgres_data
+```
+
+### Port already in use
+
+```bash
+# Find what's using port 5432
+lsof -i :5432
+
+# Change ports in docker-compose.yml
+# postgres: "5433:5432"  # Use 5433 instead of 5432
+```
+
+## Production Considerations
+
+### Use BuildKit for Faster Builds
+
+```bash
+export DOCKER_BUILDKIT=1
+docker compose build
+```
+
+### Build and Push to Registry
+
+```bash
+# Build for production
+docker build -t registry.example.com/witylogix:v1.0.0 \
+  --target runner \
+  --build-arg NEXT_PUBLIC_API_URL=https://api.example.com .
+
+# Push to registry
+docker push registry.example.com/witylogix:v1.0.0
+
+# Use in docker-compose.yml
+# image: registry.example.com/witylogix:v1.0.0
+```
+
+### Security Scanning
+
+```bash
+# Scan for vulnerabilities
+docker scout cves registry.example.com/witylogix:v1.0.0
+
+# View detailed report
+docker scout recommendations registry.example.com/witylogix:v1.0.0
+```
+
+### Resource Limits
+
+Limit container resources in `docker-compose.yml`:
+
+```yaml
+api:
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2G
+      reservations:
+        cpus: '1'
+        memory: 1G
+```
+
+See [Self-Hosting Guide](/docs/self-hosting) for production deployment details.

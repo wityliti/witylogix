@@ -1,0 +1,339 @@
+---
+title: DatePicker
+description: Calendar input for selecting dates with dropdown, range, and constraints
+---
+
+# DatePicker
+
+The DatePicker component provides a calendar interface for selecting single dates or date ranges with keyboard navigation and date constraints.
+
+## Import
+
+```typescript
+import { DatePicker } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+import { useState } from "react"
+
+const [date, setDate] = useState<Date | null>(null)
+
+<DatePicker
+  value={date}
+  onChange={setDate}
+  placeholder="Select a date"
+/>
+```
+
+## Single Date Selection
+
+```tsx
+const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+
+<DatePicker
+  value={selectedDate}
+  onChange={setSelectedDate}
+  placeholder="Choose date"
+/>
+```
+
+## Date Range Selection
+
+```tsx
+const [dateRange, setDateRange] = useState<{
+  from: Date | null
+  to: Date | null
+}>({ from: null, to: null })
+
+<DatePicker
+  range
+  value={dateRange}
+  onChange={setDateRange}
+  placeholder="Select date range"
+/>
+```
+
+## Min and Max Dates
+
+Restrict selectable dates with constraints:
+
+```tsx
+const today = new Date()
+const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+<DatePicker
+  value={date}
+  onChange={setDate}
+  minDate={today}
+  maxDate={nextWeek}
+  placeholder="Select date (this week only)"
+/>
+```
+
+## Disabled Dates
+
+Disable specific dates:
+
+```tsx
+const isWeekend = (date: Date) => {
+  return date.getDay() === 0 || date.getDay() === 6
+}
+
+<DatePicker
+  value={date}
+  onChange={setDate}
+  disabledDates={isWeekend}
+  placeholder="Weekdays only"
+/>
+```
+
+## Month Navigation
+
+Navigate between months in the calendar:
+
+```tsx
+<DatePicker
+  value={date}
+  onChange={setDate}
+  placeholder="Select date"
+  showMonthYearPicker={false}
+/>
+```
+
+## Props Table
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | Date \| null | - | Selected date |
+| `onChange` | function | - | Called when date changes |
+| `placeholder` | string | "Select a date" | Input placeholder |
+| `range` | boolean | false | Enable date range selection |
+| `minDate` | Date | - | Earliest selectable date |
+| `maxDate` | Date | - | Latest selectable date |
+| `disabledDates` | (date: Date) => boolean | - | Function to disable dates |
+| `disabled` | boolean | false | Disables input |
+| `format` | string | "MMM d, yyyy" | Date format |
+| `size` | "sm" \| "md" \| "lg" | "md" | Input size |
+| `className` | string | - | Additional classes |
+
+## Usage Examples
+
+### Birthday Selector
+
+```tsx
+import { useState } from "react"
+
+const [birthday, setBirthday] = useState<Date | null>(null)
+
+const eighteenYearsAgo = new Date()
+eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18)
+
+<div className="space-y-2">
+  <Label>Date of Birth</Label>
+  <DatePicker
+    value={birthday}
+    onChange={setBirthday}
+    maxDate={eighteenYearsAgo}
+    placeholder="Select your birthday"
+  />
+</div>
+```
+
+### Appointment Booking
+
+```tsx
+import { useState } from "react"
+
+const [appointmentDate, setAppointmentDate] = useState<Date | null>(null)
+
+const tomorrow = new Date()
+tomorrow.setDate(tomorrow.getDate() + 1)
+
+const nextMonth = new Date()
+nextMonth.setMonth(nextMonth.getMonth() + 1)
+
+const isBooked = (date: Date) => {
+  const bookedDates = [
+    new Date(2024, 2, 15),
+    new Date(2024, 2, 20),
+  ]
+  return bookedDates.some(
+    d => d.toDateString() === date.toDateString()
+  )
+}
+
+<div className="space-y-2">
+  <Label>Book Appointment</Label>
+  <DatePicker
+    value={appointmentDate}
+    onChange={setAppointmentDate}
+    minDate={tomorrow}
+    maxDate={nextMonth}
+    disabledDates={isBooked}
+    placeholder="Select appointment date"
+  />
+</div>
+```
+
+### Project Timeline
+
+```tsx
+import { useState } from "react"
+
+const [timeline, setTimeline] = useState<{
+  from: Date | null
+  to: Date | null
+}>({ from: null, to: null })
+
+const today = new Date()
+const maxDate = new Date()
+maxDate.setFullYear(maxDate.getFullYear() + 1)
+
+<div className="space-y-2">
+  <Label>Project Timeline</Label>
+  <DatePicker
+    range
+    value={timeline}
+    onChange={setTimeline}
+    minDate={today}
+    maxDate={maxDate}
+    placeholder="Select start and end dates"
+  />
+</div>
+```
+
+### Report Date Selection
+
+```tsx
+import { useState } from "react"
+
+const [reportDate, setReportDate] = useState<Date | null>(null)
+
+const isWeekday = (date: Date) => {
+  const day = date.getDay()
+  return day !== 0 && day !== 6
+}
+
+<div className="space-y-2">
+  <Label>Report Date (Weekdays Only)</Label>
+  <DatePicker
+    value={reportDate}
+    onChange={setReportDate}
+    disabledDates={(date) => !isWeekday(date)}
+    placeholder="Select a weekday"
+  />
+</div>
+```
+
+### Date Range Filter
+
+```tsx
+import { useState } from "react"
+import { Button } from "@/components/ui"
+
+const [dateRange, setDateRange] = useState<{
+  from: Date | null
+  to: Date | null
+}>({ from: null, to: null })
+
+const handleFilter = () => {
+  // Filter data based on date range
+  console.log("Filtering from", dateRange.from, "to", dateRange.to)
+}
+
+<div className="space-y-4">
+  <DatePicker
+    range
+    value={dateRange}
+    onChange={setDateRange}
+    placeholder="Select date range"
+  />
+  <Button onClick={handleFilter}>Apply Filter</Button>
+</div>
+```
+
+## Calendar Features
+
+### Month Navigation
+
+The calendar dropdown includes:
+- Previous/Next month buttons
+- Month and year selector
+- Today button for quick selection
+- Keyboard navigation (arrow keys)
+
+### Keyboard Support
+
+- **Arrow keys**: Navigate dates
+- **Enter**: Select date
+- **Escape**: Close calendar
+- **Tab**: Move focus
+
+## Formatting
+
+Dates are formatted based on the `format` prop:
+
+```tsx
+<DatePicker
+  value={date}
+  onChange={setDate}
+  format="yyyy-MM-dd"  // ISO format
+/>
+
+<DatePicker
+  value={date}
+  onChange={setDate}
+  format="MMM d, yyyy"  // Default: Mar 10, 2024
+/>
+
+<DatePicker
+  value={date}
+  onChange={setDate}
+  format="MMMM d, yyyy"  // March 10, 2024
+/>
+```
+
+## Styling
+
+### Custom Width
+
+```tsx
+<DatePicker
+  value={date}
+  onChange={setDate}
+  className="w-full"
+/>
+```
+
+### Size Variants
+
+```tsx
+<DatePicker size="sm" {...props} />
+<DatePicker size="md" {...props} />
+<DatePicker size="lg" {...props} />
+```
+
+## Accessibility
+
+- Semantic date input
+- Calendar popup with ARIA attributes
+- Keyboard navigation in calendar
+- Clear date labels and legends
+- Focus management in dropdown
+- Screen reader friendly month/year display
+- High contrast indicators
+
+## Best Practices
+
+1. Always provide a placeholder
+2. Use date constraints for valid selections
+3. Show disabled dates clearly
+4. Provide Today button in calendar
+5. Support keyboard navigation
+6. Validate date ranges before submission
+7. Show helpful error messages
+8. Consider timezone implications
+9. Test with screen readers
+10. Display selected dates in readable format

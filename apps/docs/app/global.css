@@ -1,0 +1,325 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Witylogix Color Scheme */
+:root {
+  /* Primary colors */
+  --wl-bg-primary: #0a0a1a;
+  --wl-bg-secondary: #1a1a2e;
+  --wl-bg-tertiary: #2a2a4e;
+
+  /* Text colors */
+  --wl-text: #e0e0ff;
+  --wl-text-secondary: #a0a0c0;
+  --wl-text-muted: #707090;
+
+  /* Accent colors */
+  --wl-accent: #6366f1;
+  --wl-accent-light: #818cf8;
+  --wl-accent-dark: #4f46e5;
+
+  /* Status colors */
+  --wl-success: #10b981;
+  --wl-warning: #f59e0b;
+  --wl-error: #ef4444;
+  --wl-info: #3b82f6;
+
+  /* Borders */
+  --wl-border: #3a3a5e;
+  --wl-border-light: #4a4a6e;
+
+  /* Shadows */
+  --wl-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --wl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --wl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --wl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+@layer base {
+  * {
+    @apply border-wl-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-wl-bg-primary text-wl-text antialiased;
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+
+  h6 {
+    @apply text-base md:text-lg;
+  }
+
+  a {
+    @apply text-wl-accent hover:text-wl-accent-light transition-colors;
+  }
+
+  code {
+    @apply bg-wl-bg-secondary px-2 py-1 rounded text-sm font-mono;
+  }
+
+  pre {
+    @apply bg-wl-bg-secondary p-4 rounded-lg overflow-x-auto border border-wl-border-light;
+  }
+
+  blockquote {
+    @apply border-l-4 border-wl-accent bg-wl-bg-secondary/50 pl-4 py-1 italic text-wl-text-secondary;
+  }
+
+  hr {
+    @apply border-wl-border-light;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply bg-wl-accent hover:bg-wl-accent-dark text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-wl-bg-secondary border border-wl-border hover:border-wl-accent text-wl-text font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-ghost {
+    @apply text-wl-accent hover:bg-wl-bg-secondary py-2 px-4 rounded-lg transition-colors;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-wl-bg-secondary border border-wl-border rounded-lg p-4 hover:border-wl-accent transition-colors;
+  }
+
+  .card-header {
+    @apply font-semibold text-lg text-wl-text mb-2;
+  }
+
+  .card-body {
+    @apply text-wl-text-secondary text-sm;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-wl-accent/20 text-wl-accent border border-wl-accent/30;
+  }
+
+  .badge-success {
+    @apply bg-wl-success/20 text-wl-success border border-wl-success/30;
+  }
+
+  .badge-warning {
+    @apply bg-wl-warning/20 text-wl-warning border border-wl-warning/30;
+  }
+
+  .badge-error {
+    @apply bg-wl-error/20 text-wl-error border border-wl-error/30;
+  }
+
+  /* Input fields */
+  .input {
+    @apply w-full bg-wl-bg-secondary border border-wl-border rounded-lg px-3 py-2 text-wl-text placeholder-wl-text-muted focus:outline-none focus:border-wl-accent focus:ring-2 focus:ring-wl-accent/20 transition-all;
+  }
+
+  /* Navigation links */
+  .nav-link {
+    @apply text-wl-text-secondary hover:text-wl-accent transition-colors;
+  }
+
+  .nav-link.active {
+    @apply text-wl-accent border-l-2 border-wl-accent pl-2;
+  }
+
+  /* Dividers */
+  .divider {
+    @apply border-t border-wl-border;
+  }
+
+  /* Gradients */
+  .gradient-accent {
+    @apply bg-gradient-to-r from-wl-accent via-wl-accent-light to-wl-accent;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-b from-wl-bg-primary via-wl-bg-secondary to-wl-bg-primary;
+  }
+
+  /* Shadows */
+  .shadow-wl-sm {
+    box-shadow: var(--wl-shadow-sm);
+  }
+
+  .shadow-wl-md {
+    box-shadow: var(--wl-shadow-md);
+  }
+
+  .shadow-wl-lg {
+    box-shadow: var(--wl-shadow-lg);
+  }
+
+  .shadow-wl-xl {
+    box-shadow: var(--wl-shadow-xl);
+  }
+
+  /* Utilities */
+  .text-muted {
+    @apply text-wl-text-muted;
+  }
+
+  .text-secondary {
+    @apply text-wl-text-secondary;
+  }
+
+  .border-light {
+    @apply border-wl-border-light;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--wl-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--wl-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--wl-border-light);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--wl-accent);
+  color: white;
+}
+
+/* Code block styling */
+code {
+  color: var(--wl-accent);
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+pre {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2a2a4e 100%);
+}
+
+/* Link animation */
+a {
+  position: relative;
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--wl-accent);
+  transition: width 0.3s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}
+
+/* Smooth transitions */
+* {
+  transition-duration: 200ms;
+}
+
+/* Dark mode specific (already in dark mode by default) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --wl-bg-primary: #f8f9fa;
+    --wl-bg-secondary: #ffffff;
+    --wl-bg-tertiary: #f0f0f8;
+
+    --wl-text: #1a1a2e;
+    --wl-text-secondary: #4a4a6e;
+    --wl-text-muted: #a0a0c0;
+
+    --wl-border: #e0e0f0;
+    --wl-border-light: #f0f0f8;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  a {
+    color: #0066cc;
+    text-decoration: underline;
+  }
+
+  .no-print {
+    display: none;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+  :root {
+    --wl-border: #4a4a8e;
+    --wl-text: #ffffff;
+  }
+}

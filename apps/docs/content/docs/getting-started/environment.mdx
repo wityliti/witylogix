@@ -1,0 +1,424 @@
+---
+title: Environment Variables
+description: Complete reference of all environment variables used in Witylogix.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Witylogix uses environment variables to configure all services. This guide documents every variable you can set.
+
+Copy `.env.example` to `.env` and customize for your deployment:
+
+```bash
+cp .env.example .env
+```
+
+## Database Configuration
+
+PostgreSQL connection and credentials.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | - | PostgreSQL connection string. Format: `postgresql://user:password@host:port/database?schema=public` |
+| `POSTGRES_USER` | No | `witylogix` | PostgreSQL superuser username |
+| `POSTGRES_PASSWORD` | No | `witylogix_dev_password` | PostgreSQL superuser password |
+| `POSTGRES_DB` | No | `witylogix_dev` | PostgreSQL database name |
+
+**Example:**
+```env
+DATABASE_URL="postgresql://witylogix:secure_password@localhost:5432/witylogix?schema=public"
+POSTGRES_USER=witylogix
+POSTGRES_PASSWORD=secure_password
+POSTGRES_DB=witylogix
+```
+
+<Callout type="warning">
+Never commit `.env` files to version control. Use `.env.example` as a template.
+</Callout>
+
+## Redis Configuration
+
+Redis cache and pub/sub for real-time features and job queues.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `REDIS_URL` | Yes | `redis://localhost:6379` | Redis connection string. Format: `redis://:password@host:port` |
+| `REDIS_PASSWORD` | No | - | Redis authentication password (optional) |
+
+**Example:**
+```env
+REDIS_URL="redis://localhost:6379"
+# With password:
+REDIS_URL="redis://:your_password@localhost:6379"
+```
+
+## JWT Authentication
+
+JSON Web Token configuration for API authentication.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `JWT_SECRET` | Yes | - | Secret key for signing JWTs. Min 32 characters, use a strong random string |
+| `JWT_EXPIRES_IN` | No | `7d` | JWT expiration time. Format: `7d`, `24h`, `3600s` |
+| `JWT_REFRESH_SECRET` | No | - | Secret for refresh tokens. If not set, uses `JWT_SECRET` |
+| `JWT_REFRESH_EXPIRES_IN` | No | `30d` | Refresh token expiration time |
+
+**Example:**
+```env
+JWT_SECRET="your-super-secret-key-at-least-32-characters-long-abc123xyz"
+JWT_EXPIRES_IN="7d"
+JWT_REFRESH_SECRET="separate-refresh-secret-at-least-32-chars-long"
+JWT_REFRESH_EXPIRES_IN="30d"
+```
+
+<Callout type="info">
+Generate a secure JWT secret: `openssl rand -base64 32`
+</Callout>
+
+## Shopify Integration
+
+Shopify API credentials for embedded admin app and integrations.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SHOPIFY_API_KEY` | No | - | Shopify app API key from Partner Dashboard |
+| `SHOPIFY_API_SECRET` | No | - | Shopify app API secret key |
+| `SHOPIFY_APP_URL` | No | - | Public URL of your Shopify app (e.g., `https://myapp.example.com`) |
+| `SHOPIFY_SCOPES` | No | See below | Comma-separated list of OAuth scopes |
+
+**Default Scopes:**
+```env
+SHOPIFY_SCOPES=read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers
+```
+
+**Example:**
+```env
+SHOPIFY_API_KEY=1a2b3c4d5e6f7g8h9i0j
+SHOPIFY_API_SECRET=shpss_abc123def456ghi789jkl
+SHOPIFY_APP_URL=https://delivery.mycompany.com
+SHOPIFY_SCOPES=read_products,read_orders,write_fulfillments
+```
+
+## Routing Providers
+
+Multi-provider routing configuration with BYOK (Bring Your Own Key) support.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ROUTING_PROVIDER` | No | `mapbox` | Default routing provider: `mapbox`, `osrm`, `google_maps`, `here`, `graphhopper`, `tomtom` |
+| `ROUTING_BYOK` | No | `false` | Allow tenants to provide their own routing credentials |
+
+### Mapbox (Default)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `MAPBOX_ACCESS_TOKEN` | Conditional | - | Required if `ROUTING_PROVIDER=mapbox`. Public access token from Mapbox dashboard |
+
+**Example:**
+```env
+ROUTING_PROVIDER=mapbox
+MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoieW91cnVzZXIiLCJhIjoiY2x0ZXN0In0.abc123
+```
+
+### OSRM (Self-Hosted)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `OSRM_SERVER_URL` | Conditional | - | Required if `ROUTING_PROVIDER=osrm`. URL to OSRM server |
+
+**Example:**
+```env
+ROUTING_PROVIDER=osrm
+OSRM_SERVER_URL=http://localhost:5000
+```
+
+### Google Maps (Coming Soon)
+
+```env
+ROUTING_PROVIDER=google_maps
+GOOGLE_MAPS_API_KEY=AIzaSy...
+```
+
+### HERE (Coming Soon)
+
+```env
+ROUTING_PROVIDER=here
+HERE_API_KEY=your_here_api_key
+```
+
+## Notification Providers
+
+Multi-channel notification support with BYOK configuration.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NOTIFICATIONS_BYOK` | No | `false` | Allow tenants to provide their own notification credentials |
+
+### Email Provider
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `EMAIL_PROVIDER` | No | `sendgrid` | Email service provider: `sendgrid`, `mailgun`, `aws_ses`, `postmark`, `resend`, `smtp` |
+| `EMAIL_FROM` | No | - | Sender email address (e.g., `noreply@example.com`) |
+| `EMAIL_FROM_NAME` | No | - | Sender display name (e.g., `Witylogix`) |
+
+#### SendGrid (Default)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SENDGRID_API_KEY` | Conditional | - | Required if `EMAIL_PROVIDER=sendgrid`. API key from SendGrid dashboard |
+
+**Example:**
+```env
+EMAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=SG.1a2b3c4d5e6f7g8h9i0j
+EMAIL_FROM=noreply@witylogix.com
+EMAIL_FROM_NAME=Witylogix
+```
+
+### SMS Provider
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SMS_PROVIDER` | No | `twilio` | SMS service provider: `twilio`, `vonage`, `aws_sns`, `messagebird`, `plivo` |
+
+#### Twilio (Default)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `TWILIO_ACCOUNT_SID` | Conditional | - | Required if `SMS_PROVIDER=twilio`. Account SID from Twilio console |
+| `TWILIO_AUTH_TOKEN` | Conditional | - | Required if `SMS_PROVIDER=twilio`. Auth token from Twilio console |
+| `TWILIO_PHONE_NUMBER` | Conditional | - | Required if `SMS_PROVIDER=twilio`. Twilio phone number to send from |
+
+**Example:**
+```env
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=AC1a2b3c4d5e6f7g8h9i0j
+TWILIO_AUTH_TOKEN=auth_token_abc123def456
+TWILIO_PHONE_NUMBER=+12025551234
+```
+
+### WhatsApp Provider
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `WHATSAPP_PROVIDER` | No | `meta_cloud` | WhatsApp provider: `meta_cloud`, `twilio_whatsapp`, `360dialog` |
+| `WHATSAPP_TOKEN` | Conditional | - | Required if WhatsApp enabled. API token for WhatsApp service |
+| `WHATSAPP_PHONE_NUMBER_ID` | Conditional | - | Required if WhatsApp enabled. Phone number ID for WhatsApp Business account |
+
+**Example:**
+```env
+WHATSAPP_PROVIDER=meta_cloud
+WHATSAPP_TOKEN=EAA1a2b3c4d5e6f7g8h9i0j
+WHATSAPP_PHONE_NUMBER_ID=102299999999999
+```
+
+### Push Notifications
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PUSH_PROVIDER` | No | `firebase` | Push provider: `firebase`, `onesignal`, `expo_push` |
+
+#### Firebase Cloud Messaging (Default)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `FIREBASE_PROJECT_ID` | Conditional | - | Required if `PUSH_PROVIDER=firebase`. GCP project ID |
+| `FIREBASE_PRIVATE_KEY` | Conditional | - | Required if `PUSH_PROVIDER=firebase`. Private key from Firebase service account JSON |
+| `FIREBASE_CLIENT_EMAIL` | Conditional | - | Required if `PUSH_PROVIDER=firebase`. Client email from service account |
+
+**Example:**
+```env
+PUSH_PROVIDER=firebase
+FIREBASE_PROJECT_ID=witylogix-prod-abc123
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+FIREBASE_CLIENT_EMAIL=firebase-admin@witylogix-prod.iam.gserviceaccount.com
+```
+
+## File Storage
+
+S3 or local filesystem storage for documents, proofs of delivery, and media.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `STORAGE_PROVIDER` | No | `s3` | Storage backend: `s3`, `local` |
+
+### S3 Storage
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `S3_BUCKET` | Conditional | - | Required if `STORAGE_PROVIDER=s3`. S3 bucket name |
+| `S3_REGION` | Conditional | `us-east-1` | AWS region where bucket is located |
+| `S3_ACCESS_KEY` | Conditional | - | Required if `STORAGE_PROVIDER=s3`. AWS access key ID |
+| `S3_SECRET_KEY` | Conditional | - | Required if `STORAGE_PROVIDER=s3`. AWS secret access key |
+| `S3_ENDPOINT` | No | - | Custom S3-compatible endpoint (for MinIO, DigitalOcean Spaces, etc.) |
+
+**Example:**
+```env
+STORAGE_PROVIDER=s3
+S3_BUCKET=witylogix-deliveries
+S3_REGION=us-west-2
+S3_ACCESS_KEY=AKIA1A2B3C4D5E6F7G8H
+S3_SECRET_KEY=secret_key_abc123def456
+```
+
+### Local Storage
+
+```env
+STORAGE_PROVIDER=local
+STORAGE_LOCAL_PATH=/app/storage
+```
+
+## Application Configuration
+
+Core application settings and runtime configuration.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NODE_ENV` | No | `development` | Environment mode: `development`, `production`, `test` |
+| `PORT` | No | `8000` | Port for API server to listen on |
+| `API_HOST` | No | `0.0.0.0` | Host address for API server binding |
+| `API_PORT` | No | `3001` | Port specifically for API (overrides `PORT` if set) |
+| `LOG_LEVEL` | No | `info` | Logging level: `fatal`, `error`, `warn`, `info`, `debug`, `trace` |
+| `TRACKING_PAGE_URL` | No | `http://localhost:3002` | Public URL for customer tracking page |
+| `CORS_ORIGINS` | No | `http://localhost:3000,http://localhost:3001` | Comma-separated CORS origin whitelist |
+
+**Example:**
+```env
+NODE_ENV=production
+PORT=8000
+API_PORT=3001
+LOG_LEVEL=info
+TRACKING_PAGE_URL=https://track.mycompany.com
+CORS_ORIGINS=https://app.mycompany.com,https://dashboard.mycompany.com
+```
+
+## Feature Flags
+
+Optional feature flags for experimental or beta features.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `FEATURE_WORKFLOWS` | No | `true` | Enable workflow engine for automation |
+| `FEATURE_CAMPAIGNS` | No | `true` | Enable campaign/bulk messaging feature |
+| `FEATURE_ANALYTICS` | No | `true` | Enable analytics and reporting |
+| `FEATURE_AUDIT_LOG` | No | `true` | Enable audit trail logging |
+
+**Example:**
+```env
+FEATURE_WORKFLOWS=true
+FEATURE_CAMPAIGNS=true
+FEATURE_ANALYTICS=true
+FEATURE_AUDIT_LOG=true
+```
+
+## Deployment-Specific
+
+Variables used only in specific deployment scenarios.
+
+### Docker Compose
+
+```env
+# Allows Docker Compose to pass build args
+NEXT_PUBLIC_API_URL=http://localhost:3001
+COMPOSE_PROJECT_NAME=witylogix
+```
+
+### Kubernetes
+
+```env
+# For K8s deployments
+DEPLOYMENT_ENV=kubernetes
+HEALTH_CHECK_PORT=8080
+```
+
+## Security Best Practices
+
+1. **Never commit `.env` to version control** — Use `.env.example` as a template
+2. **Use strong secrets** — Minimum 32 characters for `JWT_SECRET`
+3. **Rotate secrets regularly** — Especially in production
+4. **Use HTTPS URLs** — Always use `https://` for production URLs
+5. **Restrict CORS origins** — Only allow domains you control
+6. **Use managed secrets** — In Kubernetes/Docker Swarm, use secret management tools
+7. **Audit access** — Log who accesses and modifies environment variables
+
+## Development vs. Production
+
+### Development `.env`
+```env
+NODE_ENV=development
+LOG_LEVEL=debug
+JWT_SECRET=dev_secret_key_not_secure
+DATABASE_URL=postgresql://witylogix:witylogix_dev@localhost:5432/witylogix_dev
+```
+
+### Production `.env`
+```env
+NODE_ENV=production
+LOG_LEVEL=warn
+JWT_SECRET=$(openssl rand -base64 32)
+DATABASE_URL=postgresql://user:strong_password@db.production.internal:5432/witylogix_prod
+CORS_ORIGINS=https://app.example.com
+HTTPS_ONLY=true
+```
+
+## Validation
+
+Witylogix validates environment variables on startup. If a required variable is missing or invalid, the application will exit with an error.
+
+To check your configuration:
+
+```bash
+# Docker Compose will show startup errors
+docker compose logs -f api
+
+# Or manually test locally
+NODE_ENV=production pnpm build
+```
+
+## Common Configuration Patterns
+
+### Self-Hosted (All Local)
+
+```env
+NODE_ENV=development
+DATABASE_URL=postgresql://witylogix:password@localhost:5432/witylogix_dev
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_dev_secret_key_32_chars_min
+ROUTING_PROVIDER=osrm
+OSRM_SERVER_URL=http://localhost:5000
+STORAGE_PROVIDER=local
+```
+
+### AWS/Cloud Deployment
+
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://user:pass@aurora-prod.aws.internal:5432/witylogix_prod
+REDIS_URL=redis://elasticache-prod.aws.internal:6379
+JWT_SECRET=$(aws secretsmanager get-secret-value --secret-id jwt_secret --query SecretString)
+S3_BUCKET=witylogix-prod
+S3_REGION=us-west-2
+ROUTING_PROVIDER=mapbox
+MAPBOX_ACCESS_TOKEN=pk.eyJ...
+```
+
+### Kubernetes with Secrets
+
+```bash
+# Reference secrets from K8s Secret objects
+kubectl create secret generic witylogix-secrets \
+  --from-literal=jwt_secret=... \
+  --from-literal=db_password=... \
+  --from-literal=redis_password=...
+
+# Reference in deployment:
+# env:
+#   - name: DATABASE_URL
+#     valueFrom:
+#       secretKeyRef:
+#         name: witylogix-secrets
+#         key: database_url
+```

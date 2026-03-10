@@ -1,0 +1,264 @@
+---
+title: Getting Started
+description: Set up Witylogix in less than 5 minutes and make your first API call.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Welcome to Witylogix
+
+Witylogix is an open-source delivery logistics platform for e-commerce. This guide will help you get up and running locally in under 5 minutes.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+| Requirement | Version | Download |
+|-------------|---------|----------|
+| Node.js | 20+ | [nodejs.org](https://nodejs.org) |
+| pnpm | 9+ | `npm install -g pnpm@9` |
+| Docker | Latest | [docker.com](https://www.docker.com) |
+| Docker Compose | 2.0+ | Included with Docker Desktop |
+
+**Optional:**
+- Shopify Partner account (for Shopify integration testing)
+- cURL or Postman (for API testing)
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/witylogix/witylogix-platform.git
+cd witylogix-platform
+```
+
+## 2. Install Dependencies
+
+```bash
+pnpm install
+```
+
+This installs all workspace dependencies across the monorepo using pnpm workspaces.
+
+## 3. Set Up Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+The default `.env` is pre-configured for local development. Key variables:
+
+```env
+DATABASE_URL="postgresql://witylogix:witylogix_dev@localhost:5432/witylogix?schema=public"
+REDIS_URL="redis://localhost:6379"
+JWT_SECRET="your-secret-key-here-min-32-chars"
+NODE_ENV="development"
+PORT=8000
+```
+
+<Callout type="info">
+For a complete list of environment variables, see the [Environment Variables](/docs/getting-started/environment) reference.
+</Callout>
+
+## 4. Start Services with Docker Compose
+
+```bash
+docker compose up -d
+```
+
+This starts:
+- PostgreSQL 16 (port 5432)
+- Redis 7 (port 6379)
+- API server (port 3001)
+- Dashboard (port 3000)
+
+Wait for all services to be healthy (30-40 seconds):
+
+```bash
+docker compose ps
+```
+
+All services should show `healthy` status.
+
+## 5. Seed Database (Optional)
+
+To populate the database with sample data:
+
+```bash
+pnpm db:seed
+```
+
+This creates a test organization, shops, zones, and sample orders.
+
+## 6. Make Your First API Call
+
+Once services are running, create a delivery order via cURL:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "shopId": "test-shop-1",
+    "orderId": "order-123",
+    "customerName": "John Doe",
+    "customerPhone": "+1234567890",
+    "pickupAddress": "123 Main St, City, State 12345",
+    "deliveryAddress": "456 Oak Ave, City, State 67890",
+    "items": [
+      {
+        "id": "item-1",
+        "quantity": 1,
+        "weight": 0.5
+      }
+    ]
+  }'
+```
+
+<Callout type="warning">
+Replace `YOUR_JWT_TOKEN` with a valid JWT token. For development, check the [Authentication](/docs/guides/authentication) guide.
+</Callout>
+
+### Expected Response
+
+```json
+{
+  "id": "delivery_order_abc123",
+  "status": "pending",
+  "shopId": "test-shop-1",
+  "createdAt": "2024-03-10T12:00:00Z",
+  "estimatedDeliveryTime": "2024-03-10T14:30:00Z"
+}
+```
+
+## 7. Access the Dashboard
+
+Open your browser and navigate to:
+
+- **Dashboard:** http://localhost:3000
+- **API Health Check:** http://localhost:3001/health
+
+<Callout type="info">
+Default credentials (if seeded):
+- Email: `admin@witylogix.local`
+- Password: `password123`
+</Callout>
+
+## Project Structure
+
+Here's how the Witylogix platform is organized:
+
+```
+witylogix-platform/
+├── apps/
+│   ├── api/              # Fastify 5 backend server
+│   ├── dashboard/        # Next.js 15 merchant dashboard
+│   ├── shopify-app/      # Embedded Shopify admin app
+│   ├── driver-app/       # React Native driver mobile app
+│   └── tracking-page/    # Customer-facing delivery tracking
+├── extensions/
+│   ├── checkout-ui/      # Shopify checkout extension
+│   └── pos-ui/           # POS UI extension
+├── packages/
+│   ├── db/               # Prisma schema & migrations
+│   ├── core/             # Business logic (routing, messaging, RBAC, etc.)
+│   ├── framework/        # Workflow engine
+│   ├── workflows/        # Core delivery workflows
+│   ├── types/            # Shared TypeScript types
+│   └── validators/       # Zod schemas
+├── infra/                # Docker, Kubernetes, Nginx configs
+└── docs/                 # Documentation & API specs
+```
+
+## Common Commands
+
+```bash
+# Install dependencies across all workspaces
+pnpm install
+
+# Build all packages and apps
+pnpm build
+
+# Start development servers with hot reload
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Generate Prisma client
+pnpm db:generate
+
+# Run migrations
+pnpm db:migrate
+
+# Seed database with sample data
+pnpm db:seed
+
+# Start Docker containers
+docker compose up -d
+
+# Stop Docker containers
+docker compose down
+
+# View logs from a service
+docker compose logs -f api
+```
+
+## Next Steps
+
+Now that you have a running Witylogix instance, explore these topics:
+
+1. **[API Documentation](/docs/api)** — Learn the REST API endpoints and authentication
+2. **[Architecture Overview](/docs/architecture)** — Understand the system design
+3. **[Environment Variables](/docs/getting-started/environment)** — Configure all settings
+4. **[Self-Hosting Guide](/docs/self-hosting)** — Deploy to production
+5. **[Shopify Integration](/docs/guides/shopify)** — Connect with Shopify stores
+
+## Troubleshooting
+
+### Services not starting?
+
+Check Docker logs:
+
+```bash
+docker compose logs -f
+```
+
+Common issues:
+- **Port already in use:** Change ports in `docker-compose.yml`
+- **Out of disk space:** Clean up Docker: `docker system prune -a`
+- **Database connection error:** Ensure Postgres is healthy: `docker compose ps`
+
+### Database migration failed?
+
+Reset and migrate:
+
+```bash
+docker compose exec api pnpm db:migrate:reset
+docker compose exec api pnpm db:seed
+```
+
+### Can't connect to API?
+
+Verify the API health endpoint:
+
+```bash
+curl http://localhost:3001/health
+```
+
+If it returns 200 OK, the API is running. Check your JWT token and Authorization header.
+
+## Getting Help
+
+- **Documentation:** https://docs.witylogix.com
+- **GitHub Issues:** https://github.com/witylogix/witylogix-platform/issues
+- **Discord Community:** https://discord.gg/witylogix
+- **Email:** support@witylogix.com
+
+## What's Next?
+
+- Create your first [delivery zone](/docs/guides/zones)
+- Set up [notifications](/docs/guides/notifications)
+- Integrate with [Shopify](/docs/guides/shopify)
+- Explore [workflow automation](/docs/architecture/workflows)

@@ -1,0 +1,327 @@
+---
+title: Input & Textarea
+description: Form input components for text, email, numbers, and multi-line content
+---
+
+# Input & Textarea
+
+Input and Textarea components provide accessible form fields with support for labels, errors, icons, and various input types.
+
+## Import
+
+```typescript
+import { Input, Textarea, Label } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<Input placeholder="Enter text..." />
+<Textarea placeholder="Enter message..." />
+```
+
+## Input Types
+
+Inputs support standard HTML input types:
+
+```tsx
+<Input type="text" placeholder="Text" />
+<Input type="email" placeholder="Email address" />
+<Input type="password" placeholder="Password" />
+<Input type="number" placeholder="Enter number" />
+<Input type="date" />
+<Input type="time" />
+<Input type="tel" placeholder="Phone number" />
+<Input type="url" placeholder="Website URL" />
+<Input type="search" placeholder="Search..." />
+```
+
+## Sizes
+
+Control input size with the `size` prop:
+
+```tsx
+<Input size="sm" placeholder="Small" />
+<Input size="md" placeholder="Medium (Default)" />
+<Input size="lg" placeholder="Large" />
+```
+
+### Size Details
+
+| Size | Height | Padding | Font |
+|------|--------|---------|------|
+| **sm** | h-8 | px-2 py-1 | text-sm |
+| **md** | h-10 | px-3 py-2 | text-base |
+| **lg** | h-12 | px-4 py-3 | text-lg |
+
+## With Labels
+
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="email">Email Address</Label>
+  <Input id="email" type="email" placeholder="you@example.com" />
+</div>
+```
+
+## Error State
+
+```tsx
+<div className="space-y-2">
+  <Label>Password</Label>
+  <Input
+    type="password"
+    hasError
+    placeholder="Enter password"
+  />
+  <p className="text-sm text-red-500">Password must be at least 8 characters</p>
+</div>
+```
+
+## With Icons
+
+Leading and trailing icons:
+
+```tsx
+import { Mail, Eye } from "lucide-react"
+
+<div className="relative">
+  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+  <Input
+    type="email"
+    placeholder="Email"
+    className="pl-10"
+  />
+</div>
+
+<div className="relative">
+  <Input type="password" placeholder="Password" className="pr-10" />
+  <Eye className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
+</div>
+```
+
+## Disabled State
+
+```tsx
+<Input disabled placeholder="Disabled input" />
+```
+
+## Read-Only State
+
+```tsx
+<Input readOnly value="Read-only value" />
+```
+
+## Textarea
+
+Multi-line text input:
+
+```tsx
+<Textarea placeholder="Enter your message..." />
+```
+
+### Textarea with Rows
+
+```tsx
+<Textarea
+  placeholder="Enter description..."
+  rows={6}
+/>
+```
+
+### Textarea Sizes
+
+```tsx
+<Textarea size="sm" placeholder="Small" rows={3} />
+<Textarea size="md" placeholder="Medium" rows={5} />
+<Textarea size="lg" placeholder="Large" rows={8} />
+```
+
+## Props Table
+
+### Input
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | string | "text" | HTML input type |
+| `size` | "sm" \| "md" \| "lg" | "md" | Input size |
+| `hasError` | boolean | false | Error state styling |
+| `disabled` | boolean | false | Disables input |
+| `readOnly` | boolean | false | Prevents modification |
+| `placeholder` | string | - | Placeholder text |
+| `value` | string | - | Input value |
+| `onChange` | function | - | Change handler |
+| `onBlur` | function | - | Blur handler |
+| `className` | string | - | Additional classes |
+
+### Textarea
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `size` | "sm" \| "md" \| "lg" | "md" | Textarea size |
+| `rows` | number | 3 | Number of visible rows |
+| `disabled` | boolean | false | Disables textarea |
+| `placeholder` | string | - | Placeholder text |
+| `value` | string | - | Textarea value |
+| `onChange` | function | - | Change handler |
+| `className` | string | - | Additional classes |
+
+### Label
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `htmlFor` | string | - | Associated input id |
+| `required` | boolean | false | Marks field required |
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Label text |
+
+## Usage Examples
+
+### Email Form
+
+```tsx
+<form onSubmit={handleSubmit} className="space-y-4">
+  <div>
+    <Label htmlFor="email">Email</Label>
+    <Input
+      id="email"
+      type="email"
+      placeholder="your@email.com"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+  </div>
+  <Button type="submit">Subscribe</Button>
+</form>
+```
+
+### Search Input
+
+```tsx
+import { Search, X } from "lucide-react"
+
+<div className="relative">
+  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+  <Input
+    type="search"
+    placeholder="Search users..."
+    className="pl-9"
+  />
+  {searchTerm && (
+    <button className="absolute right-2 top-2.5">
+      <X className="h-4 w-4" />
+    </button>
+  )}
+</div>
+```
+
+### Password Input with Toggle
+
+```tsx
+import { Eye, EyeOff } from "lucide-react"
+
+const [showPassword, setShowPassword] = useState(false)
+
+<div className="relative">
+  <Input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    className="pr-10"
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-3 top-2.5"
+  >
+    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+  </button>
+</div>
+```
+
+### Comment Form
+
+```tsx
+<div className="space-y-3">
+  <Label htmlFor="comment">Add Comment</Label>
+  <Textarea
+    id="comment"
+    placeholder="Share your thoughts..."
+    rows={4}
+  />
+  <Button>Post Comment</Button>
+</div>
+```
+
+### Validation Example
+
+```tsx
+const [email, setEmail] = useState("")
+const [error, setError] = useState("")
+
+const handleChange = (e) => {
+  const value = e.target.value
+  setEmail(value)
+  if (!value.includes("@")) {
+    setError("Invalid email format")
+  } else {
+    setError("")
+  }
+}
+
+return (
+  <div className="space-y-2">
+    <Label htmlFor="email">Email</Label>
+    <Input
+      id="email"
+      type="email"
+      value={email}
+      onChange={handleChange}
+      hasError={!!error}
+    />
+    {error && <p className="text-sm text-red-500">{error}</p>}
+  </div>
+)
+```
+
+## Styling
+
+### Full Width
+
+```tsx
+<Input className="w-full" />
+```
+
+### With Addon
+
+```tsx
+<div className="flex">
+  <span className="bg-slate-700 px-3 py-2 text-slate-400">$</span>
+  <Input className="rounded-l-none" placeholder="Amount" />
+</div>
+```
+
+### Custom Focus
+
+```tsx
+<Input className="focus:ring-2 focus:ring-purple-500" />
+```
+
+## Accessibility
+
+- Associated labels with `htmlFor` and `id`
+- Clear error messages
+- Proper color contrast
+- Keyboard navigation support
+- Focus visible outlines
+- ARIA attributes for error states
+- Semantic form structure
+
+## Best Practices
+
+1. Always pair inputs with labels
+2. Provide clear placeholder text
+3. Show validation errors inline
+4. Use appropriate input types for better UX
+5. Ensure sufficient spacing between inputs
+6. Handle disabled and loading states clearly
+7. Provide success/error feedback
+8. Test keyboard navigation

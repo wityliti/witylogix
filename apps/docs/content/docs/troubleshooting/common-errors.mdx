@@ -1,0 +1,64 @@
+---
+title: Common Errors
+description: Troubleshoot common Witylogix API errors
+---
+
+# Common Errors
+
+## 401 Unauthorized
+
+**Cause:** Invalid or missing API key
+
+**Solutions:**
+1. Check API key is correct
+2. Verify key is passed in Authorization header: `Bearer YOUR_KEY`
+3. Ensure key hasn't been revoked in dashboard
+4. Try creating a new key
+
+## 429 Rate Limited
+
+**Cause:** Exceeded 1000 requests per minute limit
+
+**Solutions:**
+1. Implement exponential backoff
+2. Batch requests when possible
+3. Cache responses
+4. Request higher rate limit for your tier
+
+## 400 Bad Request
+
+**Cause:** Invalid request format or missing required fields
+
+**Solutions:**
+1. Check all required fields are provided
+2. Validate JSON syntax
+3. Verify field types match API spec
+4. Check address format
+
+## 404 Not Found
+
+**Cause:** Resource doesn't exist
+
+**Solutions:**
+1. Verify resource ID is correct
+2. Check resource hasn't been deleted
+3. Ensure correct endpoint URL
+
+## 500 Internal Server Error
+
+**Cause:** Server-side issue
+
+**Solutions:**
+1. Retry request (usually resolves in seconds)
+2. Check status.witylogix.com for incidents
+3. Contact support if persists
+
+## Validation Errors
+
+Common validation issues:
+
+- **Invalid address** - Use complete street address with city/state
+- **Invalid weight** - Must be positive number
+- **Invalid date** - Use ISO 8601 format (2026-03-15T08:00:00Z)
+
+See [Error Handling guide](/docs/guides/error-handling) for best practices.

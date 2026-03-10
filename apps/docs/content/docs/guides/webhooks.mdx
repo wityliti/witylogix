@@ -1,0 +1,94 @@
+---
+title: Webhooks
+description: Set up real-time event notifications for your application
+---
+
+# Webhooks
+
+Webhooks allow you to receive real-time notifications about shipment events. Instead of polling the API, we'll push updates directly to your application.
+
+## How Webhooks Work
+
+1. You register a webhook endpoint in your dashboard
+2. When an event occurs (e.g., shipment delivered), we send an HTTP POST to your endpoint
+3. Your application processes the event
+4. You respond with HTTP 200 to confirm receipt
+
+## Webhook Events
+
+Available events:
+
+- `shipment.created` - Shipment was created
+- `shipment.picked_up` - Shipment was picked up
+- `shipment.in_transit` - Shipment is in transit
+- `shipment.delivered` - Shipment was delivered
+- `shipment.failed` - Delivery attempt failed
+- `shipment.cancelled` - Shipment was cancelled
+
+## Registering a Webhook
+
+1. Go to Settings → Webhooks in your dashboard
+2. Click "Add Webhook"
+3. Enter your endpoint URL (must be HTTPS)
+4. Select events to subscribe to
+5. Click "Create"
+
+## Example Webhook Handler
+
+```javascript
+// pages/api/webhooks/witylogix.js
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).end();
+  }
+
+  const { event, data } = req.body;
+
+  switch (event) {
+    case 'shipment.delivered':
+      console.log(`Shipment ${data.id} delivered!`);
+      // Update your database
+      break;
+    case 'shipment.in_transit':
+      console.log(`Shipment ${data.id} is on the way`);
+      break;
+  }
+
+  res.status(200).json({ ok: true });
+}
+```
+
+## Webhook Signature Verification
+
+We sign all webhooks. Verify the signature:
+
+```javascript
+import crypto from 'crypto';
+
+function verifyWebhook(body, signature, secret) {
+  const hash = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+  return hash === signature;
+}
+```
+
+## Retries
+
+We retry failed webhooks with exponential backoff:
+- 1st attempt: immediately
+- 2nd attempt: 5 minutes
+- 3rd attempt: 30 minutes
+- 4th attempt: 2 hours
+- 5th attempt: 24 hours
+
+Respond with HTTP 200 to prevent retries.
+
+## Best Practices
+
+1. Respond quickly (< 5 seconds)
+2. Return HTTP 200 as soon as possible
+3. Process events asynchronously
+4. Verify webhook signatures
+5. Handle duplicate events

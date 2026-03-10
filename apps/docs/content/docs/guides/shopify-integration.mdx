@@ -1,0 +1,432 @@
+---
+title: Shopify Integration Guide
+description: Complete guide to setting up Shopify integration with Witylogix. Learn how to create an embedded app, configure webhooks, and implement dynamic shipping rates.
+---
+
+# Shopify Integration Guide
+
+Witylogix integrates with Shopify through a Shopify Partner app that provides real-time order synchronization, dynamic shipping rates, and a seamless checkout experience with delivery date selection.
+
+## Prerequisites
+
+- Shopify Partner account
+- Node.js 18+ and npm/pnpm
+- Ngrok or tunnel tool for local testing
+- Access to a Shopify development store
+
+## Step 1: Create a Shopify Partner App
+
+### 1.1 Set up Shopify Partner Account
+
+1. Go to [Shopify Partner Dashboard](https://partners.shopify.com)
+2. Create or sign in to your Partner account
+3. Create a new organization or use an existing one
+
+### 1.2 Create a Custom App
+
+1. From the Partner Dashboard, navigate to **Apps and integrations** → **Apps**
+2. Click **Create app**
+3. Choose **Create app manually**
+4. Fill in the app details:
+   - **App name**: "Witylogix"
+   - **App URL**: `https://your-domain.com` (or ngrok URL for development)
+   - **Whitelisted redirect URLs**: `https://your-domain.com/auth/callback`
+
+### 1.3 Configure API Credentials
+
+1. In your app settings, go to **Configuration**
+2. Under **Admin API access scopes**, enable these scopes:
+   ```
+   write_orders
+   read_orders
+   write_products
+   read_products
+   write_customers
+   read_customers
+   write_fulfillments
+   read_fulfillments
+   ```
+3. Under **Webhooks**, add the following webhook topics:
+   - `orders/create`
+   - `orders/updated`
+   - `products/create`
+   - `products/update`
+   - `customers/create`
+   - `customers/update`
+
+4. Generate API credentials and note:
+   - **API Key**
+   - **API Secret**
+   - **Access Scopes** (list above)
+
+## Step 2: Configure Environment Variables
+
+Create a `.env` file in your project root with Shopify API credentials:
+
+```bash
+# Shopify API Configuration
+SHOPIFY_API_KEY=your_api_key_here
+SHOPIFY_API_SECRET=your_api_secret_here
+SHOPIFY_API_VERSION=2025-01
+SHOPIFY_WEBHOOK_SECRET=your_webhook_secret_here
+
+# App Configuration
+APP_URL=https://your-domain.com
+NGROK_URL=https://your-ngrok-url.ngrok.io (for local development)
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost/witylogix_db
+```
+
+## Step 3: Embedded App Architecture
+
+Witylogix uses React Router v7 with Shopify Polaris for a seamless embedded app experience.
+
+### 3.1 App Structure
+
+```
+apps/shopify-embedded/
+├── src/
+│   ├── routes/
+│   │   ├── dashboard.tsx
+│   │   ├── settings.tsx
+│   │   ├── orders.tsx
+│   │   └── products.tsx
+│   ├── components/
+│   │   ├── OrderList.tsx
+│   │   ├── ProductSync.tsx
+│   │   └── WebhookStatus.tsx
+│   ├── services/
+│   │   ├── shopifyApi.ts
+│   │   └── webhooks.ts
+│   └── root.tsx
+└── package.json
+```
+
+### 3.2 Root Component with Polaris Provider
+
+```typescript
+// root.tsx
+import { AppProvider } from "@shopify/polaris";
+import "@shopify/polaris/build/esm/styles.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import Dashboard from "./routes/dashboard";
+import Settings from "./routes/settings";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Dashboard />
+  },
+  {
+    path: "/settings",
+    element: <Settings />
+  }
+]);
+
+export default function App() {
+  return (
+    <AppProvider>
+      <RouterProvider router={router} />
+    </AppProvider>
+  );
+}
+```
+
+### 3.3 Order Management Component
+
+```typescript
+// routes/orders.tsx
+import { Card, ResourceList, TextStyle, Badge } from "@shopify/polaris";
+import { useState, useEffect } from "react";
+import { fetchOrders } from "../services/shopifyApi";
+
+export default function Orders() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOrders().then(setOrders).finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <Card>
+      <ResourceList
+        resourceName={{ singular: "order", plural: "orders" }}
+        items={orders}
+        renderItem={(item: any) => (
+          <ResourceList.Item id={item.id}>
+            <h3>
+              <TextStyle variation="strong">#{item.order_number}</TextStyle>
+            </h3>
+            <div>
+              Customer: {item.customer.first_name} {item.customer.last_name}
+            </div>
+            <div>Total: ${item.total_price}</div>
+            <Badge status={item.financial_status}>{item.status}</Badge>
+          </ResourceList.Item>
+        )}
+      />
+    </Card>
+  );
+}
+```
+
+## Step 4: Webhook Setup
+
+### 4.1 Register Webhook Endpoint
+
+In your app backend, create an endpoint to receive Shopify webhooks:
+
+```typescript
+// webhooks.ts
+import express from "express";
+import crypto from "crypto";
+import { processShopifyWebhook } from "../services/webhooks";
+
+const app = express();
+const WEBHOOK_SECRET = process.env.SHOPIFY_WEBHOOK_SECRET;
+
+app.post("/api/webhooks/shopify", express.raw({ type: "application/json" }), async (req, res) => {
+  const hmacHeader = req.headers["x-shopify-hmac-sha256"] as string;
+  const body = req.body;
+
+  // Validate webhook signature
+  const hash = crypto
+    .createHmac("sha256", WEBHOOK_SECRET)
+    .update(body, "utf8")
+    .digest("base64");
+
+  if (hash !== hmacHeader) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const topic = req.headers["x-shopify-topic"] as string;
+  const shop = req.headers["x-shopify-shop-api-call-limit"] as string;
+
+  try {
+    await processShopifyWebhook(JSON.parse(body.toString()), topic, shop);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ error: "Processing failed" });
+  }
+});
+```
+
+### 4.2 Process Webhook Events
+
+```typescript
+// services/webhooks.ts
+import { ShopifyAdapter } from "@witylogix/adapters";
+
+export async function processShopifyWebhook(payload: any, topic: string, shop: string) {
+  const adapter = new ShopifyAdapter();
+
+  switch (topic) {
+    case "orders/create":
+    case "orders/updated":
+      const order = adapter.mapOrder(payload);
+      await saveOrder(shop, order);
+      break;
+
+    case "products/create":
+    case "products/update":
+      const product = adapter.mapProduct(payload);
+      await syncProduct(shop, product);
+      break;
+
+    case "customers/create":
+    case "customers/update":
+      const customer = adapter.mapCustomer(payload);
+      await syncCustomer(shop, customer);
+      break;
+
+    default:
+      console.log(`Unhandled webhook topic: ${topic}`);
+  }
+}
+```
+
+## Step 5: Carrier Service API
+
+Implement dynamic shipping rates using Shopify's Carrier Service API:
+
+### 5.1 Create Carrier Service
+
+```typescript
+// services/carrierService.ts
+import fetch from "node-fetch";
+
+export async function createCarrierService(
+  shop: string,
+  accessToken: string
+): Promise<string> {
+  const query = `
+    mutation {
+      deliveryCarrierServiceCreate(input: {
+        name: "Witylogix"
+        callbackUrl: "${process.env.APP_URL}/api/carrier-rates"
+      }) {
+        carrierService {
+          id
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(`https://${shop}/admin/api/2025-01/graphql.json`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": accessToken
+    },
+    body: JSON.stringify({ query })
+  });
+
+  const data = await response.json() as any;
+  return data.data.deliveryCarrierServiceCreate.carrierService.id;
+}
+```
+
+### 5.2 Rate Calculation Endpoint
+
+```typescript
+// webhooks.ts
+app.post("/api/carrier-rates", express.json(), async (req, res) => {
+  const { rate: { origin, destination, items } } = req.body;
+
+  try {
+    // Calculate rates based on destination and items
+    const rates = await calculateShippingRates(destination, items);
+
+    res.json({
+      rates: rates.map(rate => ({
+        service_name: rate.name,
+        service_code: rate.code,
+        total_price: (rate.price * 100).toString(), // Cents
+        currency: "USD",
+        description: rate.description
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ errors: { rate: ["Error calculating rates"] } });
+  }
+});
+```
+
+## Step 6: Checkout UI Extension
+
+Implement a checkout extension for delivery date selection:
+
+### 6.1 Create Checkout UI Extension
+
+```bash
+npm run shopify app generate extension -- --type checkout-ui
+```
+
+### 6.2 Delivery Date Picker
+
+```typescript
+// extensions/delivery-date-picker/src/index.tsx
+import { useEffect } from "react";
+import {
+  BlockStack,
+  Heading,
+  Select,
+  Text
+} from "@shopify/checkout-ui-extensions";
+
+export default function DeliveryDatePicker() {
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableDates, setAvailableDates] = useState<Array<{ label: string; value: string }>>([]);
+
+  useEffect(() => {
+    // Fetch available delivery dates based on cart contents
+    fetchAvailableDates().then(setAvailableDates);
+  }, []);
+
+  return (
+    <BlockStack>
+      <Heading level={2}>Delivery Date</Heading>
+      <Text>Select your preferred delivery date:</Text>
+      <Select
+        label="Date"
+        value={selectedDate}
+        onChange={setSelectedDate}
+        options={availableDates}
+      />
+    </BlockStack>
+  );
+}
+
+async function fetchAvailableDates() {
+  const response = await fetch("/api/v4/delivery-dates", {
+    method: "POST"
+  });
+  return response.json();
+}
+```
+
+## Step 7: Testing with Development Store
+
+### 7.1 Create Development Store
+
+1. In Shopify Partner Dashboard, click **Stores**
+2. Click **Add store** → **Development store**
+3. Fill in store details and create
+
+### 7.2 Local Testing with Ngrok
+
+1. Install ngrok:
+   ```bash
+   brew install ngrok  # macOS
+   # or download from ngrok.com
+   ```
+
+2. Start ngrok tunnel:
+   ```bash
+   ngrok http 3000
+   ```
+
+3. Update `.env` with ngrok URL:
+   ```bash
+   NGROK_URL=https://xxxx-xxx-xxx-xxx.ngrok.io
+   ```
+
+4. Update Shopify app settings with ngrok URL
+
+### 7.3 Install App on Development Store
+
+1. In Partner Dashboard, go to your app
+2. Click **Select a store to install your app**
+3. Choose your development store
+4. Click **Install app**
+
+### 7.4 Test Webhooks
+
+Use curl or Postman to simulate Shopify webhooks:
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks/shopify \
+  -H "Content-Type: application/json" \
+  -H "X-Shopify-Hmac-SHA256: $(echo -n '{...}' | openssl dgst -sha256 -hmac 'secret' -binary | base64)" \
+  -H "X-Shopify-Topic: orders/create" \
+  -d '{"id": 123, "order_number": 1001, ...}'
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Webhook signature invalid | Verify `SHOPIFY_WEBHOOK_SECRET` is correct and matches Shopify's setting |
+| App not loading in Shopify Admin | Check ngrok URL is correct and firewall allows connections |
+| Orders not syncing | Check webhook endpoint is receiving requests (enable logging) |
+| Rate calculation failing | Verify carrier service is properly registered in Shopify |
+
+## Next Steps
+
+- Monitor webhook delivery in Shopify Admin → **Settings** → **Webhooks**
+- Test carrier rates with sample orders
+- Deploy to production with proper domain

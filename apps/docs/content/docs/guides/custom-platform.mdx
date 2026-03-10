@@ -1,0 +1,603 @@
+---
+title: Custom Platform Integration
+description: Build custom ecommerce platform integrations with Witylogix. Learn configurable field mapping, multi-auth support, and merchant-defined JSON schema.
+---
+
+# Custom Platform Integration
+
+Witylogix supports integration with any REST API-based ecommerce platform through the `CustomAdapter`. This guide walks you through building a custom integration with configurable field mapping and flexible authentication options.
+
+## When to Use Custom Platform Adapter
+
+Use the `CustomAdapter` when:
+- Integrating with a headless commerce platform (commercetools, Saleor, etc.)
+- Using a proprietary or white-label ecommerce system
+- Building a multi-tenant system where each merchant uses their own platform
+- Needs custom field mapping without forking the adapter
+
+## Architecture Overview
+
+The custom platform integration uses:
+- **Configurable Field Mapping**: Dot notation for nested field paths
+- **Multi-Auth Support**: API Key, HMAC-SHA256, Bearer Token, OAuth
+- **JSON Schema Validation**: Merchant-defined data structure validation
+- **Webhook Handler**: POST endpoint at `/api/v4/webhooks/custom/:shopId`
+
+## Step 1: Store Configuration
+
+Store each merchant's platform configuration in the database:
+
+```sql
+-- Schema for storing custom platform configurations
+CREATE TABLE custom_platform_config (
+  id SERIAL PRIMARY KEY,
+  shop_id TEXT UNIQUE NOT NULL,
+  platform_name TEXT NOT NULL,
+  api_base_url TEXT NOT NULL,
+  auth_type VARCHAR(50) NOT NULL, -- 'api_key', 'bearer', 'hmac', 'oauth'
+  auth_config JSONB NOT NULL, -- Stores credentials by auth_type
+  field_mappings JSONB NOT NULL, -- Dot notation mappings
+  webhook_secret TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Example Configuration
+
+```json
+{
+  "shopId": "shop_123",
+  "platformName": "commercetools",
+  "apiBaseUrl": "https://api.sphere.io",
+  "authType": "bearer",
+  "authConfig": {
+    "token": "eyJhbGc..."
+  },
+  "fieldMappings": {
+    "order": {
+      "id": "id",
+      "externalId": "orderNumber",
+      "customerId": "customerId",
+      "totalPrice": "total.centAmount",
+      "currency": "total.currencyCode",
+      "status": "orderState",
+      "items": "lineItems",
+      "createdAt": "createdAt"
+    },
+    "product": {
+      "id": "id",
+      "title": "name",
+      "sku": "masterVariant.sku",
+      "price": "masterVariant.price.centAmount",
+      "images": "masterVariant.images[].url"
+    }
+  },
+  "webhookSecret": "whsec_1234567890"
+}
+```
+
+## Step 2: Multi-Auth Support
+
+### 2.1 API Key Authentication
+
+```typescript
+// services/customAuth.ts
+export function createApiKeyHeaders(
+  config: CustomPlatformConfig
+): Record<string, string> {
+  const { apiKey, headerName = "X-API-Key" } = config.authConfig;
+
+  return {
+    [headerName]: apiKey,
+    "Content-Type": "application/json"
+  };
+}
+```
+
+### 2.2 Bearer Token Authentication
+
+```typescript
+// services/customAuth.ts
+export function createBearerHeaders(
+  config: CustomPlatformConfig
+): Record<string, string> {
+  const { token } = config.authConfig;
+
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  };
+}
+```
+
+### 2.3 HMAC-SHA256 Authentication
+
+```typescript
+// services/customAuth.ts
+import crypto from "crypto";
+
+export function createHmacHeaders(
+  config: CustomPlatformConfig,
+  body: string
+): Record<string, string> {
+  const { clientId, clientSecret } = config.authConfig;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const nonce = crypto.randomBytes(16).toString("hex");
+
+  const message = `${timestamp}.${nonce}.${body}`;
+  const signature = crypto
+    .createHmac("sha256", clientSecret)
+    .update(message)
+    .digest("hex");
+
+  return {
+    "X-Signature": signature,
+    "X-Timestamp": timestamp.toString(),
+    "X-Nonce": nonce,
+    "X-Client-ID": clientId,
+    "Content-Type": "application/json"
+  };
+}
+
+export function getAuthHeaders(
+  config: CustomPlatformConfig,
+  method: string,
+  body?: string
+): Record<string, string> {
+  switch (config.authType) {
+    case "api_key":
+      return createApiKeyHeaders(config);
+    case "bearer":
+      return createBearerHeaders(config);
+    case "hmac":
+      return createHmacHeaders(config, body || "");
+    case "oauth":
+      return createBearerHeaders(config); // OAuth uses bearer token after exchange
+    default:
+      throw new Error(`Unsupported auth type: ${config.authType}`);
+  }
+}
+```
+
+## Step 3: Field Mapping Engine
+
+Implement flexible field mapping using dot notation:
+
+```typescript
+// services/fieldMapping.ts
+export function getValueByPath(obj: any, path: string): any {
+  // Handle array notation: "items[0].id"
+  if (path.includes("[")) {
+    const parts = path.split(/[\[\].]+/).filter(Boolean);
+    let current = obj;
+
+    for (const part of parts) {
+      if (Array.isArray(current)) {
+        current = current.map((item) => item[part]);
+      } else {
+        current = current[part];
+      }
+    }
+
+    return current;
+  }
+
+  // Handle simple dot notation: "customer.id"
+  return path.split(".").reduce((obj, key) => obj?.[key], obj);
+}
+
+export function setValueByPath(obj: any, path: string, value: any): void {
+  const keys = path.split(".");
+  let current = obj;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    current[key] = current[key] || {};
+    current = current[key];
+  }
+
+  current[keys[keys.length - 1]] = value;
+}
+
+export function mapObjectUsingConfig(
+  sourceObj: any,
+  mappingConfig: Record<string, string>
+): Record<string, any> {
+  const result: Record<string, any> = {};
+
+  for (const [targetKey, sourcePath] of Object.entries(mappingConfig)) {
+    const value = getValueByPath(sourceObj, sourcePath);
+    if (value !== undefined) {
+      setValueByPath(result, targetKey, value);
+    }
+  }
+
+  return result;
+}
+```
+
+## Step 4: Custom Adapter Implementation
+
+```typescript
+// adapters/CustomAdapter.ts
+import { PlatformAdapter, Order, Product, Customer } from "@witylogix/types";
+import { getAuthHeaders, createApiHeaders } from "../services/customAuth";
+import { mapObjectUsingConfig } from "../services/fieldMapping";
+
+export interface CustomPlatformConfig {
+  shopId: string;
+  platformName: string;
+  apiBaseUrl: string;
+  authType: "api_key" | "bearer" | "hmac" | "oauth";
+  authConfig: Record<string, string>;
+  fieldMappings: {
+    order: Record<string, string>;
+    product: Record<string, string>;
+    customer: Record<string, string>;
+  };
+  webhookSecret?: string;
+}
+
+export class CustomAdapter implements PlatformAdapter {
+  constructor(private config: CustomPlatformConfig) {}
+
+  validateWebhook(payload: unknown, headers: Record<string, string>): boolean {
+    if (!this.config.webhookSecret) {
+      // No validation configured
+      return true;
+    }
+
+    const signature = headers["x-webhook-signature"];
+    const body = JSON.stringify(payload);
+
+    const hash = crypto
+      .createHmac("sha256", this.config.webhookSecret)
+      .update(body)
+      .digest("hex");
+
+    return hash === signature;
+  }
+
+  getWebhookEventType(payload: unknown): string {
+    const data = payload as Record<string, any>;
+    // Merchant configures event type field
+    return data.event_type || data.type || "unknown";
+  }
+
+  mapOrder(platformOrder: unknown): Order {
+    const mappedData = mapObjectUsingConfig(
+      platformOrder,
+      this.config.fieldMappings.order
+    );
+
+    return {
+      id: `custom-${mappedData.externalId}`,
+      externalId: mappedData.externalId,
+      shopId: this.config.shopId,
+      customerId: mappedData.customerId,
+      items: mappedData.items || [],
+      totalPrice: mappedData.totalPrice,
+      currency: mappedData.currency || "USD",
+      status: mappedData.status,
+      createdAt: new Date(mappedData.createdAt),
+      updatedAt: new Date(mappedData.updatedAt)
+    };
+  }
+
+  async fetchOrder(
+    orderId: string,
+    credentials: Record<string, string>
+  ): Promise<Order> {
+    const headers = getAuthHeaders(this.config, "GET");
+    const url = `${this.config.apiBaseUrl}/orders/${orderId}`;
+
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+
+    return this.mapOrder(data);
+  }
+
+  mapProduct(platformProduct: unknown): Product {
+    const mappedData = mapObjectUsingConfig(
+      platformProduct,
+      this.config.fieldMappings.product
+    );
+
+    return {
+      id: `custom-${mappedData.externalId}`,
+      externalId: mappedData.externalId,
+      shopId: this.config.shopId,
+      title: mappedData.title,
+      sku: mappedData.sku,
+      price: mappedData.price,
+      description: mappedData.description,
+      images: mappedData.images || [],
+      variants: mappedData.variants || []
+    };
+  }
+
+  async fetchProducts(
+    credentials: Record<string, string>
+  ): Promise<Product[]> {
+    const headers = getAuthHeaders(this.config, "GET");
+    const url = `${this.config.apiBaseUrl}/products`;
+
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+
+    // Handle both array and paginated responses
+    const products = Array.isArray(data) ? data : data.items || data.products;
+
+    return products.map((p: any) => this.mapProduct(p));
+  }
+
+  mapCustomer(platformCustomer: unknown): Customer {
+    const mappedData = mapObjectUsingConfig(
+      platformCustomer,
+      this.config.fieldMappings.customer
+    );
+
+    return {
+      id: `custom-${mappedData.externalId}`,
+      externalId: mappedData.externalId,
+      shopId: this.config.shopId,
+      email: mappedData.email,
+      firstName: mappedData.firstName,
+      lastName: mappedData.lastName,
+      phone: mappedData.phone,
+      createdAt: new Date(mappedData.createdAt)
+    };
+  }
+}
+```
+
+## Step 5: Webhook Endpoint
+
+Create the webhook handler for custom platforms:
+
+```typescript
+// webhooks.ts
+import express from "express";
+import { CustomAdapter } from "../adapters/CustomAdapter";
+
+const app = express();
+
+app.post(
+  "/api/v4/webhooks/custom/:shopId",
+  express.json(),
+  async (req, res) => {
+    const { shopId } = req.params;
+
+    try {
+      // Load configuration from database
+      const config = await getCustomPlatformConfig(shopId);
+
+      if (!config) {
+        return res.status(404).json({ error: "Configuration not found" });
+      }
+
+      const adapter = new CustomAdapter(config);
+
+      // Validate webhook signature
+      if (!adapter.validateWebhook(req.body, req.headers as Record<string, string>)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Extract event type and process
+      const eventType = adapter.getWebhookEventType(req.body);
+
+      switch (eventType) {
+        case "order.created":
+        case "order.updated":
+          const order = adapter.mapOrder(req.body.data || req.body);
+          await saveOrder(shopId, order);
+          break;
+
+        case "product.created":
+        case "product.updated":
+          const product = adapter.mapProduct(req.body.data || req.body);
+          await syncProduct(shopId, product);
+          break;
+
+        case "customer.created":
+        case "customer.updated":
+          const customer = adapter.mapCustomer(req.body.data || req.body);
+          await syncCustomer(shopId, customer);
+          break;
+
+        default:
+          console.log(`Unhandled event type: ${eventType}`);
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Webhook processing error:", error);
+      res.status(500).json({ error: "Processing failed" });
+    }
+  }
+);
+```
+
+## Step 6: Setup Endpoint
+
+Create an endpoint for merchants to configure their custom platform:
+
+```typescript
+// routes/setup.ts
+app.post("/api/v4/setup/custom", async (req, res) => {
+  const {
+    shopId,
+    platformName,
+    apiBaseUrl,
+    authType,
+    authConfig,
+    fieldMappings,
+    webhookSecret
+  } = req.body;
+
+  try {
+    // Validate auth config by making a test request
+    const headers = getAuthHeaders(
+      { shopId, platformName, apiBaseUrl, authType, authConfig, fieldMappings, webhookSecret },
+      "GET"
+    );
+
+    const testResponse = await fetch(`${apiBaseUrl}/health`, { headers });
+
+    if (!testResponse.ok) {
+      return res.status(400).json({
+        error: "Failed to authenticate with platform API"
+      });
+    }
+
+    // Save configuration
+    await saveCustomPlatformConfig({
+      shopId,
+      platformName,
+      apiBaseUrl,
+      authType,
+      authConfig,
+      fieldMappings,
+      webhookSecret
+    });
+
+    res.json({ success: true, shopId });
+  } catch (error) {
+    console.error("Setup error:", error);
+    res.status(400).json({ error: "Configuration failed" });
+  }
+});
+```
+
+## Example: Headless Commerce Integration
+
+### Commercetools Integration
+
+```json
+{
+  "platformName": "commercetools",
+  "apiBaseUrl": "https://api.us-central-1.gcp.commercetools.com",
+  "authType": "oauth",
+  "authConfig": {
+    "clientId": "your_client_id",
+    "clientSecret": "your_client_secret",
+    "scope": "manage_project:my_project"
+  },
+  "fieldMappings": {
+    "order": {
+      "id": "id",
+      "externalId": "orderNumber",
+      "customerId": "customerId",
+      "totalPrice": "total.centAmount",
+      "currency": "total.currencyCode",
+      "status": "orderState",
+      "items": "lineItems",
+      "createdAt": "createdAt"
+    },
+    "product": {
+      "id": "id",
+      "title": "name.en",
+      "sku": "masterVariant.sku",
+      "price": "masterVariant.prices[0].value.centAmount",
+      "images": "masterVariant.images[].url"
+    }
+  }
+}
+```
+
+### Saleor GraphQL Integration
+
+For GraphQL APIs, create a wrapper:
+
+```typescript
+// services/graphqlAdapter.ts
+export async function queryGraphQL(
+  endpoint: string,
+  query: string,
+  variables: Record<string, any>,
+  headers: Record<string, string>
+): Promise<any> {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query, variables })
+  });
+
+  const data = await response.json();
+
+  if (data.errors) {
+    throw new Error(`GraphQL error: ${data.errors[0].message}`);
+  }
+
+  return data.data;
+}
+```
+
+## Testing Custom Integration
+
+### 1. Test Configuration
+
+```bash
+curl -X POST http://localhost:3000/api/v4/setup/custom \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shopId": "shop_123",
+    "platformName": "commercetools",
+    "apiBaseUrl": "https://api.sphere.io",
+    "authType": "bearer",
+    "authConfig": {"token": "your_token"},
+    "fieldMappings": {
+      "order": {
+        "id": "id",
+        "externalId": "orderNumber"
+      }
+    }
+  }'
+```
+
+### 2. Test Webhook Delivery
+
+```bash
+curl -X POST http://localhost:3000/api/v4/webhooks/custom/shop_123 \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Signature: $(echo -n '{}' | openssl dgst -sha256 -hmac 'secret' -hex | cut -d' ' -f2)" \
+  -d '{
+    "event_type": "order.created",
+    "data": {
+      "id": "ord_123",
+      "orderNumber": "12345"
+    }
+  }'
+```
+
+### 3. Monitor Sync Status
+
+```typescript
+// routes/status.ts
+app.get("/api/v4/sync/custom/:shopId", async (req, res) => {
+  const { shopId } = req.params;
+
+  const status = await db.query(
+    `SELECT * FROM sync_status WHERE shop_id = $1 AND source = 'custom'`,
+    [shopId]
+  );
+
+  res.json(status.rows[0]);
+});
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Authentication fails | Verify auth credentials and auth type matches platform requirements |
+| Field mapping returns undefined | Check field paths exist in platform response; use array notation for nested arrays |
+| Webhook signature invalid | Ensure webhook secret is consistent between platform and Witylogix config |
+| Webhook events not received | Verify webhook URL is publicly accessible and platform can reach it |
+
+## Next Steps
+
+- Configure field mappings for your specific platform
+- Test webhook delivery with sample data
+- Monitor sync status in the dashboard

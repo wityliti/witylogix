@@ -1,0 +1,632 @@
+---
+title: RBAC and Auth Guide
+description: Implement hierarchical role-based access control, multi-provider authentication, and JWT token management.
+---
+
+# RBAC and Auth Guide
+
+The Witylogix platform implements a hierarchical, resource-based role-based access control (RBAC) system with pluggable authentication providers. It supports 14 resource types and 7 action types, with fine-grained permission policies and wildcard matching.
+
+## RBAC Architecture
+
+### Resource Types (14)
+
+The platform protects 14 distinct resource types:
+
+1. **order** - Delivery orders
+2. **delivery** - Delivery operations
+3. **driver** - Driver profiles
+4. **vehicle** - Fleet vehicles
+5. **route** - Route optimization
+6. **shop** - Shop configuration
+7. **customer** - Customer profiles
+8. **user** - Platform users
+9. **webhook** - Webhook endpoints
+10. **integration** - Third-party integrations
+11. **payment** - Payment methods and subscriptions
+12. **analytics** - Analytics and reporting
+13. **team** - Team and workspace management
+14. **billing** - Billing configuration
+
+### Action Types (7)
+
+Fine-grained actions control what can be done:
+
+1. **create** - Create new resources
+2. **read** - View resource details
+3. **update** - Modify resources
+4. **delete** - Remove resources
+5. **list** - Enumerate resources
+6. **execute** - Perform special operations (route optimization, etc.)
+7. **admin** - Full administrative access
+
+### Permission Format
+
+Permissions are expressed as resource:action pairs with wildcard support:
+
+```
+order:read          // Read any order
+order:*             // All actions on orders
+*:read              // Read any resource
+*:*                 // Full admin access (dangerous!)
+driver:execute      // Run driver-specific operations (e.g., geolocation lookup)
+analytics:read      // View reports and dashboards
+```
+
+## Hierarchical Roles
+
+The RBAC system supports roles at two levels: **organization** and **shop**.
+
+### Organization-Level Roles
+
+Organization roles apply across all shops within the organization:
+
+```typescript
+// Organization roles
+const orgRoles = {
+  'org:admin': {
+    // Full platform access
+    permissions: ['*:*'],
+    level: 'organization',
+  },
+  'org:billing-manager': {
+    // Manage billing, payments, subscriptions
+    permissions: [
+      'billing:*',
+      'payment:*',
+      'shop:read', // View shop info to see usage
+    ],
+    level: 'organization',
+  },
+  'org:support': {
+    // View orders and customer data across all shops
+    permissions: [
+      'order:read',
+      'order:list',
+      'customer:read',
+      'customer:list',
+      'driver:read',
+      'driver:list',
+    ],
+    level: 'organization',
+  },
+};
+```
+
+### Shop-Level Roles
+
+Shop roles apply within a single shop:
+
+```typescript
+// Shop roles
+const shopRoles = {
+  'shop:admin': {
+    // Full shop admin access
+    permissions: ['*:*'],
+    level: 'shop',
+    shopId: 'shop_123',
+  },
+  'shop:manager': {
+    // Operational management
+    permissions: [
+      'order:read',
+      'order:update',
+      'order:list',
+      'delivery:*',
+      'driver:read',
+      'driver:list',
+      'customer:read',
+      'customer:list',
+      'route:execute',
+      'analytics:read',
+    ],
+    level: 'shop',
+    shopId: 'shop_123',
+  },
+  'shop:driver': {
+    // Driver-specific access
+    permissions: [
+      'order:read',
+      'order:list',
+      'delivery:read',
+      'delivery:update',
+      'driver:read', // Own driver record
+      'route:read',
+    ],
+    level: 'shop',
+    shopId: 'shop_123',
+  },
+  'shop:customer-support': {
+    // View orders and customers
+    permissions: [
+      'order:read',
+      'order:list',
+      'customer:read',
+      'customer:list',
+      'delivery:read',
+    ],
+    level: 'shop',
+    shopId: 'shop_123',
+  },
+};
+```
+
+## Permission Engine
+
+The permission engine evaluates policies using wildcard matching and resource context.
+
+### Policy Evaluation
+
+```typescript
+import { PermissionEngine } from '@witylogix/rbac';
+
+const engine = new PermissionEngine();
+
+// Check if user can perform action
+const canRead = engine.evaluate({
+  userId: 'user_123',
+  action: 'read',
+  resource: 'order',
+  resourceId: 'ord_456',
+  context: {
+    shopId: 'shop_123',
+    orgId: 'org_abc',
+  },
+});
+
+if (!canRead) {
+  throw new ForbiddenError('You cannot read this order');
+}
+```
+
+### Wildcard Matching
+
+The engine supports flexible wildcard matching for permissions:
+
+```typescript
+// Exact match
+'order:read' matches request for 'order:read'
+
+// Resource wildcard
+'*:read' matches 'order:read', 'customer:read', 'driver:read', etc.
+
+// Action wildcard
+'order:*' matches 'order:read', 'order:create', 'order:delete', etc.
+
+// Full wildcard
+'*:*' matches any resource:action combination
+
+// Order of precedence (evaluated in this order):
+// 1. Explicit denial (explicit deny always wins)
+// 2. Explicit allow
+// 3. Wildcard allows
+// 4. Default deny
+```
+
+### Resource Context Evaluation
+
+Policies can be context-aware, allowing fine-grained control:
+
+```typescript
+// Check if user can update a specific order
+const canUpdate = engine.evaluate({
+  userId: 'user_123',
+  action: 'update',
+  resource: 'order',
+  resourceId: 'ord_456',
+  context: {
+    shopId: 'shop_123',
+    resourceOwnerId: 'user_456', // Order was created by this user
+    resourceStatus: 'pending', // Order is in pending state
+  },
+  policy: {
+    // Custom policy: can only update own orders that are pending
+    allowOwnOnly: true,
+    allowedStatuses: ['pending', 'assigned'],
+  },
+});
+```
+
+## Permission Checking
+
+Implement permission checks in your API routes and business logic.
+
+### API Middleware
+
+```typescript
+import { requirePermission } from '@witylogix/rbac';
+
+// Protect route with permission middleware
+router.get(
+  '/orders/:orderId',
+  requirePermission('order:read'),
+  async (req, res) => {
+    const order = await db.order.findUnique({
+      where: { id: req.params.orderId },
+    });
+
+    // Additional context-based check
+    if (req.user.shopId !== order.shopId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    res.json(order);
+  }
+);
+
+// Multiple permissions (any one satisfies)
+router.post(
+  '/orders/:orderId/cancel',
+  requirePermission(['order:update', 'order:admin']),
+  async (req, res) => {
+    // Only users with order:update OR order:admin can proceed
+    // ...
+  }
+);
+```
+
+### Business Logic Checks
+
+```typescript
+import { PermissionEngine } from '@witylogix/rbac';
+
+class OrderService {
+  constructor(private engine: PermissionEngine) {}
+
+  async updateOrder(userId, orderId, updates) {
+    // Check permission
+    const canUpdate = await this.engine.evaluate({
+      userId,
+      action: 'update',
+      resource: 'order',
+      resourceId: orderId,
+    });
+
+    if (!canUpdate) {
+      throw new ForbiddenError('Cannot update this order');
+    }
+
+    // Additional context checks
+    const order = await db.order.findUnique({ where: { id: orderId } });
+    const user = await db.user.findUnique({ where: { id: userId } });
+
+    // Shop context: users can only manage orders in their shop
+    if (user.shopId !== order.shopId) {
+      throw new ForbiddenError('Order not in your shop');
+    }
+
+    // Status check: can only update pending orders
+    if (!['pending', 'assigned'].includes(order.status)) {
+      throw new ForbiddenError('Cannot update order in current status');
+    }
+
+    return await db.order.update({
+      where: { id: orderId },
+      data: updates,
+    });
+  }
+}
+```
+
+## Authentication Providers
+
+Witylogix supports multiple authentication providers with a unified abstraction layer.
+
+### Supported Providers
+
+| Provider | Best For | Setup |
+| --- | --- | --- |
+| **Local** | Development, simple deployments | No external deps |
+| **Auth0** | Enterprise SSO | Domain, client ID |
+| **Clerk** | Modern SaaS | API key, instance ID |
+| **Amazon Cognito** | AWS ecosystem | User pool ID, client ID |
+| **Firebase Auth** | Google ecosystem | Service account JSON |
+| **OIDC** | Generic OpenID Connect | Discovery URL |
+| **SAML** | Enterprise SAML 2.0 | Metadata URL, certificate |
+
+### BYOK Auth Pattern
+
+Tenants can bring their own authentication provider while deployers set defaults.
+
+```typescript
+// Deployer defaults (server-side, immutable)
+const deployerAuthDefaults = {
+  provider: 'auth0',
+  domain: 'witylogix.auth0.com',
+  clientId: 'default_client_id',
+};
+
+// Tenant overrides (custom provider)
+const tenantAuthConfig = {
+  shopId: 'shop_123',
+  provider: 'cognito', // Use Cognito instead of Auth0
+  userPoolId: 'us-east-1_xyz123',
+  clientId: 'custom_client_id',
+  clientSecret: 'custom_client_secret',
+};
+```
+
+## Configuring Auth Providers
+
+### Auth0 Setup
+
+```typescript
+import { Auth0Provider } from '@witylogix/auth';
+
+const auth0 = new Auth0Provider({
+  domain: 'your-tenant.auth0.com',
+  clientId: 'your_client_id',
+  clientSecret: 'your_client_secret',
+});
+
+app.use(auth0.middleware());
+```
+
+### Clerk Setup
+
+```typescript
+import { ClerkProvider } from '@witylogix/auth';
+
+const clerk = new ClerkProvider({
+  apiKey: 'pk_test_...',
+  instanceId: 'inst_...',
+});
+
+app.use(clerk.middleware());
+```
+
+### Cognito Setup
+
+```typescript
+import { CognitoProvider } from '@witylogix/auth';
+
+const cognito = new CognitoProvider({
+  userPoolId: 'us-east-1_xyz123',
+  clientId: 'your_client_id',
+  region: 'us-east-1',
+});
+
+app.use(cognito.middleware());
+```
+
+### Firebase Auth Setup
+
+```typescript
+import { FirebaseAuthProvider } from '@witylogix/auth';
+
+const firebase = new FirebaseAuthProvider({
+  serviceAccountKey: require('./firebase-key.json'),
+  projectId: 'your-project',
+});
+
+app.use(firebase.middleware());
+```
+
+### OIDC Setup
+
+```typescript
+import { OIDCProvider } from '@witylogix/auth';
+
+const oidc = new OIDCProvider({
+  discoveryUrl: 'https://provider.example.com/.well-known/openid-configuration',
+  clientId: 'your_client_id',
+  clientSecret: 'your_client_secret',
+  redirectUri: 'https://api.witylogix.com/auth/callback',
+});
+
+app.use(oidc.middleware());
+```
+
+### SAML Setup
+
+```typescript
+import { SAMLProvider } from '@witylogix/auth';
+
+const saml = new SAMLProvider({
+  metadataUrl: 'https://idp.example.com/metadata',
+  assertionConsumerServiceURL: 'https://api.witylogix.com/auth/saml/acs',
+  issuer: 'urn:witylogix:saml',
+  cert: fs.readFileSync('./idp-cert.pem'),
+});
+
+app.use(saml.middleware());
+```
+
+## JWT Token Management
+
+Witylogix uses JWT tokens for API authentication with access and refresh token rotation.
+
+### Token Structure
+
+```typescript
+// Access token (short-lived, ~15 minutes)
+{
+  iss: 'https://api.witylogix.com',
+  sub: 'user_123',
+  aud: 'witylogix-api',
+  exp: 1710078300,
+  iat: 1710077700,
+  userId: 'user_123',
+  shopId: 'shop_123',
+  orgId: 'org_abc',
+  roles: ['shop:admin'],
+  permissions: ['*:*'],
+}
+
+// Refresh token (long-lived, ~30 days)
+{
+  iss: 'https://api.witylogix.com',
+  sub: 'user_123',
+  aud: 'witylogix-api',
+  exp: 1712669700,
+  iat: 1710077700,
+  type: 'refresh',
+  sessionId: 'sess_xyz789',
+}
+```
+
+### Generating Tokens
+
+```typescript
+import { TokenManager } from '@witylogix/auth';
+
+const tokenManager = new TokenManager({
+  secretKey: process.env.JWT_SECRET,
+  accessTokenExpiry: 15 * 60, // 15 minutes
+  refreshTokenExpiry: 30 * 24 * 60 * 60, // 30 days
+});
+
+// Login user and issue tokens
+const { accessToken, refreshToken } = tokenManager.issueTokens({
+  userId: 'user_123',
+  shopId: 'shop_123',
+  orgId: 'org_abc',
+  roles: ['shop:admin'],
+});
+
+res.json({
+  accessToken,
+  refreshToken,
+  expiresIn: 15 * 60,
+});
+```
+
+### Refreshing Tokens
+
+```typescript
+// Client uses refresh token to get new access token
+const { accessToken, refreshToken: newRefreshToken } =
+  tokenManager.refreshAccessToken(refreshToken);
+
+res.json({
+  accessToken,
+  refreshToken: newRefreshToken, // Optional: new refresh token
+  expiresIn: 15 * 60,
+});
+```
+
+### Token Validation Middleware
+
+```typescript
+import { verifyToken } from '@witylogix/auth';
+
+app.use((req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing token' });
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    const decoded = tokenManager.verify(token);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+});
+```
+
+## Complete RBAC Example
+
+Here's a complete example implementing RBAC and auth:
+
+```typescript
+import { PermissionEngine, TokenManager } from '@witylogix/rbac';
+import { Auth0Provider } from '@witylogix/auth';
+
+const engine = new PermissionEngine();
+const tokenManager = new TokenManager(config);
+const auth0 = new Auth0Provider(config);
+
+// User logs in via Auth0
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await auth0.authenticate(email, password);
+
+  // Get user's roles and permissions
+  const roles = await db.role.findMany({
+    where: { userId: user.id },
+  });
+
+  const permissions = roles.flatMap((r) => r.permissions);
+
+  // Issue JWT tokens
+  const { accessToken, refreshToken } = tokenManager.issueTokens({
+    userId: user.id,
+    shopId: user.shopId,
+    orgId: user.orgId,
+    roles: roles.map((r) => r.name),
+    permissions,
+  });
+
+  res.json({ accessToken, refreshToken, user });
+});
+
+// Check permission before action
+app.post('/orders/:orderId/cancel', async (req, res) => {
+  const { user } = req;
+  const { orderId } = req.params;
+
+  // Check permission
+  const canUpdate = engine.evaluate({
+    userId: user.id,
+    action: 'update',
+    resource: 'order',
+    resourceId: orderId,
+    context: { shopId: user.shopId },
+  });
+
+  if (!canUpdate) {
+    return res.status(403).json({ error: 'Permission denied' });
+  }
+
+  // Proceed with cancellation
+  const order = await db.order.update({
+    where: { id: orderId },
+    data: { status: 'cancelled' },
+  });
+
+  res.json(order);
+});
+
+// Assign role to user
+app.post('/users/:userId/roles', async (req, res) => {
+  const { roleId } = req.body;
+  const { userId } = req.params;
+
+  // Only org admins can assign roles
+  const isOrgAdmin = req.user.roles.includes('org:admin');
+
+  if (!isOrgAdmin) {
+    return res.status(403).json({ error: 'Only org admins can assign roles' });
+  }
+
+  const userRole = await db.userRole.create({
+    data: { userId, roleId },
+  });
+
+  res.json(userRole);
+});
+```
+
+## Summary
+
+The Witylogix RBAC and auth system provides:
+
+- **Hierarchical RBAC**: Organization and shop-level roles
+- **Fine-grained permissions**: 14 resource types, 7 action types with wildcards
+- **Multi-provider auth**: Auth0, Clerk, Cognito, Firebase, OIDC, SAML
+- **BYOK auth**: Tenants bring their own authentication
+- **JWT tokens**: Access and refresh tokens with rotation
+- **Flexible policies**: Context-aware permission evaluation
+
+For API reference, see [RBAC API Reference](/docs/api/rbac).
+
+For auth provider setup, see [Auth Provider Configuration](/docs/guides/auth-providers).

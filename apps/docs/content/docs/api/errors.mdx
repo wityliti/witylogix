@@ -1,0 +1,299 @@
+---
+title: Error Handling
+description: Witylogix API error codes and RFC 7807 Problem Details format
+---
+
+# Error Handling
+
+The Witylogix API uses standard HTTP status codes and follows the RFC 7807 Problem Details specification for error responses.
+
+## Error Response Format
+
+All error responses follow this structure:
+
+```json
+{
+  "type": "https://api.witylogix.com/errors/error-type",
+  "title": "Human Readable Title",
+  "status": 400,
+  "detail": "Detailed explanation of what went wrong",
+  "instance": "/orders/order_123",
+  "code": "ORDER_001"
+}
+```
+
+### Fields
+
+- **type**: URI identifying the error type (machine-readable)
+- **title**: Short human-readable error title
+- **status**: HTTP status code
+- **detail**: Detailed explanation of the error
+- **instance**: The specific request/resource that caused the error
+- **code**: Internal error code for support reference
+
+## HTTP Status Codes
+
+| Code | Meaning | Description |
+|------|---------|-------------|
+| 400 | Bad Request | Invalid request parameters or malformed JSON |
+| 401 | Unauthorized | Missing or invalid authentication credentials |
+| 403 | Forbidden | Authenticated but lacks permission for resource |
+| 404 | Not Found | Requested resource does not exist |
+| 409 | Conflict | Request conflicts with existing data (e.g., duplicate) |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Unexpected server error |
+| 503 | Service Unavailable | Server temporarily unavailable |
+
+## Error Code Reference
+
+### Authentication Errors (401)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| AUTH_001 | Invalid Credentials | Email or password is incorrect |
+| AUTH_002 | Token Expired | Access token has expired |
+| AUTH_003 | Invalid Token | Token is invalid or malformed |
+| AUTH_004 | Missing Token | No authentication token provided |
+| AUTH_005 | Insufficient Permissions | Token lacks required scopes |
+
+### Order Errors (400/404)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| ORDER_001 | Missing Required Field | Required field in request body is missing |
+| ORDER_002 | Invalid Address | Delivery address is invalid or incomplete |
+| ORDER_003 | Order Not Found | Order ID does not exist |
+| ORDER_004 | Invalid Status | Cannot transition to requested status |
+| ORDER_005 | Duplicate Order | Order with same reference already exists |
+| ORDER_006 | Cannot Update | Order in terminal state cannot be modified |
+
+### Shipment Errors (400/404)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| SHIPMENT_001 | Order Not Found | Referenced order does not exist |
+| SHIPMENT_002 | Shipment Not Found | Shipment ID does not exist |
+| SHIPMENT_003 | Invalid Status Transition | Cannot change shipment to requested status |
+| SHIPMENT_004 | Driver Assignment Failed | Could not assign available driver |
+
+### Driver Errors (400/404)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| DRIVER_001 | Driver Not Found | Driver ID does not exist |
+| DRIVER_002 | Invalid Vehicle Type | Vehicle type not supported |
+| DRIVER_003 | Driver Unavailable | Driver is not available for assignment |
+| DRIVER_004 | Duplicate Driver | Driver with email already exists |
+
+### Zone Errors (400/404)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| ZONE_001 | Zone Not Found | Zone ID does not exist |
+| ZONE_002 | Invalid Boundaries | Zone boundaries are invalid |
+| ZONE_003 | Duplicate Zone | Zone with same name already exists |
+| ZONE_004 | Out of Service Area | Address outside all configured zones |
+
+### Rate Limit Errors (429)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| RATE_LIMIT_001 | Too Many Requests | Rate limit exceeded for your tier |
+| RATE_LIMIT_002 | Quota Exceeded | Daily quota exceeded |
+
+### Server Errors (500)
+
+| Code | Title | Description |
+|------|-------|-------------|
+| SERVER_001 | Internal Error | Unexpected server error |
+| SERVER_002 | Database Error | Database operation failed |
+| SERVER_003 | External Service Error | Third-party service unavailable |
+
+## Common Error Examples
+
+### Missing Required Field
+
+```bash
+curl -X POST http://localhost:8000/api/v4/orders \
+  -H "Authorization: Bearer token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "cust_123"
+  }'
+```
+
+Response (400):
+```json
+{
+  "type": "https://api.witylogix.com/errors/invalid-request",
+  "title": "Invalid Request",
+  "status": 400,
+  "detail": "Missing required field: delivery_address",
+  "instance": "/orders",
+  "code": "ORDER_001"
+}
+```
+
+### Unauthorized Request
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders
+```
+
+Response (401):
+```json
+{
+  "type": "https://api.witylogix.com/errors/unauthorized",
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "No authentication token provided",
+  "instance": "/orders",
+  "code": "AUTH_004"
+}
+```
+
+### Resource Not Found
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders/order_invalid \
+  -H "Authorization: Bearer token"
+```
+
+Response (404):
+```json
+{
+  "type": "https://api.witylogix.com/errors/not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "Order with ID 'order_invalid' not found",
+  "instance": "/orders/order_invalid",
+  "code": "ORDER_003"
+}
+```
+
+### Rate Limit Exceeded
+
+Response (429):
+```json
+{
+  "type": "https://api.witylogix.com/errors/rate-limit-exceeded",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "You have exceeded your rate limit of 50 requests per minute",
+  "code": "RATE_LIMIT_001"
+}
+```
+
+Headers:
+```
+X-RateLimit-Limit: 50
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1678890000
+Retry-After: 60
+```
+
+### Conflict (Duplicate Resource)
+
+```bash
+curl -X POST http://localhost:8000/api/v4/orders \
+  -H "Authorization: Bearer token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "cust_123",
+    "delivery_address": {...},
+    "items": [...],
+    "external_reference": "ORD-12345"
+  }'
+```
+
+Response (409):
+```json
+{
+  "type": "https://api.witylogix.com/errors/conflict",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Order with external reference 'ORD-12345' already exists",
+  "instance": "/orders",
+  "code": "ORDER_005"
+}
+```
+
+## Error Handling Best Practices
+
+### 1. Check Status Code First
+
+```typescript
+const response = await fetch('/api/v4/orders', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+
+if (!response.ok) {
+  const error = await response.json();
+  console.error(`Error ${error.status}: ${error.code} - ${error.detail}`);
+}
+```
+
+### 2. Implement Exponential Backoff for Rate Limits
+
+```typescript
+async function makeRequest(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const response = await fetch(url, options);
+
+    if (response.status === 429) {
+      const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
+      await sleep(retryAfter * 1000);
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return response.json();
+  }
+}
+```
+
+### 3. Handle Token Expiration
+
+```typescript
+async function makeAuthenticatedRequest(url, token) {
+  let response = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (response.status === 401) {
+    const error = await response.json();
+    if (error.code === 'AUTH_002') {
+      // Token expired, refresh it
+      const newToken = await refreshToken();
+      response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${newToken}` }
+      });
+    }
+  }
+
+  return response.json();
+}
+```
+
+### 4. Log Errors for Debugging
+
+```typescript
+async function logErrorResponse(response) {
+  const error = await response.json();
+  console.error({
+    timestamp: new Date().toISOString(),
+    code: error.code,
+    status: error.status,
+    detail: error.detail,
+    instance: error.instance,
+    userAction: 'what user was doing'
+  });
+}
+```
+
+## Support
+
+For help with error codes or debugging API issues, include the error code and instance in your support request. Contact support@witylogix.com

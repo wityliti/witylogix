@@ -1,0 +1,17 @@
+{
+  "title": "Components",
+  "description": "Witylogix UI Component Library documentation",
+  "pages": [
+    "index",
+    "button",
+    "card",
+    "badge",
+    "input",
+    "table",
+    "modal",
+    "date-picker",
+    "pagination",
+    "data-display",
+    "form-controls"
+  ]
+}

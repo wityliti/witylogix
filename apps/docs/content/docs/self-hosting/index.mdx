@@ -1,0 +1,834 @@
+---
+title: Self-Hosting Guide
+description: Deploy Witylogix to your own infrastructure using Docker Compose or Kubernetes.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Witylogix is designed for self-hosting with minimal operational overhead. Deploy to:
+
+- **Docker Compose** (single server, development/small production)
+- **Docker Swarm** (multiple nodes with orchestration)
+- **Kubernetes** (high-availability, auto-scaling)
+
+This guide covers Docker Compose. For Kubernetes, see [Kubernetes Deployment](#kubernetes-deployment).
+
+## Prerequisites
+
+- Linux server (Ubuntu 20.04+ recommended) or macOS
+- Docker 20.10+ and Docker Compose 2.0+
+- 4+ CPU cores, 8GB+ RAM (minimum for production)
+- 50GB+ disk space
+- Domain name (optional but recommended for SSL)
+
+### System Requirements
+
+| Workload | CPU | RAM | Disk | Network |
+|----------|-----|-----|------|---------|
+| Development | 2 | 4GB | 20GB | 10 Mbps |
+| Small Production (< 100 orders/day) | 4 | 8GB | 50GB | 25 Mbps |
+| Medium Production (100-1000 orders/day) | 8 | 16GB | 100GB | 100 Mbps |
+| Large Production (1000+ orders/day) | 16+ | 32GB+ | 200GB+ | 1 Gbps |
+
+## Quick Start with Docker Compose
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/witylogix/witylogix-platform.git
+cd witylogix-platform
+```
+
+### 2. Configure Environment
+
+Create `.env` for production:
+
+```bash
+# Copy template
+cp .env.example .env
+
+# Edit with your values
+nano .env
+```
+
+Critical variables for production:
+
+```env
+# Domain/Public URL
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+TRACKING_PAGE_URL=https://track.yourdomain.com
+
+# Secrets (generate with: openssl rand -base64 32)
+JWT_SECRET=your-super-secret-key-at-least-32-chars
+POSTGRES_PASSWORD=strong_postgres_password_here
+REDIS_PASSWORD=strong_redis_password_here
+
+# Node environment
+NODE_ENV=production
+LOG_LEVEL=warn
+
+# Database
+DATABASE_URL="postgresql://witylogix:strong_postgres_password@postgres:5432/witylogix_prod"
+
+# Routing provider
+ROUTING_PROVIDER=mapbox
+MAPBOX_ACCESS_TOKEN=your_mapbox_token
+
+# Email notifications
+EMAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=your_sendgrid_api_key
+EMAIL_FROM=noreply@yourdomain.com
+
+# SMS notifications (optional)
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Storage
+STORAGE_PROVIDER=s3
+S3_BUCKET=witylogix-prod
+S3_REGION=us-east-1
+S3_ACCESS_KEY=your_aws_access_key
+S3_SECRET_KEY=your_aws_secret_key
+
+# CORS
+CORS_ORIGINS=https://yourdomain.com,https://dashboard.yourdomain.com
+```
+
+<Callout type="warning">
+Never commit `.env` to Git. Use `.env.example` in version control.
+</Callout>
+
+### 3. Start Services
+
+```bash
+# Start in background
+docker compose up -d
+
+# Verify all services are healthy
+docker compose ps
+
+# View logs
+docker compose logs -f
+```
+
+Expected output:
+
+```
+NAME                COMMAND             STATUS              PORTS
+witylogix-postgres  postgres            Up 2 minutes        5432/tcp
+witylogix-redis     redis-server        Up 2 minutes        6379/tcp
+witylogix-api       node apps/api/...   Up 1 minute         3001/tcp
+witylogix-dashboard next start          Up 1 minute         3000/tcp
+```
+
+All services should show `healthy` status.
+
+### 4. Run Database Migrations
+
+```bash
+# Run pending migrations
+docker compose exec api pnpm db:migrate:deploy
+
+# Optional: Seed with sample data
+docker compose exec api pnpm db:seed
+```
+
+### 5. Access the Platform
+
+- **Dashboard:** http://localhost:3000
+- **API:** http://localhost:3001
+- **Health Check:** http://localhost:3001/health
+
+## Service Architecture
+
+### PostgreSQL
+
+Database with PostGIS extension for geospatial queries and Row-Level Security policies.
+
+**Configuration:**
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: witylogix_prod
+      POSTGRES_USER: witylogix
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U witylogix"]
+```
+
+**Best Practices:**
+- Run automated daily backups
+- Use persistent volumes
+- Set resource limits (4GB memory recommended)
+- Enable slow query logging: `log_min_duration_statement = 1000`
+
+### Redis
+
+Cache, session store, pub/sub for real-time features, and BullMQ job queue.
+
+**Configuration:**
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+```
+
+**Best Practices:**
+- Enable AOF (append-only file) for persistence
+- Set max memory limit: `maxmemory 2gb`
+- Use strong password in production
+- Monitor memory growth
+
+### API Server
+
+Fastify backend serving REST API and WebSocket connections.
+
+**Configuration:**
+```yaml
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+### Dashboard
+
+Next.js merchant portal.
+
+**Configuration:**
+```yaml
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+```
+
+### Nginx (Reverse Proxy)
+
+For production, add Nginx in front for SSL/TLS and load balancing.
+
+**docker-compose.prod.yml:**
+```yaml
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - api
+      - dashboard
+```
+
+## SSL/TLS Setup
+
+### Option 1: Let's Encrypt with Nginx
+
+Create `/infra/nginx/ssl/generate-certs.sh`:
+
+```bash
+#!/bin/bash
+DOMAIN=${1:-yourdomain.com}
+
+# Install certbot
+apt-get install -y certbot python3-certbot-nginx
+
+# Generate certificate
+certbot certonly --standalone \
+  -d $DOMAIN \
+  -d www.$DOMAIN \
+  -d api.$DOMAIN \
+  -d track.$DOMAIN \
+  --agree-tos -m admin@$DOMAIN
+
+# Copy to docker volume
+cp /etc/letsencrypt/live/$DOMAIN/fullchain.pem ./ssl/
+cp /etc/letsencrypt/live/$DOMAIN/privkey.pem ./ssl/
+```
+
+Run once:
+
+```bash
+bash infra/nginx/ssl/generate-certs.sh yourdomain.com
+```
+
+**Nginx Configuration** (`infra/nginx/nginx.conf`):
+
+```nginx
+upstream api {
+  server api:3001;
+}
+
+upstream dashboard {
+  server dashboard:3000;
+}
+
+server {
+  listen 80;
+  server_name _;
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  server_name api.yourdomain.com;
+
+  ssl_certificate /etc/nginx/ssl/fullchain.pem;
+  ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_ciphers HIGH:!aNULL:!MD5;
+
+  location / {
+    proxy_pass http://api;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+}
+
+server {
+  listen 443 ssl http2;
+  server_name yourdomain.com www.yourdomain.com;
+
+  ssl_certificate /etc/nginx/ssl/fullchain.pem;
+  ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+
+  location / {
+    proxy_pass http://dashboard;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+### Option 2: CloudFlare or AWS ACM
+
+Use your cloud provider's certificate management and point DNS to their service.
+
+## Database Backups
+
+### Automated Daily Backups
+
+Create `scripts/backup.sh`:
+
+```bash
+#!/bin/bash
+BACKUP_DIR="/backups/witylogix"
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="$BACKUP_DIR/witylogix_$DATE.sql.gz"
+
+mkdir -p $BACKUP_DIR
+
+# Run backup in docker
+docker compose exec -T postgres pg_dump \
+  -U witylogix witylogix_prod | gzip > $BACKUP_FILE
+
+# Keep only last 30 days
+find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
+
+# Optional: upload to S3
+# aws s3 cp $BACKUP_FILE s3://backups-bucket/witylogix/
+```
+
+Schedule with cron:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add backup at 2 AM daily
+0 2 * * * cd /opt/witylogix && bash scripts/backup.sh
+```
+
+### Restore from Backup
+
+```bash
+# Stop the API server
+docker compose stop api
+
+# Restore database
+gunzip < /backups/witylogix/witylogix_20240310_020000.sql.gz | \
+  docker compose exec -T postgres psql -U witylogix witylogix_prod
+
+# Start API
+docker compose start api
+```
+
+## Scaling Horizontally
+
+For high-volume deployments, scale the API server across multiple nodes:
+
+```yaml
+services:
+  nginx:
+    # ... load balancer configuration
+
+  api-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      INSTANCE_ID: "api-1"
+
+  api-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      INSTANCE_ID: "api-2"
+
+  api-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      INSTANCE_ID: "api-3"
+```
+
+**Nginx upstream configuration:**
+
+```nginx
+upstream api {
+  least_conn;  # Use least-connections load balancing
+  server api-1:3001;
+  server api-2:3001;
+  server api-3:3001;
+}
+```
+
+Each API instance is stateless and shares the same PostgreSQL and Redis.
+
+## Monitoring
+
+### Health Check Endpoints
+
+```bash
+# API health
+curl http://localhost:3001/health
+
+# Response:
+# {
+#   "status": "ok",
+#   "timestamp": "2024-03-10T12:00:00Z",
+#   "uptime": 3600,
+#   "database": "connected",
+#   "redis": "connected"
+# }
+```
+
+### Logs
+
+```bash
+# View API logs
+docker compose logs -f api
+
+# View database logs
+docker compose logs -f postgres
+
+# View Redis logs
+docker compose logs -f redis
+```
+
+### Prometheus Metrics
+
+Enable metrics endpoint (optional):
+
+```env
+METRICS_ENABLED=true
+METRICS_PORT=9090
+```
+
+Access metrics:
+
+```bash
+curl http://localhost:9090/metrics
+```
+
+Common metrics to monitor:
+
+- `http_request_duration_seconds` — API latency
+- `database_connection_pool_idle_count` — DB connection health
+- `redis_connected_clients` — Redis connection count
+- `bullmq_queue_depth` — Job queue backlog
+
+## Kubernetes Deployment
+
+For production high-availability, deploy to Kubernetes:
+
+### Prerequisites
+
+- Kubernetes cluster (EKS, GKE, AKS, or self-managed)
+- `kubectl` configured with cluster access
+- Helm (optional, for package management)
+
+### Basic Kubernetes Manifests
+
+**postgres.yml:**
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_DB
+          value: witylogix_prod
+        - name: POSTGRES_USER
+          value: witylogix
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: witylogix-secrets
+              key: postgres_password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Gi
+```
+
+**api-deployment.yml:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: witylogix-api
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: witylogix-api
+  template:
+    metadata:
+      labels:
+        app: witylogix-api
+    spec:
+      containers:
+      - name: api
+        image: witylogix:latest
+        ports:
+        - containerPort: 3001
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: witylogix-secrets
+              key: database_url
+        - name: REDIS_URL
+          value: redis://redis:6379
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: witylogix-secrets
+              key: jwt_secret
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: witylogix-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: witylogix-api
+  ports:
+  - port: 80
+    targetPort: 3001
+```
+
+Deploy:
+
+```bash
+# Create namespace
+kubectl create namespace witylogix
+
+# Create secrets
+kubectl create secret generic witylogix-secrets \
+  --from-literal=database_url=postgresql://... \
+  --from-literal=jwt_secret=... \
+  --from-literal=postgres_password=... \
+  -n witylogix
+
+# Deploy services
+kubectl apply -f postgres.yml -n witylogix
+kubectl apply -f api-deployment.yml -n witylogix
+
+# Verify
+kubectl get pods -n witylogix
+kubectl logs -f deployment/witylogix-api -n witylogix
+```
+
+### Auto-Scaling
+
+Enable horizontal pod autoscaling:
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: witylogix-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: witylogix-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+## Maintenance
+
+### Regular Updates
+
+```bash
+# Pull latest code
+git pull origin main
+
+# Build new image
+docker compose build --no-cache
+
+# Apply migrations
+docker compose exec api pnpm db:migrate:deploy
+
+# Restart services
+docker compose up -d
+```
+
+### Database Maintenance
+
+```bash
+# Analyze table statistics
+docker compose exec postgres vacuumdb -U witylogix -d witylogix_prod -v
+
+# Check database size
+docker compose exec postgres du -sh /var/lib/postgresql/data
+```
+
+### Log Rotation
+
+Configure Docker to rotate logs:
+
+```bash
+# /etc/docker/daemon.json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  }
+}
+```
+
+## Troubleshooting
+
+### API won't start
+
+Check logs:
+
+```bash
+docker compose logs api
+
+# Common issues:
+# - Database not ready: wait 30s and retry
+# - Port 3001 in use: change PORT in docker-compose.yml
+# - OOM: increase memory limit
+```
+
+### Database connection errors
+
+Verify connectivity:
+
+```bash
+docker compose exec api psql $DATABASE_URL -c "SELECT 1"
+```
+
+### High memory usage
+
+```bash
+# Check Redis memory
+docker compose exec redis redis-cli INFO memory
+
+# Clear cache
+docker compose exec redis redis-cli FLUSHDB
+
+# Check API memory
+docker compose top api
+```
+
+### WebSocket connection issues
+
+Verify Socket.io configuration:
+
+```bash
+curl -v http://localhost:3001/socket.io/?EIO=4&transport=websocket
+```
+
+## Performance Tuning
+
+### PostgreSQL
+
+```sql
+-- Increase max connections (in postgresql.conf)
+max_connections = 200
+
+-- Tune shared_buffers (25% of RAM)
+shared_buffers = 2GB
+
+-- Tune work_mem (RAM / max_connections / 2)
+work_mem = 20MB
+
+-- Tune effective_cache_size (75% of RAM)
+effective_cache_size = 6GB
+```
+
+### Redis
+
+```conf
+# /infra/redis/redis.conf
+maxmemory 2gb
+maxmemory-policy allkeys-lru
+tcp-backlog 511
+```
+
+### API Server
+
+```env
+# Tune Node.js
+NODE_OPTIONS="--max-old-space-size=2048"
+
+# Tune connection pooling
+DATABASE_POOL_MIN=5
+DATABASE_POOL_MAX=25
+```
+
+## Support & Resources
+
+- **Documentation:** https://docs.witylogix.com
+- **GitHub Issues:** https://github.com/witylogix/witylogix-platform/issues
+- **Discord:** https://discord.gg/witylogix
+- **Email:** support@witylogix.com

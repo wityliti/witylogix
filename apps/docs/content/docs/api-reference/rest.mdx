@@ -1,0 +1,153 @@
+---
+title: REST API Reference
+description: Complete REST API reference for Witylogix
+---
+
+# REST API Reference
+
+The Witylogix REST API provides endpoints for managing shipments, tracking, webhooks, and more.
+
+## Base URL
+
+```
+https://api.witylogix.com/v1
+```
+
+## Authentication
+
+All requests require an API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Core Endpoints
+
+### Shipments
+
+**Create a shipment:**
+
+```bash
+POST /shipments
+Content-Type: application/json
+
+{
+  "origin": {
+    "address": "123 Main St, New York, NY"
+  },
+  "destination": {
+    "address": "456 Oak Ave, Los Angeles, CA"
+  },
+  "items": [
+    {
+      "name": "Package",
+      "weight": 2.5
+    }
+  ]
+}
+```
+
+**List shipments:**
+
+```bash
+GET /shipments?limit=100&offset=0
+```
+
+**Get shipment details:**
+
+```bash
+GET /shipments/{id}
+```
+
+**Update shipment:**
+
+```bash
+PATCH /shipments/{id}
+Content-Type: application/json
+
+{
+  "status": "cancelled"
+}
+```
+
+### Tracking
+
+**Get tracking information:**
+
+```bash
+GET /shipments/{id}/tracking
+```
+
+Response includes:
+- Current status
+- Current location
+- Estimated delivery time
+- Recent events
+
+### Webhooks
+
+**Register webhook:**
+
+```bash
+POST /webhooks
+Content-Type: application/json
+
+{
+  "url": "https://your-site.com/webhooks/witylogix",
+  "events": ["shipment.delivered", "shipment.in_transit"]
+}
+```
+
+**List webhooks:**
+
+```bash
+GET /webhooks
+```
+
+**Delete webhook:**
+
+```bash
+DELETE /webhooks/{id}
+```
+
+## Response Format
+
+All responses are in JSON format:
+
+```json
+{
+  "success": true,
+  "data": { /* ... */ },
+  "errors": null
+}
+```
+
+## Error Responses
+
+```json
+{
+  "success": false,
+  "data": null,
+  "errors": [
+    {
+      "code": "INVALID_ADDRESS",
+      "message": "Invalid origin address"
+    }
+  ]
+}
+```
+
+## Rate Limiting
+
+- Limit: 1000 requests per minute per API key
+- Check headers: `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+
+## Pagination
+
+Use `limit` and `offset` for pagination:
+
+```bash
+GET /shipments?limit=50&offset=100
+```
+
+See the [API Reference](/docs/api-reference) for complete endpoint documentation.

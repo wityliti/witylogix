@@ -1,0 +1,544 @@
+---
+title: Workflow Engine Guide
+description: Master the Witylogix workflow engine with step-based orchestration, DI containers, compensation, and durable execution using BullMQ and Redis.
+---
+
+# Workflow Engine Guide
+
+The Witylogix workflow engine provides a Medusa v2-inspired step-based orchestration system for complex, multi-step business processes. Built on top of a dependency injection container and BullMQ, it enables reliable, retryable, and monitorable workflows with automatic compensation on failure.
+
+## Architecture Overview
+
+The workflow engine consists of several core components:
+
+1. **Workflow Definition**: Declarative step registration and orchestration
+2. **DI Container**: Service registration and resolution
+3. **Step Lifecycle**: Execute, success/failure branching, and compensation
+4. **Durable Execution**: BullMQ-backed queue processing
+5. **Workflow Registry**: Global discovery and execution
+6. **Real-time Events**: Socket.io-based event emission
+
+## Dependency Injection Container
+
+The DI container is the foundation for workflow service management. It allows you to register services and inject them into workflow steps.
+
+### Registering Services
+
+Register services in your application bootstrap or dedicated DI configuration:
+
+```typescript
+import { Container } from 'tsyringe';
+import { DeliveryService } from './services/delivery.service';
+import { DriverService } from './services/driver.service';
+import { GeolocationService } from './services/geolocation.service';
+
+const container = new Container();
+
+container.registerSingleton('deliveryService', DeliveryService);
+container.registerSingleton('driverService', DriverService);
+container.registerSingleton('geolocationService', GeolocationService);
+
+export { container };
+```
+
+### Resolving Services
+
+Within workflow steps, resolve services using dependency injection:
+
+```typescript
+import { inject } from 'tsyringe';
+
+export class CalculateDeliveryFeeStep {
+  constructor(
+    @inject('deliveryService') private deliveryService: DeliveryService,
+    @inject('geolocationService') private geolocationService: GeolocationService
+  ) {}
+}
+```
+
+## Creating Workflows
+
+Define workflows using the `defineWorkflow()` function and register steps using `addStep()`.
+
+### Basic Workflow Structure
+
+```typescript
+import { defineWorkflow } from '@witylogix/workflow-engine';
+import { CreateDeliveryOrderStep } from './steps/create-delivery-order.step';
+import { AssignDriverStep } from './steps/assign-driver.step';
+import { NotifyCustomerStep } from './steps/notify-customer.step';
+
+export const createOrderWorkflow = defineWorkflow('create-order', async (flow) => {
+  return flow
+    .addStep({
+      name: 'create-delivery-order',
+      action: CreateDeliveryOrderStep,
+    })
+    .addStep({
+      name: 'assign-driver',
+      action: AssignDriverStep,
+      timeout: 30000, // 30 seconds
+    })
+    .addStep({
+      name: 'notify-customer',
+      action: NotifyCustomerStep,
+      compensation: RevertNotificationStep, // Reverse on failure
+    });
+});
+```
+
+### Step Definition
+
+Implement steps as classes with `execute()` and optional `compensate()` methods:
+
+```typescript
+import { WorkflowStep } from '@witylogix/workflow-engine';
+import { inject } from 'tsyringe';
+
+export class CreateDeliveryOrderStep implements WorkflowStep {
+  name = 'create-delivery-order';
+
+  constructor(
+    @inject('deliveryService') private deliveryService: DeliveryService
+  ) {}
+
+  async execute(context: WorkflowContext) {
+    const { customerId, items, deliveryAddress } = context.input;
+
+    const order = await this.deliveryService.createOrder({
+      customerId,
+      items,
+      deliveryAddress,
+    });
+
+    return {
+      orderId: order.id,
+      status: 'created',
+      estimatedDelivery: order.estimatedDelivery,
+    };
+  }
+
+  async compensate(context: WorkflowContext, error: Error) {
+    const { orderId } = context.stepData['create-delivery-order'];
+
+    await this.deliveryService.cancelOrder(orderId);
+    console.log(`Order ${orderId} cancelled due to workflow failure`);
+  }
+}
+```
+
+## Step Lifecycle and Compensation
+
+The workflow engine executes steps sequentially and manages their lifecycle:
+
+### Execution Flow
+
+1. **Execute**: Step's `execute()` method runs with the workflow context
+2. **Success**: Output is stored in `context.stepData` for downstream steps
+3. **Failure**: If a step fails, compensation begins in **reverse order**
+4. **Compensate**: Each failed step's `compensate()` method is called with the error
+
+### Compensation Example
+
+```typescript
+export class AssignDriverStep implements WorkflowStep {
+  name = 'assign-driver';
+
+  constructor(
+    @inject('driverService') private driverService: DriverService
+  ) {}
+
+  async execute(context: WorkflowContext) {
+    const { orderId } = context.stepData['create-delivery-order'];
+
+    const driver = await this.driverService.findAvailableDriver({
+      orderId,
+      region: context.input.region,
+    });
+
+    if (!driver) {
+      throw new Error('No drivers available');
+    }
+
+    const assignment = await this.driverService.assignOrder(driver.id, orderId);
+
+    return { driverId: driver.id, assignmentId: assignment.id };
+  }
+
+  async compensate(context: WorkflowContext, error: Error) {
+    const { driverId, assignmentId } = context.stepData['assign-driver'];
+
+    // Release the driver from the assignment
+    await this.driverService.unassignOrder(driverId, assignmentId);
+    console.log(`Driver ${driverId} unassigned from order`);
+  }
+}
+```
+
+### Compensation Guarantees
+
+- Compensation runs **in reverse order** of step execution
+- Only executed steps are compensated
+- Compensation failures are logged but do not block other compensations
+- Manual intervention may be required for compensation failures
+
+## Retry and Timeout Support
+
+The workflow engine supports automatic retries with exponential backoff and step-level timeouts.
+
+### Configuring Retry Strategy
+
+```typescript
+export const robustWorkflow = defineWorkflow('robust-order', async (flow) => {
+  return flow
+    .addStep({
+      name: 'create-delivery-order',
+      action: CreateDeliveryOrderStep,
+      retry: {
+        maxAttempts: 3,
+        backoffMultiplier: 2,
+        initialDelay: 1000, // 1 second
+        maxDelay: 30000,    // 30 seconds
+      },
+    })
+    .addStep({
+      name: 'assign-driver',
+      action: AssignDriverStep,
+      timeout: 60000, // 60 second timeout
+      retry: {
+        maxAttempts: 2,
+        backoffMultiplier: 1.5,
+        initialDelay: 2000,
+      },
+    });
+});
+```
+
+Backoff calculation: `delay = min(initialDelay * (backoffMultiplier ^ attempt), maxDelay)`
+
+### Timeout Handling
+
+When a step exceeds its timeout:
+
+```typescript
+.addStep({
+  name: 'notify-customer',
+  action: NotifyCustomerStep,
+  timeout: 15000, // 15 seconds
+  // If execute() takes longer, a TimeoutError is thrown
+  // The step is NOT automatically compensated; you handle compensation normally
+})
+```
+
+## Built-in Workflows
+
+Witylogix provides three pre-built workflows for common delivery scenarios.
+
+### createDeliveryOrder (9 Steps)
+
+Creates a new delivery order with validation, assignment, and notifications.
+
+```typescript
+import { createDeliveryOrderWorkflow } from '@witylogix/workflows';
+
+const result = await workflowRegistry.execute('create-delivery-order', {
+  customerId: 'cust_123',
+  items: [{ sku: 'ITEM1', quantity: 2 }],
+  deliveryAddress: '123 Main St, Springfield',
+  region: 'central',
+});
+
+console.log(result);
+// {
+//   orderId: 'ord_456',
+//   driverId: 'drv_789',
+//   estimatedDelivery: '2026-03-11T14:30:00Z',
+//   notificationSent: true,
+// }
+```
+
+Steps: Validate Order → Create Delivery → Assign Driver → Calculate Fee → Reserve Inventory → Generate Label → Send Notification → Schedule Pickup → Create Timeline
+
+### assignDriver (10 Steps)
+
+Assigns an available driver to a pending order with geolocation and notification.
+
+```typescript
+const result = await workflowRegistry.execute('assign-driver', {
+  orderId: 'ord_456',
+  driverId: 'drv_789',
+});
+```
+
+Steps: Validate Order → Fetch Driver → Check Availability → Calculate Route → Verify Coverage → Lock Assignment → Update Status → Send Notification → Create Activity Log → Emit Event
+
+### completeDelivery (11 Steps)
+
+Marks a delivery as complete with signature, rating, and reconciliation.
+
+```typescript
+const result = await workflowRegistry.execute('complete-delivery', {
+  orderId: 'ord_456',
+  driverId: 'drv_789',
+  signature: 'data:image/png;base64,...',
+  customerRating: 5,
+});
+```
+
+Steps: Validate Delivery → Verify Location → Process Signature → Record Rating → Update Inventory → Generate Invoice → Calculate Payout → Send Receipt → Archive Order → Trigger Analytics → Emit Completion Event
+
+## BullMQ Durable Execution
+
+Workflows are executed through BullMQ queues, ensuring durability and reliability even in case of application restarts.
+
+### Queue Configuration
+
+```typescript
+import Queue from 'bull';
+import Redis from 'ioredis';
+
+const redis = new Redis({
+  host: 'localhost',
+  port: 6379,
+});
+
+const workflowQueue = new Queue('workflows', {
+  redis,
+  settings: {
+    maxStalledCount: 3,
+    lockDuration: 30000, // 30 seconds
+    lockRenewTime: 15000, // Renew lock every 15 seconds
+    retryProcessDelay: 5000,
+  },
+});
+
+// Process workflow jobs
+workflowQueue.process(10, async (job) => {
+  const { workflowName, input, executionId } = job.data;
+  return await workflowRegistry.execute(workflowName, input, {
+    executionId,
+    onProgress: (progress) => job.progress(progress),
+  });
+});
+```
+
+### Enqueuing Workflows
+
+```typescript
+// Add to queue for immediate execution
+const job = await workflowQueue.add(
+  {
+    workflowName: 'create-delivery-order',
+    input: { customerId: 'cust_123', items: [...] },
+    executionId: 'exec_abc123',
+  },
+  {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+    removeOnComplete: true,
+  }
+);
+
+console.log(`Workflow job enqueued: ${job.id}`);
+```
+
+### Cron Scheduling
+
+Schedule recurring workflows using cron expressions:
+
+```typescript
+// Run daily reconciliation at 2 AM UTC
+await workflowQueue.add(
+  {
+    workflowName: 'daily-reconciliation',
+    input: {},
+  },
+  {
+    repeat: {
+      cron: '0 2 * * *', // 2 AM daily
+      tz: 'UTC',
+    },
+  }
+);
+
+// Run every weekday at 6 PM local time
+await workflowQueue.add(
+  {
+    workflowName: 'driver-payout',
+    input: {},
+  },
+  {
+    repeat: {
+      cron: '0 18 * * 1-5', // Monday-Friday at 6 PM
+    },
+  }
+);
+```
+
+### Dead-Letter Queue (DLQ)
+
+Failed jobs that exceed retry attempts are moved to a DLQ for inspection:
+
+```typescript
+const dlq = new Queue('workflows:dlq', { redis });
+
+workflowQueue.on('failed', async (job, error) => {
+  console.error(`Job ${job.id} failed permanently:`, error);
+
+  // Jobs with exhausted retries are automatically moved to DLQ
+  const dlqJobs = await dlq.getJobs(['failed']);
+
+  // Manually inspect and requeue if needed
+  for (const dlqJob of dlqJobs) {
+    console.log(`DLQ Job: ${dlqJob.id}`, dlqJob.data);
+  }
+});
+
+// Requeue a DLQ job
+await dlq.getJob(jobId).then((job) => job.moveToWaitingChildren());
+```
+
+## Workflow Registry
+
+The workflow registry maintains a global catalog of all workflows and handles execution orchestration.
+
+### Registering Workflows
+
+```typescript
+import { WorkflowRegistry } from '@witylogix/workflow-engine';
+import { createOrderWorkflow } from './workflows/create-order.workflow';
+import { assignDriverWorkflow } from './workflows/assign-driver.workflow';
+
+const registry = new WorkflowRegistry();
+
+registry.register(createOrderWorkflow);
+registry.register(assignDriverWorkflow);
+
+// Or bulk register from a directory
+registry.registerFromDirectory('./workflows');
+```
+
+### Discovering Workflows
+
+```typescript
+// List all registered workflows
+const workflows = registry.list();
+console.log(workflows.map((w) => w.name));
+// ['create-delivery-order', 'assign-driver', 'complete-delivery', ...]
+
+// Get workflow metadata
+const workflow = registry.get('create-delivery-order');
+console.log(workflow.steps); // Array of step definitions
+```
+
+### Executing Workflows
+
+```typescript
+// Execute synchronously (returns promise)
+const result = await registry.execute('create-delivery-order', {
+  customerId: 'cust_123',
+  items: [...],
+  deliveryAddress: '123 Main St',
+});
+
+// Execute asynchronously (enqueue and return job ID)
+const jobId = await registry.enqueue('create-delivery-order', {
+  customerId: 'cust_123',
+  items: [...],
+  deliveryAddress: '123 Main St',
+});
+
+// Execute with timeout
+const resultWithTimeout = await registry.execute(
+  'create-delivery-order',
+  { /* input */ },
+  { timeout: 120000 } // 2 minutes
+);
+```
+
+## Real-time Events via Socket.io
+
+Workflows emit real-time events through Socket.io, enabling live progress tracking and notifications.
+
+### Event Emission
+
+```typescript
+import { io } from 'socket.io-server';
+
+const io = io(server);
+
+// Emit when workflow starts
+io.to(`workflow:${executionId}`).emit('workflow:started', {
+  executionId,
+  workflowName: 'create-delivery-order',
+  startedAt: new Date(),
+});
+
+// Emit when a step completes
+io.to(`workflow:${executionId}`).emit('step:completed', {
+  stepName: 'create-delivery-order',
+  output: { orderId: 'ord_456' },
+  duration: 1234, // ms
+});
+
+// Emit when workflow completes
+io.to(`workflow:${executionId}`).emit('workflow:completed', {
+  executionId,
+  result: { orderId: 'ord_456', driverId: 'drv_789' },
+  duration: 5000,
+});
+
+// Emit on failure
+io.to(`workflow:${executionId}`).emit('workflow:failed', {
+  executionId,
+  error: 'No drivers available',
+  failedStep: 'assign-driver',
+  compensationStatus: 'completed',
+});
+```
+
+### Client-side Subscription
+
+```typescript
+import { io } from 'socket.io-client';
+
+const socket = io('http://api.witylogix.com');
+
+socket.emit('subscribe:workflow', { executionId: 'exec_abc123' });
+
+socket.on('workflow:started', (event) => {
+  console.log('Workflow started:', event.workflowName);
+  updateUI('status', 'In Progress');
+});
+
+socket.on('step:completed', (event) => {
+  console.log(`${event.stepName} completed in ${event.duration}ms`);
+  updateProgressBar(event.stepName);
+});
+
+socket.on('workflow:completed', (event) => {
+  console.log('Workflow completed:', event.result);
+  showSuccessNotification();
+});
+
+socket.on('workflow:failed', (event) => {
+  console.error(`Workflow failed at ${event.failedStep}: ${event.error}`);
+  showErrorNotification(event.error);
+});
+```
+
+## Summary
+
+The Witylogix workflow engine provides a robust, production-grade system for orchestrating complex multi-step processes. Key takeaways:
+
+- Use the DI container to manage service dependencies
+- Define workflows with reusable, testable steps
+- Leverage automatic compensation for clean error handling
+- Rely on BullMQ for durable, reliable execution
+- Monitor workflows in real-time with Socket.io events
+- Use the built-in workflows for common delivery operations
+
+For more examples and advanced patterns, refer to the [Workflow Engine API Reference](/docs/api/workflow-engine).

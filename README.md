@@ -78,6 +78,8 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 - **Workflow-API integration** — auto-trigger workflows from existing endpoints (order creation, driver assignment, delivery completion) with non-blocking execution via setImmediate (`packages/core/src/workflow-integration/`)
 - **Real-time workflow events** — Socket.io room-based emission with rate limiting (10 events/sec/execution), SSE fallback endpoint, discriminated union payloads (`packages/core/src/realtime/`)
 - **shadcn/ui-inspired design system** — Tailwind CSS migration preserving Witylogix industrial aesthetic, `cn()` utility, 16 migrated/new components (button, card, badge, input, select, modal, table, tabs, toast, stat-card, empty-state, dropdown-menu, skeleton, tooltip), design token bridge, component gallery page, 44 dashboard pages migrated from inline styles to Tailwind classes
+- **Developer documentation** (`apps/docs`) — Fumadocs-powered docs site with 30+ MDX pages, OpenAPI 3.0 spec, AI-powered search via Claude API (RAG), component gallery, platform adapter guides (Shopify, WooCommerce, Magento, Custom), self-hosting guides, and ADR browser
+- **TypeScript SDK** (`packages/sdk`) — Zero-dependency HTTP client (`@witylogix/sdk`) with auto-retry on 429, typed resources (orders, drivers, zones, shipments), dual CJS/ESM output, and comprehensive error classes
 - **Extension core** — shared Preact extension package (`@witylogix/extension-core`) with theme token bridge (CSS custom property → extension context), App Bridge wrapper, POS postMessage RPC, and 8 Preact hooks
 - **Checkout UI extension** — Preact-based Shopify checkout extension (< 64KB) with delivery date calendar picker, time slot selector (morning/afternoon/evening with capacity), App Bridge session token auth
 - **File storage** — S3 provider (upload, download, presigned URLs, tenant-scoped keys) + local filesystem fallback for self-hosted deployments, BYOK credential resolution
@@ -673,8 +675,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 3.8 | Security, Error Boundaries, Route Tests & Tailwind Final | ADR-018 error handling, .gitleaks.toml, security key fix, 15 API route test suites (771 cases), Next.js error boundaries + loading states, 14 more pages → Tailwind |
 | 3.9 | Route Tests Deep, Docker, CONTRIBUTING & UI Components | CONTRIBUTING.md, Docker Compose + Dockerfile, 25 API route test suites (1,274 cases), DatePicker + Pagination components, 12 more pages → Tailwind |
 | 4.0 | Full Coverage, CI Harden, UI Polish & Integration Tests | ADR-019 CI/CD pipeline, LICENSE (AGPL-3.0), CI Docker build step, 4 final route tests (211 cases), 4 integration test suites (87 cases), 4 Shopify app test suites (237 cases), 4 webhook E2E suites (133 cases), 9 component unit tests, 6 new UI components, Tailwind final push |
+| 4.1 | Documentation Engine, TypeScript SDK & OpenAPI | ADR-020 documentation engine, Fumadocs app (`apps/docs`) with 30+ MDX pages, OpenAPI 3.0 spec, AI-powered search (Claude API), TypeScript SDK (`packages/sdk`) with zero-dep HTTP client, component gallery, platform adapter guides, self-hosting docs, ADR browser |
 
-**Current stats (Sprint 4.0):** ~2,200 source files, ~350,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (150+ migrated to Tailwind), 73 API route files, 180+ test suites, 23 UI components.
+**Current stats (Sprint 4.1):** ~2,280 source files, ~371,000 lines of code, 31 Prisma modules, 74 core modules, 2 extensions (checkout-ui + pos-ui), 66 dashboard pages (150+ migrated to Tailwind), 73 API route files, 180+ test suites, 23 UI components, 1 SDK package, 1 docs app with 30+ MDX pages.
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

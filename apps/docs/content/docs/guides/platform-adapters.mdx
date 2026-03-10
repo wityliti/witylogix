@@ -1,0 +1,354 @@
+---
+title: Platform Adapters
+description: Learn how to integrate multiple ecommerce platforms using the Witylogix platform adapter system. Build custom adapters for Shopify, WooCommerce, Magento, and beyond.
+---
+
+# Platform Adapters
+
+The Witylogix platform adapter system provides a unified interface for integrating multiple ecommerce platforms. Each adapter handles platform-specific API communication, data mapping, and webhook validation—allowing you to support any ecommerce platform with consistent business logic.
+
+## What is a PlatformAdapter?
+
+A `PlatformAdapter` is an interface that defines the contract for integrating a new ecommerce platform. It standardizes how Witylogix communicates with different platforms by providing a common set of methods.
+
+### PlatformAdapter Interface
+
+```typescript
+interface PlatformAdapter {
+  // Webhook validation
+  validateWebhook(payload: unknown, headers: Record<string, string>): boolean;
+  getWebhookEventType(payload: unknown): string;
+
+  // Order operations
+  mapOrder(platformOrder: unknown): Order;
+  fetchOrder(orderId: string, credentials: Record<string, string>): Promise<Order>;
+
+  // Product operations
+  mapProduct(platformProduct: unknown): Product;
+  fetchProducts(credentials: Record<string, string>): Promise<Product[]>;
+
+  // Customer operations
+  mapCustomer(platformCustomer: unknown): Customer;
+}
+```
+
+### Core Methods
+
+| Method | Purpose | Notes |
+|--------|---------|-------|
+| `validateWebhook()` | Verify webhook authenticity | Platform-specific validation (HMAC, signatures, etc.) |
+| `getWebhookEventType()` | Extract event type from webhook | Returns event name (e.g., "order.created", "product.updated") |
+| `mapOrder()` | Transform platform order to Witylogix Order | Standardizes order structure |
+| `fetchOrder()` | Retrieve a single order via API | Used for on-demand sync and validation |
+| `mapProduct()` | Transform platform product to Witylogix Product | Handles variants and attributes |
+| `fetchProducts()` | Retrieve all products via API | Used for initial sync and inventory updates |
+| `mapCustomer()` | Transform platform customer to Witylogix Customer | Standardizes customer data |
+
+## Supported Platforms
+
+Witylogix includes built-in adapters for the most popular ecommerce platforms:
+
+| Platform | Adapter | Webhooks | API | Custom Fields |
+|----------|---------|----------|-----|----------------|
+| **Shopify** | `ShopifyAdapter` | ✓ Orders, Products, Customers | REST API v2025-01 | Metafields |
+| **WooCommerce** | `WooCommerceAdapter` | ✓ Orders, Products | REST API v3 | Custom attributes |
+| **Magento 2** | `MagentoAdapter` | ✓ Orders, Products | REST API v1 | EAV attributes |
+| **Custom** | `CustomAdapter` | ✓ User-defined | Any REST API | Configurable mapping |
+
+## PlatformSource Enum
+
+Use the `PlatformSource` enum to identify which platform an integration uses:
+
+```typescript
+enum PlatformSource {
+  SHOPIFY = "shopify",
+  WOOCOMMERCE = "woocommerce",
+  MAGENTO = "magento",
+  CUSTOM = "custom"
+}
+```
+
+## Adapter Registry
+
+The adapter registry is a factory pattern that returns the appropriate adapter based on the platform source. Use `getPlatformAdapter()` to get an adapter instance:
+
+```typescript
+import { getPlatformAdapter } from "@witylogix/adapters";
+
+// Get adapter for Shopify
+const shopifyAdapter = getPlatformAdapter(PlatformSource.SHOPIFY);
+
+// Get adapter for WooCommerce
+const wcAdapter = getPlatformAdapter(PlatformSource.WOOCOMMERCE);
+
+// Get adapter for Magento
+const magentoAdapter = getPlatformAdapter(PlatformSource.MAGENTO);
+
+// Get adapter for custom platform
+const customAdapter = getPlatformAdapter(PlatformSource.CUSTOM);
+```
+
+## Building a Custom Adapter
+
+### Step 1: Understand Your Platform's API
+
+Before building an adapter, document:
+- REST API endpoints for orders, products, and customers
+- Webhook event types and payload structure
+- Authentication method (API key, OAuth, Bearer token)
+- Signature/HMAC validation approach for webhooks
+
+### Step 2: Create the Adapter Class
+
+Create a new class that implements the `PlatformAdapter` interface:
+
+```typescript
+// CustomAdapter.ts
+import { PlatformAdapter, Order, Product, Customer } from "@witylogix/types";
+
+export class MyCustomAdapter implements PlatformAdapter {
+  constructor(private baseUrl: string) {}
+
+  validateWebhook(payload: unknown, headers: Record<string, string>): boolean {
+    // Implement your platform's webhook validation logic
+    const signature = headers["x-webhook-signature"];
+    const body = JSON.stringify(payload);
+    const expectedSignature = computeHmac(body, process.env.WEBHOOK_SECRET);
+    return signature === expectedSignature;
+  }
+
+  getWebhookEventType(payload: unknown): string {
+    // Extract the event type from the webhook payload
+    const data = payload as Record<string, string>;
+    return data.event_type || "unknown";
+  }
+
+  mapOrder(platformOrder: unknown): Order {
+    const order = platformOrder as Record<string, any>;
+    return {
+      id: order.id,
+      externalId: order.id,
+      shopId: order.shop_id,
+      customerId: order.customer_id,
+      items: (order.line_items || []).map((item: any) => ({
+        sku: item.sku,
+        quantity: item.quantity,
+        price: item.price,
+        title: item.name
+      })),
+      totalPrice: order.total,
+      currency: order.currency || "USD",
+      status: order.status,
+      createdAt: new Date(order.created_at),
+      updatedAt: new Date(order.updated_at)
+    };
+  }
+
+  async fetchOrder(orderId: string, credentials: Record<string, string>): Promise<Order> {
+    const response = await fetch(`${this.baseUrl}/orders/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${credentials.api_token}`
+      }
+    });
+    const data = await response.json();
+    return this.mapOrder(data);
+  }
+
+  mapProduct(platformProduct: unknown): Product {
+    const product = platformProduct as Record<string, any>;
+    return {
+      id: product.id,
+      externalId: product.id,
+      shopId: product.shop_id,
+      title: product.name,
+      sku: product.sku,
+      price: product.price,
+      images: (product.images || []).map((img: any) => img.url),
+      variants: (product.variants || []).map((variant: any) => ({
+        id: variant.id,
+        sku: variant.sku,
+        price: variant.price,
+        title: variant.name,
+        options: variant.options || {}
+      }))
+    };
+  }
+
+  async fetchProducts(credentials: Record<string, string>): Promise<Product[]> {
+    const response = await fetch(`${this.baseUrl}/products`, {
+      headers: {
+        Authorization: `Bearer ${credentials.api_token}`
+      }
+    });
+    const data = await response.json();
+    return (data.products || []).map((p: any) => this.mapProduct(p));
+  }
+
+  mapCustomer(platformCustomer: unknown): Customer {
+    const customer = platformCustomer as Record<string, any>;
+    return {
+      id: customer.id,
+      externalId: customer.id,
+      shopId: customer.shop_id,
+      email: customer.email,
+      firstName: customer.first_name,
+      lastName: customer.last_name,
+      phone: customer.phone,
+      createdAt: new Date(customer.created_at)
+    };
+  }
+}
+```
+
+### Step 3: Register Your Adapter
+
+Register your adapter in the adapter registry so it can be retrieved with `getPlatformAdapter()`:
+
+```typescript
+// adapter-registry.ts
+import { getPlatformAdapter } from "@witylogix/adapters";
+
+// Register custom adapter
+registerAdapter(PlatformSource.CUSTOM, () => new MyCustomAdapter(process.env.CUSTOM_API_BASE_URL));
+```
+
+### Step 4: Implement Webhook Handling
+
+Set up a webhook endpoint that uses your adapter:
+
+```typescript
+// webhooks.ts
+import express from "express";
+
+const app = express();
+
+app.post("/api/v4/webhooks/:shopId", async (req, res) => {
+  const { shopId } = req.params;
+  const adapter = getPlatformAdapter(PlatformSource.CUSTOM);
+
+  // Validate webhook signature
+  if (!adapter.validateWebhook(req.body, req.headers)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Extract event type and process
+  const eventType = adapter.getWebhookEventType(req.body);
+
+  switch (eventType) {
+    case "order.created":
+      const order = adapter.mapOrder(req.body.data);
+      await processOrder(shopId, order);
+      break;
+    case "product.updated":
+      const product = adapter.mapProduct(req.body.data);
+      await syncProduct(shopId, product);
+      break;
+  }
+
+  res.json({ success: true });
+});
+```
+
+## Data Mapping Tables
+
+### Shopify to Witylogix Order Mapping
+
+| Shopify Field | Witylogix Field | Notes |
+|---------------|-----------------|-------|
+| `id` | `externalId` | Shopify order ID (gid format) |
+| `order_number` | `externalId` (alt) | Human-readable order number |
+| `customer.id` | `customerId` | Customer reference |
+| `line_items` | `items[]` | Order line items |
+| `total_price` | `totalPrice` | Order subtotal |
+| `currency` | `currency` | Order currency code |
+| `financial_status` | `status` | Order status mapping |
+
+### WooCommerce to Witylogix Order Mapping
+
+| WooCommerce Field | Witylogix Field | Notes |
+|-------------------|-----------------|-------|
+| `id` | `externalId` | WooCommerce order ID |
+| `customer_id` | `customerId` | Customer reference |
+| `line_items` | `items[]` | Order line items |
+| `total` | `totalPrice` | Order total |
+| `currency` | `currency` | Order currency code |
+| `status` | `status` | Order status (e.g., "processing", "completed") |
+
+### Magento to Witylogix Order Mapping
+
+| Magento Field | Witylogix Field | Notes |
+|---------------|-----------------|-------|
+| `entity_id` | `externalId` | Magento order ID |
+| `increment_id` | `externalId` (alt) | Magento order number |
+| `customer_id` | `customerId` | Customer reference |
+| `items` | `items[]` | Order items |
+| `grand_total` | `totalPrice` | Order total |
+| `order_currency_code` | `currency` | Order currency |
+
+## Webhook Validation Patterns
+
+### Shopify HMAC-SHA256 Validation
+
+Shopify includes an `X-Shopify-Hmac-SHA256` header with each webhook. Validate using your API secret:
+
+```typescript
+import crypto from "crypto";
+
+function validateShopifyWebhook(
+  payload: Buffer,
+  hmacHeader: string,
+  secret: string
+): boolean {
+  const hash = crypto
+    .createHmac("sha256", secret)
+    .update(payload, "utf8")
+    .digest("base64");
+  return hash === hmacHeader;
+}
+```
+
+### WooCommerce HMAC-SHA256 Validation
+
+WooCommerce includes an `X-WC-Webhook-Signature` header. Validate similarly:
+
+```typescript
+import crypto from "crypto";
+
+function validateWooCommerceWebhook(
+  payload: Buffer,
+  signature: string,
+  secret: string
+): boolean {
+  const hash = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("base64");
+  return hash === signature;
+}
+```
+
+### Magento OAuth Token Validation
+
+Magento uses OAuth 2.0 bearer tokens. Validate the token with Magento's API:
+
+```typescript
+async function validateMagentoToken(token: string, baseUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${baseUrl}/rest/V1/customers/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+```
+
+## Next Steps
+
+- **Shopify Users**: See [Shopify Integration Guide](/docs/guides/shopify-integration)
+- **WooCommerce Users**: See [WooCommerce Integration Guide](/docs/guides/woocommerce-integration)
+- **Magento Users**: See [Magento Integration Guide](/docs/guides/magento-integration)
+- **Custom Platforms**: See [Custom Platform Integration Guide](/docs/guides/custom-platform)

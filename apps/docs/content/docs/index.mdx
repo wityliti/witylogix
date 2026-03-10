@@ -1,0 +1,137 @@
+---
+title: Welcome to Witylogix Developer Docs
+description: Official documentation for the Witylogix delivery logistics platform
+---
+
+# Welcome to Witylogix
+
+Build powerful delivery and logistics solutions with the Witylogix platform.
+
+## What is Witylogix?
+
+Witylogix is a modern delivery logistics platform that helps businesses:
+- **Create and manage shipments** with real-time tracking
+- **Optimize routes** for faster, cheaper deliveries
+- **Integrate webhooks** for real-time event notifications
+- **Scale to thousands** of daily shipments
+- **Ensure compliance** with enterprise-grade security
+
+## Getting Started
+
+New to Witylogix? Start here:
+
+1. **[Installation & Setup](/docs/getting-started/installation)** - Get your environment ready
+2. **[Authentication](/docs/getting-started/authentication)** - Learn how to authenticate requests
+3. **[Your First Shipment](/docs/getting-started/first-shipment)** - Create your first shipment in 5 minutes
+
+## Key Features
+
+### Real-time Tracking
+Monitor shipments in real-time with our comprehensive tracking API. Get updates on location, status, and estimated delivery time.
+
+### Webhooks
+Receive real-time notifications about shipment events. Configure webhooks in your dashboard and let us push updates to your system.
+
+### Developer-Friendly
+Our APIs are designed for developers. Clear documentation, multiple SDKs, and extensive examples make integration simple.
+
+### Enterprise Ready
+Built for scale with 99.99% uptime SLA, encryption at rest and in transit, and advanced access controls.
+
+## Platform Overview
+
+The Witylogix platform consists of:
+
+- **REST API** - Core functionality for shipments, tracking, and webhooks
+- **GraphQL API** - Graph-based queries for complex data retrieval
+- **WebSocket API** - Real-time streaming for live tracking
+- **SDKs** - Official SDKs for JavaScript, Python, and Go
+- **Dashboard** - Visual management of shipments and settings
+
+## Quick API Example
+
+Create a shipment with our REST API:
+
+```bash
+curl -X POST https://api.witylogix.com/v1/shipments \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "origin": {
+      "address": "123 Main St, New York, NY 10001"
+    },
+    "destination": {
+      "address": "456 Oak Ave, Los Angeles, CA 90001"
+    },
+    "items": [
+      {
+        "name": "Package",
+        "weight": 2.5,
+        "dimensions": {
+          "length": 10,
+          "width": 8,
+          "height": 6
+        }
+      }
+    ],
+    "pickup_date": "2026-03-15T08:00:00Z"
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "ship_1234567890",
+  "tracking_number": "WLX1234567890",
+  "status": "pending",
+  "created_at": "2026-03-10T15:30:00Z"
+}
+```
+
+## Popular Topics
+
+- **[Webhooks Guide](/docs/guides/webhooks)** - Set up real-time event notifications
+- **[Rate Limiting](/docs/guides/rate-limiting)** - Understand API rate limits
+- **[Error Handling](/docs/guides/error-handling)** - Handle API errors gracefully
+- **[Deployment](/docs/guides/deployment)** - Deploy to production
+
+## API Reference
+
+Browse our complete API documentation:
+
+- **[REST API](/docs/api-reference/rest)** - All endpoints with examples
+- **[Error Codes](/docs/api-reference/error-codes)** - Status codes and error messages
+- **[Webhooks](/docs/api-reference/webhooks)** - Available webhook events
+
+## Architecture
+
+Understand how Witylogix works:
+
+- **[Platform Architecture](/docs/architecture/overview)** - System design and components
+- **[Data Model](/docs/architecture/data-model)** - Core entities and relationships
+- **[Authorization](/docs/architecture/authorization)** - Security and access control
+- **[Scaling](/docs/architecture/scaling)** - How we scale to millions of shipments
+
+## Having Issues?
+
+Check our troubleshooting guide:
+
+- **[Common Errors](/docs/troubleshooting/common-errors)** - Solutions to frequent problems
+- **[Debugging](/docs/troubleshooting/debugging)** - Tips for debugging integrations
+- **[Performance](/docs/troubleshooting/performance)** - Optimization techniques
+
+## Support
+
+Need help?
+
+- **Documentation** - Search using our AI-powered search tool
+- **Discord** - Join our [developer community](https://discord.gg/witylogix)
+- **Email** - Contact [support@witylogix.com](mailto:support@witylogix.com)
+- **Status** - Check [status.witylogix.com](https://status.witylogix.com)
+
+## What's Next?
+
+Ready to get started? Follow our [Getting Started guide](/docs/getting-started) to set up your first integration.
+
+For questions, join our [Discord community](https://discord.gg/witylogix) or email [support@witylogix.com](mailto:support@witylogix.com).

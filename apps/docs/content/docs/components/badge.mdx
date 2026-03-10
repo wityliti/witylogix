@@ -1,0 +1,213 @@
+---
+title: Badge
+description: Small labeled component for status, tags, and categories
+---
+
+# Badge
+
+The Badge component displays small, labeled elements for status indicators, tags, and categories.
+
+## Import
+
+```typescript
+import { Badge } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<Badge>New</Badge>
+```
+
+## Variants
+
+Badge supports six semantic color variants:
+
+```tsx
+<Badge variant="default">Default</Badge>
+<Badge variant="success">Success</Badge>
+<Badge variant="warning">Warning</Badge>
+<Badge variant="danger">Danger</Badge>
+<Badge variant="info">Info</Badge>
+<Badge variant="primary">Primary</Badge>
+```
+
+### Variant Details
+
+| Variant | Use Case | Background | Text | Icon |
+|---------|----------|------------|------|------|
+| **default** | Neutral information | Slate | White | - |
+| **success** | Positive status (active, complete) | Green | White | ✓ |
+| **warning** | Caution (pending, attention needed) | Amber | Dark | ⚠ |
+| **danger** | Error or critical (inactive, failed) | Red | White | ✕ |
+| **info** | Informational (new, updated) | Blue | White | ℹ |
+| **primary** | Emphasis, featured items | Blue | White | ★ |
+
+## Props Table
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | "default" \| "success" \| "warning" \| "danger" \| "info" \| "primary" | "default" | Visual style variant |
+| `className` | string | - | Additional Tailwind classes |
+| `children` | ReactNode | - | Badge text or content |
+
+## Usage Examples
+
+### Status Indicators
+
+```tsx
+<div className="space-y-2">
+  <Badge variant="success">Active</Badge>
+  <Badge variant="danger">Inactive</Badge>
+  <Badge variant="warning">Pending</Badge>
+</div>
+```
+
+### Tags
+
+```tsx
+<div className="flex flex-wrap gap-2">
+  <Badge>React</Badge>
+  <Badge>TypeScript</Badge>
+  <Badge>Tailwind</Badge>
+</div>
+```
+
+### User Status
+
+```tsx
+<div className="flex items-center gap-2">
+  <span>John Doe</span>
+  <Badge variant="success">Online</Badge>
+</div>
+```
+
+### Feature Flags
+
+```tsx
+<div className="flex gap-2">
+  <Badge variant="primary">New Feature</Badge>
+  <Badge variant="info">Beta</Badge>
+  <Badge variant="default">Experimental</Badge>
+</div>
+```
+
+### Error States
+
+```tsx
+<div>
+  <div className="mb-2">File upload failed</div>
+  <Badge variant="danger">Error: 413 Payload Too Large</Badge>
+</div>
+```
+
+### Priority Levels
+
+```tsx
+<div className="space-y-2">
+  <Badge variant="danger">Critical</Badge>
+  <Badge variant="warning">High</Badge>
+  <Badge variant="info">Medium</Badge>
+  <Badge variant="default">Low</Badge>
+</div>
+```
+
+### Badges in List
+
+```tsx
+<div className="space-y-3">
+  <div className="flex justify-between items-center">
+    <span>Authentication</span>
+    <Badge variant="success">Complete</Badge>
+  </div>
+  <div className="flex justify-between items-center">
+    <span>Payment Setup</span>
+    <Badge variant="warning">Pending</Badge>
+  </div>
+  <div className="flex justify-between items-center">
+    <span>2FA Enabled</span>
+    <Badge variant="success">Active</Badge>
+  </div>
+</div>
+```
+
+### Dismissible Badge
+
+```tsx
+import { X } from "lucide-react"
+
+<div className="flex items-center gap-2 bg-slate-700 px-3 py-1.5 rounded">
+  <Badge variant="info" className="bg-transparent border border-current">
+    Alpha Release
+  </Badge>
+  <button aria-label="Remove badge">
+    <X className="h-3 w-3" />
+  </button>
+</div>
+```
+
+### Badge Counts
+
+```tsx
+<div className="relative">
+  <button>Notifications</button>
+  <Badge variant="danger" className="absolute -top-2 -right-2">
+    5
+  </Badge>
+</div>
+```
+
+## Styling
+
+### Custom Colors
+
+```tsx
+<Badge className="bg-purple-600 text-white">Custom</Badge>
+```
+
+### Outlined Badge
+
+```tsx
+<Badge className="bg-transparent border border-blue-500 text-blue-500">
+  Outline
+</Badge>
+```
+
+### Small Badge
+
+```tsx
+<Badge className="text-xs px-2 py-0.5">Tiny</Badge>
+```
+
+### Large Badge
+
+```tsx
+<Badge className="px-4 py-2 text-base">Large</Badge>
+```
+
+## Accessibility
+
+- Semantic HTML with proper contrast
+- Color not the only indicator of information
+- Sufficient padding for touch targets
+- Text is readable at small sizes
+- Icon badges include aria-label or descriptive text
+
+## Best Practices
+
+1. Use variants to convey semantic meaning
+2. Keep text concise (1-2 words ideal)
+3. Use appropriate variant for status/context
+4. Avoid stacking too many badges (limit 3-4 per item)
+5. Ensure sufficient color contrast
+6. Pair color with text or icon for clarity
+7. Use consistent placement within layouts
+
+## Color Reference
+
+- **Success (Green)**: `bg-green-600` for positive states
+- **Warning (Amber)**: `bg-amber-600` for caution states
+- **Danger (Red)**: `bg-red-600` for error states
+- **Info (Blue)**: `bg-blue-600` for informational states
+- **Primary (Blue)**: `bg-blue-500` for emphasis
+- **Default (Slate)**: `bg-slate-700` for neutral states

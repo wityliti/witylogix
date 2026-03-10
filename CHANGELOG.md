@@ -4,6 +4,26 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.1 — Documentation Engine, TypeScript SDK & OpenAPI (2026-03-10)
+
+#### Added
+
+- **ADR-020** — Documentation engine architecture decision record (413 lines) covering Fumadocs selection rationale, AI search design, MDX content strategy (`docs/adr/ADR-020-documentation-engine.md`)
+- **Fumadocs documentation app** (`apps/docs`) — Complete Next.js 15 docs site with Fumadocs 14, dark theme with `--wl-*` CSS variables, 69 files totaling ~19,000 lines
+  - **AI-powered search** — Claude API RAG search endpoint (`/api/search`) with `CMD+K` dialog
+  - **30+ MDX documentation pages** covering: getting started, environment setup, architecture overview, API reference (auth, errors, webhooks), self-hosting (Docker, Kubernetes, SSL, backups), platform adapter guides (Shopify, WooCommerce, Magento, Custom), system guides (workflows, notifications, billing, RBAC, events), component gallery (11 component docs), contributing guide, testing guide, ADR browser
+  - **OpenAPI 3.0 specification** (`content/api/openapi.json`) with endpoint schemas
+  - **Landing page** with animated terminal hero, feature highlights, and platform stats
+  - **Navigation** with search integration, theme toggle, and sidebar config via `meta.json`
+- **TypeScript SDK** (`packages/sdk`) — `@witylogix/sdk` zero-dependency HTTP client (12 files, ~1,475 lines)
+  - Auto-retry on 429 rate limits with exponential backoff
+  - Typed resource classes: Orders (10 methods), Drivers (10 methods), Zones (10+ methods), Shipments (11 methods)
+  - 8 custom error classes (ApiError, NetworkError, ConfigError, RateLimitError, etc.)
+  - Dual CJS/ESM output via tsup
+- **Platform adapter guides** — Detailed integration docs for Shopify (432 lines), WooCommerce (506 lines), Magento (576 lines), Custom Platform (603 lines), and Platform Adapters overview (354 lines)
+- **Component gallery** — 11 MDX pages documenting all UI components with props, variants, usage examples
+- **ADR browser** — Navigable index of all 20 architecture decision records
+
 ### Sprint 4.0 — Full Coverage, CI Harden, UI Polish & Integration Tests (2026-03-10)
 
 #### Added

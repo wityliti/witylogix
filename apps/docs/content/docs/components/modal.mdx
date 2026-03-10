@@ -1,0 +1,347 @@
+---
+title: Modal
+description: Dialog component for focused interactions and important information
+---
+
+# Modal
+
+The Modal component displays content in a dialog box overlaid on the main page, with overlay dismiss, keyboard support, and footer actions.
+
+## Import
+
+```typescript
+import {
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalContent,
+  ModalFooter
+} from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+import { useState } from "react"
+
+const [isOpen, setIsOpen] = useState(false)
+
+<>
+  <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+
+  <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <ModalHeader>
+      <ModalTitle>Modal Title</ModalTitle>
+    </ModalHeader>
+    <ModalContent>
+      <p>Modal content goes here</p>
+    </ModalContent>
+  </Modal>
+</>
+```
+
+## Structure
+
+| Component | Purpose | Notes |
+|-----------|---------|-------|
+| **Modal** | Container | Manages overlay and dialog |
+| **ModalHeader** | Top section | Contains title and close button |
+| **ModalTitle** | Heading | h2 element |
+| **ModalContent** | Main area | Primary content |
+| **ModalFooter** | Bottom section | Action buttons |
+
+## Sizes
+
+Modal supports three predefined sizes:
+
+```tsx
+<Modal size="sm" isOpen={isOpen} onClose={onClose}>
+  {/* Content */}
+</Modal>
+
+<Modal size="md" isOpen={isOpen} onClose={onClose}>
+  {/* Content */}
+</Modal>
+
+<Modal size="lg" isOpen={isOpen} onClose={onClose}>
+  {/* Content */}
+</Modal>
+```
+
+### Size Details
+
+| Size | Max Width | Use Case |
+|------|-----------|----------|
+| **sm** | 384px | Confirmations, alerts |
+| **md** | 512px | Forms, default dialogs |
+| **lg** | 768px | Complex forms, layouts |
+
+## Props Table
+
+### Modal
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | boolean | - | Control modal visibility |
+| `onClose` | function | - | Callback when modal closes |
+| `size` | "sm" \| "md" \| "lg" | "md" | Modal width |
+| `closeOnEscape` | boolean | true | Close on Escape key |
+| `closeOnOverlay` | boolean | true | Close on overlay click |
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Modal content |
+
+### ModalHeader
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Header content |
+
+### ModalTitle
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Title text |
+
+### ModalContent
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Main content |
+
+### ModalFooter
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Footer content (buttons) |
+
+## Usage Examples
+
+### Confirmation Dialog
+
+```tsx
+const [isOpen, setIsOpen] = useState(false)
+
+<>
+  <Button variant="danger" onClick={() => setIsOpen(true)}>
+    Delete Account
+  </Button>
+
+  <Modal size="sm" isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <ModalHeader>
+      <ModalTitle>Delete Account?</ModalTitle>
+    </ModalHeader>
+    <ModalContent>
+      <p className="text-slate-300">
+        This action cannot be undone. Your account and all data will be permanently deleted.
+      </p>
+    </ModalContent>
+    <ModalFooter className="flex gap-2 justify-end">
+      <Button variant="secondary" onClick={() => setIsOpen(false)}>
+        Cancel
+      </Button>
+      <Button variant="danger" onClick={handleDelete}>
+        Delete
+      </Button>
+    </ModalFooter>
+  </Modal>
+</>
+```
+
+### Form Modal
+
+```tsx
+const [isOpen, setIsOpen] = useState(false)
+
+<>
+  <Button onClick={() => setIsOpen(true)}>Create User</Button>
+
+  <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <ModalHeader>
+      <ModalTitle>Create New User</ModalTitle>
+    </ModalHeader>
+    <ModalContent className="space-y-4">
+      <div>
+        <Label>Full Name</Label>
+        <Input placeholder="John Doe" />
+      </div>
+      <div>
+        <Label>Email</Label>
+        <Input type="email" placeholder="john@example.com" />
+      </div>
+      <div>
+        <Label>Role</Label>
+        <Select defaultValue="user">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </Select>
+      </div>
+    </ModalContent>
+    <ModalFooter className="flex gap-2 justify-end">
+      <Button variant="secondary" onClick={() => setIsOpen(false)}>
+        Cancel
+      </Button>
+      <Button onClick={handleCreate}>Create User</Button>
+    </ModalFooter>
+  </Modal>
+</>
+```
+
+### Alert Modal
+
+```tsx
+<Modal size="sm" isOpen={showAlert} onClose={() => setShowAlert(false)}>
+  <ModalHeader>
+    <ModalTitle>Success</ModalTitle>
+  </ModalHeader>
+  <ModalContent>
+    <p>Your changes have been saved successfully.</p>
+  </ModalContent>
+  <ModalFooter>
+    <Button onClick={() => setShowAlert(false)}>OK</Button>
+  </ModalFooter>
+</Modal>
+```
+
+### Large Content Modal
+
+```tsx
+<Modal size="lg" isOpen={isOpen} onClose={() => setIsOpen(false)}>
+  <ModalHeader>
+    <ModalTitle>User Details</ModalTitle>
+  </ModalHeader>
+  <ModalContent className="space-y-6">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <p className="text-sm text-slate-400">First Name</p>
+        <p className="font-medium">John</p>
+      </div>
+      <div>
+        <p className="text-sm text-slate-400">Last Name</p>
+        <p className="font-medium">Doe</p>
+      </div>
+      <div>
+        <p className="text-sm text-slate-400">Email</p>
+        <p className="font-medium">john@example.com</p>
+      </div>
+      <div>
+        <p className="text-sm text-slate-400">Status</p>
+        <Badge variant="success">Active</Badge>
+      </div>
+    </div>
+  </ModalContent>
+  <ModalFooter>
+    <Button variant="secondary" onClick={() => setIsOpen(false)}>
+      Close
+    </Button>
+  </ModalFooter>
+</Modal>
+```
+
+### Modal with Tabs
+
+```tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui"
+
+<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+  <ModalHeader>
+    <ModalTitle>Settings</ModalTitle>
+  </ModalHeader>
+  <ModalContent>
+    <Tabs defaultValue="general">
+      <TabsList>
+        <TabsTrigger value="general">General</TabsTrigger>
+        <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        <TabsTrigger value="security">Security</TabsTrigger>
+      </TabsList>
+      <TabsContent value="general">
+        {/* General settings */}
+      </TabsContent>
+      <TabsContent value="notifications">
+        {/* Notification settings */}
+      </TabsContent>
+      <TabsContent value="security">
+        {/* Security settings */}
+      </TabsContent>
+    </Tabs>
+  </ModalContent>
+</Modal>
+```
+
+## Behavior
+
+### Escape Key Handling
+
+By default, pressing Escape closes the modal:
+
+```tsx
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  closeOnEscape={true}
+>
+  {/* Content */}
+</Modal>
+```
+
+Disable with `closeOnEscape={false}` for important operations.
+
+### Overlay Dismiss
+
+Click the overlay to close:
+
+```tsx
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  closeOnOverlay={true}
+>
+  {/* Content */}
+</Modal>
+```
+
+Disable with `closeOnOverlay={false}` for forms or critical actions.
+
+## Styling
+
+### Custom Width
+
+```tsx
+<Modal isOpen={isOpen} onClose={onClose} className="max-w-2xl">
+  {/* Content */}
+</Modal>
+```
+
+### Full Height Modal
+
+```tsx
+<Modal isOpen={isOpen} onClose={onClose} className="min-h-full">
+  {/* Content */}
+</Modal>
+```
+
+## Accessibility
+
+- Focus trapping within modal
+- Semantic HTML (dialog role)
+- Keyboard navigation (Escape, Tab)
+- ARIA labels and descriptions
+- Focus restoration on close
+- Overlay with scrim for context
+- Clear close button in header
+
+## Best Practices
+
+1. Use descriptive titles
+2. Keep content focused and concise
+3. Place primary action on the right in footer
+4. Disable overlay dismiss for critical forms
+5. Provide clear cancel option
+6. Test keyboard navigation
+7. Ensure sufficient contrast
+8. Avoid nested modals
+9. Handle loading states in forms
+10. Restore focus after closing

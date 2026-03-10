@@ -1,0 +1,523 @@
+---
+title: Architecture Decision Records
+description: Browse Witylogix's Architecture Decision Records (ADRs). Learn about our technical decisions and design principles.
+---
+
+# Architecture Decision Records
+
+Architecture Decision Records (ADRs) document the important architectural decisions made during the development of Witylogix. They capture the context, decision, and consequences of each choice.
+
+## What Are ADRs?
+
+An ADR is a short text file in a specific format that documents an important architectural decision, the reasoning behind it, and the consequences of that decision.
+
+**Benefits of ADRs:**
+- **Clear reasoning**: Understand *why* decisions were made, not just *what* was decided
+- **Future reference**: Avoid revisiting old debates
+- **Onboarding**: Help new team members understand the platform's architecture
+- **Accountability**: Track who made decisions and when
+- **Evolution**: Show how the platform evolved over time
+
+## How to Propose a New ADR
+
+### Step 1: Identify a Decision
+
+An ADR should document decisions about:
+- Architecture patterns and styles
+- Technology choices (frameworks, libraries, tools)
+- Design principles
+- System structure
+- Integration approaches
+
+**Good candidates:**
+- "Should we use microservices or monolith?" ✅
+- "Which database: PostgreSQL or MongoDB?" ✅
+- "Event-driven or request-response?" ✅
+- "Implement real-time notifications via WebSocket or polling?" ✅
+
+**Not suitable:**
+- Code style decisions (use ESLint config instead)
+- Project management processes (use team docs)
+- Minor implementation details
+
+### Step 2: Gather Context
+
+Before writing, discuss with the team:
+- What problem are we solving?
+- What are the alternatives?
+- What are the trade-offs?
+- Who will be affected?
+
+### Step 3: Write the ADR
+
+Use the template below. Keep it concise (1-2 pages).
+
+### Step 4: Submit for Review
+
+1. Create a pull request with the new ADR
+2. Link to relevant issues or discussions
+3. Tag relevant team members for feedback
+4. Update the ADR based on feedback
+5. Merge once consensus is reached
+
+### Step 5: Document the Decision
+
+Once merged, the ADR becomes part of the official record. Reference it in code comments, documentation, and architecture discussions.
+
+## ADR Template
+
+Create a new file `adr-XXX-{title}.md` in the `/docs/adrs/` directory.
+
+```markdown
+# ADR-XXX: {Title}
+
+## Status
+Accepted | Pending | Superseded | Deprecated
+
+## Context
+Explain the issue or decision that prompted this ADR. What are we trying to solve?
+
+## Decision
+State the architectural decision that was made, clearly and concisely.
+
+## Rationale
+Explain why this decision was chosen over the alternatives. What are the trade-offs?
+
+### Alternatives Considered
+- **Alternative 1**: Why this was rejected
+- **Alternative 2**: Why this was rejected
+
+## Consequences
+What are the positive and negative consequences of this decision?
+
+### Positive
+- Benefit 1
+- Benefit 2
+
+### Negative
+- Trade-off 1
+- Trade-off 2
+
+## Related ADRs
+- ADR-XXX: Related decision
+- ADR-YYY: Related decision
+```
+
+### Example ADR
+
+```markdown
+# ADR-005: Use Event-Driven Architecture for Order Processing
+
+## Status
+Accepted
+
+## Context
+The order processing system needs to handle multiple steps: inventory reservation, payment processing,
+notification sending, and shipment creation. Currently, these are tightly coupled in a single synchronous flow,
+making it difficult to add new steps or handle failures gracefully.
+
+## Decision
+Adopt an event-driven architecture where each step publishes events that trigger the next step asynchronously.
+Use RabbitMQ as the message broker and Node.js/Fastify as the event consumer.
+
+## Rationale
+- **Decoupling**: Each service only cares about events, not implementation details
+- **Scalability**: Easy to add new steps without changing existing code
+- **Resilience**: Failed steps can retry independently without cascading failures
+- **Observability**: All events are logged, making debugging easier
+
+### Alternatives Considered
+- **Synchronous API calls**: Coupled, harder to extend, cascading failures
+- **Kafka**: Overkill for our scale, more operational overhead
+- **AWS SQS**: Would lock us into AWS, increases vendor dependency
+
+## Consequences
+
+### Positive
+- New features can be added by subscribing to events
+- Better error handling and retry logic
+- Easier testing with event mocking
+- Improved observability
+
+### Negative
+- Eventual consistency instead of immediate feedback
+- Debugging distributed events is more complex
+- Need to manage message broker infrastructure
+- Higher latency (events processed asynchronously)
+
+## Related ADRs
+- ADR-009: Event Bus Implementation
+- ADR-010: Real-Time Notifications
+```
+
+## All ADRs
+
+### Core Architecture
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-001](#adr-001) | Monorepo Structure with pnpm Workspaces | Accepted | 2024-01 |
+| [ADR-002](#adr-002) | PostgreSQL as Primary Database | Accepted | 2024-01 |
+| [ADR-003](#adr-003) | Multi-Tenant Architecture with Tenant Isolation | Accepted | 2024-02 |
+| [ADR-004](#adr-004) | Fastify for API Layer | Accepted | 2024-02 |
+
+### Features & Systems
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-005](#adr-005) | Event-Driven Order Processing Pipeline | Accepted | 2024-02 |
+| [ADR-006](#adr-006) | Routing Engine with Geographic Optimization | Accepted | 2024-03 |
+| [ADR-007](#adr-007) | Notification System with Multi-Channel Support | Accepted | 2024-03 |
+| [ADR-008](#adr-008) | Usage-Based Billing Model | Accepted | 2024-03 |
+| [ADR-009](#adr-009) | Workflow Engine for Custom Business Logic | Accepted | 2024-03 |
+
+### Integration & Real-Time
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-010](#adr-010) | Event Bus Implementation | Accepted | 2024-03 |
+| [ADR-011](#adr-011) | WebSocket for Real-Time Updates | Accepted | 2024-04 |
+| [ADR-012](#adr-012) | Plugin Architecture for Extensions | Accepted | 2024-04 |
+| [ADR-013](#adr-013) | Shopify Integration Strategy | Accepted | 2024-04 |
+
+### Design & Frontend
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-014](#adr-014) | Component Library with Tailwind CSS | Accepted | 2024-02 |
+| [ADR-015](#adr-015) | Platform Abstraction Layer | Accepted | 2024-04 |
+
+### Integrations
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-016](#adr-016) | WooCommerce Integration | Accepted | 2024-04 |
+| [ADR-017](#adr-017) | Magento Integration | Accepted | 2024-04 |
+
+### Infrastructure & Quality
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| [ADR-018](#adr-018) | Authentication using Auth Actions | Accepted | 2024-02 |
+| [ADR-019](#adr-019) | Structured Error Handling Strategy | Accepted | 2024-03 |
+| [ADR-020](#adr-020) | CI/CD Pipeline with GitHub Actions | Accepted | 2024-03 |
+
+## Detailed ADRs
+
+### <a id="adr-001"></a>ADR-001: Monorepo Structure with pnpm Workspaces
+
+**Status**: Accepted | **Date**: 2024-01
+
+Organize the Witylogix platform as a monorepo using pnpm workspaces. Allows multiple packages and applications to coexist while sharing dependencies, types, and configuration.
+
+**Key Benefits:**
+- Shared TypeScript types across apps
+- DRY principle for common utilities
+- Single dependency tree reduces conflicts
+- Easier refactoring across the codebase
+
+**Trade-offs:**
+- Requires discipline to maintain clean boundaries between packages
+- Build tooling slightly more complex
+
+---
+
+### <a id="adr-002"></a>ADR-002: PostgreSQL as Primary Database
+
+**Status**: Accepted | **Date**: 2024-01
+
+Use PostgreSQL as the primary relational database with Prisma ORM. Provides strong ACID guarantees, excellent query performance, and rich data types.
+
+**Key Benefits:**
+- ACID transactions for order consistency
+- Rich query language for complex reporting
+- PostGIS extension for geographic features
+- Excellent ecosystem and tooling
+
+---
+
+### <a id="adr-003"></a>ADR-003: Multi-Tenant Architecture with Tenant Isolation
+
+**Status**: Accepted | **Date**: 2024-02
+
+Implement a multi-tenant SaaS platform where each tenant's data is logically isolated. Use row-level security (RLS) and schema prefixes for isolation.
+
+**Key Benefits:**
+- Single codebase supports multiple customers
+- Data isolation for security and compliance
+- Easier scaling per-tenant
+- Cost-efficient for SaaS model
+
+---
+
+### <a id="adr-004"></a>ADR-004: Fastify for API Layer
+
+**Status**: Accepted | **Date**: 2024-02
+
+Build the backend API with Fastify instead of Express. Fastify provides superior performance, built-in TypeScript support, and modern async/await patterns.
+
+**Key Benefits:**
+- 2-3x faster than Express
+- Native TypeScript support
+- Built-in validation and serialization
+- Excellent plugin ecosystem
+
+---
+
+### <a id="adr-005"></a>ADR-005: Event-Driven Order Processing Pipeline
+
+**Status**: Accepted | **Date**: 2024-02
+
+Use event-driven architecture for order processing. Each step (reservation, payment, notification, shipment) publishes events that trigger subsequent steps asynchronously.
+
+**Key Benefits:**
+- Decoupled services reduce dependencies
+- Easy to add new processing steps
+- Resilient to individual step failures
+- Better observability and auditability
+
+---
+
+### <a id="adr-006"></a>ADR-006: Routing Engine with Geographic Optimization
+
+**Status**: Accepted | **Date**: 2024-03
+
+Implement a routing engine that optimizes delivery routes based on geographic coordinates, traffic data, and vehicle constraints. Uses graph algorithms for route optimization.
+
+**Key Benefits:**
+- Reduced delivery costs through optimized routes
+- Faster delivery times
+- Better resource utilization
+- Geographic intelligence built into platform
+
+---
+
+### <a id="adr-007"></a>ADR-007: Notification System with Multi-Channel Support
+
+**Status**: Accepted | **Date**: 2024-03
+
+Build a flexible notification system supporting multiple channels: email, SMS, push notifications, and in-app messages. Uses a provider-agnostic abstraction layer.
+
+**Key Benefits:**
+- Customers choose preferred notification channels
+- Easy to add new providers (SendGrid, Twilio, etc.)
+- Retry logic for failed deliveries
+- Audit trail of all notifications
+
+---
+
+### <a id="adr-008"></a>ADR-008: Usage-Based Billing Model
+
+**Status**: Accepted | **Date**: 2024-03
+
+Implement usage-based (metered) billing where customers pay per shipment, API call, or other measurable usage. Calculated monthly with transparent reporting.
+
+**Key Benefits:**
+- Fair pricing: customers pay for what they use
+- Lower barrier to entry for new customers
+- Aligns incentives with customer success
+- Clear cost visibility
+
+---
+
+### <a id="adr-009"></a>ADR-009: Workflow Engine for Custom Business Logic
+
+**Status**: Accepted | **Date**: 2024-03
+
+Provide a workflow engine allowing customers to define custom business logic flows. Workflows are DAG-based with conditional branching, parallel execution, and error handling.
+
+**Key Benefits:**
+- Customers can implement custom logic without code
+- Reduces support burden
+- Enables advanced automation
+- Auditable decision trees
+
+---
+
+### <a id="adr-010"></a>ADR-010: Event Bus Implementation
+
+**Status**: Accepted | **Date**: 2024-03
+
+Implement an event bus (using RabbitMQ or Redis Streams) for asynchronous inter-service communication. All significant domain events are published to the bus.
+
+**Key Benefits:**
+- Service decoupling enables independent scaling
+- Event sourcing enables full audit trail
+- Easy to add new event subscribers
+- Supports both async and sync consumption patterns
+
+---
+
+### <a id="adr-011"></a>ADR-011: WebSocket for Real-Time Updates
+
+**Status**: Accepted | **Date**: 2024-04
+
+Use WebSocket connections for real-time updates to clients. Customers see shipment status, delivery notifications, and platform events in real-time.
+
+**Key Benefits:**
+- Immediate feedback to users
+- Reduced polling overhead
+- Better user experience
+- Enables real-time collaboration features
+
+---
+
+### <a id="adr-012"></a>ADR-012: Plugin Architecture for Extensions
+
+**Status**: Accepted | **Date**: 2024-04
+
+Implement a plugin system allowing third-party developers to extend the platform. Plugins can hook into webhooks, extend workflows, and add custom integrations.
+
+**Key Benefits:**
+- Extensibility without modifying core code
+- Third-party ecosystem growth
+- Customer customization capabilities
+- Clear API contracts between core and plugins
+
+---
+
+### <a id="adr-013"></a>ADR-013: Shopify Integration Strategy
+
+**Status**: Accepted | **Date**: 2024-04
+
+Prioritize Shopify integration as a first-party integration. Customers can sync orders directly from Shopify, manage fulfillment, and sync inventory back.
+
+**Key Benefits:**
+- Taps into large Shopify merchant base
+- Native Shopify app ecosystem integration
+- Revenue opportunity through Shopify App Store
+- Reduces friction for Shopify merchants
+
+---
+
+### <a id="adr-014"></a>ADR-014: Component Library with Tailwind CSS
+
+**Status**: Accepted | **Date**: 2024-02
+
+Build a shared component library (`packages/ui`) using React and Tailwind CSS v3.4. Components are unstyled by default, with variants for customization.
+
+**Key Benefits:**
+- Consistency across the platform
+- Faster UI development
+- Accessibility built-in (WCAG 2.1 AA)
+- Easy theming support
+
+---
+
+### <a id="adr-015"></a>ADR-015: Platform Abstraction Layer
+
+**Status**: Accepted | **Date**: 2024-04
+
+Implement an abstraction layer for platform-specific features (push notifications, file storage, analytics). Allows easy swapping of providers without changing application code.
+
+**Key Benefits:**
+- Vendor independence
+- Easy testing with mock providers
+- Cost optimization by switching providers
+- Future-proof against provider changes
+
+---
+
+### <a id="adr-016"></a>ADR-016: WooCommerce Integration
+
+**Status**: Accepted | **Date**: 2024-04
+
+Implement WooCommerce integration through REST API and webhooks. Provides order syncing, inventory updates, and fulfillment status callbacks.
+
+**Key Benefits:**
+- Access to large WooCommerce merchant base
+- Standard REST API integration pattern
+- Webhook-based real-time synchronization
+- Easy to extend with other WooCommerce features
+
+---
+
+### <a id="adr-017"></a>ADR-017: Magento Integration
+
+**Status**: Accepted | **Date**: 2024-04
+
+Implement Magento integration supporting both Magento Open Source and Adobe Commerce. Uses GraphQL API for better performance and flexibility.
+
+**Key Benefits:**
+- Access to enterprise Magento merchants
+- GraphQL API provides better performance
+- Adobe Commerce ecosystem access
+- Flexible data fetching reduces bandwidth
+
+---
+
+### <a id="adr-018"></a>ADR-018: Authentication using Auth Actions
+
+**Status**: Accepted | **Date**: 2024-02
+
+Use Auth Actions (custom auth logic in middleware) for authentication. Supports JWT-based auth with refresh tokens, API key auth for integrations, and session-based auth for web.
+
+**Key Benefits:**
+- Flexible auth strategies
+- No dependency on external auth providers
+- Fine-grained access control
+- Support for multiple auth methods
+
+---
+
+### <a id="adr-019"></a>ADR-019: Structured Error Handling Strategy
+
+**Status**: Accepted | **Date**: 2024-03
+
+Implement structured error handling with typed error classes. API returns consistent JSON error responses with error codes, messages, and optional context.
+
+**Key Benefits:**
+- Client can handle specific error types programmatically
+- Consistent error format across all APIs
+- Better debugging with context information
+- Enables i18n for error messages
+
+---
+
+### <a id="adr-020"></a>ADR-020: CI/CD Pipeline with GitHub Actions
+
+**Status**: Accepted | **Date**: 2024-03
+
+Use GitHub Actions for continuous integration and deployment. Every PR runs tests, linting, type checking, and build verification. Deployment is automated to staging/production.
+
+**Key Benefits:**
+- Free CI/CD for open source projects
+- Native GitHub integration
+- Fast job execution
+- Easy to configure and extend
+
+---
+
+## Finding Related ADRs
+
+Each ADR references related decisions:
+
+```
+ADR-004: Fastify for API Layer
+├── Related to ADR-018: Auth Actions
+├── Related to ADR-019: Error Handling
+└── Related to ADR-020: CI/CD
+
+ADR-005: Event-Driven Order Processing
+├── Related to ADR-010: Event Bus
+└── Related to ADR-009: Workflow Engine
+```
+
+Use these relationships to understand the full architectural picture.
+
+## Updating ADRs
+
+When circumstances change:
+
+1. **Mark as superseded**: Add status "Superseded by ADR-XXX"
+2. **Create new ADR**: Document the new decision and rationale
+3. **Update references**: Update related ADRs to reference the new one
+4. **Keep history**: Never delete old ADRs (they document why we changed)
+
+## Questions?
+
+- Need clarification on a decision? Open a discussion
+- Want to propose a new ADR? Start with "RFC: ..." in issues
+- Found an issue with current approach? Create an issue with details
+
+For more information, see [Michael Nygard's ADR template](https://github.com/joelparkerhenderson/architecture_decision_record).

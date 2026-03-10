@@ -1,0 +1,13 @@
+{
+  "title": "Guides",
+  "pages": [
+    "platform-adapters",
+    "shopify-integration",
+    "woocommerce-integration",
+    "magento-integration",
+    "custom-platform",
+    "workflows",
+    "notifications",
+    "billing"
+  ]
+}

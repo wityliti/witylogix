@@ -1,0 +1,241 @@
+---
+title: Card
+description: Container component with subcomponents for organized content layout
+---
+
+# Card
+
+The Card component is a container for grouped content. It includes optional header, footer, and content sections.
+
+## Import
+
+```typescript
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<Card>
+  <CardContent>
+    <p>Card content goes here</p>
+  </CardContent>
+</Card>
+```
+
+## Card Structure
+
+A complete card with all sections:
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Optional description or subtitle</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Main content area</p>
+  </CardContent>
+  <CardFooter>
+    <Button>Action</Button>
+  </CardFooter>
+</Card>
+```
+
+### Subcomponents
+
+| Component | Purpose | Notes |
+|-----------|---------|-------|
+| **Card** | Container | Provides border, background, shadow |
+| **CardHeader** | Top section | Contains title and description |
+| **CardTitle** | Heading | h3 element, bold styling |
+| **CardDescription** | Subtitle | Smaller, muted text color |
+| **CardContent** | Main area | Primary content container |
+| **CardFooter** | Bottom section | For actions or metadata |
+
+## Props Table
+
+### Card
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional Tailwind classes |
+| `children` | ReactNode | - | Card content |
+
+### CardHeader
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Header content |
+
+### CardTitle
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Title text |
+
+### CardDescription
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Description text |
+
+### CardContent
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Main content |
+
+### CardFooter
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Footer content |
+
+## Usage Examples
+
+### Simple Data Display
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Account Status</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p className="text-sm text-slate-400">Active</p>
+  </CardContent>
+</Card>
+```
+
+### User Profile Card
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>John Doe</CardTitle>
+    <CardDescription>john@example.com</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Senior Software Engineer</p>
+  </CardContent>
+  <CardFooter>
+    <Button variant="secondary" size="sm">Edit</Button>
+  </CardFooter>
+</Card>
+```
+
+### Stats Card
+
+```tsx
+<Card>
+  <CardContent className="pt-6">
+    <div className="text-center">
+      <p className="text-3xl font-bold">2,543</p>
+      <p className="text-sm text-slate-400">Active Users</p>
+    </div>
+  </CardContent>
+</Card>
+```
+
+### Card with List
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Recent Orders</CardTitle>
+    <CardDescription>Last 5 orders</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <ul className="space-y-2">
+      <li>Order #1234 - $99.00</li>
+      <li>Order #1233 - $149.00</li>
+      <li>Order #1232 - $75.00</li>
+    </ul>
+  </CardContent>
+</Card>
+```
+
+### Clickable Card
+
+```tsx
+<Card className="cursor-pointer hover:bg-slate-800 transition-colors">
+  <CardHeader>
+    <CardTitle>Settings</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <p>Manage your account preferences</p>
+  </CardContent>
+</Card>
+```
+
+## Styling
+
+### Custom Width
+
+```tsx
+<Card className="w-full max-w-md">
+  <CardContent>Content</CardContent>
+</Card>
+```
+
+### No Border Variant
+
+```tsx
+<Card className="border-0 shadow-none bg-slate-800">
+  <CardContent>Simple box</CardContent>
+</Card>
+```
+
+### Highlighted Card
+
+```tsx
+<Card className="border-blue-500 border-2">
+  <CardHeader>
+    <CardTitle>Featured</CardTitle>
+  </CardHeader>
+  <CardContent>Highlighted content</CardContent>
+</Card>
+```
+
+## Responsive Cards
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <Card>
+    <CardHeader>
+      <CardTitle>Card 1</CardTitle>
+    </CardHeader>
+    <CardContent>Content</CardContent>
+  </Card>
+  {/* More cards */}
+</div>
+```
+
+## Accessibility
+
+- Semantic HTML structure
+- Proper heading hierarchy with CardTitle
+- Clear content organization
+- Sufficient spacing between sections
+- Links within cards are keyboard accessible
+- Color not the only indicator of information
+
+## Best Practices
+
+1. Use CardHeader for context and CardContent for main information
+2. Keep content concise and scannable
+3. Use CardFooter for actions related to the card
+4. Maintain consistent spacing across multiple cards
+5. Ensure sufficient contrast for text readability

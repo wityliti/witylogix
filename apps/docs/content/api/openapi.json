@@ -1,0 +1,227 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Witylogix API",
+    "version": "1.0.0",
+    "description": "The Witylogix delivery logistics platform API"
+  },
+  "servers": [
+    {
+      "url": "https://api.witylogix.com/v1",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API Key authentication"
+      }
+    },
+    "schemas": {
+      "Shipment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique shipment ID"
+          },
+          "tracking_number": {
+            "type": "string",
+            "description": "Tracking number for the shipment"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "picked_up", "in_transit", "delivered", "failed"],
+            "description": "Current shipment status"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "required": ["address"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Full street address"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "required": ["name", "weight"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Weight in kg"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/Dimensions"
+          }
+        }
+      },
+      "Dimensions": {
+        "type": "object",
+        "properties": {
+          "length": {
+            "type": "number",
+            "description": "Length in cm"
+          },
+          "width": {
+            "type": "number",
+            "description": "Width in cm"
+          },
+          "height": {
+            "type": "number",
+            "description": "Height in cm"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/shipments": {
+      "post": {
+        "summary": "Create a shipment",
+        "operationId": "createShipment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Shipment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shipment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "List shipments",
+        "operationId": "listShipments",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Shipment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/shipments/{id}": {
+      "get": {
+        "summary": "Get shipment details",
+        "operationId": "getShipment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "title": "Documentation",
+  "pages": [
+    {
+      "name": "Getting Started",
+      "folder": "getting-started",
+      "children": [
+        {
+          "name": "Quick Start",
+          "path": "index"
+        },
+        {
+          "name": "Environment Variables",
+          "path": "environment"
+        }
+      ]
+    },
+    {
+      "name": "Architecture",
+      "folder": "architecture",
+      "children": [
+        {
+          "name": "System Architecture",
+          "path": "index"
+        }
+      ]
+    },
+    {
+      "name": "Self-Hosting",
+      "folder": "self-hosting",
+      "children": [
+        {
+          "name": "Deployment Guide",
+          "path": "index"
+        },
+        {
+          "name": "Docker Deep Dive",
+          "path": "docker"
+        }
+      ]
+    },
+    {
+      "name": "API Reference",
+      "folder": "api"
+    }
+  ]
+}

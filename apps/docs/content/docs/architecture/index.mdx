@@ -1,0 +1,487 @@
+---
+title: Architecture Overview
+description: System design, data flow, and multi-tenant isolation in Witylogix.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## System Architecture
+
+Witylogix is a full-stack, multi-tenant delivery management platform built on proven technologies for scalability and reliability.
+
+### Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Monorepo** | Turborepo + pnpm | Unified workspace management |
+| **Backend** | Fastify 5 | High-performance REST API + WebSocket |
+| **Database** | PostgreSQL 16 + PostGIS + Prisma | Relational data + geospatial queries |
+| **Cache & Pub/Sub** | Redis 7 | Real-time features, caching, event streams |
+| **Job Queue** | BullMQ | Durable workflow execution, async tasks |
+| **Dashboard** | Next.js 15 + Tailwind + shadcn/ui | Modern merchant portal |
+| **Shopify App** | React Router v7 + Polaris | Embedded admin app |
+| **Mobile** | React Native + Expo | Driver app with background GPS |
+| **Real-time** | Socket.io + Redis Adapter | WebSocket connections, room-based events |
+| **Maps** | Leaflet.js + OpenStreetMap | Customer tracking visualization |
+
+## Monorepo Structure
+
+```
+witylogix-platform/
+├── apps/
+│   ├── api/              # Fastify REST + WebSocket server (3001)
+│   ├── dashboard/        # Next.js merchant dashboard (3000)
+│   ├── shopify-app/      # React Router embedded app
+│   ├── driver-app/       # React Native with Expo
+│   ├── tracking-page/    # Customer delivery tracking (Leaflet)
+│   └── docs/             # Fumadocs documentation site
+├── extensions/
+│   ├── checkout-ui/      # Preact < 64KB Shopify checkout extension
+│   └── pos-ui/           # POS UI extension (Preact)
+├── packages/
+│   ├── db/               # Prisma schema, migrations, RLS policies
+│   ├── core/             # Business logic (51 modules)
+│   │   ├── routing/      # Multi-provider route optimization
+│   │   ├── messaging/    # Multi-channel notifications
+│   │   ├── rbac/         # Role-based access control
+│   │   ├── campaigns/    # Bulk messaging + audience segmentation
+│   │   ├── billing/      # Subscriptions, usage tracking, invoices
+│   │   ├── webhooks/     # Outbound HMAC-signed webhooks
+│   │   └── ... (45 more modules)
+│   ├── framework/        # Workflow engine (DI, step runner, compensation)
+│   ├── workflows/        # 3 core delivery workflows (30 steps)
+│   ├── types/            # Shared TypeScript definitions
+│   ├── validators/       # Zod validation schemas
+│   ├── extension-core/   # Preact theme bridge + hooks
+│   ├── carrier-service/  # Rate calculation abstraction
+│   └── sdk/              # Client SDK for API
+├── infra/
+│   ├── docker/           # Multi-stage Dockerfiles
+│   └── docker-compose.yml # 8-service local dev stack
+└── docs/                 # ADRs, API docs, guides
+```
+
+## Request Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Client Layer                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
+│  │   Dashboard  │  │  Shopify App │  │ Mobile App   │            │
+│  │  (Next.js)   │  │ (React Router)│  │(React Native)│            │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘            │
+│         │                 │                  │                      │
+└─────────┼─────────────────┼──────────────────┼──────────────────────┘
+          │                 │                  │
+          └─────────────────┼──────────────────┘
+                      │
+          ┌───────────▼──────────────┐
+          │      Nginx (reverse       │
+          │       proxy/load          │
+          │       balancer)           │
+          └───────────┬──────────────┘
+                      │
+    ┌─────────────────┴─────────────────┐
+    │                                   │
+    │      Fastify 5 API Server         │
+    │  ┌──────────────────────────────┐ │
+    │  │  Authentication Middleware   │ │
+    │  │  (JWT + refresh tokens)      │ │
+    │  └──────────────────────────────┘ │
+    │  ┌──────────────────────────────┐ │
+    │  │  CORS + Rate Limiter         │ │
+    │  │  (Token bucket per tenant)   │ │
+    │  └──────────────────────────────┘ │
+    │  ┌──────────────────────────────┐ │
+    │  │  Tenant Context Injection    │ │
+    │  │  (Extract from JWT + header) │ │
+    │  └──────────────────────────────┘ │
+    │  ┌──────────────────────────────┐ │
+    │  │  Route Handlers              │ │
+    │  │  POST /orders (create)       │ │
+    │  │  PATCH /orders/:id (update)  │ │
+    │  │  GET /deliveries (list)      │ │
+    │  │  WS /realtime (WebSocket)    │ │
+    │  └──────────────────────────────┘ │
+    │  ┌──────────────────────────────┐ │
+    │  │  Workflow Trigger            │ │
+    │  │  (setImmediate → BullMQ)     │ │
+    │  └──────────────────────────────┘ │
+    └───────────┬──────────────────────┘
+                │
+    ┌───────────┴──────────┬──────────────┐
+    │                      │              │
+    ▼                      ▼              ▼
+┌─────────────┐  ┌─────────────────┐  ┌──────────┐
+│ PostgreSQL  │  │     Redis       │  │ BullMQ   │
+│   (RLS)     │  │  (Streams +     │  │  Queue   │
+│             │  │   Pub/Sub)      │  │          │
+└─────────────┘  └─────────────────┘  └──────────┘
+```
+
+## Event Flow
+
+The platform uses an event-driven architecture for asynchronous processing:
+
+```
+┌──────────────────────────────────┐
+│   API Handler (e.g., createOrder)│
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│   Trigger Workflow               │
+│   (createDeliveryOrder)          │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│   BullMQ Job Queue               │
+│   (Durable execution)            │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│   Workflow Runner                │
+│   Step 1: Validate order         │
+│   Step 2: Calculate rate         │
+│   Step 3: Emit OrderCreated      │
+│   Step 4: Trigger notifications  │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│   Event Bus (Redis Streams)      │
+│   Publishes domain events:       │
+│   - order:created                │
+│   - order:assigned               │
+│   - delivery:completed           │
+└──────────────┬───────────────────┘
+               │
+      ┌────────┴────────┬────────────────┐
+      ▼                 ▼                ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│Notification  │ │Outbound      │ │Real-time     │
+│Worker        │ │Webhooks      │ │Broadcast     │
+│(Email, SMS,  │ │(HMAC-SHA256) │ │(Socket.io)   │
+│Push)         │ │              │ │              │
+└──────────────┘ └──────────────┘ └──────────────┘
+      │                 │                │
+      ├─────────┬───────┴────────────────┤
+      ▼         ▼                        ▼
+┌──────────────────────────────────────────────┐
+│   External Services                          │
+│   SendGrid, Twilio, Firebase, etc.          │
+└──────────────────────────────────────────────┘
+```
+
+## Multi-Tenant Isolation
+
+Witylogix enforces tenant isolation at **four independent layers**. PostgreSQL Row-Level Security is the security boundary; the other three are convenience mechanisms.
+
+### Layer 1: PostgreSQL Row-Level Security (Security Boundary)
+
+All tables include a `tenantId` column with RLS policies that restrict data access:
+
+```sql
+CREATE POLICY tenant_isolation ON orders
+  USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+```
+
+When a request comes in, we set the tenant context:
+
+```typescript
+// In Fastify middleware
+await sql`SET LOCAL app.current_tenant_id = ${tenantId}`;
+```
+
+Database queries automatically return only the current tenant's data. **This is the primary security boundary** — even SQL injection won't leak other tenants' data.
+
+### Layer 2: Redis Key Prefixing
+
+Cache keys include the tenant ID:
+
+```typescript
+// Pattern: tenant:{tenantId}:key
+const cacheKey = `tenant:${tenantId}:driver-locations`;
+await redis.set(cacheKey, JSON.stringify(locations));
+```
+
+### Layer 3: BullMQ Job Groups
+
+Jobs are grouped by tenant to allow per-tenant scaling and independent queue management:
+
+```typescript
+// Jobs for tenant A and B run in separate groups
+queue.add(
+  'create-delivery',
+  { orderId: '123' },
+  { group: `tenant:${tenantId}` }
+);
+```
+
+### Layer 4: Socket.io Rooms
+
+WebSocket connections are joined to tenant-specific rooms:
+
+```typescript
+socket.join(`tenant:${tenantId}`);
+io.to(`tenant:${tenantId}`).emit('delivery:updated', data);
+```
+
+## Platform Adapter Pattern
+
+To support multiple e-commerce platforms (Shopify, WooCommerce, Magento, custom storefronts), Witylogix uses a platform adapter pattern:
+
+```typescript
+// packages/core/src/platform-adapters/index.ts
+interface PlatformAdapter {
+  // Order management
+  createOrder(order: CreateOrderRequest): Promise<Order>;
+  updateOrder(orderId: string, updates: OrderUpdates): Promise<void>;
+
+  // Fulfillment
+  createFulfillment(fulfillment: FulfillmentRequest): Promise<void>;
+
+  // Webhooks
+  registerWebhook(event: string, url: string): Promise<void>;
+
+  // Pricing
+  getRates(request: RatesRequest): Promise<Rate[]>;
+}
+
+// Platform-specific implementations
+class ShopifyAdapter implements PlatformAdapter { ... }
+class WooCommerceAdapter implements PlatformAdapter { ... }
+```
+
+The adapter is selected based on the tenant's platform configuration and injected into handlers.
+
+## Workflow Engine
+
+The workflow engine (Medusa v2-inspired) orchestrates complex, multi-step operations with automatic compensation (rollback) on failure.
+
+### Core Concepts
+
+- **Step:** Atomic operation with optional `compensation` (reverse operation)
+- **Workflow:** Sequence of steps with shared context
+- **Compensation Chain:** Executed in reverse order if any step fails
+
+### Example: Create Delivery Order Workflow
+
+```typescript
+const createDeliveryOrderWorkflow = createWorkflow({
+  name: 'create-delivery-order',
+  steps: [
+    {
+      name: 'validate-order',
+      action: validateOrderStep,
+    },
+    {
+      name: 'calculate-rate',
+      action: calculateRateStep,
+      compensation: revertRateCalculation,
+    },
+    {
+      name: 'emit-order-created',
+      action: emitOrderCreatedStep,
+      compensation: emitOrderCanceledStep,
+    },
+    {
+      name: 'store-delivery-order',
+      action: storeDeliveryOrderStep,
+      compensation: deleteDeliveryOrder,
+    },
+  ],
+});
+
+// Usage
+await workflow.execute({
+  orderId: 'order-123',
+  tenantId: 'tenant-abc',
+});
+```
+
+If `storeDeliveryOrderStep` fails:
+
+1. `deleteDeliveryOrder` (compensation) runs
+2. `emitOrderCanceledStep` (compensation) runs
+3. `revertRateCalculation` (compensation) runs
+4. Original error is thrown to the API handler
+
+### Workflow Persistence with BullMQ
+
+Workflows are persisted to BullMQ for durability:
+
+```typescript
+// API handler
+const job = await queue.add(
+  'create-delivery-order-workflow',
+  { orderId: 'order-123', tenantId: 'tenant-abc' },
+  {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 2000 },
+    removeOnComplete: true,
+  }
+);
+```
+
+BullMQ handles:
+- Retries with exponential backoff
+- Job state persistence (Redis)
+- Progress tracking
+- Dead-letter queue for failed jobs
+
+## Delivery Workflows
+
+Three core workflows handle the complete delivery lifecycle:
+
+### 1. Create Delivery Order (9 steps)
+
+```
+Validate Order
+  ├─ Calculate Rate (with geocoding)
+  ├─ Reserve Capacity
+  ├─ Create Delivery Record
+  ├─ Emit OrderCreated Event
+  └─ Trigger Notifications
+```
+
+### 2. Assign Driver (10 steps)
+
+```
+Find Available Drivers
+  ├─ Rank by Distance + Load + Skills
+  ├─ Emit DriverScored Events
+  ├─ Claim Delivery for Driver
+  ├─ Update Driver Route
+  ├─ Emit AssignmentConfirmed Event
+  └─ Trigger Driver Notification
+```
+
+Includes sophisticated scoring:
+- Geographic proximity (Haversine distance)
+- Driver utilization (current load)
+- Skills/certifications match
+- Availability (time windows)
+
+### 3. Complete Delivery (11 steps)
+
+```
+Verify Signature/POD
+  ├─ Process Payment (if applicable)
+  ├─ Update Order Status
+  ├─ Emit DeliveryCompleted Event
+  ├─ Trigger Customer Confirmation
+  ├─ Update Driver Stats
+  └─ Trigger Analytics Processing
+```
+
+## Data Models (Simplified)
+
+Key entities and relationships:
+
+```
+Tenant
+  ├─ Organization
+  │   ├─ Shop (multi-shop support)
+  │   │   ├─ Order
+  │   │   │   ├─ DeliveryOrder (1:1)
+  │   │   │   ├─ DeliveryItem
+  │   │   │   └─ Fulfillment
+  │   │   ├─ Driver
+  │   │   │   ├─ DriverLocation (real-time)
+  │   │   │   └─ DriverStats
+  │   │   ├─ Zone (polygon geometry)
+  │   │   │   └─ Rate (price rules)
+  │   │   └─ Customer
+  │   ├─ DeliveryAssignment
+  │   ├─ NotificationTemplate
+  │   └─ WebhookEndpoint
+  ├─ Role
+  │   └─ Permission
+  └─ AuditLog
+```
+
+## Scaling Considerations
+
+### Horizontal Scaling
+
+```
+┌─────────────┐
+│ Load Balancer│
+└──────┬──────┘
+       │
+   ┌───┴────┬────┬────┐
+   ▼        ▼    ▼    ▼
+ API 1    API 2 API 3 API 4
+   │        │    │    │
+   └────────┼────┼────┘
+            │
+        ┌───▼───┐
+        │PostgreSQL (primary)
+        │+ read replicas
+        └────────┘
+```
+
+- **Stateless API servers** — Scale horizontally behind load balancer
+- **Database connection pooling** — Via PgBouncer (25 connections per API instance)
+- **Redis Cluster** — For high-volume real-time features
+- **BullMQ Consumer Groups** — Distribute job processing across workers
+
+### Performance Targets
+
+- **API latency:** p95 < 500ms (delivery rate calculation)
+- **Real-time updates:** < 100ms (driver location)
+- **Webhook delivery:** Exponential retry (first attempt < 5s)
+- **Workflow execution:** < 2s (simple orders)
+
+## Security Architecture
+
+1. **Input Validation:** Zod schemas on all API endpoints
+2. **Authentication:** JWT + refresh tokens, scrypt password hashing
+3. **Authorization:** Policy-based RBAC with permission caching
+4. **Encryption:** AES-256-GCM for sensitive fields (PII, payment data)
+5. **Rate Limiting:** Token-bucket per tenant (tier-based: FREE 50/min → ENTERPRISE 1000/min)
+6. **Audit Logging:** All mutations logged with diffs and field masking
+7. **API Hardening:** CORS, CSRF protection, XSS input escaping
+
+## Deployment Architecture
+
+```
+┌────────────────────────────────────┐
+│  Docker Compose (Development)      │
+│  or Kubernetes (Production)        │
+│                                    │
+│  ┌──────────────────────────────┐ │
+│  │  Nginx (reverse proxy)       │ │
+│  │  - SSL/TLS termination       │ │
+│  │  - Rate limiting             │ │
+│  │  - Load balancing            │ │
+│  └──────────────────────────────┘ │
+│  ┌──────────────────────────────┐ │
+│  │  Fastify API (3 replicas)    │ │
+│  │  - Stateless                 │ │
+│  │  - Blue-green deployable     │ │
+│  └──────────────────────────────┘ │
+│  ┌──────────────────────────────┐ │
+│  │  Worker Pool (2+ instances)  │ │
+│  │  - Job queue consumer        │ │
+│  │  - Event processing          │ │
+│  │  - Notification dispatch     │ │
+│  └──────────────────────────────┘ │
+│  ┌──────────────────────────────┐ │
+│  │  PostgreSQL + PostGIS        │ │
+│  │  - Automated backups         │ │
+│  │  - Read replicas (optional)  │ │
+│  └──────────────────────────────┘ │
+│  ┌──────────────────────────────┐ │
+│  │  Redis (cluster)             │ │
+│  │  - Cache + Sessions          │ │
+│  │  - Event Streams             │ │
+│  │  - Rate limiting state       │ │
+│  └──────────────────────────────┘ │
+└────────────────────────────────────┘
+```
+
+See [Self-Hosting Guide](/docs/self-hosting) for deployment details.
