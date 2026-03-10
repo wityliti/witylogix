@@ -682,3 +682,13 @@ export const eventBus = new EventBus();
 
 /** Global trigger engine instance. Listens to all events. */
 export const triggerEngine = new NotificationTriggerEngine(eventBus);
+
+// ───────────────────────────────────────────────────────────────────
+// EVENT BUS V2 — Redis Streams (Sprint 4.4)
+// ───────────────────────────────────────────────────────────────────
+
+export * as EventBusV2 from './event-bus';
+export * as EventBusTypes from './types';
+export * as RedisStreamAdapter from './redis-stream-adapter';
+export * as EventStoreModule from './event-store';
+export * as DeadLetterModule from './dead-letter';

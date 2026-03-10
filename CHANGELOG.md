@@ -4,6 +4,33 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.4 — E2E Testing, Event Bus, Platform Admin & Gap Closure (2026-03-10)
+
+#### Added
+
+- **ADR-023** — E2E testing strategy & event bus architecture (1,668 lines) covering Playwright selection, page object model, test data management, Redis Streams event bus, schema versioning, DLQ design, AI monitoring integration (`docs/adr/ADR-023-e2e-testing-event-bus.md`)
+- **Playwright E2E framework** (`tests/e2e/`, 14 files) — Config, global setup/teardown, 4 page objects (login, dashboard, orders, drivers), auth fixtures (admin/dispatcher/driver roles), 5 spec suites (auth, order lifecycle, driver management, tracking, webhooks), 41 critical flow tests, helper utilities
+- **Event Bus v2 with Redis Streams** (`packages/core/src/events/`, 10 files, ~5,200 lines) — Typed domain events, EventBus class (publish/subscribe/wildcard), RedisStreamAdapter (consumer groups, XADD/XREADGROUP/XACK), EventStore (persistence, replay, versioning), DeadLetterQueue (retry, replay, alerts), 4 comprehensive test suites
+- **Auth provider registry** (`packages/core/src/auth/`, 5 new/updated files, ~1,800 lines) — SessionManager (create/validate/refresh/revoke, max concurrent sessions, IP tracking), TokenService (JWT signing, refresh rotation, expiry), AuthProviderBase abstract class (OAuth2, PKCE, CSRF), session manager tests
+- **Workflow integration triggers** (`packages/core/src/workflow-triggers/`, 8 files, ~2,600 lines) — TriggerRegistry (conditions, priority, debounce/throttle), API hooks (Fastify auto-trigger on order/shipment/driver events), Socket.io workflow events (room-based scoping), ShopifyWorkflowBridge (webhook→workflow, HMAC verification), tests + docs
+- **AI monitoring module** (`packages/core/src/ai-monitoring/`, 7 files, ~2,850 lines) — AnomalyDetector (z-score, IQR, moving average, deduplication, severity classification), ETAPredictor (regression model, feature extraction, confidence intervals, zone-aware), AlertEngine (rule-based + anomaly-based, routing, escalation chains, maintenance windows, daily digest), 2 test suites
+- **Activity log redesign** (`apps/dashboard/src/app/(dashboard)/activity/`, 4 files, ~1,327 lines) — Real-time event stream with live indicator, timeline view with date grouping, event type icons + severity badges, search + multi-filter (type, severity, date, user), event detail panel, CSV export
+- **Design tokens page** (`apps/dashboard/src/app/(dashboard)/design-system/tokens/`, 674 lines) — Interactive token browser (colors, typography, spacing, shadows, radius, breakpoints), copy-to-clipboard, search/filter, --wl-* CSS var swatches
+- **Component gallery** (`apps/dashboard/src/app/(dashboard)/design-system/components/`, 821 lines) — Interactive previews of 29+ UI components with prop controls and code snippets
+- **Event log viewer** (`apps/dashboard/src/app/(dashboard)/events/`, 3 files, ~830 lines) — Filterable event browser with JSON payload viewer, stats bar, infinite scroll, export
+- **Shopify workflow bridge API** (`apps/api/src/routes/shopify-workflow-bridge.ts`, 630 lines) — Order webhook→createDeliveryOrder workflow, fulfillment→shipment status, HMAC-SHA256 verification, idempotency, test suite (549 lines)
+- **4 Prisma models** — AuthProvider (org-level SSO), AuthSession (user sessions with token storage), PlatformAdmin (super_admin/admin/support roles), PosConfig (Shopify POS/Square/Clover)
+- **Package build maturity** — tsup.config.ts + proper exports for framework, types, validators, workflows packages; test scripts for carrier-service, extension-core
+- **Package verifier** (`scripts/verify-packages.ts`, ~200 lines) — Build/test script checker, exports validator, circular dependency detector
+
+#### Changed
+
+- **packages/core/src/events/index.ts** — Added Event Bus v2 re-exports (namespaced as EventBusV2)
+- **packages/core/src/auth/index.ts** — Added SessionManager, TokenService, AuthProviderBase exports
+- **packages/db/prisma/schema/** — Added relations on User (authSessions, platformAdmin) and Organization (authProviders, posConfigs)
+- **6 package.json files** — Added build/test scripts and proper exports fields
+- **package.json** (root) — Added Playwright devDependency and e2e test scripts
+
 ### Sprint 4.3 — CLI Deployment Tool, AI Diagnostics & Production Docker Compose (2026-03-10)
 
 #### Added
