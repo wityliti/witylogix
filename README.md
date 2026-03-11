@@ -690,6 +690,40 @@ See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detaile
 
 ---
 
+
+
+## Integration Ecosystem — 124+ Providers
+
+Witylogix ships a typed integration registry spanning **21 categories** and **124+ providers** with a pluggable adapter architecture. Production adapters are fully implemented and tested; planned adapters have typed schemas ready for community contribution.
+
+| Category | Providers | Production | Examples |
+|----------|-----------|------------|----------|
+| **Routing & Optimization** | 8 | 3 | Valhalla, VROOM, Google Routes, Mapbox Directions, HERE, Route4Me, OptimoRoute, Routific |
+| **Maps & Geocoding** | 5 | 4 | Google Maps, Mapbox, OpenStreetMap, HERE Maps, TomTom |
+| **Telematics & Fleet GPS** | 13 | 2 | Samsara, Geotab, Flespi, Verizon Connect, Trimble, Powerfleet, Azuga, Omnitracs, Platform Science, Fleetio, ClearPathGPS, One Step GPS, Titan GPS |
+| **SMS / WhatsApp / Push** | 7 | 3 | Twilio, WhatsApp Business, Firebase Cloud Messaging, Vonage, TextMagic, OneSignal, Sendbird |
+| **Email** | 5 | 1 | SendGrid, Mailgun, Amazon SES, Outlook, Gmail |
+| **Collaboration & Dispatch** | 7 | 0 | Pusher, Slack, Microsoft Teams, Track-POD, DispatchTrack, Podium, WorkWave |
+| **Supply Chain & Warehouse** | 6 | 0 | Manhattan Associates, Blue Yonder, Körber, Deposco, Extensiv, Fishbowl |
+| **E-Commerce** | 8 | 2 | Shopify, WooCommerce, Magento, BigCommerce, Amazon Seller Central, eBay, Etsy, Square Online |
+| **Payments** | 6 | 1 | Stripe, Square, PayPal, Braintree, Authorize.Net, Adyen |
+| **ERP & Accounting** | 11 | 2 | QuickBooks, Xero, SAP, Oracle NetSuite, Microsoft Dynamics 365, Sage, Infor, Epicor, Sage Intacct, FreshBooks, Wave |
+| **CRM** | 5 | 0 | Salesforce, HubSpot, Zoho CRM, Microsoft Dynamics CRM, Pipedrive |
+| **Fuel & Fleet Cards** | 4 | 0 | WEX, Comdata, Fuelman, EFS |
+| **ELD (Electronic Logging)** | 5 | 2 | Samsara ELD, Geotab Drive, Motive (Keep Truckin), Omnitracs ELD, Azuga ELD |
+| **Freight & Load Boards** | 4 | 0 | DAT Load Board, Truckstop.com, 123Loadboard, Direct Freight |
+| **Analytics & BI** | 5 | 0 | Tableau, Power BI, Looker, Qlik, Google Analytics |
+| **E-Signatures** | 5 | 0 | DocuSign, Adobe Sign, PandaDoc, HelloSign, Solid Protocol |
+| **Shipping Carriers** | 7 | 4 | FedEx, UPS, USPS, DHL, ShipStation, EasyPost, Shippo |
+| **Last-Mile Delivery** | 3 | 0 | DoorDash Drive, Uber Eats, Grubhub |
+| **POS & Restaurant** | 2 | 0 | Toast POS, Square for Restaurants |
+| **Healthcare (FHIR)** | 4 | 0 | Cerner, Allscripts, Epic, HL7 FHIR |
+| **Field Service** | 4 | 0 | ServiceTitan, Jobber, Housecall Pro, FieldEdge |
+| **Total** | **124** | **23 production** | *21 categories, pluggable adapter architecture* |
+
+> Every provider is defined in `packages/core/src/integrations/registry/integration-registry.ts` with typed schemas, auth methods, API endpoints, and supported operations. Planned adapters accept community PRs.
+
+
 ## License
 
 Witylogix is open-source under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
