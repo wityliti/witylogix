@@ -1,0 +1,792 @@
+"use client";
+
+import { useState, useCallback, useMemo } from "react";
+import {
+  Search,
+  Plus,
+  Download,
+  Send,
+  CheckCircle,
+  FilterX,
+  Eye,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { Table } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { MetricCard } from "@/components/ui/metric-card";
+
+type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
+
+interface Invoice {
+  id: string;
+  number: string;
+  customerId: string;
+  customerName: string;
+  amount: number;
+  status: InvoiceStatus;
+  dueDate: Date;
+  sentDate: Date | null;
+  paidDate: Date | null;
+  taxAmount: number;
+  discountAmount: number;
+  lineItemsCount: number;
+}
+
+const MOCK_INVOICES: Invoice[] = [
+  {
+    id: "inv-001",
+    number: "INV-2024-001",
+    customerId: "cust-001",
+    customerName: "Acme Corp",
+    amount: 2500.0,
+    status: "paid",
+    dueDate: new Date("2024-02-15"),
+    sentDate: new Date("2024-01-15"),
+    paidDate: new Date("2024-02-10"),
+    taxAmount: 250.0,
+    discountAmount: 0,
+    lineItemsCount: 4,
+  },
+  {
+    id: "inv-002",
+    number: "INV-2024-002",
+    customerId: "cust-002",
+    customerName: "Beta Inc",
+    amount: 1850.5,
+    status: "overdue",
+    dueDate: new Date("2024-02-01"),
+    sentDate: new Date("2024-01-20"),
+    paidDate: null,
+    taxAmount: 185.05,
+    discountAmount: 50.0,
+    lineItemsCount: 3,
+  },
+  {
+    id: "inv-003",
+    number: "INV-2024-003",
+    customerId: "cust-003",
+    customerName: "Gamma Ltd",
+    amount: 3200.0,
+    status: "sent",
+    dueDate: new Date("2024-03-15"),
+    sentDate: new Date("2024-02-20"),
+    paidDate: null,
+    taxAmount: 320.0,
+    discountAmount: 0,
+    lineItemsCount: 5,
+  },
+  {
+    id: "inv-004",
+    number: "INV-2024-004",
+    customerId: "cust-001",
+    customerName: "Acme Corp",
+    amount: 1600.0,
+    status: "draft",
+    dueDate: new Date("2024-03-30"),
+    sentDate: null,
+    paidDate: null,
+    taxAmount: 160.0,
+    discountAmount: 100.0,
+    lineItemsCount: 2,
+  },
+  {
+    id: "inv-005",
+    number: "INV-2024-005",
+    customerId: "cust-004",
+    customerName: "Delta Logistics",
+    amount: 4500.0,
+    status: "paid",
+    dueDate: new Date("2024-01-30"),
+    sentDate: new Date("2024-01-05"),
+    paidDate: new Date("2024-01-28"),
+    taxAmount: 450.0,
+    discountAmount: 200.0,
+    lineItemsCount: 8,
+  },
+  {
+    id: "inv-006",
+    number: "INV-2024-006",
+    customerId: "cust-005",
+    customerName: "Echo Distribution",
+    amount: 2200.0,
+    status: "overdue",
+    dueDate: new Date("2024-02-05"),
+    sentDate: new Date("2024-01-25"),
+    paidDate: null,
+    taxAmount: 220.0,
+    discountAmount: 0,
+    lineItemsCount: 3,
+  },
+  {
+    id: "inv-007",
+    number: "INV-2024-007",
+    customerId: "cust-002",
+    customerName: "Beta Inc",
+    amount: 3050.0,
+    status: "sent",
+    dueDate: new Date("2024-03-20"),
+    sentDate: new Date("2024-02-25"),
+    paidDate: null,
+    taxAmount: 305.0,
+    discountAmount: 150.0,
+    lineItemsCount: 6,
+  },
+  {
+    id: "inv-008",
+    number: "INV-2024-008",
+    customerId: "cust-003",
+    customerName: "Gamma Ltd",
+    amount: 1450.0,
+    status: "paid",
+    dueDate: new Date("2024-02-20"),
+    sentDate: new Date("2024-02-01"),
+    paidDate: new Date("2024-02-18"),
+    taxAmount: 145.0,
+    discountAmount: 50.0,
+    lineItemsCount: 2,
+  },
+];
+
+const getStatusBadgeVariant = (
+  status: InvoiceStatus
+): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
+  switch (status) {
+    case "paid":
+      return "success";
+    case "sent":
+      return "info";
+    case "draft":
+      return "default";
+    case "overdue":
+      return "danger";
+    case "cancelled":
+      return "warning";
+    default:
+      return "default";
+  }
+};
+
+const getStatusLabel = (status: InvoiceStatus): string => {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+export default function InvoicesPage() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | "">(
+    ""
+  );
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [amountMin, setAmountMin] = useState("");
+  const [amountMax, setAmountMax] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "status" | "due">(
+    "date"
+  );
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Get unique customers
+  const customers = useMemo(() => {
+    return Array.from(new Set(MOCK_INVOICES.map((i) => i.customerName))).sort();
+  }, []);
+
+  // Filter invoices
+  const filtered = useMemo(() => {
+    let result = MOCK_INVOICES;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.number.toLowerCase().includes(query) ||
+          i.customerName.toLowerCase().includes(query)
+      );
+    }
+
+    if (selectedStatus) {
+      result = result.filter((i) => i.status === selectedStatus);
+    }
+
+    if (selectedCustomer) {
+      result = result.filter((i) => i.customerName === selectedCustomer);
+    }
+
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      result = result.filter((i) => i.sentDate && i.sentDate >= fromDate);
+    }
+
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      result = result.filter((i) => i.sentDate && i.sentDate <= toDate);
+    }
+
+    if (amountMin) {
+      const min = parseFloat(amountMin);
+      result = result.filter((i) => i.amount >= min);
+    }
+
+    if (amountMax) {
+      const max = parseFloat(amountMax);
+      result = result.filter((i) => i.amount <= max);
+    }
+
+    // Sort
+    const sorted = [...result];
+    if (sortBy === "date") {
+      sorted.sort((a, b) => (b.sentDate?.getTime() || 0) - (a.sentDate?.getTime() || 0));
+    } else if (sortBy === "amount") {
+      sorted.sort((a, b) => b.amount - a.amount);
+    } else if (sortBy === "status") {
+      sorted.sort((a, b) => a.status.localeCompare(b.status));
+    } else if (sortBy === "due") {
+      sorted.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
+    }
+
+    return sorted;
+  }, [
+    searchQuery,
+    selectedStatus,
+    selectedCustomer,
+    dateFrom,
+    dateTo,
+    amountMin,
+    amountMax,
+    sortBy,
+  ]);
+
+  // Calculate summary stats
+  const stats = useMemo(() => {
+    const paidInvoices = MOCK_INVOICES.filter((i) => i.status === "paid");
+    const overdueInvoices = MOCK_INVOICES.filter((i) => i.status === "overdue");
+    const thisMonth = MOCK_INVOICES.filter((i) => {
+      const now = new Date();
+      return (
+        i.paidDate &&
+        i.paidDate.getMonth() === now.getMonth() &&
+        i.paidDate.getFullYear() === now.getFullYear()
+      );
+    });
+
+    const totalOutstanding = MOCK_INVOICES.filter(
+      (i) => i.status === "sent" || i.status === "draft"
+    ).reduce((sum, i) => sum + i.amount, 0);
+
+    const totalOverdue = overdueInvoices.reduce((sum, i) => sum + i.amount, 0);
+    const paidThisMonth = thisMonth.reduce((sum, i) => sum + i.amount, 0);
+
+    const avgDaysToPay =
+      paidInvoices.length > 0
+        ? paidInvoices.reduce((sum, i) => {
+            const days =
+              (i.paidDate!.getTime() - i.sentDate!.getTime()) /
+              (1000 * 60 * 60 * 24);
+            return sum + days;
+          }, 0) / paidInvoices.length
+        : 0;
+
+    return {
+      totalOutstanding,
+      totalOverdue,
+      paidThisMonth,
+      avgDaysToPay: Math.round(avgDaysToPay),
+    };
+  }, []);
+
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginatedInvoices = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handleViewInvoice = useCallback((id: string) => {
+    router.push(`/dashboard/invoices/${id}`);
+  }, [router]);
+
+  const handleCreateInvoice = useCallback(() => {
+    router.push("/dashboard/invoices/create");
+  }, [router]);
+
+  const handleSelectInvoice = useCallback(
+    (id: string) => {
+      const newSelected = new Set(selectedInvoices);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      setSelectedInvoices(newSelected);
+    },
+    [selectedInvoices]
+  );
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedInvoices.size === paginatedInvoices.length) {
+      setSelectedInvoices(new Set());
+    } else {
+      setSelectedInvoices(
+        new Set(paginatedInvoices.map((i) => i.id))
+      );
+    }
+  }, [paginatedInvoices, selectedInvoices]);
+
+  const handleBulkSend = useCallback(() => {
+    console.log("Bulk send:", Array.from(selectedInvoices));
+    // TODO: API call for bulk send
+  }, [selectedInvoices]);
+
+  const handleBulkMarkPaid = useCallback(() => {
+    console.log("Mark paid:", Array.from(selectedInvoices));
+    // TODO: API call for mark paid
+  }, [selectedInvoices]);
+
+  const handleExportCSV = useCallback(() => {
+    const headers = [
+      "Invoice Number",
+      "Customer",
+      "Amount",
+      "Status",
+      "Due Date",
+      "Sent Date",
+    ];
+    const rows = filtered.map((i) => [
+      i.number,
+      i.customerName,
+      i.amount.toFixed(2),
+      i.status,
+      i.dueDate.toLocaleDateString(),
+      i.sentDate?.toLocaleDateString() || "N/A",
+    ]);
+
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoices-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }, [filtered]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedStatus("");
+    setSelectedCustomer("");
+    setDateFrom("");
+    setDateTo("");
+    setAmountMin("");
+    setAmountMax("");
+    setSortBy("date");
+    setCurrentPage(1);
+  }, []);
+
+  const hasActiveFilters = Boolean(
+    searchQuery ||
+      selectedStatus ||
+      selectedCustomer ||
+      dateFrom ||
+      dateTo ||
+      amountMin ||
+      amountMax
+  );
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold text-wl-text-primary">Invoices</h1>
+          <p className="text-wl-text-secondary">
+            Manage and track your invoices
+          </p>
+        </div>
+        <Button variant="primary" size="lg" onClick={handleCreateInvoice}>
+          <Plus className="w-4 h-4" />
+          Create Invoice
+        </Button>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total Outstanding"
+          value={`$${stats.totalOutstanding.toFixed(2)}`}
+          trend={null}
+          icon={null}
+        />
+        <MetricCard
+          label="Total Overdue"
+          value={`$${stats.totalOverdue.toFixed(2)}`}
+          trend={null}
+          icon={null}
+        />
+        <MetricCard
+          label="Paid This Month"
+          value={`$${stats.paidThisMonth.toFixed(2)}`}
+          trend={null}
+          icon={null}
+        />
+        <MetricCard
+          label="Avg Days to Pay"
+          value={`${stats.avgDaysToPay} days`}
+          trend={null}
+          icon={null}
+        />
+      </div>
+
+      {/* Bulk Actions */}
+      {selectedInvoices.size > 0 && (
+        <Card className="flex items-center justify-between gap-4 p-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-wl-text-primary">
+              {selectedInvoices.size} selected
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={handleBulkSend}>
+              <Send className="w-4 h-4" />
+              Send
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid}>
+              <CheckCircle className="w-4 h-4" />
+              Mark Paid
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Filters & Controls */}
+      <Card className="flex flex-col gap-4">
+        <div className="flex gap-3 flex-wrap items-end">
+          <div className="flex-1 min-w-[200px]">
+            <Input
+              placeholder="Search by invoice # or customer..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.currentTarget.value);
+                setCurrentPage(1);
+              }}
+              icon={<Search className="w-4 h-4" />}
+              className="w-full"
+            />
+          </div>
+
+          <Select
+            value={selectedStatus as string}
+            onChange={(value) => {
+              setSelectedStatus((value as InvoiceStatus) || "");
+              setCurrentPage(1);
+            }}
+            label="Status"
+            className="w-32"
+          >
+            <option value="">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+            <option value="cancelled">Cancelled</option>
+          </Select>
+
+          <Select
+            value={selectedCustomer}
+            onChange={(value) => {
+              setSelectedCustomer(value);
+              setCurrentPage(1);
+            }}
+            label="Customer"
+            className="w-40"
+          >
+            <option value="">All Customers</option>
+            {customers.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            value={sortBy}
+            onChange={(value) =>
+              setSortBy(value as "date" | "amount" | "status" | "due")
+            }
+            label="Sort By"
+            className="w-32"
+          >
+            <option value="date">Date</option>
+            <option value="amount">Amount</option>
+            <option value="status">Status</option>
+            <option value="due">Due Date</option>
+          </Select>
+
+          <Button variant="secondary" size="sm" onClick={handleExportCSV}>
+            <Download className="w-4 h-4" />
+            Export
+          </Button>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearFilters}
+              className="ml-auto"
+            >
+              <FilterX className="w-4 h-4" />
+              Clear Filters
+            </Button>
+          )}
+        </div>
+
+        {/* Additional Filters */}
+        <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-subtle pt-4">
+          <div className="flex gap-2 items-end">
+            <label className="text-xs font-semibold uppercase text-wl-text-secondary">
+              Date Range
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+            />
+            <span className="text-wl-text-secondary">to</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+            />
+          </div>
+
+          <div className="flex gap-2 items-end">
+            <label className="text-xs font-semibold uppercase text-wl-text-secondary">
+              Amount
+            </label>
+            <input
+              type="number"
+              placeholder="Min"
+              value={amountMin}
+              onChange={(e) => {
+                setAmountMin(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-20 px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+            />
+            <span className="text-wl-text-secondary">-</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={amountMax}
+              onChange={(e) => {
+                setAmountMax(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-20 px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Invoices Table */}
+      {filtered.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center gap-4 py-16">
+          <Search className="w-12 h-12 text-wl-text-secondary/50" />
+          <div className="flex flex-col items-center gap-2">
+            <h3 className="text-lg font-semibold text-wl-text-secondary">
+              No invoices found
+            </h3>
+            <p className="text-sm text-wl-text-secondary/75">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <>
+          <Card className="overflow-hidden">
+            <Table
+              columns={[
+                {
+                  key: "checkbox",
+                  header: (
+                    <input
+                      type="checkbox"
+                      checked={selectedInvoices.size === paginatedInvoices.length && paginatedInvoices.length > 0}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-wl-border-subtle"
+                    />
+                  ),
+                  render: (item: any) => (
+                    <input
+                      type="checkbox"
+                      checked={selectedInvoices.has(item.id)}
+                      onChange={() => handleSelectInvoice(item.id)}
+                      className="w-4 h-4 rounded border-wl-border-subtle"
+                    />
+                  ),
+                  width: 40,
+                },
+                {
+                  key: "number",
+                  header: "Invoice #",
+                  render: (item: any) => (
+                    <div className="font-mono text-sm font-medium text-wl-primary-500">
+                      {item.number}
+                    </div>
+                  ),
+                  sortable: true,
+                  width: 120,
+                },
+                {
+                  key: "customerName",
+                  header: "Customer",
+                  sortable: true,
+                  width: 180,
+                },
+                {
+                  key: "amount",
+                  header: "Amount",
+                  render: (item: any) => (
+                    <div className="font-medium">
+                      ${item.amount.toFixed(2)}
+                    </div>
+                  ),
+                  sortable: true,
+                  align: "right",
+                  width: 120,
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  render: (item: any) => (
+                    <Badge variant={getStatusBadgeVariant(item.status)}>
+                      {getStatusLabel(item.status)}
+                    </Badge>
+                  ),
+                  width: 100,
+                },
+                {
+                  key: "dueDate",
+                  header: "Due Date",
+                  render: (item: any) => (
+                    <div className="text-sm">
+                      {item.dueDate.toLocaleDateString()}
+                    </div>
+                  ),
+                  sortable: true,
+                  width: 110,
+                },
+                {
+                  key: "sentDate",
+                  header: "Sent Date",
+                  render: (item: any) => (
+                    <div className="text-sm">
+                      {item.sentDate?.toLocaleDateString() || "-"}
+                    </div>
+                  ),
+                  width: 110,
+                },
+                {
+                  key: "actions",
+                  header: "Actions",
+                  render: (item: any) => (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewInvoice(item.id)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  ),
+                  width: 60,
+                  align: "center",
+                },
+              ]}
+              data={paginatedInvoices}
+            />
+          </Card>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-wl-text-secondary">
+                Showing {(currentPage - 1) * pageSize + 1}-
+                {Math.min(currentPage * pageSize, filtered.length)} of{" "}
+                {filtered.length}
+              </span>
+              <Select
+                value={pageSize.toString()}
+                onChange={(value) => {
+                  setPageSize(parseInt(value));
+                  setCurrentPage(1);
+                }}
+                label="Page Size"
+                className="w-20"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </Select>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const page = i + 1;
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "primary" : "ghost"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="min-w-[32px]"
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

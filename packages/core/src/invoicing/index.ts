@@ -79,3 +79,64 @@ export type {
   ReceiptEmailData,
   EmailContent,
 } from './invoice-email.js';
+
+// ─── INVOICE GENERATOR ──────────────────────────────────────────
+
+export {
+  InvoiceGenerator,
+  createInvoiceGeneratorConfig,
+} from './invoice-generator.js';
+
+export type {
+  InvoiceGeneratorConfig,
+  GenerateInvoiceOptions,
+} from './invoice-generator.js';
+
+// ─── PDF RENDERER ───────────────────────────────────────────────
+
+export {
+  InvoicePDFRenderer,
+  renderInvoiceHTML,
+  renderInvoiceHTMLWithPayment,
+} from './pdf-renderer.js';
+
+export type {
+  InvoiceBranding,
+  PaymentInstructions,
+} from './pdf-renderer.js';
+
+// ─── PAYMENT GATEWAY ────────────────────────────────────────────
+
+export {
+  StripeAdapter,
+  ManualPaymentAdapter,
+  PaymentReconciliation,
+  PaymentGatewayFactory,
+  PaymentGatewayError,
+  createPaymentLinkOptions,
+} from './payment-gateway.js';
+
+export type {
+  IPaymentGateway,
+  Payment,
+  PaymentLinkOptions,
+  CheckoutSessionOptions,
+  RefundOptions,
+  WebhookPayload,
+  PaymentStatus,
+} from './payment-gateway.js';
+
+// ─── PAYMENT REMINDER ───────────────────────────────────────────
+
+export {
+  PaymentReminderService,
+  createReminderConfig,
+  getAgingBucketDescription,
+} from './payment-reminder.js';
+
+export type {
+  PaymentReminder,
+  ReminderType,
+  ReminderConfig,
+  OverdueReport,
+} from './payment-reminder.js';

@@ -4,6 +4,37 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 4.8] - 2026-03-11 — Invoicing Completion, Courier Ecosystem & AI Demand Prediction
+
+### Added
+- Invoice generation engine with 6 billing models (per-delivery, per-mile, per-hour, flat-rate, tiered, subscription)
+- Invoice PDF renderer with professional HTML templates, multi-currency, QR codes
+- Payment gateway integration (Stripe payment links, checkout sessions, refunds)
+- Manual payment recording (bank transfer, cash, check) with reconciliation
+- Payment reminder service with 6-level escalation schedule
+- Courier webhook processors for Onfleet (HMAC-SHA512), Stuart, Uber Direct (HMAC-SHA256)
+- Partner rating engine with 6-metric composite scoring and auto-tiering (Gold/Silver/Bronze/Review)
+- Smart multi-courier routing engine with performance-based selection and batch optimization
+- Cost optimizer with volume discounts, surge detection, ROI analysis
+- SLA enforcer with graduated escalation (warning → review → suspension)
+- Courier dispatch console with live tracking map and assignment panel
+- Invoice management dashboard with list, detail, creation, and payment tracking pages
+- AI demand prediction data pipeline: feature store, data aggregator, time-series extractor, zone profiler
+- Holiday calendar with 50+ holidays (US, UK, CA, AU, IN) and custom events
+- Demand prediction ML models: seasonal decomposition, zone regression, pattern matcher, anomaly detector
+- Demand ensemble predictor with dynamic model weighting
+- Smart scheduling engine: capacity recommendations, driver allocation, what-if analysis
+- ADR-027: AI demand prediction architecture
+- Platform health dashboard with service status and integration monitoring
+- 48-invoicing.prisma: Invoice, InvoiceLineItem, Payment, PaymentReminder models
+- 200+ integration tests for invoicing, payments, courier webhooks, smart routing, SLA compliance
+
+### Changed
+- Extended courier index.ts with partner performance, smart router, cost optimizer, SLA enforcer exports
+- Extended invoicing index.ts with invoice generator, PDF renderer, payment gateway, reminder exports
+
+
+
 ### Sprint 4.7 — Telematics, Traffic-Aware ETA & Integration Ecosystem (2026-03-11)
 
 #### Added

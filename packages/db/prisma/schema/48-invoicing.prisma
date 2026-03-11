@@ -1,0 +1,89 @@
+// ─── INVOICING EXTENSIONS ────────────────────────────────────────────
+// Extended models for Sprint 4.8: Invoice PDF generation and payment processing
+// Includes payment reminders, payment reconciliation, and webhook history
+
+model PaymentReminder {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+
+  reminderType    String    // 'before-due' | 'on-due' | 'after-due' | 'escalation'
+  daysOffset      Int       @map("days_offset") // Days relative to due date
+  scheduledFor    DateTime  @map("scheduled_for")
+  sentAt          DateTime? @map("sent_at")
+
+  status          String    @default("scheduled") // 'scheduled' | 'sent' | 'failed' | 'skipped'
+  failureReason   String?   @map("failure_reason")
+  metadata        Json      @default("{}") // Attempt count, email address, etc.
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, status])
+  @@index([scheduledFor, status])
+  @@map("payment_reminders")
+}
+
+model WebhookEvent {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+
+  eventType       String    @map("event_type") // 'payment_intent.succeeded', 'charge.refunded', etc.
+  eventId         String    // External event ID from payment processor
+  provider        String    // 'stripe', 'manual', etc.
+
+  payload         Json      // Full webhook payload
+  signature       String?   // Webhook signature for verification
+
+  processed       Boolean   @default(false)
+  processedAt     DateTime? @map("processed_at")
+  error           String?   // Error message if processing failed
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, eventType])
+  @@index([eventId])
+  @@index([processed])
+  @@map("webhook_events")
+}
+
+model PaymentReconciliationLog {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+
+  matchedCount    Int       @map("matched_count")
+  unmatchedCount  Int       @map("unmatched_count")
+  overpaidCount   Int       @map("overpaid_count")
+
+  totalAmount     Decimal   @map("total_amount") @db.Decimal(14, 2)
+  unmatchedAmount Decimal   @map("unmatched_amount") @db.Decimal(14, 2)
+  overpaidAmount  Decimal   @map("overpaid_amount") @db.Decimal(14, 2)
+
+  details         Json      // Detailed reconciliation results
+
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("payment_reconciliation_logs")
+}
+
+// ─── EXTEND INVOICE MODEL ───────────────────────────────────────────
+// The Invoice model already exists in 45-invoices.prisma
+// These are additional relations added for Sprint 4.8
+
+// Add to Invoice model:
+// reminders        PaymentReminder[]
+// webhookEvents    WebhookEvent[] (via tenantId)
+
+// ─── EXTEND TENANT MODEL ───────────────────────────────────────────
+// The Tenant model should include these relations:
+// webhookEvents    WebhookEvent[]
+// reconciliationLogs PaymentReconciliationLog[]
