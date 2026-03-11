@@ -4,6 +4,29 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+### Sprint 4.7 — Telematics, Traffic-Aware ETA & Integration Ecosystem (2026-03-11)
+
+#### Added
+
+- **ADR-026** — Telematics gateway architecture (`docs/adr/ADR-026-telematics-gateway.md`) — adapter pattern for Samsara/Geotab/Verizon/Motive, polling vs webhook strategies, data normalization, Redis caching, fleet event types
+- **Fleet Dashboard** (`apps/dashboard/src/app/(dashboard)/fleet/`, 3 pages) — Fleet overview with health gauge, vehicle list with status badges and fuel bars, vehicle detail with diagnostics/behavior/maintenance tabs
+- **Fleet Map Components** (`apps/dashboard/src/components/fleet/`, 11 files) — Vehicle tracker map (canvas-based, color-coded markers), fuel gauge SVG, diagnostic alerts panel, driver behavior stacked bar chart, idle time chart, fleet stats cards, vehicle status badge, vehicle status card, fuel consumption area chart, maintenance schedule, speed history chart, fleet health radial gauge
+- **Telematics Adapter Layer** (`packages/core/src/integrations/telematics/`, 10 files, 3,800+ lines) — Abstract TelematicsAdapter with rate limiter + circuit breaker, Samsara REST API v1 client (vehicles, positions, diagnostics, fuel, behavior, webhooks), Geotab MyGeotab JSONRPC client (session management, devices, fault data, exception events), data normalizer (unit conversions: miles↔km, gallons↔liters, F↔C), polling service (configurable intervals, change detection), 75+ tests
+- **Fleet Service** (`packages/core/src/fleet/`, 4 files) — Vehicle lifecycle management, fleet overview/health scoring, diagnostics, driver behavior analytics, maintenance alerts, 8 API endpoints
+- **Courier Partner Directory UI** (`apps/dashboard/src/app/(dashboard)/partners/`, 4 pages, 2,500+ lines) — Directory with grid/list toggle and search/filter, partner detail with 4 tabs (Overview/Deliveries/Settings/SLA), 3-step onboarding wizard (select provider → credentials → configure), courier comparison view (up to 4 side-by-side)
+- **Courier Partner Adapters** (`packages/core/src/integrations/couriers/`, 11 files, 4,800+ lines) — Abstract CourierAdapter interface, Onfleet REST client (Basic auth, task management), Stuart REST client (OAuth2, transport types), Uber Direct client (OAuth2, manifest items), courier normalizer (unified quotes/status), CourierDispatcher (multi-courier comparison, 4 strategies: cheapest/fastest/preferred/auto), 12 API endpoints, 60+ tests
+- **Invoice Engine Completion** (`packages/core/src/invoicing/billing-rules.ts`, `invoice-email.ts`) — BillingRuleEngine with 6 models (per-delivery/mile/hour/kg/subscription/flat-rate), tiered pricing, surcharges, discount/tax calculation, HTML invoice email templates with branding, payment reminder emails (7/14/30 day), receipt emails
+- **QuickBooks/Xero Accounting Integration** (`packages/core/src/integrations/accounting/`, 7 files) — QuickBooks Online OAuth2 adapter (invoice creation, payment sync, customer lookup), Xero OAuth2 adapter (invoice creation, contact management, tax rates), AccountingSyncService (idempotent sync, retry, reconciliation, provider registry), 8 API endpoints, accounting settings page
+- **Traffic-Aware ETA v2 Infrastructure** (`packages/core/src/integrations/traffic/`, 6 files, 2,000+ lines) — Google Directions API client (routes, distance matrix, traffic duration), TomTom Traffic API client (routes, traffic flow, incidents), traffic normalizer, TrafficProvider service (primary + fallback, optimal departure time), 6 API endpoints, 70+ tests
+- **ML ETA Engine v2** (`packages/core/src/ai-eta-v2/`, 14 files, 6,800+ lines) — 5 ML models (time-of-day with Gaussian kernel, distance-decay piecewise regression, historical KNN, traffic-aware zone delay, weather impact), ensemble predictor (dynamic weighting, outlier detection, auto-calibration), ETA pipeline (5 adjustment stages), traffic zone classifier, weather impact calculator, feature extractor, model performance tracker, 8 API endpoints, 100+ tests
+- **Partner UI Components** (`apps/dashboard/src/components/partners/`, 8 files) — Courier partner card, rate comparison table, partner SLA indicator, onboarding steps, partner stats widget
+- **250+ integration/unit tests** (`tests/integration/telematics/`, `tests/integration/couriers/`, `tests/integration/invoicing/`, `tests/integration/accounting/`) — Samsara (40+), Geotab (35+), normalizer (20+), Onfleet/Stuart/Uber Direct (25+ each), dispatcher (20+), billing rules (30+), QuickBooks (20+), Xero (20+)
+- **2 Prisma schemas** — `46-fleet.prisma` (FleetVehicle, TelematicsConnection, VehicleTelemetryLog, DriverBehaviorEvent), `46-couriers.prisma` (CourierPartner, CourierDelivery, CourierWebhookLog)
+
+#### Changed
+
+- **packages/core/src/invoicing/index.ts** — Added billing rules engine and invoice email exports
+
 ### Sprint 4.6 — Integrations, Analytics & Platform Maturity (2026-03-11)
 
 #### Added

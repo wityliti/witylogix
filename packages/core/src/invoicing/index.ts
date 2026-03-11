@@ -42,3 +42,40 @@ export { InvoiceService } from './invoice-service.js';
 export { calculateDeliveryCost, calculateBatchCost } from './cost-calculator.js';
 export { generateInvoiceNumber, getNextInvoiceNumber, resetInvoiceCounter, updateInvoicePrefix } from './invoice-number.js';
 export { generateInvoicePDF } from './pdf-generator.js';
+
+// ─── BILLING RULES ENGINE ───────────────────────────────────────────
+
+export {
+  BillingRuleEngine,
+  createBillingRule,
+  createSurcharge,
+  createTier,
+} from './billing-rules.js';
+
+export type {
+  BillingRule,
+  BillingRuleType,
+  BillingContext,
+  Tier,
+  Surcharge,
+  SubscriptionPlan,
+  LineItemWithMetadata,
+} from './billing-rules.js';
+
+// ─── INVOICE EMAIL ──────────────────────────────────────────────────
+
+export {
+  buildInvoiceEmail,
+  buildPaymentReminderEmail,
+  buildPaymentReceiptEmail,
+  sendInvoiceEmail,
+  sendPaymentReminderEmail,
+  sendPaymentReceiptEmail,
+} from './invoice-email.js';
+
+export type {
+  InvoiceEmailData,
+  EmailReminder,
+  ReceiptEmailData,
+  EmailContent,
+} from './invoice-email.js';

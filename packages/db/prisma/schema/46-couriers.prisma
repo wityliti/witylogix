@@ -1,0 +1,153 @@
+// ─── COURIER PARTNERS ────────────────────────────────────────────
+// Configuration and credentials for external courier integrations.
+// Each partner represents a single installed courier service.
+
+model CourierPartner {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  provider         String   // onfleet, stuart, uber_direct, etc.
+  name             String   // Display name (e.g., "Onfleet", "Stuart")
+  description      String?  // Optional description
+  isEnabled        Boolean  @default(true) @map("is_enabled")
+
+  // Provider-specific credentials (encrypted at application layer)
+  credentials      Json     @default("{}") // apiKey, clientId, clientSecret, etc.
+
+  // Provider-specific configuration
+  config           Json     @default("{}") // autoAssign, teamId, etc.
+
+  // Health and sync tracking
+  status           CourierStatus   @default(ACTIVE) // ACTIVE, INACTIVE, ERROR
+  lastSyncAt       DateTime?       @map("last_sync_at")
+  lastErrorAt      DateTime?       @map("last_error_at")
+  lastError        String?         @map("last_error")
+  healthStatus     HealthStatus    @default(UNKNOWN) @map("health_status")
+
+  // Metadata
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tenant           Organization    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries       CourierDelivery[]
+  webhookLogs      CourierWebhookLog[]
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+  @@index([provider])
+  @@index([status])
+  @@map("courier_partners")
+}
+
+// ─── COURIER DELIVERIES ────────────────────────────────────────────
+// Track deliveries created through courier partners.
+// Links orders to external delivery IDs for tracking and reconciliation.
+
+model CourierDelivery {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  orderId          String?  @map("order_id") @db.Uuid // Reference to Order if applicable
+  partnerId        String   @map("partner_id") @db.Uuid
+  externalId       String   @map("external_id") // Courier's delivery ID (onfleet task ID, etc.)
+
+  // Status tracking
+  status           DeliveryStatus  @default(PENDING) // pending, picked_up, in_transit, delivered, failed, cancelled
+  lastStatusUpdate DateTime?       @map("last_status_update")
+
+  // Tracking information
+  trackingUrl      String?         @map("tracking_url") // Public tracking link
+  trackingNumber   String?         @map("tracking_number")
+
+  // Driver information (cached for convenience)
+  driverName       String?         @map("driver_name")
+  driverPhone      String?         @map("driver_phone")
+  driverLocation   Json?           @map("driver_location") // { latitude, longitude, updatedAt }
+
+  // Quote and cost
+  quote            Json? // { price, currency, estimatedMinutes, distanceKm }
+  actualCost       Decimal? @map("actual_cost") @db.Decimal(10, 2)
+
+  // Proof of delivery
+  proofOfDelivery  Json? @map("proof_of_delivery") // { signature, photo, timestamp, recipientName }
+
+  // Metadata
+  metadata         Json     @default("{}") // Additional tracking data
+
+  // Audit
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  deliveredAt      DateTime? @map("delivered_at")
+
+  // Relations
+  tenant           Organization    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  partner          CourierPartner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, externalId])
+  @@index([tenantId])
+  @@index([partnerId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tenantId, createdAt])
+  @@map("courier_deliveries")
+}
+
+// ─── COURIER WEBHOOK LOGS ──────────────────────────────────────────
+// Audit trail of webhooks received from courier providers.
+// Used for debugging, replay, and event processing tracking.
+
+model CourierWebhookLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId        String   @map("partner_id") @db.Uuid
+  deliveryId       String?  @map("delivery_id") @db.Uuid // Reference to CourierDelivery if applicable
+
+  // Event information
+  eventType        String   @map("event_type") // delivery.created, delivery.picked_up, etc.
+  eventId          String?  @map("event_id") // Provider's event ID for deduplication
+
+  // Payload and processing
+  payload          Json     // Raw webhook payload from provider
+  processed        Boolean  @default(false)
+  processedAt      DateTime? @map("processed_at")
+  error            String?  // Error message if processing failed
+
+  // Metadata
+  receivedAt       DateTime @default(now()) @map("received_at")
+  headers          Json?    // Request headers for security verification
+
+  // Relations
+  partner          CourierPartner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+  @@index([deliveryId])
+  @@index([eventType])
+  @@index([processed])
+  @@index([receivedAt])
+  @@index([partnerId, receivedAt])
+  @@map("courier_webhook_logs")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────────
+
+enum CourierStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+}
+
+enum DeliveryStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  CANCELLED
+  RETURNED
+}
+
+enum HealthStatus {
+  HEALTHY
+  DEGRADED
+  ERROR
+  UNKNOWN
+}
