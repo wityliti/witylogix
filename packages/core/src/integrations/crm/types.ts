@@ -3,7 +3,7 @@
  * Shared types for Salesforce, HubSpot, and future CRM providers
  */
 
-export type CRMProvider = 'salesforce' | 'hubspot';
+export type CRMProvider = 'salesforce' | 'hubspot' | 'zoho' | 'dynamics' | 'pipedrive';
 
 export type CRMSyncStatus = 'pending' | 'synced' | 'failed' | 'skipped' | 'partial';
 
@@ -318,4 +318,128 @@ export interface CRMWebhookRegistration {
   signatureSecret?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ─── EXTENDED ENTITIES FOR ZOHO, DYNAMICS, PIPEDRIVE ─────────────────────
+
+export interface CRMLead {
+  id: string;
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  source?: string;
+  status?: string;
+  rating?: 'hot' | 'warm' | 'cold';
+  description?: string;
+  metadata?: Record<string, unknown>;
+  lastModifiedAt?: Date;
+  customFields?: Record<string, unknown>;
+}
+
+export interface CRMPipeline {
+  id: string;
+  name: string;
+  provider: CRMProvider;
+  stages: CRMPipelineStage[];
+  isActive: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface CRMPipelineStage {
+  id: string;
+  pipelineId: string;
+  name: string;
+  displayOrder: number;
+  probability?: number; // for Dynamics
+  isFinal?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+// ─── SYNC DIRECTION & ADVANCED CONFIG ──────────────────────────────────
+
+export type SyncDirection = 'inbound' | 'outbound' | 'bidirectional';
+
+export interface CRMAdvancedConfig extends CRMSyncConfig {
+  syncDirection: SyncDirection;
+  deltaSync: boolean;
+  deltaToken?: string;
+  batchSize?: number;
+  retryPolicy?: {
+    maxRetries: number;
+    backoffMs: number;
+  };
+}
+
+// ─── DOMAIN-SPECIFIC CONFIGURATIONS ────────────────────────────────────
+
+export interface ZohoCRMConfig {
+  clientId: string;
+  clientSecret: string;
+  domain: 'com' | 'eu' | 'in' | 'au' | 'ca' | 'jp'; // Domain-specific endpoints
+  redirectUri: string;
+  apiVersion?: string; // Default v6
+}
+
+export interface MicrosoftDynamicsConfig {
+  clientId: string;
+  clientSecret: string;
+  tenantId: string;
+  organizationUrl: string; // https://[org].crm.dynamics.com
+  apiVersion?: string; // Default v9.2
+  authMode: 'client_credentials' | 'auth_code';
+}
+
+export interface PipedriveConfig {
+  clientId?: string;
+  clientSecret?: string;
+  apiToken?: string; // For personal token auth
+  redirectUri?: string;
+  companyDomain?: string;
+}
+
+// ─── OAUTH2 & TOKEN MANAGEMENT ──────────────────────────────────────────
+
+export interface OAuth2Token {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  expiresAt?: Date;
+  tokenType?: string;
+  scope?: string[];
+}
+
+export interface TokenRefreshResponse {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+  expiresAt: Date;
+}
+
+// ─── SYNC STATE & TRACKING ──────────────────────────────────────────────
+
+export interface SyncStateToken {
+  provider: CRMProvider;
+  connectionId: string;
+  token: string; // Cursor or timestamp-based token
+  updatedAt: Date;
+}
+
+export interface ConflictResolution {
+  strategy: 'last_write_wins' | 'source_priority' | 'manual' | 'merge';
+  sourceOfTruth?: CRMProvider;
+  manualReviewRequired?: boolean;
+}
+
+export interface EntityRelationshipMapping {
+  sourceType: CRMRecordType;
+  targetType: CRMRecordType;
+  relationshipType: 'one_to_one' | 'one_to_many' | 'many_to_many';
+  foreignKeyMapping?: {
+    sourceField: string;
+    targetField: string;
+  };
 }

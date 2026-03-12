@@ -4,6 +4,28 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 5.1] - 2026-03-12 — Mega Integration Sprint II — Collaboration, E-Signatures, CRM, Payments, POS, ELD, Last-Mile, Shipping
+
+### Added
+- Collaboration adapters: Slack (Web API + Events API + Socket Mode, Block Kit, OAuth2), Microsoft Teams (Graph API, Adaptive Cards, Azure AD, change notifications), Pusher (Channels API, presence tracking, batch triggers)
+- Collaboration hub engine: cross-platform messaging, notification routing, presence aggregation, message templating, delivery tracking
+- Track-POD, DispatchTrack, Podium, WorkWave collaboration adapters for delivery management and customer communication
+- E-signature adapters: DocuSign (REST API v2.1, JWT Grant, embedded signing, Connect webhooks), Adobe Sign (REST API v6, agreements, web forms, mega-sign), PandaDoc (API v2, pricing tables, approval workflows), HelloSign/Dropbox Sign (API v3, embedded signing)
+- Envelope engine: multi-provider orchestration, signing workflow management (sequential/parallel/hybrid), provider selection, audit trail
+- CRM adapters: Zoho CRM (API v6, multi-DC, COQL, bulk operations), Microsoft Dynamics CRM (Dataverse Web API, OData v4, business process flows), Pipedrive (REST API v1, deal rotting detection, pipeline management)
+- CRM sync engine v2: bidirectional sync, 4 conflict resolution strategies, entity relationship mapping, error recovery queue
+- Payment adapters: Braintree (Gateway API, customer vault, subscriptions, PayPal/Venmo), Authorize.Net (CIM, ARB, fraud detection), Adyen (Checkout API v71, split payments, 3D Secure, HMAC verification)
+- POS adapters: Toast POS (API v2, orders, menus, labor, revenue centers, kitchen display), Square for Restaurants (API v2, catalog sync, team, terminals)
+- ELD adapters: Motive/KeepTruckin (driver logs, HOS, DVIR, fault codes), Omnitracs ELD (HOS compliance, dispatch, critical event video), Azuga ELD (trips, driver scorecards, geofence alerts)
+- ELD compliance engine: FMCSA Part 395 HOS rules, multi-provider aggregation, violation detection (14h/11h/30min/60-70h), compliance scoring, DOT audit logs
+- Last-mile adapters: DoorDash Drive (API v2, JWT auth, deliveries, quotes, POD), Uber Eats (Direct API, OAuth2, real-time tracking), Grubhub (orders, menu sync, driver assignment)
+- Delivery aggregator: unified interface across platforms, concurrent quote comparison, smart platform selection, failover, commission analysis
+- Shippo shipping adapter (API v2, multi-carrier rate shopping, label generation, batch operations, customs declarations)
+- 8 integration dashboard pages: collaboration, e-signatures, ELD, payments, CRM, POS, last-mile, shipping
+- 9 new integration UI components: OAuth flow, log viewer, batch operations, template manager, alert rules, data mapper, import/export wizard, status timeline, provider switcher
+- Integration test suites: collaboration (35+ tests), e-signatures (30+ tests), CRM (30+ tests), payments (30+ tests), POS (25+ tests), ELD (25+ tests), last-mile (25+ tests), shipping (20+ tests), E2E lifecycle II (20+ tests)
+- Updated integration registry: 80 production adapters, 44 planned (124 total across 21 categories)
+
 ## [Sprint 5.0] - 2026-03-12 — Mega Integration Sprint I — Routing, Telematics, Messaging, Email, ERP
 
 ### Added
