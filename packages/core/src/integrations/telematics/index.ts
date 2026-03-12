@@ -53,6 +53,27 @@ export {
 // Clients
 export { SamsaraClient } from "./samsara-client.js";
 export { GeotabClient } from "./geotab-client.js";
+export { FlespiClient } from "./flespi-client.js";
+export { VerizonConnectClient } from "./verizon-connect-client.js";
+export { TrimbleClient } from "./trimble-client.js";
+export { FleetioClient } from "./fleetio-client.js";
+
+// Aggregator & Stream
+export { TelematicsAggregator } from "./telematics-aggregator.js";
+export type {
+  AggregatedVehicle,
+  VehicleDeduplicationRule,
+  FleetHealthScore,
+  AggregatedAlert,
+} from "./telematics-aggregator.js";
+export { TelematicsStream } from "./telematics-stream.js";
+export type {
+  StreamConfig,
+  BufferedPosition,
+  GeofenceEvent,
+  DeviceStreamStatus,
+  StreamEvent,
+} from "./telematics-stream.js";
 
 // Normalizer
 export { TelematicsNormalizer } from "./telematics-normalizer.js";

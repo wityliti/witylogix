@@ -4,6 +4,30 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 5.0] - 2026-03-12 — Mega Integration Sprint I — Routing, Telematics, Messaging, Email, ERP
+
+### Added
+- Routing adapters: Valhalla (turn-by-turn, isochrone, matrix, map-matching), VROOM (CVRP, VRPTW, pickup-delivery), Routific (async VRP, dispatch), OptimoRoute (plan routes, completion events)
+- HERE Routing V8 adapter (car/truck/EV routing, matrix, isoline) and Route4Me adapter (multi-stop optimization, tracking, territories)
+- HERE Maps adapter (geocoding, autosuggest, discover, map tiles) with LRU cache
+- Routing engine with provider registry, fallback chains, result caching, and route comparison
+- Maps abstract adapter with LRU cache, rate limiter, and circuit breaker
+- Messaging adapters: Vonage (SMS/MMS/WhatsApp, 2FA, HMAC-SHA256), TextMagic (bulk SMS, contacts, templates), OneSignal (push/in-app, A/B testing, segments), Sendbird (channels, messages, moderation)
+- Messaging router with channel-based selection, fallback chains, cost optimization, and deduplication
+- Email adapters: Mailgun (REST v3, batch send, validation, domain management), Amazon SES (AWS Sig V4, configuration sets, dedicated IPs), Gmail (OAuth2, RFC 2822 MIME, Pub/Sub), Outlook (MS Graph, folders, rules, change notifications)
+- Email routing engine with domain-based routing, load balancing, and IP warmup management
+- ERP adapters: SAP (OAuth2/Passport, batch $batch, G/L journal entries), Oracle NetSuite (OAuth 1.0 TBA, SuiteQL, saved searches), MS Dynamics 365 (Azure AD MSAL, OData v4, dimensions), Sage (OAuth2, bank transactions, tax, financial reports)
+- ERP sync engine with bidirectional delta sync, entity dependency resolution, and conflict handling
+- ERP Prisma schema (ERPConnection, ERPFieldMapping, ERPSyncLog, ERPSyncRecord, ERPConflictRecord, ERPWebhookRegistration)
+- Telematics adapters: Flespi (2500+ protocols, MQTT, geofences, calculators), Verizon Connect (OAuth2, trips, behavior events, safety scoring), Trimble (ELD, HOS, IFTA, inspections, dispatch), Fleetio (maintenance, fuel, inspections, parts, work orders)
+- Telematics aggregator with multi-provider unification, deduplication, and health scoring
+- Telematics stream with real-time streaming, interpolation, and geofence detection
+- Integration dashboard pages: routing config, telematics config, messaging config, ERP config, e-commerce config, email config, integration overview hub
+- 10 integration UI components: ProviderCard, CredentialForm, WebhookConfig, HealthMonitor, RateLimitDisplay, SyncStatusCard, ConnectionWizard, ApiUsageChart, ProviderComparison
+- Integration test suites: routing adapters (35+ tests), messaging adapters (35+ tests), email adapters (30+ tests), ERP adapters (35+ tests), maps adapters (25+ tests), E2E integration lifecycle (25+ tests)
+- Integration test fixtures and helper utilities
+- Updated integration registry: 54 production adapters, 70 planned (124 total across 21 categories)
+
 ## [Sprint 4.9] - 2026-03-12 — Demand Completion, Platform Adapters & Deployment
 
 ### Added
