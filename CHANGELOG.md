@@ -4,6 +4,50 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 4.9] - 2026-03-12 — Demand Completion, Platform Adapters & Deployment
+
+### Added
+- Real-time demand dashboard service with live snapshots, zone summaries, and EventEmitter streaming
+- Auto-rebalancer with imbalance detection, greedy redistribution algorithm, and zone capacity scoring
+- Capacity alert engine with 4 built-in rules, multi-level escalation, and multi-channel notifications (email, SMS, webhook, Slack)
+- Model retraining pipeline with A/B testing, champion/challenger evaluation, and auto-promotion
+- Magento 2 REST V1 e-commerce adapter (products, orders, customers, inventory) with rate limiter and circuit breaker
+- BigCommerce V3 e-commerce adapter (products, orders, customers, inventory) with webhook management
+- E-commerce sync engine with multi-platform support, conflict resolution, and batch processing
+- PayPal Orders API v2 payment adapter (create, capture, refund, webhooks with HMAC verification)
+- Square Payments API adapter (create, complete, refund, webhooks with signature verification)
+- Multi-gateway payment router with optimal gateway selection (method, currency, amount, region), fallback chains, and health tracking
+- Salesforce REST API CRM adapter (OAuth2, SOQL queries, Bulk API 2.0, record CRUD)
+- HubSpot CRM API v3 adapter (OAuth2, contacts, companies, deals, search API, associations)
+- CRM sync engine with bidirectional sync, field mapping, conflict resolution, and webhook processing
+- ShipStation API adapter (Basic auth, orders, shipments, labels, carriers, tracking)
+- EasyPost API adapter (Bearer + HMAC-SHA256, shipments, rates, labels, tracking, insurance)
+- Carrier rate comparison engine with multi-carrier quoting, markup rules, and rate caching
+- Demand visualization components: zone heatmap (pure SVG), forecast dual-line chart, capacity stacked bar, schedule grid
+- Admin UI components: service health card with sparkline, integration status row, activity timeline
+- Demand prediction dashboard (5 pages: forecast overview, capacity planning, scheduler, anomalies, model performance)
+- Admin console (5 pages: system health, integration monitoring, error logs, activity feed, API docs browser)
+- Payment settings page with multi-gateway configuration
+- Docker Compose production config generator with Nginx, health checks, graceful shutdown
+- OpenAPI v3.1 specification generator (Zod-to-OpenAPI converter) with Swagger UI and ReDoc
+- Health check service with database, Redis, and external dependency checks, Prometheus metrics export
+- ADR-028: Platform deployment architecture
+- 49-crm.prisma: CRMConnection, CRMFieldMapping, CRMSyncLog, CRMWebhookRegistration models
+- 13 demand API endpoints (dashboard snapshot, zone summary, capacity, alerts, rebalance, retrain)
+- 8 CRM API endpoints (connections, sync, field mappings, contacts, webhooks)
+- E-commerce API routes (Magento/BigCommerce CRUD, sync trigger, webhook handlers)
+- Payment v2 API routes (multi-gateway create/capture/refund, webhook processing)
+- Shipping API routes (rate comparison, label generation, tracking, carrier management)
+- Platform health API routes (/health, /metrics, /api/docs)
+- E2E test suite: order lifecycle (30+ tests), checkout-to-delivery (25+), payment flow (25+), e-commerce sync (20+), demand prediction (15+)
+- k6 load test suite: API load (100 VU, 7 scenarios), webhook processing (1000/min)
+- E2E test fixtures and helper utilities
+- 200+ unit tests for platform, payments, CRM, e-commerce, shipping, and demand prediction modules
+
+### Changed
+- Extended demand-prediction/index.ts with realtime dashboard, auto-rebalancer, capacity alerts, model retrainer exports
+- Extended payments/index.ts with PayPal, Square, multi-gateway router exports
+
 ## [Sprint 4.8] - 2026-03-11 — Invoicing Completion, Courier Ecosystem & AI Demand Prediction
 
 ### Added

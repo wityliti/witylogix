@@ -59,7 +59,8 @@
     "./api-hardening": "./src/api-hardening/index.ts",
     "./dispatch": "./src/dispatch/index.ts",
     "./ai-slots": "./src/ai-slots/index.ts",
-    "./ai-eta": "./src/ai-eta/index.ts"
+    "./ai-eta": "./src/ai-eta/index.ts",
+    "./platform": "./src/platform/index.ts"
   },
   "scripts": {
     "build": "tsc",

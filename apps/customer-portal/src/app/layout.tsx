@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { useState } from "react";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { Header } from "@/components/header";
 import { cn } from "@/lib/utils";

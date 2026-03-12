@@ -162,3 +162,43 @@ export {
   type SpecialEvent,
   HolidayCalendar,
 } from './holiday-calendar.js';
+
+// ─── REAL-TIME DASHBOARD & MONITORING EXPORTS ───────────────────
+
+export {
+  RealtimeDashboard,
+  type DemandSnapshot,
+  type TimelinePoint,
+  type ZoneRanking,
+  type ModelAccuracyDashboard,
+  type DashboardEvent,
+} from './realtime-dashboard.js';
+
+export {
+  AutoRebalancer,
+  type CapacityImbalance,
+  type DriverMove,
+  type RebalancingPlan,
+  type RebalancingHistory,
+  type AutoRebalancerConfig,
+} from './auto-rebalancer.js';
+
+export {
+  CapacityAlertSystem,
+  type AlertSeverity,
+  type AlertChannel,
+  type AlertCondition,
+  type AlertAction,
+  type AlertRule,
+  type Alert,
+  type AlertDashboard,
+} from './capacity-alerts.js';
+
+export {
+  ModelRetrainer,
+  type TrainingDataPoint,
+  type ModelVersion,
+  type RetrainingJob,
+  type RetrainingConfig,
+  type RetrainingReport,
+} from './model-retrainer.js';
