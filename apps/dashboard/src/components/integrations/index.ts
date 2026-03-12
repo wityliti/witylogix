@@ -24,6 +24,18 @@ export { ImportExportWizard } from "./import-export-wizard";
 export { StatusTimeline } from "./status-timeline";
 export { ProviderSwitcher } from "./provider-switcher";
 
+// Sprint 5.2 new exports
+export { AnalyticsEmbedViewer } from "./analytics-embed-viewer";
+export { SupplyChainFlow } from "./supply-chain-flow";
+export { FreightQuoteCard } from "./freight-quote-card";
+export { FuelTransactionLog } from "./fuel-transaction-log";
+export { HealthcareComplianceBadge } from "./healthcare-compliance-badge";
+export { FieldServiceScheduler } from "./field-service-scheduler";
+export { FhirResourceBrowser } from "./fhir-resource-browser";
+export { CarrierBoard } from "./carrier-board";
+export { FleetFuelChart } from "./fleet-fuel-chart";
+export { IntegrationMarketplace } from "./integration-marketplace";
+
 // Existing type exports
 export type {
   IntegrationProvider,

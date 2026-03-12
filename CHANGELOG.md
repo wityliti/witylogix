@@ -4,6 +4,30 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 5.2] - 2026-03-12 — Final Integration Sprint — Analytics, Supply Chain, Healthcare, Freight, Fuel-Fleet, Field-Service, E-Commerce, Telematics, ERP
+
+### Added
+- Analytics adapters: Tableau (PAT+JWT, workbook/view CRUD, trusted tickets), Power BI (Azure AD OAuth2, DAX queries, RLS embed), Looker (OAuth2, explore metadata, scheduled plans), Qlik (API key+OAuth2 M2M, app/sheet CRUD), Google Analytics (GA4 Data API, runReport, audiences)
+- Analytics aggregator: unified queries, dashboard federation, cross-provider normalization
+- Supply chain adapters: Manhattan (OAuth2, WSDL/REST hybrid), Blue Yonder (multi-tenant), Körber (voice-directed, robotics), Deposco, Extensiv, Fishbowl (manufacturing, BOM, QuickBooks sync)
+- Supply chain orchestrator: multi-warehouse routing, failover, inventory federation
+- Healthcare adapters: Cerner, Allscripts, Epic (MyChart, care plans), HL7 FHIR (generic R4, terminology) — all SMART on FHIR with PHI audit logging
+- Healthcare normalizer: MPI matching, code mapping, de-identification (HIPAA Safe Harbor)
+- Solid Protocol e-signature adapter (WebID, DPoP, Verifiable Credentials)
+- Freight adapters: DAT (OAuth2, rate analytics), Truckstop (safety scoring), 123Loadboard (credit reports), Direct Freight
+- Freight board aggregator: cross-board search, deduplication, rate comparison
+- Fuel-fleet adapters: WEX, Comdata, Fuelman (IFTA reporting), EFS (money codes, settlement)
+- Fuel card manager: fraud detection, IFTA calculation, cross-provider analytics
+- Field-service adapters: ServiceTitan (OAuth2, dispatch board), Jobber (GraphQL), Housecall Pro, FieldEdge (flat-rate pricing)
+- Field-service dispatcher: Haversine routing, skill-based matching, SLA enforcement
+- E-commerce extended adapters: Amazon SP (LWA OAuth2 + IAM), eBay, Etsy (OAuth2 PKCE), Square Online (loyalty, catalog)
+- Telematics extended adapters: Powerfleet (yard management, reefer), Azuga (driver rewards), Omnitracs (video safety), Platform Science (CAN bus, apps), ClearPathGPS, One Step GPS, Titan GPS
+- ERP extended adapters: Infor CloudSuite (IMS auth), Epicor Kinetic (REST, BAQ), Sage Intacct (XMLRPC, multi-entity), FreshBooks (API v3), Wave (GraphQL)
+- 8 integration dashboard pages: analytics, supply chain, freight, fuel, healthcare, field-service, telematics-extended, ecommerce-extended
+- 10 new integration UI components: analytics embed viewer, supply chain flow, freight quote card, fuel transaction log, healthcare compliance badge, field-service scheduler, FHIR resource browser, carrier board, fleet fuel chart, integration marketplace (124 providers)
+- Integration test suites: analytics (78 tests), supply chain (74 tests), healthcare (57 tests), freight (45 tests), fuel-fleet (40 tests), field-service (42 tests), telematics-extended (41 tests), ecommerce-extended (35 tests), E2E lifecycle III (23 tests)
+- Updated integration registry: ALL 124 adapters now production status (0 planned remaining)
+
 ## [Sprint 5.1] - 2026-03-12 — Mega Integration Sprint II — Collaboration, E-Signatures, CRM, Payments, POS, ELD, Last-Mile, Shipping
 
 ### Added
