@@ -1,0 +1,194 @@
+// ─── ONBOARDING (Setup Flow for New Tenants) ───────────────────
+// Tracks the onboarding progress of new organizations from start
+// through to workspace provisioning. Includes email verification,
+// step progression, workspace configuration, and tenant invitations.
+
+// ─── ONBOARDING PROGRESS ───────────────────────────────────────
+// Tracks a user's journey through the onboarding flow. Persists
+// step progression, form data, and completion status. Automatically
+// created when onboarding starts and updated as user progresses.
+
+model OnboardingProgress {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  orgId         String?  @map("org_id") @db.Uuid
+  currentStep   String   @map("current_step") // Step name (e.g., "BASIC_INFO", "WORKSPACE_CONFIG")
+  currentSubStep String? @map("current_sub_step") // Optional sub-step within a step
+  completedSteps String[] @map("completed_steps") @default([]) // Array of completed step names
+  data          Json     @default("{}") // Form data and configurations
+  startedAt     DateTime @default(now()) @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  abandonedAt   DateTime? @map("abandoned_at")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+
+  @@unique([userId]) // Only one active onboarding per user
+  @@index([userId])
+  @@index([orgId])
+  @@index([isActive, createdAt])
+  @@map("onboarding_progress")
+}
+
+// ─── WORKSPACE ─────────────────────────────────────────────────
+// Represents a deployment unit owned by an organization.
+// Workspaces are provisioned during onboarding and contain
+// settings, integrations, and dashboard configurations.
+
+model Workspace {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId                 String   @map("org_id") @db.Uuid
+  name                  String
+  slug                  String   @unique // URL-safe identifier, e.g. "default-workspace"
+  deploymentType        DeploymentType @default(CLOUD) @map("deployment_type")
+  industry              String? // Industry classification (LOGISTICS, RETAIL, etc.)
+  goals                 String[] @default([]) // Business goals from onboarding
+  selectedIntegrations  String[] @map("selected_integrations") @default([]) // Integration app slugs
+  dashboardLayout       Json?    @map("dashboard_layout") // Custom dashboard configuration
+  settings              Json     @default("{}") // Workspace-wide settings
+  provisionedAt         DateTime? @map("provisioned_at") // When workspace was fully set up
+  isActive              Boolean  @default(true) @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization       Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  workspaceSettings  WorkspaceSettings?
+  apiKeys            WorkspaceApiKey[]
+  integrationConnections IntegrationConnection[]
+
+  @@unique([orgId, slug])
+  @@index([orgId])
+  @@index([isActive, createdAt])
+  @@map("workspaces")
+}
+
+// ─── WORKSPACE SETTINGS ─────────────────────────────────────────
+// Localization and regional settings for a workspace.
+// Includes timezone, currency, units, date format, and locale.
+
+model WorkspaceSettings {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId     String   @unique @map("workspace_id") @db.Uuid
+  timezone        String   @default("UTC") // e.g., "America/New_York"
+  currency        String   @default("USD") // ISO 4217 code
+  distanceUnit    DistanceUnit @default(KM) @map("distance_unit")
+  weightUnit      WeightUnit @default(KG) @map("weight_unit")
+  dateFormat      String   @default("YYYY-MM-DD") // e.g., "DD/MM/YYYY"
+  locale          String   @default("en-US") // BCP 47 language tag
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("workspace_settings")
+}
+
+// ─── WORKSPACE API KEYS ────────────────────────────────────────
+// API credentials for workspace-level access. Generated during
+// provisioning and used for server-to-server integrations.
+
+model WorkspaceApiKey {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId  String   @map("workspace_id") @db.Uuid
+  name         String
+  keyPrefix    String   @unique @map("key_prefix") // Public identifier for rotation
+  keyHash      String   @map("key_hash") // Hashed secret (never stored plaintext)
+  isActive     Boolean  @default(true) @map("is_active")
+  lastUsedAt   DateTime? @map("last_used_at")
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  createdBy    String   @map("created_by") @db.Uuid // User who created it
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([keyPrefix])
+  @@map("workspace_api_keys")
+}
+
+// ─── INTEGRATION CONNECTION ────────────────────────────────────
+// Represents a provisioned integration connection for a workspace.
+// Stores credentials, configuration, and connection status.
+
+model IntegrationConnection {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId       String    @map("workspace_id") @db.Uuid
+  integrationAppSlug String   @map("integration_app_slug") // FK to IntegrationApp.slug
+  credentials       Json      @default("{}") // Encrypted credentials
+  config            Json      @default("{}") // Non-secret configuration
+  isEnabled         Boolean   @default(true) @map("is_enabled")
+  lastSyncAt        DateTime? @map("last_sync_at")
+  healthStatus      String    @default("UNKNOWN") @map("health_status") // HEALTHY, DEGRADED, ERROR
+  connectedAt       DateTime  @default(now()) @map("connected_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, integrationAppSlug])
+  @@index([workspaceId])
+  @@index([integrationAppSlug])
+  @@map("integration_connections")
+}
+
+// ─── INVITATION ─────────────────────────────────────────────────
+// Invites for adding team members to an organization.
+// Single-use tokens that expire after set period.
+
+model Invitation {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String   @map("org_id") @db.Uuid
+  email        String
+  role         OrgRole  @default(MEMBER)
+  invitedBy    String   @map("invited_by") @db.Uuid // User ID who sent invitation
+  token        String   @unique // URL-safe token for acceptance link
+  expiresAt    DateTime @map("expires_at")
+  acceptedAt   DateTime? @map("accepted_at")
+  acceptedBy   String?  @map("accepted_by") @db.Uuid // User ID who accepted
+  status       InvitationStatus @default(PENDING)
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, email])
+  @@index([orgId])
+  @@index([email])
+  @@index([token])
+  @@index([status, expiresAt])
+  @@map("invitations")
+}
+
+// ─── ENUMS ─────────────────────────────────────────────────────
+
+enum DeploymentType {
+  CLOUD
+  SELF_MANAGED
+}
+
+enum DistanceUnit {
+  KM
+  MILES
+}
+
+enum WeightUnit {
+  KG
+  LBS
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}

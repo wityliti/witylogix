@@ -1,0 +1,170 @@
+// ─── AUTHENTICATION SCHEMA ──────────────────────────────────
+// Session management, MFA, API keys, and RBAC models.
+//
+// Integrates with Organization/OrgMember for multi-tenant RBAC.
+// Sessions track device fingerprinting for security.
+// MFA supports TOTP, SMS, and EMAIL verification.
+// API keys enable programmatic access with scoped permissions.
+
+// ─── AUTH SESSIONS ──────────────────────────────────────────
+// Tracks active user sessions with device information.
+// Supports multi-device login with per-session MFA verification.
+
+model AuthSession {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  orgId         String   @map("org_id") @db.Uuid
+  providerId    String   @map("provider_id") @db.Uuid // Which auth provider was used
+  token         String   // Encrypted session token
+  ipAddress     String?  @map("ip_address") // Client IP for geo-awareness
+  userAgent     String?  @map("user_agent") // Browser/client info
+  deviceId      String?  @map("device_id") // Device fingerprint
+  expiresAt     DateTime @map("expires_at")
+  mfaVerified   Boolean  @default(false) @map("mfa_verified") // Whether MFA was satisfied for this session
+  mfaVerifiedAt DateTime? @map("mfa_verified_at") // When MFA was verified
+  isRevoked     Boolean  @default(false) @map("is_revoked")
+  revokedAt     DateTime? @map("revoked_at")
+  lastActivityAt DateTime @default(now()) @map("last_activity_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization  Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  authProvider  AuthProvider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+  @@index([orgId])
+  @@index([expiresAt])
+  @@index([mfaVerified])
+  @@map("auth_sessions")
+}
+
+// ─── MFA DEVICES ────────────────────────────────────────────
+// Stores MFA device configurations (TOTP, SMS, EMAIL).
+// Users can register multiple devices (phone, authenticator app).
+
+model MfaDevice {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  type          MfaType   // TOTP, SMS, EMAIL
+  secret        String?   // Encrypted TOTP secret (base32)
+  phoneNumber   String?   @map("phone_number") // For SMS verification
+  email         String?   // For EMAIL verification (can differ from user.email)
+  isVerified    Boolean   @default(false) @map("is_verified")
+  isDefault     Boolean   @default(false) @map("is_default") // Primary MFA device
+  lastUsedAt    DateTime? @map("last_used_at")
+  backupCodes   String?   // Encrypted JSON array of single-use backup codes
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, phoneNumber])
+  @@index([userId])
+  @@index([type])
+  @@map("mfa_devices")
+}
+
+// ─── LOGIN ATTEMPTS ─────────────────────────────────────────
+// Audit trail for login attempts (success + failure).
+// Used for rate limiting, anomaly detection, and compliance.
+
+model LoginAttempt {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String?  @map("user_id") @db.Uuid // null for failed attempts before user identified
+  email           String?  // Attempted email (for failed attempts)
+  ipAddress       String   @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  success         Boolean
+  failureReason   String?  @map("failure_reason") // e.g., "INVALID_PASSWORD", "USER_NOT_FOUND", "MFA_FAILED"
+  mfaMethod       String?  @map("mfa_method") // Which MFA method was attempted
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@index([success])
+  @@map("login_attempts")
+}
+
+// ─── API KEYS ───────────────────────────────────────────────
+// Organization-level API keys for programmatic access.
+// Supports scope-based permissions and expiration.
+
+model ApiKey {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  name        String    // Friendly name (e.g., "Mobile App Integration")
+  prefix      String    @unique // First 8 chars for key identification
+  keyHash     String    @map("key_hash") // Bcrypt/Argon2 hash of full key
+  scopes      String[]  @default([]) // e.g., ["shipments:read", "routes:write", "webhooks:*"]
+  isActive    Boolean   @default(true) @map("is_active")
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at") // null = never expires
+  createdBy   String    @map("created_by") @db.Uuid // User who created this key
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdByUser User       @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+
+  @@index([orgId])
+  @@index([expiresAt])
+  @@index([isActive])
+  @@map("api_keys")
+}
+
+// ─── PERMISSIONS ────────────────────────────────────────────
+// Fine-grained permission definitions (resource + action).
+// Forms the basis of RBAC policy evaluation.
+
+model Permission {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resource    String    // e.g., "shipments", "routes", "drivers", "organizations"
+  action      String    // e.g., "create", "read", "update", "delete", "*"
+  description String?   // Human-readable description for UI
+  isBuiltIn   Boolean   @default(false) @map("is_built_in") // Platform-defined vs custom
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@unique([resource, action])
+  @@index([resource])
+  @@index([isBuiltIn])
+  @@map("permissions")
+}
+
+// ─── ROLE PERMISSIONS (Junction) ────────────────────────────
+// Maps roles to permissions (many-to-many relationship).
+// Supports org-level roles via OrgRole foreign key.
+
+model RolePermission {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgRoleId     String?  @map("org_role_id") @db.Uuid // Reference to OrgMember.role context
+  permissionId  String   @map("permission_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([orgRoleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────
+
+enum MfaType {
+  TOTP   // Time-based One-Time Password (Google Authenticator, Authy)
+  SMS    // SMS OTP
+  EMAIL  // Email OTP
+}

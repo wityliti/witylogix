@@ -92,3 +92,92 @@ export { CognitoProvider } from "./providers/cognito.js";
 export { FirebaseAuthProvider } from "./providers/firebase-auth.js";
 export { GenericOIDCProvider } from "./providers/generic-oidc.js";
 export { SAMLProvider } from "./providers/saml.js";
+
+// ─── SPRINT 6.0: PASSWORD SERVICE ───────────────────────────
+
+export {
+  PasswordService,
+  getPasswordService,
+  createPasswordService,
+  type PasswordHashOptions,
+} from "./password-service.js";
+
+// ─── SPRINT 6.0: JWT SERVICE ────────────────────────────────
+
+export {
+  JwtService,
+  getJwtService,
+  createJwtService,
+  initializeJwtService,
+  type JwtServiceConfig,
+} from "./jwt-service.js";
+
+// ─── SPRINT 6.0: MFA SERVICE ────────────────────────────────
+
+export {
+  MfaService,
+  getMfaService,
+  createMfaService,
+  type MfaServiceConfig,
+  type TotpSetupResult,
+} from "./mfa-service.js";
+
+// ─── SPRINT 6.0: RBAC ENGINE ────────────────────────────────
+
+export {
+  RbacEngine,
+  getRbacEngine,
+  createRbacEngine,
+  ROLE_HIERARCHY,
+  DEFAULT_ROLE_PERMISSIONS,
+  type PermissionContext,
+  type RoleDefinition,
+  type CacheEntry,
+} from "./rbac-engine.js";
+
+// ─── SPRINT 6.0: AUTH MIDDLEWARE ────────────────────────────
+
+export {
+  createAuthMiddleware,
+  requirePermission,
+  requireMfa,
+  requireOrgAdmin,
+  requireOrgOwner,
+  asyncHandler,
+  extractBearerToken,
+  extractSessionId,
+  authErrorHandler,
+  type AuthMiddlewareOptions,
+} from "./auth-middleware.js";
+
+// ─── SPRINT 6.0: AUTH TYPES ─────────────────────────────────
+
+export type {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+  TokenVerificationResult,
+  MfaChallenge,
+  MfaVerificationRequest,
+  MfaVerificationResult,
+  AuthUser,
+  AuthSession,
+  PasswordStrengthResult,
+  BackupCodesResult,
+  Permission,
+  Role,
+  RBACPolicy,
+} from "./types.js";
+
+export {
+  MfaType,
+  SessionStatus,
+  LoginAttemptResult,
+  AuthProvider,
+  AuthError,
+  InvalidCredentialsError,
+  TokenExpiredError,
+  MfaRequiredError,
+  PermissionDeniedError,
+  SessionInvalidError,
+  RateLimitError,
+} from "./types.js";

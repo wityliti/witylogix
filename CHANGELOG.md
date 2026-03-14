@@ -4,6 +4,39 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 6.0] - 2026-03-14 — Onboarding & Auth Hardening
+
+### Added
+- Full Fleetbase-style onboarding wizard with 9 steps: email verification (6-digit OTP), deployment chooser (Cloud/Self-Managed), company info (name, website, logo, size), industry selector (9 verticals), goals picker (10 goals multi-select), integration picker (124 providers as toggleable chips grouped by 21 categories), dashboard layout chooser (11 presets), data import wizard (drivers, vehicles, CSV), review summary with edit links
+- Auth architecture: Argon2id password hashing with bcrypt fallback, password strength scoring, password history check (last 5)
+- JWT service: access tokens (15min), refresh tokens (7day), token rotation, blacklisting, claims (userId, orgId, role, permissions, mfaVerified)
+- MFA service: TOTP setup with QR code URI, SMS/Email 6-digit OTP (5min expiry), backup codes (10 single-use), rate limiting on attempts
+- Session manager: device fingerprinting, session validation, refresh, revocation (single/all), active session listing, auto-cleanup
+- RBAC engine: role hierarchy (OWNER > ADMIN > MEMBER > VIEWER), wildcard permissions, permission inheritance, LRU cache (5min TTL), audit logging
+- Auth middleware: bearer token extraction, session validation, MFA enforcement, RBAC guards
+- Password reset flow: secure token generation, 1hr expiry, session revocation on reset, rate limiting
+- Magic link authentication: URL-safe tokens, 15min expiry, one-time use
+- SSO providers: Google OAuth2 with PKCE, Microsoft MSAL, generic OIDC, account linking by email
+- Rate limiter: sliding window algorithm, per-IP (100/15min), per-user (30/min), per-endpoint (login 5/min, register 3/min), 429 + Retry-After headers
+- CSRF protection: double-submit cookie pattern, exempt routes for webhooks
+- Overhauled login page: social login (Google, Microsoft), magic link option, remember me
+- Overhauled register page: password strength meter, requirements checklist, social signup
+- New reset-password page: token validation, strength meter, auto-redirect
+- New magic-link page: token verification, loading/success/error states
+- Multi-tenant middleware: 5-strategy resolution (subdomain, header, JWT, API key, custom domain), LRU cache, plan validation
+- API key management: wl_live_/wl_test_ prefixes, SHA-256 hashing, generate/rotate/revoke, scope-based permissions
+- Usage metering: async batch recording (buffer 100, flush 5s), daily aggregation, plan quotas (FREE: 1k/day, STARTER: 10k, GROWTH: 100k, ENTERPRISE: unlimited)
+- Workspace provisioning: organization creation, workspace settings, industry defaults, integration setup, API key generation, welcome email
+- Email verification service: 6-digit OTP, 10min expiry, rate limiting, brute force protection
+- Invitation system: secure token generation, 7-day expiry, accept/revoke workflow
+- Tenant isolation: scoped Prisma queries, cross-tenant blocking, role-based access
+- Onboarding API: 10 REST endpoints with Zod validation
+- Integration onboarding: OAuth flow manager with PKCE, credential validator (30+ providers), health checker with caching, quick-setup templates (6 industry bundles), batch integration manager
+- AI-powered smart defaults: industry profiles for 9 verticals, goal-to-feature mapper, integration recommendation engine (weighted scoring), onboarding analytics (funnel, drop-off, cohort), completion predictor (rule-based risk assessment), A/B testing framework
+- 9 reusable onboarding UI components: OnboardingStepper, IndustryPicker, IntegrationChipGrid, DashboardPreviewCard, DataImportWizard, GoalSelector, ReviewSummary, VerificationCodeInput, PasswordStrengthMeter
+- 3 new Prisma schemas: 60-auth.prisma (AuthSession, MfaDevice, LoginAttempt, ApiKey, Permission, RolePermission), 61-onboarding.prisma (OnboardingProgress, Workspace, WorkspaceSettings, Invitation), 62-tenant.prisma (TenantConfig, ApiKey, UsageRecord, UsageSummary, RateLimitOverride, WebhookSecret)
+- Comprehensive test suites: auth flows (65 tests), RBAC (36 tests), rate limiting (42 tests), onboarding flow (42 tests), tenant isolation (46 tests), E2E onboarding wizard (31 tests), E2E auth security (37 tests), plus unit tests for all services
+
 ## [Sprint 5.2] - 2026-03-12 — Final Integration Sprint — Analytics, Supply Chain, Healthcare, Freight, Fuel-Fleet, Field-Service, E-Commerce, Telematics, ERP
 
 ### Added

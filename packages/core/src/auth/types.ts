@@ -571,3 +571,292 @@ export class ConfigurationError extends AuthProviderError {
     this.name = "ConfigurationError";
   }
 }
+
+// ─── SPRINT 6.0: AUTH ARCHITECTURE TYPES ────────────────────
+
+/**
+ * JWT Access Token Payload.
+ * Embedded in access tokens with 15-minute expiry.
+ */
+export interface AccessTokenPayload {
+  /** User ID from database */
+  userId: string;
+  /** Organization ID (multi-tenant context) */
+  orgId: string;
+  /** Shop ID (primary shop context) */
+  shopId: string;
+  /** User's role in the org (OWNER, ADMIN, MEMBER, VIEWER) */
+  role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+  /** Granted permissions as array (e.g., ["shipments:read", "routes:write"]) */
+  permissions: string[];
+  /** Whether MFA was verified in this session */
+  mfaVerified: boolean;
+  /** Standard JWT claims */
+  iat: number; // Issued at
+  exp: number; // Expiration (15 minutes from iat)
+  sub: string; // Subject (same as userId)
+  aud: string; // Audience ("witylogix-api")
+  iss: string; // Issuer ("witylogix")
+}
+
+/**
+ * JWT Refresh Token Payload.
+ * Embedded in refresh tokens with 7-day expiry.
+ * Used to obtain new access tokens without user interaction.
+ */
+export interface RefreshTokenPayload {
+  /** User ID */
+  userId: string;
+  /** Organization ID */
+  orgId: string;
+  /** Session ID (for revocation tracking) */
+  sessionId: string;
+  /** Refresh token version (for rotation) */
+  version: number;
+  /** Standard JWT claims */
+  iat: number;
+  exp: number; // Expiration (7 days from iat)
+  sub: string;
+  aud: string;
+  iss: string;
+}
+
+/**
+ * Result of JWT token verification.
+ */
+export interface TokenVerificationResult {
+  valid: boolean;
+  payload?: AccessTokenPayload | RefreshTokenPayload;
+  error?: string;
+}
+
+/**
+ * MFA Challenge initiated by server.
+ * Client must respond with OTP/TOTP code.
+ */
+export interface MfaChallenge {
+  challengeId: string;
+  userId: string;
+  type: MfaType;
+  expiresAt: Date;
+  method: "TOTP" | "SMS" | "EMAIL"; // Delivery method
+  maskedPhone?: string; // e.g., "+1****5678" for SMS
+  maskedEmail?: string; // e.g., "u***@example.com" for EMAIL
+}
+
+/**
+ * MFA verification request (client sends OTP/TOTP).
+ */
+export interface MfaVerificationRequest {
+  challengeId: string;
+  code: string; // 6-digit OTP or 6-digit TOTP
+  deviceId?: string; // Optional device fingerprint
+  rememberDevice?: boolean; // Trust this device for 30 days
+}
+
+/**
+ * Result of MFA verification.
+ */
+export interface MfaVerificationResult {
+  success: boolean;
+  session?: AuthSession;
+  error?: string;
+}
+
+/**
+ * Complete authenticated user with session info.
+ */
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  shopId: string;
+  orgId: string;
+  role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER" | "SUPER_ADMIN";
+  permissions: string[];
+  mfaEnabled: boolean;
+  mfaVerified: boolean;
+  lastLogin?: Date;
+}
+
+/**
+ * Session information returned to client.
+ */
+export interface AuthSession {
+  sessionId: string;
+  userId: string;
+  orgId: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: Date;
+  mfaVerified: boolean;
+  mfaRequired?: boolean;
+  user: AuthUser;
+}
+
+/**
+ * MFA Type enumeration.
+ */
+export enum MfaType {
+  TOTP = "TOTP",
+  SMS = "SMS",
+  EMAIL = "EMAIL",
+}
+
+/**
+ * Session status enumeration.
+ */
+export enum SessionStatus {
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  REVOKED = "REVOKED",
+  MFA_PENDING = "MFA_PENDING",
+}
+
+/**
+ * Login attempt result enumeration.
+ */
+export enum LoginAttemptResult {
+  SUCCESS = "SUCCESS",
+  INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  USER_INACTIVE = "USER_INACTIVE",
+  ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
+  MFA_REQUIRED = "MFA_REQUIRED",
+  TOO_MANY_ATTEMPTS = "TOO_MANY_ATTEMPTS",
+}
+
+/**
+ * Authentication provider enumeration.
+ */
+export enum AuthProvider {
+  CREDENTIALS = "CREDENTIALS",
+  GOOGLE = "GOOGLE",
+  MICROSOFT = "MICROSOFT",
+  MAGIC_LINK = "MAGIC_LINK",
+}
+
+/**
+ * Permission interface for RBAC.
+ */
+export interface Permission {
+  id: string;
+  resource: string;
+  action: string;
+  description?: string;
+}
+
+/**
+ * Role definition for RBAC.
+ */
+export interface Role {
+  id: string;
+  name: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+  description?: string;
+  permissions: Permission[];
+}
+
+/**
+ * RBAC Policy definition.
+ */
+export interface RBACPolicy {
+  userId: string;
+  orgId: string;
+  role: string;
+  permissions: string[];
+  resourceOwner?: boolean;
+}
+
+/**
+ * Password strength scoring result.
+ */
+export interface PasswordStrengthResult {
+  score: number; // 0-4 (0=very weak, 4=very strong)
+  feedback: string[];
+  suggestions: string[];
+}
+
+/**
+ * MFA backup codes result.
+ */
+export interface BackupCodesResult {
+  codes: string[];
+  used: number[];
+}
+
+/**
+ * Error class for authentication failures.
+ */
+export class AuthError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public statusCode: number = 401,
+  ) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+/**
+ * Invalid credentials error.
+ */
+export class InvalidCredentialsError extends AuthError {
+  constructor(message = "Invalid email or password") {
+    super("INVALID_CREDENTIALS", message, 401);
+    this.name = "InvalidCredentialsError";
+  }
+}
+
+/**
+ * Token expired error.
+ */
+export class TokenExpiredError extends AuthError {
+  constructor(message = "Token has expired") {
+    super("TOKEN_EXPIRED", message, 401);
+    this.name = "TokenExpiredError";
+  }
+}
+
+/**
+ * MFA required error.
+ */
+export class MfaRequiredError extends AuthError {
+  constructor(public challengeId: string, message = "MFA verification required") {
+    super("MFA_REQUIRED", message, 403);
+    this.name = "MfaRequiredError";
+  }
+}
+
+/**
+ * Permission denied error.
+ */
+export class PermissionDeniedError extends AuthError {
+  constructor(public resource: string, public action: string) {
+    super("PERMISSION_DENIED", `Not permitted to ${action} ${resource}`, 403);
+    this.name = "PermissionDeniedError";
+  }
+}
+
+/**
+ * Session invalid error.
+ */
+export class SessionInvalidError extends AuthError {
+  constructor(message = "Session is invalid or expired") {
+    super("SESSION_INVALID", message, 401);
+    this.name = "SessionInvalidError";
+  }
+}
+
+/**
+ * Rate limit exceeded error.
+ */
+export class RateLimitError extends AuthError {
+  constructor(
+    public retryAfterSeconds: number,
+    message = `Too many attempts. Try again in ${retryAfterSeconds} seconds`,
+  ) {
+    super("RATE_LIMIT_EXCEEDED", message, 429);
+    this.name = "RateLimitError";
+  }
+}

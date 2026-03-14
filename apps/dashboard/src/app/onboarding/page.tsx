@@ -1,208 +1,223 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "../../lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
-import { Input } from "../../components/ui/input";
-import { ChevronRight, ChevronLeft, Check, MapPin, Users, Truck, Zap } from "lucide-react";
+import { VerifyEmail } from "./steps/verify-email";
+import { ChooseDeployment } from "./steps/choose-deployment";
+import { CompanyInfo } from "./steps/company-info";
+import { IndustrySelect } from "./steps/industry-select";
+import { GoalsSelect } from "./steps/goals-select";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import type {
+  OnboardingData,
+  OnboardingStep,
+  OnboardingSubStep,
+  DeploymentType,
+  Industry,
+  Goal,
+} from "./types";
 
-type OnboardingStep = 1 | 2 | 3 | 4 | 5;
+type MainStep = "verify-email" | "choose-deployment" | "configure-workspace";
+type SubStep =
+  | "company-info"
+  | "industry"
+  | "goals"
+  | "integrations"
+  | "dashboard-layout"
+  | "data-import"
+  | "review";
 
-interface OnboardingData {
-  // Step 1: Business Info
-  companyName: string;
-  industry: string;
-  businessSize: string;
-
-  // Step 2: Shopify
-  shopifyStoreUrl: string;
-  shopifyConnected: boolean;
-
-  // Step 3: Delivery Zones
-  zones: Array<{
-    id: string;
-    name: string;
-    radius: string;
-  }>;
-
-  // Step 4: Driver
-  driverName: string;
-  driverPhone: string;
-  vehicleType: string;
-
-  // Step 5: Review
-  launchReady: boolean;
-}
-
-const stepConfig = [
-  {
-    number: 1,
-    title: "Welcome",
-    subtitle: "Tell us about your business",
-    icon: Zap,
-  },
-  {
-    number: 2,
-    title: "Shopify",
-    subtitle: "Connect your store",
-    icon: Zap,
-  },
-  {
-    number: 3,
-    title: "Zones",
-    subtitle: "Configure delivery zones",
-    icon: MapPin,
-  },
-  {
-    number: 4,
-    title: "Driver",
-    subtitle: "Add your first driver",
-    icon: Users,
-  },
-  {
-    number: 5,
-    title: "Review",
-    subtitle: "Launch your dashboard",
-    icon: Check,
-  },
+const mainSteps: { id: MainStep; label: string; description: string }[] = [
+  { id: "verify-email", label: "Verify Email", description: "Confirm your email address" },
+  { id: "choose-deployment", label: "Deployment", description: "Choose your setup" },
+  { id: "configure-workspace", label: "Configure", description: "Customize workspace" },
 ];
 
+const subSteps: { id: SubStep; label: string }[] = [
+  { id: "company-info", label: "Company" },
+  { id: "industry", label: "Industry" },
+  { id: "goals", label: "Goals" },
+  { id: "integrations", label: "Integrations" },
+  { id: "dashboard-layout", label: "Dashboard" },
+  { id: "data-import", label: "Import" },
+  { id: "review", label: "Review" },
+];
+
+const initialData: OnboardingData = {
+  email: "demo@witylogix.com",
+  verificationCode: "",
+  emailVerified: false,
+  deploymentType: null,
+  companyName: "",
+  companyWebsite: "",
+  companyLogo: null,
+  companySize: null,
+  phoneNumber: "",
+  industry: null,
+  industryCustom: "",
+  goals: [],
+  integrations: [],
+  dashboardLayout: "",
+  dataImport: "",
+};
+
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>(1);
-  const [data, setData] = useState<OnboardingData>({
-    companyName: "",
-    industry: "",
-    businessSize: "",
-    shopifyStoreUrl: "",
-    shopifyConnected: false,
-    zones: [{ id: "1", name: "Downtown", radius: "5" }],
-    driverName: "",
-    driverPhone: "",
-    vehicleType: "van",
-    launchReady: false,
-  });
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const updateData = (field: string, value: any) => {
-    setData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const [currentMainStep, setCurrentMainStep] = useState<MainStep>("verify-email");
+  const [currentSubStep, setCurrentSubStep] = useState<SubStep>("company-info");
+  const [data, setData] = useState<OnboardingData>(initialData);
 
-  const handleAddZone = () => {
-    const newZone = {
-      id: Date.now().toString(),
-      name: "",
-      radius: "",
-    };
-    setData((prev) => ({
-      ...prev,
-      zones: [...prev.zones, newZone],
-    }));
-  };
+  // Initialize from URL params
+  useEffect(() => {
+    const step = searchParams.get("step") as MainStep;
+    const sub = searchParams.get("sub") as SubStep;
 
-  const handleRemoveZone = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      zones: prev.zones.filter((z) => z.id !== id),
-    }));
-  };
+    if (step && mainSteps.some((s) => s.id === step)) {
+      setCurrentMainStep(step);
+    }
+    if (sub && subSteps.some((s) => s.id === sub)) {
+      setCurrentSubStep(sub);
+    }
+  }, [searchParams]);
 
-  const updateZone = (id: string, field: string, value: string) => {
-    setData((prev) => ({
-      ...prev,
-      zones: prev.zones.map((z) =>
-        z.id === id ? { ...z, [field]: value } : z
-      ),
-    }));
-  };
+  // Update URL when step changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("step", currentMainStep);
+    if (currentMainStep === "configure-workspace") {
+      params.set("sub", currentSubStep);
+    }
+    window.history.replaceState({}, "", `?${params.toString()}`);
+  }, [currentMainStep, currentSubStep]);
+
+  // Calculate progress
+  const mainStepIndex = mainSteps.findIndex((s) => s.id === currentMainStep);
+  const totalMainSteps = mainSteps.length;
+  const mainProgress = ((mainStepIndex + 1) / totalMainSteps) * 100;
+
+  const subStepIndex =
+    currentMainStep === "configure-workspace"
+      ? subSteps.findIndex((s) => s.id === currentSubStep) + 1
+      : 0;
+  const totalSubSteps =
+    currentMainStep === "configure-workspace" ? subSteps.length : 0;
+  const overallProgress =
+    currentMainStep === "configure-workspace"
+      ? ((mainStepIndex + subStepIndex / totalSubSteps + 1) / totalMainSteps) *
+        100
+      : mainProgress;
 
   const handleNext = () => {
-    if (currentStep < 5) {
-      setCurrentStep((prev) => (prev + 1) as OnboardingStep);
+    if (currentMainStep === "verify-email" && data.emailVerified) {
+      setCurrentMainStep("choose-deployment");
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (currentMainStep === "choose-deployment" && data.deploymentType) {
+      setCurrentMainStep("configure-workspace");
+      setCurrentSubStep("company-info");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (currentMainStep === "configure-workspace") {
+      const currentIndex = subSteps.findIndex((s) => s.id === currentSubStep);
+      if (currentIndex < subSteps.length - 1) {
+        setCurrentSubStep(subSteps[currentIndex + 1].id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        // Complete onboarding
+        handleComplete();
+      }
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as OnboardingStep);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (currentMainStep === "configure-workspace") {
+      const currentIndex = subSteps.findIndex((s) => s.id === currentSubStep);
+      if (currentIndex > 0) {
+        setCurrentSubStep(subSteps[currentIndex - 1].id);
+      } else {
+        setCurrentMainStep("choose-deployment");
+      }
+    } else if (currentMainStep === "choose-deployment") {
+      setCurrentMainStep("verify-email");
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSkip = () => {
-    if (currentStep < 5) {
-      setCurrentStep((prev) => (prev + 1) as OnboardingStep);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (currentMainStep === "configure-workspace") {
+      const currentIndex = subSteps.findIndex((s) => s.id === currentSubStep);
+      if (currentIndex < subSteps.length - 1) {
+        setCurrentSubStep(subSteps[currentIndex + 1].id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     }
   };
 
-  const handleLaunch = () => {
-    // In real app, would send data to backend
-    console.log("Launching with data:", data);
-    // Redirect to dashboard
-    window.location.href = "/";
+  const handleComplete = () => {
+    console.log("Onboarding complete:", data);
+    // In real app, send data to backend
+    router.push("/");
   };
 
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return data.companyName.trim() && data.industry && data.businessSize;
-      case 2:
-        return data.shopifyConnected || data.shopifyStoreUrl.trim();
-      case 3:
-        return data.zones.length > 0 && data.zones.every((z) => z.name && z.radius);
-      case 4:
-        return data.driverName.trim() && data.driverPhone.trim() && data.vehicleType;
-      case 5:
-        return true;
-      default:
-        return false;
+  const isMainStepValid = (): boolean => {
+    if (currentMainStep === "verify-email") return data.emailVerified;
+    if (currentMainStep === "choose-deployment") return !!data.deploymentType;
+    if (currentMainStep === "configure-workspace") {
+      if (currentSubStep === "company-info") {
+        return !!data.companyName && !!data.companySize;
+      }
+      if (currentSubStep === "industry") {
+        return !!data.industry;
+      }
+      if (currentSubStep === "goals") {
+        return data.goals.length > 0;
+      }
+      return true; // Other substeps are optional
     }
+    return false;
   };
+
+  const isLastStep =
+    currentMainStep === "configure-workspace" &&
+    currentSubStep === "review";
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       {/* Progress Bar */}
       <div className="mb-8">
-        <div className="flex justify-between mb-4">&nbsp;
-          {stepConfig.map((step) => {
-            const isCompleted = step.number < currentStep;
-            const isActive = step.number === currentStep;
+        {/* Main Steps */}
+        <div className="flex justify-between mb-6">
+          {mainSteps.map((step, idx) => {
+            const isCompleted =
+              mainSteps.findIndex((s) => s.id === currentMainStep) > idx;
+            const isActive = step.id === currentMainStep;
 
             return (
               <div
-                key={step.number}
-                className={cn(
-                  'flex-1 flex flex-col items-center',
-                  step.number < 5 ? 'mr-3' : ''
-                )}
+                key={step.id}
+                className={cn("flex-1 flex flex-col items-center", idx < mainSteps.length - 1 ? "mr-3" : "")}
               >
                 <div
                   className={cn(
-                    'w-11 h-11 rounded-full flex items-center justify-center mb-2 font-semibold',
+                    "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
-                      ? 'bg-indigo-500 text-slate-50'
-                      : 'bg-slate-700 text-slate-400 border border-slate-600',
-                    isActive && !isCompleted && 'border-2 border-indigo-500'
+                      ? "bg-wl-primary-500 text-wl-text-inverse"
+                      : "bg-wl-bg-overlay text-wl-text-tertiary border border-wl-border-default"
                   )}
                 >
-                  {isCompleted ? (
-                    <Check size={20} />
-                  ) : (
-                    step.number
-                  )}
+                  {isCompleted ? <Check size={20} /> : idx + 1}
                 </div>
-                <div
-                  className={cn(
-                    'text-xs font-medium text-center',
-                    isActive ? 'text-slate-100' : 'text-slate-500'
-                  )}
-                >
-                  {step.title}
+                <div className="text-center">
+                  <p
+                    className={cn(
+                      "text-xs font-semibold",
+                      isActive ? "text-wl-text-primary" : "text-wl-text-tertiary"
+                    )}
+                  >
+                    {step.label}
+                  </p>
                 </div>
               </div>
             );
@@ -210,394 +225,189 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress Line */}
-        <div className="w-full h-0.5 bg-slate-700 rounded overflow-hidden">
+        <div className="w-full h-1 bg-wl-bg-overlay rounded-full overflow-hidden mb-6">
           <div
-            className="h-full bg-indigo-500 transition-all duration-300"
+            className="h-full bg-wl-primary-500 transition-all duration-500"
             style={{
-              width: `${((currentStep - 1) / 4) * 100}%`,
+              width: `${Math.round(overallProgress)}%`,
             }}
           />
         </div>
+
+        {/* Sub Steps (if Configure Workspace) */}
+        {currentMainStep === "configure-workspace" && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {subSteps.map((step) => {
+              const isActive = step.id === currentSubStep;
+              const isCompleted = subSteps.findIndex((s) => s.id === currentSubStep) > subSteps.findIndex((s) => s.id === step.id);
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentSubStep(step.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0",
+                    isActive
+                      ? "bg-wl-primary-500 text-wl-text-inverse"
+                      : isCompleted
+                        ? "bg-wl-success-500/20 text-wl-success-400 border border-wl-success-400/30"
+                        : "bg-wl-bg-overlay text-wl-text-tertiary border border-wl-border-default hover:border-wl-border-strong"
+                  )}
+                >
+                  {step.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Step Content */}
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {stepConfig[currentStep - 1].subtitle}
-          </CardTitle>
-        </CardHeader>
+      {/* Content Card */}
+      <div className="rounded-lg border border-wl-border-default bg-wl-bg-surface p-8 mb-6 animate-in fade-in duration-300">
+        {/* Step Title */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-wl-text-primary m-0">
+            {currentMainStep === "verify-email" && "Verify your email"}
+            {currentMainStep === "choose-deployment" && "Choose deployment"}
+            {currentMainStep === "configure-workspace" &&
+              (subSteps.find((s) => s.id === currentSubStep)?.label || "")}
+          </h1>
+          <p className="text-sm text-wl-text-secondary mt-1 m-0">
+            Step {mainStepIndex + 1} of {totalMainSteps}
+            {currentMainStep === "configure-workspace" &&
+              ` • Sub-step ${subStepIndex} of ${totalSubSteps}`}
+          </p>
+        </div>
 
-        <CardContent className="min-h-96 flex flex-col">&nbsp;
-          {/* Step 1: Business Info */}
-          {currentStep === 1 && (
-            <div className="flex flex-col gap-5 flex-1">
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Company Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter your company name"
-                  value={data.companyName}
-                  onChange={(e) => updateData("companyName", e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                />
-              </div>
+        {/* Step Content */}
+        {currentMainStep === "verify-email" && (
+          <VerifyEmail
+            data={data}
+            onVerified={(updatedData) => setData(updatedData)}
+          />
+        )}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Industry
-                </label>
-                <select
-                  value={data.industry}
-                  onChange={(e) => updateData("industry", e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                >
-                  <option value="">Select industry</option>
-                  <option value="ecommerce">E-Commerce</option>
-                  <option value="saas">SaaS</option>
-                  <option value="food">Food & Beverage</option>
-                  <option value="retail">Retail</option>
-                  <option value="logistics">Logistics</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+        {currentMainStep === "choose-deployment" && (
+          <ChooseDeployment
+            data={data}
+            onSelect={(deploymentType) =>
+              setData({ ...data, deploymentType })
+            }
+          />
+        )}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Business Size
-                </label>
-                <div className="flex gap-3 flex-wrap">
-                  {["startup", "small", "medium", "enterprise"].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => updateData("businessSize", size)}
-                      className={cn(
-                        'px-4 py-2 rounded text-sm font-medium cursor-pointer transition-all capitalize',
-                        data.businessSize === size
-                          ? 'border-2 border-indigo-500 bg-indigo-500/10 text-indigo-400'
-                          : 'border border-slate-700 bg-slate-900 text-slate-400'
-                      )}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 rounded-md bg-indigo-500/5 border-l-3 border-indigo-500">
-                <p className="m-0 text-xs text-slate-400 leading-relaxed">
-                  This information helps us personalize your Witylogix experience and provide relevant features for your business type.
-                </p>
-              </div>
-            </div>
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "company-info" && (
+            <CompanyInfo
+              data={data}
+              onUpdate={(updatedData) => setData(updatedData)}
+            />
           )}
 
-          {/* Step 2: Shopify Connection */}
-          {currentStep === 2 && (
-            <div className="flex flex-col gap-5 flex-1">
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Shopify Store URL
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="mystore.myshopify.com"
-                    value={data.shopifyStoreUrl}
-                    onChange={(e) => updateData("shopifyStoreUrl", e.target.value)}
-                    className="flex-1 px-3 py-2 rounded border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                  />
-                  <button
-                    onClick={() => {
-                      if (data.shopifyStoreUrl.trim()) {
-                        updateData("shopifyConnected", true);
-                      }
-                    }}
-                    disabled={!data.shopifyStoreUrl.trim() || data.shopifyConnected}
-                    className={cn(
-                      "px-4 py-2 rounded text-sm font-semibold whitespace-nowrap transition-all",
-                      data.shopifyConnected
-                        ? "border border-indigo-500 bg-indigo-500 text-slate-50 opacity-70 cursor-default"
-                        : "border border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 cursor-pointer hover:shadow-lg"
-                    )}
-                  >
-                    {data.shopifyConnected ? "Connected" : "Connect"}
-                  </button>
-                </div>
-              </div>
-
-              {data.shopifyConnected && (
-                <div className="p-4 rounded-md bg-green-500/5 border-l-3 border-green-500">
-                  <p className="m-0 text-sm font-medium text-green-400 mb-2">
-                    ✓ Store connected successfully!
-                  </p>
-                  <p className="m-0 text-xs text-slate-400">
-                    Your Shopify store is now linked to Witylogix. We can now sync your products and orders.
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-auto p-4 rounded-md bg-slate-800">
-                <p className="m-0 text-xs text-slate-400 leading-relaxed">
-                  We securely connect to your Shopify store to sync products, orders, and customer data. You can skip this for now and connect later from Settings.
-                </p>
-              </div>
-            </div>
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "industry" && (
+            <IndustrySelect
+              data={data}
+              onSelect={(industry, custom) => {
+                setData({ ...data, industry, industryCustom: custom || "" });
+              }}
+            />
           )}
 
-          {/* Step 3: Delivery Zones */}
-          {currentStep === 3 && (
-            <div className="flex flex-col gap-5 flex-1">
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-sm font-medium text-slate-100">
-                    Delivery Zones
-                  </label>
-                  <button
-                    onClick={handleAddZone}
-                    className="px-3 py-1 rounded text-xs font-semibold border border-indigo-500 bg-transparent text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer"
-                  >
-                    + Add Zone
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  {data.zones.map((zone) => (
-                    <div
-                      key={zone.id}
-                      className="p-4 rounded-md border border-slate-700 bg-slate-900"
-                    >
-                      <div className="grid grid-cols-2 gap-3 items-end auto-rows-max">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
-                            Zone Name
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g., Downtown"
-                            value={zone.name}
-                            onChange={(e) => updateZone(zone.id, "name", e.target.value)}
-                            className="w-full px-3 py-2 rounded text-sm border border-slate-700 bg-slate-800 text-slate-100"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">
-                            Radius (km)
-                          </label>
-                          <input
-                            type="number"
-                            placeholder="5"
-                            value={zone.radius}
-                            onChange={(e) => updateZone(zone.id, "radius", e.target.value)}
-                            className="w-full px-3 py-2 rounded text-sm border border-slate-700 bg-slate-800 text-slate-100"
-                          />
-                        </div>
-                        {data.zones.length > 1 && (
-                          <button
-                            onClick={() => handleRemoveZone(zone.id)}
-                            className="col-span-2 px-3 py-2 rounded text-sm border border-slate-700 bg-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors cursor-pointer whitespace-nowrap"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-auto p-4 rounded-md bg-slate-800">
-                <p className="m-0 text-xs text-slate-400 leading-relaxed">
-                  Define geographic zones where you'll deliver. You can draw custom service areas later in the map settings.
-                </p>
-              </div>
-            </div>
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "goals" && (
+            <GoalsSelect
+              data={data}
+              onToggle={(goal) => {
+                const newGoals = data.goals.includes(goal)
+                  ? data.goals.filter((g) => g !== goal)
+                  : [...data.goals, goal];
+                setData({ ...data, goals: newGoals });
+              }}
+            />
           )}
 
-          {/* Step 4: First Driver */}
-          {currentStep === 4 && (
-            <div className="flex flex-col gap-5 flex-1">
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Driver Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter driver's name"
-                  value={data.driverName}
-                  onChange={(e) => updateData("driverName", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                />
+        {currentMainStep === "configure-workspace" &&
+          (currentSubStep === "integrations" ||
+            currentSubStep === "dashboard-layout" ||
+            currentSubStep === "data-import") && (
+            <div className="flex flex-col items-center justify-center gap-4 py-12">
+              <div className="w-12 h-12 rounded-lg bg-wl-primary-500/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-2 border-wl-primary-500 border-t-transparent animate-spin" />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  placeholder="+1 (555) 123-4567"
-                  value={data.driverPhone}
-                  onChange={(e) => updateData("driverPhone", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-100 mb-2">
-                  Vehicle Type
-                </label>
-                <select
-                  value={data.vehicleType}
-                  onChange={(e) => updateData("vehicleType", e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-slate-700 bg-slate-900 text-slate-100 text-sm"
-                >
-                  <option value="bike">Bike</option>
-                  <option value="scooter">Scooter</option>
-                  <option value="car">Car</option>
-                  <option value="van">Van</option>
-                  <option value="truck">Truck</option>
-                </select>
-              </div>
-
-              <div className="mt-auto p-4 rounded-md bg-slate-800">
-                <p className="m-0 text-xs text-slate-400 leading-relaxed">
-                  You can add more drivers after onboarding. We'll send a welcome email to your driver with login instructions.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Review & Launch */}
-          {currentStep === 5 && (
-            <div className="flex flex-col gap-5 flex-1">
-              <div className="p-4 rounded-md bg-indigo-500/5 border-l-3 border-indigo-500">
-                <h3 className="m-0 mb-3 text-sm font-semibold text-slate-100">
-                  Review Your Setup
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-wl-text-primary m-0">
+                  Coming soon
                 </h3>
-                <p className="m-0 text-xs text-slate-400 leading-relaxed">
-                  Everything looks good! Review the details below and launch your dashboard.
+                <p className="text-sm text-wl-text-secondary mt-1 m-0">
+                  {currentSubStep === "integrations" && "Configure your integrations"}
+                  {currentSubStep === "dashboard-layout" && "Customize your dashboard"}
+                  {currentSubStep === "data-import" && "Import your data"}
                 </p>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                {/* Business Info */}
-                <div className="p-4 rounded-md border border-slate-700">
-                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
-                    Business Information
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Company</p>
-                      <p className="m-0 text-slate-100 font-medium">{data.companyName}</p>
-                    </div>
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Industry</p>
-                      <p className="m-0 text-slate-100 font-medium capitalize">{data.industry}</p>
-                    </div>
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Size</p>
-                      <p className="m-0 text-slate-100 font-medium capitalize">{data.businessSize}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Zones */}
-                <div className="p-4 rounded-md border border-slate-700">
-                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
-                    Delivery Zones ({data.zones.length})
-                  </h4>
-                  <div className="flex flex-col gap-2 text-xs">
-                    {data.zones.map((zone) => (
-                      <div
-                        key={zone.id}
-                        className="flex justify-between items-center pb-2 border-b border-slate-700"
-                      >
-                        <span className="text-slate-100">{zone.name}</span>
-                        <span className="text-slate-400">
-                          {zone.radius} km radius
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Driver */}
-                <div className="p-4 rounded-md border border-slate-700">
-                  <h4 className="m-0 mb-2 text-sm font-semibold text-slate-100">
-                    First Driver
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Name</p>
-                      <p className="m-0 text-slate-100 font-medium">{data.driverName}</p>
-                    </div>
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Phone</p>
-                      <p className="m-0 text-slate-100 font-medium">{data.driverPhone}</p>
-                    </div>
-                    <div>
-                      <p className="m-0 mb-1 text-slate-400">Vehicle</p>
-                      <p className="m-0 text-slate-100 font-medium capitalize">{data.vehicleType}</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "review" && (
+            <div className="flex flex-col gap-6 py-4">
+              <div className="p-4 rounded-lg bg-wl-success-500/10 border border-wl-success-400/30">
+                <p className="text-sm font-bold text-wl-success-400 m-0">
+                  ✓ All setup complete!
+                </p>
+                <p className="text-xs text-wl-text-secondary mt-2 m-0">
+                  Your workspace is ready. Click launch to start using Witylogix.
+                </p>
+              </div>
+            </div>
+          )}
+      </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center mt-6 gap-3">
-        <button
+      <div className="flex justify-between items-center gap-3">
+        <Button
+          variant="ghost"
+          size="md"
           onClick={handleBack}
-          disabled={currentStep === 1}
-          className={cn(
-            "px-4 py-2 rounded-md border flex items-center gap-2 text-sm font-medium transition-all",
-            currentStep === 1
-              ? "border-slate-700 bg-transparent text-slate-400 opacity-50 cursor-not-allowed"
-              : "border-slate-700 bg-transparent text-slate-100 hover:border-slate-600 cursor-pointer"
-          )}
+          disabled={currentMainStep === "verify-email"}
+          className="flex items-center gap-2"
         >
           <ChevronLeft size={16} />
           Back
-        </button>
+        </Button>
 
         <div className="flex gap-3">
-          {currentStep < 5 && (
-            <button
+          {!isLastStep && currentMainStep === "configure-workspace" && (
+            <Button
+              variant="secondary"
+              size="md"
               onClick={handleSkip}
-              className="px-4 py-2 rounded-md border border-slate-700 bg-transparent text-slate-400 text-sm font-medium hover:text-slate-200 hover:border-slate-600 transition-all cursor-pointer"
             >
               Skip
-            </button>
+            </Button>
           )}
 
-          {currentStep < 5 ? (
-            <button
+          {!isLastStep ? (
+            <Button
+              variant="primary"
+              size="md"
               onClick={handleNext}
-              disabled={!isStepValid()}
-              className={cn(
-                "px-5 py-2 rounded-md border flex items-center gap-2 text-sm font-semibold transition-all",
-                isStepValid()
-                  ? "border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 cursor-pointer hover:shadow-lg"
-                  : "border-slate-700 bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed"
-              )}
+              disabled={!isMainStepValid()}
+              className="flex items-center gap-2"
             >
               Next
               <ChevronRight size={16} />
-            </button>
+            </Button>
           ) : (
-            <button
-              onClick={handleLaunch}
-              className="px-5 py-2 rounded-md border border-indigo-500 bg-gradient-to-r from-indigo-500 to-indigo-600 text-slate-50 text-sm font-semibold flex items-center gap-2 cursor-pointer hover:shadow-lg transition-all"
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleComplete}
+              className="flex items-center gap-2"
             >
-              <Zap size={16} />
+              <Check size={16} />
               Launch Dashboard
-            </button>
+            </Button>
           )}
         </div>
       </div>

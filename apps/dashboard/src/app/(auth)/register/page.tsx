@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, User, Building2, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Building2, Loader2, ArrowRight, CheckCircle2, Chrome } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
@@ -133,6 +133,16 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSignup = () => {
+    // TODO: Implement Google OAuth
+    setError("Google signup coming soon");
+  };
+
+  const handleMicrosoftSignup = () => {
+    // TODO: Implement Microsoft OAuth
+    setError("Microsoft signup coming soon");
   };
 
   if (authLoading) {
@@ -400,6 +410,53 @@ export default function RegisterPage() {
                 {strength.label} password
               </span>
 
+              {/* Password Requirements Checklist */}
+              <div className="mt-2 space-y-1 text-xs text-wl-text-tertiary">
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-4 h-4 rounded flex items-center justify-center transition-all",
+                    password.length >= 8 ? "bg-wl-success-500/20" : "bg-wl-border"
+                  )}>
+                    {password.length >= 8 && (
+                      <CheckCircle2 size={12} className="text-wl-success-500" />
+                    )}
+                  </div>
+                  At least 8 characters
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-4 h-4 rounded flex items-center justify-center transition-all",
+                    /[a-z]/.test(password) && /[A-Z]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
+                  )}>
+                    {/[a-z]/.test(password) && /[A-Z]/.test(password) && (
+                      <CheckCircle2 size={12} className="text-wl-success-500" />
+                    )}
+                  </div>
+                  Uppercase and lowercase letters
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-4 h-4 rounded flex items-center justify-center transition-all",
+                    /\d/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
+                  )}>
+                    {/\d/.test(password) && (
+                      <CheckCircle2 size={12} className="text-wl-success-500" />
+                    )}
+                  </div>
+                  At least one number
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-4 h-4 rounded flex items-center justify-center transition-all",
+                    /[!@#$%^&*]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
+                  )}>
+                    {/[!@#$%^&*]/.test(password) && (
+                      <CheckCircle2 size={12} className="text-wl-success-500" />
+                    )}
+                  </div>
+                  At least one special character (!@#$%^&*)
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -572,6 +629,66 @@ export default function RegisterPage() {
           )}
         </button>
       </form>
+
+      {/* Social Signup Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-wl-border-subtle" />
+        <span className="text-xs text-wl-text-tertiary">Or sign up with</span>
+        <div className="flex-1 h-px bg-wl-border-subtle" />
+      </div>
+
+      {/* Social Signup Buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          disabled={isLoading}
+          className={cn(
+            "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-60 cursor-not-allowed"
+          )}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+            }
+          }}
+        >
+          <Chrome size={16} />
+          <span className="hidden sm:inline">Google</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleMicrosoftSignup}
+          disabled={isLoading}
+          className={cn(
+            "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-60 cursor-not-allowed"
+          )}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+            }
+          }}
+        >
+          <Chrome size={16} />
+          <span className="hidden sm:inline">Microsoft</span>
+        </button>
+      </div>
 
       {/* Sign In Link */}
       <div className="text-center text-sm text-wl-text-tertiary">

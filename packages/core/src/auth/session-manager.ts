@@ -8,8 +8,9 @@
  * - Session revocation (logout)
  * - Multi-tenant isolation: sessions scoped by orgId
  * - Max concurrent sessions per user (configurable)
- * - IP address and user-agent tracking for security
+ * - IP address and device fingerprinting for security
  * - Automatic cleanup of expired/revoked sessions
+ * - MFA verification tracking per session
  *
  * Session lifecycle:
  *   1. User authenticates → createSession() stores session + tokens
@@ -22,6 +23,7 @@
 // @ts-ignore - prisma client
 import { prisma } from "@witylogix/db";
 import type { AuthResult } from "./types.js";
+import { SessionInvalidError } from "./types.js";
 
 // ─── TYPES ──────────────────────────────────────────────────
 
@@ -32,6 +34,7 @@ export interface CreateSessionInput {
   authResult: AuthResult;
   ipAddress?: string;
   userAgent?: string;
+  deviceId?: string;
 }
 
 export interface SessionInfo {
@@ -45,6 +48,8 @@ export interface SessionInfo {
   createdAt: Date;
   ipAddress?: string;
   userAgent?: string;
+  deviceId?: string;
+  mfaVerified: boolean;
   isRevoked: boolean;
 }
 
@@ -58,11 +63,12 @@ export interface SessionValidationResult {
 
 /**
  * Manages user sessions and tokens.
- * Enforces max concurrent sessions, token expiry, and multi-tenant isolation.
+ * Enforces max concurrent sessions, token expiry, device tracking, and multi-tenant isolation.
  */
 export class SessionManager {
   private maxConcurrentSessions: number = 5;
   private sessionTimeoutMs: number = 24 * 60 * 60 * 1000; // 24 hours default
+  private cleanupIntervalMs: number = 60 * 60 * 1000; // 1 hour
 
   constructor(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }) {
     if (options?.maxConcurrentSessions) {
@@ -71,6 +77,9 @@ export class SessionManager {
     if (options?.sessionTimeoutMs) {
       this.sessionTimeoutMs = options.sessionTimeoutMs;
     }
+
+    // Start cleanup job
+    this.startCleanupJob();
   }
 
   /**
@@ -78,13 +87,14 @@ export class SessionManager {
    *
    * - Stores session in database with tokens (encrypted)
    * - Enforces max concurrent sessions per user (revokes oldest if exceeded)
-   * - Returns session ID for client to store in cookie/header
+   * - Tracks device for security
+   * - Returns session info including session ID
    *
    * @param input Session creation data
    * @returns Session info including session ID
    */
   async createSession(input: CreateSessionInput): Promise<SessionInfo> {
-    const { orgId, userId, providerId, authResult, ipAddress, userAgent } = input;
+    const { orgId, userId, providerId, authResult, ipAddress, userAgent, deviceId } = input;
 
     // Calculate token expiry
     const expiresAt = authResult.expiresAt
@@ -92,8 +102,29 @@ export class SessionManager {
       : new Date(Date.now() + this.sessionTimeoutMs);
 
     try {
+      // Check if device already has active session (for same-device login)
+      if (deviceId) {
+        const existingSession = await (prisma as any).authSession.findFirst({
+          where: {
+            userId,
+            orgId,
+            deviceId,
+            isRevoked: false,
+            expiresAt: { gt: new Date() },
+          },
+        });
+
+        if (existingSession) {
+          // Revoke existing session for this device
+          await (prisma as any).authSession.update({
+            where: { id: existingSession.id },
+            data: { isRevoked: true, revokedAt: new Date() },
+          });
+        }
+      }
+
       // Count active sessions for this user in this org
-      const activeSessions = await (prisma as any).session.findMany({
+      const activeSessions = await (prisma as any).authSession.findMany({
         where: {
           userId,
           orgId,
@@ -103,31 +134,31 @@ export class SessionManager {
         orderBy: { createdAt: "asc" },
       });
 
-      // If at max capacity, revoke the oldest session
-      if (activeSessions.length >= this.maxConcurrentSessions) {
-        const oldestSession = activeSessions[0];
-        await (prisma as any).session.update({
-          where: { id: oldestSession.id },
-          data: {
-            isRevoked: true,
-            revokedAt: new Date(),
-          },
+      // Revoke oldest sessions if exceeding limit
+      const sessionsToRevoke = activeSessions.slice(
+        0,
+        Math.max(0, activeSessions.length - this.maxConcurrentSessions + 1),
+      );
+      for (const session of sessionsToRevoke) {
+        await (prisma as any).authSession.update({
+          where: { id: session.id },
+          data: { isRevoked: true, revokedAt: new Date() },
         });
       }
 
       // Create new session
-      const session = await (prisma as any).session.create({
+      const session = await (prisma as any).authSession.create({
         data: {
           userId,
           orgId,
           providerId,
-          accessToken: authResult.accessToken, // In production: encrypted
-          refreshToken: authResult.refreshToken, // In production: encrypted
-          expiresAt,
+          token: authResult.accessToken, // Encrypted in production
           ipAddress: ipAddress || null,
           userAgent: userAgent || null,
+          deviceId: deviceId || null,
+          expiresAt,
+          mfaVerified: authResult.mfaVerified ?? false,
           isRevoked: false,
-          createdAt: new Date(),
         },
       });
 
@@ -143,14 +174,14 @@ export class SessionManager {
    * Checks:
    * - Session exists and is not revoked
    * - Session not expired
-   * - Access token validity
+   * - MFA verification if required
    *
    * @param sessionId Session ID from cookie/header
    * @returns Validation result with session info if valid
    */
   async validateSession(sessionId: string): Promise<SessionValidationResult> {
     try {
-      const session = await (prisma as any).session.findUnique({
+      const session = await (prisma as any).authSession.findUnique({
         where: { id: sessionId },
       });
 
@@ -165,12 +196,18 @@ export class SessionManager {
       const now = new Date();
       if (session.expiresAt < now) {
         // Mark as revoked to avoid re-validation
-        await (prisma as any).session.update({
+        await (prisma as any).authSession.update({
           where: { id: sessionId },
           data: { isRevoked: true, revokedAt: now },
         });
         return { valid: false, error: "Session has expired" };
       }
+
+      // Update last activity
+      await (prisma as any).authSession.update({
+        where: { id: sessionId },
+        data: { lastActivityAt: new Date() },
+      });
 
       return {
         valid: true,
@@ -187,43 +224,43 @@ export class SessionManager {
   /**
    * Refresh a session using refresh token.
    *
-   * - Validates refresh token
-   * - Generates new access token
+   * - Validates session still active
+   * - Generates new token
    * - Extends session expiry
-   * - Rotates tokens for security
+   * - Updates last activity
    *
    * @param sessionId Session ID
-   * @param newAccessToken New access token from provider
+   * @param newToken New token from authentication
    * @param newExpiresAt New expiry time
    * @returns Updated session info
    */
   async refreshSession(
     sessionId: string,
-    newAccessToken: string,
+    newToken: string,
     newExpiresAt?: Date,
   ): Promise<SessionInfo> {
     try {
-      const session = await (prisma as any).session.findUnique({
+      const session = await (prisma as any).authSession.findUnique({
         where: { id: sessionId },
       });
 
       if (!session) {
-        throw new Error("Session not found");
+        throw new SessionInvalidError("Session not found");
       }
 
       if (session.isRevoked) {
-        throw new Error("Cannot refresh revoked session");
+        throw new SessionInvalidError("Cannot refresh revoked session");
       }
 
       // Update with new token and expiry
       const expiresAt = newExpiresAt || new Date(Date.now() + this.sessionTimeoutMs);
 
-      const updated = await (prisma as any).session.update({
+      const updated = await (prisma as any).authSession.update({
         where: { id: sessionId },
         data: {
-          accessToken: newAccessToken,
+          token: newToken,
           expiresAt,
-          refreshedAt: new Date(),
+          lastActivityAt: new Date(),
         },
       });
 
@@ -236,15 +273,11 @@ export class SessionManager {
   /**
    * Revoke a session (logout).
    *
-   * - Marks session as revoked
-   * - Prevents further use
-   * - Optionally calls provider to revoke tokens
-   *
    * @param sessionId Session ID to revoke
    */
   async revokeSession(sessionId: string): Promise<void> {
     try {
-      await (prisma as any).session.update({
+      await (prisma as any).authSession.update({
         where: { id: sessionId },
         data: {
           isRevoked: true,
@@ -257,215 +290,131 @@ export class SessionManager {
   }
 
   /**
-   * List all active sessions for a user in an org.
-   *
-   * Used for "devices" / "active sessions" UI.
+   * Revoke all sessions for a user (logout all devices).
    *
    * @param userId User ID
    * @param orgId Organization ID
-   * @returns List of active sessions
    */
-  async listActiveSessions(userId: string, orgId: string): Promise<SessionInfo[]> {
+  async revokeAllSessions(userId: string, orgId: string): Promise<void> {
     try {
-      const sessions = await (prisma as any).session.findMany({
-        where: {
-          userId,
-          orgId,
-          isRevoked: false,
-          expiresAt: { gt: new Date() },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      return sessions.map((s: any) => this.mapSessionRecord(s));
-    } catch (error) {
-      throw new Error(
-        `Failed to list active sessions: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
-
-  /**
-   * Revoke all sessions for a user (e.g., on password change).
-   *
-   * @param userId User ID
-   * @param orgId Organization ID
-   * @param excludeSessionId Optional session to keep active (current device)
-   */
-  async revokeAllSessions(userId: string, orgId: string, excludeSessionId?: string): Promise<void> {
-    try {
-      await (prisma as any).session.updateMany({
-        where: {
-          userId,
-          orgId,
-          ...(excludeSessionId && { NOT: { id: excludeSessionId } }),
-        },
+      await (prisma as any).authSession.updateMany({
+        where: { userId, orgId, isRevoked: false },
         data: {
           isRevoked: true,
           revokedAt: new Date(),
         },
       });
     } catch (error) {
-      throw new Error(
-        `Failed to revoke all sessions: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw new Error(`Failed to revoke all sessions: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
-   * Clean up expired and revoked sessions (background job).
-   *
-   * Called periodically to remove old sessions from database.
-   * Retention: 30 days for revoked sessions, 90 days for expired.
-   *
-   * @param retentionDaysExpired Days to retain expired sessions (default: 90)
-   * @param retentionDaysRevoked Days to retain revoked sessions (default: 30)
-   */
-  async cleanupExpiredSessions(retentionDaysExpired: number = 90, retentionDaysRevoked: number = 30): Promise<void> {
-    try {
-      const expiredBefore = new Date(Date.now() - retentionDaysExpired * 24 * 60 * 60 * 1000);
-      const revokedBefore = new Date(Date.now() - retentionDaysRevoked * 24 * 60 * 60 * 1000);
-
-      // Delete expired sessions beyond retention
-      const deletedExpired = await (prisma as any).session.deleteMany({
-        where: {
-          isRevoked: false,
-          expiresAt: { lt: expiredBefore },
-        },
-      });
-
-      // Delete revoked sessions beyond retention
-      const deletedRevoked = await (prisma as any).session.deleteMany({
-        where: {
-          isRevoked: true,
-          revokedAt: { lt: revokedBefore },
-        },
-      });
-
-      console.log(`Cleaned up ${deletedExpired.count} expired sessions, ${deletedRevoked.count} revoked sessions`);
-    } catch (error) {
-      console.error(
-        `Failed to cleanup expired sessions: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-  }
-
-  /**
-   * Get a single session by ID.
-   *
-   * @param sessionId Session ID
-   * @returns Session info or null if not found
-   */
-  async getSession(sessionId: string): Promise<SessionInfo | null> {
-    try {
-      const session = await (prisma as any).session.findUnique({
-        where: { id: sessionId },
-      });
-
-      return session ? this.mapSessionRecord(session) : null;
-    } catch (error) {
-      throw new Error(`Failed to get session: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  /**
-   * Check if a session is valid and not expired.
-   *
-   * @param sessionId Session ID
-   * @returns Boolean indicating validity
-   */
-  async isSessionValid(sessionId: string): Promise<boolean> {
-    const result = await this.validateSession(sessionId);
-    return result.valid;
-  }
-
-  /**
-   * Get session statistics for a user.
+   * List active sessions for a user.
    *
    * @param userId User ID
    * @param orgId Organization ID
-   * @returns Statistics object
+   * @returns Array of active sessions
    */
-  async getSessionStats(userId: string, orgId: string): Promise<{
-    totalSessions: number;
-    activeSessions: number;
-    revokedSessions: number;
-  }> {
+  async listActiveSessions(userId: string, orgId: string): Promise<SessionInfo[]> {
     try {
-      const total = await (prisma as any).session.count({
-        where: { userId, orgId },
-      });
-
-      const active = await (prisma as any).session.count({
+      const sessions = await (prisma as any).authSession.findMany({
         where: {
           userId,
           orgId,
           isRevoked: false,
           expiresAt: { gt: new Date() },
         },
+        orderBy: { lastActivityAt: "desc" },
       });
 
-      const revoked = await (prisma as any).session.count({
-        where: {
-          userId,
-          orgId,
-          isRevoked: true,
-        },
-      });
-
-      return {
-        totalSessions: total,
-        activeSessions: active,
-        revokedSessions: revoked,
-      };
+      return sessions.map((s: any) => this.mapSessionRecord(s));
     } catch (error) {
-      throw new Error(
-        `Failed to get session stats: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      console.error("Failed to list sessions:", error);
+      return [];
     }
   }
 
   /**
-   * Map database session record to SessionInfo.
-   * @private
+   * Mark MFA as verified for session.
+   *
+   * @param sessionId Session ID
    */
-  private mapSessionRecord(record: any): SessionInfo {
+  async verifyMfa(sessionId: string): Promise<void> {
+    try {
+      await (prisma as any).authSession.update({
+        where: { id: sessionId },
+        data: {
+          mfaVerified: true,
+          mfaVerifiedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      throw new Error(`Failed to verify MFA: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // ─── PRIVATE HELPERS ────────────────────────────────────
+
+  /**
+   * Map database session record to SessionInfo.
+   */
+  private mapSessionRecord(session: any): SessionInfo {
     return {
-      sessionId: record.id,
-      userId: record.userId,
-      orgId: record.orgId,
-      providerId: record.providerId,
-      accessToken: record.accessToken,
-      refreshToken: record.refreshToken || undefined,
-      expiresAt: new Date(record.expiresAt),
-      createdAt: new Date(record.createdAt),
-      ipAddress: record.ipAddress || undefined,
-      userAgent: record.userAgent || undefined,
-      isRevoked: record.isRevoked,
+      sessionId: session.id,
+      userId: session.userId,
+      orgId: session.orgId,
+      providerId: session.providerId,
+      accessToken: session.token,
+      expiresAt: session.expiresAt,
+      createdAt: session.createdAt,
+      ipAddress: session.ipAddress,
+      userAgent: session.userAgent,
+      deviceId: session.deviceId,
+      mfaVerified: session.mfaVerified,
+      isRevoked: session.isRevoked,
     };
   }
-}
 
-// ─── SINGLETON INSTANCE ──────────────────────────────────────
-
-let sessionManagerInstance: SessionManager | null = null;
-
-/**
- * Get the global session manager instance (singleton).
- */
-export function getSessionManager(options?: {
-  maxConcurrentSessions?: number;
-  sessionTimeoutMs?: number;
-}): SessionManager {
-  if (!sessionManagerInstance) {
-    sessionManagerInstance = new SessionManager(options);
+  /**
+   * Start periodic cleanup of expired sessions.
+   */
+  private startCleanupJob(): void {
+    setInterval(async () => {
+      try {
+        const now = new Date();
+        await (prisma as any).authSession.deleteMany({
+          where: {
+            OR: [
+              { expiresAt: { lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } }, // 30 days old
+              { isRevoked: true, revokedAt: { lt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } }, // 7 days revoked
+            ],
+          },
+        });
+      } catch (error) {
+        console.error("Session cleanup failed:", error);
+      }
+    }, this.cleanupIntervalMs);
   }
-  return sessionManagerInstance;
+}
+
+// ─── SINGLETON EXPORT ───────────────────────────────────────
+
+let instance: SessionManager;
+
+/**
+ * Get or create the singleton SessionManager instance.
+ */
+export function getSessionManager(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }): SessionManager {
+  if (!instance) {
+    instance = new SessionManager(options);
+  }
+  return instance;
 }
 
 /**
- * Reset the session manager (for testing).
+ * Create a new SessionManager instance (for testing).
  */
-export function resetSessionManager(): void {
-  sessionManagerInstance = null;
+export function createSessionManager(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }): SessionManager {
+  return new SessionManager(options);
 }

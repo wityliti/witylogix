@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowRight, Chrome, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 
@@ -19,6 +19,7 @@ function LoginPageInner() {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showMagicLinkOption, setShowMagicLinkOption] = useState(false);
 
   // Load remembered email if available
   useEffect(() => {
@@ -86,6 +87,24 @@ function LoginPageInner() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    // TODO: Implement Google OAuth
+    setError("Google login coming soon");
+  };
+
+  const handleMicrosoftLogin = () => {
+    // TODO: Implement Microsoft OAuth
+    setError("Microsoft login coming soon");
+  };
+
+  const handleMagicLink = () => {
+    if (!email) {
+      setEmailError("Please enter your email address");
+      return;
+    }
+    router.push(`/forgot-password?email=${encodeURIComponent(email)}&type=magic-link`);
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-wl-bg">
@@ -143,7 +162,6 @@ function LoginPageInner() {
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  // Intentional inline: dynamic border and shadow on focus
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
@@ -151,7 +169,6 @@ function LoginPageInner() {
                 }
               }}
               onBlur={(e) => {
-                // Intentional inline: remove border and shadow on blur
                 e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -196,7 +213,6 @@ function LoginPageInner() {
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  // Intentional inline: dynamic border and shadow on focus
                   e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
@@ -204,7 +220,6 @@ function LoginPageInner() {
                 }
               }}
               onBlur={(e) => {
-                // Intentional inline: remove border and shadow on blur
                 e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -232,7 +247,6 @@ function LoginPageInner() {
               disabled={isLoading}
               className={cn(isLoading && "cursor-not-allowed")}
               style={{
-                // Intentional inline: custom accent color for checkbox
                 accentColor: "var(--wl-primary-500)",
               }}
             />
@@ -241,21 +255,9 @@ function LoginPageInner() {
           <Link
             href="/forgot-password"
             className={cn(
-              "text-wl-primary-400 no-underline transition-colors",
+              "text-wl-primary-400 no-underline transition-colors hover:text-wl-primary-300",
               isLoading && "opacity-60 pointer-events-none"
             )}
-            onMouseEnter={(e) => {
-              if (!isLoading) {
-                // Intentional inline: dynamic hover color
-                (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoading) {
-                // Intentional inline: reset hover color
-                (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
-              }
-            }}
           >
             Forgot password?
           </Link>
@@ -277,7 +279,6 @@ function LoginPageInner() {
             isLoading && "opacity-80 cursor-not-allowed"
           )}
           style={{
-            // Intentional inline: dynamic gradient and shadow
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
@@ -285,14 +286,12 @@ function LoginPageInner() {
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              // Intentional inline: dynamic hover effect
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              // Intentional inline: reset hover effect
               (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
             }
@@ -312,6 +311,90 @@ function LoginPageInner() {
         </button>
       </form>
 
+      {/* Social Login Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-wl-border-subtle" />
+        <span className="text-xs text-wl-text-tertiary">Or continue with</span>
+        <div className="flex-1 h-px bg-wl-border-subtle" />
+      </div>
+
+      {/* Social Login Buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+          className={cn(
+            "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-60 cursor-not-allowed"
+          )}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+            }
+          }}
+        >
+          <Chrome size={16} />
+          <span className="hidden sm:inline">Google</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleMicrosoftLogin}
+          disabled={isLoading}
+          className={cn(
+            "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            isLoading && "opacity-60 cursor-not-allowed"
+          )}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-primary-500)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-overlay)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--wl-border-default)";
+              (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-bg-surface)";
+            }
+          }}
+        >
+          <Chrome size={16} />
+          <span className="hidden sm:inline">Microsoft</span>
+        </button>
+      </div>
+
+      {/* Magic Link Option */}
+      <button
+        type="button"
+        onClick={() => setShowMagicLinkOption(!showMagicLinkOption)}
+        className="text-center text-xs text-wl-text-tertiary hover:text-wl-primary-400 transition-colors"
+      >
+        {showMagicLinkOption ? "Back to password" : "Sign in with magic link"}
+      </button>
+
+      {showMagicLinkOption && (
+        <button
+          type="button"
+          onClick={handleMagicLink}
+          disabled={isLoading || !email}
+          className={cn(
+            "py-3 px-4 rounded-lg border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm font-semibold flex items-center justify-center gap-2 transition-all",
+            (isLoading || !email) && "opacity-60 cursor-not-allowed"
+          )}
+        >
+          <Zap size={16} />
+          Send Magic Link
+        </button>
+      )}
+
       {/* Demo Credentials Hint */}
       <div className="p-3 rounded-lg bg-opacity-5 border border-opacity-15 text-xs text-wl-text-tertiary bg-blue-400 border-blue-400 leading-relaxed">
         Demo credentials: <span className="text-wl-text-secondary font-semibold">demo@witylogix.com</span> / <span className="text-wl-text-secondary font-semibold">demo123</span>
@@ -323,21 +406,9 @@ function LoginPageInner() {
         <Link
           href="/register"
           className={cn(
-            "text-wl-primary-400 no-underline font-semibold transition-colors",
+            "text-wl-primary-400 no-underline font-semibold transition-colors hover:text-wl-primary-300",
             isLoading && "opacity-60 pointer-events-none"
           )}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              // Intentional inline: dynamic hover color
-              (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-300)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading) {
-              // Intentional inline: reset hover color
-              (e.target as HTMLAnchorElement).style.color = "var(--wl-primary-400)";
-            }
-          }}
         >
           Create one
         </Link>
