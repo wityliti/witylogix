@@ -1,0 +1,125 @@
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # High error rate alert
+      - alert: APIHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service, environment) /
+          sum(rate(http_requests_total[5m])) by (service, environment) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API high error rate"
+          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 5%)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Critical error rate alert
+      - alert: APICriticalErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[2m])) by (service, environment) /
+          sum(rate(http_requests_total[2m])) by (service, environment) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API critical error rate"
+          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 10%)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # High latency P95 alert
+      - alert: APIHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, environment, le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API high latency"
+          description: "{{ $labels.service }} in {{ $labels.environment }} P95 latency is {{ $value }}s (threshold: 2s)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Critical latency P95 alert
+      - alert: APICriticalLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (service, environment, le)) > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API critical latency"
+          description: "{{ $labels.service }} in {{ $labels.environment }} P95 latency is {{ $value }}s (threshold: 5s)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Request rate spike
+      - alert: APIRequestRateSpike
+        expr: |
+          (sum(rate(http_requests_total[5m])) by (service, environment)) /
+          (sum(rate(http_requests_total[5m] offset 1h)) by (service, environment)) > 3
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API request rate spike"
+          description: "{{ $labels.service }} in {{ $labels.environment }} request rate spiked {{ $value }}x (threshold: 3x)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Health check failures
+      - alert: APIHealthCheckFailing
+        expr: |
+          sum(rate(http_health_check_failures_total[5m])) by (service, environment) > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API health check failing"
+          description: "{{ $labels.service }} in {{ $labels.environment }} health checks failing"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Rate limit exhaustion
+      - alert: APIRateLimitExhaustion
+        expr: |
+          (sum(rate(http_rate_limit_exceeded_total[5m])) by (service, environment, client)) /
+          (sum(rate(http_requests_total[5m])) by (service, environment, client)) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API rate limit nearly exhausted"
+          description: "{{ $labels.service }} in {{ $labels.environment }} for client {{ $labels.client }} approaching rate limit ({{ $value | humanizePercentage }})"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Service unavailable
+      - alert: APIServiceUnavailable
+        expr: |
+          up{job="api", environment="production"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API service unavailable"
+          description: "{{ $labels.instance }} API is down"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Dependency failure
+      - alert: APIDependencyFailure
+        expr: |
+          sum(rate(http_dependent_service_errors_total[5m])) by (service, environment, dependency) /
+          sum(rate(http_dependent_service_requests_total[5m])) by (service, environment, dependency) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API dependency failure"
+          description: "{{ $labels.service }} in {{ $labels.environment }} dependency {{ $labels.dependency }} error rate is {{ $value | humanizePercentage }}"
+          runbook: "/docs/runbooks/incident-response.md"

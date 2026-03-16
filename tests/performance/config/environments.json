@@ -1,0 +1,156 @@
+{
+  "description": "Environment Configuration for Performance Testing",
+  "version": "1.0.0",
+  "dev": {
+    "name": "Development",
+    "baseUrl": "http://localhost:3000",
+    "apiBase": "http://localhost:3000/api/v4",
+    "vus": 10,
+    "duration": "1m",
+    "rampUpDuration": "10s",
+    "sustainedDuration": "30s",
+    "rampDownDuration": "10s",
+    "timeout": "10s",
+    "thinkTime": 1,
+    "tlsVersion": "1.2",
+    "insecureSkipTlsVerify": true,
+    "environment": "development",
+    "testAccounts": {
+      "email": "dev@example.com",
+      "password": "DevPassword123!"
+    },
+    "webhookEndpoints": [
+      "http://localhost:4000/webhooks"
+    ],
+    "description": "Local development environment - minimal load"
+  },
+  "staging": {
+    "name": "Staging",
+    "baseUrl": "https://staging-api.witylogix.com",
+    "apiBase": "https://staging-api.witylogix.com/api/v4",
+    "vus": 50,
+    "duration": "5m",
+    "rampUpDuration": "30s",
+    "sustainedDuration": "3m",
+    "rampDownDuration": "30s",
+    "timeout": "15s",
+    "thinkTime": 0.5,
+    "tlsVersion": "1.3",
+    "insecureSkipTlsVerify": false,
+    "environment": "staging",
+    "testAccounts": {
+      "email": "staging@example.com",
+      "password": "StagingPassword123!"
+    },
+    "webhookEndpoints": [
+      "https://webhook-staging.witylogix.com/webhooks/1",
+      "https://webhook-staging.witylogix.com/webhooks/2"
+    ],
+    "description": "Staging environment - medium load testing",
+    "maxVUs": 100,
+    "breakpointThreshold": 75
+  },
+  "production": {
+    "name": "Production",
+    "baseUrl": "https://api.witylogix.com",
+    "apiBase": "https://api.witylogix.com/api/v4",
+    "vus": 100,
+    "duration": "10m",
+    "rampUpDuration": "60s",
+    "sustainedDuration": "6m",
+    "rampDownDuration": "60s",
+    "timeout": "30s",
+    "thinkTime": 0.2,
+    "tlsVersion": "1.3",
+    "insecureSkipTlsVerify": false,
+    "environment": "production",
+    "testAccounts": {
+      "email": "prod@example.com",
+      "password": "ProdPassword123!"
+    },
+    "webhookEndpoints": [
+      "https://webhook-prod.witylogix.com/webhooks/1",
+      "https://webhook-prod.witylogix.com/webhooks/2",
+      "https://webhook-prod.witylogix.com/webhooks/3"
+    ],
+    "description": "Production environment - read-only testing recommended",
+    "readOnly": true,
+    "maxVUs": 200,
+    "breakpointThreshold": 150,
+    "warningNote": "Use caution when testing production - consider read-only scenarios only"
+  },
+  "loadTest": {
+    "name": "Load Testing Profile",
+    "vus": 50,
+    "duration": "5m",
+    "rampUpDuration": "30s",
+    "sustainedDuration": "3m",
+    "rampDownDuration": "30s",
+    "scenario": "all",
+    "dataVolumeScaling": 1.0,
+    "concurrencyLevel": "moderate",
+    "errorBudget": 0.01
+  },
+  "stressTest": {
+    "name": "Stress Testing Profile",
+    "vus": 200,
+    "duration": "10m",
+    "rampUpDuration": "60s",
+    "sustainedDuration": "7m",
+    "rampDownDuration": "60s",
+    "scenario": "critical",
+    "dataVolumeScaling": 2.0,
+    "concurrencyLevel": "high",
+    "errorBudget": 0.05
+  },
+  "spikeTest": {
+    "name": "Spike Testing Profile",
+    "vus": 500,
+    "duration": "3m",
+    "rampUpDuration": "10s",
+    "sustainedDuration": "1m",
+    "rampDownDuration": "30s",
+    "scenario": "critical",
+    "dataVolumeScaling": 1.0,
+    "concurrencyLevel": "very_high",
+    "errorBudget": 0.1
+  },
+  "soakTest": {
+    "name": "Soak Testing Profile",
+    "vus": 30,
+    "duration": "2h",
+    "rampUpDuration": "10m",
+    "sustainedDuration": "1h50m",
+    "rampDownDuration": "10m",
+    "scenario": "all",
+    "dataVolumeScaling": 0.5,
+    "concurrencyLevel": "low",
+    "errorBudget": 0.001
+  },
+  "smokeTest": {
+    "name": "Smoke Testing Profile",
+    "vus": 5,
+    "duration": "1m",
+    "rampUpDuration": "5s",
+    "sustainedDuration": "45s",
+    "rampDownDuration": "5s",
+    "scenario": "basic",
+    "dataVolumeScaling": 0.1,
+    "concurrencyLevel": "minimal",
+    "errorBudget": 0.05
+  },
+  "cicd": {
+    "name": "CI/CD Pipeline Profile",
+    "vus": 10,
+    "duration": "2m",
+    "rampUpDuration": "15s",
+    "sustainedDuration": "1m",
+    "rampDownDuration": "15s",
+    "scenario": "basic",
+    "dataVolumeScaling": 0.1,
+    "concurrencyLevel": "minimal",
+    "errorBudget": 0.01,
+    "timeout": "5s",
+    "failFast": true
+  }
+}

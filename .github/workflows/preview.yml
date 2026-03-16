@@ -1,0 +1,238 @@
+# .github/workflows/preview.yml
+# PR Preview Deployment Pipeline for Witylogix Platform
+#
+# Builds and deploys dashboard previews for pull requests
+# Enables collaborative review with live preview environments
+# Auto-cleans up on PR close
+
+name: Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PREVIEW_BASE_URL: https://preview.witylogix.dev
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Build Preview Dashboard
+  # ───────────────────────────────────────────────────────────────────────────
+  build-preview:
+    name: Build Preview
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Restore Next.js cache
+        uses: actions/cache@v4
+        with:
+          path: apps/dashboard/.next/cache
+          key: nextjs-cache-pr-${{ github.event.pull_request.number }}
+          restore-keys: |
+            nextjs-cache-main
+
+      - name: Build dashboard
+        env:
+          NEXT_PUBLIC_API_URL: https://api-preview-${{ github.event.pull_request.number }}.witylogix.dev
+          NODE_ENV: production
+        run: pnpm --filter @witylogix/dashboard build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-build-${{ github.event.pull_request.number }}
+          path: apps/dashboard/.next
+          retention-days: 1
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Deploy Preview Environment
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: build-preview
+    if: github.event.action != 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-build-${{ github.event.pull_request.number }}
+          path: apps/dashboard/.next
+
+      - name: Deploy to preview environment
+        id: deploy
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PREVIEW_URL="${{ env.PREVIEW_BASE_URL }}/pr-${PR_NUMBER}"
+
+          # This is a placeholder for your actual deployment logic
+          # Replace with your deployment provider (Vercel, Netlify, custom server, etc.)
+          echo "preview_url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+
+          echo "Deploying preview to: ${PREVIEW_URL}"
+          # Example with Vercel:
+          # npx vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }}
+
+          # Example with Netlify:
+          # npx netlify deploy --prod --dir=apps/dashboard/.next --site=${{ secrets.NETLIFY_SITE_ID }} --auth=${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+          # For custom deployment, use your deploy script:
+          # bash infra/scripts/deploy-preview.sh "${PR_NUMBER}" "${PREVIEW_URL}"
+
+      - name: Comment PR with preview link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const previewUrl = '${{ steps.deploy.outputs.preview_url }}';
+
+            const body = `## Preview Deployment 🚀
+
+            Your preview is ready! View the changes:
+
+            **Dashboard Preview**: [${previewUrl}](${previewUrl})
+
+            - **PR**: #${prNumber}
+            - **Commit**: \`${{ github.event.pull_request.head.sha }}\`
+            - **Branch**: \`${{ github.event.pull_request.head.ref }}\`
+
+            This preview will be automatically cleaned up when the PR is closed.
+
+            ---
+            *Updated at: ${new Date().toISOString()}*`;
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('Preview Deployment')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body,
+              });
+            }
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Cleanup Preview on PR Close
+  # ───────────────────────────────────────────────────────────────────────────
+  cleanup-preview:
+    name: Cleanup Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cleanup preview deployment
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "Cleaning up preview for PR #${PR_NUMBER}"
+
+          # Placeholder for cleanup logic
+          # Replace with your deployment provider cleanup commands
+
+          # Example with Vercel:
+          # npx vercel remove --yes --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }}
+
+          # Example with Netlify:
+          # curl -X DELETE https://api.netlify.com/api/v1/sites/pr-${PR_NUMBER}.${{ secrets.NETLIFY_SITE_ID }}/deploys \
+          #   -H "Authorization: Bearer ${{ secrets.NETLIFY_AUTH_TOKEN }}"
+
+          # For custom deployment:
+          # bash infra/scripts/cleanup-preview.sh "${PR_NUMBER}"
+
+      - name: Comment PR about cleanup
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+
+            const body = `## Preview Cleanup ✅
+
+            The preview environment for this PR has been cleaned up.
+
+            ---
+            *Cleaned up at: ${new Date().toISOString()}*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body,
+            });

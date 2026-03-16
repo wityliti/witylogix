@@ -1,0 +1,134 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: 'production'
+    cluster: 'witylogix-primary'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+      scheme: http
+      timeout: 10s
+
+rule_files:
+  - '/etc/prometheus/rules/api-alerts.yml'
+  - '/etc/prometheus/rules/infrastructure-alerts.yml'
+  - '/etc/prometheus/rules/business-alerts.yml'
+  - '/etc/prometheus/rules/slo-recording-rules.yml'
+
+remote_write:
+  - url: 'https://prometheus-prod.grafana.net/api/prom/push'
+    queue_config:
+      capacity: 10000
+      max_shards: 200
+      min_shards: 1
+      max_samples_per_send: 10000
+      batch_send_wait: 5s
+      min_backoff: 30ms
+      max_backoff: 100ms
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API services
+  - job_name: 'api'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    scheme: http
+    consul_sd_configs:
+      - server: 'consul:8500'
+        datacenter: 'dc1'
+        services: ['api']
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: instance
+
+  # Dashboard service
+  - job_name: 'dashboard'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['dashboard:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+        target_label: instance
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Container/Docker metrics (cAdvisor)
+  - job_name: 'cadvisor'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['cadvisor:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Nginx Ingress Controller
+  - job_name: 'nginx-ingress'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['nginx-ingress-controller:10254']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+
+  # Service discovery via Kubernetes (if applicable)
+  - job_name: 'kubernetes-pods'
+    scrape_interval: 15s
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: 'true'
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: '(.+)'
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: '([^:]+)(?::\d+)?;(\d+)'
+        replacement: '$1:$2'
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name

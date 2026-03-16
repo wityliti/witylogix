@@ -1,0 +1,1162 @@
+{
+  "info": {
+    "name": "Witylogix API v2.0",
+    "description": "Complete API collection for Witylogix Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.witylogix.com",
+      "type": "string"
+    },
+    {
+      "key": "apiVersion",
+      "value": "v4",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shopDomain",
+      "value": "mystore.myshopify.com",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "driverId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "routeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "zoneId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "integrationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "webhookId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('accessToken', response.data.accessToken);",
+                  "  pm.environment.set('refreshToken', response.data.refreshToken);",
+                  "  pm.environment.set('userId', response.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\",\n  \"shopDomain\": \"{{shopDomain}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Driver Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('accessToken', response.data.accessToken);",
+                  "  pm.environment.set('refreshToken', response.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+14155552671\",\n  \"password\": \"password123\",\n  \"shopDomain\": \"{{shopDomain}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/driver/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "driver",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('accessToken', response.data.accessToken);",
+                  "  pm.environment.set('refreshToken', response.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Setup MFA",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/mfa/setup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "mfa",
+                "setup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify MFA",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/mfa/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "mfa",
+                "verify"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"shopDomain\": \"{{shopDomain}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/password/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "auth",
+                "password",
+                "reset"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  if (response.data.length > 0) {",
+                  "    pm.environment.set('orderId', response.data[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders",
+                "{{orderId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('orderId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"John Doe\",\n  \"customerEmail\": \"john@example.com\",\n  \"customerPhone\": \"+14155552671\",\n  \"addressLine1\": \"123 Main St\",\n  \"city\": \"San Francisco\",\n  \"postalCode\": \"94102\",\n  \"country\": \"US\",\n  \"totalPrice\": 99.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACCEPTED\",\n  \"notes\": \"Order accepted\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders",
+                "{{orderId}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driverId\": \"{{driverId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders",
+                "{{orderId}}",
+                "assign"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Order Timeline",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/timeline",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "orders",
+                "{{orderId}}",
+                "timeline"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drivers",
+      "item": [
+        {
+          "name": "List Drivers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  if (response.data.length > 0) {",
+                  "    pm.environment.set('driverId', response.data[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Driver",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers",
+                "{{driverId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Driver",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('driverId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith\",\n  \"phone\": \"+14155552671\",\n  \"email\": \"john@example.com\",\n  \"vehicleType\": \"CAR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Driver",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith Updated\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers",
+                "{{driverId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Driver Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers",
+                "{{driverId}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Driver Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 37.7749,\n  \"longitude\": -122.4194,\n  \"accuracy\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}/location",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "drivers",
+                "{{driverId}}",
+                "location"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Routes",
+      "item": [
+        {
+          "name": "List Routes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  let response = pm.response.json();",
+                  "  if (response.data.length > 0) {",
+                  "    pm.environment.set('routeId', response.data[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/routes?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "routes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Route",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/routes/{{routeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "routes",
+                "{{routeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('routeId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-03-16\",\n  \"driverId\": \"{{driverId}}\",\n  \"orderIds\": [\"{{orderId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/routes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "routes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Optimize Route",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/routes/{{routeId}}/optimize",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "routes",
+                "{{routeId}}",
+                "optimize"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zones",
+      "item": [
+        {
+          "name": "List Zones",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/zones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "zones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Zone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('zoneId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Downtown\",\n  \"description\": \"Downtown area\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/zones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "zones"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Integrations",
+      "item": [
+        {
+          "name": "List Integrations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "integrations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Install Integration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('integrationId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SHOPIFY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "integrations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Integration Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations/{{integrationId}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "integrations",
+                "{{integrationId}}",
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "List Webhooks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "webhooks"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  let response = pm.response.json();",
+                  "  pm.environment.set('webhookId', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://yourapp.com/webhooks/witylogix\",\n  \"events\": [\"order.created\", \"order.status_changed\"],\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "webhooks"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Webhook Deliveries",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks/{{webhookId}}/deliveries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "webhooks",
+                "{{webhookId}}",
+                "deliveries"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "admin",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "System Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/admin/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "admin",
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Keys",
+      "item": [
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "api-keys"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Integration Key\",\n  \"type\": \"LIVE\",\n  \"scopes\": [\"orders.read\", \"orders.write\", \"drivers.read\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "{{apiVersion}}",
+                "api-keys"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ready"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

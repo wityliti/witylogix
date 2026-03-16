@@ -1,0 +1,450 @@
+{
+  "common": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "drivers": "Drivers",
+      "deliveries": "Deliveries",
+      "settings": "Settings",
+      "integrations": "Integrations",
+      "admin": "Admin",
+      "profile": "Profile",
+      "analytics": "Analytics",
+      "support": "Support"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "search": "Search",
+      "filter": "Filter",
+      "export": "Export",
+      "import": "Import",
+      "submit": "Submit",
+      "apply": "Apply",
+      "close": "Close",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "download": "Download",
+      "upload": "Upload",
+      "copy": "Copy",
+      "paste": "Paste",
+      "duplicate": "Duplicate",
+      "archive": "Archive",
+      "restore": "Restore",
+      "refresh": "Refresh",
+      "clear": "Clear",
+      "reset": "Reset",
+      "confirm": "Confirm",
+      "retry": "Retry"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "archived": "Archived",
+      "processing": "Processing",
+      "draft": "Draft",
+      "published": "Published",
+      "paused": "Paused",
+      "suspended": "Suspended"
+    },
+    "time": {
+      "justNow": "just now",
+      "minutesAgo": "{count} minute ago",
+      "minutesAgoPlural": "{count} minutes ago",
+      "hoursAgo": "{count} hour ago",
+      "hoursAgoPlural": "{count} hours ago",
+      "daysAgo": "{count} day ago",
+      "daysAgoPlural": "{count} days ago",
+      "weeksAgo": "{count} week ago",
+      "weeksAgoPlural": "{count} weeks ago",
+      "monthsAgo": "{count} month ago",
+      "monthsAgoPlural": "{count} months ago",
+      "yearsAgo": "{count} year ago",
+      "yearsAgoPlural": "{count} years ago"
+    },
+    "errors": {
+      "notFound": "Not found",
+      "unauthorized": "Unauthorized",
+      "forbidden": "Forbidden",
+      "serverError": "Server error",
+      "badRequest": "Bad request",
+      "conflict": "Conflict",
+      "validation": "Validation error",
+      "networkError": "Network error",
+      "timeout": "Request timeout",
+      "unknown": "Unknown error"
+    },
+    "success": {
+      "saved": "Saved successfully",
+      "created": "Created successfully",
+      "updated": "Updated successfully",
+      "deleted": "Deleted successfully",
+      "archived": "Archived successfully",
+      "restored": "Restored successfully",
+      "published": "Published successfully",
+      "imported": "Imported successfully",
+      "exported": "Exported successfully",
+      "submitted": "Submitted successfully"
+    },
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "empty": "No data available",
+    "required": "This field is required",
+    "optional": "Optional"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "email": "Email Address",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "error": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required"
+    },
+    "register": {
+      "title": "Create Account",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "agreeTerms": "I agree to the terms and conditions",
+      "submit": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "email": "Email Address",
+      "submit": "Send Reset Link",
+      "checkEmail": "Check your email for reset instructions",
+      "backToLogin": "Back to login"
+    },
+    "mfa": {
+      "title": "Two-Factor Authentication",
+      "code": "Verification Code",
+      "send": "Send Code",
+      "verify": "Verify",
+      "useApp": "Use authenticator app",
+      "useEmail": "Use email code",
+      "backupCodes": "Use backup code"
+    },
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "signOut": "Sign Out"
+  },
+  "onboarding": {
+    "title": "Welcome to Witylogix",
+    "subtitle": "Let's set up your account",
+    "step": "Step {current} of {total}",
+    "verifyEmail": {
+      "title": "Verify Email",
+      "description": "We've sent a verification link to your email",
+      "resend": "Resend Link",
+      "verified": "Email verified successfully"
+    },
+    "deployment": {
+      "title": "Deployment",
+      "description": "Choose your deployment preference",
+      "cloud": "Cloud",
+      "onPremise": "On-Premise",
+      "hybrid": "Hybrid"
+    },
+    "company": {
+      "title": "Company Information",
+      "name": "Company Name",
+      "size": "Company Size",
+      "industry": "Industry",
+      "website": "Website",
+      "phone": "Phone Number"
+    },
+    "industry": {
+      "title": "Select Industry",
+      "description": "This helps us customize your experience",
+      "logistics": "Logistics",
+      "retail": "Retail",
+      "ecommerce": "E-Commerce",
+      "healthcare": "Healthcare",
+      "food": "Food & Beverage",
+      "other": "Other"
+    },
+    "goals": {
+      "title": "What are your goals?",
+      "description": "Select all that apply",
+      "optimize": "Optimize delivery routes",
+      "tracking": "Real-time tracking",
+      "scale": "Scale operations",
+      "integration": "Third-party integration",
+      "analytics": "Advanced analytics"
+    },
+    "integrations": {
+      "title": "Connect Integrations",
+      "description": "Connect your existing systems",
+      "shopify": "Shopify",
+      "woocommerce": "WooCommerce",
+      "stripe": "Stripe",
+      "segment": "Segment",
+      "skip": "Skip for now"
+    },
+    "dashboard": {
+      "title": "Explore Dashboard",
+      "description": "Get familiar with the dashboard"
+    },
+    "import": {
+      "title": "Import Data",
+      "description": "Import orders and drivers",
+      "file": "Choose CSV file",
+      "template": "Download template",
+      "process": "Processing..."
+    },
+    "review": {
+      "title": "Review & Complete",
+      "description": "Review your setup",
+      "complete": "Complete Setup",
+      "edit": "Edit"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "sidebar": {
+      "home": "Home",
+      "orders": "Orders",
+      "drivers": "Drivers",
+      "deliveries": "Deliveries",
+      "analytics": "Analytics",
+      "settings": "Settings",
+      "help": "Help & Support"
+    },
+    "stats": {
+      "activeOrders": "Active Orders",
+      "totalDeliveries": "Total Deliveries",
+      "completionRate": "Completion Rate",
+      "avgDeliveryTime": "Avg Delivery Time",
+      "activeDrivers": "Active Drivers",
+      "revenue": "Revenue"
+    },
+    "charts": {
+      "ordersTrend": "Orders Trend",
+      "deliveryStatus": "Delivery Status",
+      "driverPerformance": "Driver Performance",
+      "routeEfficiency": "Route Efficiency"
+    }
+  },
+  "orders": {
+    "title": "Orders",
+    "list": {
+      "title": "All Orders",
+      "columns": {
+        "id": "Order ID",
+        "customer": "Customer",
+        "destination": "Destination",
+        "status": "Status",
+        "date": "Date",
+        "amount": "Amount",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Order Details",
+      "id": "Order ID",
+      "customer": "Customer",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Delivery Address",
+      "items": "Items",
+      "quantity": "Quantity",
+      "price": "Price",
+      "total": "Total",
+      "notes": "Special Notes",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "assigned": "Assigned",
+      "enRoute": "En Route",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "assign": "Assign Driver",
+      "cancel": "Cancel Order",
+      "reassign": "Reassign"
+    }
+  },
+  "drivers": {
+    "title": "Drivers",
+    "list": {
+      "title": "All Drivers",
+      "columns": {
+        "id": "Driver ID",
+        "name": "Name",
+        "status": "Status",
+        "assignments": "Active",
+        "rating": "Rating",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Driver Details",
+      "name": "Full Name",
+      "phone": "Phone",
+      "email": "Email",
+      "vehicle": "Vehicle",
+      "license": "License Number",
+      "joinDate": "Joined",
+      "status": "Status",
+      "rating": "Rating",
+      "deliveries": "Total Deliveries",
+      "avgTime": "Avg Delivery Time"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "onBreak": "On Break",
+      "unavailable": "Unavailable",
+      "suspended": "Suspended"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "assign": "Assign Delivery",
+      "message": "Send Message",
+      "deactivate": "Deactivate"
+    }
+  },
+  "deliveries": {
+    "title": "Deliveries",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "pickupScheduled": "Pickup Scheduled",
+      "pickedUp": "Picked Up",
+      "inTransit": "In Transit",
+      "delivered": "Delivered",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "timeline": {
+      "created": "Created",
+      "assigned": "Assigned",
+      "accepted": "Accepted",
+      "pickup": "Pickup",
+      "delivered": "Delivered"
+    },
+    "proof": {
+      "signature": "Signature",
+      "photo": "Photo",
+      "timestamp": "Timestamp",
+      "notes": "Delivery Notes",
+      "recipient": "Recipient Name"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "general": "General",
+      "account": "Account",
+      "notifications": "Notifications",
+      "billing": "Billing",
+      "integrations": "Integrations",
+      "team": "Team",
+      "security": "Security"
+    },
+    "general": {
+      "companyName": "Company Name",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "timezone": "Timezone",
+      "language": "Language",
+      "currency": "Currency"
+    },
+    "notifications": {
+      "emailNotifications": "Email Notifications",
+      "smsNotifications": "SMS Notifications",
+      "pushNotifications": "Push Notifications",
+      "orderUpdates": "Order Updates",
+      "driverAlerts": "Driver Alerts",
+      "weeklyReport": "Weekly Report"
+    },
+    "billing": {
+      "plan": "Current Plan",
+      "nextBillingDate": "Next Billing Date",
+      "paymentMethod": "Payment Method",
+      "upgrade": "Upgrade Plan",
+      "downgrade": "Downgrade Plan",
+      "cancel": "Cancel Subscription"
+    },
+    "team": {
+      "members": "Team Members",
+      "invite": "Invite Member",
+      "role": "Role",
+      "admin": "Admin",
+      "manager": "Manager",
+      "user": "User",
+      "pending": "Pending"
+    },
+    "security": {
+      "password": "Password",
+      "twoFactor": "Two-Factor Authentication",
+      "sessions": "Active Sessions",
+      "logout": "Logout All Devices",
+      "apiKeys": "API Keys",
+      "generateKey": "Generate New Key"
+    }
+  },
+  "integrations": {
+    "title": "Integrations",
+    "categories": {
+      "ecommerce": "E-Commerce",
+      "payment": "Payment",
+      "shipping": "Shipping",
+      "analytics": "Analytics",
+      "communication": "Communication",
+      "crm": "CRM"
+    },
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "pending": "Pending",
+      "error": "Error",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "setup": {
+      "configure": "Configure",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "reconnect": "Reconnect",
+      "test": "Test Connection",
+      "remove": "Remove Integration"
+    },
+    "common": {
+      "apiKey": "API Key",
+      "apiSecret": "API Secret",
+      "webhook": "Webhook",
+      "lastSync": "Last Sync",
+      "syncFrequency": "Sync Frequency",
+      "testConnection": "Test Connection"
+    }
+  }
+}

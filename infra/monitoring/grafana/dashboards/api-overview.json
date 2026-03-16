@@ -1,0 +1,143 @@
+{
+  "dashboard": {
+    "title": "API Overview",
+    "description": "Real-time API performance monitoring and health status",
+    "tags": ["api", "performance", "monitoring"],
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(http_requests_total, environment)",
+          "current": {"value": "production", "text": "production"},
+          "multi": false
+        },
+        {
+          "name": "service",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(http_requests_total{environment=\"$environment\"}, service)",
+          "current": {"value": "all", "text": "All"},
+          "multi": true
+        },
+        {
+          "name": "timerange",
+          "type": "interval",
+          "values": ["5m", "10m", "30m", "1h", "6h", "24h"],
+          "current": {"value": "5m", "text": "5m"}
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{environment=\"$environment\",service=~\"$service\"}[1m])) by (service)",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "yaxes": [{"label": "req/s"}]
+      },
+      {
+        "id": 2,
+        "title": "Error Rate (%)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 * sum(rate(http_requests_total{environment=\"$environment\",service=~\"$service\",status=~\"5..\"}[1m])) / sum(rate(http_requests_total{environment=\"$environment\",service=~\"$service\"}[1m]))",
+            "legendFormat": "Error Rate"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "yaxes": [{"label": "%", "max": 100}]
+      },
+      {
+        "id": 3,
+        "title": "P50/P95/P99 Latencies",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{environment=\"$environment\",service=~\"$service\"}[1m])) by (le))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{environment=\"$environment\",service=~\"$service\"}[1m])) by (le))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{environment=\"$environment\",service=~\"$service\"}[1m])) by (le))",
+            "legendFormat": "P99"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "yaxes": [{"label": "seconds"}]
+      },
+      {
+        "id": 4,
+        "title": "Status Code Distribution",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{environment=\"$environment\",service=~\"$service\"}[5m])) by (status)",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Top 10 Slowest Endpoints",
+        "type": "table",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "topk(10, histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{environment=\"$environment\",service=~\"$service\"}[5m])) by (path, le)))",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 6,
+        "title": "Active Connections",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(http_active_connections{environment=\"$environment\",service=~\"$service\"})"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+        "options": {"graphMode": "area", "colorMode": "value"}
+      },
+      {
+        "id": 7,
+        "title": "Request Size Distribution",
+        "type": "histogram",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_size_bytes_bucket{environment=\"$environment\",service=~\"$service\"}[5m])) by (le))",
+            "legendFormat": "Request Size"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8}
+      }
+    ]
+  }
+}

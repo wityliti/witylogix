@@ -1,70 +1,115 @@
-# Dockerfile.api
-# Multi-stage build for Fastify API
-# Production-ready image with optimized layers and minimal attack surface
+# infra/docker/Dockerfile.api
+# Production-hardened Fastify API Dockerfile
+#
+# Security features:
+# - Multi-stage build minimizes final image size and excludes dev dependencies
+# - Non-root user (node:1001) prevents privilege escalation
+# - Frozen lockfile ensures reproducible builds
+# - Read-only root filesystem compatible
+# - Health checks for orchestration integration
+# - Minimal attack surface with essential packages only
+#
+# Final image target: ~200MB
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STAGE 1: Base image with pnpm and dependencies
+# STAGE 1: Base - Setup pnpm and system dependencies
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS base
+
 WORKDIR /app
 
-# Install pnpm globally and depsify tools
+# Install pnpm package manager globally
 RUN npm install -g pnpm@9.15.0
-RUN apk add --no-cache libc6-compat
+
+# Install libc compatibility for glibc-dependent packages
+RUN apk add --no-cache libc6-compat curl
+
+# Create non-root user for security (must exist before production stage)
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STAGE 2: Install dependencies
+# STAGE 2: Dependencies - Install production dependencies only
 # ─────────────────────────────────────────────────────────────────────────────
 FROM base AS deps
 
-# Copy workspace and lockfile
+WORKDIR /app
+
+# Copy workspace configuration
 COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy package definitions for all packages and apps
 COPY packages/ ./packages/
 COPY apps/api/ ./apps/api/
 
-# Install dependencies in frozen mode (faster, more secure in CI)
-RUN pnpm install --frozen-lockfile
+# Install dependencies with frozen lockfile (reproducible builds)
+# --frozen-lockfile prevents any lockfile changes and ensures deterministic installs
+RUN pnpm install --frozen-lockfile --production=false
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STAGE 3: Build application
+# STAGE 3: Builder - Compile TypeScript and build packages
 # ─────────────────────────────────────────────────────────────────────────────
 FROM deps AS build
 
-# Generate Prisma client (critical for ORM to work)
-# This must run before TypeScript compilation
+WORKDIR /app
+
+# Generate Prisma client - must happen before TypeScript compilation
 RUN pnpm --filter @witylogix/db db:generate
 
-# Build only necessary packages (core, db, types, validators) and API
-# turbo build is smart about dependency graph and only builds what's needed
-RUN pnpm --filter "@witylogix/db" build
-RUN pnpm --filter "@witylogix/types" build
-RUN pnpm --filter "@witylogix/validators" build
-RUN pnpm --filter "@witylogix/core" build
-RUN pnpm --filter "@witylogix/api" build
+# Build dependency packages in correct order
+RUN pnpm --filter @witylogix/types build && \
+    pnpm --filter @witylogix/validators build && \
+    pnpm --filter @witylogix/core build && \
+    pnpm --filter @witylogix/db build && \
+    pnpm --filter @witylogix/api build
+
+# Prune dependencies to production-only (removes devDependencies)
+RUN pnpm prune --prod
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STAGE 4: Production runtime
+# STAGE 4: Production - Minimal runtime image
 # ─────────────────────────────────────────────────────────────────────────────
-FROM base AS production
+FROM node:20-alpine AS production
 
-# Copy node_modules from deps stage (only includes prod dependencies after prune)
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/ ./packages/
+WORKDIR /app
 
-# Copy built API code
-COPY --from=build /app/apps/api/dist/ ./apps/api/dist/
-COPY --from=build /app/apps/api/package.json ./apps/api/
+# Install runtime dependencies only (curl for health checks)
+RUN apk add --no-cache libc6-compat curl && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
 
-# Copy Prisma schema and migrations (needed for runtime and potential migrations)
-COPY --from=build /app/packages/db/prisma ./packages/db/prisma/
-COPY --from=build /app/packages/db/dist ./packages/db/dist/
+# Copy pruned node_modules from build stage
+COPY --from=build --chown=node:nodejs /app/node_modules ./node_modules
 
-# Expose API port (configurable via PORT env var)
+# Copy package definitions
+COPY --from=build --chown=node:nodejs /app/packages/ ./packages/
+COPY --from=build --chown=node:nodejs /app/apps/api/ ./apps/api/
+
+# Copy built application code
+COPY --from=build --chown=node:nodejs /app/apps/api/dist/ ./apps/api/dist/
+
+# Copy Prisma schema and migrations (required for runtime operations)
+COPY --from=build --chown=node:nodejs /app/packages/db/prisma/ ./packages/db/prisma/
+
+# Set environment
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Expose API port
 EXPOSE 3001
 
-# Health check endpoint: ensures container restarts if API is unresponsive
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+# Switch to non-root user for security
+USER node
 
-# Start API server (Node.js will use dist/server.js)
+# Container labels for metadata and tracking
+LABEL maintainer="Witylogix Team"
+LABEL version="1.0"
+LABEL description="Production-hardened Fastify API server with security hardening"
+
+# Health check: API must respond with 200 to /health endpoint
+# This is used by Docker and orchestrators to determine service health
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start API server
 CMD ["node", "apps/api/dist/server.js"]

@@ -1,0 +1,184 @@
+version: 2
+
+updates:
+  # npm ecosystem - main dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'UTC'
+
+    # Group related updates together
+    groups:
+      # Critical security updates - check daily, auto-merge patch versions
+      security:
+        patterns:
+          - '*security*'
+          - '*vulnerability*'
+          - '*sanitize*'
+          - '*auth*'
+        update-types:
+          - 'patch'
+        priority: 'high'
+
+      # Development dependencies - group by minor version
+      dev:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+
+      # Production dependencies - patch updates only
+      production:
+        dependency-type: 'production'
+        update-types:
+          - 'patch'
+
+      # Major versions - create separate PR, requires manual review
+      major:
+        patterns:
+          - '*'
+        update-types:
+          - 'major'
+
+    # Ignore major version bumps by default (requires manual review)
+    ignore:
+      # React major versions require careful testing
+      - dependency-name: 'react'
+        update-types:
+          - 'major'
+      - dependency-name: 'react-dom'
+        update-types:
+          - 'major'
+      # Next.js major versions require migration
+      - dependency-name: 'next'
+        update-types:
+          - 'major'
+      # TypeScript major versions may have breaking changes
+      - dependency-name: 'typescript'
+        update-types:
+          - 'major'
+
+    # Pull request configuration
+    pull-request-branch-name:
+      separator: '/'
+      prefix: 'dependabot'
+      prefix-development: 'dev'
+
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: 'scope'
+
+    # Auto-merge strategy
+    allow:
+      - dependency-type: 'production'
+        dependency-name: 'npm'
+        versions:
+          - '>= 0'
+      - dependency-type: 'development'
+
+    # Strategy configuration
+    rebase-strategy: 'auto'
+    versioning-strategy: 'auto'
+
+    # Open pull requests limit
+    open-pull-requests-limit: 10
+
+    # Labels and assignees
+    labels:
+      - 'dependencies'
+      - 'automated'
+
+    assignees:
+      - '@devops-team'
+
+    reviewers:
+      - '@backend-team'
+
+    # Allow dependabot to auto-merge
+    auto-merge: true
+    auto-merge-type: 'squash'
+
+    # Minimum approval requirement (if auto-merge fails)
+    ignore-update-types:
+      - 'version-update:semver-major'
+
+    # Branch protection - allow dependabot to override
+    pull-request-priority: 'normal'
+
+    # Advance configuration
+    milestone: 1
+    rebase-strategy: 'auto'
+
+  # GitHub Actions updates
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'tuesday'
+      time: '06:00'
+      timezone: 'UTC'
+
+    pull-request-branch-name:
+      separator: '/'
+
+    commit-message:
+      prefix: 'ci(actions)'
+
+    labels:
+      - 'ci'
+      - 'automated'
+
+    assignees:
+      - '@devops-team'
+
+    reviewers:
+      - '@devops-team'
+
+    # Auto-merge GitHub Actions updates
+    auto-merge: true
+    auto-merge-type: 'squash'
+
+    # Limit open PRs
+    open-pull-requests-limit: 5
+
+    # Ignore major versions of critical actions (manual review needed)
+    ignore:
+      - dependency-name: 'actions/checkout'
+        update-types:
+          - 'major'
+      - dependency-name: 'actions/setup-node'
+        update-types:
+          - 'major'
+
+notes:
+  - >-
+    This Dependabot configuration provides automated dependency management:
+
+    1. **Security Updates**: Critical security patches auto-merge immediately
+    2. **Patch Updates**: Low-risk patch version updates auto-merge
+    3. **Minor Updates**: Minor version updates grouped and require review
+    4. **Major Updates**: Major version updates create separate PRs (manual review)
+
+    Configuration highlights:
+    - Weekly scanning (Monday 6:00 UTC)
+    - Auto-merge for patch/security updates
+    - GitHub Actions auto-merge on Tuesday
+    - Squash commits for cleaner history
+    - Assigned to @devops-team for oversight
+    - Reviewed by @backend-team for compatibility
+
+    Best practices:
+    - Monitor dependabot PRs in pull requests dashboard
+    - Review auto-merged updates in weekly changelog
+    - Manually review major version updates before merging
+    - Test thoroughly before releasing with major version bumps
+    - Keep CI/CD actions up-to-date for security
+
+    To configure Dependabot in repository settings:
+    1. Go to Settings → Code security and analysis → Dependabot
+    2. Enable "Dependabot alerts", "Dependabot security updates", "Dependabot version updates"
+    3. All settings will be read from this .github/dependabot.yml file

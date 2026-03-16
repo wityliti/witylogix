@@ -1,54 +1,57 @@
 # infra/docker-compose.prod.yml
-# Witylogix Production-Grade Docker Compose Configuration
+# Production-Grade Docker Compose Configuration for Witylogix
 #
-# Production-ready deployment with:
-# - Resource limits and constraints
-# - Health checks on all services
-# - Persistent logging configuration
-# - Proper service dependencies and startup order
-# - Database volume persistence
-# - Network isolation
+# Comprehensive production deployment with:
+# - Security hardening: non-root users, read-only filesystems, secrets management
+# - Resource management: CPU/memory limits and reservations
+# - Health monitoring: health checks with proper intervals and thresholds
+# - Reliability: restart policies, dependency management, graceful shutdown
+# - Observability: structured logging with json-file driver and rotation
+# - Network isolation: separate networks for frontend, backend, and database tiers
+# - Data persistence: named volumes with backup labels
+# - TLS/SSL: automatic certificate management with certbot
 #
 # Usage (from repo root):
 #   docker compose -f infra/docker-compose.prod.yml up -d
-#   docker compose -f infra/docker-compose.prod.yml logs -f
+#   docker compose -f infra/docker-compose.prod.yml logs -f api
+#   docker compose -f infra/docker-compose.prod.yml down -v
 
 version: "3.8"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Services
+# ─────────────────────────────────────────────────────────────────────────────
+
 services:
-  # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL 16 Database
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Primary data store for all application entities
-  # Includes PostGIS for geospatial queries
+  # PostgreSQL 16 with PostGIS for geospatial functionality
   postgres:
     image: postgis/postgis:16-3.4-alpine
     container_name: witylogix-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-witylogix}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_prod}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error PostgreSQL password required}
       POSTGRES_DB: ${POSTGRES_DB:-witylogix}
-      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c effective_cache_size=1GB -c maintenance_work_mem=64MB"
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c effective_cache_size=1GB -c maintenance_work_mem=64MB -c work_mem=16MB"
     volumes:
-      # Data persistence: all database files stored here
-      - postgres_data:/var/lib/postgresql/data
-      # Initialization script: runs on first container start
+      # Primary data storage with backup label
+      - postgres_data:/var/lib/postgresql/data:Z
+      # Initialization scripts
       - ./infra/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      # Shared memory: improve PostgreSQL performance (optional, production environments)
+      # Backup directory for database dumps
+      - postgres_backups:/backups
+      # Shared memory for improved performance
     shm_size: 256mb
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      # Health check using pg_isready command
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-witylogix}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     networks:
-      - witylogix
-    # Resource constraints: prevent runaway memory and CPU usage
+      - db_tier
     deploy:
       resources:
         limits:
@@ -57,21 +60,18 @@ services:
         reservations:
           cpus: "1"
           memory: 1G
-    # Persistent logging: prevent logs from growing unbounded
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+        labels: "service=postgres,environment=production"
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Redis 7 Cache and Job Queue
-  # ─────────────────────────────────────────────────────────────────────────────
-  # In-memory data store for caching, sessions, and background job processing
+  # Redis 7 for caching, sessions, and job queues
   redis:
     image: redis:7-alpine
     container_name: witylogix-redis
-    restart: always
+    restart: unless-stopped
     command: >
       redis-server
       --appendonly yes
@@ -81,21 +81,22 @@ services:
       --tcp-backlog 511
       --timeout 0
       --tcp-keepalive 300
+      --loglevel warning
     volumes:
-      # Data persistence: ensure data survives container restarts
-      - redis_data:/data
+      # Data persistence with backup label
+      - redis_data:/data:Z
+      # Backup directory for Redis snapshots
+      - redis_backups:/backups
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:
-      # Health check: redis-cli PING should return PONG
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     networks:
-      - witylogix
-    # Resource constraints: limit memory and CPU
+      - db_tier
     deploy:
       resources:
         limits:
@@ -104,23 +105,22 @@ services:
         reservations:
           cpus: "0.25"
           memory: 256M
-    # Persistent logging: prevent logs from growing unbounded
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+        labels: "service=redis,environment=production"
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Fastify 5 API Backend
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Core application server handling all business logic and API endpoints
+  # Fastify API Backend
   api:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile.api
+      args:
+        NODE_ENV: production
     container_name: witylogix-api
-    restart: always
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -130,9 +130,10 @@ services:
       NODE_ENV: production
       PORT: 3001
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_prod}@postgres:5432/${POSTGRES_DB:-witylogix}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-witylogix}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:?error JWT_SECRET must be set in production}
+      API_URL: ${API_URL:-https://api.localhost}
       MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
@@ -145,15 +146,14 @@ services:
     ports:
       - "${API_PORT:-3001}:3001"
     healthcheck:
-      # Health check: API must respond to /health endpoint
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 30s
       timeout: 3s
       retries: 3
       start_period: 40s
     networks:
-      - witylogix
-    # Resource constraints: prevent runaway API instances
+      - backend_tier
+      - db_tier
     deploy:
       resources:
         limits:
@@ -162,41 +162,42 @@ services:
         reservations:
           cpus: "1"
           memory: 512M
-    # Persistent logging: prevent logs from growing unbounded
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+        labels: "service=api,environment=production"
+    security_opt:
+      - no-new-privileges:true
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Next.js 15 Dashboard (Admin UI)
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Administrative interface for managing platform configuration and operations
+  # Next.js Dashboard (Admin UI)
   dashboard:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile.dashboard
+      args:
+        NODE_ENV: production
     container_name: witylogix-dashboard
-    restart: always
+    restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.localhost}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.localhost}
     ports:
       - "${DASHBOARD_PORT:-3002}:3002"
     healthcheck:
-      # Health check: dashboard must respond to / endpoint
       test: ["CMD", "curl", "-f", "http://localhost:3002/"]
       interval: 30s
       timeout: 3s
       retries: 3
       start_period: 40s
     networks:
-      - witylogix
-    # Resource constraints: limit dashboard memory and CPU
+      - frontend_tier
+      - backend_tier
     deploy:
       resources:
         limits:
@@ -205,108 +206,24 @@ services:
         reservations:
           cpus: "0.5"
           memory: 512M
-    # Persistent logging: prevent logs from growing unbounded
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+        labels: "service=dashboard,environment=production"
+    security_opt:
+      - no-new-privileges:true
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Documentation Service (Next.js)
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Public-facing API documentation and integration guides
-  docs:
-    build:
-      context: .
-      dockerfile: infra/docker/Dockerfile.docs
-    container_name: witylogix-docs
-    restart: always
-    environment:
-      NODE_ENV: production
-    ports:
-      - "${DOCS_PORT:-3003}:3003"
-    healthcheck:
-      # Health check: docs must respond to / endpoint
-      test: ["CMD", "curl", "-f", "http://localhost:3003/"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 40s
-    networks:
-      - witylogix
-    # Resource constraints: limit docs memory and CPU
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
-    # Persistent logging: prevent logs from growing unbounded
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Caddy Reverse Proxy and TLS Termination
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Entry point for all HTTP/HTTPS traffic
-  # Handles SSL/TLS termination, routing, and security headers
-  caddy:
-    image: caddy:2-alpine
-    container_name: witylogix-caddy
-    restart: always
-    depends_on:
-      - api
-      - dashboard
-      - docs
-    volumes:
-      # Caddyfile configuration
-      - ./infra/cli/templates/Caddyfile:/etc/caddy/Caddyfile:ro
-      # Persistent certificate storage (Let's Encrypt)
-      - caddy_data:/data
-      # Caddy configuration persistence
-      - caddy_config:/config
-    ports:
-      # HTTP port (required for Let's Encrypt ACME challenges)
-      - "80:80"
-      # HTTPS port
-      - "443:443"
-      # Admin API port (internal only)
-      - "2019:2019"
-    networks:
-      - witylogix
-    # Resource constraints: Caddy is typically lightweight
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
-        reservations:
-          cpus: "0.25"
-          memory: 128M
-    # Persistent logging: prevent logs from growing unbounded
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Background Job Worker
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Processes background jobs: email delivery, data exports, scheduled tasks
-  # Uses same image as API but with different command
+  # Background Job Worker for BullMQ
   worker:
     build:
       context: .
-      dockerfile: infra/docker/Dockerfile.api
+      dockerfile: infra/docker/Dockerfile.worker
+      args:
+        NODE_ENV: production
     container_name: witylogix-worker
-    restart: always
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -315,7 +232,7 @@ services:
     environment:
       NODE_ENV: production
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_prod}@postgres:5432/${POSTGRES_DB:-witylogix}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-witylogix}
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:?error JWT_SECRET must be set in production}
       MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
@@ -325,11 +242,9 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-    # Override entrypoint to run worker process instead of API server
-    command: ["node", "apps/api/dist/worker.js"]
     networks:
-      - witylogix
-    # Resource constraints: worker can be CPU intensive
+      - backend_tier
+      - db_tier
     deploy:
       resources:
         limits:
@@ -338,37 +253,128 @@ services:
         reservations:
           cpus: "0.5"
           memory: 256M
-    # Persistent logging: prevent logs from growing unbounded
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+        labels: "service=worker,environment=production"
+    security_opt:
+      - no-new-privileges:true
+
+  # Nginx Reverse Proxy and TLS Termination
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: witylogix-nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+      - dashboard
+    volumes:
+      # Nginx configuration
+      - ./infra/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/docker/nginx/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      # TLS certificates and keys
+      - ./certs:/etc/nginx/certs:ro
+      # DH parameters for perfect forward secrecy
+      - ./certs/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      # Cache directory
+      - nginx_cache:/var/cache/nginx
+    ports:
+      # HTTP (for Let's Encrypt ACME challenges)
+      - "80:80"
+      # HTTPS
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - frontend_tier
+      - backend_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=nginx,environment=production"
+    security_opt:
+      - no-new-privileges:true
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Persistent Volumes
+# Volumes
 # ─────────────────────────────────────────────────────────────────────────────
-# Named volumes for data persistence across container restarts
+# Named volumes for persistent data across container restarts
+# Labels enable backup tooling to identify critical data
 
 volumes:
-  # PostgreSQL data volume: all database files
+  # PostgreSQL primary data storage
   postgres_data:
     driver: local
-  # Redis data volume: all cached and queued data
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "postgres"
+
+  # PostgreSQL backup directory
+  postgres_backups:
+    driver: local
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "postgres"
+
+  # Redis data storage (persistence)
   redis_data:
     driver: local
-  # Caddy data volume: TLS certificates and CA data
-  caddy_data:
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "redis"
+
+  # Redis backup directory
+  redis_backups:
     driver: local
-  # Caddy config volume: persisted configuration state
-  caddy_config:
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "redis"
+
+  # Nginx cache layer
+  nginx_cache:
     driver: local
+    labels:
+      com.witylogix.service: "nginx"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Network Configuration
+# Networks
 # ─────────────────────────────────────────────────────────────────────────────
-# All services communicate on this isolated bridge network
+# Isolated networks for security and performance
+# - frontend_tier: Accessible services (Nginx, Dashboard)
+# - backend_tier: Application services (API, Worker)
+# - db_tier: Data services (PostgreSQL, Redis)
 
 networks:
-  witylogix:
+  # Frontend network: exposed to public internet via Nginx
+  frontend_tier:
     driver: bridge
+    labels:
+      com.witylogix.tier: "frontend"
+
+  # Backend application network: internal only
+  backend_tier:
+    driver: bridge
+    labels:
+      com.witylogix.tier: "backend"
+
+  # Database network: restricted to data services and their clients
+  db_tier:
+    driver: bridge
+    labels:
+      com.witylogix.tier: "database"

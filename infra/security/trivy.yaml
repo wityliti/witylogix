@@ -1,0 +1,149 @@
+# infra/security/trivy.yaml
+# Trivy Container Image Scanner Configuration
+#
+# Trivy is an open-source vulnerability scanner for:
+# - Container images (Docker, OCI)
+# - Filesystems
+# - Git repositories
+# - Virtual machines
+#
+# This configuration scans production container images for security vulnerabilities
+#
+# Usage:
+#   trivy config infra/security/trivy.yaml
+#   trivy image --config infra/security/trivy.yaml witylogix-api:latest
+#   trivy image --config infra/security/trivy.yaml witylogix-dashboard:latest
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Severity Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Only report vulnerabilities at these severity levels
+# CRITICAL: exploitable in common scenarios, requires immediate patching
+# HIGH: exploitable in most scenarios, should be patched urgently
+# MEDIUM: may be exploitable in certain conditions
+# LOW: unlikely to be exploitable, but track anyway
+# UNKNOWN: unassigned severity
+severity:
+  - CRITICAL
+  - HIGH
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vulnerability Database
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Update vulnerability database before scanning
+# Options: true (always update), false (use cached)
+db:
+  repository: ghcr.io/aquasecurity/trivy-db
+  skip-update: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Scanning Options
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Types of artifacts to scan
+scanners:
+  - vuln      # Vulnerability scanner
+  - config    # Configuration scanner (IaC)
+  - secret    # Secret scanner
+
+# Scan these file types
+file-patterns:
+  - Dockerfile
+  - docker-compose.yml
+  - docker-compose.*.yml
+  - nginx.conf
+  - "*.pem"
+  - "*.key"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Filtering and Exceptions
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Skip scanning unfixed vulnerabilities
+# When set to true, only reports vulnerabilities with available fixes
+skip-update: false
+
+# Ignore specific vulnerability IDs (use sparingly, document reasons)
+# Format: CVE-YYYY-NNNNN
+ignore-unfixed: true
+
+# Skip scanning certain file paths
+skip-files:
+  - "**/__tests__/**"
+  - "**/test/**"
+  - "**/*.test.js"
+  - "**/*.spec.js"
+  - "**/.storybook/**"
+  - "**/storybook-static/**"
+  - "**/docs/**"
+  - "**/coverage/**"
+
+# Skip directories entirely
+skip-dirs:
+  - "docs"
+  - "test"
+  - "tests"
+  - "__tests__"
+  - "coverage"
+  - ".storybook"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reporting
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Output format: table (human-readable), json, sarif, cyclonedx
+format: table
+
+# Also output in JSON for machine processing
+list-all-pkgs: false
+
+# Show detailed vulnerability information
+vulnerability:
+  skip-db-update: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Repository Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+# If scanning private registries, configure authentication
+registry:
+  insecure: false
+  skip-tls: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Cache Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Cache directory for downloaded data
+cache:
+  dir: /tmp/trivy-cache
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI Command Examples
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Scan a local Docker image:
+#   trivy image --config infra/security/trivy.yaml witylogix-api:latest
+#
+# Scan and output JSON report:
+#   trivy image --config infra/security/trivy.yaml --format json \
+#     --output report.json witylogix-api:latest
+#
+# Scan remote image from Docker Hub:
+#   trivy image --config infra/security/trivy.yaml node:20-alpine
+#
+# Scan a directory:
+#   trivy fs --config infra/security/trivy.yaml /app
+#
+# Scan a Git repository:
+#   trivy repo --config infra/security/trivy.yaml https://github.com/witylogix/witylogix
+#
+# Generate SBOM (Software Bill of Materials):
+#   trivy image --config infra/security/trivy.yaml --format cyclonedx \
+#     --output sbom.json witylogix-api:latest
+#
+# Fail build on HIGH or CRITICAL vulnerabilities:
+#   trivy image --config infra/security/trivy.yaml \
+#     --exit-code 1 --severity HIGH,CRITICAL witylogix-api:latest

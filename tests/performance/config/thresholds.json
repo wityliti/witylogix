@@ -1,0 +1,61 @@
+{
+  "description": "Performance SLA Thresholds Configuration",
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-16",
+  "global": {
+    "responseTime": {
+      "p50": 100,
+      "p95": 500,
+      "p99": 1000,
+      "avg": 250,
+      "unit": "ms"
+    },
+    "errorRate": {
+      "max": 0.01,
+      "description": "Maximum 1% error rate"
+    },
+    "successRate": {
+      "min": 0.99,
+      "description": "Minimum 99% success rate"
+    }
+  },
+  "endpoints": {
+    "auth": {
+      "login": {
+        "responseTime": { "p95": 500, "p99": 1000, "avg": 250 },
+        "errorRate": { "max": 0.01 }
+      },
+      "register": {
+        "responseTime": { "p95": 800, "p99": 1500, "avg": 500 },
+        "errorRate": { "max": 0.02 }
+      },
+      "tokenRefresh": {
+        "responseTime": { "p95": 300, "p99": 500, "avg": 200 },
+        "errorRate": { "max": 0.01 }
+      }
+    },
+    "orders": {
+      "create": { "responseTime": { "p95": 500, "p99": 1000 } },
+      "list": { "responseTime": { "p95": 200, "p99": 400 } },
+      "get": { "responseTime": { "p95": 150, "p99": 300 } },
+      "update": { "responseTime": { "p95": 400, "p99": 800 } }
+    },
+    "webhooks": {
+      "delivery": {
+        "responseTime": { "p95": 2000, "p99": 5000 },
+        "retrySuccess": { "min": 0.95 }
+      }
+    }
+  },
+  "database": {
+    "queryTime": { "p95": 100, "p99": 200, "avg": 50, "unit": "ms" }
+  },
+  "rateLimiting": {
+    "perUser": { "requestsPerSecond": 100, "requestsPerMinute": 6000 },
+    "perTenant": { "requestsPerSecond": 1000, "requestsPerMinute": 60000 }
+  },
+  "multiTenant": {
+    "dataIsolation": { "violations": { "max": 0, "critical": true } },
+    "unauthorizedAccess": { "max": 0, "critical": true }
+  }
+}
