@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './tailwind-tokens.css';
+@import './responsive.css';
 
 @tailwind base;
 @tailwind components;
