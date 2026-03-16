@@ -47,6 +47,38 @@ export type {
 export { MapboxProvider } from "./mapbox-provider.js";
 export { OSRMProvider } from "./osrm-provider.js";
 
+// ─── Multi-Provider Routing Orchestrator ─────────────────────
+export type {
+  RoutingResult,
+  ProviderConfig,
+  OrchestratorConfig,
+  ProviderMetrics,
+  OrchestratorMetrics,
+} from "./routing-orchestrator.js";
+export { RoutingOrchestrator } from "./routing-orchestrator.js";
+
+// ─── Geocoding Service ──────────────────────────────────────
+export type {
+  GeocodingResult,
+  AutocompleteResult,
+  ReverseGeocodeResult,
+  GeocodingServiceConfig,
+} from "./geocoding-service.js";
+export { GeocodingService } from "./geocoding-service.js";
+
+// ─── Route Caching ──────────────────────────────────────────
+export type { CacheStats, CacheEntry } from "./route-cache.js";
+export { RouteCache } from "./route-cache.js";
+
+// ─── Routing Benchmark ──────────────────────────────────────
+export type {
+  BenchmarkRoute,
+  ProviderBenchmarkResult,
+  BenchmarkSummary,
+  BenchmarkReport,
+} from "./routing-benchmark.js";
+export { RoutingBenchmark, getDefaultBenchmarkRoutes, getDefaultProviders } from "./routing-benchmark.js";
+
 import type {
   RoutingProvider,
   RoutingProviderSlug,

@@ -4,6 +4,41 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.1] - 2026-03-16 — Routing, Maps & Real-Time Tracking
+
+### Added
+- **Routing orchestrator** — Multi-provider failover (Google, Mapbox, HERE, TomTom), health-weighted provider selection, automatic degradation, retry with backoff
+- **Geocoding service** — Multi-provider geocoding with result caching, fuzzy matching, configurable priority
+- **Route cache** — TTL-based caching with LRU eviction for computed routes
+- **Routing benchmark suite** — Provider comparison for latency, accuracy, cost across real-world scenarios
+- **Google Routes API v2 SDK** — Directions, distance matrix, route optimization, traffic-aware routing
+- **Mapbox Directions API SDK** — Turn-by-turn directions, isochrone, optimization, annotations
+- **HERE Routing API v8 SDK** — Car/truck/pedestrian routing, waypoint sequence, avoid areas, toll cost
+- **TomTom Routing API v1 SDK** — Route calculation, reachable range, matrix routing, traffic incidents
+- **Unified routing types** — Shared interfaces across all routing providers
+- **Polyline utilities** — Encode/decode for Google Encoded Polyline and Mapbox polyline6 formats
+- **Provider comparison engine** — Multi-criteria scoring (latency, accuracy, cost, features) across providers
+- **Samsara telematics SDK** — Vehicles, drivers, locations, alerts, fuel/energy, DVIR, HOS
+- **Geotab MyGeotab SDK** — Device data, trips, exceptions, zones, diagnostic data
+- **Vehicle feed service** — Real-time vehicle position feed with WebSocket push and configurable polling
+- **Telematics normalizer v2** — Unified data model across Samsara and Geotab with extensible adapter pattern
+- **Geofence manager** — CRUD operations plus real-time entry/exit detection with event emission
+- **Trip replay service** — Historical trip playback with breadcrumb trail and speed visualization
+- **Live delivery map** — Mapbox GL JS with driver markers, animated route polylines, clustering, driver popover, zoom/center/layer controls, status legend, delivery sidebar with filtering
+- **Route planning wizard** — 5-step multi-stop planner (stops → constraints → optimize → review → dispatch)
+- **Routes list view** — Filterable route list with status indicators and quick actions
+- **Stop list editor** — Drag-and-drop stop management with geocoding and time windows
+- **Route summary** — Distance, duration, cost breakdown, and optimization savings display
+- **Route optimizer controls** — Strategy selector (fastest, shortest, balanced, eco-friendly)
+- **AI route optimizer** — Nearest-neighbor construction + 2-opt/3-opt local search improvement
+- **ETA predictor** — ML-based prediction using traffic patterns, weather, driver history, time-of-day
+- **Delivery zone analyzer** — Geographic clustering with workload balancing across zones
+- **Smart driver assignment** — Skill matching, proximity scoring, workload balancing, availability check
+- **Optimization API** — Unified endpoint for route optimization, ETA prediction, zone analysis, driver assignment
+- **Map UI components** — Route timeline, driver info card, ETA countdown, delivery status pill, distance badge, animated counter
+- **Vehicle tracking hook** — React hook for real-time vehicle position updates via WebSocket
+- **17 test files** — Unit tests (routing SDKs, telematics, AI modules), integration tests (accuracy, failover, data integrity), E2E (map rendering)
+
 ## [Sprint 8.0] - 2026-03-16 — Integration Infrastructure & P0 Core
 
 ### Added

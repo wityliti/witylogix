@@ -44,6 +44,12 @@ export {
 } from "./use-realtime";
 
 export {
+  useMapTracking,
+  type UseMapTrackingConfig,
+  type UseMapTrackingReturn,
+} from "./use-map-tracking";
+
+export {
   useRealtimeMetrics,
   useAnimatedMetric,
   useFormattedSLA,

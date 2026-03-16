@@ -186,3 +186,6 @@ export {
   exportSelectedRows,
   buildColumnHeaderMap,
 } from "./data-table-export";
+
+// Animated Counter
+export { AnimatedCounter } from "./animated-counter";

@@ -1,7 +1,8 @@
 /**
  * AI Module Exports
  *
- * Exports for semantic search, smart suggestions, NL parsing, and ranking.
+ * Exports for semantic search, smart suggestions, NL parsing, ranking,
+ * and route optimization engines.
  */
 
 // ─── Semantic Search ────────────────────────────────────────────────────
@@ -94,3 +95,74 @@ export {
   type RecommendationFeedback,
   type RecommendationAlgorithm,
 } from "./recommendation-api.js";
+
+// ─── Route Optimization ────────────────────────────────────────────────
+
+export {
+  optimizeRoutes,
+  type OptimizationMode,
+  type Coordinate,
+  type TimeWindow,
+  type Stop,
+  type Vehicle,
+  type RouteSequence,
+  type Break,
+  type OptimizationResult,
+  type OptimizationRequest,
+} from "./route-optimizer.js";
+
+// ─── ETA Prediction ────────────────────────────────────────────────────
+
+export {
+  createETAPredictor,
+  getETAPredictor,
+  ETAPredictor,
+  type VehicleType,
+  type WeatherCondition,
+  type RouteSegment,
+  type DeliveryEvent,
+  type ETAPrediction,
+  type RouteProgress,
+  type HistoricalSpeedData,
+} from "./eta-predictor.js";
+
+// ─── Delivery Zone Analysis ────────────────────────────────────────────
+
+export {
+  createDeliveryZoneAnalyzer,
+  DeliveryZoneAnalyzer,
+  type Zone,
+  type WeeklyPattern,
+  type HourlyDistribution,
+  type HeatMapData,
+  type GeoJSONFeature,
+  type GeoJSONCollection,
+  type Delivery,
+} from "./delivery-zone-analyzer.js";
+
+// ─── Smart Driver Assignment ────────────────────────────────────────────
+
+export {
+  createSmartDriverAssignment,
+  SmartDriverAssignment,
+  type Order,
+  type Driver,
+  type DriverScore,
+  type AssignmentResult,
+  type BatchAssignmentResult,
+} from "./smart-driver-assignment.js";
+
+// ─── Optimization API ──────────────────────────────────────────────────
+
+export {
+  handleOptimizeRoutes,
+  handlePredictETA,
+  handleGetZoneHeatmap,
+  handleAssignDrivers,
+  handleCalculateSavings,
+  type ApiResponse,
+  type OptimizeRoutesRequest,
+  type ETARequest,
+  type DeliveryZoneRequest,
+  type DriverAssignmentRequest,
+} from "./optimization-api.js";
