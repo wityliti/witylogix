@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 
 export default function DesignSystemLayout({ children }: { children: ReactNode }) {
   const navItems = [
-    { href: "/design-system/tokens", label: "Design Tokens" },
-    { href: "/design-system/components", label: "Components" },
+    { href: "/design-system", label: "Components" },
+    { href: "/design-system/tokens", label: "Tokens" },
+    { href: "/design-system/forms", label: "Forms" },
   ];
 
   return (

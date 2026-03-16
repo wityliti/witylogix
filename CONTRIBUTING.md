@@ -6,13 +6,15 @@ Thank you for your interest in contributing to Witylogix! This document provides
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
 - [Development Workflow](#development-workflow)
-- [Code Style](#code-style)
-- [Testing](#testing)
+- [Code Style Guide](#code-style-guide)
+- [Architecture Overview](#architecture-overview)
+- [Testing Requirements](#testing-requirements)
+- [Pull Request Process](#pull-request-process)
 - [Commit Conventions](#commit-conventions)
-- [Pull Request Guidelines](#pull-request-guidelines)
-- [Architecture Notes](#architecture-notes)
+- [Issue Guidelines](#issue-guidelines)
+- [Community Guidelines](#community-guidelines)
+- [Recognition & Credits](#recognition--credits)
 - [License](#license)
 
 ## Code of Conduct
@@ -32,59 +34,37 @@ Before you begin, ensure you have the following installed:
 
 ### Installation Steps
 
-1. **Clone the repository**
+1. **Fork the repository** on GitHub
+
+2. **Clone your fork locally**
 
 ```bash
-git clone https://github.com/witylogix/witylogix-platform.git
+git clone https://github.com/YOUR-USERNAME/witylogix-platform.git
 cd witylogix-platform
+git remote add upstream https://github.com/witylogix/witylogix-platform.git
 ```
 
-2. **Install dependencies**
+3. **Install dependencies**
 
 ```bash
 pnpm install
 ```
 
-3. **Set up environment variables**
+4. **Set up environment variables**
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your local development configuration:
+Edit `.env.local` with your local development configuration. See `docs/development/SETUP.md` for detailed environment configuration.
 
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/witylogix_dev
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# API
-API_PORT=3001
-API_HOST=localhost
-
-# Dashboard
-DASHBOARD_PORT=3000
-
-# Shopify (if working on Shopify integration)
-SHOPIFY_API_KEY=your_key_here
-SHOPIFY_API_SECRET=your_secret_here
-```
-
-4. **Start development services**
+5. **Start development services**
 
 ```bash
 docker compose up -d
 ```
 
-This starts PostgreSQL and Redis containers. Verify they're running:
-
-```bash
-docker compose ps
-```
-
-5. **Generate Prisma client and run migrations**
+6. **Generate Prisma client and run migrations**
 
 ```bash
 pnpm db:generate
@@ -92,59 +72,15 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-6. **Start development servers**
+7. **Start development servers**
 
 ```bash
 pnpm dev
 ```
 
-This launches all development servers in watch mode using Turbo.
-
-## Project Structure
-
-Witylogix is a monorepo built with **Turborepo**, organized as follows:
-
-### Packages (`packages/`)
-
-Core shared packages used across applications:
-
-- **`core`** - Core business logic, utilities, and helpers
-- **`db`** - Prisma ORM setup and database schema definitions
-- **`types`** - TypeScript type definitions shared across the platform
-- **`validators`** - Input validation schemas and utilities
-- **`framework`** - Custom framework abstractions and utilities
-- **`workflows`** - Workflow definitions and orchestration logic
-- **`extension-core`** - Core functionality for extension development
-- **`carrier-service`** - Carrier integration service
-
-### Applications (`apps/`)
-
-Production applications:
-
-- **`api`** - Backend API (Fastify server, port 3001)
-- **`dashboard`** - Admin dashboard (Next.js, port 3000)
-- **`shopify-app`** - Shopify integration app
-- **`driver-app`** - Mobile driver application
-- **`tracking-page`** - Public tracking page for customers
-
-### Extensions (`extensions/`)
-
-Merchant-facing UI extensions:
-
-- **`checkout-ui`** - Shopify checkout customization extension
-- **`pos-ui`** - Point-of-sale integration extension
-
-### Configuration Files
-
-- **`turbo.json`** - Turborepo configuration
-- **`pnpm-workspace.yaml`** - pnpm workspace definition
-- **`docker-compose.yml`** - Development services (PostgreSQL, Redis)
-- **`Dockerfile`** - Multi-stage production build
-- **`.dockerignore`** - Docker build optimization
-
 ## Development Workflow
 
-### Branch Naming
+### Branch Naming Conventions
 
 Follow these conventions for branch names:
 
@@ -153,30 +89,43 @@ Follow these conventions for branch names:
 - **Sprint work**: `sprint-X/description`
 - **Documentation**: `docs/description`
 - **Refactoring**: `refactor/description`
+- **Performance**: `perf/description`
 
-Example: `feature/multi-carrier-support` or `fix/database-connection-pool`
+Example: `feature/multi-carrier-support`, `fix/database-connection-pool`
 
 ### Creating a Feature
 
-1. Create a new branch from `main`:
+1. **Create and checkout a feature branch**
 
 ```bash
-git checkout -b feature/your-feature-name
+git checkout -b feature/your-feature-name upstream/main
 ```
 
-2. Make your changes across the monorepo packages/apps as needed
+2. **Make your changes** across monorepo packages/apps as needed
 
-3. Test your changes locally:
+3. **Keep your branch up to date**
 
 ```bash
-pnpm test
-pnpm lint
-pnpm typecheck
+git fetch upstream
+git rebase upstream/main
 ```
 
-4. Commit your changes using [Conventional Commits](#commit-conventions)
+4. **Test your changes locally**
 
-5. Push and create a Pull Request
+```bash
+pnpm test           # Run all tests
+pnpm lint          # Run linting
+pnpm typecheck     # Type checking
+pnpm format        # Format code
+```
+
+5. **Commit with conventional commit messages** (see [Commit Conventions](#commit-conventions))
+
+6. **Push to your fork and create a Pull Request**
+
+```bash
+git push origin feature/your-feature-name
+```
 
 ### Local Development Commands
 
@@ -189,9 +138,11 @@ pnpm build
 
 # Run linting across the monorepo
 pnpm lint
+pnpm lint --fix    # Auto-fix linting issues
 
 # Run tests
 pnpm test
+pnpm test --watch
 
 # Type checking
 pnpm typecheck
@@ -203,84 +154,132 @@ pnpm format
 pnpm db:generate    # Generate Prisma client
 pnpm db:migrate     # Run pending migrations
 pnpm db:seed        # Seed database with sample data
+pnpm db:reset       # Reset database (development only)
 
-# Docker operations
-pnpm docker:up      # Start development containers
-pnpm docker:down    # Stop development containers
-pnpm docker:build   # Build Docker images
+# Clean build artifacts
+pnpm clean
+
+# Check for unused dependencies
+pnpm dependencies:check
 ```
 
-## Code Style
+## Code Style Guide
+
+For detailed code style conventions, see `docs/development/CODE_STYLE.md`. Quick overview:
 
 ### TypeScript
 
-We enforce strict TypeScript compilation:
-
 - **Strict mode**: All TypeScript strict compiler options enabled
-- **No `any` types**: Avoid using `any`; use proper typing
-- **Interfaces over types**: Prefer `interface` for object shapes
+- **No `any` types**: Use proper typing throughout the codebase
+- **Named exports**: Prefer named exports over default exports
+- **Interfaces for object shapes**: Use `interface` over `type` for object definitions
 
-### ESLint
+### React Components
 
-Run ESLint to catch style and potential errors:
+- **Server components by default**: Use React Server Components in Next.js apps
+- **Client components sparingly**: Only use `'use client'` when needed for interactivity
+- **Component composition**: Break down large components into smaller, reusable pieces
 
-```bash
-pnpm lint
-```
+### Tailwind CSS (v3.4)
 
-ESLint configuration is in `.eslintrc.js` at the root and individual apps.
-
-### Prettier
-
-We use Prettier for code formatting. It's automatically run on commit (pre-commit hook):
-
-```bash
-pnpm format
-```
-
-All code must pass Prettier formatting before submission.
-
-### Tailwind CSS
-
-Dashboard styling uses **Tailwind CSS v3.4**:
-
-- Use utility classes in components
-- Custom colors and spacing defined in `apps/dashboard/tailwind.config.js`
-- Mobile-first responsive design
-- Dark mode support through Tailwind's dark mode utilities
+- **Utility-first approach**: Use Tailwind utilities for styling
+- **Custom variables**: Use `--wl-*` CSS variables for Witylogix-specific values
+- **Dark mode**: Support dark theme using Tailwind's dark mode utilities
+- **cn() utility**: Use the `cn()` helper to conditionally combine classNames
 
 Example:
-
 ```tsx
-<div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow">
-  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-    Title
-  </h1>
+import { cn } from '@/lib/utils';
+
+<div className={cn(
+  'flex items-center justify-between p-4 rounded-lg',
+  'bg-white dark:bg-gray-900',
+  'border border-gray-200 dark:border-gray-800',
+  isActive && 'bg-blue-50 dark:bg-blue-900'
+)}>
+  Content
 </div>
 ```
 
-### Naming Conventions
+### File Naming Conventions
 
-- **Components**: PascalCase (e.g., `UserCard.tsx`)
-- **Utilities**: camelCase (e.g., `formatDate.ts`)
-- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_ATTEMPTS`)
-- **Types/Interfaces**: PascalCase (e.g., `UserProfile`)
+- **Components**: PascalCase (e.g., `UserCard.tsx`, `OrderTable.tsx`)
+- **Utilities/helpers**: camelCase (e.g., `formatDate.ts`, `calculateDistance.ts`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_ATTEMPTS.ts`)
+- **Types/Interfaces**: PascalCase (e.g., `UserProfile.ts`, `OrderStatus.ts`)
 
-## Testing
+### Import Ordering
 
-### Vitest (Packages)
+1. External packages
+2. Internal absolute imports (`@/`)
+3. Relative imports (`./`, `../`)
+4. Side-effect imports (last)
 
-Packages use **Vitest** for testing:
-
-```bash
-cd packages/core
-pnpm test
-pnpm test --watch
+```typescript
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/button';
+import { formatDate } from './helpers';
+import './styles.css';
 ```
 
-**Test file naming**: `*.test.ts` or `*.spec.ts`
+## Architecture Overview
 
-Example test:
+Witylogix is built using a modular monorepo architecture with:
+
+- **Turborepo** for build orchestration
+- **pnpm workspaces** for package management
+- **Multi-package organization**: Core libraries, utilities, and services
+- **Multiple applications**: API, Dashboard, Driver App, Shopify App, Tracking Page
+
+For a detailed architecture overview, see `docs/architecture/ARCHITECTURE.md` and the ADR documents in `docs/adr/`.
+
+Key architectural principles:
+- **Separation of concerns**: Business logic separated from presentation
+- **Type safety**: Full TypeScript strict mode throughout
+- **Plugin architecture**: Extensions and integrations via provider pattern
+- **Event-driven workflows**: Async processing with BullMQ and event bus
+
+## Testing Requirements
+
+### Write Tests First
+
+We follow a test-driven development approach where appropriate:
+
+1. Write tests that describe the desired behavior
+2. Write implementation code to make tests pass
+3. Refactor while maintaining passing tests
+
+### Test Coverage Targets
+
+- **Critical business logic**: 80%+ coverage required
+- **Utilities and helpers**: 70%+ coverage target
+- **UI components**: 50%+ coverage target (snapshot tests acceptable)
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test --watch
+
+# Run tests with coverage report
+pnpm test --coverage
+
+# Run tests for a specific package
+cd packages/core && pnpm test
+```
+
+### Test Frameworks
+
+- **Vitest**: For unit testing packages
+- **Jest**: For app-level tests
+- **Playwright**: For E2E testing (see `PLAYWRIGHT_INTEGRATION.md`)
+
+### Example Test
 
 ```typescript
 import { describe, it, expect } from 'vitest';
@@ -294,57 +293,53 @@ describe('calculateDistance', () => {
     );
     expect(result).toBeGreaterThan(0);
   });
-});
-```
 
-### Jest (Apps)
-
-Applications use **Jest** for testing:
-
-```bash
-cd apps/api
-pnpm test
-pnpm test --watch
-```
-
-**Test file naming**: `*.test.ts`, `*.spec.ts`, or `__tests__/` directory
-
-Example test:
-
-```typescript
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { createApp } from './app';
-
-describe('API Server', () => {
-  let app: any;
-
-  beforeEach(async () => {
-    app = await createApp();
-  });
-
-  it('should handle health check', async () => {
-    const response = await app.inject({
-      method: 'GET',
-      url: '/health'
-    });
-    expect(response.statusCode).toBe(200);
+  it('should handle same coordinates', () => {
+    const result = calculateDistance(
+      { lat: 40.7128, lon: -74.006 },
+      { lat: 40.7128, lon: -74.006 }
+    );
+    expect(result).toBe(0);
   });
 });
 ```
 
-### Test Coverage
+## Pull Request Process
 
-Aim for:
+### Before Submitting
 
-- Critical business logic: 80%+ coverage
-- Utilities and helpers: 70%+ coverage
-- UI components: 50%+ coverage
+- [ ] Ensure tests pass: `pnpm test`
+- [ ] No TypeScript errors: `pnpm typecheck`
+- [ ] Code is formatted: `pnpm format`
+- [ ] No linting issues: `pnpm lint`
+- [ ] Updated relevant documentation
+- [ ] Added entry to `CHANGELOG.md`
+- [ ] Tests cover new functionality (80%+ coverage)
+- [ ] Commit messages follow conventions
 
-Run coverage report:
+### Submitting a PR
 
-```bash
-pnpm test --coverage
-```
+1. **Use the pull request template** (automatically provided)
+2. **Describe the change clearly**: What does it do and why?
+3. **Link related issues**: Use "Fixes #123" to link issues
+4. **Provide testing instructions**: How to verify the change
+5. **Include screenshots** for UI changes
+6. **Request review** from code owners (see `.github/CODEOWNERS`)
+
+### PR Checklist
+
+The template includes:
+- Description of changes
+- Type of change (feature, bugfix, docs, etc.)
+- Testing instructions
+- Checklist items to verify before merge
+
+### Code Review
+
+- Reviews from at least 2 maintainers required for merge
+- Address feedback promptly
+- Keep the PR focused and reasonably sized (< 400 LOC ideally)
+- Squash commits before merge if requested
 
 ## Commit Conventions
 
@@ -360,31 +355,15 @@ We use **Conventional Commits** for clear, semantic commit messages:
 
 ### Commit Types
 
-- **feat**: New feature
-- **fix**: Bug fix
-- **docs**: Documentation changes
-- **style**: Code style changes (formatting, semicolons, etc.) - not Tailwind changes
+- **feat**: New feature or functionality
+- **fix**: Bug fix (fix a broken feature)
+- **docs**: Documentation changes (README, guides, etc.)
+- **style**: Code style changes (formatting, semicolons) - NOT Tailwind changes
 - **refactor**: Code refactoring without feature changes
 - **perf**: Performance improvements
 - **test**: Test additions or modifications
 - **chore**: Build, dependencies, or tooling changes
 - **ci**: CI/CD configuration changes
-
-### Examples
-
-```
-feat(auth): add JWT token refresh mechanism
-
-fix(api): resolve database connection pool leak
-
-Fixes #123
-
-docs(contributing): update testing guidelines
-
-refactor(dashboard): extract common layout component
-
-test(validators): add validation tests for user registration
-```
 
 ### Scope Convention
 
@@ -397,140 +376,119 @@ Use relevant scopes:
 - **carriers** - Carrier integration
 - **drivers** - Driver app features
 - **types** - Type definitions
-- **workflows** - Workflow changes
-- etc.
+- **workflows** - Workflow orchestration
+- **core** - Core utilities and business logic
 
-## Pull Request Guidelines
+### Examples
 
-### Before Submitting
+```
+feat(auth): add JWT token refresh mechanism
 
-1. **Update from main**:
+- Implement refresh token rotation
+- Add refresh endpoint to auth controller
+- Update authentication middleware
 
-```bash
-git fetch origin
-git rebase origin/main
+Fixes #123
+
+fix(api): resolve database connection pool leak
+
+Ensure connections are properly closed in error cases
+
+docs(contributing): update testing guidelines
+
+refactor(dashboard): extract common layout component
+
+test(validators): add comprehensive validation tests for user registration
 ```
 
-2. **Run all checks**:
+## Issue Guidelines
 
-```bash
-pnpm build
-pnpm test
-pnpm lint
-pnpm typecheck
-```
+### Reporting Bugs
 
-3. **Test your changes**:
-   - Manually test in development
-   - Write tests for new functionality
-   - Verify existing tests pass
+Use the bug report template when creating an issue:
 
-4. **Ensure no conflicts** and all CI checks pass
+1. **Title**: Clear, concise description of the bug
+2. **Environment**: Node version, OS, relevant software versions
+3. **Steps to reproduce**: Exact steps to reproduce the issue
+4. **Expected behavior**: What should happen
+5. **Actual behavior**: What actually happens
+6. **Screenshots/logs**: Attach relevant logs or screenshots
+7. **Additional context**: Any other relevant information
 
-### PR Description Template
+### Requesting Features
 
-```markdown
-## Description
-Brief description of what this PR does.
+Use the feature request template:
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+1. **Title**: Clear description of the desired feature
+2. **Problem statement**: What problem does this solve?
+3. **Proposed solution**: How should it work?
+4. **Alternatives considered**: Any other approaches?
+5. **Additional context**: Use cases, examples, references
 
-## Related Issues
-Fixes #(issue number)
+### Requesting Integrations
 
-## Testing
-Describe how this was tested:
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] Manual testing performed
+Use the integration request template:
 
-## Checklist
-- [ ] Code follows style guidelines
-- [ ] Tests pass locally
-- [ ] No new warnings generated
-- [ ] Documentation updated
-- [ ] Commit messages follow conventions
-```
+1. **Integration name**: Name of the service/platform
+2. **Use case**: Why is this integration needed?
+3. **Documentation**: Link to service documentation
+4. **Priority**: Impact and urgency level
+5. **Example implementation**: Any reference implementations?
 
-### PR Review Process
+## Community Guidelines
 
-- Minimum 1 approval required before merging
-- All CI checks must pass
-- No unresolved conversations
-- Feature branches must be up-to-date with main
+### Code of Conduct
 
-## Architecture Notes
+All contributors must adhere to our Code of Conduct:
 
-### Database
+- Be respectful and inclusive
+- Provide constructive feedback
+- Respect different opinions and experiences
+- Report violations to conduct@witylogix.com
 
-- **Prisma 6/7** with custom schema folder configuration (`prismaSchemaFolder`)
-- Schema files organized by domain in `packages/db/src/schemas/`
-- Migration files in `packages/db/migrations/`
+### Communication
 
-### Prisma Schema Organization
+- Use clear, professional language
+- Be patient with new contributors
+- Help others learn and grow
+- Celebrate successes and learnings
 
-When adding models, use the following pattern:
+### Attribution
 
-```prisma
-// packages/db/src/schemas/user.prisma
-model User {
-  id String @id @default(cuid())
-  email String @unique
-  // ... fields
-}
-```
+We value all contributions, no matter how small. Contributors will be:
 
-### Platform Adapter Pattern
+- Added to `CONTRIBUTORS.md`
+- Mentioned in release notes for significant contributions
+- Given credit in relevant documentation
 
-Witylogix supports multiple platforms (Shopify, custom integrations, etc.). Use the `PlatformAdapter` interface for platform-specific implementations:
+## Recognition & Credits
 
-```typescript
-interface PlatformAdapter {
-  validateWebhook(payload: unknown, signature: string): Promise<boolean>;
-  parseOrder(rawOrder: unknown): Promise<Order>;
-  notifyCustomer(orderId: string, message: string): Promise<void>;
-}
-```
+We recognize contributions in multiple ways:
 
-Platform-specific adapters are in `packages/carrier-service/src/adapters/`.
+1. **Contributor listing**: All contributors listed in `CONTRIBUTORS.md`
+2. **Release notes**: Significant contributors mentioned in releases
+3. **Commit history**: Your commits preserved in the git history
+4. **Community recognition**: Highlighted in monthly community updates
 
-### Prisma Metadata Access Pattern
+### Contributing Paths
 
-For accessing Prisma model metadata (useful in generics/utilities):
-
-```typescript
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
-// Type-safe model access
-const modelName = (prisma as any).modelName; // e.g., "User"
-```
-
-This pattern allows type-safe database operations while working with dynamic schemas.
-
-### Project Structure Best Practices
-
-1. **Isolate packages**: Each package should have a single responsibility
-2. **Minimize dependencies**: Reduce circular dependencies between packages
-3. **Type safety**: Export types from packages, not just implementations
-4. **Clear boundaries**: Apps depend on packages, not vice versa
-5. **Testing at package level**: Test business logic in packages, integration in apps
+- **Code contributions**: Core features, bug fixes, performance improvements
+- **Documentation**: Guides, tutorials, ADRs, API documentation
+- **Community**: Issue triage, testing, helping other developers
+- **Integration**: Adding new provider support or integrations
+- **Testing**: E2E tests, test coverage improvements
 
 ## License
 
-By contributing to Witylogix, you agree that your contributions will be licensed under the [AGPL-3.0-only License](./LICENSE).
-
-## Questions or Need Help?
-
-- Check existing [GitHub Issues](https://github.com/witylogix/witylogix-platform/issues)
-- Read the [documentation](./docs/)
-- Start a [discussion](https://github.com/witylogix/witylogix-platform/discussions)
+By contributing to Witylogix, you agree that your contributions will be licensed under the AGPL-3.0 License. See `LICENSE` for details.
 
 ---
 
-Thank you for contributing to Witylogix! We appreciate your efforts to improve our platform.
+## Getting Help
+
+- **Documentation**: https://docs.witylogix.com
+- **Discord Community**: https://discord.gg/witylogix
+- **Discussions**: https://github.com/witylogix/witylogix-platform/discussions
+- **Issues**: https://github.com/witylogix/witylogix-platform/issues
+
+Thank you for contributing to Witylogix!

@@ -37,11 +37,11 @@
 
 ## What is Witylogix?
 
-Witylogix is a full-stack, multi-tenant delivery management platform built for e-commerce. It gives merchants complete control over last-mile delivery — from zone-based rate calculation at checkout to real-time driver tracking and proof of delivery — without per-transaction SaaS fees.
+Witylogix is an open-source delivery management platform that enables e-commerce merchants to control their entire last-mile logistics operation—from zone-based pricing at checkout to real-time driver tracking and proof of delivery—without paying per-transaction fees. Self-host with `docker compose up` or use our managed cloud.
 
-**The problem:** E-commerce merchants using local delivery rely on fragmented tools, pay per-transaction fees that scale linearly with order volume, and have zero control over routing, driver workflows, or customer tracking experiences.
+The platform integrates natively with Shopify (React Router v7, Polaris Web Components, Preact extensions), with support for WooCommerce, Magento, and custom storefronts coming soon. Multi-tenant isolation is enforced at the PostgreSQL Row-Level Security (RLS) layer, ensuring strong data boundaries between merchants.
 
-**Our approach:** One open-source platform that handles the entire delivery lifecycle. Self-host it with `docker compose up` or use our managed cloud. Integrates with **Shopify** as a first-class platform (React Router v7, Polaris Web Components, Preact extensions) with support for more e-commerce platforms coming soon.
+Built on Fastify 5, Next.js 15, PostgreSQL + PostGIS, Redis Streams, and a production-grade workflow engine with event-driven architecture.
 
 ### Key capabilities
 
@@ -113,6 +113,8 @@ Witylogix is a full-stack, multi-tenant delivery management platform built for e
 ---
 
 ## Architecture
+
+For a comprehensive deep-dive into system design, data flows, module dependencies, database architecture, event system, multi-tenancy, integration patterns, caching strategy, security, and performance characteristics, see **[ARCHITECTURE.md](./ARCHITECTURE.md)** (400+ lines).
 
 ```
 witylogix-platform/
@@ -647,9 +649,51 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 
 ---
 
+## Documentation
+
+Core documentation for developers and operators:
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Comprehensive system design (400+ lines)
+  - System overview & ASCII architecture diagram
+  - Data flow diagrams (order lifecycle, delivery assignment, auth, webhooks)
+  - Module dependency map with 38+ core modules
+  - PostgreSQL + PostGIS + RLS database architecture
+  - TypedEventBus (Redis Streams) event system with 18 domain events
+  - Multi-tenancy architecture (4 isolation layers)
+  - Integration architecture (registry → adapter → provider pattern)
+  - Caching strategy (3-layer: LRU → Redis → database)
+  - Security architecture (auth stack, encryption, audit)
+  - Performance characteristics (latency targets, throughput, scaling)
+
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Production deployment guide (300+ lines)
+  - Docker Compose single-server deployment step-by-step
+  - Kubernetes + Helm enterprise deployment
+  - Complete environment configuration reference (40+ env vars)
+  - PostgreSQL setup with PostGIS & RLS
+  - SSL/TLS setup (Caddy, Nginx, Let's Encrypt)
+  - Prometheus & Grafana observability setup
+  - Horizontal scaling guide (API, database, Redis, workers)
+  - Backup & disaster recovery with RTO/RPO
+  - Health check endpoints
+  - Troubleshooting common issues
+
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — Development contribution guide
+  - Local development setup
+  - Code style & conventions
+  - Testing requirements
+  - Pull request process
+
+- **[apps/docs](./apps/docs)** — Full developer documentation
+  - 30+ MDX pages with OpenAPI 3.0 spec
+  - Platform adapter guides (Shopify, WooCommerce, Magento)
+  - Self-hosting & deployment guides
+  - ADR (Architecture Decision Records) browser
+
+---
+
 ## Development progress
 
-Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delivers working, build-verified code across all 5 apps.
+Witylogix is being built sprint-by-sprint by a 10-person team. Each sprint delivers working, build-verified code across all 7 apps.
 
 | Sprint | Theme | Key Deliverables |
 |--------|-------|-----------------|
@@ -691,7 +735,9 @@ Witylogix is being built sprint-by-sprint by a 9-person team. Each sprint delive
 | 6.1 | Database & API Production Hardening | Database production config (PgBouncer connection pool tuning, read replica router with lag detection + failover, zero-downtime migration manager, backup service with PITR + retention), API hardening (per-tenant sliding window rate limiter with plan tiers, Zod request validator with common schemas, HMAC-signed cursor pagination, API versioning with deprecation headers, structured request logger with field sanitization, standard response formatter with HATEOAS), security hardening OWASP (CSP nonce generation, CORS whitelist with subdomain wildcards, XSS/SQL injection detection + input sanitization, security headers middleware, request fingerprinting with anomaly scoring, immutable audit logger with hash chain, secret scanner for leaked credentials), form validation library (useForm hook with Zod, useFieldArray, 7 form components — input/select/textarea/checkbox/radio/file-upload/field wrapper, 14+ validation schemas), error pages & loading states (404/500/offline pages, skeleton loaders, toast system, error boundary, loading spinner variants, empty state), responsive audit (breakpoint hooks, touch gesture hooks, responsive nav/sidebar/header/table/grid, responsive CSS utilities), logging & monitoring (structured JSON logger, Sentry integration, Prometheus metrics collector, health endpoints, distributed tracing W3C, alert rules engine), webhook reliability (dispatcher with HMAC signing, exponential backoff retry with circuit breaker, dead letter queue, signature verifier with replay prevention, idempotency manager, delivery log, webhook registry with fan-out), query optimization (N+1 detector, EXPLAIN ANALYZE query analyzer, index advisor, slow query logger with trend detection, LRU query cache with stale-while-revalidate, DataLoader-style batch loader, connection pool monitor with leak detection), test coverage expansion (ERP/telematics/CRM/collaboration adapter tests, API + database load testing utilities, test factories + integration test helpers) | 123 | ~37,500 |
 | 6.2 | CI/CD, Deployment & Documentation | CI/CD pipeline (GitHub Actions: lint/typecheck/test/build/security matrix Node 20+22, PR previews, Docker multi-arch build + GHCR push, Trivy scanning, SBOM generation, automated releases from tags, Dependabot weekly updates, branch protection rules, CODEOWNERS, blue-green deploy script), Storybook 8 (13 component story files — Button/Badge/Card/Input/Select/Modal/Table/Toast/Skeleton/Forms/Navigation/EmptyState/LoadingSpinner, dark theme, a11y addon, interaction tests), i18n framework (next-intl setup, 3 locales en/es/fr with 450+ keys each, locale routing middleware, language switcher component, formatting utilities — currency/date/number/distance/weight/duration, RTL preparation, translation key extraction script), API documentation (OpenAPI 3.1 spec with 61+ endpoints, API changelog, auth/rate-limiting/webhooks/errors docs, Postman collection with 35 requests, SDK type regeneration), Docker production hardening (multi-stage Dockerfiles for API/dashboard/worker, production compose with resource limits + 3-tier network isolation, Nginx reverse proxy with TLS/gzip/rate-limiting/security-headers, container entrypoint with dependency waiting + signal handling, Trivy + OPA container policies), accessibility audit (focus manager + keyboard navigation + screen reader announcer + ARIA helpers + color contrast checker + reduced motion, skip links + visually hidden + focus indicator components, axe-core test utilities, WCAG 2.1 AA guide), database migrations (4 SQL migrations for auth/onboarding/tenant/webhook tables with RLS + indexes, comprehensive seed data — 3 orgs + 15 users + 50 orders + 20 drivers, minimal seed for dev, migration integrity tests, rollback + backup-restore scripts), k6 performance testing (5 load test scenarios — auth/onboarding/CRUD/webhook/tenant-isolation, data generators, SLA thresholds, HTML report generator, baselines), environment config (Zod env validator with 30+ vars, config service with hot reload, secrets manager — 4 providers, 8 feature flags with tenant overrides + percentage rollout, deployment checklist, secrets rotation guide), observability (5 Grafana dashboards — API/DB/auth/webhook/business, Prometheus alert rules — API/infra/business, SLO/SLI definitions, 4 runbooks — incident response/scaling/backup-recovery/on-call) | 140+ | ~45,000 |
 
-**Current stats (Sprint 6.2):** ~2,430 source files, ~873,000 lines of code, 130 dashboard pages, 152 API routes, 440+ test files, 50 Prisma schemas, 100+ core modules, 3 extensions (checkout-ui + pos-ui + woocommerce-block), 1 checkout widget package, 1 customer portal app, 1 SDK package, 1 docs app, 1 CLI tool (15 subcommands), 1 E2E framework (Playwright), 1 Storybook (13 stories), 3 locales (en/es/fr), 5 Grafana dashboards, 5 k6 load test scenarios, 124 integration providers across 21 categories (ALL 124 production).
+| 7.0 | Docs, Polish & Onboarding Wiring | ARCHITECTURE.md (system design, data flows, module dependency map, DB architecture, event system, multi-tenancy, integration pattern, caching, security, performance), DEPLOYMENT.md (Docker + K8s, env config, DB setup, SSL/TLS, monitoring, scaling, backups, troubleshooting), README refresh (punchier intro, documentation section, sprint 7.0), onboarding wizard fully wired (removed all "Coming soon" placeholders, connected integrations/dashboard-layout/data-import/review steps with state management + URL sync + transitions), dashboard home page (welcome banner, quick stats, activity feed, getting started checklist, quick actions, schedule), polished sidebar navigation (6 collapsible groups, active states, notification badges, Cmd+B toggle, user avatar), breadcrumb + page header components, API route map (187 routes documented, 83% validated), 25+ Zod validation schemas, 75+ error codes catalog, API health dashboard, E2E smoke tests (critical path + auth + onboarding + health, page objects), interactive design system catalog (11 sections, live previews, code snippets, token reference, form showcase), database schema docs (55 models, 7 ER diagrams, migration guide, data dictionary), test infrastructure (coverage aggregator, badge generator, flaky test detector, vitest workspace, TEST_GUIDE.md, test dashboard), integration catalog page (124 providers grid with search/filter/sort) + setup guides (routing/telematics/ERP/CRM/messaging) + troubleshooting, developer docs (CONTRIBUTING.md, SETUP.md, CODE_STYLE.md, FAQ.md, ADR index, PR + issue templates) | 100+ | ~30,000 |
+
+**Current stats (Sprint 7.0):** ~2,530 source files, ~903,000 lines of code, 135 dashboard pages, 187 API routes, 455+ test files, 50 Prisma schemas, 100+ core modules, 3 extensions (checkout-ui + pos-ui + woocommerce-block), 1 checkout widget package, 1 customer portal app, 1 SDK package, 1 docs app, 1 CLI tool (15 subcommands), 1 E2E framework (Playwright), 1 Storybook (13 stories), 3 locales (en/es/fr), 5 Grafana dashboards, 5 k6 load test scenarios, 124 integration providers across 21 categories (ALL 124 production).
 
 See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detailed completion tracking across data models, feature pages, API services, and infrastructure.
 

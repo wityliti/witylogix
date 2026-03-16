@@ -4,6 +4,29 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 7.0] - 2026-03-16 — Docs, Polish & Onboarding Wiring
+
+### Added
+- ARCHITECTURE.md: comprehensive system architecture document with ASCII diagrams, data flow diagrams (order lifecycle, delivery assignment, auth, webhook delivery), module dependency map, database architecture (PostgreSQL 16 + PostGIS + RLS with 4 isolation layers), event system (TypedEventBus → Redis Streams → webhooks → realtime), multi-tenancy architecture, integration architecture (registry → adapter → provider pattern), 3-layer caching strategy, security architecture, and performance characteristics with latency targets
+- DEPLOYMENT.md: production deployment guide covering Docker Compose step-by-step, Kubernetes with Helm charts, environment configuration reference (40+ env vars), database setup (PostGIS, RLS, migrations, backups), SSL/TLS with Caddy/Nginx, monitoring setup (Prometheus + Grafana), horizontal scaling guide (API, read replicas, Redis cluster, workers), backup & disaster recovery (RTO 30min / RPO 1hr), health check endpoints, and troubleshooting
+- Onboarding wizard fully wired: removed all "Coming soon" placeholders, connected IntegrationsSelect (124 providers as chips), DashboardLayout (11 presets), DataImport (drivers/vehicles/CSV), and ReviewSummary components with full state management, URL param sync, and smooth transitions across all 9 steps
+- Dashboard home page: welcome banner, 4 quick stat cards (orders, deliveries, drivers, SLA), recent activity feed, getting started checklist (5 onboarding tasks), quick actions (new order, add driver, view map, reports), today's schedule summary, skeleton loaders
+- Polished sidebar navigation: 6 collapsible groups with active state highlighting (left accent bar), notification badges, user avatar + role, Cmd+B collapse shortcut, Witylogix logo
+- Breadcrumb component: auto-generated from route path, clickable segments, home icon
+- Page header component: reusable with title, subtitle, breadcrumb, action button slots
+- Dashboard layout: sidebar + main area, sticky top bar with breadcrumb + user menu
+- API route map: 187 API routes documented across 18 modules (method, path, auth, rate tier, validation status), 83% validated, 92% auth required
+- Additional Zod validation schemas: 25+ schemas for orders, drivers, deliveries, zones, organizations, integrations with common patterns (pagination, search, bulk operations, exports)
+- Standardized error catalog: 75+ error codes across 10 domains (AUTH, ORDER, DRIVER, DELIVERY, ZONE, ORG, INTEGRATION, BILLING, VALIDATION, SYSTEM) with HTTP status, message template, description, resolution hints
+- API health dashboard endpoint: system health aggregation (DB, Redis, queue, storage, external APIs), per-service status with latency, uptime tracking, Fastify plugin with 4 endpoints
+- E2E smoke test suite: critical path (register → onboard → create order → assign driver → deliver), auth flows (13 scenarios), onboarding complete (full 9-step wizard), integration health (13 system checks), page objects (auth/dashboard/onboarding), Playwright smoke config
+- Interactive design system catalog: 11 sections (buttons, badges, colors, inputs, selects, cards, modals, tables, typography, forms, a11y), live component previews with code snippets, design token reference page (colors, typography, spacing, shadows, transitions), form components showcase with validation states, DESIGN_SYSTEM.md guide (principles, usage, contributing)
+- Database schema documentation: SCHEMA.md (~55 models across 17 categories), 7 Mermaid ER diagrams, MIGRATIONS.md (expand-contract pattern, rollback procedures), DATA_DICTIONARY.md (25+ enums, special fields, naming conventions), ER diagram generation script from Prisma schema
+- Test infrastructure: coverage aggregator (scan all packages, count by category, generate JSON + markdown), SVG badge generator (total tests, coverage %, passing %), flaky test detector (pass/fail history, pattern-based fix suggestions), vitest workspace config (6 suites with thresholds), TEST_GUIDE.md (philosophy, patterns, coverage requirements, mocking guide), test results dashboard page
+- Integration catalog page: 124 providers grid with search/filter/sort, expandable setup details, category badges, status badges
+- Integration documentation: OVERVIEW.md (architecture, BYOK model, metered billing, OAuth, webhooks), setup guides for routing (10 providers), telematics (14 providers), ERP (11 providers), CRM (8 providers), messaging (12 providers), TROUBLESHOOTING.md (connection, sync, rate limiting, performance)
+- Developer experience: CONTRIBUTING.md update (workflow, code style, testing, PR process), development SETUP.md (step-by-step with debugging tips), CODE_STYLE.md (TypeScript, React, Tailwind v3.4, component patterns), FAQ.md (20+ questions), ADR INDEX.md (28 ADRs categorized), PR template, issue templates (bug report, feature request, integration request)
+
 ## [Sprint 6.2] - 2026-03-16 — CI/CD, Deployment & Documentation
 
 ### Added

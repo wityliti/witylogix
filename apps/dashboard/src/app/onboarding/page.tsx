@@ -9,6 +9,10 @@ import { ChooseDeployment } from "./steps/choose-deployment";
 import { CompanyInfo } from "./steps/company-info";
 import { IndustrySelect } from "./steps/industry-select";
 import { GoalsSelect } from "./steps/goals-select";
+import { IntegrationsSelect } from "./steps/integrations-select";
+import { DashboardLayout } from "./steps/dashboard-layout";
+import { DataImport } from "./steps/data-import";
+import { ReviewSummary } from "./steps/review-summary";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import type {
   OnboardingData,
@@ -328,38 +332,67 @@ export default function OnboardingPage() {
           )}
 
         {currentMainStep === "configure-workspace" &&
-          (currentSubStep === "integrations" ||
-            currentSubStep === "dashboard-layout" ||
-            currentSubStep === "data-import") && (
-            <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <div className="w-12 h-12 rounded-lg bg-wl-primary-500/20 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-2 border-wl-primary-500 border-t-transparent animate-spin" />
-              </div>
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-wl-text-primary m-0">
-                  Coming soon
-                </h3>
-                <p className="text-sm text-wl-text-secondary mt-1 m-0">
-                  {currentSubStep === "integrations" && "Configure your integrations"}
-                  {currentSubStep === "dashboard-layout" && "Customize your dashboard"}
-                  {currentSubStep === "data-import" && "Import your data"}
-                </p>
-              </div>
-            </div>
+          currentSubStep === "integrations" && (
+            <IntegrationsSelect
+              data={data}
+              onSelect={(integrations) =>
+                setData({ ...data, integrations })
+              }
+            />
+          )}
+
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "dashboard-layout" && (
+            <DashboardLayout
+              data={data}
+              onSelect={(layout) =>
+                setData({ ...data, dashboardLayout: layout })
+              }
+            />
+          )}
+
+        {currentMainStep === "configure-workspace" &&
+          currentSubStep === "data-import" && (
+            <DataImport
+              data={data}
+              onAddDriver={(driver) => {
+                // Store driver in data (add to drivers array if needed)
+                console.log("Driver added:", driver);
+              }}
+              onAddVehicle={(vehicle) => {
+                // Store vehicle in data (add to vehicles array if needed)
+                console.log("Vehicle added:", vehicle);
+              }}
+              onImportVehicles={(csvContent) => {
+                // Process CSV content
+                console.log("CSV imported:", csvContent);
+              }}
+              onSkip={handleSkip}
+            />
           )}
 
         {currentMainStep === "configure-workspace" &&
           currentSubStep === "review" && (
-            <div className="flex flex-col gap-6 py-4">
-              <div className="p-4 rounded-lg bg-wl-success-500/10 border border-wl-success-400/30">
-                <p className="text-sm font-bold text-wl-success-400 m-0">
-                  ✓ All setup complete!
-                </p>
-                <p className="text-xs text-wl-text-secondary mt-2 m-0">
-                  Your workspace is ready. Click launch to start using Witylogix.
-                </p>
-              </div>
-            </div>
+            <ReviewSummary
+              data={data}
+              onEdit={(section) => {
+                // Navigate to the appropriate section for editing
+                const sectionMap: Record<string, SubStep> = {
+                  deployment: "company-info",
+                  company: "company-info",
+                  goals: "goals",
+                  integrations: "integrations",
+                  dashboard: "dashboard-layout",
+                  data: "data-import",
+                };
+                const targetSubStep = sectionMap[section];
+                if (targetSubStep) {
+                  setCurrentSubStep(targetSubStep);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              onComplete={handleComplete}
+            />
           )}
       </div>
 
