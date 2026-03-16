@@ -4,6 +4,33 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.2] - 2026-03-16 — Shipping & Last-Mile Carriers
+
+### Added
+- **Carrier rate engine** — Parallel rate fetching (Promise.allSettled) from multiple carriers, multi-strategy ranking (cheapest/fastest/best-value), per-tenant credential management, rate caching with 5-min TTL and LRU eviction
+- **Shipping types** — Package, ShipmentAddress, ShippingRate, ShipmentLabel, TrackingEvent, ShipmentStatus enum (8 states), CarrierCode enum (9 carriers)
+- **Label generator** — Unified label creation across carriers, format negotiation (PDF/ZPL/PNG), batch generation with parallel processing, address verification before creation
+- **Shipment tracker** — Multi-carrier tracking with status normalization, ETA calculation with confidence scoring, webhook subscription management
+- **EasyPost SDK** — Addresses, parcels, shipments, rates, labels, tracking, insurance, batch (up to 10K), customs, scan forms, HMAC-SHA256 webhook verification, 20 req/sec rate limiting
+- **ShipStation SDK** — Orders, shipments, carriers, warehouses, stores, products, webhooks, batch labels, X-Rate-Limit header tracking (40 req/min), page-based pagination
+- **Shippo SDK** — Addresses, parcels, shipments, rates, transactions (labels), tracking, customs, manifests, carrier accounts, cursor-based pagination, 100 req/min
+- **AfterShip SDK** — Trackings CRUD, courier auto-detection (1000+ carriers), notifications, estimated delivery, last checkpoint, 10 req/sec, HMAC-SHA256 webhooks
+- **DHL Express SDK** — OAuth2 auth with token caching, rating with duty/tax breakdown, shipments, pickups, tracking, address validation, commercial invoices, sandbox mode
+- **DoorDash Drive SDK** — JWT signing auth (Developer ID + Key ID + Signing Secret), delivery CRUD, quotes, tracking, webhook verification, sandbox/production switching
+- **Uber Direct SDK** — OAuth2 client_credentials flow, delivery CRUD, quotes, proof of delivery (photo/signature), multi-drop deliveries, webhook verification
+- **Shipping label wizard UI** — 4-step flow (package details → carrier & service → rate comparison → review & print), predefined package sizes, rate comparison with badges
+- **Labels list page** — Table with filters (carrier, status, date), bulk void, quick actions (track, void, reprint, download)
+- **Shipment tracking dashboard** — Search by tracking/order, status filter tabs, bulk tracking paste, CSV export, expandable cards
+- **Detailed tracking view** — Full timeline, ETA countdown, auto-refresh (30s), POD section, share link, carrier actions
+- **Tracking timeline component** — Vertical timeline with pulse animation, collapsible events
+- **Tracking embed widget** — Customer-facing embeddable tracking with customizable branding
+- **Shipping UI components** — Rate comparison card (Cheapest/Fastest/Best Value badges), carrier logo (9 carriers), package size selector (presets + custom), label preview (download/print/void), status stepper (5-step lifecycle with exception states)
+- **AI delivery time predictor** — Multi-factor prediction (carrier, distance, weather, holidays, day-of-week, package weight), confidence intervals, historical learning
+- **Smart carrier selector** — Multi-criteria scoring (cost 30%, speed 25%, reliability 25%, tracking 10%, rating 10%), cost/speed optimizers, green shipping, A/B testing
+- **Shipping analytics** — Cost analysis, performance metrics, volume heatmaps, anomaly detection (cost spikes, delay clusters), forecasting
+- **Shipping AI API** — Endpoints for prediction, recommendation, analytics, and feedback
+- **15+ test files** — Unit tests (rate engine, EasyPost, ShipStation, Shippo, AfterShip, DHL, DoorDash, Uber, predictor, selector), integration tests (rate accuracy, label generation, tracking webhooks, carrier failover), E2E (label wizard), fixtures
+
 ## [Sprint 8.1] - 2026-03-16 — Routing, Maps & Real-Time Tracking
 
 ### Added

@@ -166,3 +166,78 @@ export {
   type DeliveryZoneRequest,
   type DriverAssignmentRequest,
 } from "./optimization-api.js";
+
+// ─── Delivery Time Prediction ──────────────────────────────────────────────
+
+export {
+  createDeliveryTimePrediction,
+  getDeliveryTimePrediction,
+  DeliveryTimePrediction,
+  CarrierPerformanceTracker,
+  WeatherImpactEstimator,
+  HolidayCalendar,
+  type CarrierPerformance,
+  type WeatherImpact,
+  type PredictionFactors,
+  type DeliveryPrediction,
+  type DeliveryOutcome,
+} from "./delivery-time-predictor.js";
+
+// ─── Smart Carrier Selector ────────────────────────────────────────────────
+
+export {
+  createSmartCarrierSelector,
+  getSmartCarrierSelector,
+  SmartCarrierSelector,
+  CarrierScorer,
+  ReliabilityTracker,
+  CostOptimizer,
+  SpeedOptimizer,
+  GreenShippingOptimizer,
+  CarrierABTestManager,
+  type CarrierRate,
+  type CarrierReliability,
+  type EcoInfo,
+  type CarrierScore,
+  type ScoringWeights,
+  type CarrierRecommendation,
+  type ShippingPreference,
+  type CarrierABTest,
+  type ABTestOutcome,
+} from "./smart-carrier-selector.js";
+
+// ─── Shipping Analytics ────────────────────────────────────────────────────
+
+export {
+  createShippingAnalytics,
+  getShippingAnalytics,
+  ShippingAnalyticsEngine,
+  CostAnalyzer,
+  PerformanceAnalyzer,
+  VolumeAnalyzer,
+  AnomalyDetector,
+  ShippingForecaster,
+  type ShipmentRecord,
+  type CostBreakdown,
+  type PerformanceMetrics,
+  type VolumeReport,
+  type Anomaly,
+  type Forecast,
+  type ShippingAnalytics,
+} from "./shipping-analytics.js";
+
+// ─── Shipping API ──────────────────────────────────────────────────────────
+
+export {
+  createShippingAPI,
+  getShippingAPI,
+  ShippingAPIHandler,
+  type PredictDeliveryRequest,
+  type PredictDeliveryResponse,
+  type RecommendCarrierRequest,
+  type RecommendCarrierResponse,
+  type SubmitFeedbackRequest,
+  type SubmitFeedbackResponse,
+  type AnalyticsRequest,
+  type AnalyticsResponse,
+} from "./shipping-api.js";

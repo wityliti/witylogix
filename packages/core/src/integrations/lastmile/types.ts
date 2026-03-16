@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-export type PlatformType = 'doordash' | 'ubereats' | 'grubhub';
+export type PlatformType = 'doordash' | 'ubereats' | 'grubhub' | 'uberdirect';
 
 export type DeliveryStatus =
   | 'created'

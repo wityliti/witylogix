@@ -378,6 +378,15 @@ export abstract class LastMileAdapter implements LastMileAdapterInterface {
         cancelled: 'CANCELLED',
         failed: 'FAILED',
       },
+      uberdirect: {
+        created: 'PENDING',
+        assigned: 'ACCEPTED',
+        'picked-up': 'PICKED_UP',
+        'in-transit': 'IN_TRANSIT',
+        delivered: 'DELIVERED',
+        cancelled: 'CANCELLED',
+        failed: 'FAILED',
+      },
     };
 
     return status_reverse_map[platform]?.[unified_status] || 'PENDING';
