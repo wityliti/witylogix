@@ -4,6 +4,33 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.0] - 2026-03-16 — Integration Infrastructure & P0 Core
+
+### Added
+- **Credential vault** — AES-256-GCM encrypted storage for integration credentials, per-tenant isolation via composite key (tenantId:providerId), key rotation with re-encryption, TTL-based cache, credential masking (last 4 chars), audit logging for all access
+- **OAuth2 token manager** — Full token lifecycle (authorize URL, code exchange, refresh, revoke), auto-refresh 5 minutes before expiry, exponential backoff retries, PKCE support for public clients, token persistence via credential vault, EventEmitter for token events
+- **Webhook signature verification framework** — HMAC-SHA256 verification (timing-safe), timestamp validation (5-minute window with clock skew tolerance), replay protection with nonce tracking and TTL, provider-specific strategies (Stripe, Shopify, EasyPost, Generic)
+- **Integration gateway** — Unified HTTP client for all provider API calls, per-provider rate limiting (sliding window from registry), circuit breaker (closed/open/half-open states), retry with exponential backoff, correlation IDs (X-Request-ID), request/response logging with sensitive data redaction, unified error mapping to Witylogix error catalog
+- **Gateway middleware** — Rate limit enforcer (burst allowance, queue management, analytics), circuit breaker (configurable thresholds, health probes, state events), error mapper (HTTP status + provider-specific parsing, retryable classification), request logger (correlation IDs, header masking), metrics collector (p50/p95/p99 latency, health scores, Prometheus export)
+- **Stripe SDK client** — Payment intents (create/confirm/capture/cancel), subscriptions, invoices, checkout sessions, refunds, webhook verification via constructEvent pattern, idempotency key support, 25 req/sec rate limiting
+- **PayPal SDK client** — OAuth2 client_credentials flow with auto-refresh, orders API (create/capture/authorize/void), subscriptions, payouts, webhook transmission ID verification, sandbox/production switching
+- **Payment event normalizer** — Unified WitylogixPaymentEvent across Stripe + PayPal, 20+ event type mappings, deduplication (24-hour TTL), currency conversion helpers
+- **Shopify Admin API SDK** — OAuth2 install/callback/token exchange, orders/products/inventory/fulfillment CRUD, HMAC-SHA256 webhook verification, cursor-based pagination, 40 req/min rate limiting, metafield support
+- **WooCommerce REST API SDK** — OAuth1 consumer key/secret auth, orders/products/customers/shipping CRUD, batch operations (up to 100 items), webhook HMAC verification, page-based pagination, 25 req/10s rate limiting
+- **Order sync engine** — Bi-directional sync (real-time webhook + batch scheduled), conflict resolution (last-write-wins, external-wins, internal-wins, manual), idempotent sync, delta sync, dead letter queue for permanent failures, sync metrics
+- **SendGrid SDK client** — Transactional email, dynamic templates, batch sends (1K recipients), contact/suppression management, signed event webhook verification, statistics, 600 req/min rate limiting
+- **Twilio SDK client** — SMS/MMS send, WhatsApp Business template + freeform messages, Verify API (2FA codes), webhook signature validation (X-Twilio-Signature HMAC), phone number management
+- **WhatsApp Business client** — Meta Cloud API v18.0, template/text/media/interactive messages, webhook verification (GET challenge + POST parsing), template management, phone quality monitoring
+- **Integration marketplace UI** — Catalog page with 125 providers, grid/list view toggle, 21 category sidebar filters with counts, debounced search, 4 sort options, responsive grid (1→2→3 columns), provider detail pages, multi-step connect dialog (confirm → credentials → test → success)
+- **Per-tenant integration dashboard** — Connected integrations overview with health summary, usage meters (API calls, data synced, webhooks), integration event logs (filterable, searchable, live tail mode, CSV export), sync controls (pause/resume/force), test connection, integration layout with tab navigation
+- **Integration UI components** — IntegrationCard (logo, status, actions), OAuthRedirectHandler (callback, CSRF validation, auto-redirect), ConnectionStatusBadge (5 states, pulse animation, tooltip), CredentialForm (dynamic fields, pattern validation, test connection), IntegrationLogo (category icons, fallback initials), WebhookEventViewer (payload inspector, replay, filters)
+- **Integration test harness** — Mock provider server (multi-auth, rate limit simulation, latency/error injection, request recording), auth simulators (API Key, OAuth2, Basic, Bearer, JWT, HMAC), webhook simulator (provider-specific signatures, retry, delivery tracking), test fixtures (20+ factory functions), integration test runner (provider isolation, parallel execution, JUnit XML)
+- **AI smart integration recommender** — Industry-based recommendations (6 industries with specific provider stacks), workflow-aware suggestions, integration dependency graph (70+ synergy relationships), composite scoring (industry 40% + workflow 35% + popularity 20% + synergy 5%), setup wizard assistant (step-by-step onboarding, setup time estimates, progress tracking), recommendation API (5 endpoints, A/B test framework, feedback tracking)
+
+### Changed
+- Moved 5 root MD files to docs/ (ARCHITECTURE, DEPLOYMENT, CONTRIBUTING, FORM_VALIDATION, PLAYWRIGHT)
+- Updated integration marketplace component exports
+
 ## [Sprint 7.1] - 2026-03-16 — Real-Time Dashboard, Search & Final Hardening
 
 ### Added

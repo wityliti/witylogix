@@ -13,6 +13,11 @@ export { ConnectionWizard } from "./connection-wizard";
 export { ApiUsageChart } from "./api-usage-chart";
 export { ProviderComparison } from "./provider-comparison";
 
+// Sprint 8.0 new exports - Integration Marketplace UI
+export { MarketplaceGrid, IntegrationListItem } from "./marketplace-grid";
+export { MarketplaceFilters, FilterPills } from "./marketplace-filters";
+export { ConnectDialog } from "./connect-dialog";
+
 // Sprint 5.1 new exports
 export { OAuthFlow } from "./oauth-flow";
 export { LogViewer } from "./log-viewer";
@@ -115,3 +120,17 @@ export type {
   Provider,
   ProviderSwitcherProps,
 } from "./provider-switcher";
+
+// Sprint 8.0 new type exports
+export type {
+  IntegrationCardData,
+  MarketplaceGridProps,
+} from "./marketplace-grid";
+export type {
+  FilterCategory,
+  MarketplaceFiltersProps,
+  FilterPillsProps,
+} from "./marketplace-filters";
+export type {
+  ConnectDialogProps,
+} from "./connect-dialog";

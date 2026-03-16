@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import type { CredentialFormProps, CredentialConfig } from "./types";
 
@@ -26,13 +26,35 @@ export function CredentialForm({
   }>({ status: null, message: '' });
   const [oauthConnected, setOauthConnected] = useState(false);
   const [tokenExpiry, setTokenExpiry] = useState<Date | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleFieldChange = useCallback(
-    (fieldName: string, value: unknown) => {
+    (fieldName: string, value: unknown, field?: CredentialConfig['fields'][0]) => {
       setCredentials((prev) => ({ ...prev, [fieldName]: value }));
       setTestResult({ status: null, message: '' });
+      setIsDirty(true);
+
+      // Clear error for this field when user starts typing
+      if (fieldErrors[fieldName]) {
+        setFieldErrors((prev) => {
+          const { [fieldName]: _, ...rest } = prev;
+          return rest;
+        });
+      }
+
+      // Validate field if pattern exists
+      if (field?.pattern && value) {
+        const regex = new RegExp(field.pattern);
+        if (!regex.test(String(value))) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            [fieldName]: `Invalid format for ${field.label}`,
+          }));
+        }
+      }
     },
-    []
+    [fieldErrors]
   );
 
   const handleTestConnection = async () => {
@@ -61,6 +83,7 @@ export function CredentialForm({
   };
 
   const handleSave = () => {
+    // Check required fields
     const allFilled = credentialConfig.fields
       .filter((f) => f.required)
       .every((f) => credentials[f.name]);
@@ -73,6 +96,16 @@ export function CredentialForm({
       return;
     }
 
+    // Check for validation errors
+    if (Object.keys(fieldErrors).length > 0) {
+      setTestResult({
+        status: 'error',
+        message: 'Please fix validation errors before saving.',
+      });
+      return;
+    }
+
+    // Ensure no credentials are logged
     onSave?.(credentials);
   };
 
@@ -193,12 +226,13 @@ export function CredentialForm({
                 {field.type === 'select' ? (
                   <select
                     value={(credentials[field.name] as string) || ''}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value, field)}
                     className={cn(
                       'w-full px-3 py-2 rounded border',
                       'bg-wl-bg-default text-wl-text-primary',
                       'border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none',
-                      'dark:bg-wl-bg-default dark:border-wl-border-subtle'
+                      'dark:bg-wl-bg-default dark:border-wl-border-subtle',
+                      fieldErrors[field.name] && 'border-wl-danger-500'
                     )}
                   >
                     <option value="">{field.placeholder || 'Select...'}</option>
@@ -214,17 +248,21 @@ export function CredentialForm({
                       type={
                         field.type === 'password' && !showPassword[field.name]
                           ? 'password'
-                          : 'text'
+                          : field.type === 'url'
+                            ? 'url'
+                            : 'text'
                       }
                       value={(credentials[field.name] as string) || ''}
-                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value, field)}
                       placeholder={field.placeholder}
+                      pattern={field.type === 'url' ? 'https?://.+' : field.pattern}
                       className={cn(
                         'w-full px-3 py-2 rounded border',
                         'bg-wl-bg-default text-wl-text-primary',
                         'border-wl-border-subtle focus:border-wl-primary-500 focus:outline-none',
                         'dark:bg-wl-bg-default dark:border-wl-border-subtle',
-                        field.type === 'password' && 'pr-10'
+                        field.type === 'password' && 'pr-10',
+                        fieldErrors[field.name] && 'border-wl-danger-500'
                       )}
                     />
                     {field.type === 'password' && (
@@ -240,6 +278,32 @@ export function CredentialForm({
                       >
                         {showPassword[field.name] ? 'Hide' : 'Show'}
                       </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Field error message */}
+                {fieldErrors[field.name] && (
+                  <p className="text-xs text-wl-danger-600 dark:text-wl-danger-400 mt-1">
+                    {fieldErrors[field.name]}
+                  </p>
+                )}
+
+                {/* Help text and documentation link */}
+                {(field.helpText || field.docLink) && (
+                  <div className="mt-1">
+                    {field.helpText && (
+                      <p className="text-xs text-wl-text-secondary">{field.helpText}</p>
+                    )}
+                    {field.docLink && (
+                      <a
+                        href={field.docLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-wl-primary-500 hover:text-wl-primary-600 dark:text-wl-primary-400 dark:hover:text-wl-primary-300"
+                      >
+                        View documentation →
+                      </a>
                     )}
                   </div>
                 )}

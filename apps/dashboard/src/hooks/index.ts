@@ -55,3 +55,19 @@ export {
   useTablePreferences,
   type TablePreferences,
 } from "./use-table-preferences";
+
+// Integration management hooks
+export {
+  useIntegrationStatus,
+  type IntegrationConnection,
+  type UseIntegrationStatusConfig,
+  type UseIntegrationStatusReturn,
+} from "./use-integration-status";
+
+export {
+  useIntegrationLogs,
+  type IntegrationLogEntry,
+  type IntegrationLogFilter,
+  type UseIntegrationLogsConfig,
+  type UseIntegrationLogsReturn,
+} from "./use-integration-logs";

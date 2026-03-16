@@ -55,3 +55,42 @@ export {
   type SearchInteraction,
   type ABTestConfig,
 } from "./search-ranking.js";
+
+// ─── Integration Recommender ────────────────────────────────────────────
+
+export {
+  IntegrationRecommender,
+  IntegrationDependencyGraph,
+  analyzeCategoryGaps,
+  type IntegrationRecommendation,
+  type TenantIntegrationProfile,
+  type IndustryType,
+  type WorkflowType,
+  type DependencyEdge,
+  type CategoryCoverageSummary,
+} from "./integration-recommender.js";
+
+// ─── Setup Wizard Assistant ────────────────────────────────────────────
+
+export {
+  SetupWizardAssistant,
+  type SetupStep,
+  type ConfigSuggestion,
+  type SetupWizardState,
+  type SetupProgress,
+  type IntegrationSetupGuide,
+} from "./setup-wizard-assistant.js";
+
+// ─── Recommendation API ────────────────────────────────────────────────
+
+export {
+  RecommendationService,
+  RecommendationCache,
+  recommendationService,
+  recommendationCache,
+  type RecommendationResponse,
+  type DependencyResponse,
+  type GapAnalysisResponse,
+  type RecommendationFeedback,
+  type RecommendationAlgorithm,
+} from "./recommendation-api.js";

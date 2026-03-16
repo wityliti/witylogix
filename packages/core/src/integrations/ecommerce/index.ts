@@ -57,3 +57,69 @@ export {
   SyncEngine,
   createSyncEngine,
 } from "./ecommerce-sync.js";
+
+// Shopify SDK client
+export {
+  ShopifyClient,
+  createShopifyClient,
+} from "./shopify-sdk-client.js";
+export type {
+  ShopifyConfig,
+  ShopifyOAuthConfig,
+} from "./shopify-sdk-client.js";
+
+// WooCommerce SDK client
+export {
+  WooCommerceClient,
+  createWooCommerceClient,
+} from "./woocommerce-sdk-client.js";
+export type {
+  WooCommerceConfig,
+} from "./woocommerce-sdk-client.js";
+
+// Order sync engine
+export {
+  OrderSyncEngine,
+  createOrderSyncEngine,
+} from "./order-sync-engine.js";
+export type {
+  SyncState,
+  SyncDirection,
+  ConflictResolutionStrategy,
+  FieldMapping,
+  StatusMapping,
+  SyncMetrics,
+  SyncResult as OrderSyncResult,
+  BatchSyncResult as OrderBatchSyncResult,
+  WitylogixOrder,
+} from "./order-sync-engine.js";
+
+// SDK Types
+export type {
+  EcommercePlatform,
+  ShopifyConfig as ShopifySdkConfig,
+  WooCommerceConfig as WooCommerceSdkConfig,
+  EcommerceSdkConfig,
+  SyncStateStatus,
+  SyncStateRecord,
+  FieldMapConfig,
+  StatusMapConfig,
+  OrderSyncEvent,
+  InventorySyncEvent,
+  SyncConfig,
+  ItemSyncResult,
+  BatchSyncResult,
+  SyncMetrics as SyncMetricsType,
+  WebhookEventPayload,
+  HealthCheckResult,
+  OAuth2Config,
+  OAuth2TokenResponse,
+  RateLimitInfo,
+  ApiError,
+  SdkLogger,
+  SdkOptions,
+  InventoryLevelInfo,
+  LowStockAlert,
+  BatchOperationRequest,
+  BatchOperationResult,
+} from "./ecommerce-sdk-types.js";

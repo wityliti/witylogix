@@ -29,10 +29,13 @@ export type SyncDirection = 'inbound' | 'outbound' | 'bidirectional';
 export interface CredentialField {
   name: string;
   label: string;
-  type: 'text' | 'password' | 'select';
+  type: 'text' | 'password' | 'select' | 'url';
   required: boolean;
   placeholder?: string;
+  pattern?: string;
   options?: Array<{ value: string; label: string }>;
+  helpText?: string;
+  docLink?: string;
 }
 
 export interface CredentialConfig {
