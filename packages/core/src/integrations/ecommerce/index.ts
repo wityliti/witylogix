@@ -77,6 +77,33 @@ export type {
   WooCommerceConfig,
 } from "./woocommerce-sdk-client.js";
 
+// Magento SDK client
+export {
+  MagentoSDKClient,
+  SearchCriteriaBuilder,
+  createMagentoSDKClient,
+  MagentoAPIError,
+} from "./magento-sdk-client.js";
+export type {
+  MagentoConfig,
+  MagentoOrderResponse,
+  MagentoProductResponse,
+  MagentoCustomerResponse,
+  MagentoInvoiceResponse,
+  MagentoShipmentResponse,
+  MagentoCreditMemoResponse,
+  MagentoSearchCriteria,
+  MagentoSearchResults,
+  MagentoCategoryResponse,
+  MagentoQuoteResponse,
+  MagentoMSISourceResponse,
+  MagentoMSIStockResponse,
+  MagentoMSISourceItemResponse,
+  MagentoAsyncBulkRequest,
+  MagentoAsyncBulkResponse,
+  MagentoErrorResponse,
+} from "./magento-types.js";
+
 // Order sync engine
 export {
   OrderSyncEngine,

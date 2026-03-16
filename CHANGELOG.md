@@ -4,6 +4,28 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.3] - 2026-03-16 — E-Commerce & Order Sync
+
+### Added
+- **Order sync engine v2** — SyncOrchestrator with 4 conflict resolution strategies (LAST_WRITE_WINS, EXTERNAL_WINS, INTERNAL_WINS, MANUAL_REVIEW), IdempotencyManager with composite dedup keys, DeltaSyncTracker for incremental sync, RetryQueue with exponential backoff (1s→16s, 5 retries), DeadLetterQueue for permanent failures, BatchProcessor (500 orders), SyncMetrics
+- **Field mapper** — 15+ built-in transformers (currency, date, status, email, phone, address normalization, JSON, encoding), custom JavaScript transformer support, nested field mapping, reverse mapping for outbound sync, preview mode
+- **Sync scheduler** — Cron-based intervals (real-time/5m/15m/30m/1h/24h), priority queue (webhook > scheduled > manual), max 3 concurrent syncs per tenant, stale job detection, pause/resume per platform
+- **Sync API** — 11 REST endpoints for trigger, status, conflicts, resolution, metrics, history, config, import
+- **BigCommerce SDK** — 48 methods: OAuth2 single-click install, orders/products/customers/inventory/webhooks/shipping/storefront, SHA256 HMAC verification, X-Rate-Limit header tracking, cursor + page pagination
+- **Magento 2 SDK** — 42 methods: OAuth1/Bearer/API key auth, orders/products (configurable/simple/virtual/grouped), MSI inventory (sources/stocks/reservations), categories, cart/quote, async bulk API, fluent SearchCriteria builder
+- **Etsy v3 SDK** — OAuth2 PKCE flow, listings/receipts/shops/taxonomy/reviews, polling-based webhooks (no native webhook support), 5000 req/day rate limiting
+- **eBay SDK** — OAuth2 client credentials + user authorization, Browse/Buy/Sell/Fulfillment APIs, multi-marketplace support (US/GB/DE/AU), webhook notification subscriptions
+- **Square Online SDK** — OAuth2 flow, orders/catalog/inventory/customers/locations, HMAC-SHA256 webhook verification, idempotency keys on all writes
+- **Order import dashboard** — 8-platform selector with health indicators, sync status timeline, error log with per-job retry, 4-step bulk import wizard, auto-refresh 30s
+- **Conflict resolution page** — Side-by-side diff view, resolve actions (accept external/internal/manual edit/skip), bulk resolve by field type, filter by platform/date/field
+- **Product catalog sync UI** — Visual field mapping editor with SVG connection lines, auto-map by field name, 6 transformer types (direct/uppercase/lowercase/currency/date/custom JS), sync schedule configurator, mapping preview, template save/load
+- **E-commerce UI components** — Unified order card (cross-platform with expand/sync/track), platform connection badge (connected/disconnected/error with pulse), sync progress bar (animated with ETA), inventory level indicator (multi-warehouse, reserved vs available), platform logo (8 SVG logos with fallback)
+- **Cross-platform inventory sync engine** — StockReconciler (>10% variance detection), MultiWarehouseManager (platform location mapping), InventoryReservation (5-min TTL, ACTIVE→CONFIRMED→RELEASED/EXPIRED), LowStockMonitor (configurable thresholds), OverSellProtection (atomic stock check), BulkStockUpdate (1000 SKUs), InventoryAuditLog, 18 REST endpoints
+- **AI intelligent order router** — Multi-criteria fulfillment scoring (proximity 35%, stock 25%, capacity 20%, cost 10%, SLA 10%), haversine distance calculation, split order detection (up to 3 warehouses), configurable routing rules, human-readable routing explanation
+- **AI demand forecaster** — Time series analysis, seasonal decomposition (weekly/monthly/yearly), trend detection with slope/acceleration, demand prediction with external factors (holidays, promotions, weather), confidence intervals, SKU clustering, reorder suggestions with safety stock
+- **Order routing API** — 7 endpoints: assign, evaluate, rules CRUD, predict demand, reorder suggestions, trend analysis
+- **12+ test files** — Unit tests (sync engine, field mapper, BigCommerce, Magento, Etsy, eBay, Square, inventory, router, forecaster), integration tests (idempotency, webhook reliability, conflict resolution, inventory reconciliation), E2E (platform connect flow), fixtures
+
 ## [Sprint 8.2] - 2026-03-16 — Shipping & Last-Mile Carriers
 
 ### Added

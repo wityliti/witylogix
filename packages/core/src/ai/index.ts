@@ -241,3 +241,77 @@ export {
   type AnalyticsRequest,
   type AnalyticsResponse,
 } from "./shipping-api.js";
+
+// ─── Intelligent Order Router ──────────────────────────────────────────────
+
+export {
+  createIntelligentOrderRouter,
+  IntelligentOrderRouter,
+  ProximityCalculator,
+  StockChecker,
+  CapacityTracker,
+  CostEstimator,
+  SLAScorer,
+  FulfillmentScorer,
+  SplitOrderDetector,
+  RoutingExplainer,
+  type Coordinate,
+  type OrderItem,
+  type Order,
+  type Warehouse,
+  type WarehouseCandidate,
+  type FulfillmentScore,
+  type RoutingDecision,
+  type SplitOrder,
+  type RoutingExplanation,
+  type FulfillmentRule,
+  type FulfillmentRules,
+  type RoutingOptions,
+} from "./intelligent-order-router.js";
+
+// ─── Demand Forecaster ─────────────────────────────────────────────────────
+
+export {
+  createDemandForecaster,
+  DemandForecasterService,
+  TimeSeriesAnalyzer,
+  SeasonalDecomposer,
+  TrendDetector,
+  DemandPredictor,
+  ReorderSuggester,
+  SKUClusterer,
+  type SalesDataPoint,
+  type SeasonalPattern,
+  type TrendInfo,
+  type DemandForecast,
+  type SKUCluster,
+  type ReorderSuggestion,
+  type ExternalFactor,
+} from "./demand-forecaster.js";
+
+// ─── Order Routing API ────────────────────────────────────────────────────
+
+export {
+  getOrderRoutingAPI,
+  createOrderRoutingAPI,
+  handleAssignOrder,
+  handleEvaluateOptions,
+  handleGetRoutingRules,
+  handleUpdateRoutingRules,
+  handlePredictDemand,
+  handleGetReorderSuggestions,
+  handleGetTrends,
+  OrderRoutingAPIHandler,
+  type ApiResponse,
+  type RoutingAssignRequest,
+  type RoutingAssignResponse,
+  type RoutingEvaluateRequest,
+  type RoutingEvaluateResponse,
+  type ForecastPredictRequest,
+  type ForecastPredictResponse,
+  type ForecastSuggestionsRequest,
+  type ForecastSuggestionsResponse,
+  type ForecastTrendsRequest,
+  type ForecastTrendsResponse,
+  type RoutingRulesUpdateRequest,
+} from "./order-routing-api.js";
