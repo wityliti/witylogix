@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Settings,
+  User,
+  Building2,
   Bell,
   Key,
-  CreditCard,
-  Zap,
-  Building2,
+  Users,
+  Sliders,
   ChevronRight,
+  Zap,
 } from "lucide-react";
 
 interface SettingsSidebarLink {
@@ -23,15 +24,27 @@ interface SettingsSidebarLink {
 const SIDEBAR_LINKS: SettingsSidebarLink[] = [
   {
     href: "/settings",
+    label: "Settings Hub",
+    icon: <Sliders className="w-4 h-4" />,
+    description: "Overview of all settings",
+  },
+  {
+    href: "/settings/profile",
     label: "Profile",
-    icon: <Settings className="w-4 h-4" />,
-    description: "Account & organization settings",
+    icon: <User className="w-4 h-4" />,
+    description: "Your personal information",
+  },
+  {
+    href: "/settings/organization",
+    label: "Organization",
+    icon: <Building2 className="w-4 h-4" />,
+    description: "Organization details",
   },
   {
     href: "/settings/notifications",
     label: "Notifications",
     icon: <Bell className="w-4 h-4" />,
-    description: "Manage notification preferences",
+    description: "Notification preferences",
   },
   {
     href: "/settings/api-keys",
@@ -40,10 +53,22 @@ const SIDEBAR_LINKS: SettingsSidebarLink[] = [
     description: "Manage API credentials",
   },
   {
-    href: "/settings/billing",
-    label: "Billing",
-    icon: <CreditCard className="w-4 h-4" />,
-    description: "Plans and usage",
+    href: "/settings/team",
+    label: "Team",
+    icon: <Users className="w-4 h-4" />,
+    description: "Team management",
+  },
+  {
+    href: "/settings/preferences",
+    label: "Preferences",
+    icon: <Sliders className="w-4 h-4" />,
+    description: "Dashboard preferences",
+  },
+  {
+    href: "/settings/webhooks",
+    label: "Webhooks",
+    icon: <Zap className="w-4 h-4" />,
+    description: "Debug and test webhooks",
   },
 ];
 

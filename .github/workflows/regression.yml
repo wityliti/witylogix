@@ -1,0 +1,304 @@
+# .github/workflows/regression.yml
+# Nightly Regression Test Suite
+#
+# Comprehensive regression testing pipeline that runs daily at 2 AM UTC
+# Validates critical paths, authentication, API contracts, and visual consistency
+#
+# Triggers:
+# - Schedule: Daily at 2:00 AM UTC
+# - Manual: On-demand via workflow_dispatch
+#
+# Strategy:
+# - Run full regression suite across 4 parallel workers
+# - Test with Chromium, Firefox, WebKit browsers
+# - Capture test artifacts (screenshots, videos, reports)
+# - Notify on failures via Slack webhook
+
+name: Nightly Regression Tests
+
+on:
+  # Daily schedule: 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  # Manual trigger for on-demand runs
+  workflow_dispatch:
+    inputs:
+      browsers:
+        description: 'Browsers to test'
+        required: false
+        default: 'chromium,firefox,webkit'
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  BASE_URL: 'http://localhost:3002'
+  API_BASE_URL: 'http://localhost:3001/api'
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Setup
+  # Install dependencies and prepare environment
+  # ───────────────────────────────────────────────────────────────────────────
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set test matrix
+        id: set-matrix
+        run: |
+          BROWSERS='${{ github.event.inputs.browsers || 'chromium,firefox,webkit' }}'
+          MATRIX=$(echo "{\"browser\":$(echo \"[$BROWSERS]\" | sed 's/,/","/g')}" | sed 's/"\[/["/g' | sed 's/\]"/]/'')
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Regression Tests
+  # Run full regression suite with parallel workers
+  # ───────────────────────────────────────────────────────────────────────────
+  regression:
+    name: Regression Tests (${{ matrix.browser }}) - Shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-latest
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        # Browser selection based on input
+        browser:
+          - chromium
+          - firefox
+          - webkit
+        # Shard across 4 parallel workers for faster execution
+        shard:
+          - 1
+          - 2
+          - 3
+          - 4
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start services
+        run: |
+          pnpm run dev &
+          pnpm run dev --workspace=@witylogix/api &
+          sleep 15  # Wait for services to start
+
+      - name: Run regression tests
+        run: |
+          npx playwright test \
+            --config=tests/regression/playwright.regression.config.ts \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }}/4
+        env:
+          CI: 'true'
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL || 'test@example.com' }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD || 'TestPass123' }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'admin@test.com' }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'TestPass123' }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN || 'test-admin-token' }}
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-results-${{ matrix.browser }}-shard-${{ matrix.shard }}
+          path: tests/regression/results/
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-screenshots-${{ matrix.browser }}-shard-${{ matrix.shard }}
+          path: |
+            tests/regression/results/html/
+            tests/regression/visual/current/
+            tests/regression/visual/diffs/
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Merge Reports
+  # Consolidate test results from all shards
+  # ───────────────────────────────────────────────────────────────────────────
+  merge-reports:
+    name: Merge Test Reports
+    if: always()
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'pnpm'
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+
+      - name: Merge reports
+        run: |
+          npx playwright merge-reports --reporter html ./all-artifacts
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report-merged
+          path: playwright-report/
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Notify
+  # Send notifications on success/failure
+  # ───────────────────────────────────────────────────────────────────────────
+  notify:
+    name: Send Notifications
+    if: always()
+    needs: [regression, merge-reports]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          # Check if any job failed
+          if [[ "${{ needs.regression.result }}" == "failure" ]] || [[ "${{ needs.merge-reports.result }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "color=ff0000" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "color=00ff00" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.status.outputs.emoji }} Nightly Regression Tests"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ steps.status.outputs.status }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Run:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Test Results:*\n• Critical Paths: ${{ needs.regression.result }}\n• Auth Flows: ${{ needs.regression.result }}\n• API Contracts: ${{ needs.regression.result }}\n• Visual Regression: ${{ needs.regression.result }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Summary
+  # Generate workflow summary for GitHub Actions
+  # ───────────────────────────────────────────────────────────────────────────
+  summary:
+    name: Test Summary
+    if: always()
+    needs: [regression, merge-reports]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download merged report
+        uses: actions/download-artifact@v4
+        with:
+          name: regression-report-merged
+
+      - name: Generate summary
+        run: |
+          echo "## Nightly Regression Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.regression.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Suites:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical Paths" >> $GITHUB_STEP_SUMMARY
+          echo "- Authentication & Authorization" >> $GITHUB_STEP_SUMMARY
+          echo "- API Contracts" >> $GITHUB_STEP_SUMMARY
+          echo "- Visual Regression" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Browsers Tested:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Chromium" >> $GITHUB_STEP_SUMMARY
+          echo "- Firefox" >> $GITHUB_STEP_SUMMARY
+          echo "- WebKit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Report:** [View HTML Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

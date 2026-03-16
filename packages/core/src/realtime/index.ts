@@ -225,3 +225,51 @@ export {
   type WorkflowSocketEvent,
   type WorkflowEventName,
 } from "./workflow-events.types.js";
+
+// ─── Dashboard Real-time Infrastructure ──────────────────────────────
+
+export {
+  CONNECTION_LIMITS,
+  RATE_LIMIT_PER_CONNECTION,
+  EVENT_BUFFER_SIZE,
+  HEARTBEAT_INTERVAL,
+  HEARTBEAT_TIMEOUT,
+  METRICS_DEBOUNCE_INTERVAL,
+  type RoomType,
+  type RoomId,
+  type RoomConfig,
+  type DashboardEvent,
+  type OrderCreatedEvent,
+  type OrderUpdatedEvent,
+  type OrderCancelledEvent,
+  type DeliveryAssignedEvent,
+  type DeliveryStatusChangedEvent,
+  type DeliveryCompletedEvent,
+  type DriverLocationUpdatedEvent,
+  type DriverStatusChangedEvent,
+  type AlertSlaBreachEvent,
+  type AlertSystemEvent,
+  type MetricsUpdatedEvent,
+  type EventEnvelope,
+  type EventFilter,
+  type ConnectionConfig,
+  type ConnectionStatus,
+  type WebSocketConnection,
+  type ConnectionMetrics,
+  type TenantMetrics,
+} from "./types.js";
+
+export {
+  ConnectionManager,
+  getConnectionManager,
+} from "./connection-manager.js";
+
+export {
+  EventBroadcaster,
+} from "./event-broadcaster.js";
+
+export {
+  DashboardHub,
+  getDashboardHub,
+  type DashboardHubConfig,
+} from "./dashboard-hub.js";

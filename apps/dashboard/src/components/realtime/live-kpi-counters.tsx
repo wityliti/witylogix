@@ -1,0 +1,279 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  TrendingUp,
+  TrendingDown,
+  Package,
+  Truck,
+  Users,
+  Gauge,
+} from "lucide-react";
+
+interface KPIMetric {
+  label: string;
+  value: number;
+  previousValue: number;
+  icon: React.ReactNode;
+  unit: string;
+  status: "good" | "warning" | "critical";
+  sparkline: number[];
+}
+
+interface LiveKPICountersProps {
+  className?: string;
+}
+
+const statusColors: Record<"good" | "warning" | "critical", string> = {
+  good: "bg-wl-success-bg text-wl-success-400",
+  warning: "bg-wl-warning-bg text-wl-warning-400",
+  critical: "bg-wl-danger-bg text-wl-danger-400",
+};
+
+const statusBgColors: Record<"good" | "warning" | "critical", string> = {
+  good: "from-wl-success-500/10 to-wl-success-500/5",
+  warning: "from-wl-warning-500/10 to-wl-warning-500/5",
+  critical: "from-wl-danger-500/10 to-wl-danger-500/5",
+};
+
+function AnimatedNumber({ value, duration = 1000 }: { value: number; duration?: number }) {
+  const [displayValue, setDisplayValue] = useState(value);
+
+  useEffect(() => {
+    const start = displayValue;
+    const end = value;
+    const diff = end - start;
+    const steps = 60;
+    let step = 0;
+
+    const interval = setInterval(() => {
+      step++;
+      const progress = step / steps;
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.round(start + diff * easeProgress));
+
+      if (step >= steps) {
+        clearInterval(interval);
+        setDisplayValue(end);
+      }
+    }, duration / steps);
+
+    return () => clearInterval(interval);
+  }, [value, displayValue, duration]);
+
+  return <>{displayValue}</>;
+}
+
+function Sparkline({ data, color = "text-wl-primary-500" }: { data: number[]; color?: string }) {
+  if (data.length < 2) return null;
+
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+
+  const points = data
+    .map((value, i) => {
+      const x = (i / (data.length - 1)) * 100;
+      const y = 100 - ((value - min) / range) * 80 - 10;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      viewBox="0 0 100 30"
+      className={cn("h-6 w-full", color)}
+      preserveAspectRatio="none"
+    >
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function KPICard({ metric }: { metric: KPIMetric }) {
+  const trendPercent = metric.previousValue
+    ? ((metric.value - metric.previousValue) / metric.previousValue * 100).toFixed(1)
+    : 0;
+
+  const isPositiveTrend = metric.value >= metric.previousValue;
+  const trendIcon = isPositiveTrend ? TrendingUp : TrendingDown;
+  const TrendIcon = trendIcon;
+  const trendColor = isPositiveTrend ? "text-wl-success-400" : "text-wl-danger-400";
+
+  const sparklineColor =
+    metric.status === "good"
+      ? "text-wl-success-500"
+      : metric.status === "warning"
+        ? "text-wl-warning-500"
+        : "text-wl-danger-500";
+
+  return (
+    <div
+      className={cn(
+        "bg-gradient-to-br rounded-lg p-5 border border-wl-border-subtle",
+        "transition-all duration-base ease-default",
+        statusBgColors[metric.status],
+        "hover:border-wl-border-default hover:shadow-md"
+      )}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <p className="text-xs text-wl-text-secondary font-medium tracking-wide uppercase mb-1">
+            {metric.label}
+          </p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-wl-text-primary">
+              <AnimatedNumber value={metric.value} duration={800} />
+            </span>
+            <span className="text-xs text-wl-text-secondary">{metric.unit}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-wl-bg-surface">
+          <div className="text-wl-text-secondary">{metric.icon}</div>
+        </div>
+      </div>
+
+      {/* Sparkline */}
+      <div className="mb-3">
+        <Sparkline data={metric.sparkline} color={sparklineColor} />
+      </div>
+
+      {/* Trend indicator */}
+      <div className="flex items-center gap-1">
+        <TrendIcon className={cn("w-3 h-3", trendColor)} />
+        <span className={cn("text-xs font-semibold", trendColor)}>
+          {isPositiveTrend ? "+" : ""}{trendPercent}%
+        </span>
+        <span className="text-xs text-wl-text-secondary">vs yesterday</span>
+      </div>
+
+      {/* Pulse animation for status indicator */}
+      {metric.status !== "good" && (
+        <div className="absolute top-3 right-3 w-2 h-2 rounded-full animate-pulse" style={{
+          backgroundColor: metric.status === "warning" ? "rgb(251, 146, 60)" : "rgb(220, 38, 38)",
+        }} />
+      )}
+    </div>
+  );
+}
+
+function KPICardSkeleton() {
+  return (
+    <div className="bg-wl-bg-overlay border border-wl-border-subtle rounded-lg p-5 space-y-4">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <Skeleton className="h-3 w-20 mb-2 rounded" />
+          <Skeleton className="h-8 w-16 rounded" />
+        </div>
+        <Skeleton className="h-10 w-10 rounded" />
+      </div>
+      <Skeleton className="h-6 w-full rounded" />
+      <Skeleton className="h-3 w-24 rounded" />
+    </div>
+  );
+}
+
+export function LiveKPICounters({ className }: LiveKPICountersProps) {
+  const [metrics, setMetrics] = useState<KPIMetric[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize metrics
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      const mockMetrics: KPIMetric[] = [
+        {
+          label: "Orders Today",
+          value: 1247,
+          previousValue: 1089,
+          icon: <Package className="w-5 h-5" />,
+          unit: "orders",
+          status: "good",
+          sparkline: [89, 102, 95, 112, 108, 115, 118, 125, 120, 1247],
+        },
+        {
+          label: "Active Deliveries",
+          value: 42,
+          previousValue: 38,
+          icon: <Truck className="w-5 h-5" />,
+          unit: "in transit",
+          status: "good",
+          sparkline: [35, 36, 34, 37, 39, 40, 38, 41, 42, 42],
+        },
+        {
+          label: "Available Drivers",
+          value: 12,
+          previousValue: 15,
+          icon: <Users className="w-5 h-5" />,
+          unit: "drivers",
+          status: "warning",
+          sparkline: [18, 17, 16, 15, 14, 15, 14, 13, 12, 12],
+        },
+        {
+          label: "SLA Performance",
+          value: 94.2,
+          previousValue: 96.1,
+          icon: <Gauge className="w-5 h-5" />,
+          unit: "%",
+          status: "warning",
+          sparkline: [96.5, 96.1, 95.8, 95.2, 95.0, 94.8, 94.5, 94.3, 94.2, 94.2],
+        },
+      ];
+
+      setMetrics(mockMetrics);
+      setIsLoading(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Simulate real-time metric updates
+  useEffect(() => {
+    if (isLoading) return;
+
+    const interval = setInterval(() => {
+      setMetrics((prev) =>
+        prev.map((metric) => {
+          const change = Math.floor(Math.random() * 10) - 4;
+          const newValue = Math.max(0, metric.value + change);
+          const newSparkline = [...metric.sparkline.slice(1), newValue];
+
+          let newStatus: "good" | "warning" | "critical" = "good";
+          if (metric.label === "Available Drivers") {
+            newStatus = newValue < 10 ? "critical" : newValue < 15 ? "warning" : "good";
+          } else if (metric.label === "SLA Performance") {
+            newStatus = newValue < 92 ? "critical" : newValue < 95 ? "warning" : "good";
+          }
+
+          return {
+            ...metric,
+            value: newValue,
+            sparkline: newSparkline,
+            status: newStatus,
+          };
+        })
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
+  return (
+    <div className={cn("grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4", className)}>
+      {isLoading
+        ? Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+        : metrics.map((metric, i) => (
+            <KPICard key={i} metric={metric} />
+          ))}
+    </div>
+  );
+}
