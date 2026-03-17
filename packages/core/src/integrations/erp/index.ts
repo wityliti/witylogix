@@ -67,6 +67,73 @@ export type {
   ExchangeRate,
 } from './netsuite-client.js';
 
+// ─── SAP ODATA CLIENT ────────────────────────────────────────────────────
+
+export { SapODataClient, ODataQueryBuilder } from './sap-odata-client.js';
+
+export type {
+  SapODataConfig,
+  ODataQuery,
+  ODataOperator,
+  ODataFilterCondition,
+  CsrfTokenInfo,
+  SapBusinessPartner,
+  SapBusinessPartnerAddress,
+  SapSalesOrder,
+  SapSalesOrderItem,
+  SapPurchaseOrder,
+  SapPurchaseOrderItem,
+  SapProduct,
+  SapProductPlant,
+  SapDelivery,
+  SapDeliveryItem,
+  SapInvoice,
+  SapInvoiceItem,
+  SapBatchOperation,
+  SapBatchResponse,
+  SapErrorDetail,
+} from './sap-odata-client.js';
+
+// ─── NETSUITE SDK CLIENT ────────────────────────────────────────────────
+
+export { NetSuiteSdkClient } from './netsuite-sdk-client.js';
+
+export type {
+  NetSuiteSdkConfig,
+  OAuth1Signature,
+  SuiteQLRequest,
+  RecordOperationResult,
+  NetSuiteCustomer,
+  NetSuiteVendor,
+  NetSuiteSalesOrder,
+  NetSuitePurchaseOrder,
+  NetSuiteInvoice,
+  NetSuiteVendorBill,
+  NetSuiteItem,
+  NetSuiteAddress,
+  NetSuiteLineItem,
+  NetSuiteSearchFilter,
+  NetSuiteSavedSearchResult,
+  NetSuiteFile,
+} from './netsuite-sdk-client.js';
+
+// ─── ERP NORMALIZER ─────────────────────────────────────────────────────
+
+export {
+  normalizeSapCustomer,
+  normalizeNetSuiteCustomer,
+  normalizeSapVendor,
+  normalizeNetSuiteVendor,
+  normalizeSapProduct,
+  normalizeNetSuiteProduct,
+  normalizeSapSalesOrder,
+  normalizeNetSuiteSalesOrder,
+  normalizeSapPurchaseOrder,
+  normalizeNetSuitePurchaseOrder,
+  normalizeSapInvoice,
+  normalizeNetSuiteInvoice,
+} from './erp-normalizer.js';
+
 // ─── DYNAMICS365 ADAPTER ────────────────────────────────────────────────
 
 export { Dynamics365Client } from './dynamics365-client.js';

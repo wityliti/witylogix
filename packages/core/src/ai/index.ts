@@ -315,3 +315,72 @@ export {
   type ForecastTrendsResponse,
   type RoutingRulesUpdateRequest,
 } from "./order-routing-api.js";
+
+// ─── Customer Lifetime Value Predictor ─────────────────────────────────────
+
+export {
+  createCustomerLTVPredictor,
+  getCustomerLTVPredictor,
+  DataFuser,
+  FeatureExtractor,
+  LTVPredictor,
+  CohortAnalyzer,
+  ChurnPredictor,
+  type CustomerContact,
+  type CustomerActivity,
+  type OrderData,
+  type PaymentData,
+  type RFMFeatures,
+  type CustomerProfile,
+  type LTVPrediction,
+  type CohortAnalysis,
+  type ChurnRisk,
+  type CustomerSegment,
+} from "./customer-ltv-predictor.js";
+
+// ─── CRM Intelligence Engine ──────────────────────────────────────────────
+
+export {
+  createCRMIntelligence,
+  getCRMIntelligence,
+  DealScoringModel,
+  LeadScorer,
+  ActivityRecommender,
+  RelationshipStrengthCalculator,
+  SalesForecaster,
+  type Deal,
+  type Lead,
+  type Contact,
+  type DealScore,
+  type LeadScore,
+  type ActivityRecommendation,
+  type RelationshipScore,
+  type SalesForecast,
+  type WinLossAnalysis,
+  type DealStage,
+  type ActivityType,
+  type NextAction,
+} from "./crm-intelligence.js";
+
+// ─── CRM Intelligence API ─────────────────────────────────────────────────
+
+export {
+  createCRMIntelligenceAPI,
+  handleLTVPredict,
+  handleGetSegments,
+  handleGetCohorts,
+  handleScoreDeal,
+  handleScoreLead,
+  handleGetRecommendations,
+  handleGetForecast,
+  handleChurnRisk,
+  type ApiResponse,
+  type LTVPredictRequest,
+  type LTVSegmentsResponse,
+  type CohortsResponse,
+  type DealScoringRequest,
+  type LeadScoringRequest,
+  type RecommendationRequest,
+  type ForecastRequest,
+  type ChurnRiskRequest,
+} from "./crm-intelligence-api.js";

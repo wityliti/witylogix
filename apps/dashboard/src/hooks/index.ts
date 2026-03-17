@@ -77,3 +77,15 @@ export {
   type UseIntegrationLogsConfig,
   type UseIntegrationLogsReturn,
 } from "./use-integration-logs";
+
+// Financial data hooks
+export {
+  useInvoices,
+  useReconciliation,
+  useFinancialMetrics,
+  type InvoiceFilters,
+  type InvoiceSortOptions,
+  type InvoicesState,
+  type ReconciliationMatch,
+  type FinancialMetrics,
+} from "./use-financial-data";

@@ -4,6 +4,34 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.4] - 2026-03-17 — CRM, ERP & Accounting
+
+### Added
+- **CRM sync engine v3** — FieldMappingDSL with fluent builder (map().to().transform().when()), BidirectionalResolver with 5 strategies (TIMESTAMP_WINS, SOURCE_OF_TRUTH, FIELD_PRIORITY, MERGE, MANUAL_REVIEW), ChangeDetector for field-level delta sync, SyncTransaction with atomic rollback, CrmRepository abstraction, 15+ RESTful endpoints
+- **CRM webhook handler** — Event normalization from Salesforce, HubSpot, Zoho, Pipedrive, deduplication (5-min window), retry with exponential backoff, event caching
+- **Salesforce SDK** — 65+ methods: OAuth2 Web Server flow, SOQL query builder (injection-safe), SObject CRUD (Account, Contact, Lead, Opportunity, Task, Event, Case), Composite API (25 subrequests), Bulk API 2.0 (CSV jobs), Streaming API (PushTopic), Metadata API, HMAC-SHA256 outbound message verification, Sforce-Limit-Info rate tracking (100K/24h)
+- **HubSpot SDK** — 70+ methods: OAuth2, CRM Objects (contacts, companies, deals, tickets, line items, products), Search API with filter groups, Associations API, Properties API, Pipelines API, Batch operations (100 records), SHA-256 webhook signature verification, 100 req/10s rate tracking
+- **Zoho CRM SDK** — OAuth2 (6 domains: com/eu/in/au/ca/jp), Leads/Contacts/Accounts/Deals CRUD, Bulk operations (100), COQL query language, webhooks, 24K req/day
+- **Pipedrive SDK** — OAuth2 + API token, Persons/Organizations/Deals/Activities CRUD, Search, Pipelines, HMAC webhooks, 80 req/2s
+- **Dynamics 365 SDK** — OAuth2 MSAL (Azure AD), OData v4 query builder (injection-safe), 7 entity types (Contact, Account, Lead, Opportunity, Quote, Order, Invoice), ETag optimistic concurrency, $batch with changesets, multi-org support, 6000 req/5min
+- **QuickBooks Online SDK** — OAuth2 (Intuit), invoices/payments/customers/items/bills/estimates/reports, PDF download, HMAC-SHA256 webhook verification, 500 req/min, sandbox/production switching
+- **Xero SDK** — OAuth2 PKCE, multi-tenant (select active org), invoices/contacts/payments/bank transactions/items/accounts/POs/quotes/reports, intent-to-receive webhooks, 60 req/min per tenant
+- **Accounting normalizer** — UnifiedInvoice, UnifiedPayment, UnifiedContact, UnifiedItem, currency conversion, tax normalization, status mapping across QuickBooks and Xero
+- **SAP S/4HANA OData SDK** — OAuth2 + SAML, OData v4 query builder ($filter/$select/$expand), BusinessPartner/SalesOrder/PurchaseOrder/Product/Delivery/Invoice, $batch multipart, CSRF token handling, SAP-specific error parsing
+- **NetSuite TBA/REST SDK** — OAuth1 HMAC-SHA256 Token-Based Auth, SuiteQL parameterized queries, 7 record types CRUD, Saved Search, File Cabinet, RESTlets, concurrency control (10 concurrent, 4500 pts/day)
+- **ERP normalizer** — SAP/NetSuite → unified types, UOM mapping (15+ mappings), currency normalization
+- **CRM connection wizard** — 5-step compound component wizard (Select → OAuth → Configure → Test → Activate), keyboard navigation, 5 platform support
+- **CRM dashboard** — Connected platform overview, sync activity feed, quick stats, error summary with retry
+- **Financial dashboard** — Revenue overview with animated counters, lazy-loaded charts, reconciliation summary
+- **Invoice list page** — Virtualized table (1000+), debounced search (300ms), status filters, bulk actions
+- **Payment reconciliation** — Two-column matcher (bank transactions | invoices), auto-match with confidence scoring, partial payments, history log
+- **CRM UI components** — Contact card (unified CRM data, expandable), deal pipeline kanban (color-coded probability, state-based drag)
+- **Finance UI components** — Invoice line-item editor (dynamic rows, auto-calc, tab nav), payment matcher (confidence scoring), revenue chart (bars + trend + YoY)
+- **AI customer LTV predictor** — DataFuser (CRM + orders + payments), FeatureExtractor (RFM + engagement + tenure + growth), weighted regression, 7 segments (CHAMPION/LOYAL/POTENTIAL/NEW/AT_RISK/HIBERNATING/LOST), cohort analysis, churn prediction
+- **AI CRM intelligence** — DealScoringModel, LeadScorer (A/B/C/D grades), ActivityRecommender (next best action), RelationshipStrength calculator, SalesForecaster (pipeline prediction)
+- **CRM intelligence API** — 8 endpoints: LTV prediction, segments, cohorts, deal scoring, lead scoring, recommendations, forecast, churn risk
+- **16+ test files** — Unit tests (CRM sync, field mapping, Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, QuickBooks, Xero, SAP, NetSuite, LTV, CRM intelligence), integration tests (data accuracy, reconciliation, conflict resolution), E2E (OAuth connect flow, invoice creation), fixtures (13 factory functions)
+
 ## [Sprint 8.3] - 2026-03-16 — E-Commerce & Order Sync
 
 ### Added
