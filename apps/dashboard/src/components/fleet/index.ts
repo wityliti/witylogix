@@ -15,6 +15,9 @@ export { FuelConsumptionChart } from "./fuel-consumption-chart";
 export { MaintenanceSchedule } from "./maintenance-schedule";
 export { SpeedHistoryChart } from "./speed-history-chart";
 export { FleetHealthGauge } from "./fleet-health-gauge";
+export { VehicleHealthCard } from "./vehicle-health-card";
+export { MaintenanceTimeline } from "./maintenance-timeline";
+export { FuelGaugeChart } from "./fuel-gauge-chart";
 
 // Types
 export type {
@@ -37,3 +40,6 @@ export type { FuelConsumptionChartProps } from "./fuel-consumption-chart";
 export type { MaintenanceScheduleProps, MaintenanceItem, MaintenanceStatus } from "./maintenance-schedule";
 export type { SpeedHistoryChartProps } from "./speed-history-chart";
 export type { FleetHealthGaugeProps } from "./fleet-health-gauge";
+export type { VehicleHealthCardProps, MaintenanceHistoryEvent } from "./vehicle-health-card";
+export type { MaintenanceTimelineProps, MaintenanceEvent } from "./maintenance-timeline";
+export type { FuelGaugeChartProps, FuelGaugeDataPoint } from "./fuel-gauge-chart";

@@ -1,397 +1,420 @@
 /**
- * Fleet Management Types
+ * Fleet Management Types - Comprehensive Type Definitions
  *
- * Core type definitions for telematics integration, vehicle tracking,
- * diagnostics, and driver behavior monitoring.
+ * Core types for:
+ * - Vehicle lifecycle management (acquisition, active, maintenance, disposition)
+ * - Maintenance scheduling and compliance
+ * - Fuel tracking and optimization
+ * - Fleet cost analysis and forecasting
+ * - Vehicle assignments and utilization
+ * - Health scoring and analytics
  */
 
-// ─── TELEMATICS PROVIDERS ─────────────────────────────────────────
+// ─── VEHICLE TYPES ────────────────────────────────────────────────────────
 
-export type TelematicsProvider = "SAMSARA" | "GEOTAB" | "VERIZON" | "MOTIVE";
-
-export interface ProviderCredential {
-  id: string;
-  fleetId: string;
-  provider: TelematicsProvider;
-  apiKeyHash: string;
-  secretKeyHash?: string;
-  encryptedPrivateData?: string;
-  status: "ACTIVE" | "ROTATED" | "REVOKED";
-  createdAt: Date;
-  rotatedAt?: Date;
-  expiresAt?: Date;
-  lastUsedAt?: Date;
-}
-
-// ─── VEHICLE IDENTIFICATION & REGISTRATION ────────────────────────
-
-export interface VehicleRegistration {
-  fleetId: string;
-  make: string;
-  model: string;
-  year: number;
-  vin: string;
-  licensePlate: string;
-  engineType: "GASOLINE" | "DIESEL" | "EV" | "HYBRID";
-  capacity: number;
-  primaryProvider: TelematicsProvider;
-}
-
-export type VehicleStatus = "ACTIVE" | "IDLE" | "OFFLINE" | "MAINTENANCE";
+export type VehicleType = "TRUCK" | "VAN" | "CAR" | "TRAILER";
+export type VehicleStatus = "ACTIVE" | "MAINTENANCE" | "RETIRED" | "DISPOSED";
+export type FuelType = "DIESEL" | "GASOLINE" | "ELECTRIC" | "HYBRID" | "CNG";
 
 export interface Vehicle {
   id: string;
-  fleetId: string;
+  vin: string;
   make: string;
   model: string;
   year: number;
-  vin: string;
-  licensePlate: string;
-  engineType: "GASOLINE" | "DIESEL" | "EV" | "HYBRID";
-  providerVehicleId?: string;
-  primaryProvider?: TelematicsProvider;
+  type: VehicleType;
   status: VehicleStatus;
-  odometer: number;
-  engineHours: number;
-  fuelLevel: number;
-  battery: number;
-  driverId?: string;
-  capacity: number;
-  isActive: boolean;
-  lastPosition?: VehiclePosition;
-  lastSyncAt?: Date;
-  nextMaintenanceDate?: Date;
+  mileage: number;
+  fuelType: FuelType;
+  licensePlate: string;
+  registration: VehicleRegistration;
+  insurance: InsurancePolicy;
+  assignedDriverId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ─── VEHICLE POSITION & LOCATION ──────────────────────────────────
-
-export interface VehiclePosition {
-  vehicleId: string;
-  latitude: number;
-  longitude: number;
-  heading: number;
-  speed: number;
-  accuracy: number;
-  altitude?: number;
-  timestamp: Date;
+export interface VehicleRegistration {
+  registrationNumber: string;
+  expiryDate: Date;
+  state: string;
+  ownerName: string;
 }
 
-export interface VehicleLocation {
-  latitude: number;
-  longitude: number;
-  heading: number;
-  accuracy: number;
+export interface InsurancePolicy {
+  policyNumber: string;
+  provider: string;
+  expiryDate: Date;
+  coverageType: "COMPREHENSIVE" | "LIABILITY" | "COLLISION";
+  premium: number;
 }
 
-// ─── VEHICLE STATUS & METRICS ─────────────────────────────────────
+// ─── MAINTENANCE TYPES ────────────────────────────────────────────────────
 
-export interface VehicleStatus {
-  vehicleId: string;
-  status: "ACTIVE" | "IDLE" | "OFFLINE" | "MAINTENANCE";
-  engineRunning: boolean;
-  lastPosition: VehiclePosition;
-  battery: number;
-  odometer: number;
-  hours: number;
-  faultCodes: DiagnosticCode[];
-  timestamp: Date;
-}
+export type MaintenanceType = "PREVENTIVE" | "REACTIVE" | "PREDICTIVE" | "RECALL";
+export type MaintenanceCategory =
+  | "OIL_CHANGE"
+  | "TIRE"
+  | "BRAKE"
+  | "ENGINE"
+  | "TRANSMISSION"
+  | "ELECTRICAL"
+  | "BODY"
+  | "INSPECTION";
+export type MaintenanceStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE";
 
-export interface DiagnosticCode {
-  code: string;
-  description: string;
-  system: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-}
-
-// ─── VEHICLE FUEL ─────────────────────────────────────────────────
-
-export interface VehicleFuel {
-  vehicleId: string;
-  fuelLevel: number;
-  fuelVolume: number;
-  fuelType: "GASOLINE" | "DIESEL" | "ELECTRIC" | "HYBRID";
-  fuelEconomy: number;
-  range: number;
-  timestamp: Date;
-}
-
-export interface FuelConsumption {
+export interface MaintenanceRecord {
   id: string;
   vehicleId: string;
-  fuelLevel: number;
-  fuelVolume: number;
-  fuelEconomy: number;
-  estimatedRange: number;
-  recordedAt: Date;
-  createdAt: Date;
-}
-
-// ─── VEHICLE DIAGNOSTICS ──────────────────────────────────────────
-
-export interface VehicleDiagnostics {
-  vehicleId: string;
-  faultCodes: DiagnosticCode[];
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  description: string;
-  affectedSystems: string[];
-  recommendedAction: string;
-  firstSeenAt: Date;
-  clearedAt?: Date;
-}
-
-export interface VehicleDiagnostic {
-  id: string;
-  vehicleId: string;
-  faultCode: string;
-  faultDescription: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  affectedSystems: string[];
-  recommendedAction?: string;
-  firstSeenAt: Date;
-  clearedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// ─── DRIVER BEHAVIOR ───────────────────────────────────────────────
-
-export type DriverBehaviorEventType =
-  | "SPEEDING"
-  | "HARSH_BRAKE"
-  | "HARSH_ACCEL"
-  | "COLLISION"
-  | "DISTRACTION"
-  | "HARD_TURN"
-  | "SEATBELT_VIOLATION";
-
-export interface DriverBehaviorEvent {
-  id: string;
-  vehicleId: string;
-  driverId?: string;
-  eventType: DriverBehaviorEventType;
-  severity: 1 | 2 | 3 | 4 | 5;
-  location: {
-    latitude: number;
-    longitude: number;
-  };
-  speed: number;
-  description: string;
-  durationMs?: number;
-  timestamp: Date;
-  createdAt: Date;
-}
-
-export interface DriverBehaviorStats {
-  vehicleId: string;
-  driverId?: string;
-  totalEvents: number;
-  speedingEvents: number;
-  harshBrakingEvents: number;
-  harshAccelEvents: number;
-  collisionEvents: number;
-  distractionEvents: number;
-  avgSeverity: number;
-  riskScore: number;
-  improvementTrend: number;
-  periodStart: Date;
-  periodEnd: Date;
-}
-
-// ─── MAINTENANCE & ALERTS ─────────────────────────────────────────
-
-export interface MaintenanceAlert {
-  id: string;
-  vehicleId: string;
-  alertType: string;
-  dueDate: Date;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  estimatedCost?: number;
+  type: MaintenanceType;
+  category: MaintenanceCategory;
+  status: MaintenanceStatus;
+  scheduledDate: Date;
+  completedDate?: Date;
+  vendor?: string;
+  cost?: number;
+  parts?: string[];
+  laborHours?: number;
   notes?: string;
-  isCompleted: boolean;
-  completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface MaintenanceSchedule {
+  id: string;
   vehicleId: string;
-  alerts: MaintenanceAlert[];
-  nextDueDate?: Date;
-  overdueMaintenance: MaintenanceAlert[];
+  maintenanceType: MaintenanceType;
+  intervalMiles?: number;
+  intervalMonths?: number;
+  intervalHours?: number;
+  lastServiceDate: Date;
+  nextServiceDate: Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// ─── FLEET OVERVIEW & HEALTH ──────────────────────────────────────
+// ─── FUEL TYPES ──────────────────────────────────────────────────────────
 
-export interface FleetOverview {
-  fleetId: string;
-  totalVehicles: number;
-  activeVehicles: number;
-  idleVehicles: number;
-  offlineVehicles: number;
-  maintenanceVehicles: number;
-  healthScore: FleetHealthScore;
-  topAlerts: FleetAlert[];
-  recentEvents: FleetEvent[];
-  averageFuelEconomy: number;
-  totalIdleHours: number;
-  criticalAlertCount: number;
+export interface FuelTransaction {
+  id: string;
+  vehicleId: string;
+  driverId?: string;
+  date: Date;
+  gallons: number;
+  totalCost: number;
+  pricePerGallon: number;
+  station?: string;
+  location?: { latitude: number; longitude: number };
+  fuelCardId?: string;
+  odometerReading: number;
+  fuelType: FuelType;
+  createdAt: Date;
 }
+
+export interface FuelCard {
+  id: string;
+  cardNumber: string;
+  cardholderName: string;
+  expiryDate: Date;
+  dailyLimit: number;
+  monthlyLimit: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ─── COST TYPES ──────────────────────────────────────────────────────────
+
+export interface FleetCost {
+  id: string;
+  vehicleId: string;
+  period: { start: Date; end: Date };
+  fuel: number;
+  maintenance: number;
+  insurance: number;
+  depreciation: number;
+  tolls: number;
+  total: number;
+  costPerMile: number;
+  createdAt: Date;
+}
+
+export interface TCOComponent {
+  acquisition: number;
+  fuel: number;
+  maintenance: number;
+  insurance: number;
+  depreciation: number;
+  disposal: number;
+  tolls: number;
+  total: number;
+}
+
+export interface DepreciationSchedule {
+  method: "STRAIGHT_LINE" | "DECLINING_BALANCE";
+  acquisitionCost: number;
+  salvageValue: number;
+  usefulLifeYears: number;
+  currentValue: number;
+  annualDepreciation: number;
+}
+
+// ─── ASSIGNMENT TYPES ────────────────────────────────────────────────────
+
+export interface VehicleAssignment {
+  id: string;
+  vehicleId: string;
+  driverId: string;
+  startDate: Date;
+  endDate?: Date;
+  reason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DriverLicense {
+  licenseNumber: string;
+  class: string; // CDL, Commercial, Standard
+  expiryDate: Date;
+  restrictions?: string[];
+}
+
+// ─── HEALTH SCORE TYPES ──────────────────────────────────────────────────
 
 export interface FleetHealthScore {
-  overallScore: number;
-  fuelEfficiency: number;
-  driverSafety: number;
-  maintenanceStatus: number;
-  utilizationRate: number;
+  id: string;
+  vehicleId?: string; // null = fleet-wide
+  overallScore: number; // 0-100
+  maintenanceCompliance: number;
+  ageScore: number;
+  mileageScore: number;
+  incidentScore: number;
+  fuelEfficiencyScore: number;
+  utilizationScore: number;
   trend: "IMPROVING" | "STABLE" | "DECLINING";
   lastUpdated: Date;
-}
-
-export interface FleetHealthMetric {
-  id: string;
-  fleetId: string;
-  overallScore: number;
-  fuelEfficiency: number;
-  driverSafety: number;
-  maintenanceStatus: number;
-  utilizationRate: number;
-  totalVehicles: number;
-  activeVehicles: number;
-  idleVehicles: number;
-  offlineVehicles: number;
-  maintenanceVehicles: number;
-  avgFuelEconomy: number;
-  totalIdleHours: number;
-  criticalAlerts: number;
-  recordedAt: Date;
   createdAt: Date;
 }
 
-// ─── FLEET EVENTS & ALERTS ────────────────────────────────────────
+// ─── VEHICLE INSPECTION TYPES ────────────────────────────────────────────
 
-export type FleetEventType =
-  | "VEHICLE_ONLINE"
-  | "VEHICLE_OFFLINE"
-  | "ENGINE_START"
-  | "ENGINE_STOP"
-  | "HARSH_ACCELERATION"
-  | "HARSH_BRAKING"
-  | "SPEEDING"
-  | "COLLISION_DETECTED"
-  | "GEOFENCE_ENTRY"
-  | "GEOFENCE_EXIT"
-  | "MAINTENANCE_ALERT"
-  | "FAULT_CODE_DETECTED"
-  | "LOW_FUEL"
-  | "FUEL_THEFT"
-  | "IDLING_ALERT"
-  | "SEATBELT_VIOLATION"
-  | "DISTRACTED_DRIVING";
-
-export interface FleetEvent {
+export interface VehicleInspection {
   id: string;
-  fleetId: string;
   vehicleId: string;
-  eventType: FleetEventType;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  data: Record<string, any>;
-  timestamp: Date;
-  acknowledged: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt?: Date;
+  inspectionDate: Date;
+  inspectionType: "ROUTINE" | "SAFETY" | "PRE_TRIP" | "POST_TRIP";
+  status: "PASS" | "FAIL" | "CONDITIONAL";
+  checklist: InspectionChecklistItem[];
+  notes?: string;
+  inspectorName: string;
+  nextInspectionDueDate: Date;
   createdAt: Date;
 }
 
-export interface FleetAlert {
-  id: string;
-  fleetId: string;
-  vehicleId: string;
-  title: string;
-  description: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  category: "SAFETY" | "MAINTENANCE" | "FUEL" | "OPERATIONS";
-  timestamp: Date;
-  resolved: boolean;
-  resolvedAt?: Date;
+export interface InspectionChecklistItem {
+  component: string;
+  status: "PASS" | "FAIL" | "N/A";
+  notes?: string;
 }
 
-// ─── ADAPTER INTERFACE ─────────────────────────────────────────────
+// ─── REQUEST/RESPONSE TYPES ──────────────────────────────────────────────
 
-export type EventCallback = (event: FleetEvent) => Promise<void>;
-
-export interface DateRange {
-  start: Date;
-  end: Date;
-}
-
-export interface VehicleIdentifier {
-  vehicleId: string;
-  providerVehicleId: string;
-}
-
-export interface ITelematicsAdapter {
-  providerName: TelematicsProvider;
-  apiVersion: string;
-
-  // Vehicle lifecycle
-  registerVehicle(vehicleInfo: VehicleRegistration): Promise<VehicleIdentifier>;
-  deregisterVehicle(vehicleId: string): Promise<void>;
-
-  // Real-time data
-  getVehiclePosition(vehicleId: string): Promise<VehiclePosition>;
-  getVehicleStatus(vehicleId: string): Promise<VehicleStatus>;
-  getVehicleFuel(vehicleId: string): Promise<VehicleFuel>;
-  getVehicleDiagnostics(vehicleId: string): Promise<VehicleDiagnostics>;
-  getFleetVehicles(): Promise<Vehicle[]>;
-
-  // Events and alerts
-  subscribeToEvents(callback: EventCallback): void;
-  unsubscribeFromEvents(): void;
-
-  // Driver behavior
-  getDriverBehavior(vehicleId: string, dateRange: DateRange): Promise<DriverBehaviorEvent[]>;
-
-  // Polling state
-  getLastSyncTime(vehicleId: string): Promise<Date | null>;
-  setLastSyncTime(vehicleId: string, timestamp: Date): Promise<void>;
-}
-
-// ─── REQUEST/RESPONSE TYPES ───────────────────────────────────────
-
-export interface RegisterVehicleRequest {
+export interface CreateVehicleRequest {
+  vin: string;
   make: string;
   model: string;
   year: number;
-  vin: string;
+  type: VehicleType;
+  fuelType: FuelType;
   licensePlate: string;
-  engineType: "GASOLINE" | "DIESEL" | "EV" | "HYBRID";
-  capacity: number;
-  primaryProvider: TelematicsProvider;
-  driverId?: string;
+  registration: VehicleRegistration;
+  insurance: InsurancePolicy;
 }
 
 export interface UpdateVehicleRequest {
-  driverId?: string;
-  primaryProvider?: TelematicsProvider;
-  capacity?: number;
-  isActive?: boolean;
-  nextMaintenanceDate?: Date;
-}
-
-export interface VehicleListQueryParams {
+  mileage?: number;
   status?: VehicleStatus;
-  page?: number;
-  limit?: number;
-  search?: string;
-  provider?: TelematicsProvider;
-  isActive?: boolean;
+  assignedDriverId?: string | null;
+  insurance?: InsurancePolicy;
 }
 
-export interface PaginatedVehicles {
-  data: Vehicle[];
+export interface CreateMaintenanceRequest {
+  vehicleId: string;
+  type: MaintenanceType;
+  category: MaintenanceCategory;
+  scheduledDate: Date;
+  vendor?: string;
+  estimatedCost?: number;
+  notes?: string;
+}
+
+export interface CompleteMaintenanceRequest {
+  completedDate: Date;
+  cost: number;
+  parts?: string[];
+  laborHours?: number;
+  notes?: string;
+}
+
+export interface RecordFuelTransactionRequest {
+  vehicleId: string;
+  driverId?: string;
+  gallons: number;
+  totalCost: number;
+  station?: string;
+  location?: { latitude: number; longitude: number };
+  odometerReading: number;
+}
+
+export interface AssignVehicleRequest {
+  vehicleId: string;
+  driverId: string;
+  reason?: string;
+}
+
+export interface UnassignVehicleRequest {
+  vehicleId: string;
+}
+
+// ─── ANALYTICS TYPES ─────────────────────────────────────────────────────
+
+export interface VehicleUtilization {
+  vehicleId: string;
+  period: { start: Date; end: Date };
+  totalMiles: number;
+  idleMiles: number;
+  activeMiles: number;
+  utilizationPercentage: number;
+  averageMilesPerDay: number;
+}
+
+export interface FuelAnalysis {
+  vehicleId: string;
+  period: { start: Date; end: Date };
+  totalGallons: number;
+  totalCost: number;
+  mpg: number;
+  avgPricePerGallon: number;
+  trendComparison: number; // % change vs previous period
+}
+
+export interface MaintenanceCost {
+  vehicleId?: string; // null = fleet-wide
+  period: { start: Date; end: Date };
+  preventiveSpent: number;
+  reactiveSpent: number;
+  predictiveSpent: number;
+  totalSpent: number;
+  averageCostPerMile: number;
+}
+
+export interface FleetDashboardMetrics {
+  totalVehicles: number;
+  activeVehicles: number;
+  maintenanceVehicles: number;
+  retiredVehicles: number;
+  disposedVehicles: number;
+  utilizationRate: number;
+  healthScore: number;
+  averageFuelEconomy: number;
+  totalMaintenanceCost: number;
+  totalFuelCost: number;
+  costPerMile: number;
+  overdueMaintenance: number;
+  averageAge: number;
+  averageMileage: number;
+  lastUpdated: Date;
+}
+
+export interface CostForecast {
+  vehicleId?: string;
+  period: { start: Date; end: Date };
+  projectedFuel: number;
+  projectedMaintenance: number;
+  projectedInsurance: number;
+  projectedTotal: number;
+  confidenceLevel: number;
+}
+
+// ─── ERROR TYPES ─────────────────────────────────────────────────────────
+
+export class FleetManagementError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode: number = 500,
+    public details?: Record<string, any>,
+  ) {
+    super(message);
+    this.name = "FleetManagementError";
+  }
+}
+
+export class VehicleNotFoundError extends FleetManagementError {
+  constructor(vehicleId: string) {
+    super(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
+  }
+}
+
+export class MaintenanceNotFoundError extends FleetManagementError {
+  constructor(maintenanceId: string) {
+    super(`Maintenance record not found: ${maintenanceId}`, "MAINTENANCE_NOT_FOUND", 404);
+  }
+}
+
+export class InvalidAssignmentError extends FleetManagementError {
+  constructor(message: string, details?: Record<string, any>) {
+    super(message, "INVALID_ASSIGNMENT", 400, details);
+  }
+}
+
+export class DeprecationCalculationError extends FleetManagementError {
+  constructor(vehicleId: string) {
+    super(`Failed to calculate depreciation for vehicle: ${vehicleId}`, "DEPRECIATION_ERROR", 500);
+  }
+}
+
+export class MaintenanceScheduleError extends FleetManagementError {
+  constructor(message: string, details?: Record<string, any>) {
+    super(message, "MAINTENANCE_SCHEDULE_ERROR", 400, details);
+  }
+}
+
+// ─── PAGINATION & FILTERING ──────────────────────────────────────────────
+
+export interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+export interface VehicleFilterParams extends PaginationParams {
+  status?: VehicleStatus;
+  type?: VehicleType;
+  fuelType?: FuelType;
+  assignedDriverId?: string;
+  search?: string; // Search by VIN, plate, make/model
+}
+
+export interface MaintenanceFilterParams extends PaginationParams {
+  vehicleId?: string;
+  type?: MaintenanceType;
+  status?: MaintenanceStatus;
+  category?: MaintenanceCategory;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface FuelTransactionFilterParams extends PaginationParams {
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  station?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
   pagination: {
     page: number;
     limit: number;
@@ -400,44 +423,99 @@ export interface PaginatedVehicles {
   };
 }
 
-// ─── ERROR HANDLING ───────────────────────────────────────────────
+// ─── NOTIFICATION TYPES ──────────────────────────────────────────────────
 
-export class FleetError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public statusCode: number = 500,
-    public details?: Record<string, any>,
-  ) {
-    super(message);
-    this.name = "FleetError";
-  }
+export type FleetNotificationType =
+  | "MAINTENANCE_OVERDUE"
+  | "INSURANCE_EXPIRING"
+  | "REGISTRATION_EXPIRING"
+  | "HEALTH_SCORE_DECLINING"
+  | "MAINTENANCE_COMPLETED"
+  | "VEHICLE_ASSIGNMENT"
+  | "COST_THRESHOLD_EXCEEDED"
+  | "FUEL_ANOMALY";
+
+export interface FleetNotification {
+  id: string;
+  type: FleetNotificationType;
+  vehicleId?: string;
+  title: string;
+  message: string;
+  severity: "INFO" | "WARNING" | "CRITICAL";
+  actionUrl?: string;
+  read: boolean;
+  createdAt: Date;
+  readAt?: Date;
 }
 
-export class VehicleNotFoundError extends FleetError {
-  constructor(vehicleId: string) {
-    super(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
-  }
+// ─── BULK OPERATION TYPES ────────────────────────────────────────────────
+
+export interface BulkMaintenanceScheduleRequest {
+  vehicleIds: string[];
+  maintenanceType: MaintenanceType;
+  category: MaintenanceCategory;
+  scheduledDate: Date;
+  vendor?: string;
 }
 
-export class ProviderIntegrationError extends FleetError {
-  constructor(provider: string, message: string) {
-    super(
-      `Provider integration error (${provider}): ${message}`,
-      "PROVIDER_ERROR",
-      502,
-      { provider },
-    );
-  }
+export interface BulkFuelTransactionImport {
+  transactions: FuelTransaction[];
+  source: "CSV" | "API" | "MANUAL";
+  importDate: Date;
 }
 
-export class RateLimitError extends FleetError {
-  constructor(provider: string, resetAt: Date) {
-    super(
-      `Rate limit exceeded for ${provider}`,
-      "RATE_LIMIT_EXCEEDED",
-      429,
-      { resetAt },
-    );
-  }
+// ─── REPORTING TYPES ────────────────────────────────────────────────────
+
+export interface FleetReport {
+  id: string;
+  reportType:
+    | "HEALTH"
+    | "MAINTENANCE"
+    | "FUEL"
+    | "COST"
+    | "UTILIZATION"
+    | "COMPLIANCE";
+  period: { start: Date; end: Date };
+  generatedAt: Date;
+  data: Record<string, any>;
+  createdBy: string;
+}
+
+export interface ComplianceReport {
+  vehicleId: string;
+  period: { start: Date; end: Date };
+  maintenanceCompliance: number;
+  inspectionCompliance: number;
+  insuranceCompliance: boolean;
+  registrationCompliance: boolean;
+  issues: string[];
+}
+
+// ─── CONFIGURATION TYPES ────────────────────────────────────────────────
+
+export interface FleetConfiguration {
+  id: string;
+  maintenanceThreshold: {
+    warningMiles: number;
+    criticalMiles: number;
+    warningDays: number;
+    criticalDays: number;
+  };
+  costThreshold: {
+    monthlyBudget: number;
+    alertPercentage: number;
+  };
+  healthScoreWeights: {
+    maintenance: number;
+    age: number;
+    mileage: number;
+    incidents: number;
+    fuelEfficiency: number;
+    utilization: number;
+  };
+  replacementCriteria: {
+    maxAge: number;
+    maxMileage: number;
+    minHealthScore: number;
+  };
 }
