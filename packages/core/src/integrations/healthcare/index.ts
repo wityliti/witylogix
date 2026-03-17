@@ -39,6 +39,28 @@ export { AllscriptsClient } from "./allscripts-client.js";
 export { EpicClient } from "./epic-client.js";
 export { HL7FHIRClient } from "./hl7-fhir-client.js";
 
+// FHIR v2 SDK Clients (production-grade)
+export { EpicFhirV2SdkClient } from "./epic-fhir-v2-sdk-client.js";
+export { CernerFhirV2SdkClient } from "./cerner-fhir-v2-sdk-client.js";
+export { AllscriptsFhirV2SdkClient } from "./allscripts-fhir-v2-sdk-client.js";
+
+// FHIR v2 SDK Types
+export {
+  type SDKConfig,
+  type NormalizedPatient,
+  type NormalizedEncounter,
+  type NormalizedObservation,
+  type NormalizedCondition,
+  type NormalizedMedication,
+  type FHIRBundle,
+  type OperationOutcome,
+  type BulkExportResult,
+  type OAuth2Token,
+  type RetryConfig,
+  type RateLimiterState,
+  HealthcareSDKError,
+} from "./healthcare-sdk-types.js";
+
 export {
   matchPatients,
   translateCode,
