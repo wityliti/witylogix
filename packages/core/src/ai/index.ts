@@ -447,3 +447,78 @@ export {
   type FeedbackRequest,
   type NotificationAnalytics,
 } from "./notification-intelligence-api.js";
+
+// ─── Integration Anomaly Detector ──────────────────────────────────────────
+
+export {
+  MultiSignalAnalyzer,
+  LatencyAnomalyDetector,
+  ErrorPatternRecognizer,
+  VolumeAnomalyDetector,
+  AnomalyCorrelator,
+  type IntegrationMetric,
+  type AnomalySignal,
+  type CompositeAnomalyScore,
+  type BaselineWindow,
+  type LatencyAnomalyReport,
+  type ErrorPattern,
+  type VolumeAnomaly,
+  type ProviderCorrelation,
+  type CascadeDetection,
+} from "./integration-anomaly-detector.js";
+
+// ─── Integration Auto-Remediation ─────────────────────────────────────────
+
+export {
+  RemediationRecommender,
+  AutoRemediationEngine,
+  RemediationPlaybook,
+  IncidentPredictor,
+  type RemediationActionType,
+  type RemediationAction,
+  type RemediationRecommendation,
+  type RemediationRule,
+  type PlaybookStep,
+  type RemediationExecution,
+  type IncidentPrediction,
+  type RemediationMetrics,
+} from "./integration-auto-remediation.js";
+
+// ─── Integration Capacity Planner ──────────────────────────────────────────
+
+export {
+  GrowthProjector,
+  ProviderLimitForecaster,
+  CostOptimizer,
+  CapacityPlanner,
+  SLAPredictor,
+  type ProviderCapacity,
+  type GrowthMetric,
+  type GrowthProjection,
+  type LimitForecast,
+  type CostMetrics,
+  type CheaperAlternative,
+  type CapacitySimulation,
+  type SLAMetrics,
+  type CapacityAlert,
+} from "./integration-capacity-planner.js";
+
+// ─── Integration Intelligence API ──────────────────────────────────────────
+
+export {
+  createIntegrationIntelligenceAPI,
+  handleGetAnomalies,
+  handleGetAnomaliesByProvider,
+  handleDetectAnomalies,
+  handleGetRemediationRecommendations,
+  handleExecuteRemediation,
+  handleGetPlaybooks,
+  handleGetCapacityForecast,
+  handleGetCostAnalysis,
+  handleGetLimitForecasts,
+  handleGetSLAPredictions,
+  handleSimulateCapacity,
+  handleGetIncidentPredictions,
+  handleHealthCheck,
+  handleRegisterProvider,
+} from "./integration-intelligence-api.js";

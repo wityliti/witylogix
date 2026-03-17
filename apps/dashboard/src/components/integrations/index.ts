@@ -134,3 +134,54 @@ export type {
 export type {
   ConnectDialogProps,
 } from "./connect-dialog";
+
+// Sprint 8.9 new exports - Advanced integration monitoring
+export { HealthStatusCard } from "./health-status-card";
+export { LatencySparkline } from "./latency-sparkline";
+export { WebhookDeliveryChart } from "./webhook-delivery-chart";
+export { CircuitBreakerVisualizer } from "./circuit-breaker-visualizer";
+export { ChaosScenarioCard } from "./chaos-scenario-card";
+export { MigrationProgressBar } from "./migration-progress-bar";
+export { CredentialRotationTimeline } from "./credential-rotation-timeline";
+export { SLABadge } from "./sla-badge";
+
+// Sprint 8.9 new type exports
+export type {
+  HealthStatusCardProps,
+} from "./health-status-card";
+export type {
+  LatencyDataPoint,
+  LatencySparklineProps,
+} from "./latency-sparkline";
+export type {
+  WebhookDeliveryHour,
+  WebhookDeliveryChartProps,
+} from "./webhook-delivery-chart";
+export type {
+  CircuitBreakerState,
+  StateTransition,
+  HistorySegment,
+  CircuitBreakerVisualizerProps,
+} from "./circuit-breaker-visualizer";
+export type {
+  FaultType,
+  Severity,
+  ScenarioStatus,
+  ChaosScenarioCardProps,
+} from "./chaos-scenario-card";
+export type {
+  MigrationStep,
+  StepStats,
+  MigrationProgressBarProps,
+} from "./migration-progress-bar";
+export type {
+  CredentialType,
+  RotationStatus,
+  RotationFilter,
+  RotationEntry,
+  CredentialRotationTimelineProps,
+} from "./credential-rotation-timeline";
+export type {
+  TrendDirection,
+  SLABadgeProps,
+} from "./sla-badge";

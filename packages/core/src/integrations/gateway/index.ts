@@ -70,3 +70,36 @@ export {
   type DailyAggregation,
   type PrometheusMetric,
 } from './metrics-collector.js';
+
+// ─── Integration Gateway V2 ─────────────────────────────────────
+
+// Gateway V2 Core
+export {
+  AdvancedCircuitBreaker,
+  BulkheadIsolator,
+  RetryEngine,
+  RequestDeduplicator,
+  ResponseCache,
+  CorrelationTracker,
+  GatewayOrchestrator,
+  type HttpRequestOptions as HttpRequestOptionsV2,
+  type HttpResponse as HttpResponseV2,
+  type CircuitBreakerStateChangeEvent,
+  type TraceContext,
+  type HttpClient,
+} from './integration-gateway-v2.js';
+
+// Gateway V2 Metrics
+export {
+  MetricsCollectorV2,
+  MetricsExporter,
+  type Percentile,
+  type ErrorBreakdown,
+  type ProviderMetrics,
+  type AggregatedMetrics,
+  type AnomalyDetection,
+  type MetricsCollectorConfig,
+} from './gateway-metrics.js';
+
+// Gateway V2 API
+export { GatewayV2API, createGatewayV2Routes } from './gateway-v2-api.js';

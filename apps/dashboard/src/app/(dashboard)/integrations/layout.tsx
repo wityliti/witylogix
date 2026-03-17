@@ -14,6 +14,12 @@ import {
   ShoppingBag,
   Plug,
   FileText,
+  Activity,
+  Webhook,
+  Key,
+  Zap,
+  GitBranch,
+  BookOpen,
 } from "lucide-react";
 
 interface IntegrationTab {
@@ -25,22 +31,46 @@ interface IntegrationTab {
 
 const INTEGRATION_TABS: IntegrationTab[] = [
   {
-    href: "/integrations/overview",
-    label: "Marketplace",
-    icon: <ShoppingBag className="w-4 h-4" />,
-    description: "Browse and connect integrations",
+    href: "/integrations",
+    label: "Health Center",
+    icon: <Activity className="w-4 h-4" />,
+    description: "Overall health and status",
   },
   {
-    href: "/integrations/connected",
-    label: "Connected",
+    href: "/integrations/providers",
+    label: "Providers",
     icon: <Plug className="w-4 h-4" />,
-    description: "Manage active connections",
+    description: "Provider metrics and configuration",
   },
   {
-    href: "/integrations/logs",
-    label: "Logs",
-    icon: <FileText className="w-4 h-4" />,
-    description: "View integration activity",
+    href: "/integrations/webhooks",
+    label: "Webhooks",
+    icon: <Webhook className="w-4 h-4" />,
+    description: "Webhook monitoring and DLQ",
+  },
+  {
+    href: "/integrations/credentials",
+    label: "Credentials",
+    icon: <Key className="w-4 h-4" />,
+    description: "Credential management and rotation",
+  },
+  {
+    href: "/integrations/chaos",
+    label: "Chaos Testing",
+    icon: <Zap className="w-4 h-4" />,
+    description: "Failure injection testing",
+  },
+  {
+    href: "/integrations/migration",
+    label: "Migration",
+    icon: <GitBranch className="w-4 h-4" />,
+    description: "Provider migration tools",
+  },
+  {
+    href: "/integrations/docs",
+    label: "Docs",
+    icon: <BookOpen className="w-4 h-4" />,
+    description: "API documentation",
   },
 ];
 

@@ -13,6 +13,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "downlevelIteration": true,
     "outDir": "dist",
     "rootDir": "src"
   },
