@@ -1,0 +1,486 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useDVIR } from "@/hooks/use-eld";
+import { DVIRForm } from "@/components/eld/dvir-form";
+import {
+  CheckCircle,
+  AlertTriangle,
+  Calendar,
+  Search,
+  Plus,
+  Eye,
+  Download,
+  Filter,
+  Wrench,
+  TrendingDown,
+} from "lucide-react";
+
+/* ═══════════════════════════════════════════════════════════
+   DVIR PAGE — Vehicle inspection reports management
+   Forms, defect tracking, status workflow, history, mechanic sign-off
+   ═══════════════════════════════════════════════════════════ */
+
+type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
+type InspectionStatus = "PASSED" | "FAILED";
+
+interface InspectionHistory {
+  id: string;
+  vehicleNumber: string;
+  driverId: string;
+  driverName: string;
+  type: "PRE_TRIP" | "POST_TRIP";
+  status: InspectionStatus;
+  date: string;
+  defectsCount: number;
+  criticalDefects: number;
+}
+
+const VEHICLES = [
+  { id: "veh-1", number: "WTY-4501" },
+  { id: "veh-2", number: "WTY-2201" },
+  { id: "veh-3", number: "WTY-1101" },
+  { id: "veh-4", number: "WTY-2202" },
+  { id: "veh-5", number: "WTY-4502" },
+  { id: "veh-6", number: "WTY-6001" },
+];
+
+const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
+  {
+    id: "ins-1",
+    vehicleNumber: "WTY-4501",
+    driverId: "drv-1",
+    driverName: "Carlos Martinez",
+    type: "PRE_TRIP",
+    status: "PASSED",
+    date: new Date(Date.now() - 86400000).toISOString(),
+    defectsCount: 0,
+    criticalDefects: 0,
+  },
+  {
+    id: "ins-2",
+    vehicleNumber: "WTY-4501",
+    driverId: "drv-1",
+    driverName: "Carlos Martinez",
+    type: "POST_TRIP",
+    status: "FAILED",
+    date: new Date(Date.now() - 43200000).toISOString(),
+    defectsCount: 2,
+    criticalDefects: 0,
+  },
+  {
+    id: "ins-3",
+    vehicleNumber: "WTY-2201",
+    driverId: "drv-2",
+    driverName: "Sofia Lindberg",
+    type: "PRE_TRIP",
+    status: "PASSED",
+    date: new Date(Date.now() - 3600000).toISOString(),
+    defectsCount: 0,
+    criticalDefects: 0,
+  },
+  {
+    id: "ins-4",
+    vehicleNumber: "WTY-2202",
+    driverId: "drv-4",
+    driverName: "Lisa Thompson",
+    type: "PRE_TRIP",
+    status: "FAILED",
+    date: new Date(Date.now() - 7200000).toISOString(),
+    defectsCount: 1,
+    criticalDefects: 1,
+  },
+  {
+    id: "ins-5",
+    vehicleNumber: "WTY-4502",
+    driverId: "drv-5",
+    driverName: "Marcus Johnson",
+    type: "POST_TRIP",
+    status: "PASSED",
+    date: new Date(Date.now() - 172800000).toISOString(),
+    defectsCount: 0,
+    criticalDefects: 0,
+  },
+  {
+    id: "ins-6",
+    vehicleNumber: "WTY-6001",
+    driverId: "drv-8",
+    driverName: "Diego Fernandez",
+    type: "PRE_TRIP",
+    status: "PASSED",
+    date: new Date(Date.now() - 259200000).toISOString(),
+    defectsCount: 0,
+    criticalDefects: 0,
+  },
+];
+
+export default function DVIRPage() {
+  const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
+  const [showForm, setShowForm] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("WTY-4501");
+  const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
+  const [showVehicleSearch, setShowVehicleSearch] = useState(false);
+
+  const filteredDefects = useMemo(() => {
+    let result = defects;
+
+    if (filterStatus !== "ALL") {
+      result = result.filter((d) => d.status === filterStatus);
+    }
+
+    if (searchQuery) {
+      result = result.filter((d) =>
+        d.component.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return result;
+  }, [defects, filterStatus, searchQuery]);
+
+  const filteredHistory = useMemo(() => {
+    let result = MOCK_INSPECTION_HISTORY;
+
+    if (selectedVehicle) {
+      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
+    }
+
+    return result.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [selectedVehicle]);
+
+  const criticalDefectsCount = filteredDefects.filter(
+    (d) => d.severity === "CRITICAL"
+  ).length;
+  const openDefectsCount = filteredDefects.filter(
+    (d) => d.status !== "CERTIFIED"
+  ).length;
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-4 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-wl-text-secondary uppercase">
+              Total Defects
+            </span>
+            <Wrench className="w-4 h-4 text-wl-info-400" />
+          </div>
+          <p className="text-2xl font-bold text-wl-text-primary">{defects.length}</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            {openDefectsCount} open
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-wl-text-secondary uppercase">
+              Critical Issues
+            </span>
+            <AlertTriangle className="w-4 h-4 text-wl-danger-400" />
+          </div>
+          <p className="text-2xl font-bold text-wl-danger-400">{criticalDefectsCount}</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            Require immediate action
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-wl-text-secondary uppercase">
+              Repaired
+            </span>
+            <CheckCircle className="w-4 h-4 text-wl-success-400" />
+          </div>
+          <p className="text-2xl font-bold text-wl-success-400">
+            {defects.filter((d) => d.status === "REPAIRED").length}
+          </p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            Awaiting certification
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-wl-text-secondary uppercase">
+              Certified
+            </span>
+            <CheckCircle className="w-4 h-4 text-wl-info-400" />
+          </div>
+          <p className="text-2xl font-bold text-wl-info-400">
+            {defects.filter((d) => d.status === "CERTIFIED").length}
+          </p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            Resolved and closed
+          </p>
+        </div>
+      </div>
+
+      {!showForm ? (
+        <>
+          {/* Active Defects */}
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-lg">Active Defects</CardTitle>
+                  <p className="text-xs text-wl-text-secondary mt-1">
+                    Track vehicle maintenance issues
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  className="h-9"
+                  onClick={() => setShowForm(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Inspection
+                </Button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  placeholder="Search defects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-9 text-xs flex-1"
+                />
+
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as DefectStatus | "ALL")}
+                  className="h-9 px-3 text-xs rounded-lg bg-[var(--wl-bg-primary)] border border-[var(--wl-border)] text-wl-text-primary"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="REPORTED">Reported</option>
+                  <option value="ACKNOWLEDGED">Acknowledged</option>
+                  <option value="REPAIRED">Repaired</option>
+                  <option value="CERTIFIED">Certified</option>
+                </select>
+              </div>
+
+              {/* Defects list */}
+              {defectsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-primary-500/30 border-t-wl-primary-500 animate-spin" />
+                </div>
+              ) : filteredDefects.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
+                  <Wrench className="w-12 h-12 mb-3 opacity-50" />
+                  <p className="text-sm font-medium">No defects found</p>
+                  <p className="text-xs mt-1">All systems are operating normally</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredDefects.map((defect) => (
+                    <div
+                      key={defect.id}
+                      className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] hover:border-[var(--wl-primary)]/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-wl-text-primary">
+                              {defect.component}
+                            </h4>
+                            <Badge
+                              variant={
+                                defect.severity === "CRITICAL"
+                                  ? "danger"
+                                  : defect.severity === "MAJOR"
+                                    ? "warning"
+                                    : "info"
+                              }
+                              className="text-xs"
+                            >
+                              {defect.severity}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-wl-text-secondary">
+                            {defect.description}
+                          </p>
+                          <p className="text-xs text-wl-text-tertiary mt-1">
+                            Vehicle: {defect.vehicleId} • Driver: {defect.driverName}
+                          </p>
+                        </div>
+
+                        <select
+                          value={defect.status}
+                          onChange={(e) =>
+                            updateDefectStatus(defect.id, e.target.value as DefectStatus)
+                          }
+                          className="h-8 px-2 text-xs rounded bg-[var(--wl-bg-primary)] border border-[var(--wl-border)] text-wl-text-primary"
+                        >
+                          <option value="REPORTED">Reported</option>
+                          <option value="ACKNOWLEDGED">Acknowledged</option>
+                          <option value="REPAIRED">Repaired</option>
+                          <option value="CERTIFIED">Certified</option>
+                        </select>
+                      </div>
+
+                      {defect.mechanicApproval && (
+                        <div className="text-xs text-wl-success-400 pt-2 border-t border-[var(--wl-border)]">
+                          ✓ Certified by {defect.mechanicApproval.mechanicName}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Inspection History */}
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-lg">Inspection History</CardTitle>
+                  <p className="text-xs text-wl-text-secondary mt-1">
+                    Past and current vehicle inspections
+                  </p>
+                </div>
+              </div>
+
+              {/* Vehicle selector */}
+              <div className="mt-4 relative">
+                <button
+                  onClick={() => setShowVehicleSearch(!showVehicleSearch)}
+                  className="w-full h-9 px-3 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-wl-text-primary text-left flex items-center justify-between hover:bg-[var(--wl-bg-primary)] transition-colors text-sm"
+                >
+                  <span>Vehicle: {selectedVehicle}</span>
+                </button>
+
+                {showVehicleSearch && (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] rounded-lg shadow-lg">
+                    {VEHICLES.map((vehicle) => (
+                      <button
+                        key={vehicle.id}
+                        onClick={() => {
+                          setSelectedVehicle(vehicle.number);
+                          setShowVehicleSearch(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[var(--wl-border)] last:border-0",
+                          selectedVehicle === vehicle.number
+                            ? "bg-wl-primary-500/10 text-wl-primary-400"
+                            : "text-wl-text-secondary hover:bg-[var(--wl-bg-primary)]"
+                        )}
+                      >
+                        {vehicle.number}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              {filteredHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
+                  <Calendar className="w-12 h-12 mb-3 opacity-50" />
+                  <p className="text-sm font-medium">No inspections yet</p>
+                  <p className="text-xs mt-1">Schedule the first inspection for this vehicle</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredHistory.map((inspection) => (
+                    <div
+                      key={inspection.id}
+                      className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] hover:border-[var(--wl-primary)]/30 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-wl-text-primary">
+                              {inspection.type === "PRE_TRIP" ? "📋" : "✓"}{" "}
+                              {inspection.type.replace(/_/g, "-")} Inspection
+                            </h4>
+                            <Badge
+                              variant={inspection.status === "PASSED" ? "success" : "danger"}
+                              className="text-xs"
+                            >
+                              {inspection.status === "PASSED" ? "✓ PASSED" : "✗ FAILED"}
+                            </Badge>
+                          </div>
+
+                          <p className="text-xs text-wl-text-secondary">
+                            {inspection.driverName} •{" "}
+                            {new Date(inspection.date).toLocaleDateString()} at{" "}
+                            {new Date(inspection.date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+
+                          {inspection.defectsCount > 0 && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-wl-warning-400">
+                                {inspection.defectsCount} defect
+                                {inspection.defectsCount > 1 ? "s" : ""}
+                              </span>
+                              {inspection.criticalDefects > 0 && (
+                                <span className="text-xs text-wl-danger-400">
+                                  • {inspection.criticalDefects} critical
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="h-7 text-xs"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      ) : (
+        <>
+          {/* Form mode */}
+          <DVIRForm
+            vehicleNumber={selectedVehicle}
+            driverId="drv-1"
+            driverName="Carlos Martinez"
+            inspectionType={inspectionType}
+            onSubmit={(data) => {
+              console.log("Inspection submitted:", data);
+              setShowForm(false);
+            }}
+          />
+
+          <div className="flex justify-center">
+            <Button
+              variant="secondary"
+              className="h-9"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

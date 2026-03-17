@@ -1,0 +1,538 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useDriverHOS, useViolations, DutyStatus } from "@/hooks/use-eld";
+import { HOSClock, MultiHOSGauge } from "@/components/eld/hos-clock";
+import { ViolationTimeline } from "@/components/eld/violation-timeline";
+import {
+  ChevronDown,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  Edit2,
+  Download,
+  RotateCw,
+  TrendingDown,
+} from "lucide-react";
+
+/* ═══════════════════════════════════════════════════════════
+   HOS PAGE — Detailed Hours of Service per driver
+   HOS clock display, daily log graph, 8-day recap, violations
+   Edit request workflow, personal conveyance toggle
+   ═══════════════════════════════════════════════════════════ */
+
+const DRIVER_OPTIONS = [
+  { id: "drv-1", name: "Carlos Martinez" },
+  { id: "drv-2", name: "Sofia Lindberg" },
+  { id: "drv-3", name: "Ahmed Khalil" },
+  { id: "drv-4", name: "Lisa Thompson" },
+  { id: "drv-5", name: "Marcus Johnson" },
+  { id: "drv-6", name: "Yuki Tanaka" },
+  { id: "drv-7", name: "Priya Patel" },
+  { id: "drv-8", name: "Diego Fernandez" },
+];
+
+interface DailyLogEntry {
+  hour: number;
+  status: DutyStatus | "NONE";
+  label: string;
+}
+
+interface EightDayEntry {
+  day: string;
+  driving: number;
+  onDuty: number;
+  total: number;
+}
+
+const generateDailyLog = (): DailyLogEntry[] => {
+  const log: DailyLogEntry[] = [];
+  for (let i = 0; i < 24; i++) {
+    if (i < 6) {
+      log.push({ hour: i, status: "OFF_DUTY", label: "Off-Duty" });
+    } else if (i < 10) {
+      log.push({ hour: i, status: "DRIVING", label: "Driving" });
+    } else if (i < 11) {
+      log.push({ hour: i, status: "ON_DUTY", label: "Break" });
+    } else if (i < 18) {
+      log.push({ hour: i, status: "DRIVING", label: "Driving" });
+    } else {
+      log.push({ hour: i, status: "ON_DUTY", label: "On-Duty" });
+    }
+  }
+  return log;
+};
+
+const generateEightDayRecap = (): EightDayEntry[] => {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Today"];
+  return days.map((day) => ({
+    day,
+    driving: Math.floor(Math.random() * 11) + 2,
+    onDuty: Math.floor(Math.random() * 8) + 2,
+    total: 70 + Math.floor(Math.random() * 10) - 5,
+  }));
+};
+
+const dutyStatusColor = (status: DutyStatus): string => {
+  const colors: Record<DutyStatus, string> = {
+    OFF_DUTY: "bg-wl-text-secondary/30",
+    SLEEPER: "bg-wl-warning-500/40",
+    DRIVING: "bg-wl-danger-500/40",
+    ON_DUTY: "bg-wl-info-500/40",
+  };
+  return colors[status];
+};
+
+const dutyStatusLabel: Record<DutyStatus, string> = {
+  OFF_DUTY: "Off-Duty",
+  SLEEPER: "Sleeper",
+  DRIVING: "Driving",
+  ON_DUTY: "On-Duty",
+};
+
+export default function HOSPage() {
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("drv-1");
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [personalConveyance, setPersonalConveyance] = useState(false);
+  const [yardMove, setYardMove] = useState(false);
+
+  const { hos, isLoading } = useDriverHOS(selectedDriverId);
+  const { violations, isLoading: violationsLoading } = useViolations(selectedDriverId);
+
+  const dailyLog = useMemo(() => generateDailyLog(), []);
+  const eightDayRecap = useMemo(() => generateEightDayRecap(), []);
+
+  const selectedDriver = DRIVER_OPTIONS.find((d) => d.id === selectedDriverId);
+  const filteredDrivers = useMemo(() => {
+    if (!searchQuery) return DRIVER_OPTIONS;
+    return DRIVER_OPTIONS.filter((d) =>
+      d.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const getHosStatus = () => {
+    if (!hos) return "unknown";
+    if (hos.drivingTimeRemaining < 120) return "critical";
+    if (hos.drivingTimeRemaining < 240) return "warning";
+    return "compliant";
+  };
+
+  const hosStatus = getHosStatus();
+
+  return (
+    <div className="space-y-6">
+      {/* Driver Selector */}
+      <Card className="border-[var(--wl-border)]">
+        <CardHeader>
+          <CardTitle className="text-lg">Driver Selection</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <div className="relative">
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="w-full h-10 px-3 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-wl-text-primary text-left flex items-center justify-between hover:bg-[var(--wl-bg-primary)] transition-colors"
+            >
+              <span className="text-sm font-medium">{selectedDriver?.name}</span>
+              <ChevronDown
+                className={cn(
+                  "w-4 h-4 text-wl-text-secondary transition-transform",
+                  showSearch && "rotate-180"
+                )}
+              />
+            </button>
+
+            {showSearch && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] rounded-lg shadow-lg">
+                <Input
+                  placeholder="Search drivers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-0 rounded-t-lg rounded-b-none text-xs h-8"
+                  autoFocus
+                />
+
+                <div className="max-h-60 overflow-y-auto">
+                  {filteredDrivers.map((driver) => (
+                    <button
+                      key={driver.id}
+                      onClick={() => {
+                        setSelectedDriverId(driver.id);
+                        setShowSearch(false);
+                        setSearchQuery("");
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[var(--wl-border)] last:border-0",
+                        selectedDriverId === driver.id
+                          ? "bg-wl-primary-500/10 text-wl-primary-400"
+                          : "text-wl-text-secondary hover:bg-[var(--wl-bg-primary)]"
+                      )}
+                    >
+                      {driver.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 rounded-full border-2 border-wl-primary-500/30 border-t-wl-primary-500 animate-spin" />
+        </div>
+      ) : hos ? (
+        <>
+          {/* HOS Gauge Display */}
+          <MultiHOSGauge
+            driving={hos.drivingTimeRemaining}
+            onDutyWindow={hos.onDutyWindowRemaining}
+            cycle={{ used: hos.cycleHoursUsed, max: hos.cycleHours }}
+            breakRemaining={hos.breakStatus === "REQUIRED" ? hos.breakTimeRemaining : 0}
+            isViolation={hosStatus === "critical"}
+          />
+
+          {/* Status Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Current Status */}
+            <Card className="border-[var(--wl-border)]">
+              <CardHeader>
+                <CardTitle className="text-sm">Current Status</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Duty Status
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "w-3 h-3 rounded-full",
+                        hos.currentStatus === "DRIVING"
+                          ? "bg-wl-danger-400 animate-pulse"
+                          : hos.currentStatus === "ON_DUTY"
+                            ? "bg-wl-info-400"
+                            : hos.currentStatus === "SLEEPER"
+                              ? "bg-wl-warning-400"
+                              : "bg-wl-text-secondary"
+                      )}
+                    />
+                    <p className="text-sm font-semibold text-wl-text-primary">
+                      {hos.currentStatus.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Break Status
+                  </p>
+                  <Badge
+                    variant={hos.breakStatus === "TAKEN" ? "success" : "warning"}
+                  >
+                    {hos.breakStatus === "TAKEN" ? "✓ Taken" : "⚠ Required"}
+                  </Badge>
+                </div>
+
+                <div>
+                  <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">
+                    Last Updated
+                  </p>
+                  <p className="text-xs text-wl-text-primary">
+                    {new Date(hos.lastStatusChange).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Toggles */}
+            <Card className="border-[var(--wl-border)]">
+              <CardHeader>
+                <CardTitle className="text-sm">HOS Exemptions</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[var(--wl-bg-secondary)] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={personalConveyance}
+                    onChange={(e) => setPersonalConveyance(e.target.checked)}
+                    className="w-4 h-4 rounded border-[var(--wl-border)]"
+                  />
+                  <span className="text-xs text-wl-text-primary font-medium">
+                    Personal Conveyance
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[var(--wl-bg-secondary)] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={yardMove}
+                    onChange={(e) => setYardMove(e.target.checked)}
+                    className="w-4 h-4 rounded border-[var(--wl-border)]"
+                  />
+                  <span className="text-xs text-wl-text-primary font-medium">
+                    Yard Move
+                  </span>
+                </label>
+
+                <p className="text-xs text-wl-text-secondary pt-2 border-t border-[var(--wl-border)]">
+                  These HOS exemptions apply only with proper authorization
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Compliance Alert */}
+            <Card
+              className={cn(
+                "border-[var(--wl-border)]",
+                hosStatus === "critical" && "border-wl-danger-500/50 bg-wl-danger-500/5"
+              )}
+            >
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  {hosStatus === "compliant" && (
+                    <>
+                      <CheckCircle className="w-4 h-4 text-wl-success-400" />
+                      Compliant
+                    </>
+                  )}
+                  {hosStatus === "warning" && (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-wl-warning-400" />
+                      Caution
+                    </>
+                  )}
+                  {hosStatus === "critical" && (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-wl-danger-400" />
+                      Critical
+                    </>
+                  )}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="text-xs text-wl-text-secondary">
+                {hosStatus === "compliant" &&
+                  "Driver is within safe HOS limits. Continue monitoring."}
+                {hosStatus === "warning" &&
+                  "Driving hours approaching limit. Schedule break soon."}
+                {hosStatus === "critical" &&
+                  "URGENT: Driver must stop driving immediately. HOS violation imminent."}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Daily Log Graph */}
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">24-Hour Daily Log</CardTitle>
+                <span className="text-xs text-wl-text-secondary">
+                  {new Date().toLocaleDateString()}
+                </span>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div className="space-y-2">
+                {/* Hour labels */}
+                <div className="flex text-xs text-wl-text-secondary">
+                  <div className="w-12" />
+                  <div className="flex-1 flex gap-2">
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 text-center text-wl-text-secondary"
+                      >
+                        {String(i).padStart(2, "0")}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status bars */}
+                {[hos.currentStatus].map((statusType) => (
+                  <div key={statusType} className="flex items-center gap-2">
+                    <div className="w-12 text-xs font-semibold text-wl-text-secondary">
+                      {dutyStatusLabel[statusType]}
+                    </div>
+                    <div className="flex-1 flex gap-2 h-8">
+                      {dailyLog.map((entry) => (
+                        <div
+                          key={entry.hour}
+                          className={cn(
+                            "flex-1 rounded-sm transition-all hover:opacity-80",
+                            entry.status === "NONE"
+                              ? "bg-white/3"
+                              : dutyStatusColor(entry.status)
+                          )}
+                          title={`${String(entry.hour).padStart(2, "0")}:00 - ${entry.label}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Legend */}
+                <div className="pt-4 flex flex-wrap gap-4 text-xs text-wl-text-secondary border-t border-[var(--wl-border)]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-sm bg-wl-danger-500/40" />
+                    Driving
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-sm bg-wl-info-500/40" />
+                    On-Duty
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-sm bg-wl-warning-500/40" />
+                    Sleeper
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-sm bg-wl-text-secondary/30" />
+                    Off-Duty
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 8-Day Recap Table */}
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <CardTitle className="text-lg">8-Day Cycle Recap</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-[var(--wl-border)]">
+                      <th className="text-left py-2 px-3 text-wl-text-secondary font-semibold">
+                        Day
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Driving
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        On-Duty
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Total Hours
+                      </th>
+                      <th className="text-center py-2 px-3 text-wl-text-secondary font-semibold">
+                        Cycle Usage
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {eightDayRecap.map((entry, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-b border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)]"
+                      >
+                        <td className="py-2 px-3 font-semibold text-wl-text-primary">
+                          {entry.day}
+                        </td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary">
+                          {entry.driving.toFixed(1)}h
+                        </td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary">
+                          {entry.onDuty.toFixed(1)}h
+                        </td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary font-semibold">
+                          {(entry.driving + entry.onDuty).toFixed(1)}h
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                              <div
+                                className="h-full bg-wl-info-500 transition-all"
+                                style={{ width: `${(entry.total / 70) * 100}%` }}
+                              />
+                            </div>
+                            <span
+                              className={cn(
+                                "font-semibold",
+                                entry.total > 70
+                                  ? "text-wl-danger-400"
+                                  : entry.total > 60
+                                    ? "text-wl-warning-400"
+                                    : "text-wl-text-primary"
+                              )}
+                            >
+                              {entry.total}h
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Violations Timeline */}
+          <ViolationTimeline violations={violations} isLoading={violationsLoading} />
+
+          {/* Edit Request Workflow */}
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-wl-info-400" />
+                Edit Request Workflow
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+                  <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
+                    How It Works
+                  </p>
+                  <ol className="space-y-2 text-xs text-wl-text-primary">
+                    <li>1. Driver submits log edit request with reason and time</li>
+                    <li>2. Fleet manager reviews request and documentation</li>
+                    <li>3. Manager approves or rejects with feedback</li>
+                    <li>4. Approved edits are logged and auditable for compliance</li>
+                  </ol>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="primary" className="h-9 flex-1">
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Request Edit
+                  </Button>
+                  <Button variant="secondary" className="h-9 flex-1">
+                    <RotateCw className="w-4 h-4 mr-2" />
+                    View History
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Export */}
+          <div className="flex justify-end">
+            <Button variant="secondary" className="h-9">
+              <Download className="w-4 h-4 mr-2" />
+              Export HOS Report
+            </Button>
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}

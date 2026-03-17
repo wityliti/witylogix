@@ -1,0 +1,507 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/ui/stat-card";
+import { cn } from "@/lib/utils";
+import {
+  useFleetCompliance,
+  useViolations,
+  useELDEvents,
+  DutyStatus,
+} from "@/hooks/use-eld";
+import {
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  AlertOctagon,
+  Wrench,
+  Activity,
+  Users,
+  Eye,
+  XCircle,
+  Zap,
+} from "lucide-react";
+
+/* ═══════════════════════════════════════════════════════════
+   ELD OVERVIEW — Fleet-wide HOS compliance status dashboard
+   Driver grid, violations summary, compliance score, DVIR rates
+   ═══════════════════════════════════════════════════════════ */
+
+type DriverStatus = "COMPLIANT" | "WARNING" | "VIOLATION" | "OFFLINE";
+
+interface DriverStatusInfo {
+  driverId: string;
+  name: string;
+  status: DriverStatus;
+  currentDuty: DutyStatus;
+  drivingRemaining: number; // hours
+  breakStatus: "TAKEN" | "REQUIRED";
+  violations: number;
+  lastUpdate: string;
+}
+
+const MOCK_DRIVERS: DriverStatusInfo[] = [
+  {
+    driverId: "drv-1",
+    name: "Carlos Martinez",
+    status: "COMPLIANT",
+    currentDuty: "DRIVING",
+    drivingRemaining: 8.5,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "now",
+  },
+  {
+    driverId: "drv-2",
+    name: "Sofia Lindberg",
+    status: "COMPLIANT",
+    currentDuty: "DRIVING",
+    drivingRemaining: 9.2,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "now",
+  },
+  {
+    driverId: "drv-3",
+    name: "Ahmed Khalil",
+    status: "WARNING",
+    currentDuty: "ON_DUTY",
+    drivingRemaining: 1.5,
+    breakStatus: "REQUIRED",
+    violations: 0,
+    lastUpdate: "2m ago",
+  },
+  {
+    driverId: "drv-4",
+    name: "Lisa Thompson",
+    status: "COMPLIANT",
+    currentDuty: "OFF_DUTY",
+    drivingRemaining: 11,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "15m ago",
+  },
+  {
+    driverId: "drv-5",
+    name: "Marcus Johnson",
+    status: "VIOLATION",
+    currentDuty: "SLEEPER",
+    drivingRemaining: 0,
+    breakStatus: "NOT_REQUIRED",
+    violations: 1,
+    lastUpdate: "1h ago",
+  },
+  {
+    driverId: "drv-6",
+    name: "Yuki Tanaka",
+    status: "OFFLINE",
+    currentDuty: "OFF_DUTY",
+    drivingRemaining: 11,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "3h ago",
+  },
+  {
+    driverId: "drv-7",
+    name: "Priya Patel",
+    status: "COMPLIANT",
+    currentDuty: "DRIVING",
+    drivingRemaining: 7.8,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "now",
+  },
+  {
+    driverId: "drv-8",
+    name: "Diego Fernandez",
+    status: "WARNING",
+    currentDuty: "ON_DUTY",
+    drivingRemaining: 2.3,
+    breakStatus: "TAKEN",
+    violations: 0,
+    lastUpdate: "now",
+  },
+];
+
+const statusVariant = (status: DriverStatus): "success" | "warning" | "danger" | "info" | "default" => {
+  const map: Record<DriverStatus, "success" | "warning" | "danger" | "info" | "default"> = {
+    COMPLIANT: "success",
+    WARNING: "warning",
+    VIOLATION: "danger",
+    OFFLINE: "default",
+  };
+  return map[status] ?? "default";
+};
+
+const dutyStatusIcon: Record<DutyStatus, string> = {
+  OFF_DUTY: "⏸️",
+  SLEEPER: "😴",
+  DRIVING: "🚗",
+  ON_DUTY: "📋",
+};
+
+const dutyStatusColor = (duty: DutyStatus): string => {
+  const colors: Record<DutyStatus, string> = {
+    OFF_DUTY: "text-wl-text-secondary",
+    SLEEPER: "text-wl-warning-400",
+    DRIVING: "text-wl-danger-400",
+    ON_DUTY: "text-wl-info-400",
+  };
+  return colors[duty];
+};
+
+export default function ELDOverviewPage() {
+  const { compliance, isLoading: complianceLoading } = useFleetCompliance();
+  const { violations, isLoading: violationsLoading } = useViolations(undefined, 5);
+  const { events, isLoading: eventsLoading } = useELDEvents(8);
+  const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+
+  const complianceScore = compliance?.compliancePercentage ?? 0;
+  const scoreColor =
+    complianceScore >= 90
+      ? "text-wl-success-400"
+      : complianceScore >= 75
+        ? "text-wl-warning-400"
+        : "text-wl-danger-400";
+
+  const statusCounts = useMemo(() => {
+    return {
+      compliant: MOCK_DRIVERS.filter((d) => d.status === "COMPLIANT").length,
+      warning: MOCK_DRIVERS.filter((d) => d.status === "WARNING").length,
+      violation: MOCK_DRIVERS.filter((d) => d.status === "VIOLATION").length,
+      offline: MOCK_DRIVERS.filter((d) => d.status === "OFFLINE").length,
+    };
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Fleet Compliance"
+          value={complianceScore.toFixed(1)}
+          unit="%"
+          icon={<TrendingUp className="w-5 h-5 text-wl-success-400" />}
+          trend={{ direction: "up", value: 2.3 }}
+          isLoading={complianceLoading}
+          className={cn(scoreColor)}
+        />
+        <StatCard
+          label="Compliant Drivers"
+          value={statusCounts.compliant}
+          unit={`/ ${MOCK_DRIVERS.length}`}
+          icon={<CheckCircle className="w-5 h-5 text-wl-success-400" />}
+          trend={{ direction: "neutral", value: 0 }}
+          isLoading={false}
+        />
+        <StatCard
+          label="Active Violations"
+          value={compliance?.activeViolations ?? 0}
+          unit="drivers"
+          icon={<AlertTriangle className="w-5 h-5 text-wl-danger-400" />}
+          trend={{ direction: "down", value: 1 }}
+          isLoading={complianceLoading}
+        />
+        <StatCard
+          label="DVIR Completion"
+          value={(compliance?.dvirCompletionRate ?? 0).toFixed(1)}
+          unit="%"
+          icon={<Wrench className="w-5 h-5 text-wl-info-400" />}
+          trend={{ direction: "up", value: 3.1 }}
+          isLoading={complianceLoading}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Driver Status Grid */}
+        <div className="lg:col-span-2">
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Driver Status Grid</CardTitle>
+                  <p className="text-xs text-wl-text-secondary mt-1">
+                    Real-time HOS compliance per driver
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Badge variant="success" dot>
+                    {statusCounts.compliant} Compliant
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {MOCK_DRIVERS.map((driver) => (
+                  <button
+                    key={driver.driverId}
+                    onClick={() => setSelectedDriver(driver.driverId)}
+                    className={cn(
+                      "p-3 rounded-lg border transition-all text-left",
+                      "hover:border-wl-primary-500/30 hover:bg-[var(--wl-bg-secondary)]",
+                      selectedDriver === driver.driverId
+                        ? "border-wl-primary-500/50 bg-wl-primary-500/5"
+                        : "border-[var(--wl-border)]"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-wl-text-primary">
+                          {driver.name}
+                        </p>
+                        <p className="text-xs text-wl-text-secondary mt-0.5">
+                          {driver.driverId}
+                        </p>
+                      </div>
+                      <Badge variant={statusVariant(driver.status)} className="text-xs">
+                        {driver.status === "COMPLIANT"
+                          ? "✓"
+                          : driver.status === "WARNING"
+                            ? "⚠"
+                            : driver.status === "VIOLATION"
+                              ? "⛔"
+                              : "—"}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs mb-2">
+                      <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
+                        {dutyStatusIcon[driver.currentDuty]}
+                      </span>
+                      <span className="text-wl-text-secondary">
+                        {driver.currentDuty.replace(/_/g, " ")}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs">
+                      <div className="flex-1">
+                        <span className="text-wl-text-secondary">Driving: </span>
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            driver.drivingRemaining > 4
+                              ? "text-wl-success-400"
+                              : driver.drivingRemaining > 2
+                                ? "text-wl-warning-400"
+                                : "text-wl-danger-400"
+                          )}
+                        >
+                          {driver.drivingRemaining.toFixed(1)}h
+                        </span>
+                      </div>
+                      {driver.violations > 0 && (
+                        <Badge variant="danger" className="text-xs">
+                          {driver.violations} violation
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-wl-text-secondary mt-2 pt-2 border-t border-[var(--wl-border)]">
+                      Updated {driver.lastUpdate}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Violations Summary */}
+        <Card className="border-[var(--wl-border)]">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-wl-danger-400" />
+              Active Violations
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            {violationsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 rounded-full border-2 border-wl-primary-500/30 border-t-wl-primary-500 animate-spin" />
+              </div>
+            ) : violations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-wl-text-secondary">
+                <CheckCircle className="w-12 h-12 mb-2 opacity-50" />
+                <p className="text-sm font-medium">No violations</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {violations.map((violation) => (
+                  <div
+                    key={violation.id}
+                    className="p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-xs font-semibold text-wl-text-primary">
+                        {violation.type.replace(/_/g, " ")}
+                      </p>
+                      <Badge
+                        variant={
+                          violation.severity === "CRITICAL"
+                            ? "danger"
+                            : violation.severity === "WARNING"
+                              ? "warning"
+                              : "info"
+                        }
+                        className="text-xs"
+                      >
+                        {violation.severity === "CRITICAL" ? "⚠" : "ℹ"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-wl-text-secondary">
+                      {violation.driverName}
+                    </p>
+                    <p className="text-xs text-wl-text-tertiary mt-1">
+                      {violation.duration}m ago
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* DVIR Status & Recent Events */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* DVIR Summary */}
+        <Card className="border-[var(--wl-border)]">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-wl-info-400" />
+              DVIR Status
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-wl-text-secondary">
+                  Completion Rate
+                </span>
+                <span className="text-lg font-bold text-wl-success-400">
+                  {(compliance?.dvirCompletionRate ?? 0).toFixed(1)}%
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full bg-wl-success-500 transition-all"
+                  style={{ width: `${compliance?.dvirCompletionRate ?? 0}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-wl-text-secondary">Open Defects</span>
+                <span className="font-semibold text-wl-warning-400">
+                  {compliance?.openDefects ?? 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-wl-text-secondary">Critical Issues</span>
+                <span className="font-semibold text-wl-danger-400">
+                  {compliance?.criticalDefects ?? 0}
+                </span>
+              </div>
+            </div>
+
+            <Button variant="primary" className="w-full h-8 text-xs" href="/eld/dvir">
+              <Wrench className="w-3 h-3 mr-2" />
+              Manage DVIRs
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Recent Events */}
+        <div className="lg:col-span-2">
+          <Card className="border-[var(--wl-border)]">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-wl-primary-400" />
+                Recent ELD Events
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              {eventsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-primary-500/30 border-t-wl-primary-500 animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {events.map((event) => (
+                    <div
+                      key={event.id}
+                      className="p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] text-xs"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg mt-0.5">
+                          {event.type === "STATUS_CHANGE"
+                            ? "📝"
+                            : event.type === "VIOLATION"
+                              ? "⚠️"
+                              : event.type === "EDIT_REQUEST"
+                                ? "✏️"
+                                : "✓"}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-wl-text-primary">
+                            {event.driverName}
+                          </p>
+                          <p className="text-wl-text-secondary">{event.description}</p>
+                          <p className="text-wl-text-tertiary mt-0.5">
+                            {new Date(event.timestamp).toLocaleDateString()} at{" "}
+                            {new Date(event.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <Card className="border-[var(--wl-border)]">
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Button variant="secondary" className="h-10" href="/eld/hos">
+              <Clock className="w-4 h-4 mr-2" />
+              View HOS Details
+            </Button>
+            <Button variant="secondary" className="h-10" href="/drivers">
+              <Users className="w-4 h-4 mr-2" />
+              Driver Profiles
+            </Button>
+            <Button variant="secondary" className="h-10" href="/eld/dvir">
+              <Wrench className="w-4 h-4 mr-2" />
+              Submit DVIR
+            </Button>
+            <Button variant="secondary" className="h-10">
+              <Zap className="w-4 h-4 mr-2" />
+              Export Report
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

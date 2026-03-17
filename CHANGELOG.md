@@ -4,6 +4,35 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.6] - 2026-03-17 — Freight, ELD & Compliance
+
+### Added
+- **Freight management engine v2** — LaneManager (pricing tiers, volume commitments, contract terms), CarrierScorecard (weighted 5-factor scoring: on-time/claims/tender/cost/safety, quarterly reviews, grade A-F), RateNegotiationTracker (multi-round bidding, counter-offers, award notifications), CapacityPlanner (seasonal demand, surge detection, backup carrier activation), 17 REST endpoints
+- **Freight audit engine** — InvoiceAuditor (line-item vs contract rate, configurable 1-3% tolerance), AccessorialValidator (detention/liftgate/residential tariff matching), DuplicateDetector (Levenshtein similarity scoring, PRO/BOL fuzzy match), DisputeManager (auto-dispute generation, 3-tier escalation at 7/14/30 days), AuditReporter (savings metrics, dispute win rate, carrier accuracy rankings)
+- **FMCSA SAFER client** — Carrier lookup by DOT#/MC#/company name, safety ratings (Satisfactory/Conditional/Unsatisfactory), inspection history, crash data, insurance/bond verification, operating authority status, census data, 24h cache TTL
+- **HOS rules engine v2** — US Property-Carrying (FMCSA Part 395: 11h driving, 14h window, 30min break, 60h/7d or 70h/8d cycle, 34h restart with 1-5am, sleeper berth 7/3 and 8/2 splits, short-haul 150mi exception, adverse driving +2h, 16h exception), US Passenger-Carrying (10h/15h/60-70h), Canadian Federal (13h/14h/70h-7d, 24h mandatory off per 14 days), Mexico NOM-087-SCT (14h driving, 24h rest)
+- **HOS calculator** — Pure functional clock computations: driving/window/cycle remaining, break required/deadline, sleeper berth credit, 34h restart qualification, next available driving, availability projection, timezone-aware 8-day rolling window
+- **HOS violation detector** — Real-time violation detection on duty status change, FMCSA violation codes mapping (395.3, 395.8), Form/Manner violations, falsified log heuristics (GPS vs log discrepancy), auto-resolution after rest, repeat offender scoring
+- **DVIR engine** — Pre/post-trip inspection templates (8 component groups), defect categorization (minor/major/out-of-service per CVSA criteria), repair workflow (defect → mechanic → repaired → certified), FMCSA 396.11/396.13 compliance
+- **Samsara Fleet API SDK** — Bearer token auth, 25+ methods for drivers/HOS/vehicles/DVIR/safety/routes/assets/documents, cursor-based pagination, HMAC-SHA256 webhooks, 100 req/sec rate limiting
+- **KeepTruckin/Motive v2 SDK** — OAuth2 + API key auth, 28+ methods for HOS/DVIR/IFTA/eRODS export/dispatch/documents, page-based pagination, HMAC webhooks, 20 req/sec with exponential backoff
+- **FMCSA DataQs SDK** — WebKey auth, SMS BASIC scores (7 categories), inspections/crashes/census/insurance/authority data, DataQs challenge submission, 24h cache, 50 req/min
+- **Trimble/PeopleNet ELD SDK** — OAuth2+JWT auth, driver qualification files, J1939/J1708 engine diagnostics, IFTA mileage, eRODS generation, fleet messaging, HMAC webhooks, 60 req/min
+- **Geotab Drive SDK** — Session-based auth, JSONRPC 2.0 protocol, DutyStatusLog, GetFeed incremental sync, multi-call batch requests, zones/geofences, TextMessage dispatch, 5000 credits/min
+- **Omnitracs XRS v2 SDK** — API key+OAuth2 hybrid auth, dispatch integration, performance analytics (speed/idle/MPG), driver scorecards, compliance reporting, cursor pagination, 300 req/min
+- **Lytx DriveCam SDK** — OAuth2 client credentials, event video clips (signed URLs, 1h expiry), driver risk profiles, fleet safety scoring, coaching workflows, live camera streams, alerts, 120 req/min
+- **DAT Freight v2 SDK** — OAuth2 client credentials, RateView (spot/contract/trends/components), Load Board (post/search/match/alerts), Carrier Search, Market Analytics (volume/capacity/forecasts), Broker Tools, 1000 req/hr
+- **Truckstop v2 SDK** — API key+OAuth2 hybrid, Load Posting, Rate Intelligence (spot/contract/seasonal), Carrier Matching, QuickPay/factoring, RMIS (safety/insurance/authority), Book It Now instant booking, Document Management, 500 req/hr
+- **FreightWaves SONAR SDK** — Bearer auth, tender data (OTVI/OTRI/ITVI), rate data (TLI), capacity indicators, market indices (freight futures, diesel), 135 freight markets, batch queries (50 metrics), threshold alerts, 100 req/min
+- **Freight management dashboard** — Overview (KPI cards, rate trends, top carriers, audit findings), load board (filters, 4-step create wizard, bulk actions), rate comparison (lane rates, RFP wizard, rate calculator), compliance (FMCSA ratings, insurance alerts, DOT/MC lookup)
+- **ELD & compliance dashboard** — Fleet HOS overview (driver status grid, violations, compliance score), per-driver HOS (clocks, daily log graph, 8-day recap, edit requests), DVIR management (inspection forms, defect tracking, mechanic workflow)
+- **Freight UI components** — Rate comparison card (sparklines, expandable accessorials), lane heatmap (volume vs cost), carrier scorecard (SVG radar chart, A-F grading), freight timeline (milestone tracking with delays)
+- **ELD UI components** — HOS gauge (circular gradient, 3 sizes), compliance badge (4 states with pulse animation), DVIR checklist (30+ items, 8 categories, photo attachments)
+- **AI freight matcher** — 5-dimension scoring (lane fit 30%, rate 25%, capacity 20%, reliability 15%, compliance 10%), explainable recommendations, load bundling, deadhead optimization, fallback cascade (primary→secondary→spot→emergency)
+- **AI rate forecaster** — Seasonal decomposition (weekly/monthly/yearly), supply/demand indicators (load-to-truck ratio, OTRI), regional factors (fuel, weather), confidence intervals, contract vs spot gap analysis, budget projection, spike detection
+- **AI compliance risk scorer** — Driver/carrier/fleet risk scoring, fatigue detection heuristics (maxing hours, short rests, late-night patterns), predictive violation alerts, intervention recommendations, audit readiness assessment, CSA score prediction, ROI calculator
+- **20+ test files** — Unit tests (freight engine, audit, HOS rules, violations, Samsara, KeepTruckin, FMCSA, Trimble, Geotab, Omnitracs, Lytx, DAT, Truckstop, SONAR, freight matcher, rate forecaster), integration tests (rate accuracy, audit, scorecard, HOS scenarios, FMCSA validation, DVIR workflow), E2E (freight management), fixtures
+
 ## [Sprint 8.5] - 2026-03-17 — Collaboration, Messaging & Notifications
 
 ### Added
