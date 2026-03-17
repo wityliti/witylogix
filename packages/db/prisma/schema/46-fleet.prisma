@@ -3,36 +3,36 @@
 // Tracks vehicle metadata, telematics connections, and real-time data
 
 model FleetVehicle {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId              String   @map("tenant_id") @db.Uuid
-  telematicsProvider    String   @map("telematics_provider") // "samsara" | "geotab"
-  externalVehicleId     String   @map("external_vehicle_id") // Provider's unique ID
-  name                  String
-  vin                   String?
-  licensePlate          String?  @map("license_plate")
-  make                  String?
-  model                 String?
-  year                  Int?
-  status                String   @default("ACTIVE") // "ACTIVE" | "INACTIVE" | "DELETED"
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String  @map("tenant_id") @db.Uuid
+  telematicsProvider String  @map("telematics_provider") // "samsara" | "geotab"
+  externalVehicleId  String  @map("external_vehicle_id") // Provider's unique ID
+  name               String
+  vin                String?
+  licensePlate       String? @map("license_plate")
+  make               String?
+  model              String?
+  year               Int?
+  status             String  @default("ACTIVE") // "ACTIVE" | "INACTIVE" | "DELETED"
 
   // Last known state (cached from poller)
-  lastPosition          Json?    @map("last_position") // { latitude, longitude, timestamp, speed, heading }
-  lastFuelLevel         Decimal? @map("last_fuel_level") @db.Decimal(5, 2) // percentage or absolute value
-  lastDiagnosticAt      DateTime? @map("last_diagnostic_at")
-  lastDiagnosticData    Json?    @map("last_diagnostic_data") // { engineRunning, faultCodes }
+  lastPosition       Json?     @map("last_position") // { latitude, longitude, timestamp, speed, heading }
+  lastFuelLevel      Decimal?  @map("last_fuel_level") @db.Decimal(5, 2) // percentage or absolute value
+  lastDiagnosticAt   DateTime? @map("last_diagnostic_at")
+  lastDiagnosticData Json?     @map("last_diagnostic_data") // { engineRunning, faultCodes }
 
   // Metadata
-  tags                  String[] @default([])
-  metadata              Json     @default("{}")
+  tags     String[] @default([])
+  metadata Json     @default("{}")
 
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  organization          Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  connection            TelematicsConnection @relation(fields: [telematicsProvider, tenantId], references: [provider, tenantId], onDelete: Cascade)
-  telemetryLogs         VehicleTelemetryLog[]
-  behaviorEvents        DriverBehaviorEvent[]
+  organization   Organization          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  connection     TelematicsConnection  @relation(fields: [telematicsProvider, tenantId], references: [provider, tenantId], onDelete: Cascade)
+  telemetryLogs  VehicleTelemetryLog[]
+  behaviorEvents DriverBehaviorEvent[]
 
   @@unique([tenantId, externalVehicleId, telematicsProvider])
   @@index([tenantId, status])
@@ -46,30 +46,31 @@ model FleetVehicle {
 // One connection per organization per provider
 
 model TelematicsConnection {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId              String   @map("tenant_id") @db.Uuid
-  provider              String   // "samsara" | "geotab"
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  provider String // "samsara" | "geotab"
 
   // Encrypted credentials (JSON structure varies by provider)
   // Samsara: { apiToken: string }
   // Geotab: { database: string, userName: string, password: string, sessionId?: string }
-  credentials           Json
+  credentials Json
 
   // Connection state
-  status                String   @default("DISCONNECTED") // "CONNECTED" | "DISCONNECTED" | "ERROR"
-  errorMessage          String?  @map("error_message")
-  lastSyncAt            DateTime? @map("last_sync_at")
-  lastErrorAt           DateTime? @map("last_error_at")
-  errorCount            Int      @default(0) @map("error_count")
+  status       String    @default("DISCONNECTED") // "CONNECTED" | "DISCONNECTED" | "ERROR"
+  errorMessage String?   @map("error_message")
+  lastSyncAt   DateTime? @map("last_sync_at")
+  lastErrorAt  DateTime? @map("last_error_at")
+  errorCount   Int       @default(0) @map("error_count")
 
   // Configuration
-  config                Json     @default("{}") // provider-specific settings
+  config Json @default("{}") // provider-specific settings
 
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  organization          Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  organization  Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fleetVehicles FleetVehicle[]
 
   @@unique([tenantId, provider])
   @@index([tenantId, status])
@@ -81,26 +82,26 @@ model TelematicsConnection {
 // Allows historical analysis and debugging
 
 model VehicleTelemetryLog {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vehicleId             String   @map("vehicle_id") @db.Uuid
-  tenantId              String   @map("tenant_id") @db.Uuid
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vehicleId String @map("vehicle_id") @db.Uuid
+  tenantId  String @map("tenant_id") @db.Uuid
 
   // Data type: "position" | "diagnostic" | "fuel" | "behavior"
-  type                  String
+  type String
 
   // Normalized data payload
-  data                  Json
+  data Json
 
   // Metadata
-  sourceProvider        String   @map("source_provider")
-  externalEventId       String?  @map("external_event_id")
+  sourceProvider  String  @map("source_provider")
+  externalEventId String? @map("external_event_id")
 
-  timestamp             DateTime
-  createdAt             DateTime @default(now()) @map("created_at")
+  timestamp DateTime
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  vehicle               FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  organization          Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle      FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, type])
   @@index([tenantId, timestamp])
@@ -114,42 +115,42 @@ model VehicleTelemetryLog {
 // Used for driver safety scoring and analytics
 
 model DriverBehaviorEvent {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vehicleId             String   @map("vehicle_id") @db.Uuid
-  tenantId              String   @map("tenant_id") @db.Uuid
-  driverId              String?  @map("driver_id") @db.Uuid // Optional link to Driver model
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vehicleId String  @map("vehicle_id") @db.Uuid
+  tenantId  String  @map("tenant_id") @db.Uuid
+  driverId  String? @map("driver_id") @db.Uuid // Optional link to Driver model
 
   // Event details
-  eventType             String   @map("event_type") // "harsh_acceleration", "harsh_braking", "speeding", etc.
-  severity              String   // "info" | "warning" | "critical"
+  eventType String @map("event_type") // "harsh_acceleration", "harsh_braking", "speeding", etc.
+  severity  String // "info" | "warning" | "critical"
 
   // Location
-  latitude              Decimal  @db.Decimal(10, 8)
-  longitude             Decimal  @db.Decimal(11, 8)
-  locationName          String?  @map("location_name")
+  latitude     Decimal @db.Decimal(10, 8)
+  longitude    Decimal @db.Decimal(11, 8)
+  locationName String? @map("location_name")
 
   // Event metadata
-  speed                 Decimal? @db.Decimal(6, 2) // mph or kmh
-  speedLimit            Decimal? @map("speed_limit") @db.Decimal(6, 2)
-  duration              Int?     // milliseconds
+  speed      Decimal? @db.Decimal(6, 2) // mph or kmh
+  speedLimit Decimal? @map("speed_limit") @db.Decimal(6, 2)
+  duration   Int? // milliseconds
 
   // Provider reference
-  externalEventId       String   @map("external_event_id")
-  sourceProvider        String   @map("source_provider") // "samsara" | "geotab"
+  externalEventId String @map("external_event_id")
+  sourceProvider  String @map("source_provider") // "samsara" | "geotab"
 
   // Analytics
-  acknowledged          Boolean  @default(false)
-  acknowledgedBy        String?  @map("acknowledged_by") @db.Uuid
-  acknowledgedAt        DateTime? @map("acknowledged_at")
-  notes                 String?
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  notes          String?
 
-  timestamp             DateTime
-  createdAt             DateTime @default(now()) @map("created_at")
+  timestamp DateTime
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  vehicle               FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driver                Driver?  @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  organization          Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle      FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driver       Driver?      @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId, timestamp])
   @@index([driverId, timestamp])

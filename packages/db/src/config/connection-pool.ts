@@ -40,28 +40,14 @@ export interface PoolConfig {
 export function createPoolConfig(
   env: "development" | "staging" | "production"
 ): PoolConfig {
+  const envConfig = env === "development"
+    ? { min: 1, max: 5, connectionTimeoutMs: 30000, idleTimeoutMs: 600000 }
+    : env === "staging"
+    ? { min: 5, max: 20, connectionTimeoutMs: 20000, idleTimeoutMs: 300000 }
+    : { min: 10, max: 100, connectionTimeoutMs: 10000, idleTimeoutMs: 60000 };
+
   const baseConfig: PoolConfig = {
-    // Development: minimal pooling for flexibility
-    ...(env === "development" && {
-      min: 1,
-      max: 5,
-      connectionTimeoutMs: 30000,
-      idleTimeoutMs: 600000, // 10 minutes
-    }),
-    // Staging: moderate pooling for testing
-    ...(env === "staging" && {
-      min: 5,
-      max: 20,
-      connectionTimeoutMs: 20000,
-      idleTimeoutMs: 300000, // 5 minutes
-    }),
-    // Production: aggressive pooling with tight timeouts
-    ...(env === "production" && {
-      min: 10,
-      max: 100,
-      connectionTimeoutMs: 10000,
-      idleTimeoutMs: 60000, // 1 minute
-    }),
+    ...envConfig,
     // Common settings
     statementTimeoutMs: env === "production" ? 30000 : 60000,
     healthCheckIntervalMs: env === "production" ? 10000 : 30000,

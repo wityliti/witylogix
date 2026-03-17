@@ -7,18 +7,18 @@ import {
   WebhookDebugger,
   DeliveryRecord,
   TimelineEntry,
-} from "../webhook-debugger";
+} from "../webhook-webhookDebugger.js";
 
 describe("WebhookDebugger", () => {
-  let debugger: WebhookDebugger;
+  let webhookDebugger: WebhookDebugger;
 
   beforeEach(() => {
-    debugger = new WebhookDebugger();
+    webhookDebugger = new WebhookDebugger();
   });
 
   describe("storeDelivery", () => {
     it("should store a delivery record", () => {
-      const delivery = debugger.storeDelivery(
+      const delivery = webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         {
@@ -50,7 +50,7 @@ describe("WebhookDebugger", () => {
 
     it("should maintain storage limit", () => {
       for (let i = 0; i < 150; i++) {
-        debugger.storeDelivery(
+        webhookDebugger.storeDelivery(
           "endpoint-1",
           "https://example.com/webhook",
           {
@@ -66,14 +66,14 @@ describe("WebhookDebugger", () => {
         );
       }
 
-      const history = debugger.getEndpointHistory("endpoint-1", 1000);
+      const history = webhookDebugger.getEndpointHistory("endpoint-1", 1000);
       expect(history.length).toBe(100); // Max storage
     });
   });
 
   describe("getEndpointHistory", () => {
     it("should return delivery history in reverse chronological order", () => {
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -84,7 +84,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "order.created", id: "evt-2", data: {} },
@@ -95,7 +95,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const history = debugger.getEndpointHistory("endpoint-1", 10);
+      const history = webhookDebugger.getEndpointHistory("endpoint-1", 10);
       expect(history.length).toBe(2);
       expect(history[0].eventType).toBe("order.created"); // Most recent first
     });
@@ -105,7 +105,7 @@ describe("WebhookDebugger", () => {
     it("should return timeline of all attempts for an event", () => {
       const eventId = "evt-123";
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: eventId, data: {} },
@@ -116,7 +116,7 @@ describe("WebhookDebugger", () => {
         "pending"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: eventId, data: {} },
@@ -128,7 +128,7 @@ describe("WebhookDebugger", () => {
         "Server error"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: eventId, data: {} },
@@ -139,7 +139,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const timeline = debugger.getEventTimeline(eventId);
+      const timeline = webhookDebugger.getEventTimeline(eventId);
       expect(timeline.length).toBe(3);
       expect(timeline[0].attemptNumber).toBe(1);
       expect(timeline[2].attemptNumber).toBe(3);
@@ -149,7 +149,7 @@ describe("WebhookDebugger", () => {
 
   describe("getDelivery", () => {
     it("should retrieve specific delivery by ID", () => {
-      const delivery1 = debugger.storeDelivery(
+      const delivery1 = webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -160,20 +160,20 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const retrieved = debugger.getDelivery(delivery1.id);
+      const retrieved = webhookDebugger.getDelivery(delivery1.id);
       expect(retrieved).toBeDefined();
       expect(retrieved?.eventId).toBe("evt-1");
     });
 
     it("should return undefined for non-existent delivery", () => {
-      const retrieved = debugger.getDelivery("non-existent");
+      const retrieved = webhookDebugger.getDelivery("non-existent");
       expect(retrieved).toBeUndefined();
     });
   });
 
   describe("replayDelivery", () => {
     it("should return original request and response for replay", () => {
-      const delivery = debugger.storeDelivery(
+      const delivery = webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -192,7 +192,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const replay = debugger.replayDelivery(delivery.id);
+      const replay = webhookDebugger.replayDelivery(delivery.id);
       expect(replay).toBeDefined();
       expect(replay?.request.body).toBe('{"shipmentId":"ship-1"}');
       expect(replay?.originalResponse.status).toBe(200);
@@ -202,7 +202,7 @@ describe("WebhookDebugger", () => {
   describe("getEndpointStats", () => {
     it("should calculate correct statistics", () => {
       // Success
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -214,7 +214,7 @@ describe("WebhookDebugger", () => {
       );
 
       // Failure (retry required)
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-2", data: {} },
@@ -226,7 +226,7 @@ describe("WebhookDebugger", () => {
         "Timeout"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-2", data: {} },
@@ -237,7 +237,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const stats = debugger.getEndpointStats("endpoint-1");
+      const stats = webhookDebugger.getEndpointStats("endpoint-1");
       expect(stats.totalDeliveries).toBe(3);
       expect(stats.successCount).toBe(2);
       expect(stats.failureCount).toBe(0); // Retried to success
@@ -249,7 +249,7 @@ describe("WebhookDebugger", () => {
   describe("getResponseTimeHistogram", () => {
     it("should generate histogram buckets", () => {
       for (let i = 0; i < 10; i++) {
-        debugger.storeDelivery(
+        webhookDebugger.storeDelivery(
           "endpoint-1",
           "https://example.com/webhook",
           { type: "shipment.created", id: `evt-${i}`, data: {} },
@@ -261,7 +261,7 @@ describe("WebhookDebugger", () => {
         );
       }
 
-      const histogram = debugger.getResponseTimeHistogram("endpoint-1", 5);
+      const histogram = webhookDebugger.getResponseTimeHistogram("endpoint-1", 5);
       expect(histogram.length).toBe(5);
       expect(histogram[0].bucket).toMatch(/ms/);
       expect(
@@ -272,7 +272,7 @@ describe("WebhookDebugger", () => {
 
   describe("classifyError", () => {
     it("should classify errors correctly", () => {
-      const timeout = debugger.storeDelivery(
+      const timeout = webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -284,9 +284,9 @@ describe("WebhookDebugger", () => {
         "ECONNREFUSED"
       );
 
-      expect(debugger.classifyError(timeout)).toBe("connection_refused");
+      expect(webhookDebugger.classifyError(timeout)).toBe("connection_refused");
 
-      const serverError = debugger.storeDelivery(
+      const serverError = webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-2", data: {} },
@@ -297,13 +297,13 @@ describe("WebhookDebugger", () => {
         "failed"
       );
 
-      expect(debugger.classifyError(serverError)).toBe("server_error");
+      expect(webhookDebugger.classifyError(serverError)).toBe("server_error");
     });
   });
 
   describe("filterDeliveries", () => {
     it("should filter by event type", () => {
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -314,7 +314,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "order.created", id: "evt-2", data: {} },
@@ -325,7 +325,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      const filtered = debugger.filterDeliveries({
+      const filtered = webhookDebugger.filterDeliveries({
         eventType: "shipment.created",
       });
       expect(filtered.length).toBe(1);
@@ -333,7 +333,7 @@ describe("WebhookDebugger", () => {
     });
 
     it("should filter by status", () => {
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -344,7 +344,7 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "order.created", id: "evt-2", data: {} },
@@ -355,7 +355,7 @@ describe("WebhookDebugger", () => {
         "pending"
       );
 
-      const failed = debugger.filterDeliveries({ status: "pending" });
+      const failed = webhookDebugger.filterDeliveries({ status: "pending" });
       expect(failed.length).toBe(1);
       expect(failed[0].status).toBe("pending");
     });
@@ -363,7 +363,7 @@ describe("WebhookDebugger", () => {
 
   describe("clearEndpointHistory", () => {
     it("should clear history for specific endpoint", () => {
-      debugger.storeDelivery(
+      webhookDebugger.storeDelivery(
         "endpoint-1",
         "https://example.com/webhook",
         { type: "shipment.created", id: "evt-1", data: {} },
@@ -374,8 +374,8 @@ describe("WebhookDebugger", () => {
         "delivered"
       );
 
-      debugger.clearEndpointHistory("endpoint-1");
-      const history = debugger.getEndpointHistory("endpoint-1");
+      webhookDebugger.clearEndpointHistory("endpoint-1");
+      const history = webhookDebugger.getEndpointHistory("endpoint-1");
       expect(history.length).toBe(0);
     });
   });

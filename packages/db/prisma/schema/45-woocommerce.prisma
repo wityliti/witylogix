@@ -22,10 +22,10 @@ model WooCommerceConnection {
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  tenant                   Shop                        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  syncs                    WooCommerceSyncRecord[]
-  webhookLogs              WooCommerceWebhookLog[]
-  registeredWebhooks       WooCommerceRegisteredWebhook[]
+  tenant             Shop                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  syncs              WooCommerceSyncRecord[]
+  webhookLogs        WooCommerceWebhookLog[]
+  registeredWebhooks WooCommerceRegisteredWebhook[]
 
   @@unique([tenantId, storeUrl])
   @@index([tenantId])
@@ -38,20 +38,20 @@ model WooCommerceConnection {
 // Last-write-wins conflict resolution with timestamps
 
 model WooCommerceSyncRecord {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  connectionId    String   @map("connection_id") @db.Uuid
-  entityType      String   @map("entity_type") // order, product, customer
-  wcId            String   @map("wc_id") // WooCommerce entity ID
-  wlId            String   @map("wl_id") // Witylogix entity ID
-  syncDirection   String   @map("sync_direction") // wc_to_wl, wl_to_wc, bidirectional
-  lastSyncedAt    DateTime @map("last_synced_at")
-  wcModifiedAt    DateTime @map("wc_modified_at") // Track WC modification time
-  wlModifiedAt    DateTime @map("wl_modified_at") // Track WL modification time
-  status          String   @default("success") // success, pending, failed
-  errorMessage    String?  @map("error_message")
-  metadata        Json     @default("{}") // Entity-specific sync metadata
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId  String   @map("connection_id") @db.Uuid
+  entityType    String   @map("entity_type") // order, product, customer
+  wcId          String   @map("wc_id") // WooCommerce entity ID
+  wlId          String   @map("wl_id") // Witylogix entity ID
+  syncDirection String   @map("sync_direction") // wc_to_wl, wl_to_wc, bidirectional
+  lastSyncedAt  DateTime @map("last_synced_at")
+  wcModifiedAt  DateTime @map("wc_modified_at") // Track WC modification time
+  wlModifiedAt  DateTime @map("wl_modified_at") // Track WL modification time
+  status        String   @default("success") // success, pending, failed
+  errorMessage  String?  @map("error_message")
+  metadata      Json     @default("{}") // Entity-specific sync metadata
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
   connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
@@ -67,15 +67,15 @@ model WooCommerceSyncRecord {
 // Track registered webhooks on WooCommerce store
 
 model WooCommerceRegisteredWebhook {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  connectionId  String   @map("connection_id") @db.Uuid
-  wcWebhookId   String   @map("wc_webhook_id") // ID from WooCommerce
-  topic         String   // e.g., "order.created", "product.updated"
-  deliveryUrl   String   @map("delivery_url")
-  status        String   @default("active") // active, paused, disabled
-  secret        String   @map("secret") // For verification (encrypted)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId String   @map("connection_id") @db.Uuid
+  wcWebhookId  String   @map("wc_webhook_id") // ID from WooCommerce
+  topic        String // e.g., "order.created", "product.updated"
+  deliveryUrl  String   @map("delivery_url")
+  status       String   @default("active") // active, paused, disabled
+  secret       String   @map("secret") // For verification (encrypted)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
   connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
@@ -89,21 +89,21 @@ model WooCommerceRegisteredWebhook {
 // Audit trail for webhook deliveries with idempotency tracking
 
 model WooCommerceWebhookLog {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  connectionId  String   @map("connection_id") @db.Uuid
-  deliveryId    String   @map("delivery_id") // Unique delivery identifier (idempotency key)
-  topic         String   // e.g., "order.created"
-  resource      String   // e.g., "order", "product"
-  event         String   // e.g., "created", "updated"
-  payload       Json     // Full webhook payload
-  signature     String?  // Received signature for audit
-  verified      Boolean  @default(false) // Signature verification result
-  processed     Boolean  @default(false)
-  status        String   @default("pending") // pending, processed, failed, skipped
-  errorMessage  String?  @map("error_message")
-  processedAt   DateTime? @map("processed_at")
-  receivedAt    DateTime @default(now()) @map("received_at")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId String    @map("connection_id") @db.Uuid
+  deliveryId   String    @map("delivery_id") // Unique delivery identifier (idempotency key)
+  topic        String // e.g., "order.created"
+  resource     String // e.g., "order", "product"
+  event        String // e.g., "created", "updated"
+  payload      Json // Full webhook payload
+  signature    String? // Received signature for audit
+  verified     Boolean   @default(false) // Signature verification result
+  processed    Boolean   @default(false)
+  status       String    @default("pending") // pending, processed, failed, skipped
+  errorMessage String?   @map("error_message")
+  processedAt  DateTime? @map("processed_at")
+  receivedAt   DateTime  @default(now()) @map("received_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   // Relations
   connection WooCommerceConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)

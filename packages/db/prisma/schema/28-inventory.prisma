@@ -46,18 +46,18 @@ model InventoryMovement {
 
 /// Product collections for grouping and bulk operations
 model Collection {
-  id          String  @id @default(cuid())
-  shopId      String
-  externalId  String? // Shopify collection ID for sync
-  title       String
-  handle      String?
-  description String?
-  type        String  @default("manual") // manual, auto
-  sortOrder   String  @default("manual") // manual, best-selling, alpha-asc, alpha-desc, price-asc, price-desc, created-desc
-  imageUrl    String?
-  isActive    Boolean @default(true)
-  rules       Json?   // auto collection rules: [{column, relation, condition}]
-  productCount Int    @default(0)
+  id           String  @id @default(cuid())
+  shopId       String
+  externalId   String? // Shopify collection ID for sync
+  title        String
+  handle       String?
+  description  String?
+  type         String  @default("manual") // manual, auto
+  sortOrder    String  @default("manual") // manual, best-selling, alpha-asc, alpha-desc, price-asc, price-desc, created-desc
+  imageUrl     String?
+  isActive     Boolean @default(true)
+  rules        Json? // auto collection rules: [{column, relation, condition}]
+  productCount Int     @default(0)
 
   products CollectionProduct[]
 

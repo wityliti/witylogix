@@ -15,13 +15,34 @@ model Organization {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  shops         Shop[]
-  orgMembers    OrgMember[]
-  drivers       Driver[] // Org-level drivers (shared across shops)
-  deliveryZones DeliveryZone[] // Org-level zones (shared across shops)
-  locations     Location[] // Org-level locations (shared across shops)
-  authProviders AuthProvider[] // org-level auth providers
-  posConfigs    PosConfig[] // org-level POS configurations
+  shops                     Shop[]
+  orgMembers                OrgMember[]
+  drivers                   Driver[] // Org-level drivers (shared across shops)
+  deliveryZones             DeliveryZone[] // Org-level zones (shared across shops)
+  locations                 Location[] // Org-level locations (shared across shops)
+  authProviders             AuthProvider[] // org-level auth providers
+  posConfigs                PosConfig[] // org-level POS configurations
+  tenantConfig              TenantConfig?
+  apiKeys                   ApiKey[]
+  usageRecords              UsageRecord[]
+  usageSummaries            UsageSummary[]
+  rateLimitOverrides        RateLimitOverride[]
+  webhookSecrets            WebhookSecret[]
+  invoices                  Invoice[]
+  rateCards                 RateCard[]
+  invoiceNumberCounters     InvoiceNumberCounter[]
+  webhookEvents             WebhookEvent[]
+  paymentReconciliationLogs PaymentReconciliationLog[]
+  authSessions              AuthSession[]
+  courierPartners           CourierPartner[]
+  courierDeliveries         CourierDelivery[]
+  fleetVehicles             FleetVehicle[]
+  telematicsConnections     TelematicsConnection[]
+  vehicleTelemetryLogs      VehicleTelemetryLog[]
+  driverBehaviorEvents      DriverBehaviorEvent[]
+  onboardingProgresses      OnboardingProgress[]
+  workspaces                Workspace[]
+  invitations               Invitation[]
 
   @@map("organizations")
 }

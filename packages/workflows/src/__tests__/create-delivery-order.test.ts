@@ -207,7 +207,7 @@ const calculateRateStep = {
     input: CreateDeliveryOrderInput & { coordinates: { lat: number; lng: number }; reservationId: string }
   ): Promise<StepResult<CreateDeliveryOrderInput & { coordinates: { lat: number; lng: number }; reservationId: string; shippingRate: number; zone: string }>> {
     try {
-      const totalWeight = input.items.reduce((sum, item) => sum + (item.weight || 1), 0);
+      const totalWeight = input.items.reduce((sum, item) => sum + (item.weight || 1) * (item.quantity || 1), 0);
 
       const rateData = await mockCalculateRate({
         coordinates: input.coordinates,

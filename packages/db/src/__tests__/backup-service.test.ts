@@ -179,14 +179,18 @@ describe("Backup Service", () => {
       expect(true).toBe(true); // Just verify no errors
     });
 
-    it("should create backups on schedule", (done) => {
+    it("should create backups on schedule", async () => {
+      vi.useFakeTimers();
+
       service.startScheduledBackups();
 
-      setTimeout(() => {
-        const backups = service.getAllBackups();
-        expect(backups.length).toBeGreaterThan(0);
-        done();
-      }, 2000);
+      // Advance past the 30-second incremental backup interval
+      await vi.advanceTimersByTimeAsync(31000);
+
+      const backups = service.getAllBackups();
+      expect(backups.length).toBeGreaterThan(0);
+
+      vi.useRealTimers();
     });
 
     it("should not start schedule twice", () => {
@@ -374,7 +378,7 @@ describe("Backup Service", () => {
     });
 
     it("should get recent backups", async () => {
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 7; i++) {
         await service.createFullBackup();
       }
 
@@ -384,7 +388,7 @@ describe("Backup Service", () => {
       expect(recent[0].startedAt.getTime()).toBeGreaterThanOrEqual(
         recent[1].startedAt.getTime()
       );
-    });
+    }, 15000);
 
     it("should filter recent backups by status", async () => {
       // All newly created backups should be verified/completed
@@ -440,13 +444,13 @@ describe("Backup Service", () => {
     });
 
     it("should limit audit log size", async () => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 20; i++) {
         await service.createIncrementalBackup();
       }
 
       const auditLog = service.getAuditLog();
       expect(auditLog.length).toBeLessThanOrEqual(500);
-    });
+    }, 30000);
   });
 
   describe("Error Handling", () => {

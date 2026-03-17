@@ -33,7 +33,7 @@ export class WitylogixClient {
     this.apiKey = config.apiKey;
     this.accessToken = config.accessToken;
     this.timeout = config.timeout || 30000;
-    this.retryAttempts = config.retryAttempts || 3;
+    this.retryAttempts = config.retryAttempts ?? 3;
   }
 
   /**
@@ -209,7 +209,12 @@ export class WitylogixClient {
       return undefined as unknown as T;
     }
 
-    return JSON.parse(text) as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      // Return raw text if not valid JSON
+      return text as unknown as T;
+    }
   }
 
   // =========================================================================

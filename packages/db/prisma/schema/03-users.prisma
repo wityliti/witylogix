@@ -14,10 +14,15 @@ model User {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
-  shop           Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  orgMembers     OrgMember[]    // org-level access (if any)
-  authSessions   AuthSession[]  // sessions with auth providers
-  platformAdmin  PlatformAdmin? // if this user is a platform admin
+  shop                 Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orgMembers           OrgMember[] // org-level access (if any)
+  authSessions         AuthSession[] // sessions with auth providers
+  platformAdmin        PlatformAdmin? // if this user is a platform admin
+  externalAuthSessions ExternalAuthSession[]
+  mfaDevices           MfaDevice[]
+  loginAttempts        LoginAttempt[]
+  apiKeys              ApiKey[]
+  onboardingProgress   OnboardingProgress?
 
   @@unique([shopId, email])
   @@index([shopId])

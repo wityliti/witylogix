@@ -3,26 +3,26 @@
 // Enables tracking of customs, weight, dimensions per item
 
 model ShipmentItem {
-  id String @id @default(cuid())
-  shipmentId String
-  productId String?
-  variantId String?
-  sku String?
-  title String
-  quantity Int
-  weight Decimal? @db.Decimal(10, 3)
-  weightUnit String @default("kg")
-  length Decimal? @db.Decimal(10, 2)
-  width Decimal? @db.Decimal(10, 2)
-  height Decimal? @db.Decimal(10, 2)
-  dimensionUnit String @default("cm")
-  customsValue Decimal? @db.Decimal(10, 2)
-  customsCurrency String @default("usd")
-  hsCode String?
-  originCountry String?
-  shopId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  shipmentId      String
+  productId       String?
+  variantId       String?
+  sku             String?
+  title           String
+  quantity        Int
+  weight          Decimal? @db.Decimal(10, 3)
+  weightUnit      String   @default("kg")
+  length          Decimal? @db.Decimal(10, 2)
+  width           Decimal? @db.Decimal(10, 2)
+  height          Decimal? @db.Decimal(10, 2)
+  dimensionUnit   String   @default("cm")
+  customsValue    Decimal? @db.Decimal(10, 2)
+  customsCurrency String   @default("usd")
+  hsCode          String?
+  originCountry   String?
+  shopId          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([shipmentId])
   @@index([shopId])

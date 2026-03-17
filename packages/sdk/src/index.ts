@@ -31,7 +31,6 @@ export class Witylogix extends WitylogixClient {
 // ============================================================================
 
 // Main client
-export { Witylogix };
 export { WitylogixClient };
 
 // Resources

@@ -57,6 +57,10 @@ model Shop {
   whatsappConfigs         WhatsAppConfig[]
   campaigns               Campaign[]
   broadcastGroups         BroadcastGroup[]
+  webhookEndpoints        WebhookEndpoint[]
+  authProviders           AuthProvider[]
+  authMeterEvents         AuthMeterEvent[]
+  wooCommerceConnections  WooCommerceConnection[]
 
   @@index([orgId])
   @@map("shops")

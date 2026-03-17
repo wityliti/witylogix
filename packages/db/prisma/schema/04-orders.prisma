@@ -4,12 +4,12 @@
 // VIEW orders across shops but each order belongs to one shop.
 
 model Order {
-  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  shopId             String      @map("shop_id") @db.Uuid
-  externalOrderId    String      @map("external_order_id")
-  externalOrderNumber String?    @map("external_order_number")
-  source             String      @default("SHOPIFY") @map("source")
-  status             OrderStatus @default(PENDING)
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId              String      @map("shop_id") @db.Uuid
+  externalOrderId     String      @map("external_order_id")
+  externalOrderNumber String?     @map("external_order_number")
+  source              String      @default("SHOPIFY") @map("source")
+  status              OrderStatus @default(PENDING)
 
   // Customer info (snapshot at creation)
   customerName  String? @map("customer_name")

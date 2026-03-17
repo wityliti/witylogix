@@ -126,7 +126,7 @@ interface LytxVideoClip {
   expiresAt: string;
 }
 
-interface LytxSafety Score {
+interface LytxSafetyScore {
   scoreId: string;
   driverId: string;
   period: string; // "daily", "weekly", "monthly"
@@ -441,9 +441,9 @@ export class LytxDriveCamClient extends ELDAdapter {
   /**
    * Get safety score for driver.
    */
-  async getSafetyScore(driverId: string, period: string = "monthly"): Promise<LytxSafety Score> {
+  async getSafetyScore(driverId: string, period: string = "monthly"): Promise<LytxSafetyScore> {
     return this.executeWithRetry(() =>
-      this.makeRequest<LytxSafety Score>("GET", `/drivers/${driverId}/safety-score`, {
+      this.makeRequest<LytxSafetyScore>("GET", `/drivers/${driverId}/safety-score`, {
         period,
       })
     );

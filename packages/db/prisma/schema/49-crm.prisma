@@ -2,119 +2,119 @@
 // Stores connections, sync logs, and field mappings for Salesforce/HubSpot
 
 model CRMConnection {
-  id                String           @id @default(cuid())
-  tenantId          String           @db.Varchar(255)
-  provider          String           @db.Varchar(50) // 'salesforce' | 'hubspot'
-  accessToken       String           @db.Text
-  refreshToken      String?          @db.Text
-  expiresAt         DateTime?
-  instanceUrl       String?          @db.Varchar(500) // Salesforce instance URL
-  orgId             String?          @db.Varchar(255) // HubSpot org ID
-  email             String?          @db.Varchar(255)
-  isActive          Boolean          @default(true)
-  lastSyncAt        DateTime?
+  id           String    @id @default(cuid())
+  tenantId     String    @db.VarChar(255)
+  provider     String    @db.VarChar(50) // 'salesforce' | 'hubspot'
+  accessToken  String    @db.Text
+  refreshToken String?   @db.Text
+  expiresAt    DateTime?
+  instanceUrl  String?   @db.VarChar(500) // Salesforce instance URL
+  orgId        String?   @db.VarChar(255) // HubSpot org ID
+  email        String?   @db.VarChar(255)
+  isActive     Boolean   @default(true)
+  lastSyncAt   DateTime?
 
   // Sync configuration
-  autoSync          Boolean          @default(true)
-  syncFrequency     String?          @db.Varchar(50) // 'hourly' | 'daily' | 'weekly'
-  bidirectional     Boolean          @default(true)
-  webhooksEnabled   Boolean          @default(true)
-  conflictResolution String          @default("manual") // 'crm_wins' | 'witylogix_wins' | 'manual'
-  lastSyncToken     String?          @db.Text
+  autoSync           Boolean @default(true)
+  syncFrequency      String? @db.VarChar(50) // 'hourly' | 'daily' | 'weekly'
+  bidirectional      Boolean @default(true)
+  webhooksEnabled    Boolean @default(true)
+  conflictResolution String  @default("manual") // 'crm_wins' | 'witylogix_wins' | 'manual'
+  lastSyncToken      String? @db.Text
 
   // Metadata
-  metadata          Json?
-  clientId          String?          @db.Varchar(500) // OAuth client ID for refreshing
-  clientSecret      String?          @db.Text // OAuth client secret for refreshing
+  metadata     Json?
+  clientId     String? @db.VarChar(500) // OAuth client ID for refreshing
+  clientSecret String? @db.Text // OAuth client secret for refreshing
 
   // Relations
-  fieldMappings     CRMFieldMapping[]
-  syncLogs          CRMSyncLog[]
-  webhookRegs       CRMWebhookRegistration[]
+  fieldMappings CRMFieldMapping[]
+  syncLogs      CRMSyncLog[]
+  webhookRegs   CRMWebhookRegistration[]
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([tenantId, provider], name: "unique_tenant_provider")
   @@index([tenantId], name: "idx_crm_conn_tenant")
   @@index([isActive], name: "idx_crm_conn_active")
-  @@table(name: "crm_connections")
+  @@map("crm_connections")
 }
 
 model CRMFieldMapping {
-  id                String           @id @default(cuid())
-  connectionId      String           @db.Varchar(255)
-  witylogixField    String           @db.Varchar(255)
-  crmField          String           @db.Varchar(255)
-  recordType        String           @db.Varchar(50) // 'contact' | 'account' | 'opportunity' | 'deal' | 'activity'
-  direction         String           @db.Varchar(50) // 'bidirectional' | 'to_crm' | 'from_crm'
-  transformation    String?          @db.Varchar(100) // 'none' | 'uppercase' | 'lowercase' | 'phone_format' | 'custom'
-  transformationScript String?       @db.Text
-  isRequired        Boolean          @default(false)
+  id                   String  @id @default(cuid())
+  connectionId         String  @db.VarChar(255)
+  witylogixField       String  @db.VarChar(255)
+  crmField             String  @db.VarChar(255)
+  recordType           String  @db.VarChar(50) // 'contact' | 'account' | 'opportunity' | 'deal' | 'activity'
+  direction            String  @db.VarChar(50) // 'bidirectional' | 'to_crm' | 'from_crm'
+  transformation       String? @db.VarChar(100) // 'none' | 'uppercase' | 'lowercase' | 'phone_format' | 'custom'
+  transformationScript String? @db.Text
+  isRequired           Boolean @default(false)
 
   // Relation
-  connection        CRMConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  connection CRMConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([connectionId], name: "idx_crm_mapping_conn")
   @@index([recordType], name: "idx_crm_mapping_type")
-  @@table(name: "crm_field_mappings")
+  @@map("crm_field_mappings")
 }
 
 model CRMSyncLog {
-  id                String           @id @default(cuid())
-  tenantId          String           @db.Varchar(255)
-  connectionId      String           @db.Varchar(255)
-  provider          String           @db.Varchar(50)
-  recordType        String           @db.Varchar(50) // 'contact' | 'account' | 'opportunity' | 'deal' | 'activity'
-  recordId          String           @db.Varchar(255)
-  externalId        String?          @db.Varchar(500)
-  syncType          String           @db.Varchar(50) // 'create' | 'update' | 'delete' | 'sync'
-  direction         String           @db.Varchar(50) // 'to_crm' | 'from_crm' | 'bidirectional'
-  status            String           @db.Varchar(50) // 'pending' | 'synced' | 'failed' | 'skipped' | 'partial'
-  errorMessage      String?          @db.Text
-  errorDetails      Json?
+  id           String  @id @default(cuid())
+  tenantId     String  @db.VarChar(255)
+  connectionId String  @db.VarChar(255)
+  provider     String  @db.VarChar(50)
+  recordType   String  @db.VarChar(50) // 'contact' | 'account' | 'opportunity' | 'deal' | 'activity'
+  recordId     String  @db.VarChar(255)
+  externalId   String? @db.VarChar(500)
+  syncType     String  @db.VarChar(50) // 'create' | 'update' | 'delete' | 'sync'
+  direction    String  @db.VarChar(50) // 'to_crm' | 'from_crm' | 'bidirectional'
+  status       String  @db.VarChar(50) // 'pending' | 'synced' | 'failed' | 'skipped' | 'partial'
+  errorMessage String? @db.Text
+  errorDetails Json?
 
   // Metadata for retry logic
-  queuedAt          DateTime?
-  startedAt         DateTime?
-  retryCount        Int              @default(0)
-  lastRetryAt       DateTime?
+  queuedAt    DateTime?
+  startedAt   DateTime?
+  retryCount  Int       @default(0)
+  lastRetryAt DateTime?
 
-  syncedAt          DateTime?
+  syncedAt DateTime?
 
   // Relations
-  connection        CRMConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  connection CRMConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId], name: "idx_crm_log_tenant")
   @@index([connectionId], name: "idx_crm_log_conn")
   @@index([recordType], name: "idx_crm_log_type")
   @@index([status], name: "idx_crm_log_status")
   @@index([createdAt], name: "idx_crm_log_created")
-  @@table(name: "crm_sync_logs")
+  @@map("crm_sync_logs")
 }
 
 model CRMWebhookRegistration {
-  id                String           @id @default(cuid())
-  connectionId      String           @db.Varchar(255)
-  provider          String           @db.Varchar(50)
-  endpoint          String           @db.Varchar(500)
-  events            String           @db.Text // JSON array of event types
-  isActive          Boolean          @default(true)
-  signatureSecret   String?          @db.Text // Webhook signature secret for verification
+  id              String  @id @default(cuid())
+  connectionId    String  @db.VarChar(255)
+  provider        String  @db.VarChar(50)
+  endpoint        String  @db.VarChar(500)
+  events          String  @db.Text // JSON array of event types
+  isActive        Boolean @default(true)
+  signatureSecret String? @db.Text // Webhook signature secret for verification
 
   // Relations
-  connection        CRMConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  connection CRMConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([connectionId], name: "idx_crm_webhook_conn")
   @@index([isActive], name: "idx_crm_webhook_active")
-  @@table(name: "crm_webhook_registrations")
+  @@map("crm_webhook_registrations")
 }

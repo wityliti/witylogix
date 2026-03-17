@@ -48,7 +48,7 @@ describe("DocuSignClient", () => {
     });
 
     it("should verify credentials", async () => {
-      vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })));
+      vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))));
 
       await client.initialize(mockConfig);
       const verified = await client.verifyCredentials();
@@ -81,7 +81,7 @@ describe("DocuSignClient", () => {
     it("should send envelope", async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
-      );
+      ));
 
       const result = await client.sendEnvelope("test-envelope-id");
       expect(result.status).toBe("sent");
@@ -90,7 +90,7 @@ describe("DocuSignClient", () => {
     it("should void envelope", async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
-      );
+      ));
 
       await expect(client.voidEnvelope("test-envelope-id", "User request")).resolves.not.toThrow();
     });
@@ -116,7 +116,7 @@ describe("DocuSignClient", () => {
             { status: 200 }
           )
         )
-      );
+      ));
 
       const status = await client.getEnvelopeStatus("test-envelope-id");
       expect(status.status).toBe("sent");
@@ -142,7 +142,7 @@ describe("DocuSignClient", () => {
             { status: 200 }
           )
         )
-      );
+      ));
 
       const result = await client.listEnvelopes({ limit: 20 });
       expect(result.total).toBe(1);
@@ -152,7 +152,7 @@ describe("DocuSignClient", () => {
     it("should resend envelope", async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
-      );
+      ));
 
       await expect(
         client.resendEnvelope("test-envelope-id", ["signer@example.com"])
@@ -164,7 +164,7 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
-      );
+      ));
       await client.initialize(mockConfig);
     });
 
@@ -185,7 +185,7 @@ describe("DocuSignClient", () => {
             { status: 200 }
           )
         )
-      );
+      ));
 
       const result = await client.listTemplates({ limit: 20 });
       expect(result.templates).toHaveLength(1);
@@ -204,7 +204,7 @@ describe("DocuSignClient", () => {
             { status: 200 }
           )
         )
-      );
+      ));
 
       const template = await client.getTemplate("template-1");
       expect(template.id).toBe("template-1");
@@ -216,7 +216,7 @@ describe("DocuSignClient", () => {
         Promise.resolve(
           new Response(JSON.stringify({ envelopeId: "env-from-template" }), { status: 201 })
         )
-      );
+      ));
 
       const result = await client.createEnvelopeFromTemplate("template-1", {
         signers: [{ email: "signer@example.com", name: "John", order: 1, requiresSequentialSigning: false }],
@@ -232,7 +232,7 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
-      );
+      ));
       await client.initialize(mockConfig);
     });
 
@@ -241,7 +241,7 @@ describe("DocuSignClient", () => {
 
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(Buffer.from(pdfContent, "base64"), { status: 200 }))
-      );
+      ));
 
       const result = await client.downloadDocument("env-id", "doc-id");
       expect(result.documentId).toBe("doc-id");
@@ -253,7 +253,7 @@ describe("DocuSignClient", () => {
 
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(Buffer.from(zipContent, "base64"), { status: 200 }))
-      );
+      ));
 
       const result = await client.downloadEnvelopeDocuments("env-id");
       expect(result.mimeType).toBe("application/zip");
@@ -265,14 +265,14 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
-      );
+      ));
       await client.initialize(mockConfig);
     });
 
     it("should get embedded signing URL", async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ url: "https://docusign.com/signing" }), { status: 200 }))
-      );
+      ));
 
       const result = await client.getEmbeddedSigningUrl(
         "env-id",
@@ -295,7 +295,7 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
-      );
+      ));
       await client.initialize(mockConfig);
     });
 
@@ -321,7 +321,7 @@ describe("DocuSignClient", () => {
             { status: 200 }
           )
         )
-      );
+      ));
 
       const events = await client.getEnvelopeEvents("env-id");
       expect(events.length).toBeGreaterThan(0);
@@ -356,7 +356,7 @@ describe("DocuSignClient", () => {
 
   describe("health checks", () => {
     it("should perform health check", async () => {
-      vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 })));
+      vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))));
 
       await client.initialize(mockConfig);
       const health = await client.healthCheck();
@@ -370,7 +370,7 @@ describe("DocuSignClient", () => {
     beforeEach(async () => {
       vi.stubGlobal("fetch", vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({ access_token: "token", expires_in: 3600 })))
-      );
+      ));
       await client.initialize(mockConfig);
     });
 

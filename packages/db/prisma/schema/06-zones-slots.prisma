@@ -22,6 +22,7 @@ model DeliveryZone {
   shop          Shop?              @relation(fields: [shopId], references: [id], onDelete: Cascade)
   timeSlots     TimeSlot[]
   locationLinks LocationZoneLink[]
+  deliverySlots DeliverySlot[]
 
   @@index([orgId, isActive])
   @@index([shopId, isActive])

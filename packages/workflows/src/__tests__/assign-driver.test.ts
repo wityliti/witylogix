@@ -77,7 +77,7 @@ const validateDeliveryStep = {
         return { success: false, error: 'Delivery address is required', code: 'INVALID_ADDRESS' };
       }
 
-      if (typeof input.latitude !== 'number' || typeof input.longitude !== 'number') {
+      if (!Number.isFinite(input.latitude) || !Number.isFinite(input.longitude)) {
         return { success: false, error: 'Valid coordinates required', code: 'INVALID_COORDINATES' };
       }
 

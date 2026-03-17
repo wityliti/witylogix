@@ -79,8 +79,9 @@ export function isPlatformSource(value: unknown): value is PlatformSource {
  * Helper to normalize source to uppercase
  */
 export function normalizePlatformSource(source: string): PlatformSource | string {
-  const normalized = source?.toUpperCase();
-  return isPlatformSource(normalized) ? normalized : source;
+  if (!source) return source;
+  const normalized = source.toUpperCase();
+  return isPlatformSource(normalized) ? (normalized as PlatformSource) : normalized;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -140,9 +141,10 @@ describe('PlatformSource Enum', () => {
     });
 
     it('should reject invalid values at type level', () => {
-      // @ts-expect-error - Testing type safety
+      // @ts-expect-error - Testing type safety: 'INVALID' is not assignable to PlatformSource
       const invalidValue: PlatformSource = 'INVALID';
-      expect(invalidValue).not.toBeDefined();
+      // At runtime the string exists, but TypeScript should flag the assignment above
+      expect(isPlatformSource(invalidValue)).toBe(false);
     });
   });
 });

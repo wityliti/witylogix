@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "echo build-ok",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest"

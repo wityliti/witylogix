@@ -1,49 +1,34 @@
-// ─── ORG-LEVEL AUTH PROVIDERS ────────────────────────────────────
-// Multi-provider authentication at organization level.
-// Allows each org to configure its own auth providers for SSO, OIDC, etc.
-// Distinct from shop-level AuthProvider in 39-auth-providers.prisma
-
-model AuthProvider {
-  id            String   @id @default(cuid())
-  orgId         String
-  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  name          String   // e.g. "Google", "Auth0", "Clerk"
-  type          String   // "oauth2" | "saml" | "oidc" | "custom"
-  clientId      String?
-  clientSecret  String?  // encrypted
-  issuerUrl     String?
-  callbackUrl   String?
-  scopes        String[] @default([])
-  metadata      Json     @default("{}")
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  sessions      AuthSession[]
-
-  @@map("auth_providers")
-  @@index([orgId])
-}
-
 // ─── AUTH SESSIONS ───────────────────────────────────────────────
 // Tracks user sessions with specific auth providers.
 // Stores encrypted tokens for multi-provider authentication flow.
 
 model AuthSession {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  providerId    String
-  provider      AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  accessToken   String?  // encrypted
-  refreshToken  String?  // encrypted
-  expiresAt     DateTime?
-  ipAddress     String?
-  userAgent     String?
-  createdAt     DateTime @default(now())
-  revokedAt     DateTime?
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  providerId     String    @map("provider_id") @db.Uuid // Which auth provider was used
+  token          String // Encrypted session token
+  ipAddress      String?   @map("ip_address") // Client IP for geo-awareness
+  userAgent      String?   @map("user_agent") // Browser/client info
+  deviceId       String?   @map("device_id") // Device fingerprint
+  expiresAt      DateTime  @map("expires_at")
+  mfaVerified    Boolean   @default(false) @map("mfa_verified") // Whether MFA was satisfied for this session
+  mfaVerifiedAt  DateTime? @map("mfa_verified_at") // When MFA was verified
+  isRevoked      Boolean   @default(false) @map("is_revoked")
+  revokedAt      DateTime? @map("revoked_at")
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  @@map("auth_sessions")
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  authProvider AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
   @@index([userId])
-  @@index([providerId])
+  @@index([orgId])
+  @@index([expiresAt])
+  @@index([mfaVerified])
+  @@map("auth_sessions")
 }

@@ -3,40 +3,40 @@
 // Includes execution tracking, stats, and event logging
 
 model Campaign {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId      String             @map("tenant_id") @db.Uuid
-  shopId        String             @map("shop_id") @db.Uuid
-  name          String
-  description   String?
-  type          CampaignType       // email, sms, whatsapp, push, multi_channel
-  status        CampaignStatus     @default(DRAFT)
-  templateId    String?            @map("template_id") @db.Uuid
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  shopId      String         @map("shop_id") @db.Uuid
+  name        String
+  description String?
+  type        CampaignType // email, sms, whatsapp, push, multi_channel
+  status      CampaignStatus @default(DRAFT)
+  templateId  String?        @map("template_id") @db.Uuid
 
   // Audience targeting
-  audienceFilter Json               @default("{}") @map("audience_filter")
+  audienceFilter Json @default("{}") @map("audience_filter")
 
   // Scheduling
-  scheduledAt   DateTime?          @map("scheduled_at")
-  startedAt     DateTime?          @map("started_at")
-  completedAt   DateTime?          @map("completed_at")
+  scheduledAt DateTime? @map("scheduled_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
 
   // Stats tracking (denormalized for performance)
-  sentCount     Int                @default(0) @map("sent_count")
-  deliveredCount Int               @default(0) @map("delivered_count")
-  openedCount   Int                @default(0) @map("opened_count")
-  clickedCount  Int                @default(0) @map("clicked_count")
-  bouncedCount  Int                @default(0) @map("bounced_count")
-  failedCount   Int                @default(0) @map("failed_count")
-  unsubscribedCount Int            @default(0) @map("unsubscribed_count")
+  sentCount         Int @default(0) @map("sent_count")
+  deliveredCount    Int @default(0) @map("delivered_count")
+  openedCount       Int @default(0) @map("opened_count")
+  clickedCount      Int @default(0) @map("clicked_count")
+  bouncedCount      Int @default(0) @map("bounced_count")
+  failedCount       Int @default(0) @map("failed_count")
+  unsubscribedCount Int @default(0) @map("unsubscribed_count")
 
   // Audit & metadata
-  createdBy     String             @map("created_by") @db.Uuid
-  metadata      Json               @default("{}")
-  createdAt     DateTime           @default(now()) @map("created_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
+  createdBy String   @map("created_by") @db.Uuid
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  shop          Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  events        CampaignEvent[]
+  shop   Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  events CampaignEvent[]
 
   @@index([tenantId, status])
   @@index([shopId, createdAt(sort: Desc)])
@@ -48,18 +48,18 @@ model Campaign {
 // Groups of recipients for bulk messaging
 
 model BroadcastGroup {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId      String             @map("tenant_id") @db.Uuid
-  shopId        String             @map("shop_id") @db.Uuid
-  name          String
-  description   String?
-  memberFilter  Json?              @map("member_filter") // Filter criteria for dynamic membership
-  memberCount   Int                @default(0) @map("member_count") // Cached count
-  createdAt     DateTime           @default(now()) @map("created_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  name         String
+  description  String?
+  memberFilter Json?    @map("member_filter") // Filter criteria for dynamic membership
+  memberCount  Int      @default(0) @map("member_count") // Cached count
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  shop          Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  members       BroadcastGroupMember[]
+  shop    Shop                   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  members BroadcastGroupMember[]
 
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([shopId])
@@ -70,12 +70,12 @@ model BroadcastGroup {
 // Individual members of a broadcast group
 
 model BroadcastGroupMember {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  groupId       String             @map("group_id") @db.Uuid
-  customerId    String             @map("customer_id") @db.Uuid
-  addedAt       DateTime           @default(now()) @map("added_at")
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupId    String   @map("group_id") @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  addedAt    DateTime @default(now()) @map("added_at")
 
-  group         BroadcastGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group BroadcastGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, customerId])
   @@index([groupId])
@@ -87,15 +87,15 @@ model BroadcastGroupMember {
 // Event log for campaign tracking (sent, delivered, opened, clicked, etc.)
 
 model CampaignEvent {
-  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  campaignId    String             @map("campaign_id") @db.Uuid
-  messageId     String             @map("message_id")
-  recipientId   String             @map("recipient_id") @db.Uuid
-  event         CampaignEventType
-  timestamp     DateTime           @default(now())
-  metadata      Json               @default("{}")
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  campaignId  String            @map("campaign_id") @db.Uuid
+  messageId   String            @map("message_id")
+  recipientId String            @map("recipient_id") @db.Uuid
+  event       CampaignEventType
+  timestamp   DateTime          @default(now())
+  metadata    Json              @default("{}")
 
-  campaign      Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@index([campaignId, event])
   @@index([campaignId, timestamp(sort: Desc)])

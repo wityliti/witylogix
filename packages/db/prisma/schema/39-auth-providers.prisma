@@ -10,11 +10,11 @@
 // - Refresh tokens and external IDs stored in ExternalAuthSession for user linking
 
 model AuthProvider {
-  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  shopId            String                @map("shop_id") @db.Uuid
-  provider          String                // "auth0" | "clerk" | "cognito" | "firebase_auth" | "okta" | "generic_oidc" | "saml" | "local"
-  displayName       String                @map("display_name") // e.g., "Auth0 (Marketing Team)"
-  description       String?               // Optional user-facing description
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String  @map("shop_id") @db.Uuid
+  provider    String // "auth0" | "clerk" | "cognito" | "firebase_auth" | "okta" | "generic_oidc" | "saml" | "local"
+  displayName String  @map("display_name") // e.g., "Auth0 (Marketing Team)"
+  description String? // Optional user-facing description
 
   // Provider-specific config (JSON, encrypted at rest)
   // Shape depends on provider type:
@@ -26,31 +26,34 @@ model AuthProvider {
   // Generic OIDC:  { issuer, clientId, clientSecret, discoveryUrl?, scope?, ... }
   // SAML:         { entryPoint, issuer, cert, privateKey?, ... }
   // Local:        {} (no credentials needed)
-  config            Json                  // Encrypted via encryption middleware
+  config Json // Encrypted via encryption middleware
 
   // Whether this provider is active for login
-  isEnabled         Boolean               @default(true) @map("is_enabled")
+  isEnabled Boolean @default(true) @map("is_enabled")
 
   // Whether this is the default provider for the shop
-  isDefault         Boolean               @default(false) @map("is_default")
+  isDefault Boolean @default(false) @map("is_default")
 
   // Deployment-level (deployer) or shop-level (tenant) provider?
   // "deployer" = applies to all shops (fallback)
   // "shop"     = specific to this shop (BYOK override)
-  level             String                @default("shop") // "deployer" | "shop"
+  level String @default("shop") // "deployer" | "shop"
 
   // Last time provider credentials were validated successfully
-  lastValidatedAt   DateTime?             @map("last_validated_at")
-  lastValidationError String?             @map("last_validation_error")
+  lastValidatedAt     DateTime? @map("last_validated_at")
+  lastValidationError String?   @map("last_validation_error")
 
-  createdAt         DateTime              @default(now()) @map("created_at")
-  updatedAt         DateTime              @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  shop              Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  externalSessions  ExternalAuthSession[]
+  shop             Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  externalSessions ExternalAuthSession[]
+  organization     Organization?         @relation(fields: [organizationId], references: [id])
+  organizationId   String?               @db.Uuid
+  authSessions     AuthSession[]
 
-  // Unique constraint: one default provider per shop
-  @@unique([shopId, isDefault], where: { isDefault: true })
+  // Unique constraint: one provider type per shop
+  @@unique([shopId, provider])
   @@index([shopId, isEnabled])
   @@index([provider])
   @@map("auth_providers")
@@ -65,37 +68,37 @@ model AuthProvider {
 //   user=bob@shop.com   → Cognito (externalUserId=us-east-1_xxx|user-123, accessToken=...)
 
 model ExternalAuthSession {
-  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String      @map("user_id") @db.Uuid
-  providerId        String      @map("provider_id") @db.Uuid
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String @map("user_id") @db.Uuid
+  providerId String @map("provider_id") @db.Uuid
 
   // External provider's user ID (e.g., "auth0|123456" for Auth0)
-  externalUserId    String      @map("external_user_id")
+  externalUserId String @map("external_user_id")
 
   // Encrypted access token (provider's JWT or bearer token)
   // Refreshed periodically or on each auth cycle
-  accessToken       String?     @map("access_token")
+  accessToken String? @map("access_token")
 
   // Encrypted refresh token (if provider supports token refresh)
   // Used to obtain new access tokens without user re-authentication
-  refreshToken      String?     @map("refresh_token")
+  refreshToken String? @map("refresh_token")
 
   // When the access token expires (if provider provides expiry)
-  tokenExpiresAt    DateTime?   @map("token_expires_at")
+  tokenExpiresAt DateTime? @map("token_expires_at")
 
   // Provider-specific metadata (e.g., Auth0's identities array, Cognito groups)
   // Useful for profile sync, role refresh, and audit logging
-  metadata          Json?
+  metadata Json?
 
   // Last time we refreshed the access token from this provider
-  lastRefreshedAt   DateTime?   @map("last_refreshed_at")
+  lastRefreshedAt DateTime? @map("last_refreshed_at")
 
   // Link to user record
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider          AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  createdAt         DateTime    @default(now()) @map("created_at")
-  updatedAt         DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Unique: one external session per provider per user
   @@unique([userId, providerId])
@@ -112,14 +115,14 @@ model ExternalAuthSession {
 // and gets metered here for billing.
 
 model AuthMeterEvent {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  shopId            String    @map("shop_id") @db.Uuid
-  provider          String    // e.g., "auth0", "cognito"
-  operation         String    // "login" | "token_refresh" | "user_info"
-  usedFallback      Boolean   @default(true) @map("used_fallback")
-  timestamp         DateTime  @default(now())
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  provider     String // e.g., "auth0", "cognito"
+  operation    String // "login" | "token_refresh" | "user_info"
+  usedFallback Boolean  @default(true) @map("used_fallback")
+  timestamp    DateTime @default(now())
 
-  shop              Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@index([shopId, timestamp])
   @@index([provider, timestamp])

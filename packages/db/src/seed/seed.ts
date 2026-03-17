@@ -124,20 +124,20 @@ async function main() {
       { name: "Alice Johnson", org: orgs[0], role: OrgRole.OWNER },
       { name: "Bob Smith", org: orgs[0], role: OrgRole.ADMIN },
       { name: "Carol White", org: orgs[0], role: OrgRole.MEMBER },
-      { name: "David Lee", org: orgs[0], role: OrgRole.DRIVER },
-      { name: "Emma Davis", org: orgs[0], role: OrgRole.VIEWER },
+      { name: "David Lee", org: orgs[0], role: OrgRole.MEMBER },
+      { name: "Emma Davis", org: orgs[0], role: OrgRole.MEMBER },
       // FastShip Co users
       { name: "Frank Miller", org: orgs[1], role: OrgRole.OWNER },
       { name: "Grace Chen", org: orgs[1], role: OrgRole.ADMIN },
       { name: "Henry Brown", org: orgs[1], role: OrgRole.MEMBER },
-      { name: "Isabella Martinez", org: orgs[1], role: OrgRole.DRIVER },
+      { name: "Isabella Martinez", org: orgs[1], role: OrgRole.MEMBER },
       // GreenRoute users
       { name: "Jack Wilson", org: orgs[2], role: OrgRole.OWNER },
       { name: "Karen Taylor", org: orgs[2], role: OrgRole.ADMIN },
       { name: "Leo Anderson", org: orgs[2], role: OrgRole.MEMBER },
-      { name: "Maria Garcia", org: orgs[2], role: OrgRole.DRIVER },
-      { name: "Nathan Robinson", org: orgs[2], role: OrgRole.VIEWER },
-      { name: "Olivia Thomas", org: orgs[2], role: OrgRole.DRIVER },
+      { name: "Maria Garcia", org: orgs[2], role: OrgRole.MEMBER },
+      { name: "Nathan Robinson", org: orgs[2], role: OrgRole.MEMBER },
+      { name: "Olivia Thomas", org: orgs[2], role: OrgRole.MEMBER },
     ];
 
     const users = await Promise.all(

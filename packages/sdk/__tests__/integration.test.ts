@@ -96,7 +96,7 @@ describe('SDK Integration Tests', () => {
         },
       ];
 
-      mockServer.register('/orders', () => {
+      mockServer.register('/v1/orders', () => {
         return new Response(JSON.stringify(mockOrders), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -119,7 +119,7 @@ describe('SDK Integration Tests', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockServer.register('/orders/order-1', () => {
+      mockServer.register('/v1/orders/order-1', () => {
         return new Response(JSON.stringify(mockOrder), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -146,7 +146,7 @@ describe('SDK Integration Tests', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockServer.register('/orders', () => {
+      mockServer.register('/v1/orders', () => {
         return new Response(JSON.stringify(mockResponse), {
           status: 201,
           headers: { 'Content-Type': 'application/json' },
@@ -176,7 +176,7 @@ describe('SDK Integration Tests', () => {
         hasMore: true,
       };
 
-      mockServer.register('/orders', (params: any) => {
+      mockServer.register('/v1/orders', (params: any) => {
         if (params.cursor === 'next-page-token') {
           return new Response(
             JSON.stringify({
@@ -233,7 +233,7 @@ describe('SDK Integration Tests', () => {
         },
       ];
 
-      mockServer.register('/drivers', () => {
+      mockServer.register('/v1/drivers', () => {
         return new Response(JSON.stringify(mockDrivers), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -254,7 +254,7 @@ describe('SDK Integration Tests', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockServer.register('/drivers/driver-1', () => {
+      mockServer.register('/v1/drivers/driver-1', () => {
         return new Response(JSON.stringify(mockDriver), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -276,7 +276,7 @@ describe('SDK Integration Tests', () => {
         updatedAt: new Date().toISOString(),
       };
 
-      mockServer.register('/drivers/driver-1', () => {
+      mockServer.register('/v1/drivers/driver-1', () => {
         return new Response(JSON.stringify(mockResponse), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -309,7 +309,7 @@ describe('SDK Integration Tests', () => {
         },
       ];
 
-      mockServer.register('/zones', () => {
+      mockServer.register('/v1/zones', () => {
         return new Response(JSON.stringify(mockZones), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -321,17 +321,14 @@ describe('SDK Integration Tests', () => {
     });
 
     it('should check if location is in zone', async () => {
-      mockServer.register('/zones/zone-1/check', () => {
+      mockServer.register('/v1/zones/check-point', () => {
         return new Response(JSON.stringify({ inside: true }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
       });
 
-      const result = await client.zones.check('zone-1', {
-        lat: 0.5,
-        lng: 0.5,
-      });
+      const result = await client.zones.checkPoint(0.5, 0.5);
       expect(result.inside).toBe(true);
     });
   });
@@ -362,7 +359,7 @@ describe('SDK Integration Tests', () => {
         },
       ];
 
-      mockServer.register('/shipments', () => {
+      mockServer.register('/v1/shipments', () => {
         return new Response(JSON.stringify(mockShipments), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -374,7 +371,7 @@ describe('SDK Integration Tests', () => {
     });
 
     it('should track a shipment', async () => {
-      mockServer.register('/shipments/shipment-1/track', () => {
+      mockServer.register('/v1/shipments/shipment-1/tracking', () => {
         return new Response(
           JSON.stringify({
             status: 'in-transit',
@@ -393,7 +390,7 @@ describe('SDK Integration Tests', () => {
         );
       });
 
-      const result = await client.shipments.track('shipment-1');
+      const result = await client.shipments.getTracking('shipment-1');
       expect(result.status).toBe('in-transit');
       expect(result.events).toHaveLength(1);
     });
@@ -405,7 +402,7 @@ describe('SDK Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle 400 Bad Request errors', async () => {
-      mockServer.register('/orders', () => {
+      mockServer.register('/v1/orders', () => {
         return new Response(
           JSON.stringify({
             error: 'Invalid request',
@@ -420,12 +417,12 @@ describe('SDK Integration Tests', () => {
         expect.fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.status).toBe(400);
-        expect(error.message).toContain('Invalid request');
+        expect(error.message).toContain('Missing required field');
       }
     });
 
     it('should handle 500 Server errors', async () => {
-      mockServer.register('/drivers', () => {
+      mockServer.register('/v1/drivers', () => {
         return new Response(
           JSON.stringify({
             error: 'Internal Server Error',
@@ -440,14 +437,14 @@ describe('SDK Integration Tests', () => {
         expect.fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.status).toBe(500);
-        expect(error.message).toContain('Internal Server Error');
+        expect(error.message).toContain('Database connection failed');
       }
     });
 
     it('should handle 429 Rate Limit with retry', async () => {
       let callCount = 0;
 
-      mockServer.register('/zones', () => {
+      mockServer.register('/v1/zones', () => {
         callCount++;
         if (callCount === 1) {
           return new Response(
@@ -502,7 +499,7 @@ describe('SDK Integration Tests', () => {
     it('should apply custom headers', async () => {
       let receivedHeaders: Record<string, string> = {};
 
-      const mockFetchSpy = vi.fn(async (url: string, options?: any) => {
+      const mockFetchSpy = vi.fn(async (_url: string, options?: any) => {
         receivedHeaders = options.headers;
         return new Response(JSON.stringify([]), {
           status: 200,
@@ -512,7 +509,8 @@ describe('SDK Integration Tests', () => {
 
       global.fetch = mockFetchSpy;
 
-      await client.orders.list(undefined, {
+      // Use client.get directly since resource methods don't expose headers option
+      await client.get('/v1/orders', undefined, {
         headers: { 'X-Custom-Header': 'custom-value' },
       });
 
@@ -526,7 +524,7 @@ describe('SDK Integration Tests', () => {
         timeout: 5000,
       });
 
-      mockServer.register('/orders', () => {
+      mockServer.register('/v1/orders', () => {
         return new Response(JSON.stringify([]), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },

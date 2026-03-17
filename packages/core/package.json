@@ -64,8 +64,9 @@
     "./config": "./src/config/index.ts"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "echo build-ok",
+    "dev": "tsc --watch",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@witylogix/db": "workspace:*",

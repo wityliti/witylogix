@@ -71,8 +71,8 @@ export type {
 
 export {
   CrmWebhookHandler,
-  SalesforceParser: "SalesforceParser",
-  HubSpotParser: "HubSpotParser",
-  ZohoParser: "ZohoParser",
-  PipedriveParser: "PipedriveParser",
+  SalesforceParser,
+  HubSpotParser,
+  ZohoParser,
+  PipedriveParser,
 } from "./crm-webhook-handler.js";

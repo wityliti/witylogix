@@ -46,7 +46,7 @@ model BillingSubscription {
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  plan       BillingPlan           @relation(fields: [planId], references: [id])
+  plan       BillingPlan       @relation(fields: [planId], references: [id])
   invoices   Invoice[]
   quotaUsage StoreQuotaUsage[]
 
@@ -68,7 +68,7 @@ model Invoice {
   currency       String    @default("usd")
   status         String    @default("draft") // draft, finalized, paid, failed, refunded
   lineItems      Json      @default("[]") // Array of {description, amount, quantity}
-  discountAmount Decimal?  @db.Decimal(10, 2) @map("discount_amount")
+  discountAmount Decimal?  @map("discount_amount") @db.Decimal(10, 2)
   couponCode     String?   @map("coupon_code")
   paidAt         DateTime? @map("paid_at")
   dueDate        DateTime  @map("due_date")
@@ -76,7 +76,14 @@ model Invoice {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  subscription BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscription     BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  organization     Organization?       @relation(fields: [organizationId], references: [id])
+  organizationId   String?             @db.Uuid
+  invoiceLineItems InvoiceLineItem[]
+  invoiceDiscounts InvoiceDiscount[]
+  invoiceTaxes     InvoiceTax[]
+  invoicePayments  InvoicePayment[]
+  paymentReminders PaymentReminder[]
 
   @@index([subscriptionId])
   @@index([shopId])
@@ -90,15 +97,15 @@ model Invoice {
 // Updated atomically during operations to ensure consistency.
 
 model StoreQuotaUsage {
-  id              String   @id @default(cuid())
-  subscriptionId  String   @map("subscription_id")
-  shopId          String   @map("shop_id") @db.Uuid
-  resource        String   // orders, shipments, api_calls, storage, drivers
-  currentUsage    Int      @default(0) @map("current_usage")
-  periodStart     DateTime @map("period_start")
-  periodEnd       DateTime @map("period_end")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(cuid())
+  subscriptionId String   @map("subscription_id")
+  shopId         String   @map("shop_id") @db.Uuid
+  resource       String // orders, shipments, api_calls, storage, drivers
+  currentUsage   Int      @default(0) @map("current_usage")
+  periodStart    DateTime @map("period_start")
+  periodEnd      DateTime @map("period_end")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
   subscription BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)

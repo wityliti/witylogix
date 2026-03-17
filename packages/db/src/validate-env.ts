@@ -26,6 +26,7 @@ interface EnvCategory {
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
+  dim: "\x1b[2m",
   red: "\x1b[31m",
   green: "\x1b[32m",
   yellow: "\x1b[33m",
@@ -148,7 +149,7 @@ export function validateEnv(): boolean {
   if (presentRequired.length > 0) {
     console.log(`${colors.green}${colors.bright}Required Variables (Set):${colors.reset}`);
     for (const v of presentRequired) {
-      const displayValue = v.value.length > 50 ? `${v.value.substring(0, 47)}...` : v.value;
+      const displayValue = v.value!.length > 50 ? `${v.value!.substring(0, 47)}...` : v.value!;
       console.log(`  ${colors.green}✓${colors.reset} ${colors.bright}${v.name}${colors.reset} = ${colors.dim}${displayValue}${colors.reset}`);
     }
     console.log("");

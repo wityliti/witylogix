@@ -7,7 +7,7 @@ model DeliverySlot {
   zoneId          String?  @map("zone_id") @db.Uuid
   date            DateTime @map("date") @db.Date
   startTime       String   @map("start_time") // HH:mm
-  endTime         String   @map("end_time")   // HH:mm
+  endTime         String   @map("end_time") // HH:mm
   maxCapacity     Int      @default(50) @map("max_capacity")
   currentBookings Int      @default(0) @map("current_bookings")
   price           Decimal  @default(0) @db.Decimal(10, 2)
@@ -16,8 +16,8 @@ model DeliverySlot {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  zone         DeliveryZone?      @relation(fields: [zoneId], references: [id])
-  location     Location           @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  zone         DeliveryZone?     @relation(fields: [zoneId], references: [id])
+  location     Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
   reservations SlotReservation[]
 
   @@unique([locationId, date, startTime, endTime])
@@ -104,55 +104,6 @@ model DeadlineConfig {
   @@map("deadline_configs")
 }
 
-// ─── DELIVERY ZONES (ENHANCED) ────────────────────────────────
-
-model DeliveryZone {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orgId     String?  @map("org_id") @db.Uuid
-  shopId    String?  @map("shop_id") @db.Uuid
-  name      String
-  boundary  Json?    @map("boundary") // GeoJSON polygon
-  baseRate  Decimal  @default(0) @map("base_rate") @db.Decimal(10, 2)
-  perKmRate Decimal  @default(0) @map("per_km_rate") @db.Decimal(10, 2)
-  minOrder  Decimal  @default(0) @map("min_order") @db.Decimal(10, 2)
-  freeAbove Decimal? @map("free_above") @db.Decimal(10, 2)
-  isActive  Boolean  @default(true) @map("is_active")
-  priority  Int      @default(0)
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  organization Organization?      @relation(fields: [orgId], references: [id])
-  shop         Shop?              @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  slots        DeliverySlot[]
-  timeSlots    TimeSlot[]
-  locationLinks LocationZoneLink[]
-
-  @@index([orgId, isActive])
-  @@index([shopId, isActive])
-  @@map("delivery_zones")
-}
-
-// ─── LOCATION-ZONE LINKS ────────────────────────────────────────
-
-model LocationZoneLink {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  locationId String  @map("location_id") @db.Uuid
-  zoneId    String   @map("zone_id") @db.Uuid
-  priority  Int      @default(0)
-  isActive  Boolean  @default(true) @map("is_active")
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  location Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  zone     DeliveryZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  @@unique([locationId, zoneId])
-  @@index([locationId, isActive])
-  @@map("location_zone_links")
-}
-
 // ─── RATE SURGE PRICING (AI-DRIVEN) ────────────────────────────
 
 model SurgePrice {
@@ -160,7 +111,7 @@ model SurgePrice {
   locationId   String   @map("location_id") @db.Uuid
   date         DateTime @map("date") @db.Date
   startTime    String   @map("start_time") // HH:mm
-  endTime      String   @map("end_time")   // HH:mm
+  endTime      String   @map("end_time") // HH:mm
   surgePercent Decimal  @map("surge_percent") @db.Decimal(5, 2)
   reason       String
   isActive     Boolean  @default(true) @map("is_active")

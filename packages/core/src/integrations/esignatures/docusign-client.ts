@@ -12,7 +12,7 @@
  */
 
 import { fetch } from "undici";
-import { createHmac } from "crypto";
+import { createHmac, createSign } from "crypto";
 
 import { ESignatureAdapter } from "./esignature-adapter.js";
 import type {
@@ -83,6 +83,62 @@ interface DocuSignEnvelopeRequest {
     name: string;
     roleName: string;
   }>;
+}
+
+interface DocuSignEnvelopeResponse {
+  envelopeId: string;
+  emailSubject?: string;
+  status: string;
+  statusChangedDateTime?: string;
+  createdBy?: string;
+  envelopeDocuments?: Array<{
+    documentId: string;
+    name: string;
+  }>;
+  recipients?: {
+    signers?: Array<{
+      email: string;
+      name: string;
+      status: string;
+      routingOrder: string;
+      signedDateTime?: string;
+      declinedDateTime?: string;
+      statusChangedDateTime?: string;
+      location?: string;
+      declinedReason?: string;
+    }>;
+  };
+  emailBlurb?: string;
+}
+
+interface DocuSignTemplateResponse {
+  templateId: string;
+  name: string;
+  description?: string;
+  dateModified?: string;
+  recipients?: {
+    signers?: Array<{ email: string; name: string }>;
+  };
+}
+
+interface DocuSignTemplatesListResponse {
+  envelopeTemplates?: Array<{
+    templateId: string;
+    name: string;
+    description?: string;
+    dateModified?: string;
+  }>;
+  totalSetSize?: number;
+}
+
+interface DocuSignEnvelopesListResponse {
+  envelopes?: Array<{
+    envelopeId: string;
+    emailSubject?: string;
+    status: string;
+    statusChangedDateTime?: string;
+  }>;
+  totalSetSize?: number;
 }
 
 /**
@@ -200,9 +256,10 @@ export class DocuSignClient extends ESignatureAdapter {
     const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
     const message = `${headerB64}.${payloadB64}`;
 
-    const signature = createHmac("sha256", this.config.privateKey)
-      .update(message)
-      .digest("base64url");
+    const signer = createSign("sha256");
+    signer.update(message);
+    const signatureBuffer = signer.sign(this.config.privateKey);
+    const signature = signatureBuffer.toString("base64url");
 
     const assertion = `${message}.${signature}`;
 
@@ -407,7 +464,7 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to get envelope: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignEnvelopeResponse;
 
       const statusMap: Record<string, EnvelopeStatus> = {
         created: "created",
@@ -423,7 +480,7 @@ export class DocuSignClient extends ESignatureAdapter {
         id: data.envelopeId,
         name: data.emailSubject || "Document",
         status: statusMap[data.status] || "created",
-        documents: data.envelopeDocuments?.map((doc: any, i: number) => ({
+        documents: data.envelopeDocuments?.map((doc, i) => ({
           id: doc.documentId,
           name: doc.name,
           fileName: doc.name,
@@ -431,14 +488,14 @@ export class DocuSignClient extends ESignatureAdapter {
           order: i + 1,
           mimeType: "application/pdf",
         })) || [],
-        signers: data.recipients?.signers?.map((signer: any) => ({
+        signers: data.recipients?.signers?.map((signer) => ({
           email: signer.email,
           name: signer.name,
           order: parseInt(signer.routingOrder) || 1,
           requiresSequentialSigning: true,
         })) || [],
         fields: [],
-        createdAt: new Date(data.statusChangedDateTime),
+        createdAt: new Date(data.statusChangedDateTime || ""),
         subject: data.emailSubject,
         message: data.emailBlurb,
         workflowMode: "sequential",
@@ -469,7 +526,7 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to get envelope status: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignEnvelopeResponse;
 
       const statusMap: Record<string, EnvelopeStatus> = {
         created: "created",
@@ -482,7 +539,7 @@ export class DocuSignClient extends ESignatureAdapter {
         declined: "declined",
       };
 
-      const signerStatuses = data.recipients?.signers?.map((signer: any) => ({
+      const signerStatuses = data.recipients?.signers?.map((signer) => ({
         email: signer.email,
         name: signer.name,
         status: statusMap[signer.status] || ("created" as EnvelopeStatus),
@@ -499,7 +556,7 @@ export class DocuSignClient extends ESignatureAdapter {
         status: statusMap[data.status] || "created",
         signerStatuses,
         completionPercentage: Math.round(completionPercentage),
-        lastUpdated: new Date(data.statusChangedDateTime),
+        lastUpdated: new Date(data.statusChangedDateTime || ""),
       };
     });
   }
@@ -543,7 +600,7 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to list envelopes: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignEnvelopesListResponse;
 
       const statusMap: Record<string, EnvelopeStatus> = {
         created: "created",
@@ -555,14 +612,14 @@ export class DocuSignClient extends ESignatureAdapter {
         declined: "declined",
       };
 
-      const envelopes = data.envelopes?.map((env: any) => ({
+      const envelopes = data.envelopes?.map((env) => ({
         id: env.envelopeId,
         name: env.emailSubject || "Document",
         status: statusMap[env.status] || "created",
         documents: [],
         signers: [],
         fields: [],
-        createdAt: new Date(env.statusChangedDateTime),
+        createdAt: new Date(env.statusChangedDateTime || ""),
         workflowMode: "sequential" as const,
         createdBy: "unknown",
       })) || [];
@@ -630,14 +687,14 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to list templates: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignTemplatesListResponse;
 
-      const templates = data.envelopeTemplates?.map((template: any) => ({
+      const templates = data.envelopeTemplates?.map((template) => ({
         id: template.templateId,
         name: template.name,
         description: template.description,
         createdAt: new Date(),
-        modifiedAt: new Date(template.dateModified),
+        modifiedAt: new Date(template.dateModified || ""),
         defaultSignerCount: 1,
       })) || [];
 
@@ -670,14 +727,14 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to get template: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignTemplateResponse;
 
       return {
         id: data.templateId,
         name: data.name,
         description: data.description,
         createdAt: new Date(),
-        modifiedAt: new Date(data.dateModified),
+        modifiedAt: new Date(data.dateModified || ""),
         defaultSignerCount: data.recipients?.signers?.length || 1,
       };
     });
@@ -872,7 +929,7 @@ export class DocuSignClient extends ESignatureAdapter {
         throw new Error(`DocuSign: Failed to get events: ${response.statusText}`);
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as DocuSignEnvelopeResponse;
       const events: SigningEvent[] = [];
 
       const statusMap: Record<string, EnvelopeStatus> = {
@@ -892,11 +949,11 @@ export class DocuSignClient extends ESignatureAdapter {
         type: "status_changed",
         previousStatus: "created",
         newStatus: statusMap[data.status] || "created",
-        timestamp: new Date(data.statusChangedDateTime),
+        timestamp: new Date(data.statusChangedDateTime || ""),
       });
 
       // Add signer events
-      data.recipients?.signers?.forEach((signer: any) => {
+      data.recipients?.signers?.forEach((signer) => {
         events.push({
           id: `${envelopeId}_${signer.email}`,
           envelopeId,
@@ -904,7 +961,7 @@ export class DocuSignClient extends ESignatureAdapter {
           signerEmail: signer.email,
           previousStatus: "sent",
           newStatus: statusMap[signer.status] || "sent",
-          timestamp: new Date(signer.statusChangedDateTime || data.statusChangedDateTime),
+          timestamp: new Date(signer.statusChangedDateTime || data.statusChangedDateTime || ""),
           signatureDetails: signer.signedDateTime
             ? {
                 date: new Date(signer.signedDateTime),
@@ -928,22 +985,23 @@ export class DocuSignClient extends ESignatureAdapter {
   ): Promise<ESignatureWebhookEvent> {
     const isValid = this.verifyWebhookSignature(JSON.stringify(payload), headers["x-docusign-signature-1"] || "");
 
-    const envelopeId = (payload.data as any)?.envelopeId || "";
-    const eventType = (payload.event as string) || "unknown";
+    const payloadData = payload as Record<string, unknown>;
+    const envelopeId = (payloadData.data as Record<string, unknown> | undefined)?.envelopeId || "";
+    const eventType = (payloadData.event as string) || "unknown";
 
     const statusMap: Record<string, EnvelopeStatus> = {
-      envelope-created: "created",
-      envelope-sent: "sent",
-      envelope-delivered: "delivered",
-      envelope-signed: "signed",
-      envelope-completed: "completed",
-      envelope-declined: "declined",
-      envelope-voided: "voided",
+      "envelope-created": "created",
+      "envelope-sent": "sent",
+      "envelope-delivered": "delivered",
+      "envelope-signed": "signed",
+      "envelope-completed": "completed",
+      "envelope-declined": "declined",
+      "envelope-voided": "voided",
     };
 
     const signingEvent: SigningEvent = {
       id: `${envelopeId}_${Date.now()}`,
-      envelopeId,
+      envelopeId: String(envelopeId),
       type: "status_changed",
       previousStatus: "created",
       newStatus: statusMap[eventType] || "created",
@@ -952,8 +1010,8 @@ export class DocuSignClient extends ESignatureAdapter {
 
     return {
       source: "docusign",
-      eventType,
-      envelopeId,
+      eventType: String(eventType),
+      envelopeId: String(envelopeId),
       timestamp: new Date(),
       payload,
       headers,
@@ -970,9 +1028,7 @@ export class DocuSignClient extends ESignatureAdapter {
       return true; // Skip verification if no secret configured
     }
 
-    const crypto = require("crypto");
-    const hash = crypto
-      .createHmac("sha256", this.config.webhookSecret)
+    const hash = createHmac("sha256", this.config.webhookSecret)
       .update(payload)
       .digest("hex");
 

@@ -396,7 +396,7 @@ export class SecretScanner extends EventEmitter {
 
     for (const word of words) {
       if (word.length > 20) {
-        const entropy = this.calculateShannon entropy(word);
+        const entropy = this.calculateShannonEntropy(word);
         if (entropy > 4.5) {
           findings.push({
             id: `finding_${Date.now()}_${Math.random()}`,

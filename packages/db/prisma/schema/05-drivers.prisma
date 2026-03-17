@@ -34,13 +34,14 @@ model Driver {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  organization   Organization?   @relation(fields: [orgId], references: [id])
-  shop           Shop?           @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  orders         Order[]
-  routeStops     RouteStop[]
-  routes         Route[]
-  shipments      Shipment[]
-  codCollections CODCollection[]
+  organization         Organization?         @relation(fields: [orgId], references: [id])
+  shop                 Shop?                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orders               Order[]
+  routeStops           RouteStop[]
+  routes               Route[]
+  shipments            Shipment[]
+  codCollections       CODCollection[]
+  driverBehaviorEvents DriverBehaviorEvent[]
 
   @@unique([orgId, phone])
   @@index([orgId, status])

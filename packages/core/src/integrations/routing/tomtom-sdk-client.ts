@@ -157,7 +157,8 @@ interface TomTomMatrixResponse {
         travelTimeInSeconds: number;
         trafficDelayInSeconds?: number;
       };
-    } | string>>;
+    };
+  } | string>>;
 }
 
 /**
@@ -667,7 +668,13 @@ export class TomTomSDKClient extends RoutingAdapter {
           }
 
           const cell = matrixRow[j];
-          if (typeof cell === 'string' || cell.response === 'UNREACHABLE') {
+          if (typeof cell === 'string') {
+            matrix[i][j] = {
+              distance_m: 0,
+              duration_s: 0,
+              status: 'NO_ROUTE',
+            };
+          } else if (cell.response === 'UNREACHABLE') {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,

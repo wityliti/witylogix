@@ -51,6 +51,11 @@ model Location {
   capacity                 LocationCapacity?
   zoneLinks                LocationZoneLink[]
   profileLocationLinks     ProfileLocationLink[]
+  deliverySlots            DeliverySlot[]
+  capacityConfigs          CapacityConfig[]
+  blackoutDates            BlackoutDate[]
+  deadlineConfig           DeadlineConfig?
+  surgePrices              SurgePrice[]
 
   @@index([orgId, isActive])
   @@index([shopId, isActive])

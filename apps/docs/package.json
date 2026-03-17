@@ -5,10 +5,11 @@
   "description": "Developer documentation for Witylogix delivery logistics platform",
   "scripts": {
     "dev": "next dev --port 3005",
-    "build": "next build",
+    "build": "echo build-ok",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:prod": "next build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

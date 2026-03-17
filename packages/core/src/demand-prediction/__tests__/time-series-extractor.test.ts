@@ -257,8 +257,8 @@ describe('TimeSeriesExtractor', () => {
       const smoothed = extractor.computeMovingAverage(noisy, 7, false);
 
       // Smoothed data should have lower variance
-      const noisyVar = this.variance(noisy);
-      const smoothedVar = this.variance(smoothed);
+      const noisyVar = variance(noisy);
+      const smoothedVar = variance(smoothed);
 
       expect(smoothedVar).toBeLessThan(noisyVar);
     });
@@ -308,7 +308,7 @@ describe('TimeSeriesExtractor', () => {
       for (let i = 0; i < 100; i++) {
         series.push({
           timestamp: new Date(2026, 0, i + 1),
-          value: 100 + this.randomNormal(0, 5),
+          value: 100 + randomNormal(0, 5),
           index: i,
         });
       }
@@ -386,18 +386,19 @@ describe('TimeSeriesExtractor', () => {
     });
   });
 
-  // Helper functions
-  private variance(values: number[]): number {
-    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    return values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
-  }
-
-  private randomNormal(mean: number, stdDev: number): number {
-    let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-
-    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-    return z * stdDev + mean;
-  }
 });
+
+// Helper functions
+function variance(values: number[]): number {
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  return values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+}
+
+function randomNormal(mean: number, stdDev: number): number {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+
+  const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  return z * stdDev + mean;
+}

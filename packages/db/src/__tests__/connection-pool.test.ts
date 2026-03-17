@@ -183,10 +183,20 @@ describe("Connection Pool Configuration", () => {
       // Mock console.warn
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
+      // Simulate a slow query by mocking Date.now to report elapsed time
+      // exceeding the threshold (connectionTimeoutMs / 2)
+      const originalDateNow = Date.now;
+      let callCount = 0;
+      const baseTime = originalDateNow();
+      vi.spyOn(Date, "now").mockImplementation(() => {
+        callCount++;
+        // First call (start): return base time
+        // Second call (duration check): return base + connectionTimeoutMs to simulate slow query
+        return callCount <= 1 ? baseTime : baseTime + config.connectionTimeoutMs;
+      });
+
       const mockClient = {
-        query: vi.fn().mockImplementation(
-          () => new Promise((resolve) => setTimeout(resolve, config.connectionTimeoutMs))
-        ),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
 
       await healthCheckFn(mockClient);
@@ -194,6 +204,7 @@ describe("Connection Pool Configuration", () => {
       expect(warnSpy).toHaveBeenCalled();
 
       warnSpy.mockRestore();
+      vi.spyOn(Date, "now").mockRestore();
     });
 
     it("should use correct health check query", async () => {
@@ -337,7 +348,7 @@ describe("Connection Pool Configuration", () => {
       const dev = createPoolConfig("development");
 
       expect(prod.sslRejectUnauthorized).toBe(true);
-      expect(dev.sslRejectUnauthorized).toBeUndefined();
+      expect(dev.sslRejectUnauthorized).toBe(false);
     });
   });
 });

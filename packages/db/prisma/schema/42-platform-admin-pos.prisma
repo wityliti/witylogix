@@ -3,34 +3,14 @@
 // Controls access to global settings, monitoring, support functions.
 
 model PlatformAdmin {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role          String   @default("admin") // "super_admin" | "admin" | "support"
-  permissions   String[] @default([])
-  lastLoginAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    @default("admin") // "super_admin" | "admin" | "support"
+  permissions String[]  @default([])
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("platform_admins")
-}
-
-// ─── ORG-LEVEL POS CONFIGURATION ────────────────────────────────
-// Point-of-sale configuration at organization level.
-// Complements shop-level PosConfig in 40-pos-integration.prisma
-
-model PosConfig {
-  id            String   @id @default(cuid())
-  orgId         String
-  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  provider      String   // "shopify_pos" | "square" | "clover" | "custom"
-  locationId    String?
-  deviceId      String?
-  settings      Json     @default("{}")
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@map("pos_configs")
-  @@index([orgId])
 }

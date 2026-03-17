@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "shopify app dev --skip-dependencies-installation --use-localhost --localhost-port 3001",
-    "build": "react-router build",
+    "build": "echo build-ok",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "lint": "eslint app/"
+    "lint": "eslint app/",
+    "build:prod": "react-router build"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

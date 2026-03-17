@@ -503,7 +503,7 @@ describe('Create-Delivery-Order Workflow - Platform Abstraction', () => {
       const input = {
         ...baseDeliveryOrderInput,
         externalOrderId: 'ext-456',
-        // externalOrderNumber is undefined
+        externalOrderNumber: undefined,
       };
 
       // Should fallback to externalOrderId

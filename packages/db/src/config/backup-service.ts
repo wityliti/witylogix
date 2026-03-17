@@ -77,10 +77,12 @@ export class BackupService {
    */
   constructor(config: BackupServiceConfig) {
     this.config = {
-      retentionDays: 30,
-      enablePITR: true,
-      pitRWindowHours: 24,
-      checksumAlgorithm: "sha256",
+      ...{
+        retentionDays: 30,
+        enablePITR: true,
+        pitRWindowHours: 24,
+        checksumAlgorithm: "sha256",
+      },
       ...config,
     };
   }

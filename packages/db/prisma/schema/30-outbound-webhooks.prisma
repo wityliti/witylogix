@@ -2,22 +2,22 @@
 // Tenant-managed webhooks for subscribing to platform events
 
 model WebhookEndpoint {
-  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId             String   @map("tenant_id") @db.Uuid
-  url                  String
-  events               String[] @default([]) // JSON array of event patterns
-  secret               String   // HMAC-SHA256 signing key
-  active               Boolean  @default(true)
-  circuitBreakerOpen   Boolean  @default(false) @map("circuit_breaker_open")
-  failureCount         Int      @default(0) @map("failure_count")
-  successCount         Int      @default(0) @map("success_count")
-  lastDeliveryAt       DateTime? @map("last_delivery_at")
-  lastFailureAt        DateTime? @map("last_failure_at")
-  metadata             Json?
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  url                String
+  events             String[]  @default([]) // JSON array of event patterns
+  secret             String // HMAC-SHA256 signing key
+  active             Boolean   @default(true)
+  circuitBreakerOpen Boolean   @default(false) @map("circuit_breaker_open")
+  failureCount       Int       @default(0) @map("failure_count")
+  successCount       Int       @default(0) @map("success_count")
+  lastDeliveryAt     DateTime? @map("last_delivery_at")
+  lastFailureAt      DateTime? @map("last_failure_at")
+  metadata           Json?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  shop Shop @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  shop       Shop              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   deliveries WebhookDelivery[]
 
   @@index([tenantId])
@@ -27,24 +27,24 @@ model WebhookEndpoint {
 }
 
 model WebhookDelivery {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  endpointId       String   @map("endpoint_id") @db.Uuid
-  tenantId         String   @map("tenant_id") @db.Uuid
-  eventType        String   @map("event_type")
-  eventId          String   @map("event_id")
-  status           String   // pending | delivering | delivered | failed | circuit_open
-  attempt          Int      @default(1)
-  maxAttempts      Int      @default(3) @map("max_attempts")
-  nextRetryAt      DateTime? @map("next_retry_at")
-  requestHeaders   Json? @map("request_headers")
-  requestBody      String? @map("request_body") @db.Text
-  responseStatus   Int? @map("response_status")
-  responseHeaders  Json? @map("response_headers")
-  responseBody     String? @map("response_body") @db.Text
-  durationMs       Int? @map("duration_ms")
-  error            String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpointId      String    @map("endpoint_id") @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  eventType       String    @map("event_type")
+  eventId         String    @map("event_id")
+  status          String // pending | delivering | delivered | failed | circuit_open
+  attempt         Int       @default(1)
+  maxAttempts     Int       @default(3) @map("max_attempts")
+  nextRetryAt     DateTime? @map("next_retry_at")
+  requestHeaders  Json?     @map("request_headers")
+  requestBody     String?   @map("request_body") @db.Text
+  responseStatus  Int?      @map("response_status")
+  responseHeaders Json?     @map("response_headers")
+  responseBody    String?   @map("response_body") @db.Text
+  durationMs      Int?      @map("duration_ms")
+  error           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
 
@@ -60,17 +60,17 @@ model WebhookDelivery {
 // Audit trail of all webhook events fired
 
 model WebhookEventLog {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId         String   @map("tenant_id") @db.Uuid
-  eventType        String   @map("event_type")
-  eventId          String   @map("event_id")
-  source           String   // Which service triggered this event
-  correlationId    String?  @map("correlation_id")
-  data             Json     // Event payload
-  deliveryCount    Int      @default(0) @map("delivery_count")
-  successCount     Int      @default(0) @map("success_count")
-  failureCount     Int      @default(0) @map("failure_count")
-  createdAt        DateTime @default(now()) @map("created_at")
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  eventType     String   @map("event_type")
+  eventId       String   @map("event_id")
+  source        String // Which service triggered this event
+  correlationId String?  @map("correlation_id")
+  data          Json // Event payload
+  deliveryCount Int      @default(0) @map("delivery_count")
+  successCount  Int      @default(0) @map("success_count")
+  failureCount  Int      @default(0) @map("failure_count")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   @@index([tenantId])
   @@index([eventType])

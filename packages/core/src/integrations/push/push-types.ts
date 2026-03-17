@@ -419,7 +419,7 @@ export interface WhatsAppWebhookEvent {
     changes: Array<{
       field: "messages" | "message_status" | "message_template_status_update";
       value: Record<string, unknown>;
-    };
+    }>;
   }>;
 }
 

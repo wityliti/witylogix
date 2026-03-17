@@ -33,23 +33,23 @@ model Product {
 // Local cache of customers from any e-commerce platform. Synced via webhooks.
 
 model Customer {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  shopId            String   @map("shop_id") @db.Uuid
-  externalCustomerId String  @map("external_customer_id")
-  source            String   @default("SHOPIFY") @map("source")
-  email             String?
-  phone             String?
-  firstName         String?  @map("first_name")
-  lastName          String?  @map("last_name")
-  ordersCount       Int      @default(0) @map("orders_count")
-  totalSpent        Decimal  @default(0) @map("total_spent") @db.Decimal(12, 2)
-  tags              String[] @default([])
-  addresses         Json     @default("[]") // Array of address objects
-  marketingConsent  Boolean  @default(false) @map("marketing_consent")
-  notes             String?
-  lastSyncAt        DateTime @default(now()) @map("last_sync_at")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId             String   @map("shop_id") @db.Uuid
+  externalCustomerId String   @map("external_customer_id")
+  source             String   @default("SHOPIFY") @map("source")
+  email              String?
+  phone              String?
+  firstName          String?  @map("first_name")
+  lastName           String?  @map("last_name")
+  ordersCount        Int      @default(0) @map("orders_count")
+  totalSpent         Decimal  @default(0) @map("total_spent") @db.Decimal(12, 2)
+  tags               String[] @default([])
+  addresses          Json     @default("[]") // Array of address objects
+  marketingConsent   Boolean  @default(false) @map("marketing_consent")
+  notes              String?
+  lastSyncAt         DateTime @default(now()) @map("last_sync_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
