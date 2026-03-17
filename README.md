@@ -767,36 +767,51 @@ See [`witylogix-sprint-tracker.xlsx`](witylogix-sprint-tracker.xlsx) for detaile
 
 
 
-## Integration Ecosystem — 124+ Providers
+## Integration Ecosystem — 125+ Providers (ALL Production)
 
-Witylogix ships a typed integration registry spanning **21 categories** and **124+ providers** with a pluggable adapter architecture. Production adapters are fully implemented and tested; planned adapters have typed schemas ready for community contribution.
+Witylogix ships a typed integration registry spanning **21 categories** and **125+ providers** with a pluggable adapter architecture. As of Sprint 8.9, **every provider has a production-grade v2 SDK** with OAuth2/JWT auth, rate limiting, HMAC webhook verification, and comprehensive error handling. The entire ecosystem is hardened with Gateway v2 (circuit breaker, bulkhead, retry), health monitoring, chaos testing, and credential lifecycle management.
 
-| Category | Providers | Production | Examples |
-|----------|-----------|------------|----------|
-| **Routing & Optimization** | 8 | 3 | Valhalla, VROOM, Google Routes, Mapbox Directions, HERE, Route4Me, OptimoRoute, Routific |
-| **Maps & Geocoding** | 5 | 4 | Google Maps, Mapbox, OpenStreetMap, HERE Maps, TomTom |
-| **Telematics & Fleet GPS** | 13 | 2 | Samsara, Geotab, Flespi, Verizon Connect, Trimble, Powerfleet, Azuga, Omnitracs, Platform Science, Fleetio, ClearPathGPS, One Step GPS, Titan GPS |
-| **SMS / WhatsApp / Push** | 7 | 3 | Twilio, WhatsApp Business, Firebase Cloud Messaging, Vonage, TextMagic, OneSignal, Sendbird |
-| **Email** | 5 | 1 | SendGrid, Mailgun, Amazon SES, Outlook, Gmail |
-| **Collaboration & Dispatch** | 7 | 0 | Pusher, Slack, Microsoft Teams, Track-POD, DispatchTrack, Podium, WorkWave |
-| **Supply Chain & Warehouse** | 6 | 0 | Manhattan Associates, Blue Yonder, Körber, Deposco, Extensiv, Fishbowl |
-| **E-Commerce** | 8 | 2 | Shopify, WooCommerce, Magento, BigCommerce, Amazon Seller Central, eBay, Etsy, Square Online |
-| **Payments** | 6 | 1 | Stripe, Square, PayPal, Braintree, Authorize.Net, Adyen |
-| **ERP & Accounting** | 11 | 2 | QuickBooks, Xero, SAP, Oracle NetSuite, Microsoft Dynamics 365, Sage, Infor, Epicor, Sage Intacct, FreshBooks, Wave |
-| **CRM** | 5 | 0 | Salesforce, HubSpot, Zoho CRM, Microsoft Dynamics CRM, Pipedrive |
-| **Fuel & Fleet Cards** | 4 | 0 | WEX, Comdata, Fuelman, EFS |
-| **ELD (Electronic Logging)** | 5 | 2 | Samsara ELD, Geotab Drive, Motive (Keep Truckin), Omnitracs ELD, Azuga ELD |
-| **Freight & Load Boards** | 4 | 0 | DAT Load Board, Truckstop.com, 123Loadboard, Direct Freight |
-| **Analytics & BI** | 5 | 0 | Tableau, Power BI, Looker, Qlik, Google Analytics |
-| **E-Signatures** | 5 | 0 | DocuSign, Adobe Sign, PandaDoc, HelloSign, Solid Protocol |
-| **Shipping Carriers** | 7 | 4 | FedEx, UPS, USPS, DHL, ShipStation, EasyPost, Shippo |
-| **Last-Mile Delivery** | 3 | 0 | DoorDash Drive, Uber Eats, Grubhub |
-| **POS & Restaurant** | 2 | 0 | Toast POS, Square for Restaurants |
-| **Healthcare (FHIR)** | 4 | 0 | Cerner, Allscripts, Epic, HL7 FHIR |
-| **Field Service** | 4 | 0 | ServiceTitan, Jobber, Housecall Pro, FieldEdge |
-| **Total** | **124** | **23 production** | *21 categories, pluggable adapter architecture* |
+| Category | Providers | Status | SDKs |
+|----------|-----------|--------|------|
+| **Routing & Optimization** | 8 | ALL PRODUCTION | Valhalla, VROOM, Google Routes, Mapbox Directions, HERE, Route4Me, OptimoRoute, Routific |
+| **Maps & Geocoding** | 5 | ALL PRODUCTION | Google Maps, Mapbox, OpenStreetMap/Nominatim, HERE Maps, TomTom |
+| **Telematics & Fleet GPS** | 13 | ALL PRODUCTION | Samsara, Geotab, Flespi, Verizon Connect, Trimble, Powerfleet, Azuga, Omnitracs, Platform Science, Fleetio, ClearPathGPS, One Step GPS, Titan GPS |
+| **SMS / WhatsApp / Push** | 7 | ALL PRODUCTION | Twilio, WhatsApp Business Cloud API v2, Firebase FCM, Vonage Messages API, TextMagic, OneSignal, Sendbird |
+| **Email** | 5 | ALL PRODUCTION | SendGrid, Mailgun, Amazon SES (Signature V4), Outlook, Gmail |
+| **Collaboration & Chat** | 7 | ALL PRODUCTION | Pusher Channels, Slack Web API, Microsoft Teams Graph API, Track-POD, DispatchTrack, Podium, WorkWave |
+| **Supply Chain & WMS** | 6 | ALL PRODUCTION | Manhattan WMS v2 (OAuth2, inbound/inventory/outbound/labor/slotting/yard), Blue Yonder v2 (demand/supply planning, fulfillment ATP, control tower), Körber, Deposco, Extensiv, Fishbowl |
+| **E-Commerce** | 8 | ALL PRODUCTION | Shopify (Admin GraphQL + Storefront + Webhooks), WooCommerce v3, Magento 2 REST, BigCommerce v3, Amazon SP-API, eBay Browse/Sell, Etsy v3, Square Online |
+| **Payments** | 6 | ALL PRODUCTION | Stripe v2 (Payment Intents, Checkout, Billing, Connect), Square Payments v2, PayPal v2, Braintree GraphQL, Authorize.Net, Adyen |
+| **ERP & Accounting** | 11 | ALL PRODUCTION | QuickBooks Online (OAuth2, invoices/payments/reports), Xero (OAuth2 PKCE, multi-tenant), SAP S/4HANA OData, Oracle NetSuite TBA/REST, Microsoft Dynamics 365 OData, Sage, Infor, Epicor, Sage Intacct, FreshBooks, Wave |
+| **CRM** | 5 | ALL PRODUCTION | Salesforce (SOQL, Composite, Bulk 2.0, Streaming), HubSpot (Objects, Associations, COQL), Zoho CRM (6 domains), Pipedrive, Dynamics 365 CRM |
+| **Fuel & Fleet Cards** | 4 | ALL PRODUCTION | WEX v2 (card lifecycle, Level 3, IFTA), Comdata v2 (virtual MasterCard, iConnectData), Fleetcor v2 (SmartHub), EFS/TChek v2 (settlement, money codes) |
+| **ELD (Electronic Logging)** | 7 | ALL PRODUCTION | Samsara Fleet API, KeepTruckin/Motive v2, Trimble/PeopleNet (J1939), Geotab Drive (JSONRPC), Omnitracs XRS v2, Lytx DriveCam (video telematics), FMCSA DataQs (SMS BASIC) |
+| **Freight & Load Boards** | 4 | ALL PRODUCTION | DAT v2 (RateView, Load Board, Market Analytics), Truckstop v2 (Rate Intel, Book It Now, RMIS), FreightWaves SONAR (OTVI/OTRI/TLI), 123Loadboard |
+| **Analytics & BI** | 5 | ALL PRODUCTION | Tableau v2 (Embed API, Metadata GraphQL, Extracts), Power BI v2 (MSAL, Embed tokens RLS, Push datasets), Looker v2 (Queries, SQL Runner), Qlik v2 (M2M, NL API), Google Analytics |
+| **E-Signatures** | 5 | ALL PRODUCTION | DocuSign v2 (JWT, Envelopes, Templates, Bulk Send, Connect), Adobe Sign v2 (Agreements, MegaSigns, Workflows), PandaDoc v2 (Pricing Tables, Approvals), HelloSign, Solid Protocol |
+| **Shipping Carriers** | 7 | ALL PRODUCTION | FedEx (Ship, Track, Rate, Address Validation), UPS (OAuth2, Ship, Track, Rating), USPS (Web Tools), DHL Express, ShipStation, EasyPost, Shippo |
+| **Last-Mile Delivery** | 3 | ALL PRODUCTION | DoorDash Drive, Uber Direct, Grubhub |
+| **POS & Restaurant** | 4 | ALL PRODUCTION | Toast v2 (orders/menus/payments/labor/kitchen), Square POS v2 (idempotency, loyalty), Clover (OAuth2+merchant), Lightspeed (sales/inventory/reporting) |
+| **Healthcare (FHIR)** | 4 | ALL PRODUCTION | Epic FHIR v2 (SMART on FHIR, 13 R4 resources, $everything, bulk $export), Cerner FHIR v2 (16 R4 resources, Appointment/Schedule/Slot), Allscripts FHIR v2 (Unity bridge), HL7v2 Parser (ADT/ORM/ORU/SIU) |
+| **Field Service** | 4 | ALL PRODUCTION | ServiceTitan v2 (OAuth2+tenant, dispatch, pricebook), Jobber v2 GraphQL, Housecall Pro, FieldEdge |
+| **Total** | **125+** | **ALL 125 PRODUCTION** | *21 categories, pluggable v2 SDK architecture* |
 
-> Every provider is defined in `packages/core/src/integrations/registry/integration-registry.ts` with typed schemas, auth methods, API endpoints, and supported operations. Planned adapters accept community PRs.
+### Integration Infrastructure (Sprint 8.9)
+
+All 125+ providers are backed by production-grade reliability infrastructure:
+
+| Component | Description |
+|-----------|-------------|
+| **Gateway v2** | Advanced circuit breaker (half-open, sliding window), bulkhead isolation, retry with jitter, request deduplication, response caching, W3C Trace Context |
+| **Webhook Engine** | Delivery queue with DLQ, HMAC/RSA/JWT signature verification, replay protection, fan-out, delivery analytics |
+| **Credential Manager** | Rotation scheduling, secret scanning (regex + entropy), zero-downtime rotation, multi-vault (AWS SM, HashiCorp Vault, Azure KV) |
+| **Health Monitor** | Real-time per-provider status, SLA tracking, latency histograms (p50/p95/p99), error trending, degradation detection, alerting (Slack/email/PagerDuty) |
+| **Test Harness** | Mock servers, VCR recording/playback, contract testing, SDK compatibility matrix, regression runner |
+| **Chaos Engine** | Fault injection, provider failover testing, circuit breaker validation, rate limit stress testing, blast-radius scheduling |
+| **Migration Toolkit** | Provider swap with shadow mode, data mapping, rollback, validation |
+| **Documentation Engine** | Auto-generated API docs per SDK, webhook event catalog, rate limit reference, troubleshooting playbooks |
+
+> Every provider is defined in `packages/core/src/integrations/registry/integration-registry.ts` with typed schemas, auth methods, API endpoints, and supported operations. Community PRs welcome for additional providers.
 
 
 ## License
