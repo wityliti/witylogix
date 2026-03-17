@@ -31,9 +31,20 @@ export type {
 
 export { MessagingAdapter } from "./messaging-adapter.js";
 export { VonageClient } from "./vonage-client.js";
+export { VonageSDKClient } from "./vonage-sdk-client.js";
 export { TextMagicClient } from "./textmagic-client.js";
 export { OneSignalClient } from "./onesignal-client.js";
 export { SendbirdClient } from "./sendbird-client.js";
+
+export type {
+  VonageMessage,
+  VonageDispatchConfig,
+  VonageSmsStatus,
+  VonageInboundMessage,
+  VonageVerifyRequest,
+  VonageWebhookPayload,
+  VonageSDKConfig,
+} from "./vonage-sdk-client.js";
 
 export { MessagingRouter } from "./messaging-router.js";
 export type { ChannelRoutingConfig } from "./messaging-router.js";

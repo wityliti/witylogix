@@ -4,6 +4,28 @@ All notable changes to the Witylogix platform are documented here. This project 
 
 ## [Unreleased]
 
+## [Sprint 8.5] - 2026-03-17 — Collaboration, Messaging & Notifications
+
+### Added
+- **Notification orchestrator v2** — ChannelRouter (priority-based channel selection), FallbackChainExecutor (automatic failover across channels), QuietHoursManager (timezone-aware suppression with critical override), DigestBatcher (configurable interval grouping), DeliveryTracker (receipt confirmation), RetryManager with DLQ, ThrottleManager (per-user rate limits), template engine (Handlebars-compatible, per-channel rendering, i18n, preview mode), 12+ REST endpoints
+- **Slack Web API SDK** — OAuth2 V2 flow, channels (CRUD, archive, invite), messages (send, update, delete, threads, reactions), users, files, search, Block Kit fluent builder, HMAC-SHA256 webhook verification, Tier 1-4 rate limiting
+- **Microsoft Teams Graph API SDK** — OAuth2 MSAL (Azure AD), Graph API for teams/channels/messages/replies/reactions, Adaptive Card builder, change notification subscriptions, proactive messaging, delegated + application permissions
+- **Firebase FCM SDK** — Service account JWT auth, send to token/topic/condition, multicast (500 devices), data + notification payloads, APNS/Android platform config, topic management, batch subscribe/unsubscribe
+- **OneSignal SDK** — REST API key auth, push to segments/filters/player IDs, templates, outcomes tracking, A/B testing, scheduling, TTL configuration
+- **Vonage Messages API SDK** — JWT + API key auth, SMS/MMS/WhatsApp/Viber/Facebook Messenger, Verify API (2FA), number insight, HMAC webhook verification, 1 req/sec throttle
+- **Pusher Channels SDK** — HMAC-SHA256 auth, public/private/presence/encrypted channels, trigger events, batch trigger (10 events), user authentication, channel info/users, webhooks, 10 msg/sec per channel
+- **WhatsApp Business Cloud API v2 SDK** — OAuth2/System User auth, text/template/media/interactive/location/contact messages, template management (CRUD, variables), media upload/download, webhook verification, read receipts, business profile management
+- **Mailgun SDK** — API key auth, send text/HTML/template email, batch send (1000 recipients), MIME support, domains/routes/events management, HMAC webhooks, suppressions, mailing lists, tag analytics
+- **AWS SES SDK** — AWS Signature V4 auth, send email/templated/bulk, identities (email/domain), configuration sets, DKIM/SPF management, suppression list, account sending stats, receipt rules
+- **Sendbird Chat SDK** — API token auth, users, group channels, open channels, messages (text/file/admin), moderation, metadata, push settings, webhooks
+- **Notification center UI** — Inbox with read/unread, priority badges, bulk actions, infinite scroll; preference matrix (email/push/SMS/in-app per category); delivery audit log with status/channel/timestamp/retry; template editor with variable insertion and channel preview tabs
+- **Team collaboration panel** — Messaging hub with channel list and presence indicators; rich text composer with mentions, file attachments, emoji picker; virtualized message list with threading, reactions, read receipts; channel sidebar with categories, search, unread counts
+- **Notification UI components** — Template editor (variable insertion, syntax highlighting, channel preview), channel toggle matrix (bulk enable/disable per category), delivery timeline (send → deliver → read), priority selector (critical/high/medium/low), toast stack (auto-dismiss, actions, animation)
+- **AI smart notification timer** — UserBehaviorAnalyzer (engagement windows), OptimalTimePredictor (per-user, per-channel), TimezoneManager, BatchOptimizer (group at optimal times), A/B test framework for send times
+- **AI notification fatigue detector** — FatigueScoreCalculator (frequency, recency, engagement decay), ChannelSaturationDetector, UserToleranceProfiler, ThrottleRecommender, FatigueAlertSystem
+- **Notification intelligence API** — 8 endpoints: optimal timing, fatigue score, channel recommendation, engagement prediction, user tolerance, saturation check, batch optimize, A/B results
+- **13+ test files** — Unit tests (orchestrator, template engine, Slack, Teams, FCM, WhatsApp, Vonage, Pusher, OneSignal, Sendbird, Mailgun, SES, notification timer, fatigue detector), integration tests (delivery all-channels, channel failover, quiet hours, template rendering), E2E (notification preferences), fixtures
+
 ## [Sprint 8.4] - 2026-03-17 — CRM, ERP & Accounting
 
 ### Added

@@ -384,3 +384,66 @@ export {
   type ForecastRequest,
   type ChurnRiskRequest,
 } from "./crm-intelligence-api.js";
+
+// ─── Smart Notification Timer ─────────────────────────────────────────────
+
+export {
+  createSmartNotificationTimer,
+  createBatchOptimizer,
+  UserActivityTracker,
+  EngagementScorer,
+  OptimalTimePredictor,
+  ChannelPreferenceLearner,
+  SendTimeOptimizer,
+  BatchOptimizer,
+  type DayOfWeekActivity,
+  type UserActivity,
+  type EngagementScore,
+  type SendTimeRecommendation,
+  type ChannelPreference,
+  type BatchSendSchedule,
+  type NotificationOutcome,
+} from "./smart-notification-timer.js";
+
+// ─── Notification Fatigue Detector ────────────────────────────────────────
+
+export {
+  createFatigueDetector,
+  createOverloadDetector,
+  createThrottleRecommender,
+  createImportanceRanker,
+  createDigestOptimizer,
+  createUnsubscribePrediction,
+  FatigueScorer,
+  OverloadDetector,
+  ThrottleRecommender,
+  ImportanceRanker,
+  DigestOptimizer,
+  UnsubscribePrediction,
+  type FatigueSignal,
+  type FatigueScore,
+  type ThrottleRecommendation,
+  type ImportanceScore,
+  type DigestWindow,
+  type UnsubscribePrediction as UnsubscribePredictionType,
+} from "./notification-fatigue-detector.js";
+
+// ─── Notification Intelligence API ────────────────────────────────────────
+
+export {
+  getOptimalTime,
+  optimizeBatchSend,
+  getFatigueScore,
+  getEngagementMetrics,
+  recommendChannel,
+  recordFeedback,
+  getAnalytics,
+  getUnsubscribeRisk,
+  type ApiResponse as NotificationApiResponse,
+  type OptimalTimeRequest,
+  type BatchOptimizeRequest,
+  type EngagementRequest,
+  type ChannelRecommendRequest,
+  type FeedbackRequest,
+  type NotificationAnalytics,
+} from "./notification-intelligence-api.js";

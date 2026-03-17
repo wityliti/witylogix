@@ -319,3 +319,87 @@ export function resolveAllNotificationProviders(
     push: resolveNotificationProvider("push", tenantConfig?.push, shopId),
   };
 }
+
+// ─── NOTIFICATION TYPES (v2) ───────────────────────────────────────────
+
+export type {
+  NotificationTemplate as NotificationTemplateV2,
+  RecipientPreferences,
+  NotificationRequest,
+  BatchNotificationRequest,
+  NotificationWithReceipts,
+  DeliveryReceipt,
+  ChannelConfig,
+  PriorityMatrix,
+  QuietHoursConfig,
+  DigestConfig,
+  ChannelPreference,
+  ChannelTemplate,
+} from "./notification-types.js";
+
+export {
+  NotificationChannel,
+  NotificationPriority,
+  NotificationCategory,
+  DeliveryStatus,
+  NotificationChannelSchema,
+  NotificationPrioritySchema,
+  NotificationCategorySchema,
+  DeliveryStatusSchema,
+  NotificationRequestSchema,
+  BatchNotificationRequestSchema,
+  RecipientPreferencesSchema,
+} from "./notification-types.js";
+
+// ─── TEMPLATE ENGINE ───────────────────────────────────────────────────
+
+export {
+  HandlebarsCompiler,
+  ChannelFormatter,
+  TemplateRegistry,
+  TemplateValidator,
+  TemplateLocalizer,
+  TemplatePreview,
+} from "./template-engine.js";
+
+// ─── NOTIFICATION ORCHESTRATOR v2 ──────────────────────────────────────
+
+export type { } from "./notification-orchestrator-v2.js";
+
+export {
+  ChannelRouter,
+  FallbackChain,
+  QuietHoursManager,
+  DigestBatcher,
+  DeliveryTracker,
+  RetryManager,
+  NotificationThrottler,
+  NotificationOrchestratorV2,
+  getNotificationOrchestratorV2,
+  resetNotificationOrchestratorV2,
+} from "./notification-orchestrator-v2.js";
+
+// ─── NOTIFICATION API ──────────────────────────────────────────────────
+
+export type {
+  ApiResponse,
+  PaginatedResponse,
+  NotificationListItem,
+  NotificationDetail,
+  AnalyticsResult,
+} from "./notification-api.js";
+
+export {
+  SendNotificationRequestSchema,
+  SendBatchNotificationRequestSchema,
+  ListNotificationsQuerySchema,
+  GetNotificationRequestSchema,
+  MarkAsReadRequestSchema,
+  UpdatePreferencesRequestSchema,
+  CreateTemplateRequestSchema,
+  ListTemplatesQuerySchema,
+  AnalyticsQuerySchema,
+  TestNotificationRequestSchema,
+  createNotificationApiHandlers,
+  getNotificationApiHandlers,
+} from "./notification-api.js";

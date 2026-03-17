@@ -89,3 +89,36 @@ export {
   type ReconciliationMatch,
   type FinancialMetrics,
 } from "./use-financial-data";
+
+// Notification management hooks
+export {
+  useNotifications,
+  useNotificationPreferences,
+  useDeliveryLog,
+  useNotificationCount,
+  type Notification,
+  type NotificationPreference,
+  type NotificationPreferences,
+  type DeliveryLogEntry,
+  type UseNotificationsOptions,
+  type UseNotificationsState,
+  type UseDeliveryLogOptions,
+  type UseDeliveryLogState,
+  type NotificationChannel,
+  type NotificationCategory,
+  type NotificationStatus,
+  type DeliveryStatus,
+  type DigestFrequency,
+} from "./use-notifications";
+
+// Team collaboration hooks
+export {
+  useCollaboration,
+  type Channel,
+  type DirectMessage,
+  type Message,
+  type TypingUser,
+  type User,
+  type UseCollaborationConfig,
+  type UseCollaborationReturn,
+} from "./use-collaboration";
