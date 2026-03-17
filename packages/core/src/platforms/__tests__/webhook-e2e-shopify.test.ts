@@ -215,6 +215,9 @@ class MockShopifyAdapter implements PlatformAdapter {
 
   getWebhookEventType(payload: unknown): string | null {
     const webhookPayload = payload as any;
+    if (!webhookPayload || typeof webhookPayload !== 'object') {
+      return null;
+    }
     return webhookPayload.event_type || null;
   }
 }
@@ -844,11 +847,10 @@ describe('Shopify Webhook E2E Tests', () => {
   describe('Malformed Payload Handling', () => {
     it('should handle null payload', async () => {
       const nullPayload = null;
-      expect(() => {
-        const json = JSON.stringify(nullPayload);
-        const parsed = JSON.parse(json);
-        adapter.getWebhookEventType(parsed);
-      }).not.toThrow();
+      const json = JSON.stringify(nullPayload);
+      const parsed = JSON.parse(json);
+      const eventType = adapter.getWebhookEventType(parsed);
+      expect(eventType).toBeNull();
     });
 
     it('should handle missing required order fields', async () => {

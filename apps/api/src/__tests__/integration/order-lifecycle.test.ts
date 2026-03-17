@@ -190,6 +190,8 @@ describe("Order Lifecycle Integration Tests", () => {
         findUnique: vi.fn(),
         update: vi.fn(),
         findMany: vi.fn(),
+        count: vi.fn(),
+        updateMany: vi.fn(),
       },
       shipment: {
         create: vi.fn(),

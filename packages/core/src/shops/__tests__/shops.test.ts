@@ -520,13 +520,13 @@ describe("Shop Service - CRUD Operations", () => {
         updatedAt: new Date(),
       };
 
-      mockPrismaClient.shop.findUnique.mockResolvedValue(shop);
-      mockPrismaClient.shop.findUnique.mockResolvedValueOnce(
-        {
+      // First call returns the shop being updated, second call returns the conflicting shop
+      mockPrismaClient.shop.findUnique
+        .mockResolvedValueOnce(shop)
+        .mockResolvedValueOnce({
           id: "shop_456",
           slug: "new-slug",
-        }
-      );
+        });
 
       await expect(
         shopService.updateShop("shop_123", { slug: "new-slug" })

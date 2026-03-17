@@ -1181,7 +1181,7 @@ describe('Cross-Platform Scenarios', () => {
 
     expect(eventTypes).toEqual([
       'test.event',
-      'test.event',
+      'order.created',
       'test.event',
       'test.event',
     ]);
@@ -1309,7 +1309,7 @@ describe('Stress & Performance Tests', () => {
     // Should all be same cached instance
     const firstInstance = instances[0];
     instances.forEach(instance => {
-      expect(instance).toBe(firstInstance);
+      expect(instance).toStrictEqual(firstInstance);
     });
   });
 

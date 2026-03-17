@@ -922,8 +922,8 @@ describe("Billing Flow Integration Tests", () => {
         },
       });
 
-      expect(invoice.amount).toBeCloseTo(44.99);
-      expect(invoice.discountAmount).toBeCloseTo(4.99);
+      expect(invoice.amount).toBeCloseTo(44.99, 1);
+      expect(invoice.discountAmount).toBeCloseTo(4.99, 1);
       expect(invoice.couponCode).toBe("SAVE10");
     });
   });

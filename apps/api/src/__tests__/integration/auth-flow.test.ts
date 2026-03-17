@@ -133,6 +133,7 @@ describe("Authentication Flow Integration Tests", () => {
       passwordResetToken: {
         create: vi.fn(),
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
         delete: vi.fn(),
       },
       shop: {
@@ -150,6 +151,8 @@ describe("Authentication Flow Integration Tests", () => {
       sessionToken: {
         create: vi.fn(),
         findUnique: vi.fn(),
+        findMany: vi.fn(),
+        deleteMany: vi.fn(),
         delete: vi.fn(),
       },
     };

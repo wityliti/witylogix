@@ -169,7 +169,7 @@ export class GPSTrackingService {
 
     // Get existing location or create new one
     const stored = this.locations.get(key);
-    const speedHistory = stored?.location.speed ? [stored.location.speed] : [];
+    const speedHistory = stored?.speedHistory ?? [];
 
     // Update speed history with outlier rejection
     if (update.speed !== undefined) {
@@ -460,18 +460,25 @@ export class GPSTrackingService {
     newSpeed: number,
     history: number[],
   ): number {
-    if (history.length < 2) {
+    if (history.length < 1) {
       return newSpeed;
     }
 
     const mean = history.reduce((a, b) => a + b, 0) / history.length;
+
+    // For small sample sizes, use a stricter threshold
+    let threshold = SPEED_OUTLIER_THRESHOLD;
+    if (history.length < 3) {
+      threshold = 2; // More strict for small sample sizes
+    }
+
     const variance =
       history.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) /
       history.length;
     const stdDev = Math.sqrt(variance);
 
     // Reject if more than N standard deviations from mean
-    if (Math.abs(newSpeed - mean) > SPEED_OUTLIER_THRESHOLD * stdDev) {
+    if (Math.abs(newSpeed - mean) > threshold * stdDev) {
       return mean;
     }
 

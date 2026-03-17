@@ -26,31 +26,29 @@ import {
 import { getTenantProviderRegistry, clearAllRegistries } from '../provider-registry.js';
 import type { NotificationProvider, NotificationMessage, NotificationResult } from '../providers/types.js';
 
+// Create mockPrisma before vi.mock for reference
+const mockPrisma = {
+  notificationTemplate: {
+    findFirst: vi.fn(),
+  },
+  notificationLog: {
+    create: vi.fn(),
+  },
+};
+
 // Mock prisma module
 vi.mock('@witylogix/db', () => ({
-  prisma: {
-    notificationTemplate: {
-      findFirst: vi.fn(),
-    },
-    notificationLog: {
-      create: vi.fn(),
-    },
-  },
+  prisma: mockPrisma,
 }));
 
 describe('NotificationOrchestrator', () => {
   let orchestrator: NotificationOrchestrator;
-  let mockPrisma: any;
   let mockProvider: NotificationProvider;
 
   beforeEach(() => {
     // Reset orchestrator singleton
     orchestrator = getNotificationOrchestrator();
     clearAllRegistries();
-
-    // Get mocked prisma
-    const module = vi.importActual('@witylogix/db') as any;
-    mockPrisma = module.prisma;
 
     // Create mock provider
     mockProvider = {

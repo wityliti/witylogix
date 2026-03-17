@@ -99,8 +99,8 @@ export class MetricsCollector {
     values.push(value);
     this.histograms.set(key, values);
 
-    // Keep memory efficient: limit to 10k values per histogram
-    if (values.length > 10000) {
+    // Keep memory efficient: limit to 1000 values per histogram
+    if (values.length > 1000) {
       values.shift();
     }
   }
@@ -162,6 +162,83 @@ export class MetricsCollector {
         name,
         type: "gauge",
         value,
+        labels,
+        timestamp: new Date(),
+      });
+    }
+
+    for (const [key, values] of this.histograms) {
+      if (values.length === 0) continue;
+      const [name, labels] = this.parseKey(key);
+      const sorted = [...values].sort((a, b) => a - b);
+      const sum = sorted.reduce((a, b) => a + b, 0);
+
+      metrics.push({
+        name: `${name}_count`,
+        type: "histogram",
+        value: values.length,
+        labels,
+        timestamp: new Date(),
+      });
+
+      metrics.push({
+        name: `${name}_sum`,
+        type: "histogram",
+        value: sum,
+        labels,
+        timestamp: new Date(),
+      });
+
+      // Average
+      metrics.push({
+        name: `${name}_avg`,
+        type: "histogram",
+        value: sum / values.length,
+        labels,
+        timestamp: new Date(),
+      });
+
+      // Min
+      metrics.push({
+        name: `${name}_min`,
+        type: "histogram",
+        value: sorted[0],
+        labels,
+        timestamp: new Date(),
+      });
+
+      // Max
+      metrics.push({
+        name: `${name}_max`,
+        type: "histogram",
+        value: sorted[sorted.length - 1],
+        labels,
+        timestamp: new Date(),
+      });
+
+      // P50
+      metrics.push({
+        name: `${name}_p50`,
+        type: "histogram",
+        value: sorted[Math.floor(sorted.length * 0.5)],
+        labels,
+        timestamp: new Date(),
+      });
+
+      // P95
+      metrics.push({
+        name: `${name}_p95`,
+        type: "histogram",
+        value: sorted[Math.floor(sorted.length * 0.95)],
+        labels,
+        timestamp: new Date(),
+      });
+
+      // P99
+      metrics.push({
+        name: `${name}_p99`,
+        type: "histogram",
+        value: sorted[Math.floor(sorted.length * 0.99)],
         labels,
         timestamp: new Date(),
       });

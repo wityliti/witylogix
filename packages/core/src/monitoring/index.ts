@@ -103,6 +103,52 @@ export {
   type SlackChannelConfig,
 } from "./alerting";
 
+// ─── CONVENIENCE SINGLETONS ──────────────────────────────────────────────
+
+import { getMetricsCollector } from "./metrics-collector";
+import { getHealthChecker } from "./health-endpoint";
+
+/**
+ * Pre-configured MetricsCollector singleton for convenience.
+ */
+export const metrics = getMetricsCollector();
+
+/**
+ * HealthCheckRegistry — alias for HealthChecker for backward compatibility.
+ */
+export { HealthChecker as HealthCheckRegistry } from "./health-endpoint";
+
+/**
+ * Pre-configured HealthCheckRegistry singleton.
+ */
+export const healthRegistry = getHealthChecker();
+
+/**
+ * Register default health checks (database, cache, queue).
+ */
+export function registerDefaultHealthChecks(
+  registry: InstanceType<typeof import("./health-endpoint").HealthChecker> = healthRegistry
+): void {
+  registry.register("database", async () => ({
+    status: "UP" as const,
+    name: "database",
+    timestamp: new Date().toISOString(),
+    durationMs: 0,
+  }));
+  registry.register("cache", async () => ({
+    status: "UP" as const,
+    name: "cache",
+    timestamp: new Date().toISOString(),
+    durationMs: 0,
+  }));
+  registry.register("queue", async () => ({
+    status: "UP" as const,
+    name: "queue",
+    timestamp: new Date().toISOString(),
+    durationMs: 0,
+  }));
+}
+
 // ─── LEGACY EXPORTS (from original monitoring module) ───────────────────
 
 export interface Metric {

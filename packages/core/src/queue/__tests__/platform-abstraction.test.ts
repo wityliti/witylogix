@@ -12,6 +12,26 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+vi.mock('@witylogix/db', () => ({
+  prisma: {
+    order: {
+      upsert: vi.fn(),
+    },
+    product: {
+      upsert: vi.fn(),
+      update: vi.fn(),
+    },
+    variant: {
+      upsert: vi.fn(),
+    },
+    productCollection: {
+      deleteMany: vi.fn(),
+      create: vi.fn(),
+    },
+  },
+}));
+
 import type {
   QueueJobPayload,
   QueueJobMetadata,

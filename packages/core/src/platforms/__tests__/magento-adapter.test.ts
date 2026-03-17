@@ -1358,7 +1358,7 @@ describe('MagentoAdapter', () => {
       await adapter.fetchProducts(credentials, '5');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('searchCriteria[currentPage]=5'),
+        expect.stringContaining('searchCriteria%5BcurrentPage%5D=5'),
         expect.any(Object)
       );
     });
@@ -1381,7 +1381,7 @@ describe('MagentoAdapter', () => {
       await adapter.fetchProducts(credentials);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('searchCriteria[pageSize]=20'),
+        expect.stringContaining('searchCriteria%5BpageSize%5D=20'),
         expect.any(Object)
       );
     });

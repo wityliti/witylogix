@@ -186,6 +186,33 @@ export class HealthChecker {
   }
 
   /**
+   * Run a single health check by name.
+   */
+  async check(name: string): Promise<ComponentHealth | null> {
+    const fn = this.checks.get(name);
+    if (!fn) {
+      return null;
+    }
+
+    const start = Date.now();
+    try {
+      const result = await fn();
+      return {
+        ...result,
+        name,
+        duration: result.duration ?? (Date.now() - start),
+      };
+    } catch (error) {
+      return {
+        name,
+        status: "DOWN",
+        duration: Date.now() - start,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  /**
    * Unregister a health check.
    */
   unregister(name: string): void {
