@@ -465,6 +465,9 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.19.15)(lightningcss@1.27.0)(terser@5.46.0)
 
   packages/checkout-widget:
     dependencies:
@@ -520,10 +523,16 @@ importers:
       '@witylogix/validators':
         specifier: workspace:*
         version: link:../validators
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.19.15)(lightningcss@1.27.0)(terser@5.46.0)
 
   packages/db:
     dependencies:
@@ -540,12 +549,18 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.19.15)(lightningcss@1.27.0)(terser@5.46.0)
 
   packages/extension-core:
     devDependencies:
       preact:
         specifier: ^10.16.0
         version: 10.28.4
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@22.19.15)(lightningcss@1.27.0)(terser@5.46.0)
 
   packages/framework:
     dependencies:
