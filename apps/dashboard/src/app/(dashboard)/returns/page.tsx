@@ -1,53 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Calendar, Search, X, ChevronRight, Clock } from "lucide-react";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Calendar, Search, X, ChevronRight, Clock } from 'lucide-react';
+import { useReturns, Return as ApiReturn, ReturnStatus as ApiReturnStatus } from '@/hooks/use-returns';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — Full return lifecycle with
    multi-status workflow, filtering, and detail viewing
    ═══════════════════════════════════════════════════════════ */
 
-type ReturnStatus = "requested" | "approved" | "rejected" | "received" | "inspected" | "refunded";
+const STATUS_CONFIG: Record<string, { badge: string; color: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }> = {
+  initiated: { badge: 'Initiated', color: 'info', label: 'Pending Review' },
+  approved: { badge: 'Approved', color: 'primary', label: 'Return Approved' },
+  rejected: { badge: 'Rejected', color: 'danger', label: 'Return Denied' },
+  picked_up: { badge: 'Picked Up', color: 'warning', label: 'In Transit' },
+  in_transit: { badge: 'In Transit', color: 'warning', label: 'Shipment en route' },
+  received: { badge: 'Received', color: 'warning', label: 'Awaiting Inspection' },
+  refunded: { badge: 'Refunded', color: 'success', label: 'Refund Processed' },
+};
 
-interface ReturnItem {
-  id: string;
-  name: string;
-  quantity: number;
-  condition: "good" | "damaged" | "defective";
-}
-
-interface ReturnRecord {
-  id: string;
-  orderId: string;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
-  status: ReturnStatus;
-  reason: string;
-  items: ReturnItem[];
-  refundAmount: number;
-  createdAt: string;
-  requestedAt: string;
-  approvedAt?: string;
-  receivedAt?: string;
-  inspectedAt?: string;
-  refundedAt?: string;
-  notes: string;
-  timeline: Array<{
-    timestamp: string;
-    status: ReturnStatus;
-    notes: string;
-  }>;
-}
-
-// Mock returns data with varied statuses
-const MOCK_RETURNS: ReturnRecord[] = [
+// Mock returns data for development fallback
+const MOCK_RETURNS: ApiReturn[] = [
   {
     id: "RET-2024-001",
     orderId: "ORD-2024-115",
@@ -401,52 +379,33 @@ const STATUS_CONFIG: Record<ReturnStatus, { badge: string; color: "default" | "s
 };
 
 export default function ReturnsPage() {
-  const [filterStatus, setFilterStatus] = useState<ReturnStatus | "all">("all");
-  const [filterDateRange, setFilterDateRange] = useState<"all" | "7days" | "30days" | "90days">("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedReturn, setSelectedReturn] = useState<ReturnRecord | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [selectedReturn, setSelectedReturn] = useState<ApiReturn | null>(null);
 
   const itemsPerPage = 10;
 
-  // Filter returns
+  // Fetch returns from API
+  const { items: returns, loading, error, refetch, pagination } = useReturns({
+    search: searchQuery || undefined,
+    limit: itemsPerPage * 3,
+  });
+
+  // Filter returns client-side
   const filteredReturns = useMemo(() => {
-    return MOCK_RETURNS.filter((ret) => {
-      // Status filter
-      if (filterStatus !== "all" && ret.status !== filterStatus) {
-        return false;
-      }
+    let result = returns;
 
-      // Date range filter
-      const createdDate = new Date(ret.createdAt);
-      const now = new Date();
-      const daysDiff = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (filterStatus !== 'all') {
+      result = result.filter((ret) => ret.status.toLowerCase() === filterStatus.toLowerCase());
+    }
 
-      if (filterDateRange === "7days" && daysDiff > 7) return false;
-      if (filterDateRange === "30days" && daysDiff > 30) return false;
-      if (filterDateRange === "90days" && daysDiff > 90) return false;
-
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          ret.id.toLowerCase().includes(query) ||
-          ret.orderId.toLowerCase().includes(query) ||
-          ret.customerName.toLowerCase().includes(query)
-        );
-      }
-
-      return true;
-    });
-  }, [filterStatus, filterDateRange, searchQuery]);
+    return result;
+  }, [filterStatus, returns]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredReturns.length / itemsPerPage);
-  const paginatedReturns = filteredReturns.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.max(1, Math.ceil(pagination.total / itemsPerPage));
+  const paginatedReturns = filteredReturns.slice(0, itemsPerPage);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -568,6 +527,19 @@ export default function ReturnsPage() {
     }
   };
 
+  // Calculate stats from API data
+  const stats = {
+    totalReturns: pagination.total,
+    pendingApprovals: returns.filter((r) => r.status.toLowerCase() === 'initiated').length,
+    awaitingReceipt: returns.filter((r) =>
+      ['approved', 'picked_up', 'in_transit'].includes(r.status.toLowerCase())
+    ).length,
+    refunded: returns.filter((r) => r.status.toLowerCase() === 'refunded').length,
+    totalRefundAmount: returns
+      .filter((r) => r.status.toLowerCase() === 'refunded')
+      .reduce((sum, r) => sum + r.totalRefundAmount, 0),
+  };
+
   const headerActions = (
     <div className="flex gap-2">
       <Button variant="secondary" size="md">
@@ -583,47 +555,47 @@ export default function ReturnsPage() {
     <>
       <Header
         title="Returns Management"
-        subtitle={`${filteredReturns.length} returns • ${stats.pendingApproval} pending approval`}
+        subtitle={`${pagination.total} total returns · ${stats.pendingApprovals} pending approval`}
         actions={headerActions}
       />
 
       <div className="p-6 space-y-6">
+        {/* Error State */}
+        {error && (
+          <div className="p-4 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
+            <p className="text-sm text-wl-danger-400 flex items-center justify-between">
+              <span>Failed to load returns</span>
+              <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-wl-danger-400">
+                Retry
+              </Button>
+            </p>
+          </div>
+        )}
+
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Total Returns
             </div>
-            <div className="text-3xl font-bold font-mono text-wl-text-primary">
-              {stats.totalReturns}
-            </div>
-            <div className="text-xs text-wl-text-secondary mt-1">
-              all time
-            </div>
+            <div className="text-3xl font-bold font-mono text-wl-text-primary">{stats.totalReturns}</div>
+            <div className="text-xs text-wl-text-secondary mt-1">all time</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
               Pending Approval
             </div>
-            <div className="text-3xl font-bold font-mono text-wl-text-primary">
-              {stats.pendingApproval}
-            </div>
-            <div className="text-xs text-wl-text-secondary mt-1">
-              needs review
-            </div>
+            <div className="text-3xl font-bold font-mono text-wl-text-primary">{stats.pendingApprovals}</div>
+            <div className="text-xs text-wl-text-secondary mt-1">needs review</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg">
             <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
-              Awaiting Receipt
+              In Transit
             </div>
-            <div className="text-3xl font-bold font-mono text-wl-text-primary">
-              {stats.awaitingReceipt}
-            </div>
-            <div className="text-xs text-wl-text-secondary mt-1">
-              in transit
-            </div>
+            <div className="text-3xl font-bold font-mono text-wl-text-primary">{stats.awaitingReceipt}</div>
+            <div className="text-xs text-wl-text-secondary mt-1">shipments</div>
           </Card>
 
           <Card className="p-4 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg">
@@ -633,9 +605,7 @@ export default function ReturnsPage() {
             <div className="text-3xl font-bold font-mono text-wl-text-primary">
               ${stats.totalRefundAmount.toFixed(2)}
             </div>
-            <div className="text-xs text-wl-text-secondary mt-1">
-              {stats.refunded} returns
-            </div>
+            <div className="text-xs text-wl-text-secondary mt-1">{stats.refunded} returns</div>
           </Card>
         </div>
 
@@ -657,7 +627,7 @@ export default function ReturnsPage() {
               {searchQuery && (
                 <button
                   onClick={() => {
-                    setSearchQuery("");
+                    setSearchQuery('');
                     setCurrentPage(1);
                   }}
                   className="p-1 hover:bg-wl-bg rounded transition-colors"
@@ -669,23 +639,22 @@ export default function ReturnsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
-                  Status
-                </label>
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">Status</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => {
-                    setFilterStatus(e.target.value as ReturnStatus | "all");
+                    setFilterStatus(e.target.value);
                     setCurrentPage(1);
                   }}
                   className="w-full px-3 py-2 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none focus:border-wl-border-default"
                 >
                   <option value="all">All Statuses</option>
-                  <option value="requested">Requested</option>
+                  <option value="initiated">Initiated</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
+                  <option value="picked_up">Picked Up</option>
+                  <option value="in_transit">In Transit</option>
                   <option value="received">Received</option>
-                  <option value="inspected">Inspected</option>
                   <option value="refunded">Refunded</option>
                 </select>
               </div>

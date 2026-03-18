@@ -1,32 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { StatCard } from "@/components/ui/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { StatCard } from '@/components/ui/stat-card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useCustomers, Customer as ApiCustomer } from '@/hooks/use-customers';
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOMERS PAGE — Customer management with Shopify sync
    ═══════════════════════════════════════════════════════════ */
 
-interface Customer {
-  id: string;
-  shopifyId: string;
-  name: string;
-  email: string;
-  phone: string;
-  ordersCount: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  status: "active" | "inactive";
-  syncedAt: string;
-  segment: "vip" | "regular" | "new" | "inactive";
-}
-
-const CUSTOMERS: Customer[] = [
+const MOCK_CUSTOMERS: ApiCustomer[] = [
   {
     id: "cust-001",
     shopifyId: "gid://shopify/Customer/123456789",
@@ -193,68 +180,72 @@ const getSegmentColor = (segment: string): "primary" | "success" | "warning" | "
   return map[segment] ?? "default";
 };
 
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+};
+
+const getSegmentColor = (tier: string): 'primary' | 'success' | 'warning' | 'info' | 'default' => {
+  const map: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'default'> = {
+    enterprise: 'primary',
+    premium: 'success',
+    standard: 'info',
+    inactive: 'default',
+  };
+  return map[tier.toLowerCase()] ?? 'default';
+};
+
 export default function CustomersPage() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [segmentFilter, setSegmentFilter] = useState<"all" | "vip" | "regular" | "new" | "inactive">("all");
-  const [sortBy, setSortBy] = useState<"name" | "totalSpent" | "ordersCount" | "lastOrderDate">("name");
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'totalSpent' | 'totalOrders' | 'lastOrderDate'>('name');
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
 
-  // Calculate stats
-  const activeCustomers = CUSTOMERS.filter((c) => c.status === "active").length;
-  const newThisMonth = CUSTOMERS.filter((c) => {
-    const orderDate = new Date(c.lastOrderDate);
-    const now = new Date();
-    const thisMonth = now.getMonth() === orderDate.getMonth() && now.getFullYear() === orderDate.getFullYear();
-    return thisMonth && c.ordersCount > 0;
-  }).length;
-  const avgOrders =
-    CUSTOMERS.length > 0 ? (CUSTOMERS.reduce((sum, c) => sum + c.ordersCount, 0) / CUSTOMERS.length).toFixed(1) : "0";
-  const topSpender = Math.max(...CUSTOMERS.map((c) => c.totalSpent));
+  // Fetch customers from API
+  const { items: customers, loading, error, refetch, pagination } = useCustomers({
+    search: search || undefined,
+    limit: pageSize,
+  });
 
-  // Filter and sort
+  // Filter customer client-side
   const filtered = useMemo(() => {
-    let result = CUSTOMERS.filter((c) => {
-      if (statusFilter !== "all" && c.status !== statusFilter) return false;
-      if (segmentFilter !== "all" && c.segment !== segmentFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return (
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.phone.includes(q) ||
-          c.shopifyId.includes(q)
-        );
-      }
-      return true;
-    });
+    let result = customers;
+
+    if (statusFilter !== 'all') {
+      result = result.filter((c) => c.status === statusFilter);
+    }
 
     result.sort((a, b) => {
       switch (sortBy) {
-        case "totalSpent":
+        case 'totalSpent':
           return b.totalSpent - a.totalSpent;
-        case "ordersCount":
-          return b.ordersCount - a.ordersCount;
-        case "lastOrderDate":
-          return new Date(b.lastOrderDate || 0).getTime() - new Date(a.lastOrderDate || 0).getTime();
+        case 'totalOrders':
+          return b.totalOrders - a.totalOrders;
+        case 'lastOrderDate':
+          return (new Date(b.lastOrderDate || 0).getTime() - new Date(a.lastOrderDate || 0).getTime());
         default:
           return a.name.localeCompare(b.name);
       }
     });
 
     return result;
-  }, [search, statusFilter, segmentFilter, sortBy]);
+  }, [customers, statusFilter, sortBy]);
 
-  const paginatedItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginatedItems = filtered.slice(0, pageSize);
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pageSize));
+
+  // Calculate stats
+  const activeCustomers = customers.filter((c) => c.status === 'active').length;
+  const avgOrders =
+    customers.length > 0 ? (customers.reduce((sum, c) => sum + c.totalOrders, 0) / customers.length).toFixed(1) : '0';
+  const topSpender = customers.length > 0 ? Math.max(...customers.map((c) => c.totalSpent)) : 0;
 
   return (
     <>
       <Header
         title="Customers"
-        subtitle={`${activeCustomers} active · ${CUSTOMERS.length} total`}
+        subtitle={`${activeCustomers} active · ${pagination.total} total`}
         actions={
           <Button variant="primary" size="md">
             + Sync from Shopify
@@ -263,33 +254,45 @@ export default function CustomersPage() {
       />
 
       <div className="p-6">
+        {/* Error State */}
+        {error && (
+          <div className="mb-4 p-4 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
+            <p className="text-sm text-wl-danger-400 flex items-center justify-between">
+              <span>Failed to load customers</span>
+              <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-wl-danger-400">
+                Retry
+              </Button>
+            </p>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Customers"
-            value={CUSTOMERS.length}
-            change={{ value: 5.2, label: "vs last month" }}
+            value={pagination.total}
+            change={{ value: 5.2, label: 'vs last month' }}
             accentColor="var(--wl-primary-500)"
             index={0}
           />
           <StatCard
-            label="New This Month"
-            value={newThisMonth}
-            change={{ value: 12.8, label: "vs last month" }}
+            label="Active Customers"
+            value={activeCustomers}
+            change={{ value: 12.8, label: 'vs last month' }}
             accentColor="var(--wl-info-400)"
             index={1}
           />
           <StatCard
             label="Average Orders"
             value={avgOrders}
-            change={{ value: 2.3, label: "per customer" }}
+            change={{ value: 2.3, label: 'per customer' }}
             accentColor="var(--wl-success-400)"
             index={2}
           />
           <StatCard
             label="Top Spender"
             value={formatCurrency(topSpender)}
-            change={{ value: 15.1, label: "vs avg" }}
+            change={{ value: 15.1, label: 'vs avg' }}
             accentColor="var(--wl-warning-400)"
             index={3}
           />
@@ -313,7 +316,7 @@ export default function CustomersPage() {
 
           {/* Status Filter */}
           <div className="flex gap-1">
-            {(["all", "active", "inactive"] as const).map((status) => (
+            {(['all', 'active', 'inactive'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => {
@@ -321,14 +324,14 @@ export default function CustomersPage() {
                   setCurrentPage(1);
                 }}
                 className={cn(
-                  "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast",
+                  'p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast',
                   statusFilter === status
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                    : "bg-transparent text-wl-text-tertiary border-wl-border-default",
-                  "capitalize"
+                    ? 'bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500'
+                    : 'bg-transparent text-wl-text-tertiary border-wl-border-default',
+                  'capitalize'
                 )}
               >
-                {status === "all" ? "All Statuses" : status}
+                {status === 'all' ? 'All Statuses' : status}
               </button>
             ))}
           </div>
@@ -344,42 +347,28 @@ export default function CustomersPage() {
           >
             <option value="name">Sort by Name</option>
             <option value="totalSpent">Sort by Total Spent</option>
-            <option value="ordersCount">Sort by Orders</option>
+            <option value="totalOrders">Sort by Orders</option>
             <option value="lastOrderDate">Sort by Last Order</option>
           </select>
         </div>
 
-        {/* Segments Overview */}
+        {/* Tiers Overview */}
         <Card className="mb-5 p-4">
           <div className="flex gap-4 flex-wrap items-center">
             <div>
-              <h3 className="m-0 text-sm font-semibold text-wl-text-primary">
-                Customer Segments
-              </h3>
+              <h3 className="m-0 text-sm font-semibold text-wl-text-primary">Customer Tiers</h3>
             </div>
-            {(["vip", "regular", "new", "inactive"] as const).map((segment) => {
-              const count = CUSTOMERS.filter((c) => c.segment === segment).length;
-              const isActive = segmentFilter === segment;
+            {(['standard', 'premium', 'enterprise'] as const).map((tier) => {
+              const count = customers.filter((c) => c.tier === tier).length;
               return (
                 <button
-                  key={segment}
-                  onClick={() => {
-                    setSegmentFilter(isActive ? "all" : segment);
-                    setCurrentPage(1);
-                  }}
+                  key={tier}
                   className={cn(
-                    "p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans",
-                    isActive
-                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                      : "bg-transparent text-wl-text-secondary border-wl-border-subtle",
-                    "capitalize"
+                    'p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans capitalize',
+                    'bg-transparent text-wl-text-secondary border-wl-border-subtle'
                   )}
                 >
-                  {segment === "vip" && "VIP (10+)"}
-                  {segment === "regular" && "Regular (3-9)"}
-                  {segment === "new" && "New (1-2)"}
-                  {segment === "inactive" && "Inactive"}
-                  <span className="ml-1.5 opacity-70">({count})</span>
+                  {tier} <span className="ml-1.5 opacity-70">({count})</span>
                 </button>
               );
             })}
@@ -392,88 +381,68 @@ export default function CustomersPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
-                    Name
-                  </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
-                    Email
-                  </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
-                    Phone
-                  </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
-                    Orders
-                  </th>
-                  <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">
-                    Total Spent
-                  </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
-                    Last Order
-                  </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
-                    Shopify ID
-                  </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
-                    Status
-                  </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
-                    Synced
-                  </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
-                    Actions
-                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Name</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Email</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Phone</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Orders</th>
+                  <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">Total Spent</th>
+                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Tier</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedItems.map((customer, idx) => (
-                  <tr
-                    key={customer.id}
-                    className={cn(
-                      "border-b border-wl-border-subtle transition-colors duration-fast",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay"
-                    )}
-                  >
-                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
-                      {customer.name}
-                    </td>
-                    <td className="p-3 px-4 text-wl-text-secondary">
-                      {customer.email}
-                    </td>
-                    <td className="p-3 px-4 text-wl-text-secondary">
-                      {customer.phone}
-                    </td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
-                      {customer.ordersCount}
-                    </td>
-                    <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">
-                      {formatCurrency(customer.totalSpent)}
-                    </td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary">
-                      {formatDate(customer.lastOrderDate)}
-                    </td>
-                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
-                      {customer.shopifyId.split("/").pop()}
-                    </td>
-                    <td className="p-3 px-4 text-center">
-                      <Badge variant={customer.status === "active" ? "success" : "default"}>
-                        {customer.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
-                      {formatDateTime(customer.syncedAt)}
-                    </td>
-                    <td className="p-3 px-4 text-center">
-                      <div className="flex gap-1 justify-center">
-                        <Button variant="secondary" size="sm">
-                          View
-                        </Button>
-                        <Button variant="secondary" size="sm">
-                          Edit
-                        </Button>
-                      </div>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-wl-border-subtle">
+                      <td colSpan={8} className="px-4 py-3 h-12 bg-wl-bg-overlay/50 animate-pulse" />
+                    </tr>
+                  ))
+                ) : paginatedItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-8 text-center text-wl-text-tertiary">
+                      No customers found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedItems.map((customer, idx) => (
+                    <tr
+                      key={customer.id}
+                      className={cn(
+                        'border-b border-wl-border-subtle transition-colors duration-fast',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay'
+                      )}
+                    >
+                      <td className="p-3 px-4 text-wl-text-primary font-semibold">{customer.name}</td>
+                      <td className="p-3 px-4 text-wl-text-secondary">{customer.email}</td>
+                      <td className="p-3 px-4 text-wl-text-secondary">{customer.phone}</td>
+                      <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                        {customer.totalOrders}
+                      </td>
+                      <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">
+                        {formatCurrency(customer.totalSpent)}
+                      </td>
+                      <td className="p-3 px-4 text-left">
+                        <Badge variant={getSegmentColor(customer.tier)}>{customer.tier}</Badge>
+                      </td>
+                      <td className="p-3 px-4 text-center">
+                        <Badge variant={customer.status === 'active' ? 'success' : 'default'}>
+                          {customer.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3 px-4 text-center">
+                        <div className="flex gap-1 justify-center">
+                          <Button variant="secondary" size="sm">
+                            View
+                          </Button>
+                          <Button variant="secondary" size="sm">
+                            Edit
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -481,7 +450,8 @@ export default function CustomersPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
             <div>
-              Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
+              Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
+              {Math.min(currentPage * pageSize, pagination.total)} of {pagination.total}
             </div>
             <div className="flex gap-2">
               <Button
@@ -493,7 +463,9 @@ export default function CustomersPage() {
                 Previous
               </Button>
               <div className="flex items-center gap-2">
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
               <Button
                 variant="secondary"

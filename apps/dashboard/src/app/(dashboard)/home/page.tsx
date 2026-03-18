@@ -1,13 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/navigation/page-header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton, SkeletonText, SkeletonCard } from "@/components/ui/skeleton";
+import { useState } from 'react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/navigation/page-header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton, SkeletonText, SkeletonCard } from '@/components/ui/skeleton';
+import { useOrderStats } from '@/hooks/use-orders';
+import { useDrivers } from '@/hooks/use-drivers';
 
 interface QuickStat {
   label: string;
@@ -309,124 +311,131 @@ function GettingStartedChecklist({
 }
 
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+  // Fetch real API data
+  const { data: orderStats, loading: statsLoading, error: statsError, refetch: refetchStats } = useOrderStats();
+  const { items: drivers, loading: driversLoading, error: driversError } = useDrivers({ limit: 5 });
 
   const now = new Date();
-  const stats: QuickStat[] = [
-    {
-      label: "Total Orders",
-      value: 1248,
-      trend: "up",
-      trendValue: "+12.5%",
-      icon: "M16 3h5v5 M21 3l-7 7 M8 21H3v-5 M3 21l7-7",
-    },
-    {
-      label: "Active Deliveries",
-      value: 84,
-      trend: "up",
-      trendValue: "+8.2%",
-      icon: "M3 12l9-5 9 5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z",
-    },
-    {
-      label: "Drivers Online",
-      value: 42,
-      trend: "neutral",
-      trendValue: "100%",
-      icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
-    },
-    {
-      label: "SLA Compliance",
-      value: "98.5%",
-      trend: "up",
-      trendValue: "+2.3%",
-      icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-    },
-  ];
 
+  // Build stats from API data or show loading state
+  const stats: QuickStat[] = statsLoading
+    ? Array.from({ length: 4 }).map((_, i) => ({
+        label: 'Loading...',
+        value: '—',
+        icon: 'M12 2v20m0 0l-7-7m7 7l7-7',
+      }))
+    : [
+        {
+          label: 'Total Orders',
+          value: orderStats?.totalOrders ?? 0,
+          trend: 'up',
+          trendValue: '+12.5%',
+          icon: 'M16 3h5v5 M21 3l-7 7 M8 21H3v-5 M3 21l7-7',
+        },
+        {
+          label: 'Pending Orders',
+          value: orderStats?.pendingOrders ?? 0,
+          trend: 'up',
+          trendValue: '+8.2%',
+          icon: 'M3 12l9-5 9 5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z',
+        },
+        {
+          label: 'Drivers Online',
+          value: drivers.length,
+          trend: 'neutral',
+          trendValue: '100%',
+          icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
+        },
+        {
+          label: 'Delivered Today',
+          value: orderStats?.deliveredToday ?? 0,
+          trend: 'up',
+          trendValue: '+2.3%',
+          icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+        },
+      ];
+
+  // Mock activity events (can be replaced with real API call later)
   const activityEvents: ActivityEvent[] = [
     {
-      id: "1",
-      type: "order",
-      action: "Order #ORD-2024-8954 Created",
-      description: "New order from John Doe",
+      id: '1',
+      type: 'order',
+      action: 'Order Placed',
+      description: 'New order received',
       timestamp: new Date(now.getTime() - 5 * 60000),
     },
     {
-      id: "2",
-      type: "delivery",
-      action: "Delivery Route Optimized",
-      description: "Route updated for 12 stops",
+      id: '2',
+      type: 'delivery',
+      action: 'Route Optimized',
+      description: 'Delivery route updated',
       timestamp: new Date(now.getTime() - 15 * 60000),
     },
     {
-      id: "3",
-      type: "driver",
-      action: "Driver Alex Johnson Online",
-      description: "Status changed from offline",
+      id: '3',
+      type: 'driver',
+      action: 'Driver Online',
+      description: 'Status changed from offline',
       timestamp: new Date(now.getTime() - 22 * 60000),
     },
     {
-      id: "4",
-      type: "order",
-      action: "Order #ORD-2024-8953 Delivered",
-      description: "Successfully delivered to 456 Oak St",
+      id: '4',
+      type: 'order',
+      action: 'Delivered',
+      description: 'Order successfully delivered',
       timestamp: new Date(now.getTime() - 45 * 60000),
     },
     {
-      id: "5",
-      type: "system",
-      action: "Daily Report Generated",
-      description: "Sent to admin@witylogix.com",
+      id: '5',
+      type: 'system',
+      action: 'Report Generated',
+      description: 'Daily report created',
       timestamp: new Date(now.getTime() - 120 * 60000),
     },
   ];
 
   const checklistItems: ChecklistItem[] = [
     {
-      id: "1",
-      label: "Complete Your Profile",
-      description: "Add profile picture and company details",
+      id: '1',
+      label: 'Complete Your Profile',
+      description: 'Add profile picture and company details',
       completed: true,
-      href: "/settings",
-      icon: "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2",
+      href: '/settings',
+      icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2',
     },
     {
-      id: "2",
-      label: "Add Your First Driver",
-      description: "Register a driver in the fleet management",
-      completed: false,
-      href: "/drivers",
-      icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
+      id: '2',
+      label: 'Add Your First Driver',
+      description: 'Register a driver in the fleet management',
+      completed: drivers.length > 0,
+      href: '/drivers',
+      icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
     },
     {
-      id: "3",
-      label: "Create Delivery Zone",
-      description: "Define your service area",
+      id: '3',
+      label: 'Create Delivery Zone',
+      description: 'Define your service area',
       completed: true,
-      href: "/zones",
-      icon: "M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z",
+      href: '/zones',
+      icon: 'M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z',
     },
     {
-      id: "4",
-      label: "Configure Integrations",
-      description: "Connect with order management systems",
+      id: '4',
+      label: 'Configure Integrations',
+      description: 'Connect with order management systems',
       completed: false,
-      href: "/integrations",
-      icon: "M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z",
+      href: '/integrations',
+      icon: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
     },
     {
-      id: "5",
-      label: "Invite Team Members",
-      description: "Add your team to collaborate",
+      id: '5',
+      label: 'Invite Team Members',
+      description: 'Add your team to collaborate',
       completed: false,
-      href: "/settings",
-      icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
+      href: '/settings',
+      icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
     },
   ];
 
@@ -435,11 +444,11 @@ export default function HomePage() {
       {/* Page Header */}
       <PageHeader
         title="Welcome back!"
-        subtitle={`Today is ${now.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
+        subtitle={`Today is ${now.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
         })}`}
         breadcrumb={false}
         actions={
@@ -461,9 +470,24 @@ export default function HomePage() {
           <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
             Key Metrics
           </h2>
+          {statsError && (
+            <div className="mb-4 p-4 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
+              <p className="text-sm text-wl-danger-400 flex items-center justify-between">
+                <span>Failed to load stats</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refetchStats()}
+                  className="text-wl-danger-400 hover:text-wl-danger-300"
+                >
+                  Retry
+                </Button>
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, i) => (
-              <StatCard key={i} stat={stat} loading={loading} />
+              <StatCard key={i} stat={stat} loading={statsLoading} />
             ))}
           </div>
         </section>
@@ -472,12 +496,12 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Activity Feed */}
           <div className="lg:col-span-2">
-            <ActivityFeed events={activityEvents} loading={loading} />
+            <ActivityFeed events={activityEvents} loading={statsLoading} />
           </div>
 
           {/* Right Column - Checklist + Actions */}
           <div className="space-y-6">
-            <GettingStartedChecklist items={checklistItems} loading={loading} />
+            <GettingStartedChecklist items={checklistItems} loading={driversLoading} />
 
             {/* Quick Actions */}
             <Card>

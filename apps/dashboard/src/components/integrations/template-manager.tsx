@@ -171,7 +171,7 @@ export function TemplateManager({ templates, onSave, onDelete, className }: Temp
                   <div className="grid grid-cols-2 gap-3">
                     {Object.entries(SAMPLE_DATA).map(([key, value]) => (
                       <div key={key} className="p-2 bg-wl-surface-hover rounded border border-wl-border-subtle text-xs">
-                        <div className="font-mono text-wl-text-secondary">{{'{'}}{key}{'}'}}</div>
+                        <div className="font-mono text-wl-text-secondary">{`{${key}}`}</div>
                         <div className="text-wl-text-primary mt-1">{value}</div>
                       </div>
                     ))}
