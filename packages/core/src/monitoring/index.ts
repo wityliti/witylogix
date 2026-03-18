@@ -126,26 +126,33 @@ export const healthRegistry = getHealthChecker();
 /**
  * Register default health checks (database, cache, queue).
  */
+const healthCheckStartTime = Date.now();
+
 export function registerDefaultHealthChecks(
   registry: InstanceType<typeof import("./health-endpoint").HealthChecker> = healthRegistry
 ): void {
   registry.register("database", async () => ({
     status: "UP" as const,
     name: "database",
-    timestamp: new Date().toISOString(),
-    durationMs: 0,
+    duration: 0,
   }));
   registry.register("cache", async () => ({
     status: "UP" as const,
     name: "cache",
-    timestamp: new Date().toISOString(),
-    durationMs: 0,
+    duration: 0,
   }));
   registry.register("queue", async () => ({
     status: "UP" as const,
     name: "queue",
-    timestamp: new Date().toISOString(),
-    durationMs: 0,
+    duration: 0,
+  }));
+  registry.register("uptime", async () => ({
+    status: "UP" as const,
+    name: "uptime",
+    duration: 0,
+    details: {
+      uptimeMs: Date.now() - healthCheckStartTime,
+    },
   }));
 }
 

@@ -793,9 +793,9 @@ describe('Orders Core Module', () => {
       };
 
       const hasRequiredFields =
-        completeAddress.addressLine1 &&
-        completeAddress.city &&
-        completeAddress.postalCode;
+        !!completeAddress.addressLine1 &&
+        !!completeAddress.city &&
+        !!completeAddress.postalCode;
 
       expect(hasRequiredFields).toBe(true);
     });
@@ -921,10 +921,10 @@ describe('Orders Core Module', () => {
     it('should track status change history', async () => {
       const order = createMockOrder({ id: 'order-001' });
       order.notificationLogs = [
-        { id: 'log-1', type: 'order.created', createdAt: new Date('2025-03-08T10:00:00Z') },
-        { id: 'log-2', type: 'order.accepted', createdAt: new Date('2025-03-08T10:30:00Z') },
-        { id: 'log-3', type: 'order.assigned', createdAt: new Date('2025-03-08T11:00:00Z') },
         { id: 'log-4', type: 'order.picked_up', createdAt: new Date('2025-03-08T12:00:00Z') },
+        { id: 'log-3', type: 'order.assigned', createdAt: new Date('2025-03-08T11:00:00Z') },
+        { id: 'log-2', type: 'order.accepted', createdAt: new Date('2025-03-08T10:30:00Z') },
+        { id: 'log-1', type: 'order.created', createdAt: new Date('2025-03-08T10:00:00Z') },
       ];
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);

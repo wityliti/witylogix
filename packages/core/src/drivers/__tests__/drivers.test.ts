@@ -45,26 +45,47 @@ interface Driver {
   updatedAt: Date;
 }
 
-const createMockDriver = (overrides?: Partial<Driver>): Driver => ({
-  id: `driver-${Math.random().toString(36).substring(7)}`,
-  shopId: 'shop-123',
-  name: 'Alice Johnson',
-  email: 'alice@example.com',
-  phone: '+12025551234',
-  vehicleType: 'CAR',
-  vehiclePlate: 'ABC-123',
-  maxCapacity: 50,
-  maxWeight: 100,
-  fcmToken: 'fcm-token-abc123',
-  status: 'OFFLINE',
-  isActive: true,
-  currentLocation: null,
-  lastLocationAt: null,
-  heading: null,
-  createdAt: new Date('2025-01-01T10:00:00Z'),
-  updatedAt: new Date('2025-01-01T10:00:00Z'),
-  ...overrides,
-});
+const createMockDriver = (overrides?: Partial<Driver>): Driver => {
+  const defaults: Partial<Driver> = {
+    id: `driver-${Math.random().toString(36).substring(7)}`,
+    shopId: 'shop-123',
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    phone: '+12025551234',
+    vehicleType: 'CAR',
+    vehiclePlate: 'ABC-123',
+    maxCapacity: 50,
+    maxWeight: 100,
+    fcmToken: 'fcm-token-abc123',
+    status: 'OFFLINE',
+    isActive: true,
+    currentLocation: null,
+    lastLocationAt: null,
+    heading: null,
+    createdAt: new Date('2025-01-01T10:00:00Z'),
+    updatedAt: new Date('2025-01-01T10:00:00Z'),
+  };
+
+  // Optional fields that should only be included if provided in overrides
+  const optionalFields = ['email', 'vehiclePlate', 'orgId', 'maxWeight', 'fcmToken', 'currentLocation', 'lastLocationAt', 'heading'];
+
+  // Start with required fields from defaults
+  const result: any = {};
+  for (const [key, value] of Object.entries(defaults)) {
+    if (!optionalFields.includes(key)) {
+      result[key] = value;
+    }
+  }
+
+  // Add overrides, including optional fields if provided
+  if (overrides) {
+    for (const [key, value] of Object.entries(overrides)) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+};
 
 describe('Drivers Core Module', () => {
   let prisma: any;

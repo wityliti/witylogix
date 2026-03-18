@@ -303,11 +303,15 @@ describe("Backup Service", () => {
     });
 
     it("should include current time in PITR window", () => {
+      const before = Date.now();
       const window = service.getPITRWindow()!;
-      const now = Date.now();
+      const after = Date.now();
 
-      expect(now).toBeGreaterThanOrEqual(window.start.getTime());
-      expect(now).toBeLessThanOrEqual(window.end.getTime());
+      // The PITR window.end is computed from Date.now() inside getPITRWindow,
+      // so it must fall between our before/after timestamps (inclusive).
+      expect(window.start.getTime()).toBeLessThanOrEqual(before);
+      expect(window.end.getTime()).toBeGreaterThanOrEqual(before);
+      expect(window.end.getTime()).toBeLessThanOrEqual(after + 1);
     });
   });
 

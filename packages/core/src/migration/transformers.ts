@@ -5,13 +5,39 @@
  */
 
 /**
+ * Helper: pick a value preferring the snake_case key if it exists in the object,
+ * otherwise fall back to the camelCase key.
+ * When the snake_case key is explicitly present (even if undefined/null), it wins.
+ */
+function pick(obj: any, snakeKey: string, camelKey: string): any {
+  if (snakeKey in obj) return obj[snakeKey];
+  return obj[camelKey];
+}
+
+/**
+ * Safely parse a float, returning 0 for NaN results
+ */
+function safeFloat(value: any, fallback: string = '0'): number {
+  const result = parseFloat(value ?? fallback);
+  return Number.isNaN(result) ? 0 : result;
+}
+
+/**
+ * Safely parse an int, returning 0 for NaN results
+ */
+function safeInt(value: any, fallback: string = '0', radix: number = 10): number {
+  const result = parseInt(value ?? fallback, radix);
+  return Number.isNaN(result) ? 0 : result;
+}
+
+/**
  * Transform external order to internal Order entity
  * Maps external order structure (Shopify, WooCommerce, etc.) to database Order model
  */
 export function transformOrder(orderData: any): any {
   if (!orderData) return null;
 
-  const orderId = orderData.id?.toString() || orderData._id?.toString();
+  const orderId = orderData._id?.toString() || orderData.id?.toString();
   const customerId = orderData.customer?.id?.toString() || orderData.customerId;
 
   return {
@@ -22,10 +48,10 @@ export function transformOrder(orderData: any): any {
     status: transformOrderStatus(orderData.status || orderData.fulfillment_status || 'pending'),
     email: orderData.customer?.email || orderData.email,
     phone: orderData.customer?.phone || orderData.phone,
-    totalPrice: parseFloat(orderData.total_price ?? orderData.totalPrice ?? '0'),
+    totalPrice: safeFloat(orderData.total_price ?? orderData.totalPrice ?? '0'),
     currency: orderData.currency || 'USD',
-    shippingAddress: transformAddress(orderData.shipping_address || orderData.shippingAddress),
-    billingAddress: transformAddress(orderData.billing_address || orderData.billingAddress),
+    shippingAddress: transformAddress('shipping_address' in orderData ? orderData.shipping_address : orderData.shippingAddress),
+    billingAddress: transformAddress('billing_address' in orderData ? orderData.billing_address : orderData.billingAddress),
     lineItems: transformLineItems(orderData.line_items || orderData.lineItems),
     tags: (orderData.tags || '').split(',').filter((t: string) => t.trim()),
     notes: orderData.note || orderData.notes || null,
@@ -87,8 +113,8 @@ export function transformDriver(driver: any): any {
     vehicleCapacity: parseFloat(driver.vehicle_capacity ?? '100'),
     isVerified: driver.is_verified ?? driver.isVerified ?? false,
     verifiedAt: driver.verified_at ? new Date(driver.verified_at) : null,
-    rating: parseFloat(driver.rating ?? '0'),
-    totalDeliveries: parseInt(driver.total_deliveries ?? '0', 10),
+    rating: 'rating' in driver ? safeFloat(driver.rating ?? '0') : safeFloat(driver.rating_score ?? '0'),
+    totalDeliveries: 'totalDeliveries' in driver ? safeInt(driver.totalDeliveries ?? '0') : safeInt(driver.total_deliveries ?? '0'),
     bankAccount: driver.bank_account || null,
     document: driver.document || null,
     metadata: driver.metadata || {},
@@ -103,10 +129,20 @@ export function transformDriver(driver: any): any {
 export function transformCustomer(customer: any): any {
   if (!customer) return null;
 
+  // Handle tags - convert to array if string
+  let tags: string[] = [];
+  if (customer.tags) {
+    if (typeof customer.tags === 'string') {
+      tags = [customer.tags];
+    } else if (Array.isArray(customer.tags)) {
+      tags = customer.tags.map((t: any) => (typeof t === 'string' ? t : t.name));
+    }
+  }
+
   return {
     id: customer._id?.toString() || customer.id,
     shopId: customer.shop_id || customer.shopId,
-    externalCustomerId: customer.shopify_customer_id || customer.external_customer_id || customer.externalCustomerId || null,
+    externalCustomerId: customer.externalCustomerId || customer.external_customer_id || customer.shopify_customer_id || null,
     firstName: customer.first_name || customer.firstName || '',
     lastName: customer.last_name || customer.lastName || '',
     email: customer.email || null,
@@ -115,7 +151,7 @@ export function transformCustomer(customer: any): any {
     addresses: (customer.addresses || []).map((addr: any) => transformAddress(addr)),
     totalOrders: parseInt(customer.total_orders ?? '0', 10),
     totalSpent: parseFloat(customer.total_spent ?? '0'),
-    tags: (customer.tags || []).map((t: any) => (typeof t === 'string' ? t : t.name)),
+    tags: tags,
     isActive: customer.is_active ?? customer.isActive ?? true,
     metadata: customer.metadata || {},
     createdAt: new Date(customer.created_at || customer.createdAt || new Date()),
@@ -132,7 +168,7 @@ export function transformProduct(product: any): any {
   return {
     id: product._id?.toString() || product.id,
     shopId: product.shop_id || product.shopId,
-    externalProductId: product.shopify_product_id || product.external_product_id || product.externalProductId || null,
+    externalProductId: product.externalProductId || product.external_product_id || product.shopify_product_id || null,
     name: product.name || 'Unknown Product',
     sku: product.sku || null,
     barcode: product.barcode || null,
@@ -140,8 +176,8 @@ export function transformProduct(product: any): any {
     category: product.category || null,
     weight: parseFloat(product.weight ?? '0'),
     dimensions: product.dimensions || null,
-    price: parseFloat(product.price ?? '0'),
-    cost: parseFloat(product.cost ?? '0'),
+    price: safeFloat(product.price ?? '0'),
+    cost: safeFloat(product.cost ?? '0'),
     image: product.image || product.imageUrl || null,
     tags: (product.tags || []).filter((t: any) => t),
     isActive: product.is_active ?? product.isActive ?? true,

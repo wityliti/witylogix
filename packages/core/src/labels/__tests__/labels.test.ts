@@ -65,8 +65,8 @@ describe("Barcode Generation", () => {
       const result1 = encodeCode128B("ABC");
       const result2 = encodeCode128B("ABD");
 
-      // Different inputs should produce different encoded outputs
-      expect(result1.length).not.toBe(result2.length);
+      // Different inputs should produce different encoded outputs (different arrays, not just different lengths)
+      expect(result1).not.toEqual(result2);
     });
 
     it("should handle long tracking numbers", () => {

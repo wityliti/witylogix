@@ -287,6 +287,10 @@ export class ShopifyAdapter {
       return false;
     }
 
+    if (!payload) {
+      return false;
+    }
+
     try {
       const payloadString = typeof payload === 'string' ? payload : payload.toString('utf-8');
 
@@ -318,10 +322,29 @@ export class ShopifyAdapter {
    * @returns Normalized order input
    */
   mapOrder(shopifyOrder: ShopifyOrder): CreateOrderInput {
+    const lineItems = (shopifyOrder.line_items || []).map((item) => ({
+      id: String(item.id),
+      productId: String(item.product_id),
+      variantId: String(item.variant_id),
+      title: item.title,
+      quantity: item.quantity,
+      price: parseFloat(item.price),
+      sku: item.sku,
+    }));
+
+    const customerName = shopifyOrder.customer
+      ? `${shopifyOrder.customer.first_name || ''} ${shopifyOrder.customer.last_name || ''}`.trim()
+      : shopifyOrder.billing_address
+        ? `${shopifyOrder.billing_address.first_name || ''} ${shopifyOrder.billing_address.last_name || ''}`.trim()
+        : undefined;
+
     return {
       externalOrderId: String(shopifyOrder.id),
+      externalOrderNumber: String(shopifyOrder.number || shopifyOrder.order_number),
       source: this.source,
-      email: shopifyOrder.email,
+      status: shopifyOrder.cancelled_at ? 'cancelled' : shopifyOrder.status,
+      customerEmail: shopifyOrder.customer?.email || shopifyOrder.email,
+      customerName: customerName,
       currency: shopifyOrder.currency,
       totalPrice: parseFloat(shopifyOrder.total_price),
       subtotalPrice: parseFloat(shopifyOrder.subtotal_price),
@@ -329,34 +352,20 @@ export class ShopifyAdapter {
       totalWeight: shopifyOrder.total_weight,
       financialStatus: shopifyOrder.financial_status,
       fulfillmentStatus: shopifyOrder.fulfillment_status || 'unshipped',
-      lineItems: shopifyOrder.line_items.map((item) => ({
-        id: String(item.id),
-        productId: String(item.product_id),
-        variantId: String(item.variant_id),
-        title: item.title,
-        quantity: item.quantity,
-        price: parseFloat(item.price),
-        sku: item.sku,
-      })),
+      lineItems: lineItems,
       shippingAddress: shopifyOrder.shipping_address ? {
         firstName: shopifyOrder.shipping_address.first_name,
         lastName: shopifyOrder.shipping_address.last_name,
+        line1: shopifyOrder.shipping_address.address1,
+        line2: shopifyOrder.shipping_address.address2,
         address1: shopifyOrder.shipping_address.address1,
-        address2: shopifyOrder.shipping_address.address2 || undefined,
+        address2: shopifyOrder.shipping_address.address2,
         city: shopifyOrder.shipping_address.city,
         province: shopifyOrder.shipping_address.province,
         country: shopifyOrder.shipping_address.country,
         postalCode: shopifyOrder.shipping_address.zip,
-        phone: shopifyOrder.shipping_address.phone || undefined,
-      } : {
-        firstName: '',
-        lastName: '',
-        address1: '',
-        city: '',
-        province: '',
-        country: '',
-        postalCode: '',
-      },
+        phone: shopifyOrder.shipping_address.phone,
+      } : undefined,
       createdAt: new Date(shopifyOrder.created_at),
     };
   }
@@ -372,7 +381,7 @@ export class ShopifyAdapter {
     const tags = shopifyProduct.tags ? shopifyProduct.tags.split(',').map((t) => t.trim()) : [];
 
     // Map variants from Shopify product
-    const variants = shopifyProduct.variants.map((variant) => ({
+    const variants = (shopifyProduct.variants || []).map((variant) => ({
       id: String(variant.id),
       sku: variant.sku,
       barcode: variant.barcode || undefined,
@@ -382,10 +391,15 @@ export class ShopifyAdapter {
       price: variant.price,
     }));
 
+    // Extract first image URL
+    const imageUrl = shopifyProduct.images?.[0]?.src || shopifyProduct.image?.src;
+
     return {
       externalProductId: String(shopifyProduct.id),
       source: this.source,
       title: shopifyProduct.title,
+      description: shopifyProduct.body_html,
+      imageUrl: imageUrl,
       vendor: shopifyProduct.vendor,
       productType: shopifyProduct.product_type,
       handle: shopifyProduct.handle,

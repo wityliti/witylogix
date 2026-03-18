@@ -44,6 +44,12 @@ export function generateZPL(label: LabelData, options: LabelOptions): string {
   const senderName = label.sender.name;
   zpl += `^FD${escapeZPL(senderName)}^FS\n`;
 
+  if (label.sender.company) {
+    zpl += `^FO50,170\n`;
+    zpl += `^AF0,14,9\n`;
+    zpl += `^FD${escapeZPL(label.sender.company)}^FS\n`;
+  }
+
   if (label.sender.street1) {
     zpl += `^FO50,175\n`;
     zpl += `^AF0,14,9\n`;

@@ -316,6 +316,10 @@ export class WooCommerceAdapter {
       return false;
     }
 
+    if (!payload) {
+      return false;
+    }
+
     try {
       const payloadString = typeof payload === 'string' ? payload : payload.toString('utf-8');
 
@@ -349,12 +353,12 @@ export class WooCommerceAdapter {
   mapOrder(wcOrder: WooCommerceOrder): CreateOrderInput {
     // Determine financial status based on payment and order status
     let financialStatus = 'pending';
-    if (wcOrder.date_paid) {
-      financialStatus = 'paid';
-    } else if (wcOrder.status === 'refunded') {
+    if (wcOrder.status === 'refunded') {
       financialStatus = 'refunded';
     } else if (wcOrder.status === 'cancelled') {
       financialStatus = 'voided';
+    } else if (wcOrder.date_paid) {
+      financialStatus = 'paid';
     }
 
     // Determine fulfillment status
@@ -371,7 +375,7 @@ export class WooCommerceAdapter {
       email: wcOrder.billing.email || '',
       currency: wcOrder.currency,
       totalPrice: parseFloat(wcOrder.total),
-      subtotalPrice: parseFloat(wcOrder.total) - parseFloat(wcOrder.total_tax),
+      subtotalPrice: Math.floor(parseFloat(wcOrder.total) - parseFloat(wcOrder.shipping_total)),
       totalTax: parseFloat(wcOrder.total_tax),
       totalWeight: 0, // WooCommerce doesn't provide total weight directly
       financialStatus,
@@ -388,6 +392,8 @@ export class WooCommerceAdapter {
       shippingAddress: {
         firstName: wcOrder.shipping.first_name,
         lastName: wcOrder.shipping.last_name,
+        line1: wcOrder.shipping.address_1,
+        line2: wcOrder.shipping.address_2,
         address1: wcOrder.shipping.address_1,
         address2: wcOrder.shipping.address_2 || undefined,
         city: wcOrder.shipping.city,
@@ -441,10 +447,15 @@ export class WooCommerceAdapter {
       }
     }
 
+    // Extract image URL from first image
+    const imageUrl = wcProduct.images?.[0]?.src;
+
     return {
       externalProductId: String(wcProduct.id),
       source: this.source,
       title: wcProduct.name,
+      description: wcProduct.description,
+      imageUrl: imageUrl,
       vendor: undefined, // WooCommerce doesn't have vendor concept by default
       productType: wcProduct.type,
       handle: wcProduct.slug,
@@ -469,13 +480,16 @@ export class WooCommerceAdapter {
    * @returns Normalized customer input
    */
   mapCustomer(wcCustomer: WooCommerceCustomer): CreateCustomerInput {
+    // Try to get phone from direct property, then from billing address
+    const phone = (wcCustomer as any).phone || wcCustomer.billing?.phone || undefined;
+
     return {
       externalCustomerId: String(wcCustomer.id),
       source: this.source,
       email: wcCustomer.email,
       firstName: wcCustomer.first_name,
       lastName: wcCustomer.last_name,
-      phone: wcCustomer.billing?.phone || undefined,
+      phone: phone,
       billingAddress: wcCustomer.billing ? {
         address1: wcCustomer.billing.address_1,
         address2: wcCustomer.billing.address_2 || undefined,

@@ -105,7 +105,7 @@ class InMemoryEventStream implements EventStream {
 }
 
 class DeadLetterQueueImpl implements DeadLetterQueue {
-  private dlqEvents: Map<string, DeadLetterEvent> = new Map();
+  private dlqEvents: Record<string, DeadLetterEvent> = {};
   private eventStream: EventStream;
   private dlqIdCounter = 0;
 
@@ -143,7 +143,7 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
       },
     };
 
-    this.dlqEvents.set(dlqEventId, dlqEvent);
+    this.dlqEvents[dlqEventId] = dlqEvent;
 
     // Publish to event stream
     const streamKey = `dlq:${envelope.metadata.type}`;
@@ -151,7 +151,7 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
   }
 
   getMetrics(): DLQMetrics {
-    const events = Array.from(this.dlqEvents.values());
+    const events = Object.values(this.dlqEvents);
     const eventsByType: Record<string, number> = {};
     const eventsByTenant: Record<string, number> = {};
     let oldestEventAge = 0;
@@ -182,19 +182,19 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
   }
 
   getEventsByType(eventType: string): DeadLetterEvent[] {
-    return Array.from(this.dlqEvents.values()).filter(
+    return Object.values(this.dlqEvents).filter(
       (e) => e.eventType === eventType
     );
   }
 
   getEventsByTenant(tenantId: string): DeadLetterEvent[] {
-    return Array.from(this.dlqEvents.values()).filter(
+    return Object.values(this.dlqEvents).filter(
       (e) => e.metadata.tenantId === tenantId
     );
   }
 
   async replayEvent(dlqEventId: string): Promise<void> {
-    const dlqEvent = this.dlqEvents.get(dlqEventId);
+    const dlqEvent = this.dlqEvents[dlqEventId];
     if (!dlqEvent) {
       throw new Error(`DLQ event not found: ${dlqEventId}`);
     }
@@ -203,18 +203,18 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
   }
 
   async deleteEvent(dlqEventId: string): Promise<void> {
-    const deleted = this.dlqEvents.delete(dlqEventId);
-    if (!deleted) {
+    if (!(dlqEventId in this.dlqEvents)) {
       throw new Error(`DLQ event not found: ${dlqEventId}`);
     }
+    delete this.dlqEvents[dlqEventId];
   }
 
   getSize(): number {
-    return this.dlqEvents.size;
+    return Object.keys(this.dlqEvents).length;
   }
 
   getAllEvents(): DeadLetterEvent[] {
-    return Array.from(this.dlqEvents.values());
+    return Object.values(this.dlqEvents);
   }
 }
 

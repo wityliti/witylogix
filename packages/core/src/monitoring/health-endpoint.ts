@@ -24,13 +24,14 @@ export interface ComponentHealth {
   name: string;
   status: HealthStatus;
   duration: number;
+  durationMs?: number;
   message?: string;
   details?: Record<string, unknown>;
 }
 
 export interface HealthCheckResponse {
   status: HealthStatus;
-  timestamp: string;
+  timestamp: Date;
   uptime: number;
   checks: ComponentHealth[];
 }
@@ -197,16 +198,20 @@ export class HealthChecker {
     const start = Date.now();
     try {
       const result = await fn();
+      const duration = Date.now() - start;
       return {
         ...result,
         name,
-        duration: result.duration ?? (Date.now() - start),
+        duration: duration,
+        durationMs: duration,
       };
     } catch (error) {
+      const duration = Date.now() - start;
       return {
         name,
         status: "DOWN",
-        duration: Date.now() - start,
+        duration: duration,
+        durationMs: duration,
         message: error instanceof Error ? error.message : String(error),
       };
     }
@@ -225,7 +230,7 @@ export class HealthChecker {
   async getLiveness(): Promise<HealthCheckResponse> {
     return {
       status: "UP",
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       uptime: Date.now() - this.startTime,
       checks: [],
     };
@@ -273,15 +278,28 @@ export class HealthChecker {
     const results: ComponentHealth[] = [];
     const checkStart = Date.now();
 
-    // Run all checks in parallel
-    const promises = Array.from(this.checks.values()).map((checkFn) =>
-      checkFn().catch((error) => ({
-        name: "unknown",
-        status: "DOWN" as const,
-        duration: 0,
-        message: error instanceof Error ? error.message : String(error),
-      }))
-    );
+    // Run all checks in parallel with duration measurement
+    const promises = Array.from(this.checks.values()).map(async (checkFn) => {
+      const start = Date.now();
+      try {
+        const result = await checkFn();
+        const duration = Date.now() - start;
+        return {
+          ...result,
+          duration: duration,
+          durationMs: duration,
+        };
+      } catch (error) {
+        const duration = Date.now() - start;
+        return {
+          name: "unknown",
+          status: "DOWN" as const,
+          duration: duration,
+          durationMs: duration,
+          message: error instanceof Error ? error.message : String(error),
+        };
+      }
+    });
 
     const componentResults = await Promise.all(promises);
     results.push(...componentResults);
@@ -291,7 +309,7 @@ export class HealthChecker {
 
     const response: HealthCheckResponse = {
       status: overallStatus,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       uptime: Date.now() - this.startTime,
       checks: results.sort((a, b) => a.name.localeCompare(b.name)),
     };

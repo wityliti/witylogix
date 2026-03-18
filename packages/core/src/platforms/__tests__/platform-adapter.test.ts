@@ -92,6 +92,10 @@ class ShopifyAdapter implements PlatformAdapter {
     secret: string
   ): WebhookValidationResult {
     try {
+      if (!payload) {
+        throw new Error('Payload is required');
+      }
+
       const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload);
       const hmac = crypto
         .createHmac('sha256', secret)
