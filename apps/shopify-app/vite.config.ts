@@ -13,7 +13,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [reactRouter(), tsconfigPaths()],
   server: {
-    port: 3001,
+    port: Number(process.env.PORT) || 3000,
     hmr: {
       protocol: "ws",
     },

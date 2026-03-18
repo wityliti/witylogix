@@ -11,7 +11,7 @@
  *   await app.register(workflowIntegrationPlugin);
  */
 
-import fp from "@fastify/plugin";
+import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import { WorkflowEngine } from "@witylogix/framework";
 import {

@@ -28,11 +28,6 @@ export function getRedis(): Redis {
       enableReadyCheck: false,
     };
 
-    // Railway proxy endpoints require TLS
-    if (REDIS_URL.includes("rlwy.net")) {
-      opts.tls = {};
-    }
-
     _redis = new Redis(REDIS_URL, opts);
 
     _redis.on("error", (err) => {

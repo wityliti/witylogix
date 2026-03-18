@@ -8,33 +8,36 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./workflow": {
-      "import": "./dist/workflow/index.mjs",
+      "import": "./dist/workflow/index.js",
       "require": "./dist/workflow/index.cjs",
       "types": "./dist/workflow/index.d.ts"
     },
     "./container": {
-      "import": "./dist/container/index.mjs",
+      "import": "./dist/container/index.js",
       "require": "./dist/container/index.cjs",
       "types": "./dist/container/index.d.ts"
     },
     "./types": {
-      "import": "./dist/types/index.mjs",
+      "import": "./dist/types/index.js",
       "require": "./dist/types/index.cjs",
       "types": "./dist/types/index.d.ts"
     },
     "./queue": {
-      "import": "./dist/queue/index.mjs",
+      "import": "./dist/queue/index.js",
       "require": "./dist/queue/index.cjs",
       "types": "./dist/queue/index.d.ts"
     }
   },
   "scripts": {
-    "build": "echo build-ok",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf dist",
     "test": "vitest run"
   },
   "dependencies": {

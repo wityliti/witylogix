@@ -58,12 +58,11 @@ function nearestNeighborTSP(
 
 // ─── Worker ─────────────────────────────────────────────────
 
+import { getQueueConnection } from "../lib/queue.js";
+
 export function startOptimizationWorker(): Worker {
   const config = getConfig();
-  const connection = {
-    host: new URL(config.REDIS_URL).hostname || "localhost",
-    port: Number(new URL(config.REDIS_URL).port) || 6379,
-  };
+  const connection = getQueueConnection();
 
   const worker = new Worker<OptimizationJobData>(
     "optimization",

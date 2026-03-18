@@ -23,6 +23,10 @@
     "./compliance": "./src/compliance/index.ts",
     "./cache": "./src/cache/index.ts",
     "./billing": "./src/billing/index.ts",
+    "./workflow-integration/hooks.js": {
+      "import": "./src/workflow-integration/hooks.ts",
+      "require": "./src/workflow-integration/hooks.ts"
+    },
     "./locations": "./src/locations/index.ts",
     "./scheduler": "./src/scheduler/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
@@ -70,9 +74,10 @@
   },
   "dependencies": {
     "@witylogix/db": "workspace:*",
+    "@witylogix/framework": "workspace:*",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
-    "zod": "^4.3.6"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

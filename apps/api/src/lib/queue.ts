@@ -13,25 +13,17 @@
  */
 
 import { Queue, Worker, type ConnectionOptions, type Job } from "bullmq";
+import Redis from "ioredis";
 import { getRedis } from "./redis.js";
 import { getConfig } from "./config.js";
 
 // ─── Connection ─────────────────────────────────────────────
 
-function getQueueConnection(): ConnectionOptions {
+export function getQueueConnection(): any {
   const config = getConfig();
-  const parsedUrl = new URL(config.REDIS_URL);
-  const connection: ConnectionOptions = {
-    host: parsedUrl.hostname || "localhost",
-    port: Number(parsedUrl.port) || 6379,
-  };
-  if (parsedUrl.password) {
-    connection.password = decodeURIComponent(parsedUrl.password);
-  }
-  if (parsedUrl.username && parsedUrl.username !== "default") {
-    connection.username = decodeURIComponent(parsedUrl.username);
-  }
-  return connection;
+  return new Redis(config.REDIS_URL, {
+    maxRetriesPerRequest: null,
+  });
 }
 
 // ─── Queue Definitions ──────────────────────────────────────

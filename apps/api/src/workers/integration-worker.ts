@@ -308,12 +308,11 @@ async function processIntegrationJob(job: Job<IntegrationJobData>): Promise<void
 /**
  * Start the integration worker. Called from server.ts at startup.
  */
+import { getQueueConnection } from "../lib/queue.js";
+
 export function startIntegrationWorker(): void {
   const config = getConfig();
-  const connection = {
-    host: new URL(config.REDIS_URL).hostname || "localhost",
-    port: Number(new URL(config.REDIS_URL).port) || 6379,
-  };
+  const connection = getQueueConnection();
 
   const worker = new Worker<IntegrationJobData>(
     "integrations",
