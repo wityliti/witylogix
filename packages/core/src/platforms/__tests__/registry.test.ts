@@ -96,6 +96,7 @@ type AdapterConstructor = () => Promise<PlatformAdapter>;
 
 const ADAPTER_REGISTRY: Map<PlatformSource, AdapterConstructor> = new Map();
 const ADAPTER_CACHE: Map<PlatformSource, PlatformAdapter> = new Map();
+const ADAPTER_PENDING: Map<PlatformSource, Promise<PlatformAdapter>> = new Map();
 
 function registerAdapter(
   source: PlatformSource,
@@ -120,6 +121,11 @@ async function getPlatformAdapter(source: PlatformSource): Promise<PlatformAdapt
     return ADAPTER_CACHE.get(source)!;
   }
 
+  // Deduplicate concurrent requests for the same source
+  if (ADAPTER_PENDING.has(source)) {
+    return ADAPTER_PENDING.get(source)!;
+  }
+
   // Get adapter constructor
   const constructor = ADAPTER_REGISTRY.get(source);
   if (!constructor) {
@@ -128,17 +134,27 @@ async function getPlatformAdapter(source: PlatformSource): Promise<PlatformAdapt
     );
   }
 
-  // Create adapter instance
-  const adapter = await constructor();
+  // Create adapter instance with deduplication
+  const pending = (async () => {
+    const adapter = await constructor();
 
-  // Validate adapter source matches
-  if (adapter.source !== source) {
-    throw new Error(`Adapter source mismatch: expected ${source}, got ${adapter.source}`);
+    // Validate adapter source matches
+    if (adapter.source !== source) {
+      throw new Error(`Adapter source mismatch: expected ${source}, got ${adapter.source}`);
+    }
+
+    // Cache and return
+    ADAPTER_CACHE.set(source, adapter);
+    return adapter;
+  })();
+
+  ADAPTER_PENDING.set(source, pending);
+
+  try {
+    return await pending;
+  } finally {
+    ADAPTER_PENDING.delete(source);
   }
-
-  // Cache and return
-  ADAPTER_CACHE.set(source, adapter);
-  return adapter;
 }
 
 function getSupportedPlatforms(): PlatformSource[] {
@@ -183,9 +199,10 @@ function getAllAdapterMetadata(): AdapterMetadata[] {
 
 describe('PlatformAdapterRegistry', () => {
   beforeEach(() => {
-    // Clear registry and cache before each test
+    // Clear registry, cache, and pending before each test
     ADAPTER_REGISTRY.clear();
     ADAPTER_CACHE.clear();
+    ADAPTER_PENDING.clear();
 
     // Register default adapters
     registerAdapter(
