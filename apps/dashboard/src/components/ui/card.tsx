@@ -15,10 +15,11 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5",
+          "bg-[#13131a] border border-white/[0.08] rounded-xl p-5",
+          "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
           "transition-all duration-base ease-default",
-          hover && "hover:border-wl-border-default hover:shadow-md cursor-pointer",
-          glow && "shadow-glow",
+          hover && "hover:border-white/[0.14] hover:bg-[#161620] cursor-pointer",
+          glow && "shadow-[0_0_20px_rgba(245,166,35,0.12),0_1px_0_0_rgba(255,255,255,0.07)_inset]",
           props.onClick && "cursor-pointer",
           className
         )}

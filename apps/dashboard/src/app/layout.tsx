@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Sidebar } from "@/components/layout/sidebar";
-import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: "Witylogix Dashboard",
@@ -16,18 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="wl-noise">
-        <div className={cn("flex min-h-screen")}>
-          <Sidebar />
-          <main
-            className={cn("flex-1 min-h-screen bg-wl-bg-root")}
-            style={{
-              marginLeft: "var(--wl-sidebar-width)",
-              transition: `margin-left var(--wl-duration-base) var(--wl-ease-default)`,
-            }}
-          >
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

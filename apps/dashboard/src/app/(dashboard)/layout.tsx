@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NavSidebar } from "@/components/navigation/sidebar";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
@@ -11,13 +10,12 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className={cn("flex min-h-screen bg-wl-bg-root")}>
+    <div className={cn("flex min-h-screen wl-dashboard-bg")}>
       {/* Sidebar */}
-      <NavSidebar />
+      <NavSidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
 
       {/* Main Content */}
       <main
@@ -26,18 +24,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           "flex flex-col"
         )}
         style={{
-          marginLeft: "var(--wl-sidebar-width)",
+          marginLeft: collapsed ? "var(--wl-sidebar-collapsed)" : "var(--wl-sidebar-width)",
           transition: `margin-left var(--wl-duration-base) var(--wl-ease-default)`,
         }}
       >
         {/* Top Bar */}
         <header
           className={cn(
-            "bg-wl-bg-elevated border-b border-wl-border-subtle",
+            "bg-[#0f0f14]/90 backdrop-blur-md border-b border-white/[0.06]",
             "h-[var(--wl-header-height)]",
             "flex items-center justify-between",
             "px-6",
-            "sticky top-0 z-40"
+            "sticky top-0 z-40",
+            "shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
           )}
         >
           <Breadcrumb />

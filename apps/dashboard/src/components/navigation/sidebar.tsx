@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/auth-context";
 
 interface SidebarItem {
   label: string;
@@ -129,12 +130,27 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 
 interface NavSidebarProps {
   className?: string;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export function NavSidebar({ className }: NavSidebarProps) {
+export function NavSidebar({ className, collapsed: controlledCollapsed, onCollapsedChange }: NavSidebarProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const router = useRouter();
+  const { logout } = useAuth();
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const collapsed = controlledCollapsed ?? internalCollapsed;
+  const setCollapsed = (val: boolean) => {
+    setInternalCollapsed(val);
+    onCollapsedChange?.(val);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -142,7 +158,7 @@ export function NavSidebar({ className }: NavSidebarProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "b") {
         e.preventDefault();
-        setCollapsed((prev) => !prev);
+        setCollapsed(!collapsed);
       }
     };
 
@@ -158,7 +174,7 @@ export function NavSidebar({ className }: NavSidebarProps) {
     <aside
       className={cn(
         "h-screen",
-        "bg-wl-bg-sidebar border-r border-wl-border-subtle",
+        "bg-[#0a0a0e] border-r border-white/[0.06]",
         "flex flex-col",
         "fixed top-0 left-0 z-50",
         "transition-all duration-base ease-default",
@@ -263,12 +279,12 @@ export function NavSidebar({ className }: NavSidebarProps) {
                     "relative",
                     collapsed ? "justify-center" : "justify-between",
                     isActive
-                      ? "text-wl-primary-400 bg-[rgba(245,166,35,0.08)]"
-                      : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay"
+                      ? "text-[#f5a623] bg-[rgba(245,166,35,0.1)] border border-[rgba(245,166,35,0.15)] shadow-[0_0_12px_rgba(245,166,35,0.08)]"
+                      : "text-wl-text-secondary border border-transparent hover:text-wl-text-primary hover:bg-white/[0.04]"
                   )}
                 >
                   <span className="flex items-center gap-3 flex-1 min-w-0">
-                    <span className="flex flex-shrink-0">
+                    <span className={cn("flex flex-shrink-0", isActive && "drop-shadow-[0_0_6px_rgba(245,166,35,0.5)]")}>
                       <Icon d={item.icon} />
                     </span>
                     {!collapsed && (
@@ -281,9 +297,10 @@ export function NavSidebar({ className }: NavSidebarProps) {
                       className={cn(
                         "absolute left-0",
                         "top-1/2 -translate-y-1/2",
-                        "w-0.5 h-4",
+                        "w-[3px] h-5",
                         "rounded-r-full",
-                        "bg-wl-primary-500"
+                        "bg-[#f5a623]",
+                        "shadow-[0_0_8px_rgba(245,166,35,0.6)]"
                       )}
                     />
                   )}
@@ -331,6 +348,31 @@ export function NavSidebar({ className }: NavSidebarProps) {
             </div>
           </div>
         )}
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className={cn(
+            "w-full",
+            "flex items-center",
+            "px-3 py-2",
+            "rounded-md",
+            "border-none bg-transparent",
+            "text-wl-text-tertiary",
+            "text-sm",
+            "cursor-pointer font-sans",
+            "transition-colors duration-fast ease-default",
+            "hover:text-red-400 hover:bg-wl-bg-overlay",
+            collapsed ? "justify-center" : "justify-start",
+            "gap-3"
+          )}
+          title="Sign out"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+          </svg>
+          {!collapsed && <span>Sign out</span>}
+        </button>
 
         {/* Collapse Toggle */}
         <button

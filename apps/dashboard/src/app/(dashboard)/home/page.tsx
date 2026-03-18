@@ -56,62 +56,70 @@ function Icon({ d, size = 24 }: { d: string; size?: number }) {
 function StatCard({ stat, loading }: { stat: QuickStat; loading?: boolean }) {
   if (loading) {
     return (
-      <Card className="flex flex-col items-start justify-start">
-        <div className="flex items-start justify-between w-full mb-3">
-          <div className="w-10 h-10 rounded-lg bg-wl-bg-surface" />
-          <SkeletonText lines={1} className="w-16" />
+      <div className="bg-[#13131a] border border-white/[0.08] rounded-xl p-5 shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]">
+        <div className="flex items-start justify-between w-full mb-4">
+          <div className="w-9 h-9 rounded-lg bg-white/[0.04]" />
+          <div className="w-14 h-4 rounded bg-white/[0.04]" />
         </div>
-        <SkeletonText lines={2} className="w-full" />
-      </Card>
+        <div className="w-20 h-3 rounded bg-white/[0.04] mb-2" />
+        <div className="w-24 h-8 rounded bg-white/[0.06]" />
+      </div>
     );
   }
 
   const trendColor =
     stat.trend === "up"
-      ? "text-wl-success-400"
+      ? "text-emerald-400"
       : stat.trend === "down"
-        ? "text-wl-danger-400"
+        ? "text-red-400"
         : "text-wl-text-tertiary";
 
-  const trendIcon =
+  const trendBg =
     stat.trend === "up"
-      ? "M7 17l4-11 4 11m0 0l3-3m-3 3l-3-3"
+      ? "bg-emerald-400/10 border-emerald-400/20"
       : stat.trend === "down"
-        ? "M7 7l4 11 4-11m0 0l3 3m-3-3l-3 3"
-        : null;
+        ? "bg-red-400/10 border-red-400/20"
+        : "bg-white/[0.04] border-white/[0.08]";
 
   return (
-    <Card className="flex flex-col items-start justify-start">
-      <div className="flex items-start justify-between w-full mb-2">
-        <div
-          className={cn(
-            "w-10 h-10 rounded-lg",
-            "bg-gradient-to-br from-wl-primary-500/20 to-wl-primary-600/20",
-            "flex items-center justify-center",
-            "text-wl-primary-400"
-          )}
-        >
-          <Icon d={stat.icon} size={20} />
+    <div className={cn(
+      "bg-[#13131a] border border-white/[0.08] rounded-xl p-5",
+      "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
+      "transition-all duration-200",
+      "hover:border-white/[0.14] hover:bg-[#161620] group"
+    )}>
+      <div className="flex items-start justify-between w-full mb-4">
+        <div className={cn(
+          "w-9 h-9 rounded-lg flex items-center justify-center",
+          "bg-[rgba(245,166,35,0.1)] border border-[rgba(245,166,35,0.18)]",
+          "text-[#f5a623]",
+          "group-hover:shadow-[0_0_12px_rgba(245,166,35,0.15)]",
+          "transition-shadow duration-200"
+        )}>
+          <Icon d={stat.icon} size={17} />
         </div>
         {stat.trendValue && (
-          <span className={cn("text-xs font-semibold", trendColor)}>
+          <span className={cn(
+            "text-xs font-semibold px-2 py-0.5 rounded-full border",
+            trendColor, trendBg
+          )}>
             {stat.trendValue}
           </span>
         )}
       </div>
 
-      <p className="text-xs uppercase tracking-widest text-wl-text-tertiary font-medium mb-1">
+      <p className="text-[10px] uppercase tracking-[0.12em] text-wl-text-tertiary font-medium mb-1.5">
         {stat.label}
       </p>
-      <div className="flex items-baseline gap-2">
-        <p className="text-2xl font-bold text-wl-text-primary">
+      <div className="flex items-baseline gap-1.5">
+        <p className="text-[1.75rem] font-bold text-wl-text-primary leading-none tracking-tight">
           {stat.value}
         </p>
         {stat.unit && (
           <p className="text-xs text-wl-text-secondary">{stat.unit}</p>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 

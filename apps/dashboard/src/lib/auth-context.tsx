@@ -60,15 +60,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
 
-          // Attempt to refresh token on mount
-          try {
-            await refreshTokenFn(storedToken);
-          } catch (error) {
-            // If refresh fails, clear auth
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("authUser");
-            setToken(null);
-            setUser(null);
+          // Skip token refresh for demo tokens
+          if (!storedToken.startsWith("demo-token-")) {
+            try {
+              await refreshTokenFn(storedToken);
+            } catch (error) {
+              // If refresh fails, clear auth
+              localStorage.removeItem("authToken");
+              localStorage.removeItem("authUser");
+              setToken(null);
+              setUser(null);
+            }
           }
         }
       } catch (error) {
@@ -107,6 +109,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string, rememberMe = false) => {
+    // Demo credentials bypass (no backend required)
+    if (email === "demo@witylogix.com" && password === "demo123") {
+      const demoUser: User = {
+        id: "demo-001",
+        name: "Demo User",
+        email: "demo@witylogix.com",
+        role: "admin",
+        shopId: "shop-demo",
+        createdAt: new Date().toISOString(),
+      };
+      const demoToken = "demo-token-" + Date.now();
+      setToken(demoToken);
+      setUser(demoUser);
+      localStorage.setItem("authToken", demoToken);
+      localStorage.setItem("authUser", JSON.stringify(demoUser));
+      // Set cookie so middleware can verify auth on protected routes
+      document.cookie = `auth-token=${demoToken}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+        localStorage.setItem("rememberedEmail", email);
+      }
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -138,6 +164,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store auth data
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("authUser", JSON.stringify(data.user));
+      // Set cookie so middleware can verify auth on protected routes
+      document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
 
       if (rememberMe) {
         localStorage.setItem("rememberMe", "true");
@@ -196,6 +224,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("rememberedEmail");
 
+    // Clear auth cookie so middleware stops protecting routes
+    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax";
+
     // Optional: Notify backend of logout
     if (token) {
       fetch(`${API_URL}/auth/logout`, {
@@ -236,7 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 const defaultAuthContext: AuthContextType = {
   user: null,
   token: null,
-  isLoading: true,
+  isLoading: false,
   isAuthenticated: false,
   login: async () => {},
   register: async () => {},
