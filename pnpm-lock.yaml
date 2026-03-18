@@ -517,6 +517,9 @@ importers:
       '@witylogix/db':
         specifier: workspace:*
         version: link:../db
+      '@witylogix/framework':
+        specifier: workspace:*
+        version: link:../framework
       '@witylogix/types':
         specifier: workspace:*
         version: link:../types
@@ -524,8 +527,8 @@ importers:
         specifier: workspace:*
         version: link:../validators
       zod:
-        specifier: ^4.3.6
-        version: 4.3.6
+        specifier: ^3.23.0
+        version: 3.25.76
     devDependencies:
       typescript:
         specifier: ^5.7.0

@@ -488,6 +488,60 @@ export interface WitylogixEvents {
     method: string;
     receivedAt: string;
   };
+
+  // ── Return Events ───────────────────────────────────────────
+  "return.requested": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    customerId: string;
+    reason: string;
+    items: Array<{
+      orderItemId: string;
+      productId: string;
+      productName: string;
+      quantity: number;
+      unitPrice: number;
+    }>;
+    refundAmount: number;
+  };
+
+  "return.approved": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    approvedBy: string;
+  };
+
+  "return.rejected": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    reason: string;
+  };
+
+  "return.received": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    receivedAt: string;
+  };
+
+  "return.inspected": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    condition: string;
+    adjustedRefund: number;
+  };
+
+  "return.refunded": {
+    returnId: string;
+    orderId: string;
+    tenantId: string;
+    refundAmount: number;
+    refundMethod: string;
+  };
 }
 
 /**
