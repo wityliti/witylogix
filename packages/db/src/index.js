@@ -18,7 +18,7 @@
  *   // Dual-scoped: shop + org (for assigning org drivers to shop orders)
  *   const dualDb = forTenantInOrg(shopId, orgId);
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma";
 // Singleton Prisma client
 const globalForPrisma = globalThis;
 export const prisma = globalForPrisma.prisma ??
@@ -91,5 +91,5 @@ export function forTenantInOrg(shopId, orgId) {
     });
 }
 // Re-export Prisma types for consumers
-export * from "@prisma/client";
+export * from "./generated/prisma";
 //# sourceMappingURL=index.js.map

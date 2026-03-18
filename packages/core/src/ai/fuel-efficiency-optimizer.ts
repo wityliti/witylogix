@@ -222,39 +222,43 @@ export class DriverBehaviorScorer {
     focus: string;
     estimatedImpact: number; // % MPG improvement
   }> {
-    const coaching = [];
+    const coaching: Array<{
+      priority: "high" | "medium" | "low";
+      focus: string;
+      estimatedImpact: number;
+    }> = [];
 
     if (score.accelerationScore < 60) {
       coaching.push({
-        priority: "high",
+        priority: "high" as const,
         focus: "Smooth acceleration technique",
         estimatedImpact: 3,
       });
     }
     if (score.brakingScore < 60) {
       coaching.push({
-        priority: "high",
+        priority: "high" as const,
         focus: "Predictive braking",
         estimatedImpact: 2.5,
       });
     }
     if (score.idleScore < 60) {
       coaching.push({
-        priority: "medium",
+        priority: "medium" as const,
         focus: "Engine off during stops",
         estimatedImpact: 1.5,
       });
     }
     if (score.speedScore < 70) {
       coaching.push({
-        priority: "high",
+        priority: "high" as const,
         focus: "Speed optimization",
         estimatedImpact: 4,
       });
     }
 
     return coaching.sort((a, b) => {
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      const priorityOrder: Record<"high" | "medium" | "low", number> = { high: 0, medium: 1, low: 2 };
       return (
         priorityOrder[a.priority] - priorityOrder[b.priority] ||
         b.estimatedImpact - a.estimatedImpact
@@ -486,11 +490,13 @@ export class FuelStopPlanner {
     const stops: FuelStop[] = [];
     let totalDetourKm = 0;
     let totalCost = 0;
+    let avgPrice = availableStops.length > 0
+      ? availableStops.reduce((sum, s) => sum + s.pricePerLiter, 0) / availableStops.length
+      : FUEL_PRICE_AVG;
 
     if (requiredCapacity > tankCapacity) {
       // Need multiple stops
       const stopsNeeded = Math.ceil(requiredCapacity / tankCapacity);
-      const avgPrice = availableStops.reduce((sum, s) => sum + s.pricePerLiter, 0) / availableStops.length;
 
       const scoredStops = availableStops
         .map((stop) => this.scoreFuelStop(stop, avgPrice, tankCapacity, currentFuel))

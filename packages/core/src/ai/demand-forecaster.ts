@@ -469,7 +469,7 @@ export class DemandPredictor {
       },
       trend,
       seasonalInfluence: maxSeasonalInfluence,
-      forecastedDate,
+      forecastedDate: forecastDate,
       bases: {
         baseline: Math.round(baseline),
         trendAdjustment: Math.round(trendAdjustment),

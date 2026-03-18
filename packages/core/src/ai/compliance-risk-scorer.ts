@@ -146,6 +146,13 @@ export interface CSAScore {
   inspection_level: 'normal' | 'intermediate' | 'scrutiny';
 }
 
+export interface PortfolioRisk {
+  overallRisk: number; // 0-100
+  riskTrend: 'improving' | 'stable' | 'declining';
+  criticalDrivers: string[];
+  flaggedVehicles: string[];
+}
+
 export interface AuditReadinessReport {
   entityId: string;
   entityType: 'driver' | 'carrier' | 'fleet';
@@ -357,14 +364,14 @@ export class ComplianceRiskScorer {
     let readinessScore = 75; // Start optimistic
     const criticalGaps: string[] = [];
     const minorDeficiencies: string[] = [];
-    const areaMembership: string[] = [];
+    let areaMembership: string[] = [];
 
     if (entityType === 'driver') {
       const score = this.driverScores.get(entityId);
       if (score) {
         readinessScore -= (score.overallScore / 100) * 30;
-        if (score.violationHistory < 50) minorDeficiencies.push('Recent violation history');
-        if (score.hosCompliance < 70) criticalGaps.push('HOS compliance issues detected');
+        if (score.scores.violationHistory < 50) minorDeficiencies.push('Recent violation history');
+        if (score.scores.hosCompliance < 70) criticalGaps.push('HOS compliance issues detected');
         areaMembership.push('Driver File Documentation', 'Hours of Service Records', 'Vehicle Inspection Reports');
       }
     } else if (entityType === 'carrier') {

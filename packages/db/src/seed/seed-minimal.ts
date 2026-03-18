@@ -13,7 +13,7 @@
  * Run with: npx tsx src/seed/seed-minimal.ts
  */
 
-import { PrismaClient, OrgRole } from "@prisma/client";
+import { PrismaClient, OrgRole } from "../generated/prisma";
 import * as crypto from "crypto";
 
 const colors = {

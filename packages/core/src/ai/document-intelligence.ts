@@ -284,7 +284,7 @@ export class FieldExtractor {
     if (terminationMatch) dates.termination = this.parseDate(terminationMatch[0]);
 
     if (!dates.effective && dateMatches.length > 0) {
-      dates.effective = this.parseDate(dateMatches[0]);
+      dates.effective = this.parseDate(dateMatches[0] || '');
     }
 
     return dates;

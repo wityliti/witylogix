@@ -16,7 +16,7 @@
  * All timestamps use `(prisma as any).modelName` pattern for access.
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma";
 import * as crypto from "crypto";
 
 // Color output helpers

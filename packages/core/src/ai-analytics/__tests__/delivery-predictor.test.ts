@@ -80,9 +80,9 @@ describe('Delivery Time Predictor', () => {
 
       const prediction = predictDeliveryWindow(context);
 
-      expect(prediction.models.historical).toBeGreaterThan(0);
-      expect(prediction.models.distance).toBeGreaterThan(0);
-      expect(prediction.models.contextual).toBeGreaterThan(0);
+      expect(prediction.models.historicalModel).toBeGreaterThan(0);
+      expect(prediction.models.distanceModel).toBeGreaterThan(0);
+      expect(prediction.models.contextualModel).toBeGreaterThan(0);
     });
   });
 
@@ -99,7 +99,7 @@ describe('Delivery Time Predictor', () => {
       const prediction = predictDeliveryWindow(context);
 
       // 10km at 50km/h = 12 minutes
-      const distanceModel = prediction.models.distance;
+      const distanceModel = prediction.models.distanceModel;
       expect(distanceModel).toBeGreaterThan(6); // At least 6 minutes
       expect(distanceModel).toBeLessThan(30); // Less than 30 minutes
     });
@@ -119,8 +119,8 @@ describe('Delivery Time Predictor', () => {
         }),
       );
 
-      expect(heavyTraffic.models.distance).toBeGreaterThan(
-        normalTraffic.models.distance,
+      expect(heavyTraffic.models.distanceModel).toBeGreaterThan(
+        normalTraffic.models.distanceModel,
       );
     });
 
@@ -132,8 +132,8 @@ describe('Delivery Time Predictor', () => {
 
       const prediction = predictDeliveryWindow(context);
 
-      expect(prediction.models.distance).toBeGreaterThan(0);
-      expect(prediction.models.distance).toBeLessThan(5); // Less than 5 minutes
+      expect(prediction.models.distanceModel).toBeGreaterThan(0);
+      expect(prediction.models.distanceModel).toBeLessThan(5); // Less than 5 minutes
     });
 
     it('should handle long distances', () => {
@@ -144,8 +144,8 @@ describe('Delivery Time Predictor', () => {
 
       const prediction = predictDeliveryWindow(context);
 
-      expect(prediction.models.distance).toBeGreaterThan(30); // More than 30 minutes
-      expect(prediction.models.distance).toBeLessThan(120); // Less than 2 hours
+      expect(prediction.models.distanceModel).toBeGreaterThan(30); // More than 30 minutes
+      expect(prediction.models.distanceModel).toBeLessThan(120); // Less than 2 hours
     });
   });
 
@@ -167,8 +167,8 @@ describe('Delivery Time Predictor', () => {
         }),
       );
 
-      expect(rainWeather.models.contextual).toBeGreaterThan(
-        clearWeather.models.contextual,
+      expect(rainWeather.models.contextualModel).toBeGreaterThan(
+        clearWeather.models.contextualModel,
       );
     });
 
@@ -187,8 +187,8 @@ describe('Delivery Time Predictor', () => {
         }),
       );
 
-      expect(peakHour.models.contextual).toBeGreaterThan(
-        offPeak.models.contextual,
+      expect(peakHour.models.contextualModel).toBeGreaterThan(
+        offPeak.models.contextualModel,
       );
     });
 
@@ -212,11 +212,11 @@ describe('Delivery Time Predictor', () => {
       );
 
       // Apartment and warehouse should take longer than house
-      expect(apartment.models.contextual).toBeGreaterThanOrEqual(
-        house.models.contextual,
+      expect(apartment.models.contextualModel).toBeGreaterThanOrEqual(
+        house.models.contextualModel,
       );
-      expect(warehouse.models.contextual).toBeGreaterThanOrEqual(
-        house.models.contextual,
+      expect(warehouse.models.contextualModel).toBeGreaterThanOrEqual(
+        house.models.contextualModel,
       );
     });
   });
@@ -231,14 +231,14 @@ describe('Delivery Time Predictor', () => {
 
       // Ensemble should be within range of individual models
       const min = Math.min(
-        prediction.models.historical,
-        prediction.models.distance,
-        prediction.models.contextual,
+        prediction.models.historicalModel,
+        prediction.models.distanceModel,
+        prediction.models.contextualModel,
       );
       const max = Math.max(
-        prediction.models.historical,
-        prediction.models.distance,
-        prediction.models.contextual,
+        prediction.models.historicalModel,
+        prediction.models.distanceModel,
+        prediction.models.contextualModel,
       );
 
       // Estimated arrival should be between min and max
@@ -449,7 +449,7 @@ describe('Delivery Time Predictor', () => {
       const prediction = predictDeliveryWindow(context);
 
       expect(prediction.estimatedArrival).toBeTruthy();
-      expect(prediction.models.distance).toBeGreaterThan(30);
+      expect(prediction.models.distanceModel).toBeGreaterThan(30);
     });
 
     it('should handle extreme weather', () => {
@@ -460,7 +460,7 @@ describe('Delivery Time Predictor', () => {
       const prediction = predictDeliveryWindow(context);
 
       expect(prediction.estimatedArrival).toBeTruthy();
-      expect(prediction.models.contextual).toBeGreaterThan(5);
+      expect(prediction.models.contextualModel).toBeGreaterThan(5);
     });
 
     it('should handle midnight prediction', () => {

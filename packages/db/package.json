@@ -6,12 +6,12 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "build": "prisma generate --schema=./prisma/schema && tsc",
-    "db:generate": "prisma generate --schema=./prisma/schema",
-    "db:migrate": "prisma migrate dev --schema=./prisma/schema",
-    "db:migrate:deploy": "prisma migrate deploy --schema=./prisma/schema",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio --schema=./prisma/schema",
+    "build": "node -e \"try{require('fs').accessSync('src/generated/prisma/index.d.ts')}catch(e){process.exit(1)}\" || npx prisma generate --schema=./prisma/schema; tsc",
+    "db:generate": "npx prisma generate --schema=./prisma/schema",
+    "db:migrate": "npx prisma migrate dev --schema=./prisma/schema",
+    "db:migrate:deploy": "npx prisma migrate deploy --schema=./prisma/schema",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:studio": "npx prisma studio --schema=./prisma/schema",
     "seed": "tsx src/seed.ts",
     "validate-env": "tsx src/validate-env.ts",
     "test": "vitest run --passWithNoTests"

@@ -19,7 +19,7 @@
  *   const dualDb = forTenantInOrg(shopId, orgId);
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma";
 
 // Singleton Prisma client
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
@@ -101,4 +101,4 @@ export function forTenantInOrg(shopId: string, orgId: string) {
 }
 
 // Re-export Prisma types for consumers
-export * from "@prisma/client";
+export * from "./generated/prisma";

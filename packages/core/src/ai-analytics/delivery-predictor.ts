@@ -26,9 +26,10 @@ interface PredictionRecord {
  * Model-specific predictions
  */
 interface ModelPredictions {
-  historical: number;
-  distance: number;
-  contextual: number;
+  historicalModel: number;
+  distanceModel: number;
+  contextualModel: number;
+  ensemble: number;
 }
 
 /**
@@ -252,11 +253,11 @@ function calculateConfidence(
 
   // Reduce confidence if models disagree significantly
   const avg =
-    (models.historical + models.distance + models.contextual) / 3;
+    (models.historicalModel + models.distanceModel + models.contextualModel) / 3;
   const maxDeviation = Math.max(
-    Math.abs(models.historical - avg),
-    Math.abs(models.distance - avg),
-    Math.abs(models.contextual - avg),
+    Math.abs(models.historicalModel - avg),
+    Math.abs(models.distanceModel - avg),
+    Math.abs(models.contextualModel - avg),
   );
 
   const disagreementPenalty = Math.min(20, maxDeviation * 10);
@@ -341,9 +342,10 @@ export function predictDeliveryWindow(
     contextualModel(context);
 
   const models: ModelPredictions = {
-    historical: historicalMinutes,
-    distance: distanceMinutes,
-    contextual: contextualMinutes,
+    historicalModel: historicalMinutes,
+    distanceModel: distanceMinutes,
+    contextualModel: contextualMinutes,
+    ensemble: estimatedMinutes,
   };
 
   // Ensemble: weighted average

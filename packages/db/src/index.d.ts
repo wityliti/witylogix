@@ -18,7 +18,7 @@
  *   // Dual-scoped: shop + org (for assigning org drivers to shop orders)
  *   const dualDb = forTenantInOrg(shopId, orgId);
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma";
 export declare const prisma: PrismaClient<import("@prisma/client").Prisma.PrismaClientOptions, never, import("@prisma/client/runtime/library").DefaultArgs>;
 /**
  * Shop-scoped Prisma client — sets `app.current_shop_id`.
@@ -67,5 +67,5 @@ export declare function forTenantInOrg(shopId: string, orgId: string): import("@
     query: {};
     client: {};
 }>;
-export * from "@prisma/client";
+export * from "./generated/prisma";
 //# sourceMappingURL=index.d.ts.map

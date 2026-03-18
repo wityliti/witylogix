@@ -19,7 +19,7 @@
  * Run with: npx tsx src/seed/seed.ts
  */
 
-import { PrismaClient, OrgRole } from "@prisma/client";
+import { PrismaClient, OrgRole } from "../generated/prisma";
 import * as crypto from "crypto";
 
 // ─── COLOR OUTPUT HELPERS ──────────────────────────────────────────────────
