@@ -55,7 +55,7 @@ import {
   syncProductsSchema,
   syncCustomerSchema,
   syncCustomersSchema,
-} from '../schemas';
+} from '../index';
 
 // ─── UUID Schema Tests ──────────────────────────────────
 
