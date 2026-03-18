@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Header } from '../../../../components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Badge } from '../../../../components/ui/badge';
-import { cn } from '../../../../lib/utils';
-import { FieldMappingEditor } from '../../../../components/sync/field-mapping-editor';
-import { SyncScheduleConfig } from '../../../../components/sync/sync-schedule-config';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { FieldMappingEditor } from '@/components/sync/field-mapping-editor';
+import { SyncScheduleConfig } from '@/components/sync/sync-schedule-config';
 import {
   useFieldMappings,
   useSyncSchedule,
   useProductPreview,
-} from '../../../../hooks/use-product-sync';
+} from '@/hooks/use-product-sync';
 import {
   AlertCircle,
   Check,

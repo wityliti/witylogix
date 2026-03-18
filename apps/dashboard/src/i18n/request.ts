@@ -34,8 +34,8 @@ export default getRequestConfig(async () => {
   }
 
   // Load messages dynamically based on locale
-  const messages = await import(`../../../messages/${locale}.json`).catch(() =>
-    import(`../../../messages/${defaultLocale}.json`)
+  const messages = await import(`../../messages/${locale}.json`).catch(() =>
+    import(`../../messages/${defaultLocale}.json`)
   );
 
   return {

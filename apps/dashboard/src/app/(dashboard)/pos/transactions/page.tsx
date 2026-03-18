@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Header } from "../../../../components/layout/header";
-import { Card, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Badge } from "../../../../components/ui/badge";
-import { Button } from "../../../../components/ui/button";
-import { cn } from "../../../../lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   useTransactions,
   useTerminals,
@@ -13,7 +13,7 @@ import {
   useExportTransactions,
   type TransactionStatus,
   type PaymentMethod,
-} from "../../../../hooks/use-pos";
+} from "@/hooks/use-pos";
 
 /**
  * POS Transactions Page

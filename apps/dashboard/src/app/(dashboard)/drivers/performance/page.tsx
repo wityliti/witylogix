@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Header } from "../../../components/layout/header";
-import { StatCard } from "../../../components/ui/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/card";
-import { Badge } from "../../../components/ui/badge";
-import { Button } from "../../../components/ui/button";
-import { cn } from "../../../lib/utils";
+import { Header } from "@/components/layout/header";
+import { StatCard } from "@/components/ui/stat-card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /* ═══════════════════════════════════════════════════════════
    DRIVER PERFORMANCE LEADERBOARD

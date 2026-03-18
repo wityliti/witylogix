@@ -11,8 +11,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="wl-noise">
+    <div className="wl-noise">
         <div
           className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
           style={{
@@ -89,7 +88,6 @@ export default function AuthLayout({
             </div>
           </div>
         </div>
-      </body>
-    </html>
+    </div>
   );
 }

@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Header } from "../../../../components/layout/header";
-import { Card, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Badge } from "../../../../components/ui/badge";
-import { Button } from "../../../../components/ui/button";
-import { cn } from "../../../../lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   useDispatchMap,
   useAutoAssign,
   useTechnicians,
   type TechnicianStatus,
-} from "../../../../hooks/use-field-service";
+} from "@/hooks/use-field-service";
 
 /**
  * Dispatch Management Page

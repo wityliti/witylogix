@@ -1,9 +1,7 @@
-import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   defaultLocale,
   getLocaleFromRequest,
-  supportedLocales,
 } from './i18n/config';
 
 /**
@@ -24,17 +22,7 @@ const protectedRoutes = [
 /**
  * Public routes that don't require authentication
  */
-const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password'];
-
-/**
- * i18n middleware with locale detection and routing
- */
-const intlMiddleware = createMiddleware({
-  locales: supportedLocales,
-  defaultLocale,
-  localePrefix: 'as-needed',
-  localeCookie: 'NEXT_LOCALE',
-});
+const publicRoutes = ['/login', '/register', '/forgot-password'];
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -42,10 +30,9 @@ export function middleware(request: NextRequest) {
   const acceptLanguage = request.headers.get('accept-language');
 
   // Determine locale
-  const locale = getLocaleFromRequest(cookieLocale, acceptLanguage || undefined);
+  const locale = getLocaleFromRequest(cookieLocale, acceptLanguage || undefined) || defaultLocale;
 
-  // Create response from intl middleware
-  let response = intlMiddleware(request);
+  const response = NextResponse.next();
 
   // Set locale cookie for client-side access
   response.cookies.set('NEXT_LOCALE', locale, {
@@ -54,30 +41,23 @@ export function middleware(request: NextRequest) {
     sameSite: 'lax',
   });
 
-  // Check authentication for protected routes
-  const isProtectedRoute = protectedRoutes.some((route) => {
-    const pathWithoutLocale = pathname.replace(new RegExp(`^/(${supportedLocales.join('|')})`), '');
-    return pathWithoutLocale.startsWith(route);
-  });
-
-  const isPublicRoute = publicRoutes.some((route) => {
-    const pathWithoutLocale = pathname.replace(new RegExp(`^/(${supportedLocales.join('|')})`), '');
-    return pathWithoutLocale.startsWith(route);
-  });
-
   // Get auth token from cookies
   const authToken = request.cookies.get('auth-token')?.value;
 
+  // Check authentication for protected routes
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !authToken) {
-    const loginUrl = new URL(`/${locale}/auth/login`, request.url);
+    const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect to dashboard if accessing login while authenticated
   if (isPublicRoute && authToken) {
-    return NextResponse.redirect(new URL(`/${locale}`, request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return response;
