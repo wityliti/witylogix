@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useDrivers, Driver as ApiDriver, DriverStatus as ApiDriverStatus } from '@/hooks/use-drivers';
+import { useDrivers, Driver } from '@/hooks/use-drivers';
 
 /* ═══════════════════════════════════════════════════════════
    DRIVERS PAGE — Enhanced fleet management with detail panel
@@ -36,7 +36,7 @@ const statusColor = (status: string): string => {
 };
 
 // Mock drivers array - for development fallback when API is unavailable
-const DRIVERS: ApiDriver[] = [
+const DRIVERS: Driver[] = [
   {
     id: "drv-1",
     name: "Carlos Martinez",

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Calendar, Search, X, ChevronRight, Clock } from 'lucide-react';
-import { useReturns, Return as ApiReturn, ReturnStatus as ApiReturnStatus } from '@/hooks/use-returns';
+import { useReturns, Return } from '@/hooks/use-returns';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — Full return lifecycle with
@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<string, { badge: string; color: 'default' | 'success
 };
 
 // Mock returns data for development fallback
-const MOCK_RETURNS: ApiReturn[] = [
+const MOCK_RETURNS: Return[] = [
   {
     id: "RET-2024-001",
     orderId: "ORD-2024-115",

@@ -7,13 +7,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCustomers, Customer as ApiCustomer } from '@/hooks/use-customers';
+import { useCustomers, Customer } from '@/hooks/use-customers';
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOMERS PAGE — Customer management with Shopify sync
    ═══════════════════════════════════════════════════════════ */
 
-const MOCK_CUSTOMERS: ApiCustomer[] = [
+const MOCK_CUSTOMERS: Customer[] = [
   {
     id: "cust-001",
     shopifyId: "gid://shopify/Customer/123456789",
