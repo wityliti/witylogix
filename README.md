@@ -57,6 +57,8 @@ Built on Fastify 5, Next.js 15, PostgreSQL + PostGIS, Redis Streams, and a produ
 - **Audit trail** — batch audit logging (50 events / 5s flush), automatic diff computation, sensitive field masking, full-text search, and CSV export for compliance
 - **Campaign engine** — audience segmentation with parameterized SQL, timezone-aware scheduling, state machine lifecycle (draft → scheduled → sending → completed), batch processing with pause/resume
 - **Unified messaging** — multi-channel dispatcher (email, SMS, WhatsApp, push) with provider abstraction, retry logic, rate limiting, template rendering, and webhook handling
+- **Internationalization (i18n)** — lightweight translation engine with nested key lookup, parameter interpolation (`{{name}}`), RTL detection, and 4 built-in locales (English, Spanish, French, Arabic) covering 120+ UI keys across 12 categories
+- **Order Kanban board** — drag-and-drop order management board with 8 status columns (PENDING → DELIVERED), priority indicators, driver avatars, search/filter/sort, and auto-refresh — inspired by Fleetbase's order board
 - **Structured logging** — Pino-compatible JSON logger with request tracing (UUID v4 correlation IDs), slow-request warnings, and sensitive field redaction
 - **Field-level encryption** — AES-256-GCM with scrypt key derivation, key rotation support, and Prisma middleware for transparent encrypt/decrypt
 - **JWT authentication** with refresh token rotation, scrypt password hashing, and password reset flows
