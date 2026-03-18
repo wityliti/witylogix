@@ -10,17 +10,7 @@
  * - Event emission
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { EventEmitter } from "events";
-import { OnboardingService } from "../onboarding-service";
-import {
-  OnboardingStep,
-  OnboardingEventType,
-  OnboardingError,
-  OnboardingErrorCodes,
-} from "../types";
-
-// Mock prisma
+// Mock prisma - must be before any imports
 vi.mock("@witylogix/db", () => ({
   prisma: {
     onboardingProgress: {
@@ -35,6 +25,15 @@ vi.mock("@witylogix/db", () => ({
   },
 }));
 
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { EventEmitter } from "events";
+import { OnboardingService } from "../onboarding-service";
+import {
+  OnboardingStep,
+  OnboardingEventType,
+  OnboardingError,
+  OnboardingErrorCodes,
+} from "../types";
 import { prisma as any } from "@witylogix/db";
 
 describe("OnboardingService", () => {

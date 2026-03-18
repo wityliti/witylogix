@@ -4,6 +4,18 @@
  * Tests: job processing, channel routing, error handling, retry logic
  */
 
+// Mock Prisma for template loading - must be before any imports
+vi.mock('@witylogix/db', () => ({
+  prisma: {
+    notificationTemplate: {
+      findFirst: vi.fn(),
+    },
+    notificationLog: {
+      create: vi.fn(),
+    },
+  },
+}));
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NotificationOrchestrator } from '../orchestrator';
 import type { NotificationResult, NotificationMessage } from '../providers/types';
@@ -16,18 +28,6 @@ describe('NotificationWorker Integration', () => {
     mockFetch = vi.fn();
     global.fetch = mockFetch;
     orchestrator = new NotificationOrchestrator();
-
-    // Mock Prisma for template loading
-    vi.mock('@witylogix/db', () => ({
-      prisma: {
-        notificationTemplate: {
-          findFirst: vi.fn(),
-        },
-        notificationLog: {
-          create: vi.fn(),
-        },
-      },
-    }));
   });
 
   afterEach(() => {

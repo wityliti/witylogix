@@ -62,6 +62,19 @@ const defaultConfig: ConsumerConfig = {
   deadLetterQueue: "driver-tracking-dlq",
 };
 
+const createJobMetadata = (
+  jobId = "job-123",
+  attempt = 1,
+  type: QueueJobMetadata["type"] = "driver_tracking"
+): QueueJobMetadata => ({
+  jobId,
+  type,
+  createdAt: Date.now(),
+  processingStartedAt: Date.now(),
+  attempts: attempt,
+  maxAttempts: 2,
+});
+
 describe("DriverTrackingConsumer", () => {
   let consumer: DriverTrackingConsumer;
 
@@ -106,7 +119,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockRedis.geoadd.mockResolvedValueOnce(1);
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       expect(mockPrisma.driverLocation.create).toHaveBeenCalledWith({
@@ -132,7 +145,7 @@ describe("DriverTrackingConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow(
+      await expect(consumer.executeJob(job, createJobMetadata("job_123", 1))).rejects.toThrow(
         "Invalid latitude"
       );
     });
@@ -150,7 +163,7 @@ describe("DriverTrackingConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow(
+      await expect(consumer.executeJob(job, createJobMetadata("job_123", 1))).rejects.toThrow(
         "Invalid longitude"
       );
     });
@@ -167,7 +180,8 @@ describe("DriverTrackingConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow();
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
+      expect(result.success).toBe(false);
     });
 
     it("should handle driver not found gracefully", async () => {
@@ -185,7 +199,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driver.findUnique.mockResolvedValueOnce(null);
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow(
+      await expect(consumer.executeJob(job, createJobMetadata("job_123", 1))).rejects.toThrow(
         "Driver not found"
       );
     });
@@ -212,7 +226,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockRedis.geoadd).toHaveBeenCalledWith(
         "drivers:geo:tenant_123",
@@ -242,7 +256,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockRedis.geoadd).toHaveBeenCalledWith(
         "drivers:geo:tenant_456",
@@ -274,7 +288,8 @@ describe("DriverTrackingConsumer", () => {
 
       mockRedis.geoadd.mockRejectedValueOnce(new Error("Redis connection lost"));
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow();
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
+      expect(result.success).toBe(false);
     });
   });
 
@@ -306,7 +321,7 @@ describe("DriverTrackingConsumer", () => {
         driverId: "driver_123",
       });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(
         "driver.location.updated",
@@ -344,7 +359,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockEventBus.emit).toHaveBeenCalledWith(
         "driver.location.updated",
@@ -377,7 +392,7 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       // Event may or may not be emitted based on business logic
@@ -414,7 +429,7 @@ describe("DriverTrackingConsumer", () => {
         },
       ]);
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockGeofenceService.checkGeofences).toHaveBeenCalledWith(
         "driver_123",
@@ -454,7 +469,7 @@ describe("DriverTrackingConsumer", () => {
         { geofenceId: "geofence_2", event: "exited" },
       ]);
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockGeofenceService.triggerEvent).toHaveBeenCalledTimes(2);
     });
@@ -508,7 +523,7 @@ describe("DriverTrackingConsumer", () => {
         { geofenceId: "geofence_1", event: "entered" },
       ]);
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(callOrder).toEqual(["geofence", "location"]);
     });
@@ -538,7 +553,7 @@ describe("DriverTrackingConsumer", () => {
 
       const results = await Promise.all(
         jobs.map((job, i) =>
-          consumer.processJob(job as QueueJobPayload, {
+          consumer.executeJob(job as QueueJobPayload, {
             attempt: 1,
             jobId: `job_${i}`,
           })
@@ -574,7 +589,7 @@ describe("DriverTrackingConsumer", () => {
 
         mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
-        const result = await consumer.processJob(job, {
+        const result = await consumer.executeJob(job, {
           attempt: 1,
           jobId: `job_${accuracy}`,
         });
@@ -606,7 +621,7 @@ describe("DriverTrackingConsumer", () => {
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
       const startTime = Date.now();
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
       const duration = Date.now() - startTime;
 
       expect(result.processingTimeMs).toBeLessThan(100);

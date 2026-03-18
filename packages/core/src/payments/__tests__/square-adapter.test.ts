@@ -8,12 +8,12 @@
  * - Webhook verification
  */
 
+// Mock fetch for API calls - must be before any imports
+vi.mock('node-fetch');
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SquareGateway } from '../square-adapter.js';
 import type { PaymentGatewayConfig } from '../types.js';
-
-// Mock fetch for API calls
-vi.mock('node-fetch');
 
 describe('SquareGateway', () => {
   let gateway: SquareGateway;

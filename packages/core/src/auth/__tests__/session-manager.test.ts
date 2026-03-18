@@ -11,11 +11,7 @@
  * - IP/user-agent tracking
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { SessionManager, getSessionManager, resetSessionManager, type CreateSessionInput } from "../session-manager";
-import type { AuthResult } from "../types";
-
-// ─── MOCK PRISMA ────────────────────────────────────────────
+// ─── MOCK PRISMA - MUST BE BEFORE ANY IMPORTS ─────────────────
 
 const mockPrisma = {
   session: {
@@ -34,6 +30,10 @@ const mockPrisma = {
 vi.mock("@witylogix/db", () => ({
   prisma: mockPrisma,
 }));
+
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { SessionManager, getSessionManager, resetSessionManager, type CreateSessionInput } from "../session-manager";
+import type { AuthResult } from "../types";
 
 // ─── TEST SUITE ─────────────────────────────────────────────
 

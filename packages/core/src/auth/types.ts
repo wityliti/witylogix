@@ -799,26 +799,6 @@ export class AuthError extends Error {
 }
 
 /**
- * Invalid credentials error.
- */
-export class InvalidCredentialsError extends AuthError {
-  constructor(message = "Invalid email or password") {
-    super("INVALID_CREDENTIALS", message, 401);
-    this.name = "InvalidCredentialsError";
-  }
-}
-
-/**
- * Token expired error.
- */
-export class TokenExpiredError extends AuthError {
-  constructor(message = "Token has expired") {
-    super("TOKEN_EXPIRED", message, 401);
-    this.name = "TokenExpiredError";
-  }
-}
-
-/**
  * MFA required error.
  */
 export class MfaRequiredError extends AuthError {

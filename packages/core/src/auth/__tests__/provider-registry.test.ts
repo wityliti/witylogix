@@ -3,6 +3,22 @@
  * Comprehensive test suite for provider registration, resolution, validation, and authentication flows
  */
 
+// Mock encryption module - must be before any imports
+vi.mock('@witylogix/core/encryption', () => ({
+  getEncryption: vi.fn(() => ({
+    decrypt: vi.fn((encrypted: string) => {
+      try {
+        return JSON.parse(Buffer.from(encrypted, 'base64').toString());
+      } catch {
+        throw new Error('Decryption failed');
+      }
+    }),
+    encrypt: vi.fn((data: any) => {
+      return Buffer.from(JSON.stringify(data)).toString('base64');
+    }),
+  })),
+}));
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AuthProviderRegistry } from '../provider-registry';
 import type {
@@ -34,22 +50,6 @@ const mockPrisma = {
     update: vi.fn(),
   },
 };
-
-// Mock encryption module
-vi.mock('@witylogix/core/encryption', () => ({
-  getEncryption: vi.fn(() => ({
-    decrypt: vi.fn((encrypted: string) => {
-      try {
-        return JSON.parse(Buffer.from(encrypted, 'base64').toString());
-      } catch {
-        throw new Error('Decryption failed');
-      }
-    }),
-    encrypt: vi.fn((data: any) => {
-      return Buffer.from(JSON.stringify(data)).toString('base64');
-    }),
-  })),
-}));
 
 describe('AuthProviderRegistry', () => {
   let registry: AuthProviderRegistry;

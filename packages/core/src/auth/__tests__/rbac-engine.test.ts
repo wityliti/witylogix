@@ -11,7 +11,7 @@
  * - Edge cases
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createRbacEngine, ROLE_HIERARCHY, DEFAULT_ROLE_PERMISSIONS } from "../rbac-engine.js";
 import type { RbacEngine } from "../rbac-engine.js";
 import type { PermissionContext } from "../rbac-engine.js";

@@ -17,16 +17,7 @@
  * - Mock sleep/delays to run tests quickly
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  NotificationOrchestrator,
-  getNotificationOrchestrator,
-  setOrchestratorRetryOptions,
-} from '../orchestrator.js';
-import { getTenantProviderRegistry, clearAllRegistries } from '../provider-registry.js';
-import type { NotificationProvider, NotificationMessage, NotificationResult } from '../providers/types.js';
-
-// Create mockPrisma before vi.mock for reference
+// Mock prisma module - must be before any imports
 const mockPrisma = {
   notificationTemplate: {
     findFirst: vi.fn(),
@@ -36,10 +27,18 @@ const mockPrisma = {
   },
 };
 
-// Mock prisma module
 vi.mock('@witylogix/db', () => ({
   prisma: mockPrisma,
 }));
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  NotificationOrchestrator,
+  getNotificationOrchestrator,
+  setOrchestratorRetryOptions,
+} from '../orchestrator.js';
+import { getTenantProviderRegistry, clearAllRegistries } from '../provider-registry.js';
+import type { NotificationProvider, NotificationMessage, NotificationResult } from '../providers/types.js';
 
 describe('NotificationOrchestrator', () => {
   let orchestrator: NotificationOrchestrator;

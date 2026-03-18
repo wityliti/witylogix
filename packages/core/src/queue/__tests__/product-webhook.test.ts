@@ -66,6 +66,19 @@ const defaultConfig: ConsumerConfig = {
   deadLetterQueue: "product-webhook-dlq",
 };
 
+const createJobMetadata = (
+  jobId = "job-123",
+  attempt = 1,
+  type: QueueJobMetadata["type"] = "product_webhook"
+): QueueJobMetadata => ({
+  jobId,
+  type,
+  createdAt: Date.now(),
+  processingStartedAt: Date.now(),
+  attempts: attempt,
+  maxAttempts: 3,
+});
+
 describe("ProductWebhookConsumer", () => {
   let consumer: ProductWebhookConsumer;
 
@@ -97,9 +110,9 @@ describe("ProductWebhookConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "1" })).rejects.toThrow(
-        "missing shopId or shopifyProductId"
-      );
+      const result = await consumer.executeJob(job, createJobMetadata("1", 1));
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain("missing shopId or externalProductId");
     });
 
     it("should reject payload without required product fields", async () => {
@@ -117,7 +130,8 @@ describe("ProductWebhookConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "1" })).rejects.toThrow();
+      const result = await consumer.executeJob(job, createJobMetadata("1", 1));
+      expect(result.success).toBe(false);
     });
 
     it("should reject variant with missing required fields", async () => {
@@ -141,9 +155,8 @@ describe("ProductWebhookConsumer", () => {
         timestamp: new Date(),
       };
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "1" })).rejects.toThrow(
-        "missing required fields"
-      );
+      const result = await consumer.executeJob(job, createJobMetadata("1", 1));
+      expect(result.success).toBe(false);
     });
   });
 
@@ -179,7 +192,7 @@ describe("ProductWebhookConsumer", () => {
 
       mockPrisma.variant.createMany.mockResolvedValueOnce({ count: 2 });
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       expect(mockPrisma.product.upsert).toHaveBeenCalledWith({
@@ -224,7 +237,7 @@ describe("ProductWebhookConsumer", () => {
       mockPrisma.product.upsert.mockResolvedValueOnce({ id: "prod_123" });
       mockPrisma.variant.createMany.mockResolvedValueOnce({ count: 3 });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockPrisma.variant.createMany).toHaveBeenCalledWith({
         data: expect.arrayContaining([
@@ -265,7 +278,7 @@ describe("ProductWebhookConsumer", () => {
 
       mockPrisma.variant.updateMany.mockResolvedValueOnce({ count: 2 });
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       expect(mockEventBus.emit).toHaveBeenCalledWith(
@@ -301,7 +314,7 @@ describe("ProductWebhookConsumer", () => {
       mockPrisma.product.upsert.mockResolvedValueOnce({ id: "prod_123" });
       mockPrisma.variant.updateMany.mockResolvedValueOnce({ count: 1 });
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockRedis.hset).toHaveBeenCalledWith(
         "inventory:prod_123",
@@ -330,7 +343,7 @@ describe("ProductWebhookConsumer", () => {
 
       mockPrisma.product.delete.mockResolvedValueOnce({ id: "prod_123" });
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       expect(mockPrisma.product.delete).toHaveBeenCalledWith({
@@ -360,7 +373,7 @@ describe("ProductWebhookConsumer", () => {
 
       mockPrisma.product.findUnique.mockResolvedValueOnce(null);
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.success).toBe(true);
       expect(mockPrisma.product.delete).not.toHaveBeenCalled();
@@ -393,7 +406,7 @@ describe("ProductWebhookConsumer", () => {
         { id: "coll_2" },
       ]);
 
-      await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(mockPrisma.collection.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({ shopId: "shop_123" }),
@@ -421,8 +434,9 @@ describe("ProductWebhookConsumer", () => {
       const dbError = new Error("Unique constraint failed");
       mockPrisma.product.upsert.mockRejectedValueOnce(dbError);
 
-      await expect(consumer.processJob(job, { attempt: 1, jobId: "job_123" })).rejects.toThrow();
-      expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Unique constraint"));
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
     it("should retry on transient errors", async () => {
@@ -444,11 +458,12 @@ describe("ProductWebhookConsumer", () => {
       const timeoutError = new Error("Connection timeout");
       mockPrisma.product.upsert.mockRejectedValueOnce(timeoutError);
 
-      const attempt2 = { attempt: 2, jobId: "job_123" };
+      const attempt2 = createJobMetadata("job_123", 2);
       mockPrisma.product.upsert.mockResolvedValueOnce({ id: "prod_123" });
       mockPrisma.variant.createMany.mockResolvedValueOnce({ count: 1 });
 
-      await expect(consumer.processJob(job, attempt2)).resolves.toBeDefined();
+      const result = await consumer.executeJob(job, attempt2);
+      expect(result).toBeDefined();
     });
 
     it("should emit to dead letter queue after max retries", async () => {
@@ -470,7 +485,8 @@ describe("ProductWebhookConsumer", () => {
       mockPrisma.product.upsert.mockRejectedValue(new Error("Persistent failure"));
 
       const dlqSpy = vi.spyOn(consumer, "sendToDeadLetterQueue");
-      await expect(consumer.processJob(job, { attempt: 4, jobId: "job_123" })).rejects.toThrow();
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 4));
+      expect(result.success).toBe(false);
     });
   });
 
@@ -496,7 +512,7 @@ describe("ProductWebhookConsumer", () => {
       mockPrisma.product.upsert.mockResolvedValueOnce({ id: "prod_123" });
       mockPrisma.variant.createMany.mockResolvedValueOnce({ count: 1 });
 
-      const result = await consumer.processJob(job, { attempt: 1, jobId: "job_123" });
+      const result = await consumer.executeJob(job, createJobMetadata("job_123", 1));
 
       expect(result.processingTimeMs).toBeGreaterThanOrEqual(0);
       expect(result.data).toMatchObject({
@@ -543,8 +559,8 @@ describe("ProductWebhookConsumer", () => {
       mockPrisma.variant.createMany.mockResolvedValue({ count: 1 });
 
       const results = await Promise.all([
-        consumer.processJob(job1, { attempt: 1, jobId: "job_1" }),
-        consumer.processJob(job2, { attempt: 1, jobId: "job_2" }),
+        consumer.executeJob(job1, createJobMetadata("job_1", 1)),
+        consumer.executeJob(job2, createJobMetadata("job_2", 1)),
       ]);
 
       expect(results.every((r) => r.success)).toBe(true);

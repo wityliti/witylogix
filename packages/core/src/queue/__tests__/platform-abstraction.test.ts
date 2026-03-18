@@ -11,8 +11,7 @@
  * - Platform-agnostic consumer logic
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
+// Mock must be before any imports
 vi.mock('@witylogix/db', () => ({
   prisma: {
     order: {
@@ -32,6 +31,7 @@ vi.mock('@witylogix/db', () => ({
   },
 }));
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type {
   QueueJobPayload,
   QueueJobMetadata,

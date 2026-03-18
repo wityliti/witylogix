@@ -3,7 +3,7 @@
  * Test Shopify + WooCommerce order/product/customer normalization
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { DataNormalizer } from '../data-normalizer.js';
 import type { WCOrder, WCProduct, WCCustomer } from '../../woocommerce/types.js';
 

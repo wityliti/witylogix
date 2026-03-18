@@ -10,7 +10,7 @@
  * - Edge cases (empty, unicode, very long)
  */
 
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createPasswordService } from "../password-service.js";
 import type { PasswordService } from "../password-service.js";
 

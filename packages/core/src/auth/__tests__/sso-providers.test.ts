@@ -4,7 +4,7 @@
  * Comprehensive test suite for OAuth2 and OIDC providers.
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   GoogleSSOProvider,
   MicrosoftSSOProvider,

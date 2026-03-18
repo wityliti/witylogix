@@ -10,19 +10,7 @@
  * - Error handling
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { WorkspaceProvisioner } from "../workspace-provisioner";
-import {
-  Industry,
-  DeploymentType,
-  DistanceUnit,
-  WeightUnit,
-  WorkspaceConfig,
-  OnboardingError,
-  OnboardingErrorCodes,
-} from "../types";
-
-// Mock prisma
+// Mock prisma - must be before any imports
 vi.mock("@witylogix/db", () => ({
   prisma: {
     workspace: {
@@ -51,6 +39,17 @@ vi.mock("@witylogix/db", () => ({
   },
 }));
 
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { WorkspaceProvisioner } from "../workspace-provisioner";
+import {
+  Industry,
+  DeploymentType,
+  DistanceUnit,
+  WeightUnit,
+  WorkspaceConfig,
+  OnboardingError,
+  OnboardingErrorCodes,
+} from "../types";
 import { prisma as any } from "@witylogix/db";
 
 describe("WorkspaceProvisioner", () => {

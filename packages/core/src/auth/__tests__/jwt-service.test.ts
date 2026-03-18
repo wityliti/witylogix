@@ -10,7 +10,7 @@
  * - Edge cases and security
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createJwtService } from "../jwt-service.js";
 import type { JwtService } from "../jwt-service.js";
 import type { AccessTokenPayload, RefreshTokenPayload } from "../types.js";

@@ -4,7 +4,7 @@
  * Comprehensive test suite for sliding window rate limiting.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   SlidingWindowRateLimiter,
   createRateLimiter,

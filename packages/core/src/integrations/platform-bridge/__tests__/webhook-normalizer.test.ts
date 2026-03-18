@@ -3,7 +3,7 @@
  * Test webhook normalization from both Shopify and WooCommerce platforms
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { WebhookNormalizer } from '../webhook-normalizer.js';
 import type { WCOrder } from '../../woocommerce/types.js';
 
