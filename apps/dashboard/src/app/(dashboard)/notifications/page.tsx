@@ -6,9 +6,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
@@ -38,15 +35,8 @@ import {
 } from "@/hooks/use-notifications";
 
 /**
- * Notification Inbox Page
- * Features:
- * - All/Unread/Read tabs with counts
- * - Category filter chips (Orders, Deliveries, Drivers, Payments, System)
- * - Notification cards with channel icon, timestamp, read/unread dot
- * - Click to expand with full details
- * - Bulk mark as read, bulk delete
- * - Infinite scroll with loading skeleton
- * - Real-time updates via WebSocket
+ * Notification Inbox Page - Professional Dark Theme
+ * Manages notifications with read/unread status, category filters, bulk actions
  */
 
 export default function NotificationsPage() {
@@ -75,11 +65,6 @@ export default function NotificationsPage() {
 
   // Filter notifications
   const filteredNotifications = useMemo(() => {
-  const { items: data, loading, error, refetch, pagination } = useApiList<Notification>('/api/v4/notifications');
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
     return notifications.filter((n) => {
       if (activeTab === "unread" && n.status !== "UNREAD") return false;
       if (activeTab === "read" && n.status !== "READ") return false;
@@ -96,7 +81,11 @@ export default function NotificationsPage() {
   const allCount = notifications.length;
 
   // Tab configuration
-  
+  const tabs = [
+    { id: "all", label: `All (${allCount})` },
+    { id: "unread", label: `Unread (${unreadCount})` },
+    { id: "read", label: `Read (${readCount})` },
+  ];
 
   // Category chips
   const categories: { id: NotificationCategory | "ALL"; label: string }[] = [
@@ -152,7 +141,7 @@ export default function NotificationsPage() {
   }, [loadMore]);
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notifications"
         subtitle="Manage and view all your notifications"
@@ -184,11 +173,11 @@ export default function NotificationsPage() {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
                   "px-3 py-1 rounded-full text-sm font-medium",
-                  "transition-colors duration-fast ease-default",
+                  "transition-colors duration-200",
                   "border cursor-pointer",
                   selectedCategory === cat.id
-                    ? "border-wl-primary-500 bg-wl-primary-500/20 text-wl-primary-400"
-                    : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-subtle"
+                    ? "border-blue-500 bg-blue-500/20 text-blue-400"
+                    : "border-[#1e1e2e] text-gray-400 hover:border-[#2a2a3e]"
                 )}
               >
                 {cat.label}
@@ -198,9 +187,9 @@ export default function NotificationsPage() {
 
           {/* Bulk Actions Bar */}
           {selectedNotifications.size > 0 && (
-            <Card className="border-wl-primary-500/30 bg-wl-primary-500/5">
+            <Card className={cn("border-blue-500/30 bg-blue-500/5")}>
               <CardContent className="flex items-center justify-between py-3">
-                <span className="text-sm text-wl-text-secondary">
+                <span className="text-sm text-gray-400">
                   {selectedNotifications.size} selected
                 </span>
                 <div className="flex gap-2">
@@ -226,19 +215,19 @@ export default function NotificationsPage() {
           )}
 
           {/* Notifications List */}
-          <Card>
+          <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
             <CardContent className="p-0">
               {filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Bell className="w-12 h-12 text-wl-text-tertiary mb-3" />
-                  <p className="text-wl-text-secondary">
+                  <Bell className="w-12 h-12 text-gray-400 mb-3" />
+                  <p className="text-gray-400">
                     No notifications to display
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-wl-border-default">
+                <div className="divide-y divide-[#1e1e2e]">
                   {/* Header Row */}
-                  <div className="flex items-center gap-4 px-6 py-3 bg-wl-bg-surface border-b border-wl-border-default">
+                  <div className="flex items-center gap-4 px-6 py-3 bg-[#1a1a2e] border-b border-[#1e1e2e]">
                     <Checkbox
                       checked={
                         selectedNotifications.size ===
@@ -246,13 +235,13 @@ export default function NotificationsPage() {
                       }
                       onChange={handleSelectAll}
                     />
-                    <span className="flex-1 text-xs font-semibold uppercase text-wl-text-tertiary tracking-wide">
+                    <span className="flex-1 text-xs font-semibold uppercase text-gray-400 tracking-wide">
                       Message
                     </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-tertiary tracking-wide">
+                    <span className="w-24 text-xs font-semibold uppercase text-gray-400 tracking-wide">
                       Channel
                     </span>
-                    <span className="w-24 text-xs font-semibold uppercase text-wl-text-tertiary tracking-wide">
+                    <span className="w-24 text-xs font-semibold uppercase text-gray-400 tracking-wide">
                       Time
                     </span>
                   </div>
@@ -267,10 +256,10 @@ export default function NotificationsPage() {
                         <div
                           className={cn(
                             "flex items-center gap-4 px-6 py-4",
-                            "hover:bg-wl-bg-overlay cursor-pointer transition-colors",
-                            isSelected && "bg-wl-bg-surface",
+                            "hover:bg-[#1a1a2e] cursor-pointer transition-colors",
+                            isSelected && "bg-[#1a1a2e]",
                             notif.status === "UNREAD" &&
-                              "bg-wl-primary-500/5 border-l-2 border-wl-primary-500"
+                              "bg-blue-500/5 border-l-2 border-blue-500"
                           )}
                         >
                           <Checkbox
@@ -283,7 +272,7 @@ export default function NotificationsPage() {
                           {/* Read/Unread Indicator */}
                           <div className="flex-shrink-0 w-2 h-2">
                             {notif.status === "UNREAD" && (
-                              <div className="w-2 h-2 rounded-full bg-wl-primary-500" />
+                              <div className="w-2 h-2 rounded-full bg-blue-500" />
                             )}
                           </div>
 
@@ -301,10 +290,10 @@ export default function NotificationsPage() {
                               )
                             }
                           >
-                            <div className="font-medium text-wl-text-primary">
+                            <div className="font-medium text-white">
                               {notif.title}
                             </div>
-                            <div className="text-sm text-wl-text-secondary truncate">
+                            <div className="text-sm text-gray-400 truncate">
                               {notif.message}
                             </div>
                           </div>
@@ -320,14 +309,14 @@ export default function NotificationsPage() {
                           </div>
 
                           {/* Timestamp */}
-                          <div className="w-24 text-sm text-wl-text-tertiary text-right">
+                          <div className="w-24 text-sm text-gray-500 text-right">
                             {formatTime(notif.timestamp)}
                           </div>
 
                           {/* Expand Icon */}
                           <ChevronDown
                             className={cn(
-                              "w-4 h-4 text-wl-text-tertiary transition-transform",
+                              "w-4 h-4 text-gray-500 transition-transform",
                               isExpanded && "rotate-180"
                             )}
                           />
@@ -335,20 +324,20 @@ export default function NotificationsPage() {
 
                         {/* Expanded Details */}
                         {isExpanded && (
-                          <div className="bg-wl-bg-surface px-6 py-4 border-t border-wl-border-default">
+                          <div className="bg-[#1a1a2e] px-6 py-4 border-t border-[#1e1e2e]">
                             <div className="space-y-4">
                               <div>
-                                <h4 className="text-sm font-semibold text-wl-text-primary mb-2">
+                                <h4 className="text-sm font-semibold text-white mb-2">
                                   Details
                                 </h4>
-                                <p className="text-sm text-wl-text-secondary">
+                                <p className="text-sm text-gray-400">
                                   {notif.message}
                                 </p>
                               </div>
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <p className="text-xs text-wl-text-tertiary uppercase tracking-wide font-semibold">
+                                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
                                     Status
                                   </p>
                                   <Badge
@@ -362,10 +351,10 @@ export default function NotificationsPage() {
                                   </Badge>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-wl-text-tertiary uppercase tracking-wide font-semibold">
+                                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">
                                     Timestamp
                                   </p>
-                                  <p className="text-sm text-wl-text-secondary">
+                                  <p className="text-sm text-gray-400">
                                     {new Date(
                                       notif.timestamp
                                     ).toLocaleString()}
@@ -374,7 +363,7 @@ export default function NotificationsPage() {
                               </div>
 
                               {notif.actionUrl && (
-                                <div className="pt-2 border-t border-wl-border-default">
+                                <div className="pt-2 border-t border-[#1e1e2e]">
                                   <Link href={notif.actionUrl}>
                                     <Button variant="primary" size="sm">
                                       View Details
@@ -383,7 +372,7 @@ export default function NotificationsPage() {
                                 </div>
                               )}
 
-                              <div className="flex gap-2 pt-2 border-t border-wl-border-default">
+                              <div className="flex gap-2 pt-2 border-t border-[#1e1e2e]">
                                 {notif.status === "UNREAD" ? (
                                   <Button
                                     variant="ghost"
@@ -441,7 +430,7 @@ export default function NotificationsPage() {
 
           {/* Loading Skeletons */}
           {isLoading && (
-            <Card>
+            <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
               <CardContent className="space-y-3 py-6">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex gap-4">
@@ -462,10 +451,10 @@ export default function NotificationsPage() {
   );
 }
 
-// ─── HELPERS ────────────────────────────────────────────────────────
+// Helpers
 
 function getChannelIcon(channel: NotificationChannel): ReactNode {
-  const iconProps = "w-5 h-5 text-wl-text-tertiary";
+  const iconProps = "w-5 h-5 text-gray-400";
 
   switch (channel) {
     case "EMAIL":

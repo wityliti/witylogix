@@ -1,11 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  BoxIcon,
+  TrendingUp,
+  AlertCircle,
+  Plus,
+  Package,
+  Warehouse,
+} from 'lucide-react';
 import {
   useInventory,
   useOrders,
@@ -28,7 +36,6 @@ interface DemandSupplyData {
   variance: number;
 }
 
-// Mock data
 const KPI_METRICS = [
   {
     id: 'kpi-1',
@@ -122,273 +129,237 @@ export default function SupplyChainPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {KPI_METRICS.map((metric, idx) => (
-          <StatCard
-            key={metric.id}
-            label={metric.name}
-            value={metric.value}
-            change={{
-              value: metric.trend,
-              label: metric.trendLabel,
-            }}
-            accentColor={`var(--wl-${metric.color}-500)`}
-            index={idx}
-          />
-        ))}
+    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Supply Chain</h1>
+              <p className="text-sm text-gray-400 mt-1">Inventory, orders, and warehouse operations</p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="secondary" size="md">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Alerts
+              </Button>
+              <Button variant="primary" size="md">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Order
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Order Fulfillment Pipeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Fulfillment Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pipelineStages.map((stage, idx) => (
-                <div key={stage.stage}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div
-                      onClick={() => setSelectedStage(selectedStage === stage.stage ? null : stage.stage)}
-                      className="flex-1 cursor-pointer"
-                    >
-                      <h4 className="font-medium text-wl-text-primary">
-                        {stage.stage}
-                      </h4>
-                      <p className="text-xs text-wl-text-tertiary">
-                        {stage.count} orders
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto px-8 py-6">
+        <div className="space-y-6 max-w-7xl">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {KPI_METRICS.map((metric, idx) => (
+              <StatCard
+                key={metric.id}
+                label={metric.name}
+                value={metric.value}
+                change={{
+                  value: metric.trend,
+                  label: metric.trendLabel,
+                }}
+                accentColor={`var(--wl-${metric.color}-500)`}
+                index={idx}
+              />
+            ))}
+          </div>
+
+          {/* Two-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Order Fulfillment Pipeline */}
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <BoxIcon className="w-5 h-5 text-blue-500" />
+                Order Fulfillment Pipeline
+              </h2>
+              <div className="space-y-4">
+                {pipelineStages.map((stage) => (
+                  <div key={stage.stage}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex-1 cursor-pointer" onClick={() => setSelectedStage(selectedStage === stage.stage ? null : stage.stage)}>
+                        <h4 className="font-medium text-white">{stage.stage}</h4>
+                        <p className="text-xs text-gray-500">{stage.count} orders</p>
+                      </div>
+                      <Badge variant={stage.status === 'healthy' ? 'success' : stage.status === 'warning' ? 'warning' : 'danger'}>
+                        {stage.count}
+                      </Badge>
+                    </div>
+                    <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all',
+                          stage.status === 'healthy' ? 'bg-emerald-500' : stage.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                        )}
+                        style={{ width: `${stage.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {/* Pipeline Summary */}
+                <div className="mt-6 p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-400">Total Orders:</span>
+                      <p className="font-semibold text-white mt-1">
+                        {pipelineStages.reduce((sum, s) => sum + s.count, 0)}
                       </p>
                     </div>
-                    <Badge
-                      variant={
-                        stage.status === 'healthy'
-                          ? 'success'
-                          : stage.status === 'warning'
-                          ? 'warning'
-                          : 'danger'
-                      }
-                    >
-                      {stage.count}
+                    <div>
+                      <span className="text-gray-400">Avg Process Time:</span>
+                      <p className="font-semibold text-white mt-1">2.3 days</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">On-Time Rate:</span>
+                      <p className="font-semibold text-white mt-1">94.2%</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Backlog:</span>
+                      <p className="font-semibold text-white mt-1">12 orders</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Warehouse Utilization */}
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Warehouse className="w-5 h-5 text-emerald-500" />
+                Warehouse Utilization
+              </h2>
+              <div className="space-y-4">
+                {warehouse.warehouses.map((wh) => (
+                  <div key={wh.warehouseId}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-white">{wh.name}</h4>
+                      <span className="text-sm font-semibold text-white">{wh.utilizationPercentage.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-[#1a1a2e] rounded-full h-2.5">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all',
+                          wh.utilizationPercentage < 60 ? 'bg-emerald-500' : wh.utilizationPercentage < 80 ? 'bg-amber-500' : 'bg-red-500'
+                        )}
+                        style={{ width: `${wh.utilizationPercentage}%` }}
+                      />
+                    </div>
+                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                      <span>{wh.activeOrders} active orders</span>
+                      <span>{wh.pendingPutaway} pending putaway</span>
+                      <span>{wh.cycleCountsScheduled} cycle counts</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Warehouse Summary */}
+                <div className="mt-6 p-4 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1">Highest Utilization</p>
+                    <p className="text-lg font-bold text-white">{warehouse.highestUtilization.name}</p>
+                    <p className="text-xs text-gray-500 mt-1">{warehouse.highestUtilization.utilizationPercentage.toFixed(1)}% capacity used</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Demand vs Supply */}
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              Demand vs Supply Forecast
+            </h2>
+            <div className="space-y-4">
+              {demandSupplyData.map((data) => (
+                <div key={data.period} className="pb-4 border-b border-[#1e1e2e] last:border-0">
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="font-medium text-white">{data.period}</h4>
+                    <Badge variant={data.variance > 10 ? 'danger' : data.variance < -10 ? 'warning' : 'success'}>
+                      {data.variance > 0 ? '+' : ''}{data.variance.toFixed(1)}%
                     </Badge>
                   </div>
-                  <div className="w-full bg-wl-bg-overlay rounded-full h-2">
-                    <div
-                      className={cn(
-                        'h-full rounded-full transition-all',
-                        stage.status === 'healthy'
-                          ? 'bg-wl-success-500'
-                          : stage.status === 'warning'
-                          ? 'bg-wl-warning-500'
-                          : 'bg-wl-danger-500'
-                      )}
-                      style={{ width: `${stage.percentage}%` }}
-                    />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="w-3 h-3 rounded-full bg-blue-500" />
+                        <span className="text-xs text-gray-400">Demand:</span>
+                        <span className="text-sm font-semibold text-white flex-1">{data.demand.toLocaleString()} units</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                        <span className="text-xs text-gray-400">Supply:</span>
+                        <span className="text-sm font-semibold text-white flex-1">{data.supply.toLocaleString()} units</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
-
-              {/* Pipeline Summary */}
-              <div className="mt-6 p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-wl-text-secondary">Total Orders:</span>
-                    <p className="font-semibold text-wl-text-primary">
-                      {pipelineStages.reduce((sum, s) => sum + s.count, 0)}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-wl-text-secondary">Avg Process Time:</span>
-                    <p className="font-semibold text-wl-text-primary">2.3 days</p>
-                  </div>
-                  <div>
-                    <span className="text-wl-text-secondary">On-Time Rate:</span>
-                    <p className="font-semibold text-wl-text-primary">94.2%</p>
-                  </div>
-                  <div>
-                    <span className="text-wl-text-secondary">Backlog:</span>
-                    <p className="font-semibold text-wl-text-primary">12 orders</p>
-                  </div>
-                </div>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </Card>
 
-        {/* Warehouse Utilization */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Warehouse Utilization</CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Inventory ABC Distribution */}
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5 text-amber-500" />
+              Inventory ABC Distribution
+            </h2>
             <div className="space-y-4">
-              {warehouse.warehouses.map((wh) => (
-                <div key={wh.warehouseId}>
+              {INVENTORY_DISTRIBUTION.map((item) => (
+                <div key={item.category}>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-wl-text-primary">{wh.name}</h4>
-                    <span className="text-sm font-semibold text-wl-text-primary">
-                      {wh.utilizationPercentage.toFixed(1)}%
-                    </span>
+                    <div>
+                      <h4 className="font-medium text-white">{item.category}</h4>
+                      <p className="text-xs text-gray-500">{item.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-white">{item.count} SKUs</p>
+                      <p className="text-xs text-gray-500">{item.percentage}% of inventory</p>
+                    </div>
                   </div>
-                  <div className="w-full bg-wl-bg-overlay rounded-full h-2.5">
-                    <div
-                      className={cn(
-                        'h-full rounded-full transition-all',
-                        wh.utilizationPercentage < 60
-                          ? 'bg-wl-success-500'
-                          : wh.utilizationPercentage < 80
-                          ? 'bg-wl-warning-500'
-                          : 'bg-wl-danger-500'
-                      )}
-                      style={{ width: `${wh.utilizationPercentage}%` }}
-                    />
-                  </div>
-                  <div className="flex gap-4 mt-2 text-xs text-wl-text-tertiary">
-                    <span>{wh.activeOrders} active orders</span>
-                    <span>{wh.pendingPutaway} pending putaway</span>
-                    <span>{wh.cycleCountsScheduled} cycle counts</span>
+                  <div className="w-full bg-[#1a1a2e] rounded-full h-2">
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400" style={{ width: `${item.percentage}%` }} />
                   </div>
                 </div>
               ))}
-
-              {/* Warehouse Summary */}
-              <div className="mt-6 p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
-                <div className="text-center">
-                  <p className="text-xs text-wl-text-secondary mb-1">Highest Utilization</p>
-                  <p className="text-lg font-bold text-wl-text-primary">
-                    {warehouse.highestUtilization.name}
-                  </p>
-                  <p className="text-xs text-wl-text-tertiary mt-1">
-                    {warehouse.highestUtilization.utilizationPercentage.toFixed(1)}% capacity used
-                  </p>
-                </div>
-              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </Card>
 
-      {/* Demand vs Supply */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Demand vs Supply Forecast</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {demandSupplyData.map((data) => (
-              <div key={data.period} className="pb-4 border-b border-wl-border-subtle last:border-0">
-                <div className="flex items-start justify-between mb-3">
-                  <h4 className="font-medium text-wl-text-primary">{data.period}</h4>
-                  <Badge
-                    variant={
-                      data.variance > 10
-                        ? 'danger'
-                        : data.variance < -10
-                        ? 'warning'
-                        : 'success'
-                    }
-                  >
-                    {data.variance > 0 ? '+' : ''}{data.variance.toFixed(1)}%
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className="w-3 h-3 rounded-full bg-wl-primary-500" />
-                      <span className="text-xs text-wl-text-secondary">Demand:</span>
-                      <span className="text-sm font-semibold text-wl-text-primary flex-1">
-                        {data.demand.toLocaleString()} units
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className="w-3 h-3 rounded-full bg-wl-success-500" />
-                      <span className="text-xs text-wl-text-secondary">Supply:</span>
-                      <span className="text-sm font-semibold text-wl-text-primary flex-1">
-                        {data.supply.toLocaleString()} units
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-blue-500/30 transition-colors">
+              <Button variant="primary" className="w-full mb-3">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Transfer Order
+              </Button>
+              <p className="text-xs text-gray-500 text-center">Move inventory between warehouses</p>
+            </Card>
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-emerald-500/30 transition-colors">
+              <Button variant="primary" className="w-full mb-3">
+                <Plus className="w-4 h-4 mr-2" />
+                Schedule Cycle Count
+              </Button>
+              <p className="text-xs text-gray-500 text-center">Plan inventory verification</p>
+            </Card>
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:border-amber-500/30 transition-colors">
+              <Button variant="primary" className="w-full mb-3">
+                <Plus className="w-4 h-4 mr-2" />
+                Process Reorders
+              </Button>
+              <p className="text-xs text-gray-500 text-center">Create purchase orders for low stock</p>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Inventory ABC Analysis Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Inventory ABC Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {INVENTORY_DISTRIBUTION.map((item) => (
-              <div key={item.category}>
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h4 className="font-medium text-wl-text-primary">
-                      {item.category}
-                    </h4>
-                    <p className="text-xs text-wl-text-tertiary">{item.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-wl-text-primary">
-                      {item.count} SKUs
-                    </p>
-                    <p className="text-xs text-wl-text-secondary">
-                      {item.percentage}% of inventory
-                    </p>
-                  </div>
-                </div>
-                <div className="w-full bg-wl-bg-overlay rounded-full h-2">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400"
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <Button variant="primary" className="w-full">
-              Create Transfer Order
-            </Button>
-            <p className="text-xs text-wl-text-tertiary text-center mt-3">
-              Move inventory between warehouses
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <Button variant="primary" className="w-full">
-              Schedule Cycle Count
-            </Button>
-            <p className="text-xs text-wl-text-tertiary text-center mt-3">
-              Plan inventory verification
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <Button variant="primary" className="w-full">
-              Process Reorders
-            </Button>
-            <p className="text-xs text-wl-text-tertiary text-center mt-3">
-              Create purchase orders for low stock
-            </p>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );

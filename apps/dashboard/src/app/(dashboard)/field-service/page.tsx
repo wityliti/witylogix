@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/header';
-import { StatCard } from '@/components/ui/stat-card';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
+import { TrendingUp, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 /**
  * Field Service Overview Page
@@ -119,55 +119,77 @@ export default function FieldServicePage() {
     <>
       <Header
         title="Field Service Overview"
-        subtitle={`${overview.totalTechnicians} technicians · ${overview.activeJobs} active jobs · ${overview.completionRate}% completion rate`}
-        actions={<Button variant="primary" size="md">+ Create Work Order</Button>}
+        subtitle={`${overview.totalTechnicians} technicians · ${overview.activeJobs} active jobs`}
       />
 
-      <div className="p-6">
+      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-screen">
         {/* ═══ KPI Stats Row ═══ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 auto-rows-max">
-          <StatCard
-            label="Active Jobs"
-            value={overview.activeJobs}
-            change={{ value: 8.5, label: "vs yesterday" }}
-            accentColor="var(--wl-primary-500)"
-            index={0}
-          />
-          <StatCard
-            label="In Field"
-            value={overview.techniciansInField}
-            change={{ value: 2.0, label: "dispatched" }}
-            accentColor="var(--wl-info-400)"
-            index={1}
-          />
-          <StatCard
-            label="Completion Rate"
-            value={`${overview.completionRate}%`}
-            change={{ value: 3.5, label: "growth" }}
-            accentColor="var(--wl-success-400)"
-            index={2}
-          />
-          <StatCard
-            label="Avg Response"
-            value={`${overview.avgResponseTime}m`}
-            change={{ value: -2.0, label: "faster" }}
-            accentColor="var(--wl-warning-400)"
-            index={3}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-blue-500">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400 mb-2">Active Jobs</p>
+                  <p className="text-3xl font-bold text-white">{overview.activeJobs}</p>
+                  <p className="text-xs text-emerald-400 mt-2">+8.5% vs yesterday</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-blue-500/30" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-cyan-500">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400 mb-2">In Field</p>
+                  <p className="text-3xl font-bold text-white">{overview.techniciansInField}</p>
+                  <p className="text-xs text-gray-400 mt-2">dispatched technicians</p>
+                </div>
+                <CheckCircle2 className="w-8 h-8 text-cyan-500/30" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-emerald-500">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400 mb-2">Completion Rate</p>
+                  <p className="text-3xl font-bold text-white">{overview.completionRate}%</p>
+                  <p className="text-xs text-emerald-400 mt-2">+3.5% growth</p>
+                </div>
+                <CheckCircle2 className="w-8 h-8 text-emerald-500/30" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e] border-l-4 border-l-amber-500">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400 mb-2">Avg Response</p>
+                  <p className="text-3xl font-bold text-white">{overview.avgResponseTime}m</p>
+                  <p className="text-xs text-emerald-400 mt-2">-2.0% faster</p>
+                </div>
+                <Clock className="w-8 h-8 text-amber-500/30" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* ═══ Main Grid: Schedule + SLA + Job Queue ═══ */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Schedule Timeline */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Today's Schedule</CardTitle>
+                  <CardTitle className="text-white">Today's Schedule</CardTitle>
                   <select
                     value={selectedTech || "all"}
                     onChange={(e) => setSelectedTech(e.target.value === "all" ? null : e.target.value)}
-                    className="px-3 py-1 text-xs rounded border border-slate-700 bg-slate-900 text-slate-100 focus:outline-none"
+                    className="px-3 py-2 text-xs rounded border border-[#1e1e2e] bg-[#1a1a2e] text-gray-300 focus:outline-none focus:border-blue-500/50"
                   >
                     <option value="all">All Technicians</option>
                     {technicians.map((t) => (
@@ -179,43 +201,30 @@ export default function FieldServicePage() {
                 </div>
               </CardHeader>
 
-              <div className="p-4">
+              <CardContent>
                 {filteredSchedule.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">No scheduled jobs</div>
+                  <div className="text-center py-12 text-gray-500">No scheduled jobs for today</div>
                 ) : (
                   <div className="space-y-3">
                     {filteredSchedule.map((item, idx) => (
                       <div
                         key={item.jobId}
-                        className="flex items-center gap-4 p-3 bg-slate-800 rounded-md border border-slate-700 hover:border-slate-600 transition-colors opacity-0"
-                        style={{
-                          animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
-                        }}
+                        className="flex items-center gap-4 p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] hover:border-blue-500/30 transition-colors"
                       >
-                        {/* Time */}
-                        <div className="w-20 flex-shrink-0">
-                          <div className="text-sm font-semibold text-indigo-400">
-                            {item.startTime}
-                          </div>
-                          <div className="text-xs text-slate-400">
-                            {item.endTime}
-                          </div>
+                        <div className="w-24 flex-shrink-0">
+                          <div className="text-sm font-semibold text-blue-400">{item.startTime}</div>
+                          <div className="text-xs text-gray-500">{item.endTime}</div>
                         </div>
 
-                        {/* Timeline dot */}
-                        <div className="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
 
-                        {/* Job details */}
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-slate-100">
-                            {item.jobNumber}
-                          </div>
-                          <div className="text-xs text-slate-400 mt-0.5">
+                          <div className="text-sm font-semibold text-white">{item.jobNumber}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
                             {item.customerName} • {item.location}
                           </div>
                         </div>
 
-                        {/* Status badge */}
                         <Badge variant={statusVariant(item.status)} className="flex-shrink-0">
                           {item.status.replace(/_/g, " ")}
                         </Badge>
@@ -223,119 +232,101 @@ export default function FieldServicePage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </CardContent>
             </Card>
           </div>
 
           {/* SLA Compliance Tracker */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>SLA Compliance</CardTitle>
-              </CardHeader>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <CardHeader>
+              <CardTitle className="text-white">SLA Compliance</CardTitle>
+            </CardHeader>
 
-              <div className="p-4 space-y-4">
-                {/* On-time percentage */}
-                <div>
-                  <div className="flex justify-between items-baseline mb-2">
-                    <span className="text-sm font-medium text-slate-100">
-                      On-Time Percentage
-                    </span>
-                    <span className="text-2xl font-bold text-green-400">
-                      {slaMetrics.onTimePercentage}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2">
-                    <div
-                      className="bg-green-500 h-2 rounded-full transition-all"
-                      style={{ width: `${slaMetrics.onTimePercentage}%` }}
-                    />
-                  </div>
+            <CardContent className="space-y-5">
+              {/* On-time percentage */}
+              <div>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="text-sm font-medium text-gray-400">On-Time %</span>
+                  <span className="text-2xl font-bold text-emerald-400">
+                    {slaMetrics.onTimePercentage}%
+                  </span>
                 </div>
-
-                <div className="h-px bg-slate-700" />
-
-                {/* Overdue jobs */}
-                <div>
-                  <div className="text-sm text-slate-400 mb-2">Overdue Jobs</div>
-                  <div className="text-3xl font-bold text-red-400">
-                    {slaMetrics.overdueCount}
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1">
-                    of {slaMetrics.totalJobs} total
-                  </div>
+                <div className="w-full bg-[#1a1a2e] rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-emerald-500 h-2.5 rounded-full transition-all"
+                    style={{ width: `${slaMetrics.onTimePercentage}%` }}
+                  />
                 </div>
-
-                <div className="h-px bg-slate-700" />
-
-                {/* Avg completion time */}
-                <div>
-                  <div className="text-sm text-slate-400 mb-2">Avg Completion</div>
-                  <div className="text-3xl font-bold text-blue-400">
-                    {slaMetrics.avgCompletionTime}
-                  </div>
-                  <div className="text-xs text-slate-400 mt-1">minutes</div>
-                </div>
-
-                <div className="h-px bg-slate-700" />
-
-                <Button variant="secondary" size="sm" className="w-full">
-                  View Details
-                </Button>
               </div>
-            </Card>
-          </div>
+
+              <div className="h-px bg-[#1e1e2e]" />
+
+              {/* Overdue jobs */}
+              <div>
+                <div className="text-sm text-gray-400 mb-2">Overdue Jobs</div>
+                <div className="text-3xl font-bold text-red-400">{slaMetrics.overdueCount}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  of {slaMetrics.totalJobs} total
+                </div>
+              </div>
+
+              <div className="h-px bg-[#1e1e2e]" />
+
+              {/* Avg completion time */}
+              <div>
+                <div className="text-sm text-gray-400 mb-2">Avg Completion</div>
+                <div className="text-3xl font-bold text-blue-400">{slaMetrics.avgCompletionTime}m</div>
+              </div>
+
+              <div className="h-px bg-[#1e1e2e]" />
+
+              <Button variant="secondary" size="sm" className="w-full">
+                View Details
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* ═══ Job Queue + Recent Completions ═══ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Job Queue */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Job Queue (Unassigned)</CardTitle>
+                <CardTitle className="text-white">Job Queue (Unassigned)</CardTitle>
                 <Badge variant="warning">{jobQueue.length}</Badge>
               </div>
             </CardHeader>
 
-            <div className="p-4">
+            <CardContent>
               {jobQueue.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">
-                  All jobs assigned! ✓
-                </div>
+                <div className="text-center py-12 text-gray-500">All jobs assigned ✓</div>
               ) : (
                 <div className="space-y-3">
-                  {jobQueue.map((job, idx) => (
+                  {jobQueue.map((job) => (
                     <div
                       key={job.id}
-                      className="p-3 bg-slate-800 rounded-md border-l-4 border-slate-700 hover:border-indigo-500 transition-colors opacity-0 cursor-pointer group"
-                      style={{
-                        animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
-                      }}
+                      className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer group"
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
-                          <div className="text-sm font-semibold text-slate-100">
-                            {job.jobNumber}
-                          </div>
-                          <div className="text-xs text-slate-400">
-                            {job.customerName}
-                          </div>
+                          <div className="text-sm font-semibold text-white">{job.jobNumber}</div>
+                          <div className="text-xs text-gray-400">{job.customerName}</div>
                         </div>
                         <Badge variant={priorityVariant(job.priority)}>
-                          {job.priority}
+                          {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)}
                         </Badge>
                       </div>
 
-                      <div className="text-xs text-slate-400 mb-2">
+                      <div className="text-xs text-gray-500 mb-4">
                         {job.serviceType.replace(/_/g, " ")} • {job.location}
                       </div>
 
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="xs" className="text-xs flex-1">
+                        <Button variant="secondary" size="sm" className="flex-1">
                           Auto-Assign
                         </Button>
-                        <Button variant="secondary" size="xs" className="text-xs flex-1">
+                        <Button variant="primary" size="sm" className="flex-1">
                           Assign
                         </Button>
                       </div>
@@ -343,52 +334,43 @@ export default function FieldServicePage() {
                   ))}
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
 
           {/* Recent Completions Feed */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Recent Completions</CardTitle>
+              <CardTitle className="text-white">Recent Completions</CardTitle>
             </CardHeader>
 
-            <div className="p-4">
+            <CardContent>
               {recentCompletions.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">
-                  No completions yet today
-                </div>
+                <div className="text-center py-12 text-gray-500">No completions yet today</div>
               ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {recentCompletions.map((job, idx) => (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {recentCompletions.map((job) => (
                     <div
                       key={job.id}
-                      className="p-3 bg-slate-800 rounded-md border-l-4 border-green-500 opacity-0"
-                      style={{
-                        animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
-                      }}
+                      className="p-4 bg-[#1a1a2e] rounded-lg border-l-4 border-emerald-500"
                     >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>
-                          <div className="text-sm font-semibold text-green-400">
+                          <div className="text-sm font-semibold text-emerald-400">
                             ✓ {job.jobNumber}
                           </div>
-                          <div className="text-xs text-slate-400">
-                            {job.customerName}
-                          </div>
+                          <div className="text-xs text-gray-400">{job.customerName}</div>
                         </div>
-                        <div className="text-xs text-slate-400">
-                          {job.completionTime}
-                        </div>
+                        <div className="text-xs text-gray-500">{job.completionTime}</div>
                       </div>
 
-                      <div className="text-xs text-slate-400 mt-1">
+                      <div className="text-xs text-gray-500 mt-2">
                         {job.serviceType.replace(/_/g, " ")} • {job.assignedTechName}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>

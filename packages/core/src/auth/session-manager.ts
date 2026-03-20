@@ -20,8 +20,7 @@
  *   5. Cleanup job removes expired sessions periodically
  */
 
-// @ts-ignore - prisma client
-import { prisma } from "@witylogix/db";
+import { db } from "@witylogix/db";
 import type { AuthResult } from "./types.js";
 import { SessionInvalidError } from "./types.js";
 
@@ -104,7 +103,7 @@ export class SessionManager {
     try {
       // Check if device already has active session (for same-device login)
       if (deviceId) {
-        const existingSession = await (prisma as any).authSession.findFirst({
+        const existingSession = await db.authSession.findFirst({
           where: {
             userId,
             orgId,
@@ -116,7 +115,7 @@ export class SessionManager {
 
         if (existingSession) {
           // Revoke existing session for this device
-          await (prisma as any).authSession.update({
+          await db.authSession.update({
             where: { id: existingSession.id },
             data: { isRevoked: true, revokedAt: new Date() },
           });
@@ -124,7 +123,7 @@ export class SessionManager {
       }
 
       // Count active sessions for this user in this org
-      const activeSessions = await (prisma as any).authSession.findMany({
+      const activeSessions = await db.authSession.findMany({
         where: {
           userId,
           orgId,
@@ -140,14 +139,14 @@ export class SessionManager {
         Math.max(0, activeSessions.length - this.maxConcurrentSessions + 1),
       );
       for (const session of sessionsToRevoke) {
-        await (prisma as any).authSession.update({
+        await db.authSession.update({
           where: { id: session.id },
           data: { isRevoked: true, revokedAt: new Date() },
         });
       }
 
       // Create new session
-      const session = await (prisma as any).authSession.create({
+      const session = await db.authSession.create({
         data: {
           userId,
           orgId,
@@ -181,7 +180,7 @@ export class SessionManager {
    */
   async validateSession(sessionId: string): Promise<SessionValidationResult> {
     try {
-      const session = await (prisma as any).authSession.findUnique({
+      const session = await db.authSession.findUnique({
         where: { id: sessionId },
       });
 
@@ -196,7 +195,7 @@ export class SessionManager {
       const now = new Date();
       if (session.expiresAt < now) {
         // Mark as revoked to avoid re-validation
-        await (prisma as any).authSession.update({
+        await db.authSession.update({
           where: { id: sessionId },
           data: { isRevoked: true, revokedAt: now },
         });
@@ -204,7 +203,7 @@ export class SessionManager {
       }
 
       // Update last activity
-      await (prisma as any).authSession.update({
+      await db.authSession.update({
         where: { id: sessionId },
         data: { lastActivityAt: new Date() },
       });
@@ -240,7 +239,7 @@ export class SessionManager {
     newExpiresAt?: Date,
   ): Promise<SessionInfo> {
     try {
-      const session = await (prisma as any).authSession.findUnique({
+      const session = await db.authSession.findUnique({
         where: { id: sessionId },
       });
 
@@ -255,7 +254,7 @@ export class SessionManager {
       // Update with new token and expiry
       const expiresAt = newExpiresAt || new Date(Date.now() + this.sessionTimeoutMs);
 
-      const updated = await (prisma as any).authSession.update({
+      const updated = await db.authSession.update({
         where: { id: sessionId },
         data: {
           token: newToken,
@@ -277,7 +276,7 @@ export class SessionManager {
    */
   async revokeSession(sessionId: string): Promise<void> {
     try {
-      await (prisma as any).authSession.update({
+      await db.authSession.update({
         where: { id: sessionId },
         data: {
           isRevoked: true,
@@ -297,7 +296,7 @@ export class SessionManager {
    */
   async revokeAllSessions(userId: string, orgId: string): Promise<void> {
     try {
-      await (prisma as any).authSession.updateMany({
+      await db.authSession.updateMany({
         where: { userId, orgId, isRevoked: false },
         data: {
           isRevoked: true,
@@ -318,7 +317,7 @@ export class SessionManager {
    */
   async listActiveSessions(userId: string, orgId: string): Promise<SessionInfo[]> {
     try {
-      const sessions = await (prisma as any).authSession.findMany({
+      const sessions = await db.authSession.findMany({
         where: {
           userId,
           orgId,
@@ -342,7 +341,7 @@ export class SessionManager {
    */
   async verifyMfa(sessionId: string): Promise<void> {
     try {
-      await (prisma as any).authSession.update({
+      await db.authSession.update({
         where: { id: sessionId },
         data: {
           mfaVerified: true,
@@ -383,7 +382,7 @@ export class SessionManager {
     setInterval(async () => {
       try {
         const now = new Date();
-        await (prisma as any).authSession.deleteMany({
+        await db.authSession.deleteMany({
           where: {
             OR: [
               { expiresAt: { lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } }, // 30 days old

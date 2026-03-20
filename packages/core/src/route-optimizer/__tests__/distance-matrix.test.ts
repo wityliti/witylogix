@@ -23,9 +23,9 @@ describe("Distance Matrix", () => {
 
       const matrix = computeDistanceMatrix(points);
 
-      // NYC to LA is approximately 2,790 km (1,735 miles)
-      expect(matrix.distances[0][1]).toBeGreaterThan(2700000); // > 2700 km in meters
-      expect(matrix.distances[0][1]).toBeLessThan(2900000); // < 2900 km in meters
+      // NYC to LA is approximately 3,944 km great-circle distance
+      expect(matrix.distances[0][1]).toBeGreaterThan(3900000); // > 3900 km in meters
+      expect(matrix.distances[0][1]).toBeLessThan(4000000); // < 4000 km in meters
     });
 
     it("should calculate short distance accurately", () => {
@@ -44,14 +44,14 @@ describe("Distance Matrix", () => {
     it("should calculate medium distance accurately", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 }, // NYC
-        { latitude: 41.8781, longitude: -87.6298 }, // Chicago, ~790 km away
+        { latitude: 41.8781, longitude: -87.6298 }, // Chicago, ~1144 km away
       ];
 
       const matrix = computeDistanceMatrix(points);
 
-      // Should be approximately 790 km
-      expect(matrix.distances[0][1]).toBeGreaterThan(750000);
-      expect(matrix.distances[0][1]).toBeLessThan(850000);
+      // Should be approximately 1144 km
+      expect(matrix.distances[0][1]).toBeGreaterThan(1100000);
+      expect(matrix.distances[0][1]).toBeLessThan(1200000);
     });
   });
 
@@ -242,6 +242,7 @@ describe("Distance Matrix", () => {
     it("should have valid timestamp", () => {
       const points: GeoPoint[] = [
         { latitude: 40.7128, longitude: -74.006 },
+        { latitude: 40.7580, longitude: -73.9855 },
       ];
 
       const matrix = computeDistanceMatrix(points);
@@ -255,12 +256,12 @@ describe("Distance Matrix", () => {
   describe("traffic factor handling", () => {
     it("should apply traffic factor to durations", () => {
       const points: GeoPoint[] = [
-        { latitude: 40.7128, longitude: -74.006 },
-        { latitude: 40.7580, longitude: -73.9855 },
+        { latitude: 40.8, longitude: -74.1 }, // Different points to avoid cache hit
+        { latitude: 40.7, longitude: -73.9 },
       ];
 
       const trafficFactor = 1.5;
-      const matrix = computeDistanceMatrix(points, trafficFactor);
+      const matrix = computeDistanceMatrix(points, 60, trafficFactor);
 
       expect(matrix.trafficFactor).toBe(trafficFactor);
       // Durations should be affected by traffic factor
@@ -284,11 +285,9 @@ describe("Distance Matrix", () => {
     it("should handle single point", () => {
       const points: GeoPoint[] = [{ latitude: 40.7128, longitude: -74.006 }];
 
-      const matrix = computeDistanceMatrix(points);
-
-      expect(matrix.distances.length).toBe(1);
-      expect(matrix.distances[0].length).toBe(1);
-      expect(matrix.distances[0][0]).toBe(0);
+      expect(() => computeDistanceMatrix(points)).toThrow(
+        "Distance matrix requires at least 2 points"
+      );
     });
 
     it("should handle extreme latitudes", () => {

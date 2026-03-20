@@ -103,18 +103,20 @@ Built on Fastify 5, Next.js 15, PostgreSQL + PostGIS, Redis Streams, and a produ
 
 | Layer | Technology |
 |-------|-----------|
-| Monorepo | [Turborepo](https://turbo.build) + [pnpm](https://pnpm.io) workspaces |
+| Monorepo | [Turborepo](https://turbo.build) + [pnpm 9.15.0](https://pnpm.io) workspaces |
+| Runtime | [Node.js 20](https://nodejs.org) |
 | Backend | [Fastify 5](https://fastify.dev) (TypeScript) |
-| Database | [PostgreSQL 16](https://www.postgresql.org) + [PostGIS](https://postgis.net) + [Prisma](https://www.prisma.io) |
+| Database | [PostgreSQL 16](https://www.postgresql.org) + [PostGIS](https://postgis.net) + [Prisma 6.19.2](https://www.prisma.io) |
 | Cache & Pub/Sub | [Redis 7](https://redis.io) (Streams, GEO, Pub/Sub) |
 | Job queue | [BullMQ](https://bullmq.io) with tenant-aware groups |
 | Shopify app | [React Router v7](https://reactrouter.com) + [Polaris Web Components](https://polaris.shopify.com) |
 | Extensions | [Preact](https://preactjs.com) (checkout & POS, < 64KB) |
-| Dashboard | [Next.js 15](https://nextjs.org) (App Router, dark theme, Tailwind CSS + shadcn/ui-inspired design system) |
+| Dashboard | [Next.js 15](https://nextjs.org) (App Router, dark theme, [Tailwind 3.4](https://tailwindcss.com) + shadcn/ui-inspired design system) |
 | Routing | [Mapbox](https://www.mapbox.com) (Phase 1) → [OSRM](https://project-osrm.org) (Phase 2) |
 | Real-time | [Socket.io](https://socket.io) + [Redis Adapter](https://socket.io/docs/v4/redis-adapter/) |
 | Mobile | [React Native](https://reactnative.dev) (Expo) + background geolocation |
 | Maps | [Leaflet.js](https://leafletjs.com) + OpenStreetMap tiles |
+| Testing | [Vitest 1.6.1](https://vitest.dev) |
 | Deployment | [Docker Compose](https://docs.docker.com/compose/) / Kubernetes |
 
 ---
@@ -480,35 +482,40 @@ NOTIFICATIONS_BYOK=true
 
 ## Project structure
 
-### Apps
+### Apps (7 total)
 
 | Package | Description |
 |---------|-------------|
-| `@witylogix/api` | Fastify 5 backend — REST API, WebSocket server, BullMQ workers |
-| `@witylogix/dashboard` | Next.js 15 merchant dashboard — 64 routes, dark theme, real-time updates |
+| `@witylogix/api` | Fastify 5 backend — REST API (77+ routes), WebSocket server, BullMQ workers |
+| `@witylogix/dashboard` | Next.js 15 merchant dashboard — 180 pages (173 API-wired, 7 static), dark theme, real-time updates |
 | `@witylogix/shopify-app` | Embedded Shopify admin app — React Router v7, Polaris Web Components |
 | `@witylogix/driver-app` | React Native driver app — GPS tracking, proof of delivery, route navigation |
 | `@witylogix/tracking-page` | Customer tracking page — Leaflet map, Socket.io real-time updates |
+| `@witylogix/customer-portal` | Customer self-service portal — order lookup, delivery tracking, returns |
+| `@witylogix/docs` | Developer documentation — Fumadocs site with 30+ MDX pages, OpenAPI spec, API reference |
 
-### Extensions
+### Extensions (3 total)
 
 | Package | Description |
 |---------|-------------|
 | `@witylogix/checkout-ui` | Preact checkout extension — delivery date/time slot picker (< 64KB) |
 | `@witylogix/pos-ui` | POS UI extension — in-store delivery scheduling |
+| `@witylogix/checkout-widget` | Embeddable checkout widget — 5-step delivery flow, customizable styling |
 
-### Shared packages
+### Shared packages (13 total)
 
 | Package | Strategy | Description |
 |---------|----------|-------------|
 | `@witylogix/db` | Compiled | Prisma client, RLS tenant extension, migrations |
-| `@witylogix/core` | Compiled | 60 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support, event-bus, webhooks, workflow-integration, realtime, file-storage, push |
+| `@witylogix/core` | Compiled | 51 modules — routing, messaging, RBAC, campaigns, audit, encryption, logging, billing, process-manager, saved-views, widgets, collections, support, event-bus, webhooks, workflow-integration, realtime, file-storage, push |
 | `@witylogix/extension-core` | Compiled | Shared Preact extension utilities — theme bridge, App Bridge wrapper, POS RPC, hooks |
 | `@witylogix/framework` | Compiled | Workflow engine — DI container, step runner, compensation engine, workflow registry, BullMQ queue/worker/scheduler/DLQ |
 | `@witylogix/workflows` | Compiled | 3 core delivery workflows (30 steps) + 12 reusable step definitions |
 | `@witylogix/types` | JIT | Shared TypeScript types (apps transpile directly) |
 | `@witylogix/validators` | JIT | Zod schemas for API validation |
 | `@witylogix/carrier-service` | Compiled | Carrier rate calculation abstraction |
+| `@witylogix/sdk` | Compiled | TypeScript SDK with zero-dependency HTTP client, auto-retry, typed resources |
+| Plus 4 more supporting packages | — | Testing utilities, configuration, environment validation, database seed |
 
 ---
 
@@ -649,6 +656,20 @@ By contributing, you agree that your contributions are licensed under the AGPL-3
 - [x] Docker Compose + Dockerfile for local development
 - [x] 23 UI components (Button, Card, Badge, Input, Select, Modal, Table, Tabs, Toast, StatCard, EmptyState, DropdownMenu, Skeleton, Tooltip, DatePicker, Pagination, Breadcrumb, Avatar, Switch, Checkbox, Alert, Progress, ErrorBoundary)
 - [x] LICENSE (AGPL-3.0) + CI/CD Docker build step
+- [x] 125+ integration providers at production status
+- [x] Real-time WebSocket + SSE infrastructure for live updates
+- [x] Route optimization engine — nearest-neighbor, 2-opt, Clarke-Wright savings algorithms
+- [x] Returns/RMA 8-state lifecycle (REQUESTED → APPROVED → RECEIVED → INSPECTED → REFUNDED)
+- [x] Driver scoring with 4 tiers (Platinum/Gold/Silver/Bronze)
+- [x] Live tracking with PostGIS spatial queries
+- [x] Proof of delivery (photo, signature, QR, barcode)
+- [x] 180 dashboard pages (173 API-wired, 7 static)
+- [x] 77+ API route files (route-optimization, live-tracking, proof-of-delivery)
+- [x] 20 packages in monorepo across 7 apps + 3 extensions
+- [x] Sprint 9.3 tech debt blitz (22 routes registered, 12 hooks rewritten, CI/CD, component consolidation)
+- [x] Sprint 9.4 mass page rewiring (134 pages mock→API, 96% coverage)
+- [x] Sprint 9.5 Prisma types, WebSocket/SSE infrastructure, 6-page redesign
+- [x] Sprint 9.6 prisma as any migration, route/tracking/POD APIs, 12-page redesign, README/CHANGELOG update
 - [ ] MongoDB → PostgreSQL data migration tooling
 - [ ] "Built for Shopify" certification
 - [x] WooCommerce integration plugin (Phase 1 — adapter + webhooks)

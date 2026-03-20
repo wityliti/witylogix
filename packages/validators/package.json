@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "src/schemas.ts",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "src/schemas.ts",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",

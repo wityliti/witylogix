@@ -11,7 +11,7 @@
  */
 
 import crypto from "crypto";
-import { prisma as any } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import {
   InvitationRequest,
   InvitationResponse,
@@ -57,7 +57,7 @@ export class InvitationService {
     }
 
     // Check for existing invitation
-    const existing = await (prisma as any).invitation.findUnique({
+    const existing = await db.invitation.findUnique({
       where: { orgId_email: { orgId, email } },
     });
 
@@ -93,7 +93,7 @@ export class InvitationService {
     expiresAt.setDate(expiresAt.getDate() + this.INVITATION_EXPIRY_DAYS);
 
     // Create invitation
-    const invitation = await (prisma as any).invitation.create({
+    const invitation = await db.invitation.create({
       data: {
         orgId,
         email,
@@ -127,7 +127,7 @@ export class InvitationService {
     const { token, userId } = input;
 
     // Find invitation by token
-    const invitation = await (prisma as any).invitation.findUnique({
+    const invitation = await db.invitation.findUnique({
       where: { token },
       include: { organization: true },
     });
@@ -152,7 +152,7 @@ export class InvitationService {
     // Check expiry
     if (invitation.expiresAt < new Date()) {
       // Mark as expired
-      await (prisma as any).invitation.update({
+      await db.invitation.update({
         where: { id: invitation.id },
         data: {
           status: InvitationStatus.EXPIRED,
@@ -201,7 +201,7 @@ export class InvitationService {
 
     // Mark invitation as accepted
     const now = new Date();
-    await (prisma as any).invitation.update({
+    await db.invitation.update({
       where: { id: invitation.id },
       data: {
         status: InvitationStatus.ACCEPTED,
@@ -228,7 +228,7 @@ export class InvitationService {
    * @throws OnboardingError if invitation not found
    */
   async revokeInvitation(invitationId: string): Promise<InvitationResponse> {
-    const invitation = await (prisma as any).invitation.findUnique({
+    const invitation = await db.invitation.findUnique({
       where: { id: invitationId },
     });
 
@@ -240,7 +240,7 @@ export class InvitationService {
       );
     }
 
-    const updated = await (prisma as any).invitation.update({
+    const updated = await db.invitation.update({
       where: { id: invitationId },
       data: {
         status: InvitationStatus.REVOKED,
@@ -263,7 +263,7 @@ export class InvitationService {
     orgId: string,
     status?: InvitationStatus,
   ): Promise<InvitationResponse[]> {
-    const invitations = await (prisma as any).invitation.findMany({
+    const invitations = await db.invitation.findMany({
       where: {
         orgId,
         ...(status && { status }),
@@ -282,7 +282,7 @@ export class InvitationService {
    * @throws OnboardingError if not found
    */
   async getInvitation(invitationId: string): Promise<InvitationResponse> {
-    const invitation = await (prisma as any).invitation.findUnique({
+    const invitation = await db.invitation.findUnique({
       where: { id: invitationId },
     });
 
@@ -304,7 +304,7 @@ export class InvitationService {
    * @returns Count of expired invitations marked
    */
   async cleanupExpiredInvitations(): Promise<number> {
-    const result = await (prisma as any).invitation.updateMany({
+    const result = await db.invitation.updateMany({
       where: {
         status: InvitationStatus.PENDING,
         expiresAt: { lt: new Date() },
@@ -329,7 +329,7 @@ export class InvitationService {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - olderThanDays);
 
-    const result = await (prisma as any).invitation.deleteMany({
+    const result = await db.invitation.deleteMany({
       where: {
         status: { in: [InvitationStatus.EXPIRED, InvitationStatus.REVOKED] },
         updatedAt: { lt: cutoff },
@@ -400,15 +400,15 @@ export class InvitationService {
     revokedInvitations: number;
   }> {
     const [total, pending, accepted, expired, revoked] = await Promise.all([
-      (prisma as any).invitation.count(),
-      (prisma as any).invitation.count({ where: { status: InvitationStatus.PENDING } }),
-      (prisma as any).invitation.count({
+      db.invitation.count(),
+      db.invitation.count({ where: { status: InvitationStatus.PENDING } }),
+      db.invitation.count({
         where: { status: InvitationStatus.ACCEPTED },
       }),
-      (prisma as any).invitation.count({
+      db.invitation.count({
         where: { status: InvitationStatus.EXPIRED },
       }),
-      (prisma as any).invitation.count({
+      db.invitation.count({
         where: { status: InvitationStatus.REVOKED },
       }),
     ]);

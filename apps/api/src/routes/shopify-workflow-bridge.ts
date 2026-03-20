@@ -20,7 +20,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createHmac } from "crypto";
-import { prisma } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import { getNotificationQueue } from "../lib/queue.js";
 import { z } from "zod";
 
@@ -232,7 +232,7 @@ async function shopifyWorkflowBridgeRoutes(
         );
 
         // Check idempotency — avoid duplicate processing
-        const existingOrder = await (prisma as any).order.findFirst({
+        const existingOrder = await db.order.findFirst({
           where: {
             shopifyOrderId: String(order.id),
           },
@@ -252,7 +252,7 @@ async function shopifyWorkflowBridgeRoutes(
         }
 
         // Fetch shop credentials for workflow context
-        const shop = await (prisma as any).shop.findUnique({
+        const shop = await db.shop.findUnique({
           where: { id: shopId },
           select: { id: true, name: true, organizationId: true },
         });
@@ -419,7 +419,7 @@ async function shopifyWorkflowBridgeRoutes(
         );
 
         // Find associated order
-        const order = await (prisma as any).order.findFirst({
+        const order = await db.order.findFirst({
           where: {
             shopifyOrderId: String(fulfillment.order_id),
           },

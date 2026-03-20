@@ -49,7 +49,7 @@ export class CollectionManager {
     externalCollectionId?: string,
     source?: string
   ): Promise<Collection> {
-    const collection = await (prisma as any).collection.create({
+    const collection = await this.prisma.collection.create({
       data: {
         shopId,
         externalId: externalCollectionId,
@@ -75,7 +75,7 @@ export class CollectionManager {
     collectionId: string,
     data: UpdateCollectionRequest
   ): Promise<Collection> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -83,7 +83,7 @@ export class CollectionManager {
       throw new CollectionNotFoundError(collectionId);
     }
 
-    const updated = await (prisma as any).collection.update({
+    const updated = await this.prisma.collection.update({
       where: { id: collectionId },
       data: {
         title: data.title ?? collection.title,
@@ -103,7 +103,7 @@ export class CollectionManager {
    * Delete a collection and all its product associations
    */
   async deleteCollection(collectionId: string): Promise<void> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -111,7 +111,7 @@ export class CollectionManager {
       throw new CollectionNotFoundError(collectionId);
     }
 
-    await (prisma as any).collection.delete({
+    await this.prisma.collection.delete({
       where: { id: collectionId },
     });
   }
@@ -123,7 +123,7 @@ export class CollectionManager {
     collectionId: string,
     request: AddProductsRequest
   ): Promise<CollectionProduct[]> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -132,7 +132,7 @@ export class CollectionManager {
     }
 
     // Get current max position
-    const lastProduct = await (prisma as any).collectionProduct.findFirst({
+    const lastProduct = await this.prisma.collectionProduct.findFirst({
       where: { collectionId },
       orderBy: { position: 'desc' },
     });
@@ -142,7 +142,7 @@ export class CollectionManager {
     // Create collection products
     const items: CollectionProduct[] = [];
     for (const productId of request.productIds) {
-      const item = await (prisma as any).collectionProduct.upsert({
+      const item = await this.prisma.collectionProduct.upsert({
         where: {
           collectionId_productId: {
             collectionId,
@@ -161,11 +161,11 @@ export class CollectionManager {
     }
 
     // Update product count
-    const count = await (prisma as any).collectionProduct.count({
+    const count = await this.prisma.collectionProduct.count({
       where: { collectionId },
     });
 
-    await (prisma as any).collection.update({
+    await this.prisma.collection.update({
       where: { id: collectionId },
       data: { productCount: count },
     });
@@ -180,7 +180,7 @@ export class CollectionManager {
     collectionId: string,
     productIds: string[]
   ): Promise<void> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -188,7 +188,7 @@ export class CollectionManager {
       throw new CollectionNotFoundError(collectionId);
     }
 
-    await (prisma as any).collectionProduct.deleteMany({
+    await this.prisma.collectionProduct.deleteMany({
       where: {
         collectionId,
         productId: { in: productIds },
@@ -196,11 +196,11 @@ export class CollectionManager {
     });
 
     // Update product count
-    const count = await (prisma as any).collectionProduct.count({
+    const count = await this.prisma.collectionProduct.count({
       where: { collectionId },
     });
 
-    await (prisma as any).collection.update({
+    await this.prisma.collection.update({
       where: { id: collectionId },
       data: { productCount: count },
     });
@@ -213,7 +213,7 @@ export class CollectionManager {
     collectionId: string,
     request: ReorderProductsRequest
   ): Promise<CollectionProduct[]> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -223,7 +223,7 @@ export class CollectionManager {
 
     const items: CollectionProduct[] = [];
     for (const item of request.items) {
-      const updated = await (prisma as any).collectionProduct.update({
+      const updated = await this.prisma.collectionProduct.update({
         where: {
           collectionId_productId: {
             collectionId,
@@ -250,7 +250,7 @@ export class CollectionManager {
     const collections: Collection[] = [];
 
     for (const platformCollection of platformCollections) {
-      const collection = await (prisma as any).collection.upsert({
+      const collection = await this.prisma.collection.upsert({
         where: {
           shopId_externalId: {
             shopId,
@@ -310,7 +310,7 @@ export class CollectionManager {
    * Evaluate auto collection rules (re-evaluate all matching products)
    */
   async evaluateAutoRules(collectionId: string): Promise<number> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -324,7 +324,7 @@ export class CollectionManager {
 
     // This would normally query products and apply rules
     // For now, return the current product count
-    const count = await (prisma as any).collectionProduct.count({
+    const count = await this.prisma.collectionProduct.count({
       where: { collectionId },
     });
 
@@ -335,7 +335,7 @@ export class CollectionManager {
    * Get collection with products
    */
   async getCollectionWithProducts(collectionId: string): Promise<CollectionWithProducts | null> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
       include: {
         products: {
@@ -365,13 +365,13 @@ export class CollectionManager {
     const offset = pagination?.offset || 0;
 
     const [collections, total] = await Promise.all([
-      (prisma as any).collection.findMany({
+      this.prisma.collection.findMany({
         where: { shopId },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
       }),
-      (prisma as any).collection.count({
+      this.prisma.collection.count({
         where: { shopId },
       }),
     ]);
@@ -388,7 +388,7 @@ export class CollectionManager {
    * Get collection by ID
    */
   async getCollection(collectionId: string): Promise<Collection | null> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
     });
 
@@ -402,7 +402,7 @@ export class CollectionManager {
     shopId: string,
     externalCollectionId: string
   ): Promise<Collection | null> {
-    const collection = await (prisma as any).collection.findUnique({
+    const collection = await this.prisma.collection.findUnique({
       where: {
         shopId_externalId: {
           shopId,

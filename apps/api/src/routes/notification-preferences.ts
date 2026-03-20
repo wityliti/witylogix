@@ -1,9 +1,8 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@witylogix/db";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * Validation schemas
@@ -40,13 +39,13 @@ router.get(
       }
 
       // Fetch or create default preferences
-      let preferences = await (prisma as any).notificationPreference.findUnique({
+      let preferences = await db.notificationPreference.findUnique({
         where: { customerId },
       });
 
       if (!preferences) {
         // Create default preferences
-        preferences = await (prisma as any).notificationPreference.create({
+        preferences = await db.notificationPreference.create({
           data: {
             customerId,
             email_enabled: true,
@@ -101,7 +100,7 @@ router.put(
       const validatedData = PreferencesSchema.parse(req.body);
 
       // Update or create preferences
-      const preferences = await (prisma as any).notificationPreference.upsert({
+      const preferences = await db.notificationPreference.upsert({
         where: { customerId },
         create: {
           customerId,
@@ -157,7 +156,7 @@ router.post(
         updatedAt: new Date(),
       };
 
-      const preferences = await (prisma as any).notificationPreference.upsert({
+      const preferences = await db.notificationPreference.upsert({
         where: { customerId },
         create: {
           customerId,
@@ -196,7 +195,7 @@ router.get(
       }
 
       // Fetch preferences
-      const preferences = await (prisma as any).notificationPreference.findUnique({
+      const preferences = await db.notificationPreference.findUnique({
         where: { customerId },
       });
 
@@ -286,7 +285,7 @@ router.patch(
         updatedAt: new Date(),
       };
 
-      const preferences = await (prisma as any).notificationPreference.upsert({
+      const preferences = await db.notificationPreference.upsert({
         where: { customerId },
         create: {
           customerId,
@@ -329,7 +328,7 @@ router.patch(
         updatedAt: new Date(),
       };
 
-      const preferences = await (prisma as any).notificationPreference.upsert({
+      const preferences = await db.notificationPreference.upsert({
         where: { customerId },
         create: {
           customerId,
@@ -365,7 +364,7 @@ router.post(
         });
       }
 
-      const preferences = await (prisma as any).notificationPreference.findMany({
+      const preferences = await db.notificationPreference.findMany({
         where: {
           customerId: { in: customerIds },
         },

@@ -16,8 +16,7 @@
  * - All comparisons are constant-time to prevent timing attacks
  */
 
-// @ts-ignore - prisma client
-import { prisma } from "@witylogix/db";
+import { db } from "@witylogix/db";
 import type { PasswordStrengthResult } from "./types.js";
 
 // ─── TYPES ──────────────────────────────────────────────────
@@ -183,7 +182,7 @@ export class PasswordService {
   async checkHistory(userId: string, newPassword: string, historySize = 5): Promise<boolean> {
     try {
       // Fetch last N password hashes for this user
-      const user = await (prisma as any).user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: userId },
         select: { id: true },
       });

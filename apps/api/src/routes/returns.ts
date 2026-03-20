@@ -16,6 +16,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { db } from "@witylogix/db";
 import { paginationSchema } from "@witylogix/validators";
 import {
   ReturnStatus,
@@ -117,7 +118,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const [returns, total] = await Promise.all([
-        (prisma as any).returnRequest.findMany({
+        db.returnRequest.findMany({
           where,
           orderBy: { [sortBy]: sortOrder },
           skip: (page - 1) * limit,
@@ -133,7 +134,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
             },
           },
         }),
-        (prisma as any).returnRequest.count({ where }),
+        db.returnRequest.count({ where }),
       ]);
 
       return {
@@ -156,7 +157,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     try {
       const { id } = request.params as { id: string };
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
         include: {
           order: {
@@ -193,7 +194,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const body = createReturnSchema.parse(request.body);
 
       // Verify order exists and belongs to tenant
-      const order = await (prisma as any).order.findUnique({
+      const order = await db.order.findUnique({
         where: { id: body.orderId },
       });
 
@@ -225,7 +226,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const { id } = request.params as { id: string };
       const body = approveReturnSchema.parse(request.body);
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
       });
 
@@ -246,7 +247,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Update status and approval details
-      const updated = await (prisma as any).returnRequest.update({
+      const updated = await db.returnRequest.update({
         where: { id },
         data: {
           status: ReturnStatus.APPROVED,
@@ -274,7 +275,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const { id } = request.params as { id: string };
       const body = rejectReturnSchema.parse(request.body);
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
       });
 
@@ -295,7 +296,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Update status with rejection reason
-      const updated = await (prisma as any).returnRequest.update({
+      const updated = await db.returnRequest.update({
         where: { id },
         data: {
           status: ReturnStatus.REJECTED,
@@ -318,7 +319,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
     try {
       const { id } = request.params as { id: string };
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
       });
 
@@ -339,7 +340,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Update status
-      const updated = await (prisma as any).returnRequest.update({
+      const updated = await db.returnRequest.update({
         where: { id },
         data: {
           status: ReturnStatus.RECEIVED,
@@ -360,7 +361,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const { id } = request.params as { id: string };
       const body = inspectItemsSchema.parse(request.body);
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
       });
 
@@ -387,7 +388,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       }));
 
       // Update status to inspected
-      const updated = await (prisma as any).returnRequest.update({
+      const updated = await db.returnRequest.update({
         where: { id },
         data: {
           status: ReturnStatus.INSPECTED,
@@ -409,7 +410,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       const { id } = request.params as { id: string };
       const body = processRefundSchema.parse(request.body);
 
-      const returnRequest = await (prisma as any).returnRequest.findUnique({
+      const returnRequest = await db.returnRequest.findUnique({
         where: { id },
         include: {
           order: { select: { totalPrice: true } },
@@ -440,7 +441,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       // Update return status to refunded
-      const updated = await (prisma as any).returnRequest.update({
+      const updated = await db.returnRequest.update({
         where: { id },
         data: {
           status: ReturnStatus.REFUNDED,
@@ -466,31 +467,31 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Get counts by status
       const statusCounts = await Promise.all([
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.REQUESTED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.APPROVED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.REJECTED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.RECEIVED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.INSPECTED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.REFUNDED },
         }),
-        (prisma as any).returnRequest.count({
+        db.returnRequest.count({
           where: { ...where, status: ReturnStatus.CLOSED },
         }),
       ]);
 
       // Get total refund amount
-      const refundStats = await (prisma as any).returnRequest.aggregate({
+      const refundStats = await db.returnRequest.aggregate({
         where: { ...where, status: ReturnStatus.REFUNDED },
         _sum: {
           refundAmount: true,

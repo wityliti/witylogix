@@ -11,7 +11,7 @@
  */
 
 import { EventEmitter } from "events";
-import { prisma as any } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import {
   OnboardingStep,
   OnboardingState,
@@ -57,7 +57,7 @@ export class OnboardingService {
     const { userId, email, name } = input;
 
     // Check for existing active onboarding
-    const existing = await (prisma as any).onboardingProgress.findUnique({
+    const existing = await db.onboardingProgress.findUnique({
       where: { userId },
     });
 
@@ -70,7 +70,7 @@ export class OnboardingService {
     }
 
     // Create new progress record
-    const progress = await (prisma as any).onboardingProgress.create({
+    const progress = await db.onboardingProgress.create({
       data: {
         userId,
         currentStep: OnboardingStep.EMAIL_VERIFICATION,
@@ -113,7 +113,7 @@ export class OnboardingService {
     const { progressId, step, subStep, data } = input;
 
     // Fetch current progress
-    const progress = await (prisma as any).onboardingProgress.findUnique({
+    const progress = await db.onboardingProgress.findUnique({
       where: { id: progressId },
     });
 
@@ -137,7 +137,7 @@ export class OnboardingService {
     this.validateStepTransition(progress.completedSteps, step);
 
     // Update progress record
-    const updatedProgress = await (prisma as any).onboardingProgress.update({
+    const updatedProgress = await db.onboardingProgress.update({
       where: { id: progressId },
       data: {
         currentStep: step,
@@ -174,7 +174,7 @@ export class OnboardingService {
    * @returns Current onboarding state or null if none exists
    */
   async getProgress(userId: string): Promise<OnboardingState | null> {
-    const progress = await (prisma as any).onboardingProgress.findUnique({
+    const progress = await db.onboardingProgress.findUnique({
       where: { userId },
     });
 
@@ -189,7 +189,7 @@ export class OnboardingService {
    * @throws OnboardingError if not found
    */
   async getProgressById(progressId: string): Promise<OnboardingState> {
-    const progress = await (prisma as any).onboardingProgress.findUnique({
+    const progress = await db.onboardingProgress.findUnique({
       where: { id: progressId },
     });
 
@@ -230,7 +230,7 @@ export class OnboardingService {
     }
 
     // Mark as complete
-    const completed = await (prisma as any).onboardingProgress.update({
+    const completed = await db.onboardingProgress.update({
       where: { id: progressId },
       data: {
         isActive: false,
@@ -261,7 +261,7 @@ export class OnboardingService {
   async abandonOnboarding(progressId: string): Promise<OnboardingState> {
     const progress = await this.getProgressById(progressId);
 
-    const abandoned = await (prisma as any).onboardingProgress.update({
+    const abandoned = await db.onboardingProgress.update({
       where: { id: progressId },
       data: {
         isActive: false,
@@ -292,7 +292,7 @@ export class OnboardingService {
    * @returns Updated onboarding state
    */
   async linkOrganization(progressId: string, orgId: string): Promise<OnboardingState> {
-    const updated = await (prisma as any).onboardingProgress.update({
+    const updated = await db.onboardingProgress.update({
       where: { id: progressId },
       data: {
         orgId,
@@ -387,7 +387,7 @@ export class OnboardingService {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - olderThanDays);
 
-    const result = await (prisma as any).onboardingProgress.deleteMany({
+    const result = await db.onboardingProgress.deleteMany({
       where: {
         abandonedAt: {
           lt: cutoff,
@@ -410,15 +410,15 @@ export class OnboardingService {
     averageStepsCompleted: number;
     completionRate: number;
   }> {
-    const total = await (prisma as any).onboardingProgress.count();
-    const completed = await (prisma as any).onboardingProgress.count({
+    const total = await db.onboardingProgress.count();
+    const completed = await db.onboardingProgress.count({
       where: { completedAt: { not: null } },
     });
-    const abandoned = await (prisma as any).onboardingProgress.count({
+    const abandoned = await db.onboardingProgress.count({
       where: { abandonedAt: { not: null } },
     });
 
-    const sessions = await (prisma as any).onboardingProgress.findMany({
+    const sessions = await db.onboardingProgress.findMany({
       select: {
         completedSteps: true,
       },

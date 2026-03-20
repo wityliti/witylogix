@@ -205,6 +205,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(import("./routes/workflow-drivers.js"), { prefix: "/api/v4/workflow/drivers" });
   await app.register(import("./routes/workflow-executions.js"), { prefix: "/api/v4/workflow/executions" });
   await app.register(import("./routes/workflow-orders.js"), { prefix: "/api/v4/workflow/orders" });
+  await app.register(import("./routes/route-optimization.js"), { prefix: "/api/v4/route-optimization" });
+  await app.register(import("./routes/live-tracking.js"), { prefix: "/api/v4/tracking/live" });
+  await app.register(import("./routes/proof-of-delivery.js"), { prefix: "/api/v4/pod/v2" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

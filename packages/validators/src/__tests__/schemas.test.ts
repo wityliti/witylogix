@@ -1,5 +1,5 @@
 /**
- * @witylogix/validators — Comprehensive Zod Schema Tests
+ * @witylogix/validators - Comprehensive Zod Schema Tests
  *
  * Tests all validation schemas for:
  * - Valid input acceptance
@@ -55,9 +55,9 @@ import {
   syncProductsSchema,
   syncCustomerSchema,
   syncCustomersSchema,
-} from '../index';
+} from '@witylogix/validators';
 
-// ─── UUID Schema Tests ──────────────────────────────────
+// - UUID Schema Tests -
 
 describe('uuidSchema', () => {
   it('accepts valid UUID v4', () => {
@@ -77,7 +77,7 @@ describe('uuidSchema', () => {
   });
 });
 
-// ─── Pagination Schema Tests ────────────────────────────
+// - Pagination Schema Tests -
 
 describe('paginationSchema', () => {
   it('accepts valid pagination params', () => {
@@ -111,7 +111,7 @@ describe('paginationSchema', () => {
   });
 });
 
-// ─── Coordinates Schema Tests ───────────────────────────
+// - Coordinates Schema Tests -
 
 describe('coordinatesSchema', () => {
   it('accepts valid coordinates', () => {
@@ -140,7 +140,7 @@ describe('coordinatesSchema', () => {
   });
 });
 
-// ─── Order Schema Tests ─────────────────────────────────
+// - Order Schema Tests -
 
 describe('createOrderSchema', () => {
   const validOrder = {
@@ -251,7 +251,7 @@ describe('updateOrderStatusSchema', () => {
   });
 });
 
-// ─── Driver Schema Tests ────────────────────────────────
+// - Driver Schema Tests -
 
 describe('createDriverSchema', () => {
   const validDriver = {
@@ -376,7 +376,7 @@ describe('updateDriverLocationSchema', () => {
   });
 });
 
-// ─── Delivery Zone Schema Tests ─────────────────────────
+// - Delivery Zone Schema Tests -
 
 describe('createDeliveryZoneSchema', () => {
   const validZone = {
@@ -431,7 +431,7 @@ describe('createDeliveryZoneSchema', () => {
   });
 });
 
-// ─── Carrier Rate Request Schema Tests ──────────────────
+// - Carrier Rate Request Schema Tests -
 
 describe('carrierRateRequestSchema', () => {
   const validRequest = {
@@ -504,7 +504,7 @@ describe('carrierRateRequestSchema', () => {
   });
 });
 
-// ─── Route Optimization Schema Tests ────────────────────
+// - Route Optimization Schema Tests -
 
 describe('optimizeRouteSchema', () => {
   const validOptimization = {
@@ -554,7 +554,7 @@ describe('optimizeRouteSchema', () => {
   });
 });
 
-// ─── Shipment Schema Tests ──────────────────────────────
+// - Shipment Schema Tests -
 
 describe('createShipmentSchema', () => {
   const validShipment = {
@@ -673,7 +673,7 @@ describe('updateShipmentStatusSchema', () => {
   });
 });
 
-// ─── Location Schema Tests ──────────────────────────────
+// - Location Schema Tests -
 
 describe('createLocationSchema', () => {
   const validLocation = {
@@ -721,7 +721,7 @@ describe('createLocationSchema', () => {
   });
 });
 
-// ─── Shipping Profile Schema Tests ──────────────────────
+// - Shipping Profile Schema Tests -
 
 describe('createShippingProfileSchema', () => {
   const validProfile = {
@@ -775,7 +775,7 @@ describe('createShippingProfileSchema', () => {
   });
 });
 
-// ─── Calendar Rule Schema Tests ─────────────────────────
+// - Calendar Rule Schema Tests -
 
 describe('createCalendarRuleSchema', () => {
   const validRule = {
@@ -813,7 +813,7 @@ describe('createCalendarRuleSchema', () => {
   });
 });
 
-// ─── Notification Template Schema Tests ──────────────────
+// - Notification Template Schema Tests -
 
 describe('createNotificationTemplateSchema', () => {
   const validTemplate = {
@@ -874,7 +874,7 @@ describe('previewNotificationTemplateSchema', () => {
   });
 });
 
-// ─── Activity Log Schema Tests ──────────────────────────
+// - Activity Log Schema Tests -
 
 describe('createActivityLogSchema', () => {
   const validLog = {
@@ -910,7 +910,7 @@ describe('createActivityLogSchema', () => {
   });
 });
 
-// ─── Payment Schema Tests ───────────────────────────────
+// - Payment Schema Tests -
 
 describe('createPaymentSchema', () => {
   const validPayment = {
@@ -977,7 +977,7 @@ describe('updatePaymentStatusSchema', () => {
   });
 });
 
-// ─── Product/Customer Sync Schema Tests ─────────────────
+// - Product/Customer Sync Schema Tests -
 
 describe('syncProductSchema', () => {
   const validProduct = {
@@ -1063,7 +1063,7 @@ describe('syncCustomerSchema', () => {
   });
 });
 
-// ─── SQL Injection Prevention ────────────────────────────
+// - SQL Injection Prevention -
 
 describe('SQL Injection Prevention', () => {
   it('escapes SQL special characters in strings', () => {
@@ -1092,7 +1092,7 @@ describe('SQL Injection Prevention', () => {
   });
 });
 
-// ─── Edge Cases ──────────────────────────────────────────
+// - Edge Cases -
 
 describe('Edge Cases', () => {
   it('handles empty strings in optional string fields', () => {

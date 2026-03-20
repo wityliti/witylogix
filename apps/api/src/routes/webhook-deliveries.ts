@@ -17,7 +17,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { prisma } from "@witylogix/db";
+import { db } from "@witylogix/db";
 
 // ─── ZODI VALIDATION SCHEMAS ────────────────────────────
 
@@ -92,7 +92,7 @@ export default async function webhookDeliveriesRoutes(
 
         // Fetch deliveries and total count
         const [deliveries, total] = await Promise.all([
-          (prisma as any).webhookDelivery.findMany({
+          db.webhookDelivery.findMany({
             where,
             select: {
               id: true,
@@ -107,7 +107,7 @@ export default async function webhookDeliveriesRoutes(
             skip,
             take: query.limit,
           }),
-          (prisma as any).webhookDelivery.count({ where }),
+          db.webhookDelivery.count({ where }),
         ]);
 
         const totalPages = Math.ceil(total / query.limit);
@@ -142,7 +142,7 @@ export default async function webhookDeliveriesRoutes(
         const { id } = deliveryIdSchema.parse(request.params);
         const shopId = request.shopId;
 
-        const delivery = await (prisma as any).webhookDelivery.findUnique({
+        const delivery = await db.webhookDelivery.findUnique({
           where: { id },
         });
 
@@ -197,7 +197,7 @@ export default async function webhookDeliveriesRoutes(
         const shopId = request.shopId;
 
         // Find the delivery
-        const delivery = await (prisma as any).webhookDelivery.findUnique({
+        const delivery = await db.webhookDelivery.findUnique({
           where: { id },
         });
 
@@ -230,7 +230,7 @@ export default async function webhookDeliveriesRoutes(
         }
 
         // Update delivery status to pending and increment retry count
-        const updatedDelivery = await (prisma as any).webhookDelivery.update({
+        const updatedDelivery = await db.webhookDelivery.update({
           where: { id },
           data: {
             status: "pending",
@@ -271,34 +271,34 @@ export default async function webhookDeliveriesRoutes(
     const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const [total, success, failed, pending, avgDuration] = await Promise.all([
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: {
           shopId,
           timestamp: { gte: last24h },
         },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: {
           shopId,
           status: "success",
           timestamp: { gte: last24h },
         },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: {
           shopId,
           status: "failed",
           timestamp: { gte: last24h },
         },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: {
           shopId,
           status: "pending",
           timestamp: { gte: last24h },
         },
       }),
-      (prisma as any).webhookDelivery.aggregate({
+      db.webhookDelivery.aggregate({
         where: {
           shopId,
           timestamp: { gte: last24h },

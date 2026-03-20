@@ -13,7 +13,7 @@
  */
 
 import crypto from "crypto";
-import { prisma as any } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import {
   WorkspaceConfig,
   WorkspaceProvisionResult,
@@ -134,7 +134,7 @@ export class WorkspaceProvisioner {
       const locale = config.locale || defaults.locale;
 
       // Create workspace
-      const workspace = await (prisma as any).workspace.create({
+      const workspace = await db.workspace.create({
         data: {
           orgId: config.orgId,
           name: config.name,
@@ -170,7 +170,7 @@ export class WorkspaceProvisioner {
       const integrationConnections = [];
       for (const integrationSlug of config.selectedIntegrations || []) {
         try {
-          const connection = await (prisma as any).integrationConnection.create({
+          const connection = await db.integrationConnection.create({
             data: {
               workspaceId: workspace.id,
               integrationAppSlug: integrationSlug,
@@ -266,7 +266,7 @@ export class WorkspaceProvisioner {
     workspaceId: string,
     hardDelete: boolean = false,
   ): Promise<void> {
-    const workspace = await (prisma as any).workspace.findUnique({
+    const workspace = await db.workspace.findUnique({
       where: { id: workspaceId },
     });
 
@@ -284,7 +284,7 @@ export class WorkspaceProvisioner {
         where: { workspaceId },
       });
 
-      await (prisma as any).integrationConnection.deleteMany({
+      await db.integrationConnection.deleteMany({
         where: { workspaceId },
       });
 
@@ -292,12 +292,12 @@ export class WorkspaceProvisioner {
         where: { workspaceId },
       });
 
-      await (prisma as any).workspace.delete({
+      await db.workspace.delete({
         where: { id: workspaceId },
       });
     } else {
       // Soft delete: mark as inactive
-      await (prisma as any).workspace.update({
+      await db.workspace.update({
         where: { id: workspaceId },
         data: {
           isActive: false,
@@ -306,7 +306,7 @@ export class WorkspaceProvisioner {
       });
 
       // Disable all integrations
-      await (prisma as any).integrationConnection.updateMany({
+      await db.integrationConnection.updateMany({
         where: { workspaceId },
         data: {
           isEnabled: false,
@@ -390,7 +390,7 @@ export class WorkspaceProvisioner {
     workspaceId: string,
     updates: Partial<WorkspaceConfig>,
   ): Promise<any> {
-    const workspace = await (prisma as any).workspace.findUnique({
+    const workspace = await db.workspace.findUnique({
       where: { id: workspaceId },
     });
 
@@ -403,7 +403,7 @@ export class WorkspaceProvisioner {
     }
 
     // Update workspace record
-    const updated = await (prisma as any).workspace.update({
+    const updated = await db.workspace.update({
       where: { id: workspaceId },
       data: {
         name: updates.name || workspace.name,
@@ -454,7 +454,7 @@ export class WorkspaceProvisioner {
    * @returns Array of workspace records
    */
   async listWorkspaces(orgId: string): Promise<any[]> {
-    return (prisma as any).workspace.findMany({
+    return db.workspace.findMany({
       where: { orgId, isActive: true },
       include: { workspaceSettings: true },
       orderBy: { createdAt: "desc" },
@@ -468,7 +468,7 @@ export class WorkspaceProvisioner {
    * @returns Workspace with all details
    */
   async getWorkspaceWithDetails(workspaceId: string): Promise<any> {
-    return (prisma as any).workspace.findUnique({
+    return db.workspace.findUnique({
       where: { id: workspaceId },
       include: {
         workspaceSettings: true,

@@ -27,7 +27,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { prisma } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import { getNotificationQueue } from "../lib/queue.js";
 import { CustomAdapter } from "@witylogix/core/platforms/adapters/custom.js";
 import type { CustomCredentials, CustomAuthConfig, CustomWebhookConfig, CustomFieldMapping } from "@witylogix/core/platforms/adapters/custom.js";
@@ -78,7 +78,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
       try {
         // Step 1: Load shop and its platform configuration
-        const shop = await (prisma as any).shop.findUnique({
+        const shop = await db.shop.findUnique({
           where: { id: shopId },
           select: {
             id: true,

@@ -14,11 +14,10 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MetricCard } from '@/components/ui/metric-card';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
@@ -283,64 +282,58 @@ export default function InvoicesPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-wl-text-primary">Invoices</h1>
-          <p className="text-wl-text-secondary">
-            Manage and track your invoices
-          </p>
+          <h1 className="text-3xl font-bold text-white">Invoices</h1>
+          <p className="text-gray-400">Manage and track your invoices</p>
         </div>
-        <Button variant="primary" size="lg" onClick={handleCreateInvoice}>
-          <Plus className="w-4 h-4" />
+        <Button variant="primary" onClick={handleCreateInvoice}>
+          <Plus className="w-4 h-4 mr-2" />
           Create Invoice
         </Button>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Outstanding"
-          value={`$${stats.totalOutstanding.toFixed(2)}`}
-          trend={null}
-          icon={null}
-        />
-        <MetricCard
-          label="Total Overdue"
-          value={`$${stats.totalOverdue.toFixed(2)}`}
-          trend={null}
-          icon={null}
-        />
-        <MetricCard
-          label="Paid This Month"
-          value={`$${stats.paidThisMonth.toFixed(2)}`}
-          trend={null}
-          icon={null}
-        />
-        <MetricCard
-          label="Avg Days to Pay"
-          value={`${stats.avgDaysToPay} days`}
-          trend={null}
-          icon={null}
-        />
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-gray-400 mb-2">Total Outstanding</p>
+            <p className="text-3xl font-bold text-white">${stats.totalOutstanding.toFixed(2)}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-gray-400 mb-2">Total Overdue</p>
+            <p className="text-3xl font-bold text-red-400">${stats.totalOverdue.toFixed(2)}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-gray-400 mb-2">Paid This Month</p>
+            <p className="text-3xl font-bold text-emerald-400">${stats.paidThisMonth.toFixed(2)}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-gray-400 mb-2">Avg Days to Pay</p>
+            <p className="text-3xl font-bold text-blue-400">{stats.avgDaysToPay} days</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bulk Actions */}
       {selectedInvoices.size > 0 && (
-        <Card className="flex items-center justify-between gap-4 p-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-wl-text-primary">
-              {selectedInvoices.size} selected
-            </span>
-          </div>
+        <Card className="bg-[#12121a] border-[#1e1e2e] flex items-center justify-between gap-4 p-4">
+          <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={handleBulkSend}>
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 mr-2" />
               Send
             </Button>
             <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid}>
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-4 h-4 mr-2" />
               Mark Paid
             </Button>
           </div>
@@ -348,159 +341,153 @@ export default function InvoicesPage() {
       )}
 
       {/* Filters & Controls */}
-      <Card className="flex flex-col gap-4">
-        <div className="flex gap-3 flex-wrap items-end">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              placeholder="Search by invoice # or customer..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.currentTarget.value);
+      <Card className="bg-[#12121a] border-[#1e1e2e] space-y-4">
+        <CardContent className="pt-6">
+          <div className="flex gap-3 flex-wrap items-end">
+            <div className="flex-1 min-w-[250px]">
+              <Input
+                placeholder="Search by invoice # or customer..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.currentTarget.value);
+                  setCurrentPage(1);
+                }}
+                icon={<Search className="w-4 h-4" />}
+                className="w-full bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
+              />
+            </div>
+
+            <Select
+              value={selectedStatus as string}
+              onChange={(value) => {
+                setSelectedStatus((value as InvoiceStatus) || "");
                 setCurrentPage(1);
               }}
-              icon={<Search className="w-4 h-4" />}
-              className="w-full"
-            />
-          </div>
-
-          <Select
-            value={selectedStatus as string}
-            onChange={(value) => {
-              setSelectedStatus((value as InvoiceStatus) || "");
-              setCurrentPage(1);
-            }}
-            label="Status"
-            className="w-32"
-          >
-            <option value="">All Status</option>
-            <option value='draft'>Draft</option>
-            <option value='sent'>Sent</option>
-            <option value='paid'>Paid</option>
-            <option value='overdue'>Overdue</option>
-            <option value='cancelled'>Cancelled</option>
-          </Select>
-
-          <Select
-            value={selectedCustomer}
-            onChange={(value) => {
-              setSelectedCustomer(value);
-              setCurrentPage(1);
-            }}
-            label="Customer"
-            className="w-40"
-          >
-            <option value="">All Customers</option>
-            {customers.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </Select>
-
-          <Select
-            value={sortBy}
-            onChange={(value) =>
-              setSortBy(value as "date" | "amount" | "status" | "due")
-            }
-            label="Sort By"
-            className="w-32"
-          >
-            <option value='date'>Date</option>
-            <option value='amount'>Amount</option>
-            <option value='status'>Status</option>
-            <option value='due'>Due Date</option>
-          </Select>
-
-          <Button variant="secondary" size="sm" onClick={handleExportCSV}>
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="ml-auto"
+              label="Status"
+              className="w-40 bg-[#1a1a2e] border-[#1e1e2e] text-white"
             >
-              <FilterX className="w-4 h-4" />
-              Clear Filters
+              <option value="">All Status</option>
+              <option value='draft'>Draft</option>
+              <option value='sent'>Sent</option>
+              <option value='paid'>Paid</option>
+              <option value='overdue'>Overdue</option>
+              <option value='cancelled'>Cancelled</option>
+            </Select>
+
+            <Select
+              value={selectedCustomer}
+              onChange={(value) => {
+                setSelectedCustomer(value);
+                setCurrentPage(1);
+              }}
+              label="Customer"
+              className="w-40 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+            >
+              <option value="">All Customers</option>
+              {customers.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              value={sortBy}
+              onChange={(value) =>
+                setSortBy(value as "date" | "amount" | "status" | "due")
+              }
+              label="Sort By"
+              className="w-32 bg-[#1a1a2e] border-[#1e1e2e] text-white"
+            >
+              <option value='date'>Date</option>
+              <option value='amount'>Amount</option>
+              <option value='status'>Status</option>
+              <option value='due'>Due Date</option>
+            </Select>
+
+            <Button variant="secondary" size="sm" onClick={handleExportCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              Export
             </Button>
-          )}
-        </div>
 
-        {/* Additional Filters */}
-        <div className="flex gap-3 flex-wrap items-end border-t border-wl-border-subtle pt-4">
-          <div className="flex gap-2 items-end">
-            <label className="text-xs font-semibold uppercase text-wl-text-secondary">
-              Date Range
-            </label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
-            />
-            <span className="text-wl-text-secondary">to</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
-            />
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-gray-400 hover:text-white"
+              >
+                <FilterX className="w-4 h-4 mr-2" />
+                Clear
+              </Button>
+            )}
           </div>
 
-          <div className="flex gap-2 items-end">
-            <label className="text-xs font-semibold uppercase text-wl-text-secondary">
-              Amount
-            </label>
-            <input
-              type="number"
-              placeholder="Min"
-              value={amountMin}
-              onChange={(e) => {
-                setAmountMin(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-20 px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
-            />
-            <span className="text-wl-text-secondary">-</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={amountMax}
-              onChange={(e) => {
-                setAmountMax(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-20 px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
-            />
+          {/* Additional Filters */}
+          <div className="flex gap-3 flex-wrap items-end border-t border-[#1e1e2e] pt-4 mt-4">
+            <div className="flex gap-2 items-end">
+              <label className="text-xs font-semibold uppercase text-gray-400">Date Range</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+              />
+              <span className="text-gray-400">to</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
+              />
+            </div>
+
+            <div className="flex gap-2 items-end">
+              <label className="text-xs font-semibold uppercase text-gray-400">Amount</label>
+              <input
+                type="number"
+                placeholder="Min"
+                value={amountMin}
+                onChange={(e) => {
+                  setAmountMin(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-20 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white placeholder-gray-500"
+              />
+              <span className="text-gray-400">-</span>
+              <input
+                type="number"
+                placeholder="Max"
+                value={amountMax}
+                onChange={(e) => {
+                  setAmountMax(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-20 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white placeholder-gray-500"
+              />
+            </div>
           </div>
-        </div>
+        </CardContent>
       </Card>
 
       {/* Invoices Table */}
       {filtered.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center gap-4 py-16">
-          <Search className="w-12 h-12 text-wl-text-secondary/50" />
+        <Card className="bg-[#12121a] border-[#1e1e2e] flex flex-col items-center justify-center gap-4 py-16">
+          <Search className="w-12 h-12 text-gray-600" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-wl-text-secondary">
-              No invoices found
-            </h3>
-            <p className="text-sm text-wl-text-secondary/75">
-              Try adjusting your search or filters
-            </p>
+            <h3 className="text-lg font-semibold text-gray-300">No invoices found</h3>
+            <p className="text-sm text-gray-500">Try adjusting your search or filters</p>
           </div>
         </Card>
       ) : (
         <>
-          <Card className="overflow-hidden">
+          <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden">
             <Table
               columns={[
                 {
@@ -510,7 +497,7 @@ export default function InvoicesPage() {
                       type="checkbox"
                       checked={selectedInvoices.size === paginatedInvoices.length && paginatedInvoices.length > 0}
                       onChange={handleSelectAll}
-                      className="w-4 h-4 rounded border-wl-border-subtle"
+                      className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
                     />
                   ),
                   render: (item: any) => (
@@ -518,7 +505,7 @@ export default function InvoicesPage() {
                       type="checkbox"
                       checked={selectedInvoices.has(item.id)}
                       onChange={() => handleSelectInvoice(item.id)}
-                      className="w-4 h-4 rounded border-wl-border-subtle"
+                      className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
                     />
                   ),
                   width: 40,
@@ -527,7 +514,7 @@ export default function InvoicesPage() {
                   key: "number",
                   header: "Invoice #",
                   render: (item: any) => (
-                    <div className="font-mono text-sm font-medium text-wl-primary-500">
+                    <div className="font-mono text-sm font-medium text-blue-400">
                       {item.number}
                     </div>
                   ),
@@ -539,12 +526,13 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
+                  render: (item: any) => <span className="text-gray-300">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
                   header: "Amount",
                   render: (item: any) => (
-                    <div className="font-medium">
+                    <div className="font-medium text-white">
                       ${item.amount.toFixed(2)}
                     </div>
                   ),
@@ -566,7 +554,7 @@ export default function InvoicesPage() {
                   key: "dueDate",
                   header: "Due Date",
                   render: (item: any) => (
-                    <div className="text-sm">
+                    <div className="text-sm text-gray-300">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
                   ),
@@ -577,7 +565,7 @@ export default function InvoicesPage() {
                   key: "sentDate",
                   header: "Sent Date",
                   render: (item: any) => (
-                    <div className="text-sm">
+                    <div className="text-sm text-gray-400">
                       {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
                   ),
@@ -591,6 +579,7 @@ export default function InvoicesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleViewInvoice(item.id)}
+                      className="text-gray-400 hover:text-white"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -605,11 +594,10 @@ export default function InvoicesPage() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-wl-text-secondary">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-400">
                 Showing {(currentPage - 1) * pageSize + 1}-
-                {Math.min(currentPage * pageSize, filtered.length)} of{" "}
-                {filtered.length}
+                {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
               </span>
               <Select
                 value={pageSize.toString()}
@@ -618,7 +606,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 label="Page Size"
-                className="w-20"
+                className="w-24 bg-[#1a1a2e] border-[#1e1e2e] text-white"
               >
                 <option value="5">5</option>
                 <option value="10">10</option>
@@ -637,7 +625,7 @@ export default function InvoicesPage() {
                 Previous
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }).map((_, i) => {
+                {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
                   const page = i + 1;
                   return (
                     <Button
@@ -651,6 +639,7 @@ export default function InvoicesPage() {
                     </Button>
                   );
                 })}
+                {totalPages > 5 && <span className="text-gray-500">...</span>}
               </div>
               <Button
                 variant="secondary"

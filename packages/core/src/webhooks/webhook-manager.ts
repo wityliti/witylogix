@@ -5,6 +5,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { db } from "@witylogix/db";
 import { generateSecret } from "./signer";
 import type {
   WebhookEndpoint,
@@ -75,7 +76,7 @@ export class WebhookManager {
     const secret = generateSecret();
     const id = uuidv4();
 
-    const endpoint = await (prisma as any).webhookEndpoint.create({
+    const endpoint = await db.webhookEndpoint.create({
       data: {
         id,
         tenantId,
@@ -105,7 +106,7 @@ export class WebhookManager {
     id: string,
     config: Partial<WebhookEndpointConfig>
   ): Promise<WebhookEndpoint> {
-    const existing = await (prisma as any).webhookEndpoint.findUnique({
+    const existing = await db.webhookEndpoint.findUnique({
       where: { id },
     });
 
@@ -131,7 +132,7 @@ export class WebhookManager {
     if (config.active !== undefined) updateData.active = config.active;
     if (config.metadata) updateData.metadata = config.metadata;
 
-    const updated = await (prisma as any).webhookEndpoint.update({
+    const updated = await db.webhookEndpoint.update({
       where: { id },
       data: updateData,
     });
@@ -145,7 +146,7 @@ export class WebhookManager {
    * @returns Deleted endpoint
    */
   async deleteEndpoint(id: string): Promise<WebhookEndpoint> {
-    const endpoint = await (prisma as any).webhookEndpoint.findUnique({
+    const endpoint = await db.webhookEndpoint.findUnique({
       where: { id },
     });
 
@@ -153,7 +154,7 @@ export class WebhookManager {
       throw new Error(`Webhook endpoint not found: ${id}`);
     }
 
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: { active: false, updatedAt: new Date() },
     });
@@ -197,13 +198,13 @@ export class WebhookManager {
     }
 
     const [data, total] = await Promise.all([
-      (prisma as any).webhookEndpoint.findMany({
+      db.webhookEndpoint.findMany({
         where,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      (prisma as any).webhookEndpoint.count({ where }),
+      db.webhookEndpoint.count({ where }),
     ]);
 
     return {
@@ -220,7 +221,7 @@ export class WebhookManager {
    * @returns Webhook endpoint or null
    */
   async getEndpoint(id: string): Promise<WebhookEndpoint | null> {
-    return await (prisma as any).webhookEndpoint.findUnique({
+    return await db.webhookEndpoint.findUnique({
       where: { id },
     });
   }
@@ -232,7 +233,7 @@ export class WebhookManager {
    */
   async deliverEvent(event: WebhookEvent): Promise<string[]> {
     // Get all active endpoints for this tenant
-    const endpoints = await (prisma as any).webhookEndpoint.findMany({
+    const endpoints = await db.webhookEndpoint.findMany({
       where: {
         tenantId: event.tenantId,
         active: true,
@@ -251,7 +252,7 @@ export class WebhookManager {
       // Create delivery record
       const deliveryId = uuidv4();
 
-      await (prisma as any).webhookDelivery.create({
+      await db.webhookDelivery.create({
         data: {
           id: deliveryId,
           endpointId: endpoint.id,
@@ -297,7 +298,7 @@ export class WebhookManager {
    * @returns Updated delivery record
    */
   async retryDelivery(deliveryId: string): Promise<WebhookDelivery | null> {
-    const delivery = await (prisma as any).webhookDelivery.findUnique({
+    const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
     });
 
@@ -314,7 +315,7 @@ export class WebhookManager {
     }
 
     // Reset to pending and increment attempt
-    const updated = await (prisma as any).webhookDelivery.update({
+    const updated = await db.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         status: "pending",
@@ -345,13 +346,13 @@ export class WebhookManager {
     const limit = pagination?.limit || 50;
 
     const [data, total] = await Promise.all([
-      (prisma as any).webhookDelivery.findMany({
+      db.webhookDelivery.findMany({
         where: { endpointId },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      (prisma as any).webhookDelivery.count({ where: { endpointId } }),
+      db.webhookDelivery.count({ where: { endpointId } }),
     ]);
 
     return {
@@ -368,7 +369,7 @@ export class WebhookManager {
    * @returns Updated endpoint with new secret
    */
   async rotateSecret(id: string): Promise<WebhookEndpoint> {
-    const endpoint = await (prisma as any).webhookEndpoint.findUnique({
+    const endpoint = await db.webhookEndpoint.findUnique({
       where: { id },
     });
 
@@ -378,7 +379,7 @@ export class WebhookManager {
 
     const newSecret = generateSecret();
 
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: {
         secret: newSecret,
@@ -393,7 +394,7 @@ export class WebhookManager {
    * @returns Updated endpoint
    */
   async enableEndpoint(id: string): Promise<WebhookEndpoint> {
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: {
         active: true,
@@ -410,7 +411,7 @@ export class WebhookManager {
    * @returns Updated endpoint
    */
   async disableEndpoint(id: string): Promise<WebhookEndpoint> {
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: {
         active: false,
@@ -425,7 +426,7 @@ export class WebhookManager {
    * @returns Updated endpoint
    */
   async openCircuitBreaker(id: string): Promise<WebhookEndpoint> {
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: {
         circuitBreakerOpen: true,
@@ -440,7 +441,7 @@ export class WebhookManager {
    * @returns Updated endpoint
    */
   async resetCircuitBreaker(id: string): Promise<WebhookEndpoint> {
-    return await (prisma as any).webhookEndpoint.update({
+    return await db.webhookEndpoint.update({
       where: { id },
       data: {
         circuitBreakerOpen: false,
@@ -464,7 +465,7 @@ export class WebhookManager {
     durationMs: number,
     responseBody?: string
   ): Promise<WebhookDelivery> {
-    const delivery = await (prisma as any).webhookDelivery.findUnique({
+    const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
     });
 
@@ -473,7 +474,7 @@ export class WebhookManager {
     }
 
     // Update delivery record
-    const updated = await (prisma as any).webhookDelivery.update({
+    const updated = await db.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         status: "delivered",
@@ -485,12 +486,12 @@ export class WebhookManager {
     });
 
     // Update endpoint metrics
-    const endpoint = await (prisma as any).webhookEndpoint.findUnique({
+    const endpoint = await db.webhookEndpoint.findUnique({
       where: { id: delivery.endpointId },
     });
 
     if (endpoint) {
-      await (prisma as any).webhookEndpoint.update({
+      await db.webhookEndpoint.update({
         where: { id: delivery.endpointId },
         data: {
           lastDeliveryAt: new Date(),
@@ -520,7 +521,7 @@ export class WebhookManager {
     durationMs?: number,
     responseBody?: string
   ): Promise<WebhookDelivery> {
-    const delivery = await (prisma as any).webhookDelivery.findUnique({
+    const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
     });
 
@@ -539,7 +540,7 @@ export class WebhookManager {
       delivery.attempt >= delivery.maxAttempts ? "failed" : "pending";
 
     // Update delivery record
-    const updated = await (prisma as any).webhookDelivery.update({
+    const updated = await db.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         status: newStatus,
@@ -553,7 +554,7 @@ export class WebhookManager {
     });
 
     // Update endpoint metrics
-    const endpoint = await (prisma as any).webhookEndpoint.findUnique({
+    const endpoint = await db.webhookEndpoint.findUnique({
       where: { id: delivery.endpointId },
     });
 
@@ -564,7 +565,7 @@ export class WebhookManager {
       const shouldOpenCircuit =
         newFailureCount >= CIRCUIT_BREAKER_CONFIG.failureThreshold;
 
-      await (prisma as any).webhookEndpoint.update({
+      await db.webhookEndpoint.update({
         where: { id: delivery.endpointId },
         data: {
           lastFailureAt: new Date(),
@@ -598,7 +599,7 @@ export class WebhookManager {
   async sendTestWebhook(
     endpointId: string
   ): Promise<{ success: boolean; statusCode?: number; error?: string }> {
-    const endpoint = await (prisma as any).webhookEndpoint.findUnique({
+    const endpoint = await db.webhookEndpoint.findUnique({
       where: { endpointId },
     });
 
@@ -645,22 +646,22 @@ export class WebhookManager {
       failedDeliveries,
       circuitBreakerOpen,
     ] = await Promise.all([
-      (prisma as any).webhookEndpoint.count({
+      db.webhookEndpoint.count({
         where: { tenantId },
       }),
-      (prisma as any).webhookEndpoint.count({
+      db.webhookEndpoint.count({
         where: { tenantId, active: true },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: { tenantId },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: { tenantId, status: "pending" },
       }),
-      (prisma as any).webhookDelivery.count({
+      db.webhookDelivery.count({
         where: { tenantId, status: "failed" },
       }),
-      (prisma as any).webhookEndpoint.count({
+      db.webhookEndpoint.count({
         where: { tenantId, circuitBreakerOpen: true },
       }),
     ]);

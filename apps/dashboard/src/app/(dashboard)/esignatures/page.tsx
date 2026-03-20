@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEnvelopes, useEsigAnalytics } from "@/hooks/use-esignatures";
+
+/**
+ * E-Signatures Page - Professional Dark Theme
+ * Document signing queue, completed signatures, templates, status tracking
+ */
 
 function Icon({ d, size = 24 }: { d: string; size?: number }) {
   return (
@@ -38,27 +40,19 @@ interface KPICard {
 
 function KPICardComponent({ card }: { card: KPICard }) {
   return (
-    <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardContent className={cn("pt-6")}>
         <div className={cn("flex items-start justify-between")}>
           <div className={cn("flex-1")}>
-            <p
-              className={cn(
-                "text-sm font-medium text-wl-text-secondary mb-2"
-              )}
-            >
+            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               {card.label}
             </p>
             <div className={cn("flex items-baseline gap-2")}>
-              <span
-                className={cn(
-                  "text-3xl font-bold text-wl-text-primary"
-                )}
-              >
+              <span className={cn("text-3xl font-bold text-white")}>
                 {card.value}
               </span>
               {card.unit && (
-                <span className={cn("text-sm text-wl-text-secondary")}>
+                <span className={cn("text-sm text-gray-400")}>
                   {card.unit}
                 </span>
               )}
@@ -68,8 +62,8 @@ function KPICardComponent({ card }: { card: KPICard }) {
                 <span
                   className={cn(
                     card.trend === "up"
-                      ? "text-wl-status-success"
-                      : "text-wl-status-warning"
+                      ? "text-emerald-400"
+                      : "text-amber-400"
                   )}
                 >
                   {card.trend === "up" ? "↑" : "↓"} {card.trendValue || "0%"}
@@ -77,7 +71,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
               </div>
             )}
           </div>
-          <div className={cn("text-wl-text-secondary opacity-20 ml-4")}>
+          <div className={cn("text-gray-400 opacity-20 ml-4")}>
             <Icon d={card.icon} size={32} />
           </div>
         </div>
@@ -88,18 +82,18 @@ function KPICardComponent({ card }: { card: KPICard }) {
 
 function CompletionRateChart({ rate }: { rate: number }) {
   return (
-    <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
-        <CardTitle className={cn("text-base")}>Completion Rate</CardTitle>
+        <CardTitle className={cn("text-base text-white")}>Completion Rate</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("space-y-4")}>
           <div className={cn("flex items-end justify-between")}>
             <div>
-              <p className={cn("text-4xl font-bold text-wl-text-primary")}>
+              <p className={cn("text-4xl font-bold text-white")}>
                 {Math.round(rate)}%
               </p>
-              <p className={cn("text-sm text-wl-text-secondary mt-1")}>
+              <p className={cn("text-sm text-gray-400 mt-1")}>
                 Average completion rate
               </p>
             </div>
@@ -110,7 +104,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="var(--wl-border-subtle)"
+                  stroke="#2a2a3e"
                   strokeWidth="8"
                 />
                 <circle
@@ -118,7 +112,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="var(--wl-status-success)"
+                  stroke="#10b981"
                   strokeWidth="8"
                   strokeDasharray={`${(rate / 100) * 339.3} 339.3`}
                   strokeLinecap="round"
@@ -129,7 +123,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
                   y="65"
                   textAnchor="middle"
                   className={cn("text-base font-bold")}
-                  fill="var(--wl-text-primary)"
+                  fill="white"
                 >
                   {Math.round(rate)}%
                 </text>
@@ -144,41 +138,25 @@ function CompletionRateChart({ rate }: { rate: number }) {
 
 function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
   return (
-    <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
-        <CardTitle className={cn("text-base")}>Recent Envelopes</CardTitle>
+        <CardTitle className={cn("text-base text-white")}>Recent Envelopes</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("overflow-x-auto")}>
           <table className={cn("w-full text-sm")}>
             <thead>
-              <tr className={cn("border-b border-wl-border-subtle")}>
-                <th
-                  className={cn(
-                    "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                  )}
-                >
+              <tr className={cn("border-b border-[#1e1e2e]")}>
+                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Name
                 </th>
-                <th
-                  className={cn(
-                    "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                  )}
-                >
+                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Sender
                 </th>
-                <th
-                  className={cn(
-                    "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                  )}
-                >
+                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Status
                 </th>
-                <th
-                  className={cn(
-                    "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                  )}
-                >
+                <th className={cn("text-left py-3 px-4 font-medium text-gray-400")}>
                   Completion
                 </th>
               </tr>
@@ -188,13 +166,13 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
                 <tr
                   key={env.id}
                   className={cn(
-                    "border-b border-wl-border-subtle hover:bg-wl-bg-overlay transition-colors"
+                    "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                   )}
                 >
-                  <td className={cn("py-3 px-4 text-wl-text-primary font-medium")}>
+                  <td className={cn("py-3 px-4 text-white font-medium")}>
                     {env.name}
                   </td>
-                  <td className={cn("py-3 px-4 text-wl-text-secondary")}>
+                  <td className={cn("py-3 px-4 text-gray-400")}>
                     {env.sender.name}
                   </td>
                   <td className={cn("py-3 px-4")}>
@@ -214,17 +192,13 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
                   </td>
                   <td className={cn("py-3 px-4")}>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("flex-1 h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden")}>
+                      <div className={cn("flex-1 h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
                         <div
-                          className={cn("h-full bg-wl-status-success transition-all")}
+                          className={cn("h-full bg-emerald-500 transition-all")}
                           style={{ width: `${env.completionRate}%` }}
                         />
                       </div>
-                      <span
-                        className={cn(
-                          "text-xs text-wl-text-secondary min-w-fit"
-                        )}
-                      >
+                      <span className={cn("text-xs text-gray-400 min-w-fit")}>
                         {env.completionRate}%
                       </span>
                     </div>
@@ -239,25 +213,23 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
   );
 }
 
-function TemplateUsageCard() {
-  
-
+function TemplateUsageCard({ templates }: { templates: any[] }) {
   return (
-    <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+    <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
-        <CardTitle className={cn("text-base")}>Template Usage</CardTitle>
+        <CardTitle className={cn("text-base text-white")}>Template Usage</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("space-y-4")}>
-          {mockTemplates.map((tpl) => (
+          {templates.map((tpl) => (
             <div
               key={tpl.name}
               className={cn("flex items-center justify-between")}
             >
-              <span className={cn("text-sm text-wl-text-secondary")}>
+              <span className={cn("text-sm text-gray-400")}>
                 {tpl.name}
               </span>
-              <span className={cn("text-sm font-medium text-wl-text-primary")}>
+              <span className={cn("text-sm font-medium text-white")}>
                 {tpl.count}
               </span>
             </div>
@@ -271,6 +243,12 @@ function TemplateUsageCard() {
 export default function ESignaturesPage() {
   const { envelopes, loading: envelopesLoading } = useEnvelopes();
   const { analytics, loading: analyticsLoading } = useEsigAnalytics();
+
+  const mockTemplates = [
+    { name: "Service Agreement", count: 12 },
+    { name: "NDA", count: 8 },
+    { name: "Proposal Form", count: 15 },
+  ];
 
   const kpiCards: KPICard[] = [
     {
@@ -301,26 +279,21 @@ export default function ESignaturesPage() {
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     },
   ];
-  const { items: data, loading, error, refetch, pagination } = useApiList<ESignature>('/api/v4/esignatures');
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
 
   return (
-    <div className={cn("p-6 space-y-6")}>
+    <div className={cn("p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]")}>
       {/* Header with Action */}
       <div className={cn("flex items-center justify-between")}>
         <div>
-          <h1 className={cn("text-2xl font-bold text-wl-text-primary")}>
+          <h1 className={cn("text-2xl font-bold text-white")}>
             E-Signature Overview
           </h1>
-          <p className={cn("text-sm text-wl-text-secondary mt-1")}>
+          <p className={cn("text-sm text-gray-400 mt-1")}>
             Track and manage digital document signing
           </p>
         </div>
         <Button variant="primary">
-          Create Envelope
+          + Create Envelope
         </Button>
       </div>
 
@@ -337,7 +310,7 @@ export default function ESignaturesPage() {
           <CompletionRateChart rate={analytics?.completionRate || 0} />
         </div>
         <div>
-          <TemplateUsageCard />
+          <TemplateUsageCard templates={mockTemplates} />
         </div>
       </div>
 
@@ -346,42 +319,42 @@ export default function ESignaturesPage() {
 
       {/* Additional Stats */}
       <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
-        <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
-              Expiration Rate
+            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+              Decline Rate
             </p>
-            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
+            <p className={cn("text-2xl font-bold text-white")}>
               {analytics?.declineRate || 0}%
             </p>
-            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
+            <p className={cn("text-xs text-gray-400 mt-2")}>
               Of total envelopes
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
+            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
               Avg Signers per Envelope
             </p>
-            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
+            <p className={cn("text-2xl font-bold text-white")}>
               {analytics?.avgSignersPerEnvelope || 0}
             </p>
-            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
+            <p className={cn("text-xs text-gray-400 mt-2")}>
               Across all envelopes
             </p>
           </CardContent>
         </Card>
-        <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
+        <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
           <CardContent className={cn("pt-6")}>
-            <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
-              Total Templates
+            <p className={cn("text-sm font-medium text-gray-400 mb-2")}>
+              Active Templates
             </p>
-            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
-              3
+            <p className={cn("text-2xl font-bold text-white")}>
+              {mockTemplates.length}
             </p>
-            <p className={cn("text-xs text-wl-text-secondary mt-2")}>
-              Active templates
+            <p className={cn("text-xs text-gray-400 mt-2")}>
+              Ready to use
             </p>
           </CardContent>
         </Card>

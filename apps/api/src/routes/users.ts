@@ -25,7 +25,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { prisma } from "@witylogix/db";
+import { db, prisma } from "@witylogix/db";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import {
@@ -261,7 +261,7 @@ async function usersRoutes(fastify: FastifyInstance): Promise<void> {
 
     // Send welcome/invite email via notification queue
     try {
-      const shop = await (prisma as any).shop.findUnique({
+      const shop = await db.shop.findUnique({
         where: { id: request.auth.shopId },
         select: { name: true },
       });

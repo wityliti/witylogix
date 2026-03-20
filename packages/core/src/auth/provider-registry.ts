@@ -14,8 +14,7 @@
  *   4. If used deployer credentials, record AuthMeterEvent for billing
  */
 
-// @ts-ignore - prisma client
-import { prisma } from "@witylogix/db";
+import { db } from "@witylogix/db";
 // Encryption helper - uses core encryption module
 const getEncryption = (): any => ({ decrypt: (v: string) => v, encrypt: (v: string) => v });
 import type {
@@ -134,7 +133,7 @@ export class AuthProviderRegistry {
 
     try {
       // Look up shop's default auth provider from database
-      const provider = await (prisma as any).authProvider.findFirst({
+      const provider = await db.authProvider.findFirst({
         where: {
           shopId,
           isEnabled: true,
@@ -180,7 +179,7 @@ export class AuthProviderRegistry {
 
     try {
       // Look up deployer's provider config from database
-      const provider = await (prisma as any).authProvider.findFirst({
+      const provider = await db.authProvider.findFirst({
         where: {
           provider: this.deployerProvider,
           isEnabled: true,
@@ -221,7 +220,7 @@ export class AuthProviderRegistry {
 
     try {
       // Get shop-level providers
-      const shopProviders = await (prisma as any).authProvider.findMany({
+      const shopProviders = await db.authProvider.findMany({
         where: {
           shopId,
           isEnabled: true,
@@ -277,7 +276,7 @@ export class AuthProviderRegistry {
    * Validate a provider's configuration (called after setup/update in Settings UI).
    */
   async validateProvider(providerId: string): Promise<void> {
-    const provider = await (prisma as any).authProvider.findUnique({
+    const provider = await db.authProvider.findUnique({
       where: { id: providerId },
     });
 
@@ -294,7 +293,7 @@ export class AuthProviderRegistry {
       await instance.validateConfiguration();
 
       // Update validation timestamp
-      await (prisma as any).authProvider.update({
+      await db.authProvider.update({
         where: { id: providerId },
         data: {
           lastValidatedAt: new Date(),
@@ -305,7 +304,7 @@ export class AuthProviderRegistry {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       // Record validation error
-      await (prisma as any).authProvider.update({
+      await db.authProvider.update({
         where: { id: providerId },
         data: {
           lastValidatedAt: new Date(),

@@ -10,6 +10,7 @@ import {
   Eye,
   ArrowUpRight,
   ArrowDownRight,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -253,26 +254,32 @@ export default function DemandPage() {
     : 0;
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary">
+    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default">
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">Demand Forecast</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Real-time demand predictions and analytics</p>
+              <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
+              <p className="text-sm text-gray-400 mt-1">Real-time demand predictions and analytics</p>
             </div>
-            <Button variant="primary" size="md">
-              <Calendar className="w-4 h-4" />
-              Export Report
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="secondary" size="md">
+                <Download className="w-4 h-4 mr-2" />
+                Report
+              </Button>
+              <Button variant="primary" size="md">
+                <Calendar className="w-4 h-4 mr-2" />
+                Schedule
+              </Button>
+            </div>
           </div>
 
           {/* Controls */}
-          <div className="flex flex-wrap gap-4 mt-6">
+          <div className="flex flex-wrap gap-4">
             {/* Zone Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="zone-select" className="text-sm font-medium text-wl-text-secondary">
+              <label htmlFor="zone-select" className="text-sm font-medium text-gray-400">
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Zone
               </label>
@@ -282,10 +289,10 @@ export default function DemandPage() {
                 onChange={(e) => setSelectedZone(e.target.value)}
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-wl-bg-overlay border border-wl-border-default',
-                  'text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-wl-primary-500',
-                  'cursor-pointer'
+                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'text-white',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
+                  'cursor-pointer hover:border-blue-500/50 transition-colors'
                 )}
               >
                 <option value="all">All Zones</option>
@@ -299,7 +306,7 @@ export default function DemandPage() {
 
             {/* Date Range Selector */}
             <div className="flex items-center gap-2">
-              <label htmlFor="date-range" className="text-sm font-medium text-wl-text-secondary">
+              <label htmlFor="date-range" className="text-sm font-medium text-gray-400">
                 <Calendar className="w-4 h-4 inline mr-2" />
                 Period
               </label>
@@ -309,10 +316,10 @@ export default function DemandPage() {
                 onChange={(e) => setDateRange(e.target.value as any)}
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
-                  'bg-wl-bg-overlay border border-wl-border-default',
-                  'text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-wl-primary-500',
-                  'cursor-pointer'
+                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'text-white',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500',
+                  'cursor-pointer hover:border-blue-500/50 transition-colors'
                 )}
               >
                 <option value="today">Today</option>
@@ -326,47 +333,47 @@ export default function DemandPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto px-8 py-6">
         <div className="space-y-6 max-w-7xl">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">Total Predicted</p>
-              <p className="text-2xl font-bold text-wl-text-primary mt-2">
-                {metrics?.totalPredicted.toLocaleString()}
+          {/* KPI Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Predicted</p>
+              <p className="text-3xl font-bold text-white mt-3">
+                {(metrics?.totalPredicted || 0 / 1000).toFixed(0)}k
               </p>
-              <p className="text-xs text-wl-text-secondary mt-2">Volume for selected period</p>
+              <p className="text-xs text-gray-500 mt-2">Volume units</p>
             </Card>
 
-            <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">Current Actual</p>
-              <p className="text-2xl font-bold text-wl-text-primary mt-2">
-                {metrics?.totalActual.toLocaleString()}
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Actual</p>
+              <p className="text-3xl font-bold text-white mt-3">
+                {(metrics?.totalActual || 0 / 1000).toFixed(0)}k
               </p>
               <div className="flex items-center gap-2 mt-2">
                 {volumeDeviation >= 0 ? (
                   <>
-                    <ArrowUpRight className="w-4 h-4 text-wl-success-500" />
-                    <span className="text-xs text-wl-success-400">+{volumeDeviation}%</span>
+                    <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                    <span className="text-xs text-emerald-400">+{volumeDeviation}%</span>
                   </>
                 ) : (
                   <>
-                    <ArrowDownRight className="w-4 h-4 text-wl-danger-500" />
-                    <span className="text-xs text-wl-danger-400">{volumeDeviation}%</span>
+                    <ArrowDownRight className="w-4 h-4 text-red-500" />
+                    <span className="text-xs text-red-400">{volumeDeviation}%</span>
                   </>
                 )}
               </div>
             </Card>
 
-            <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">Avg Confidence</p>
-              <p className="text-2xl font-bold text-wl-text-primary mt-2">{metrics?.avgConfidence}%</p>
-              <p className="text-xs text-wl-text-secondary mt-2">Model prediction accuracy</p>
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Avg Confidence</p>
+              <p className="text-3xl font-bold text-white mt-3">{metrics?.avgConfidence}%</p>
+              <p className="text-xs text-gray-500 mt-2">Prediction accuracy</p>
             </Card>
 
-            <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-              <p className="text-xs font-medium text-wl-text-tertiary uppercase tracking-wide">Anomalies</p>
-              <p className="text-2xl font-bold text-wl-text-primary mt-2">{metrics?.anomalyCount}</p>
+            <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Anomalies Detected</p>
+              <p className="text-3xl font-bold text-white mt-3">{metrics?.anomalyCount}</p>
               <Badge variant="warning" className="mt-2 text-xs">
                 Active Alerts
               </Badge>
@@ -374,8 +381,8 @@ export default function DemandPage() {
           </div>
 
           {/* Chart Section */}
-          <Card className="p-6 bg-wl-bg-surface border-wl-border-default">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Predicted vs Actual Volume</h2>
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-semibold text-white mb-4">Predicted vs Actual Volume</h2>
             <div className="flex items-end gap-6">
               <div className="flex-1 overflow-x-auto">{renderForecastChart()}</div>
               <div className="flex flex-col gap-3 text-sm min-w-max">
@@ -398,24 +405,24 @@ export default function DemandPage() {
           </Card>
 
           {/* Heatmap Section */}
-          <Card className="p-6 bg-wl-bg-surface border-wl-border-default">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Demand Intensity by Zone</h2>
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-semibold text-white mb-4">Demand Intensity by Zone</h2>
             {renderHeatmap()}
           </Card>
 
-          {/* Zone Details Table */}
-          <Card className="p-6 bg-wl-bg-surface border-wl-border-default overflow-hidden">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Zone Performance</h2>
+          {/* Zone Performance Table */}
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e] overflow-hidden">
+            <h2 className="text-lg font-semibold text-white mb-4">Zone Performance</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Zone</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Predicted</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actual</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Confidence</th>
-                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Trend</th>
-                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Anomalies</th>
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Zone</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Predicted</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Actual</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Confidence</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Trend</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Anomalies</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -423,15 +430,15 @@ export default function DemandPage() {
                     <tr
                       key={zone.id}
                       className={cn(
-                        'border-b border-wl-border-default hover:bg-wl-bg-overlay transition-colors',
-                        idx % 2 === 0 ? 'bg-wl-bg-surface' : 'bg-transparent'
+                        'border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors',
+                        idx % 2 === 0 ? 'bg-[#0f0f14]' : 'bg-transparent'
                       )}
                     >
-                      <td className="px-4 py-3 font-medium text-wl-text-primary">{zone.name}</td>
-                      <td className="text-right px-4 py-3 text-wl-text-secondary">
+                      <td className="px-4 py-3 font-medium text-white">{zone.name}</td>
+                      <td className="text-right px-4 py-3 text-gray-300">
                         {zone.predictedVolume.toLocaleString()}
                       </td>
-                      <td className="text-right px-4 py-3 text-wl-text-secondary">
+                      <td className="text-right px-4 py-3 text-gray-300">
                         {zone.actualVolume.toLocaleString()}
                       </td>
                       <td className="text-right px-4 py-3">
@@ -443,18 +450,18 @@ export default function DemandPage() {
                       </td>
                       <td className="text-center px-4 py-3">
                         {zone.trend === 'up' ? (
-                          <TrendingUp className="w-4 h-4 text-wl-success-500 mx-auto" />
+                          <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />
                         ) : zone.trend === 'down' ? (
-                          <TrendingDown className="w-4 h-4 text-wl-danger-500 mx-auto" />
+                          <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />
                         ) : (
-                          <div className="w-4 h-4 border-l-2 border-wl-neutral-500 mx-auto" />
+                          <div className="w-4 h-4 border-l-2 border-gray-600 mx-auto" />
                         )}
                       </td>
                       <td className="text-center px-4 py-3">
                         {zone.anomalies > 0 ? (
                           <Badge variant="warning">{zone.anomalies}</Badge>
                         ) : (
-                          <span className="text-wl-text-tertiary">—</span>
+                          <span className="text-gray-500">—</span>
                         )}
                       </td>
                     </tr>
@@ -465,14 +472,14 @@ export default function DemandPage() {
           </Card>
 
           {/* Anomaly Alerts */}
-          <Card className="p-6 bg-wl-bg-surface border-wl-border-default">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-wl-warning-500" />
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
               Anomaly Alerts
             </h2>
 
             {anomalies.length === 0 ? (
-              <p className="text-wl-text-secondary text-sm">No anomalies detected</p>
+              <p className="text-gray-400 text-sm">No anomalies detected</p>
             ) : (
               <div className="space-y-3">
                 {anomalies.map((anomaly) => {
@@ -481,10 +488,10 @@ export default function DemandPage() {
 
                   const severityColor =
                     anomaly.severity === 'high'
-                      ? 'border-wl-danger-500/50 bg-wl-danger-500/5'
+                      ? 'border-red-500/50 bg-red-500/5'
                       : anomaly.severity === 'medium'
-                        ? 'border-wl-warning-500/50 bg-wl-warning-500/5'
-                        : 'border-wl-info-500/50 bg-wl-info-500/5';
+                        ? 'border-amber-500/50 bg-amber-500/5'
+                        : 'border-blue-500/50 bg-blue-500/5';
 
                   const severityBadgeVariant =
                     anomaly.severity === 'high'
@@ -497,9 +504,9 @@ export default function DemandPage() {
                     <div
                       key={anomaly.id}
                       className={cn(
-                        'border rounded-md p-4 cursor-pointer transition-colors',
+                        'border rounded-lg p-4 cursor-pointer transition-colors',
                         severityColor,
-                        'hover:border-opacity-75'
+                        'hover:border-opacity-100'
                       )}
                       onClick={() => toggleAnomalyExpansion(anomaly.id)}
                     >
@@ -507,15 +514,15 @@ export default function DemandPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <Badge variant={severityBadgeVariant}>{anomaly.severity}</Badge>
-                            <span className="text-sm font-medium text-wl-text-primary capitalize">
+                            <span className="text-sm font-medium text-white capitalize">
                               {anomaly.type.replace(/_/g, ' ')}
                             </span>
-                            <span className="text-xs text-wl-text-tertiary">in {anomaly.zone}</span>
+                            <span className="text-xs text-gray-500">in {anomaly.zone}</span>
                           </div>
-                          <p className="text-sm text-wl-text-secondary">{anomaly.description}</p>
+                          <p className="text-sm text-gray-300">{anomaly.description}</p>
 
                           {isExpanded && (
-                            <div className="mt-3 pt-3 border-t border-wl-border-default/30 text-xs text-wl-text-tertiary">
+                            <div className="mt-3 pt-3 border-t border-[#1e1e2e] text-xs text-gray-500">
                               <p>Detected: {timestamp.toLocaleString()}</p>
                               <div className="mt-2 flex gap-2">
                                 <Button variant="ghost" size="sm">
@@ -529,7 +536,7 @@ export default function DemandPage() {
                             </div>
                           )}
                         </div>
-                        <span className="text-xs text-wl-text-tertiary whitespace-nowrap">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
                           {Math.round((Date.now() - timestamp.getTime()) / 60000)}m ago
                         </span>
                       </div>

@@ -20,6 +20,7 @@ import {
 } from "@witylogix/core";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
+import { prisma } from "@witylogix/db";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
 
 // ─── Query Schemas ──────────────────────────────────────────
@@ -55,7 +56,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
         request.tenantId,
         period as ScoringPeriod,
         limit,
-        (prisma as any)
+prisma
       );
 
       return {
@@ -97,7 +98,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
         driverId,
         request.tenantId,
         period,
-        (prisma as any)
+prisma
       );
 
       // Get score with breakdown
@@ -105,7 +106,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
         request.tenantId,
         period,
         [driverId],
-        (prisma as any)
+prisma
       );
 
       const score = scoreResponse[0];
@@ -187,7 +188,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
         request.tenantId,
         period as ScoringPeriod,
         [driverId],
-        (prisma as any)
+prisma
       );
 
       const score = currentScores[0];
@@ -260,7 +261,7 @@ async function driverScoringRoutes(fastify: FastifyInstance): Promise<void> {
       const periods: ScoringPeriod[] = ["daily", "weekly", "monthly", "all_time"];
 
       for (const period of periods) {
-        await aggregateAllDrivers(request.tenantId, period, driverIds, (prisma as any));
+        await aggregateAllDrivers(request.tenantId, period, driverIds, prisma);
       }
 
       return {

@@ -11,6 +11,7 @@
  * - Track metrics and handle errors gracefully
  */
 
+import { db } from "@witylogix/db";
 import type {
   TypedEventBus,
 } from "../event-bus/index.js";
@@ -334,7 +335,7 @@ export class EventWebhookBridge {
     };
 
     // Create delivery record
-    const delivery = await (prisma as any).webhookDelivery.create({
+    const delivery = await db.webhookDelivery.create({
       data: {
         id: `delivery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         endpointId: endpoint.id,
@@ -359,7 +360,7 @@ export class EventWebhookBridge {
 
     // Update delivery record with result
     const deliveryStatus = result.success ? "delivered" : "failed";
-    await (prisma as any).webhookDelivery.update({
+    await db.webhookDelivery.update({
       where: { id: delivery.id },
       data: {
         status: deliveryStatus,
@@ -387,7 +388,7 @@ export class EventWebhookBridge {
     tenantId: string,
   ): Promise<WebhookEndpoint[]> {
     try {
-      const endpoints = await (prisma as any).webhookEndpoint.findMany({
+      const endpoints = await db.webhookEndpoint.findMany({
         where: {
           tenantId,
           active: true,

@@ -1,11 +1,11 @@
 /**
- * @witylogix/validators — Shared Zod schemas
+ * @witylogix/validators - Shared Zod schemas
  * JIT package: consuming apps transpile directly from src/
  */
 
 import { z } from "zod";
 
-// ─── Common ─────────────────────────────────────────────────
+// - Common -
 
 export const uuidSchema = z.string().uuid();
 export const paginationSchema = z.object({
@@ -18,7 +18,7 @@ export const coordinatesSchema = z.object({
   longitude: z.number().min(-180).max(180),
 });
 
-// ─── Orders ─────────────────────────────────────────────────
+// - Orders -
 
 export const createOrderSchema = z.object({
   shopifyOrderId: z.string().min(1),
@@ -53,7 +53,7 @@ export const updateOrderStatusSchema = z.object({
   notes: z.string().optional(),
 });
 
-// ─── Drivers ────────────────────────────────────────────────
+// - Drivers -
 
 export const createDriverSchema = z.object({
   name: z.string().min(1).max(100),
@@ -74,7 +74,7 @@ export const updateDriverLocationSchema = z.object({
   timestamp: z.number().int().positive(),
 });
 
-// ─── Delivery Zones ─────────────────────────────────────────
+// - Delivery Zones -
 
 export const createDeliveryZoneSchema = z.object({
   name: z.string().min(1).max(100),
@@ -86,7 +86,7 @@ export const createDeliveryZoneSchema = z.object({
   priority: z.number().int().default(0),
 });
 
-// ─── Carrier Service ────────────────────────────────────────
+// - Carrier Service -
 
 export const carrierRateRequestSchema = z.object({
   rate: z.object({
@@ -113,7 +113,7 @@ export const carrierRateRequestSchema = z.object({
   }),
 });
 
-// ─── Route Optimization ────────────────────────────────────
+// - Route Optimization -
 
 export const optimizeRouteSchema = z.object({
   depot: z.object({
@@ -129,14 +129,7 @@ export const optimizeRouteSchema = z.object({
   }).optional(),
 });
 
-export type CreateOrder = z.infer<typeof createOrderSchema>;
-export type UpdateOrderStatus = z.infer<typeof updateOrderStatusSchema>;
-export type CreateDriver = z.infer<typeof createDriverSchema>;
-export type UpdateDriverLocation = z.infer<typeof updateDriverLocationSchema>;
-export type CreateDeliveryZone = z.infer<typeof createDeliveryZoneSchema>;
-export type OptimizeRoute = z.infer<typeof optimizeRouteSchema>;
-
-// ─── Shipments ──────────────────────────────────────────────
+// ---- Shipments ----
 
 export const createShipmentSchema = z.object({
   orderId: z.string().uuid(),
@@ -180,7 +173,7 @@ export const updateShipmentStatusSchema = z.object({
   failureReason: z.string().optional(),
 });
 
-// ─── Locations ──────────────────────────────────────────────
+// - Locations -
 
 export const createLocationSchema = z.object({
   name: z.string().min(1).max(200),
@@ -207,7 +200,7 @@ export type CreateShipment = z.infer<typeof createShipmentSchema>;
 export type UpdateShipmentStatus = z.infer<typeof updateShipmentStatusSchema>;
 export type CreateLocation = z.infer<typeof createLocationSchema>;
 
-// ─── Shipping Profiles ──────────────────────────────────────
+// - Shipping Profiles -
 
 export const createShippingProfileSchema = z.object({
   name: z.string().min(1).max(200),
@@ -222,7 +215,7 @@ export const createShippingProfileSchema = z.object({
   rateRules: z.array(z.record(z.unknown())).default([]),
 });
 
-// ─── Calendar Rules ─────────────────────────────────────────
+// - Calendar Rules -
 
 export const createCalendarRuleSchema = z.object({
   shippingProfileId: z.string().uuid().optional(),
@@ -243,7 +236,7 @@ export const createCalendarRuleSchema = z.object({
 export type CreateShippingProfile = z.infer<typeof createShippingProfileSchema>;
 export type CreateCalendarRule = z.infer<typeof createCalendarRuleSchema>;
 
-// ─── Notification Templates ─────────────────────────────
+// - Notification Templates -
 
 export const createNotificationTemplateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -280,7 +273,7 @@ export type UpdateNotificationTemplate = z.infer<typeof updateNotificationTempla
 export type PreviewNotificationTemplate = z.infer<typeof previewNotificationTemplateSchema>;
 export type DuplicateNotificationTemplate = z.infer<typeof duplicateNotificationTemplateSchema>;
 
-// ── Activity Logs ────────────────────────────────────────
+// - Activity Logs -
 export const createActivityLogSchema = z.object({
   entityType: z.string().min(1).max(50),
   entityId: z.string().uuid(),
@@ -306,7 +299,7 @@ export const activityLogFilterSchema = z.object({
 export type CreateActivityLog = z.infer<typeof createActivityLogSchema>;
 export type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
 
-// ── Payments ─────────────────────────────────────────────
+// - Payments -
 export const createPaymentSchema = z.object({
   shipmentId: z.string().uuid().optional(),
   paymentType: z.enum(["DELIVERY", "COD", "SUBSCRIPTION", "ADDON", "REFUND"]),
@@ -335,7 +328,7 @@ export type CreatePayment = z.infer<typeof createPaymentSchema>;
 export type UpdatePaymentStatus = z.infer<typeof updatePaymentStatusSchema>;
 export type PaymentFilter = z.infer<typeof paymentFilterSchema>;
 
-// ── Products (Cache Sync) ────────────────────────────────────
+// - Products (Cache Sync) -
 export const syncProductSchema = z.object({
   externalId: z.string().min(1).max(200),
   title: z.string().min(1).max(500),
@@ -350,7 +343,7 @@ export const syncProductsSchema = z.object({
   products: z.array(syncProductSchema).min(1).max(250),
 });
 
-// ── Customers (Cache Sync) ───────────────────────────────────
+// - Customers (Cache Sync) -
 export const syncCustomerSchema = z.object({
   externalId: z.string().min(1).max(200),
   email: z.string().email().optional(),
@@ -367,3 +360,11 @@ export const syncCustomersSchema = z.object({
 });
 export type SyncProduct = z.infer<typeof syncProductSchema>;
 export type SyncCustomer = z.infer<typeof syncCustomerSchema>;
+
+// Type exports (moved to end to avoid vitest parsing issues)
+export type CreateOrder = z.infer<typeof createOrderSchema>;
+export type UpdateOrderStatus = z.infer<typeof updateOrderStatusSchema>;
+export type CreateDriver = z.infer<typeof createDriverSchema>;
+export type UpdateDriverLocation = z.infer<typeof updateDriverLocationSchema>;
+export type CreateDeliveryZone = z.infer<typeof createDeliveryZoneSchema>;
+export type OptimizeRoute = z.infer<typeof optimizeRouteSchema>;

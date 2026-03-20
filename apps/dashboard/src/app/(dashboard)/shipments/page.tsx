@@ -2,18 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { useApiList } from "@/hooks/use-api";
-import { ErrorState } from "@/components/ui/error-state";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 
-/* ═══════════════════════════════════════════════════════════
-   SHIPMENTS PAGE — Full shipment management with filtering + detail
-   MIGRATION STATUS: Inline styles → Tailwind CSS (COMPLETE)
-   ═══════════════════════════════════════════════════════════ */
+/**
+ * Shipments Page - Professional Dark Theme
+ * Full shipment management with filtering, tracking timeline, status updates
+ */
 
 type ShipmentStatus =
   | "PENDING"
@@ -239,9 +237,9 @@ export default function ShipmentsPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 space-y-6 bg-[#0a0a0f] min-h-[calc(100vh-var(--header-height))]">
         {/* KPI Stats Row */}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <StatCard
             label="Total Shipments"
             value={stats.total}
@@ -281,7 +279,7 @@ export default function ShipmentsPage() {
         </div>
 
         {/* Filters Bar */}
-        <div className="flex flex-wrap items-center mb-5 gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="flex-1 min-w-80 max-w-96">
             <input
@@ -289,7 +287,12 @@ export default function ShipmentsPage() {
               placeholder="Search shipments, tracking, recipient..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
+              className={cn(
+                "w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md",
+                "text-white text-sm font-sans outline-none",
+                "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                "placeholder:text-gray-500 transition-colors"
+              )}
             />
           </div>
 
@@ -307,8 +310,8 @@ export default function ShipmentsPage() {
                   className={cn(
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     statusFilter === f.key
-                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#2a2a3e]"
                   )}
                 >
                   {f.label}
@@ -320,7 +323,7 @@ export default function ShipmentsPage() {
         </div>
 
         {/* Delivery Method Tabs */}
-        <div className="flex mb-5 gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap">
           {DELIVERY_METHODS.map((m) => {
             const count =
               m.key === "ALL"
@@ -333,8 +336,8 @@ export default function ShipmentsPage() {
                 className={cn(
                   "flex items-center gap-1 px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition-all",
                   methodFilter === m.key
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#2a2a3e]"
                 )}
               >
                 <span>{m.icon}</span>
@@ -351,7 +354,7 @@ export default function ShipmentsPage() {
           selectedShipment ? "grid-cols-[1fr_400px]" : "grid-cols-1"
         )}>
           {/* Shipments Table */}
-          <Card className="overflow-hidden p-0">
+          <Card className={cn("bg-[#12121a] border-[#1e1e2e] overflow-hidden p-0")}>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
@@ -360,7 +363,11 @@ export default function ShipmentsPage() {
                       (h) => (
                         <th
                           key={h}
-                          className="text-left p-4 text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider border-b border-wl-border-subtle bg-wl-bg-surface sticky top-0 whitespace-nowrap"
+                          className={cn(
+                            "text-left p-4 text-xs font-semibold text-gray-400",
+                            "uppercase tracking-wider border-b border-[#1e1e2e]",
+                            "bg-[#1a1a2e] sticky top-0 whitespace-nowrap"
+                          )}
                         >
                           {h}
                         </th>
@@ -376,12 +383,12 @@ export default function ShipmentsPage() {
                         setSelectedShipment(selectedShipment?.id === shipment.id ? null : shipment)
                       }
                       className={cn(
-                        "border-b border-wl-border-subtle cursor-pointer transition-all",
-                        selectedShipment?.id === shipment.id ? "bg-[rgba(245,166,35,0.06)]" : "bg-transparent"
+                        "border-b border-[#1e1e2e] cursor-pointer transition-all",
+                        selectedShipment?.id === shipment.id ? "bg-amber-500/10" : "hover:bg-[#1a1a2e]"
                       )}
                     >
                       {/* Tracking Number */}
-                      <td className="p-4 font-mono font-semibold text-wl-primary-400 text-xs whitespace-nowrap">
+                      <td className="p-4 font-mono font-semibold text-blue-400 text-xs whitespace-nowrap">
                         {shipment.trackingNumber ?? "—"}
                         {shipment.tags.length > 0 && (
                           <div className="flex gap-1 mt-1">
@@ -391,10 +398,10 @@ export default function ShipmentsPage() {
                                 className={cn(
                                   "text-[9px] px-1 py-0.5 rounded font-semibold uppercase tracking-tighter",
                                   t === "priority"
-                                    ? "bg-[var(--wl-danger-bg)] text-[var(--wl-danger-400)]"
+                                    ? "bg-red-500/20 text-red-400"
                                     : t === "express"
-                                      ? "bg-[rgba(245,166,35,0.12)] text-[var(--wl-primary-400)]"
-                                      : "bg-[var(--wl-info-bg)] text-[var(--wl-info-400)]"
+                                      ? "bg-amber-500/20 text-amber-400"
+                                      : "bg-blue-500/20 text-blue-400"
                                 )}
                               >
                                 {t}
@@ -405,12 +412,12 @@ export default function ShipmentsPage() {
                       </td>
 
                       {/* Order Number */}
-                      <td className="p-4 font-mono font-medium text-wl-text-primary">
+                      <td className="p-4 font-mono font-medium text-white">
                         {shipment.orderNumber}
                       </td>
 
                       {/* Recipient Name */}
-                      <td className="p-4 text-wl-text-primary font-medium max-w-40 truncate">
+                      <td className="p-4 text-white font-medium max-w-40 truncate">
                         {shipment.recipientName}
                       </td>
 
@@ -422,7 +429,7 @@ export default function ShipmentsPage() {
                       </td>
 
                       {/* Method */}
-                      <td className="p-4 text-wl-text-secondary text-sm whitespace-nowrap">
+                      <td className="p-4 text-gray-400 text-sm whitespace-nowrap">
                         <span className="mr-1">
                           {deliveryMethodIcon(shipment.deliveryMethod)}
                         </span>
@@ -433,19 +440,19 @@ export default function ShipmentsPage() {
                       <td className={cn(
                         "p-4 text-xs whitespace-nowrap",
                         shipment.driverName || shipment.locationName
-                          ? "text-wl-text-secondary"
-                          : "text-wl-text-tertiary italic"
+                          ? "text-gray-400"
+                          : "text-gray-500 italic"
                       )}>
                         {shipment.driverName ?? shipment.locationName ?? "—"}
                       </td>
 
                       {/* Items */}
-                      <td className="p-4 font-mono text-xs text-wl-text-secondary text-center">
+                      <td className="p-4 font-mono text-xs text-gray-400 text-center">
                         {shipment.itemCount}
                       </td>
 
                       {/* Cost */}
-                      <td className="p-4 font-mono font-semibold text-wl-text-primary">
+                      <td className="p-4 font-mono font-semibold text-white">
                         {formatCurrency(shipment.shippingCost)}
                       </td>
 
@@ -453,8 +460,8 @@ export default function ShipmentsPage() {
                       <td className={cn(
                         "p-4 font-mono text-xs",
                         shipment.estimatedDelivery && new Date(shipment.estimatedDelivery) > new Date()
-                          ? "text-wl-primary-400"
-                          : "text-wl-text-tertiary"
+                          ? "text-blue-400"
+                          : "text-gray-500"
                       )}>
                         {shipment.estimatedDelivery
                           ? formatRelativeTime(shipment.estimatedDelivery)
@@ -469,224 +476,226 @@ export default function ShipmentsPage() {
 
           {/* Shipment Detail Panel */}
           {selectedShipment && (
-            <Card className="sticky top-24 max-h-[calc(100vh-var(--wl-header-height)-var(--wl-space-12))] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-lg font-bold font-mono text-wl-primary-400">
-                    {selectedShipment.trackingNumber}
-                  </span>
+            <Card className={cn("bg-[#12121a] border-[#1e1e2e] sticky top-24 max-h-[calc(100vh-var(--wl-header-height)-var(--wl-space-12))] overflow-y-auto")}>
+              <CardContent className="space-y-4 pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-lg font-bold font-mono text-blue-400">
+                      {selectedShipment.trackingNumber}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedShipment(null)}
+                    className="bg-none border-none text-gray-400 cursor-pointer text-lg font-sans hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button
-                  onClick={() => setSelectedShipment(null)}
-                  className="bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans"
+
+                <Badge
+                  variant={statusVariant(selectedShipment.status)}
+                  className="inline-block"
                 >
-                  ✕
-                </button>
-              </div>
+                  {selectedShipment.status.replace(/_/g, " ")}
+                </Badge>
 
-              <Badge
-                variant={statusVariant(selectedShipment.status)}
-                className="mb-4"
-              >
-                {selectedShipment.status.replace(/_/g, " ")}
-              </Badge>
-
-              <div className="flex flex-col gap-4">
-                {/* Recipient Info */}
-                <div>
-                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
-                    Recipient
-                  </div>
-                  <div className="text-base font-semibold text-wl-text-primary">
-                    {selectedShipment.recipientName}
-                  </div>
-                  <div className="text-xs text-wl-text-secondary mt-0.5">
-                    {selectedShipment.recipientEmail}
-                  </div>
-                  <div className="text-xs text-wl-text-secondary font-mono">
-                    {selectedShipment.recipientPhone}
-                  </div>
-                </div>
-
-                <div className="h-px bg-wl-border-subtle" />
-
-                {/* Delivery Details */}
-                <div>
-                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
-                    Delivery Address
-                  </div>
-                  <div className="text-sm text-wl-text-secondary mb-1 leading-snug">
-                    {selectedShipment.addressLine1}
-                    <br />
-                    {selectedShipment.city}, {selectedShipment.province}{" "}
-                    {selectedShipment.postalCode}
-                  </div>
-                  <div className="flex items-center gap-1 text-sm mt-2">
-                    <span>{deliveryMethodIcon(selectedShipment.deliveryMethod)}</span>
-                    {selectedShipment.deliveryMethod.replace(/_/g, " ")}
-                  </div>
-                  {(selectedShipment.driverName || selectedShipment.locationName) && (
-                    <div className="text-xs text-wl-text-tertiary mt-1">
-                      {selectedShipment.driverName && `Driver: ${selectedShipment.driverName}`}
-                      {selectedShipment.locationName && `Location: ${selectedShipment.locationName}`}
+                <div className="flex flex-col gap-4">
+                  {/* Recipient Info */}
+                  <div>
+                    <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                      Recipient
                     </div>
-                  )}
-                  {selectedShipment.estimatedDelivery && (
-                    <div className="text-xs text-wl-text-secondary mt-2">
-                      ETA: {formatRelativeTime(selectedShipment.estimatedDelivery)}
+                    <div className="text-base font-semibold text-white">
+                      {selectedShipment.recipientName}
                     </div>
-                  )}
-                </div>
-
-                <div className="h-px bg-wl-border-subtle" />
-
-                {/* Status Timeline */}
-                <div>
-                  <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-3">
-                    Progress
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {selectedShipment.recipientEmail}
+                    </div>
+                    <div className="text-xs text-gray-400 font-mono">
+                      {selectedShipment.recipientPhone}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0">
-                    {statusProgression.map((step, idx) => {
-                      const isCompleted =
-                        statusProgression.indexOf(selectedShipment.status) >= idx;
-                      const isCurrent = selectedShipment.status === step;
-                      return (
-                        <div key={step} className="flex gap-2">
-                          <div className="flex flex-col items-center">
-                            <div
-                              className={cn(
-                                "w-3 h-3 rounded-full flex-shrink-0",
-                                isCompleted
-                                  ? isCurrent
-                                    ? "bg-[var(--wl-primary-500)]"
-                                    : "bg-[var(--wl-success-400)]"
-                                  : "bg-[var(--wl-border-default)]"
-                              )}
-                            />
-                            {idx < statusProgression.length - 1 && (
+
+                  <div className="h-px bg-[#1e1e2e]" />
+
+                  {/* Delivery Details */}
+                  <div>
+                    <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                      Delivery Address
+                    </div>
+                    <div className="text-sm text-gray-400 mb-1 leading-snug">
+                      {selectedShipment.addressLine1}
+                      <br />
+                      {selectedShipment.city}, {selectedShipment.province}{" "}
+                      {selectedShipment.postalCode}
+                    </div>
+                    <div className="flex items-center gap-1 text-sm mt-2 text-gray-300">
+                      <span>{deliveryMethodIcon(selectedShipment.deliveryMethod)}</span>
+                      {selectedShipment.deliveryMethod.replace(/_/g, " ")}
+                    </div>
+                    {(selectedShipment.driverName || selectedShipment.locationName) && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {selectedShipment.driverName && `Driver: ${selectedShipment.driverName}`}
+                        {selectedShipment.locationName && `Location: ${selectedShipment.locationName}`}
+                      </div>
+                    )}
+                    {selectedShipment.estimatedDelivery && (
+                      <div className="text-xs text-gray-400 mt-2">
+                        ETA: {formatRelativeTime(selectedShipment.estimatedDelivery)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="h-px bg-[#1e1e2e]" />
+
+                  {/* Status Timeline */}
+                  <div>
+                    <div className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                      Progress
+                    </div>
+                    <div className="flex flex-col gap-0">
+                      {statusProgression.map((step, idx) => {
+                        const isCompleted =
+                          statusProgression.indexOf(selectedShipment.status) >= idx;
+                        const isCurrent = selectedShipment.status === step;
+                        return (
+                          <div key={step} className="flex gap-2">
+                            <div className="flex flex-col items-center">
                               <div
                                 className={cn(
-                                  "w-0.5 h-6",
+                                  "w-3 h-3 rounded-full flex-shrink-0",
                                   isCompleted
-                                    ? "bg-[var(--wl-success-400)]"
-                                    : "bg-[var(--wl-border-default)]"
+                                    ? isCurrent
+                                      ? "bg-blue-500"
+                                      : "bg-emerald-400"
+                                    : "bg-[#1e1e2e]"
                                 )}
                               />
-                            )}
+                              {idx < statusProgression.length - 1 && (
+                                <div
+                                  className={cn(
+                                    "w-0.5 h-6",
+                                    isCompleted
+                                      ? "bg-emerald-400"
+                                      : "bg-[#1e1e2e]"
+                                  )}
+                                />
+                              )}
+                            </div>
+                            <div
+                              className={cn(
+                                "text-xs py-0.5",
+                                isCompleted
+                                  ? "text-white"
+                                  : "text-gray-500",
+                                isCurrent ? "font-semibold" : "font-medium"
+                              )}
+                            >
+                              {step.replace(/_/g, " ")}
+                            </div>
                           </div>
-                          <div
-                            className={cn(
-                              "text-xs py-0.5",
-                              isCompleted
-                                ? "text-wl-text-primary"
-                                : "text-wl-text-tertiary",
-                              isCurrent ? "font-semibold" : "font-medium"
-                            )}
-                          >
-                            {step.replace(/_/g, " ")}
-                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-[#1e1e2e]" />
+
+                  {/* Shipment Info */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Items
+                      </div>
+                      <div className="text-base font-bold font-mono text-white">
+                        {selectedShipment.itemCount}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Weight
+                      </div>
+                      <div className="text-base font-bold font-mono text-gray-400">
+                        {selectedShipment.weight ? `${selectedShipment.weight} kg` : "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Shipping Cost
+                      </div>
+                      <div className="text-base font-bold font-mono text-emerald-400">
+                        {formatCurrency(selectedShipment.shippingCost)}
+                      </div>
+                    </div>
+                    {selectedShipment.codAmount && (
+                      <div className="col-span-3">
+                        <div className="text-xs text-gray-500">
+                          COD Amount
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="h-px bg-wl-border-subtle" />
-
-                {/* Shipment Info */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <div className="text-xs text-wl-text-tertiary">
-                      Items
-                    </div>
-                    <div className="text-base font-bold font-mono text-wl-text-primary">
-                      {selectedShipment.itemCount}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-wl-text-tertiary">
-                      Weight
-                    </div>
-                    <div className="text-base font-bold font-mono text-wl-text-secondary">
-                      {selectedShipment.weight ? `${selectedShipment.weight} kg` : "—"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-wl-text-tertiary">
-                      Shipping Cost
-                    </div>
-                    <div className="text-base font-bold font-mono text-wl-success-400">
-                      {formatCurrency(selectedShipment.shippingCost)}
-                    </div>
-                  </div>
-                  {selectedShipment.codAmount && (
-                    <div className="col-span-3">
-                      <div className="text-xs text-wl-text-tertiary">
-                        COD Amount
+                        <div className="text-base font-bold font-mono text-amber-400">
+                          {formatCurrency(selectedShipment.codAmount)}
+                        </div>
                       </div>
-                      <div className="text-base font-bold font-mono text-wl-warning-400">
-                        {formatCurrency(selectedShipment.codAmount)}
+                    )}
+                  </div>
+
+                  {/* Tags */}
+                  {selectedShipment.tags.length > 0 && (
+                    <>
+                      <div className="h-px bg-[#1e1e2e]" />
+                      <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                          Tags
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedShipment.tags.map((t) => (
+                            <Badge
+                              key={t}
+                              variant={
+                                t === "priority"
+                                  ? "danger"
+                                  : t === "express"
+                                    ? "primary"
+                                    : "info"
+                              }
+                            >
+                              {t}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
+
+                  {/* Notes */}
+                  {selectedShipment.notes && (
+                    <>
+                      <div className="h-px bg-[#1e1e2e]" />
+                      <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                          Notes
+                        </div>
+                        <div className="text-xs text-gray-400 italic">
+                          {selectedShipment.notes}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button variant="primary" size="sm" className="flex-1">
+                      Assign Driver
+                    </Button>
+                    <Button variant="secondary" size="sm" className="flex-1">
+                      Edit Details
+                    </Button>
+                    <Button variant="ghost" size="sm" className="flex-1">
+                      View Tracking
+                    </Button>
+                  </div>
                 </div>
-
-                {/* Tags */}
-                {selectedShipment.tags.length > 0 && (
-                  <>
-                    <div className="h-px bg-wl-border-subtle" />
-                    <div>
-                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
-                        Tags
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedShipment.tags.map((t) => (
-                          <Badge
-                            key={t}
-                            variant={
-                              t === "priority"
-                                ? "danger"
-                                : t === "express"
-                                  ? "primary"
-                                  : "info"
-                            }
-                          >
-                            {t}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Notes */}
-                {selectedShipment.notes && (
-                  <>
-                    <div className="h-px bg-wl-border-subtle" />
-                    <div>
-                      <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
-                        Notes
-                      </div>
-                      <div className="text-xs text-wl-text-secondary italic">
-                        {selectedShipment.notes}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Button variant="primary" size="sm" className="flex-1">
-                    Assign Driver
-                  </Button>
-                  <Button variant="secondary" size="sm" className="flex-1">
-                    Edit Details
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex-1">
-                    View Tracking
-                  </Button>
-                </div>
-              </div>
+              </CardContent>
             </Card>
           )}
         </div>
