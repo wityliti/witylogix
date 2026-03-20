@@ -22,6 +22,8 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION DETAIL PAGE

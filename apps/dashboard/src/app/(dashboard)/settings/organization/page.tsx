@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,31 +12,43 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Upload,
   AlertTriangle,
   Trash2,
-} from "lucide-react";
+} from 'lucide-react';
+
+interface Organization {
+  name: string;
+  logo: string;
+  website: string;
+  industry: string;
+  companySize: string;
+}
+
+interface BillingInfo {
+  plan: string;
+  monthlyPrice: number;
+  cycleStart: string;
+  nextBilling: string;
+}
 
 export default function OrganizationPage() {
-  const [org, setOrg] = useState({
-    name: "Witylogix Inc.",
-    logo: "https://api.dicebear.com/7.x/icons/svg?seed=witylogix",
-    website: "https://witylogix.com",
-    industry: "Logistics & Delivery",
-    companySize: "50-100",
-  });
+  const { data: org, loading, error, refetch } = useApiQuery<Organization>('/api/v4/settings/organization');
+  const { data: billing } = useApiQuery<BillingInfo>('/api/v4/billing');
+  const { execute: updateOrg } = useApiMutation('PATCH', '/api/v4/settings/organization');
 
-  const [billing, setBilling] = useState({
-    plan: "Pro",
-    monthlyPrice: 299,
-    cycleStart: "2025-03-15",
-    nextBilling: "2025-04-15",
+  const [orgData, setOrgData] = useState(org || {
+    name: '',
+    logo: '',
+    website: '',
+    industry: '',
+    companySize: '',
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -44,7 +59,7 @@ export default function OrganizationPage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setOrg({ ...org, logo: event.target?.result as string });
+        setOrgData({ ...orgData, logo: event.target?.result as string });
       };
       reader.readAsDataURL(file);
     }
@@ -52,8 +67,14 @@ export default function OrganizationPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      await updateOrg(orgData);
+      refetch();
+    } catch (err) {
+      console.error('Failed to update organization:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const usageStats = [
@@ -61,6 +82,9 @@ export default function OrganizationPage() {
     { label: "Active Drivers", current: 45, limit: 100, color: "bg-[var(--wl-success)]" },
     { label: "API Calls/Month", current: 2800000, limit: 5000000, color: "bg-[var(--wl-warning)]" },
   ];
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[var(--wl-bg-primary)]">
@@ -84,7 +108,7 @@ export default function OrganizationPage() {
                 </label>
                 <div className="flex items-center gap-6">
                   <img
-                    src={org.logo}
+                    src={orgData.logo}
                     alt="Logo"
                     className="w-20 h-20 rounded-lg border border-[var(--wl-border)] object-cover"
                   />
@@ -109,8 +133,8 @@ export default function OrganizationPage() {
                 </label>
                 <Input
                   type="text"
-                  value={org.name}
-                  onChange={(e) => setOrg({ ...org, name: e.target.value })}
+                  value={orgData.name}
+                  onChange={(e) => setOrgData({ ...orgData, name: e.target.value })}
                   placeholder="Organization name"
                 />
               </div>
@@ -121,8 +145,8 @@ export default function OrganizationPage() {
                 </label>
                 <Input
                   type="url"
-                  value={org.website}
-                  onChange={(e) => setOrg({ ...org, website: e.target.value })}
+                  value={orgData.website}
+                  onChange={(e) => setOrgData({ ...orgData, website: e.target.value })}
                   placeholder="https://example.com"
                 />
               </div>
@@ -133,8 +157,8 @@ export default function OrganizationPage() {
                     Industry
                   </label>
                   <select
-                    value={org.industry}
-                    onChange={(e) => setOrg({ ...org, industry: e.target.value })}
+                    value={orgData.industry}
+                    onChange={(e) => setOrgData({ ...orgData, industry: e.target.value })}
                     className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
                   >
                     <option value="Logistics & Delivery">Logistics & Delivery</option>
@@ -150,8 +174,8 @@ export default function OrganizationPage() {
                     Company Size
                   </label>
                   <select
-                    value={org.companySize}
-                    onChange={(e) => setOrg({ ...org, companySize: e.target.value })}
+                    value={orgData.companySize}
+                    onChange={(e) => setOrgData({ ...orgData, companySize: e.target.value })}
                     className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
                   >
                     <option value="1-10">1-10 employees</option>

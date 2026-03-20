@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 
 /* ═══════════════════════════════════════════════════════════
    LOCATIONS PAGE — Warehouse & store management with filtering
@@ -67,233 +69,15 @@ const typeLabel = (t: LocationType): string => {
   return map[t];
 };
 
-// Mock locations data
-const LOCATIONS: Location[] = [
-  {
-    id: "loc-1",
-    name: "Downtown Distribution Hub",
-    type: "HUB",
-    addressLine1: "123 Commerce St",
-    city: "Toronto",
-    province: "ON",
-    postalCode: "M5H 2R2",
-    country: "Canada",
-    phone: "+1 416-555-0101",
-    email: "downtown@witylogix.io",
-    isDefault: true,
-    latitude: 43.6629,
-    longitude: -79.3957,
-    activeShipments: 287,
-    totalProcessed: 12450,
-    avgPrepTime: 18,
-    operatingHours: {
-      Monday: { open: "06:00", close: "22:00" },
-      Tuesday: { open: "06:00", close: "22:00" },
-      Wednesday: { open: "06:00", close: "22:00" },
-      Thursday: { open: "06:00", close: "22:00" },
-      Friday: { open: "06:00", close: "23:00" },
-      Saturday: { open: "08:00", close: "20:00" },
-      Sunday: { open: "08:00", close: "20:00" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-2",
-    name: "Midtown Warehouse",
-    type: "WAREHOUSE",
-    addressLine1: "456 Industrial Ave",
-    city: "Toronto",
-    province: "ON",
-    postalCode: "M4H 1L3",
-    country: "Canada",
-    phone: "+1 416-555-0102",
-    email: "midtown@witylogix.io",
-    isDefault: false,
-    latitude: 43.7315,
-    longitude: -79.3794,
-    activeShipments: 156,
-    totalProcessed: 8921,
-    avgPrepTime: 22,
-    operatingHours: {
-      Monday: { open: "05:00", close: "23:00" },
-      Tuesday: { open: "05:00", close: "23:00" },
-      Wednesday: { open: "05:00", close: "23:00" },
-      Thursday: { open: "05:00", close: "23:00" },
-      Friday: { open: "05:00", close: "23:00" },
-      Saturday: { open: "07:00", close: "22:00" },
-      Sunday: { open: "07:00", close: "22:00" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-3",
-    name: "Yorkville Retail Store",
-    type: "STORE",
-    addressLine1: "789 Bloor St W",
-    city: "Toronto",
-    province: "ON",
-    postalCode: "M6G 1L9",
-    country: "Canada",
-    phone: "+1 416-555-0103",
-    email: "yorkville@witylogix.io",
-    isDefault: false,
-    latitude: 43.6729,
-    longitude: -79.4047,
-    activeShipments: 42,
-    totalProcessed: 3280,
-    avgPrepTime: 12,
-    operatingHours: {
-      Monday: { open: "09:00", close: "21:00" },
-      Tuesday: { open: "09:00", close: "21:00" },
-      Wednesday: { open: "09:00", close: "21:00" },
-      Thursday: { open: "09:00", close: "21:00" },
-      Friday: { open: "09:00", close: "22:00" },
-      Saturday: { open: "09:00", close: "22:00" },
-      Sunday: { open: "10:00", close: "20:00" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-4",
-    name: "Scarborough Depot",
-    type: "DEPOT",
-    addressLine1: "321 McCowan Rd",
-    city: "Scarborough",
-    province: "ON",
-    postalCode: "M1S 4Z9",
-    country: "Canada",
-    phone: "+1 416-555-0104",
-    email: "scarborough@witylogix.io",
-    isDefault: false,
-    latitude: 43.7710,
-    longitude: -79.2187,
-    activeShipments: 89,
-    totalProcessed: 5640,
-    avgPrepTime: 20,
-    operatingHours: {
-      Monday: { open: "06:00", close: "21:00" },
-      Tuesday: { open: "06:00", close: "21:00" },
-      Wednesday: { open: "06:00", close: "21:00" },
-      Thursday: { open: "06:00", close: "21:00" },
-      Friday: { open: "06:00", close: "22:00" },
-      Saturday: { open: "08:00", close: "18:00" },
-      Sunday: { open: "closed", close: "closed" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-5",
-    name: "North York Pickup Point",
-    type: "PICKUP_POINT",
-    addressLine1: "654 Sheppard Ave E",
-    city: "North York",
-    province: "ON",
-    postalCode: "M2N 5Y7",
-    country: "Canada",
-    phone: "+1 416-555-0105",
-    email: "northyork@witylogix.io",
-    isDefault: false,
-    latitude: 43.7667,
-    longitude: -79.4099,
-    activeShipments: 18,
-    totalProcessed: 1240,
-    avgPrepTime: 8,
-    operatingHours: {
-      Monday: { open: "07:00", close: "19:00" },
-      Tuesday: { open: "07:00", close: "19:00" },
-      Wednesday: { open: "07:00", close: "19:00" },
-      Thursday: { open: "07:00", close: "19:00" },
-      Friday: { open: "07:00", close: "19:00" },
-      Saturday: { open: "09:00", close: "17:00" },
-      Sunday: { open: "closed", close: "closed" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-6",
-    name: "Etobicoke Hub",
-    type: "HUB",
-    addressLine1: "987 The Queensway",
-    city: "Etobicoke",
-    province: "ON",
-    postalCode: "M8Y 1J3",
-    country: "Canada",
-    phone: "+1 416-555-0106",
-    email: "etobicoke@witylogix.io",
-    isDefault: false,
-    latitude: 43.6354,
-    longitude: -79.4871,
-    activeShipments: 123,
-    totalProcessed: 7580,
-    avgPrepTime: 19,
-    operatingHours: {
-      Monday: { open: "06:00", close: "22:00" },
-      Tuesday: { open: "06:00", close: "22:00" },
-      Wednesday: { open: "06:00", close: "22:00" },
-      Thursday: { open: "06:00", close: "22:00" },
-      Friday: { open: "06:00", close: "23:00" },
-      Saturday: { open: "08:00", close: "20:00" },
-      Sunday: { open: "08:00", close: "20:00" },
-    },
-    status: "ACTIVE",
-  },
-  {
-    id: "loc-7",
-    name: "Mississauga Warehouse",
-    type: "WAREHOUSE",
-    addressLine1: "111 Matheson Blvd",
-    city: "Mississauga",
-    province: "ON",
-    postalCode: "L4Z 1X8",
-    country: "Canada",
-    phone: "+1 905-555-0107",
-    email: "mississauga@witylogix.io",
-    isDefault: false,
-    latitude: 43.5890,
-    longitude: -79.6441,
-    activeShipments: 201,
-    totalProcessed: 10230,
-    avgPrepTime: 24,
-    operatingHours: {
-      Monday: { open: "05:00", close: "23:00" },
-      Tuesday: { open: "05:00", close: "23:00" },
-      Wednesday: { open: "05:00", close: "23:00" },
-      Thursday: { open: "05:00", close: "23:00" },
-      Friday: { open: "05:00", close: "23:00" },
-      Saturday: { open: "07:00", close: "21:00" },
-      Sunday: { open: "07:00", close: "21:00" },
-    },
-    status: "INACTIVE",
-  },
-  {
-    id: "loc-8",
-    name: "Brampton Retail Store",
-    type: "STORE",
-    addressLine1: "222 Queen St",
-    city: "Brampton",
-    province: "ON",
-    postalCode: "L6Y 1L2",
-    country: "Canada",
-    phone: "+1 905-555-0108",
-    email: "brampton@witylogix.io",
-    isDefault: false,
-    latitude: 43.7315,
-    longitude: -79.7624,
-    activeShipments: 31,
-    totalProcessed: 2150,
-    avgPrepTime: 14,
-    operatingHours: null,
-    status: "MAINTENANCE",
-  },
-];
 
 export default function LocationsPage() {
+  const { items: locations, loading, error, refetch } = useApiList<Location>('/api/v4/locations');
   const [typeFilter, setTypeFilter] = useState<LocationType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const filtered = useMemo(() => {
-    return LOCATIONS.filter((loc) => {
+    return locations.filter((loc) => {
       if (typeFilter !== "ALL" && loc.type !== typeFilter) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -306,14 +90,22 @@ export default function LocationsPage() {
       }
       return true;
     });
-  }, [typeFilter, search]);
+  }, [typeFilter, search, locations]);
 
   const stats = {
-    totalLocations: LOCATIONS.length,
-    activeLocations: LOCATIONS.filter((l) => l.status === "ACTIVE").length,
-    totalShipments: LOCATIONS.reduce((sum, l) => sum + l.activeShipments, 0),
-    avgPrepTime: Math.round(LOCATIONS.reduce((sum, l) => sum + l.avgPrepTime, 0) / LOCATIONS.length),
+    totalLocations: locations.length,
+    activeLocations: locations.filter((l) => l.status === "ACTIVE").length,
+    totalShipments: locations.reduce((sum, l) => sum + l.activeShipments, 0),
+    avgPrepTime: Math.round(locations.length > 0 ? locations.reduce((sum, l) => sum + l.avgPrepTime, 0) / locations.length : 0),
   };
+
+  if (loading) {
+    return <LoadingSkeleton type="list" />;
+  }
+
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
 
   return (
     <>
@@ -353,7 +145,7 @@ export default function LocationsPage() {
           <div className={cn("flex gap-1 flex-wrap")}>
             {(["ALL", "WAREHOUSE", "STORE", "HUB", "DEPOT", "PICKUP_POINT"] as const).map((t) => {
               const count =
-                t === "ALL" ? LOCATIONS.length : LOCATIONS.filter((loc) => loc.type === t).length;
+                t === "ALL" ? locations.length : locations.filter((loc) => loc.type === t).length;
               return (
                 <button
                   key={t}

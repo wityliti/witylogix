@@ -1,16 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -18,9 +21,9 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import {
   Edit,
   Trash2,
@@ -30,15 +33,15 @@ import {
   AlertCircle,
   Clock,
   Eye,
-} from "lucide-react";
+} from 'lucide-react';
 
-type TemplateCategory = "UTILITY" | "MARKETING" | "AUTHENTICATION";
-type TemplateStatus = "PENDING" | "APPROVED" | "REJECTED";
-type ComponentType = "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
-type ComponentSubType = "text" | "image" | "video" | "document" | "quick_reply" | "url" | "phone";
+type TemplateCategory = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+type TemplateStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+type ComponentType = 'HEADER' | 'BODY' | 'FOOTER' | 'BUTTONS';
+type ComponentSubType = 'text' | 'image' | 'video' | 'document' | 'quick_reply' | 'url' | 'phone';
 
 interface WhatsAppButton {
-  type: "quick_reply" | "url" | "phone";
+  type: 'quick_reply' | 'url' | 'phone';
   text: string;
   value: string;
 }
@@ -63,7 +66,15 @@ interface WhatsAppTemplate {
   rejectionReason?: string;
 }
 
-const TEMPLATES: WhatsAppTemplate[] = [
+export default function WhatsAppPage() {
+  const { items: templates, loading, error, refetch } = useApiList<WhatsAppTemplate>('/api/v4/notifications/whatsapp-templates');
+  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notifications/whatsapp-templates/:id');
+  const { execute: syncTemplates } = useApiMutation('POST', '/api/v4/notifications/whatsapp-templates/sync');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const TEMPLATES: WhatsAppTemplate[] = templates ?? [
   {
     id: "wa1",
     name: "Order Confirmation",

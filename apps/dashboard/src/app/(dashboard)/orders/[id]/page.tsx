@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface Activity {
   id: string;
@@ -30,80 +34,49 @@ interface LineItem {
   total: number;
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: '1',
-      author: 'Priya Kapoor',
-      timestamp: '2026-03-05 14:30',
-      content: 'Customer requested expedited shipping. Premium customers get priority.'
-    },
-    {
-      id: '2',
-      author: 'Rajesh Kumar',
-      timestamp: '2026-03-04 10:15',
-      content: 'Order verified and ready for fulfillment.'
-    }
-  ]);
+interface Order {
+  orderNumber: string;
+  status: string;
+  createdDate: string;
+  source: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    orderHistoryCount: number;
+  };
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  lineItems: LineItem[];
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  discount: number;
+  total: number;
+  shipment: {
+    trackingNumber: string;
+    carrier: string;
+    status: string;
+    eta: string;
+  };
+  activities: Activity[];
+}
+
+export default function OrderDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
 
-  const mockOrder = {
-    orderNumber: '#WL-10042',
-    status: 'ready_to_ship',
-    createdDate: '2026-03-04',
-    source: 'Shopify',
-    customer: {
-      name: 'Rajesh Kumar',
-      email: 'rajesh.kumar@email.com',
-      phone: '+91-9876543210',
-      orderHistoryCount: 5
-    },
-    address: {
-      street: '123 MG Road',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      zip: '560001'
-    },
-    lineItems: [
-      { id: '1', product: 'Premium Bluetooth Speaker', sku: 'BS-001', quantity: 2, unitPrice: 2499, total: 4998 },
-      { id: '2', product: 'USB-C Charging Cable', sku: 'USB-C-001', quantity: 3, unitPrice: 499, total: 1497 },
-      { id: '3', product: 'Wireless Mouse', sku: 'WM-001', quantity: 1, unitPrice: 1299, total: 1299 }
-    ],
-    subtotal: 7794,
-    tax: 1559,
-    shipping: 100,
-    discount: 500,
-    total: 8953,
-    shipment: {
-      trackingNumber: 'WL-SHIP-2026-0001234',
-      carrier: 'FedEx',
-      status: 'processing',
-      eta: '2026-03-08'
-    },
-    activities: [
-      {
-        id: '1',
-        timestamp: '2026-03-05 14:30',
-        actor: 'System',
-        action: 'status_changed',
-        description: 'Status changed from "confirmed" to "ready_to_ship"'
-      },
-      {
-        id: '2',
-        timestamp: '2026-03-05 10:00',
-        actor: 'Priya Kapoor',
-        action: 'order_created',
-        description: 'Order created and confirmed'
-      },
-      {
-        id: '3',
-        timestamp: '2026-03-04 09:15',
-        actor: 'System',
-        action: 'order_received',
-        description: 'Order received from Shopify'
-      }
-    ]
-  };
+  const { data: order, loading, error, refetch } = useApiQuery<Order>(
+    id ? `/api/v4/orders/${id}` : null
+  );
+  const { execute: addNoteApi } = useApiMutation<Note>('POST', `/api/v4/orders/${id}/notes`);
 
   const statusColors: Record<string, string> = {
     'pending': '#8888a0',
@@ -136,33 +109,56 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     return labels[status] || status;
   };
 
-  const addNote = () => {
+  const addNote = async () => {
     if (!newNote.trim()) return;
-    const note: Note = {
-      id: Date.now().toString(),
-      author: 'Current User',
-      timestamp: new Date().toLocaleString('en-IN'),
-      content: newNote
-    };
-    setNotes([note, ...notes]);
-    setNewNote('');
+    try {
+      await addNoteApi({ content: newNote });
+      setNewNote('');
+      refetch();
+    } catch (err) {
+      console.error('Failed to add note:', err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-5">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-5">
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-5">
+        <div className="text-center text-wl-muted">Order not found</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <div className="text-4xl font-bold">{mockOrder.orderNumber}</div>
+          <div className="text-4xl font-bold">{order.orderNumber}</div>
           <div className="text-sm text-wl-muted mt-1">
-            Created on {mockOrder.createdDate} • Source: {mockOrder.source}
+            Created on {order.createdDate} • Source: {order.source}
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button className="px-4 py-2 rounded bg-wl-primary text-white font-semibold text-sm transition-all">Edit Order</button>
-          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Create Shipment</button>
-          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Print Label</button>
-          <button className="px-4 py-2 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all">Refund</button>
-          <button className="px-4 py-2 rounded bg-red-400 text-white font-semibold text-sm transition-all">Cancel</button>
+          <Button variant="primary">Edit Order</Button>
+          <Button variant="secondary">Create Shipment</Button>
+          <Button variant="secondary">Print Label</Button>
+          <Button variant="secondary">Refund</Button>
+          <Button variant="danger">Cancel</Button>
         </div>
       </div>
 
@@ -172,14 +168,11 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           <div>
             <div className="font-semibold text-sm mb-2">Order Status</div>
             <div className="mt-2">
-              <Badge
-                label={getStatusLabel(mockOrder.status)}
-                color={statusColors[mockOrder.status]}
-              />
+              <Badge variant="default">{getStatusLabel(order.status)}</Badge>
             </div>
           </div>
           <div className="text-sm text-wl-muted">
-            Last updated: 2026-03-05 14:30
+            Last updated: {order.createdDate}
           </div>
         </div>
       </div>
@@ -189,10 +182,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <div className="bg-wl-surface border border-wl-border rounded p-5">
           <div className="font-semibold text-sm mb-4">Customer Information</div>
           {[
-            { label: 'Name', value: mockOrder.customer.name },
-            { label: 'Email', value: mockOrder.customer.email },
-            { label: 'Phone', value: mockOrder.customer.phone },
-            { label: 'Order History', value: `${mockOrder.customer.orderHistoryCount} orders` }
+            { label: 'Name', value: order.customer.name },
+            { label: 'Email', value: order.customer.email },
+            { label: 'Phone', value: order.customer.phone },
+            { label: 'Order History', value: `${order.customer.orderHistoryCount} orders` }
           ].map((row, idx) => (
             <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
               <span className="text-wl-muted font-medium">{row.label}</span>
@@ -205,10 +198,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <div className="bg-wl-surface border border-wl-border rounded p-5">
           <div className="font-semibold text-sm mb-4">Delivery Address</div>
           {[
-            { label: 'Street', value: mockOrder.address.street },
-            { label: 'City', value: mockOrder.address.city },
-            { label: 'State', value: mockOrder.address.state },
-            { label: 'Zip', value: mockOrder.address.zip }
+            { label: 'Street', value: order.address.street },
+            { label: 'City', value: order.address.city },
+            { label: 'State', value: order.address.state },
+            { label: 'Zip', value: order.address.zip }
           ].map((row, idx) => (
             <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
               <span className="text-wl-muted font-medium">{row.label}</span>
@@ -224,18 +217,17 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <div className="bg-wl-surface border border-wl-border rounded p-5">
           <div className="font-semibold text-sm mb-4">Shipment Information</div>
           {[
-            { label: 'Tracking #', value: mockOrder.shipment.trackingNumber },
-            { label: 'Carrier', value: mockOrder.shipment.carrier },
+            { label: 'Tracking #', value: order.shipment.trackingNumber },
+            { label: 'Carrier', value: order.shipment.carrier },
             { label: 'Status', value: null, isBadge: true },
-            { label: 'Estimated Delivery', value: mockOrder.shipment.eta }
+            { label: 'Estimated Delivery', value: order.shipment.eta }
           ].map((row, idx) => (
             <div key={idx} className="flex justify-between py-3 border-b border-wl-border text-sm last:border-0">
               <span className="text-wl-muted font-medium">{row.label}</span>
               {row.isBadge ? (
-                <Badge
-                  label={mockOrder.shipment.status.charAt(0).toUpperCase() + mockOrder.shipment.status.slice(1)}
-                  color={shipmentStatusColors[mockOrder.shipment.status]}
-                />
+                <Badge variant="default">
+                  {order.shipment.status.charAt(0).toUpperCase() + order.shipment.status.slice(1)}
+                </Badge>
               ) : (
                 <span className="text-wl-text font-semibold">{row.value}</span>
               )}
@@ -258,7 +250,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </tr>
           </thead>
           <tbody>
-            {mockOrder.lineItems.map(item => (
+            {order.lineItems.map(item => (
               <tr key={item.id}>
                 <td className="border-b border-wl-border p-3 text-sm">{item.product}</td>
                 <td className="border-b border-wl-border p-3 text-sm">{item.sku}</td>
@@ -273,10 +265,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         {/* Order Totals */}
         <div className="mt-4">
           {[
-            { label: 'Subtotal', value: `₹${mockOrder.subtotal.toLocaleString()}` },
-            { label: 'Tax', value: `₹${mockOrder.tax.toLocaleString()}` },
-            { label: 'Shipping', value: `₹${mockOrder.shipping.toLocaleString()}` },
-            { label: 'Discount', value: `-₹${mockOrder.discount.toLocaleString()}` }
+            { label: 'Subtotal', value: `₹${order.subtotal.toLocaleString()}` },
+            { label: 'Tax', value: `₹${order.tax.toLocaleString()}` },
+            { label: 'Shipping', value: `₹${order.shipping.toLocaleString()}` },
+            { label: 'Discount', value: `-₹${order.discount.toLocaleString()}` }
           ].map((row, idx) => (
             <div key={idx} className="flex justify-between py-2 border-b border-wl-border text-sm">
               <span>{row.label}</span>
@@ -285,7 +277,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           ))}
           <div className="flex justify-between py-4 border-t border-wl-border text-base font-bold text-wl-primary">
             <span>Total Amount</span>
-            <span>₹{mockOrder.total.toLocaleString()}</span>
+            <span>₹{order.total.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -295,7 +287,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <div className="bg-wl-surface border border-wl-border rounded p-5">
           <div className="font-semibold text-sm mb-4">Activity Timeline</div>
           <div className="relative pl-8">
-            {mockOrder.activities.map((activity, idx) => (
+            {order.activities.map((activity, idx) => (
               <div key={activity.id} className="mb-5 pb-5 border-b border-wl-border last:border-0">
                 <div className="absolute left-0 top-0 w-3 h-3 rounded-full bg-wl-primary border-4 border-wl-surface" />
                 <div className="text-xs text-wl-muted">{activity.timestamp}</div>
@@ -319,12 +311,9 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
             />
-            <button
-              onClick={addNote}
-              className="w-full mt-2 px-4 py-2 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
-            >
+            <Button variant="primary" className="w-full mt-2" onClick={addNote}>
               Add Note
-            </button>
+            </Button>
           </div>
 
           <div className="border-t border-wl-border pt-4">

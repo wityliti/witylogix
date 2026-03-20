@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { usePatients, useEncounters, useClinicalRecords } from "@/hooks/use-healthcare";
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
 function Icon({ d, size = 24 }: { d: string; size?: number }) {
   return (
@@ -433,8 +435,22 @@ function PatientTable({ patients }: { patients: any[] }) {
   );
 }
 
+interface Patient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  mrn: string;
+  status: string;
+  dateOfBirth: string;
+  activeConditionsCount: number;
+  medicationsCount: number;
+}
+
 export default function PatientsPage() {
-  const { patients } = usePatients();
+  const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className={cn("p-6 space-y-6")}>

@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
+import { useState } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@/components/ui';
 import {
   Package,
   Zap,
@@ -17,7 +18,7 @@ import {
   CheckCircle,
   AlertTriangle,
   AlertCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION HEALTH MONITORING

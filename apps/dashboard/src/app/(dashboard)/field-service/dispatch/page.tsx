@@ -1,69 +1,102 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  useDispatchMap,
-  useAutoAssign,
-  useTechnicians,
-  type TechnicianStatus,
-} from "@/hooks/use-field-service";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
 
 /**
  * Dispatch Management Page
  * Map view with technician locations, job pins, and real-time status updates
  */
 
-const techStatusVariant = (status: TechnicianStatus): "success" | "warning" | "info" | "primary" | "default" => {
-  const map: Record<TechnicianStatus, "success" | "warning" | "info" | "primary" | "default"> = {
-    available: "success",
-    on_job: "info",
-    break: "warning",
-    offline: "default",
+type TechnicianStatus = 'available' | 'on_job' | 'break' | 'offline';
+
+const techStatusVariant = (status: TechnicianStatus): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
+  const map: Record<TechnicianStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
+    available: 'success',
+    on_job: 'info',
+    break: 'warning',
+    offline: 'default',
   };
   return map[status];
 };
 
+interface Technician {
+  id: string;
+  name: string;
+  location: string;
+  status: TechnicianStatus;
+  currentJobId?: string;
+  skillSet: string[];
+  currentWorkload: number;
+  ratings: number;
+  responseTime: number;
+  jobsCompleted: number;
+}
+
+interface Job {
+  id: string;
+  jobNumber: string;
+  customerName: string;
+  location: string;
+  status: string;
+  priority: string;
+  assignedTechId?: string;
+}
+
 const jobStatusColor: Record<string, string> = {
-  created: "#6b7280",
-  scheduled: "#3b82f6",
-  dispatched: "#8b5cf6",
-  in_progress: "#f59e0b",
-  completed: "#10b981",
+  created: '#6b7280',
+  scheduled: '#3b82f6',
+  dispatched: '#8b5cf6',
+  in_progress: '#f59e0b',
+  completed: '#10b981',
 };
 
 const getJobStatusIcon = (status: string) => {
   const icons: Record<string, string> = {
-    created: "📋",
-    scheduled: "📅",
-    dispatched: "🚗",
-    in_progress: "⚙️",
-    completed: "✓",
+    created: '📋',
+    scheduled: '📅',
+    dispatched: '🚗',
+    in_progress: '⚙️',
+    completed: '✓',
   };
-  return icons[status] || "📍";
+  return icons[status] || '📍';
 };
 
 export default function DispatchPage() {
-  const { technicians: allTechs, jobs } = useDispatchMap();
-  const { suggestAssignment, isLoading: assignLoading } = useAutoAssign();
+  const { items: allJobs, loading, error, refetch } = useApiList<Job>('/api/v4/orders?type=field-service&view=dispatch');
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<TechnicianStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<TechnicianStatus | 'all'>('all');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Mock technicians data for now
+  const allTechs: Technician[] = [];
+  const jobs = allJobs;
 
   // Filter technicians by status
   const filteredTechs = useMemo(
     () =>
-      statusFilter === "all"
+      statusFilter === 'all'
         ? allTechs
         : allTechs.filter((t) => t.status === statusFilter),
     [allTechs, statusFilter]
   );
 
   const selectedTechData = selectedTech ? allTechs.find((t) => t.id === selectedTech) : null;
+
+  const suggestAssignment = async (jobId: string) => {
+    // TODO: Implement auto-assign mutation
+  };
+  const assignLoading = false;
 
   return (
     <>
@@ -190,10 +223,10 @@ export default function DispatchPage() {
               </CardHeader>
 
               <div className="p-3 space-y-2">
-                {(["all", "available", "on_job", "break", "offline"] as const).map(
+                {(['all', 'available', 'on_job', 'break', 'offline'] as const).map(
                   (status) => {
                     const count =
-                      status === "all"
+                      status === 'all'
                         ? allTechs.length
                         : allTechs.filter((t) => t.status === status).length;
                     return (
@@ -201,14 +234,14 @@ export default function DispatchPage() {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={cn(
-                          "w-full px-3 py-2 rounded text-xs font-medium text-left transition-all",
+                          'w-full px-3 py-2 rounded text-xs font-medium text-left transition-all',
                           statusFilter === status
-                            ? "bg-indigo-500 text-slate-50"
-                            : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                            ? 'bg-indigo-500 text-slate-50'
+                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                         )}
                       >
                         <div className="flex justify-between">
-                          <span className="capitalize">{status === "all" ? "All" : status.replace(/_/g, " ")}</span>
+                          <span className="capitalize">{status === 'all' ? 'All' : status.replace(/_/g, ' ')}</span>
                           <span className="text-slate-400">({count})</span>
                         </div>
                       </button>

@@ -15,6 +15,7 @@ import { DataImport } from "./steps/data-import";
 import { ReviewSummary } from "./steps/review-summary";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import type {
+import { useApiQuery } from '@/hooks/use-api';
   OnboardingData,
   OnboardingStep,
   OnboardingSubStep,

@@ -1,20 +1,24 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Save,
   X,
@@ -24,9 +28,9 @@ import {
   RefreshCw,
   Eye,
   Code,
-} from "lucide-react";
+} from 'lucide-react';
 
-type Channel = "email" | "sms" | "whatsapp" | "push";
+type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
 
 interface TemplateVersion {
   id: string;
@@ -46,12 +50,12 @@ interface TemplateContent {
   };
   whatsapp: {
     templateId: string;
-    headerType: "text" | "image" | "video" | "document";
+    headerType: 'text' | 'image' | 'video' | 'document';
     headerText?: string;
     body: string;
     footer?: string;
     buttons: Array<{
-      type: "quick_reply" | "url" | "phone";
+      type: 'quick_reply' | 'url' | 'phone';
       text: string;
       value: string;
     }>;
@@ -66,6 +70,15 @@ interface TemplateContent {
     }>;
   };
 }
+
+export default function NotificationTemplateDetailPage() {
+  const params = useParams();
+  const templateId = params.id as string;
+  const { data: template, loading, error, refetch } = useApiQuery<TemplateContent>(`/api/v4/notification-templates/${templateId}`);
+  const { execute: updateTemplate } = useApiMutation('PATCH', `/api/v4/notification-templates/${templateId}`);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
 const VARIABLES = [
   { name: "customer_name", label: "Customer Name" },

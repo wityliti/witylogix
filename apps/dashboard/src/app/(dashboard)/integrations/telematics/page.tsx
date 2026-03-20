@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 /* ═══════════════════════════════════════════════════════════
    TELEMATICS PROVIDER CONFIGURATION PAGE

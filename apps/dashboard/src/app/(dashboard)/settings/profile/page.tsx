@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,10 +12,10 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import {
   Upload,
   Check,
@@ -22,26 +25,45 @@ import {
   Copy,
   Eye,
   EyeOff,
-} from "lucide-react";
+} from 'lucide-react';
+
+interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+}
+
+interface MFAStatus {
+  enabled: boolean;
+  qrCode?: string;
+  backupCodes?: string[];
+}
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    name: "Sarah Chen",
-    email: "sarah.chen@witylogix.com",
-    phone: "+1 (555) 123-4567",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
+  const { data: profile, loading, error, refetch } = useApiQuery<UserProfile>('/api/v4/users/profile');
+  const { data: mfaStatus } = useApiQuery<MFAStatus>('/api/v4/users/mfa');
+  const { execute: updateProfile } = useApiMutation('PATCH', '/api/v4/users/profile');
+  const { execute: changePassword } = useApiMutation('POST', '/api/v4/users/change-password');
+  const { execute: setupMFA } = useApiMutation('POST', '/api/v4/users/mfa/setup');
+
+  const [profileData, setProfileData] = useState(profile || {
+    name: '',
+    email: '',
+    phone: '',
+    avatar: '',
   });
 
   const [password, setPassword] = useState({
-    current: "",
-    new: "",
-    confirm: "",
+    current: '',
+    new: '',
+    confirm: '',
   });
 
-  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaEnabled, setMfaEnabled] = useState(mfaStatus?.enabled ?? false);
   const [mfaSetup, setMfaSetup] = useState(false);
-  const [qrCode, setQrCode] = useState("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Witylogix%3Asarah@witylogix.com");
-  const [backupCodes, setBackupCodes] = useState(["ABC1-2345", "DEF6-7890", "GHI3-4567"]);
+  const [qrCode, setQrCode] = useState(mfaStatus?.qrCode ?? '');
+  const [backupCodes, setBackupCodes] = useState(mfaStatus?.backupCodes ?? []);
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -74,8 +96,26 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      await updateProfile(profileData);
+      refetch();
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      await changePassword({
+        currentPassword: password.current,
+        newPassword: password.new,
+      });
+      setPassword({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      console.error('Failed to change password:', err);
+    }
   };
 
   const getStrengthColor = () => {
@@ -84,6 +124,9 @@ export default function ProfilePage() {
     if (passwordStrength < 75) return "bg-[var(--wl-info)]";
     return "bg-[var(--wl-success)]";
   };
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[var(--wl-bg-primary)]">
@@ -107,7 +150,7 @@ export default function ProfilePage() {
                 </label>
                 <div className="flex items-center gap-6">
                   <img
-                    src={profile.avatar}
+                    src={profileData.avatar}
                     alt="Avatar"
                     className="w-24 h-24 rounded-full border-2 border-[var(--wl-border)] object-cover"
                   />
@@ -119,7 +162,16 @@ export default function ProfilePage() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={handleAvatarUpload}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setProfileData({ ...profileData, avatar: event.target?.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
                           className="hidden"
                         />
                       </label>
@@ -134,8 +186,8 @@ export default function ProfilePage() {
                 </label>
                 <Input
                   type="text"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                  value={profileData.name}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                   placeholder="Your full name"
                 />
               </div>
@@ -146,7 +198,7 @@ export default function ProfilePage() {
                 </label>
                 <Input
                   type="email"
-                  value={profile.email}
+                  value={profileData.email}
                   disabled
                   className="bg-[var(--wl-bg-secondary)]"
                 />
@@ -158,8 +210,8 @@ export default function ProfilePage() {
                 </label>
                 <Input
                   type="tel"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   placeholder="+1 (555) 123-4567"
                 />
               </div>

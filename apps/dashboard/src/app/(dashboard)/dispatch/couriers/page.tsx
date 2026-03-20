@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { MoreVertical, MapPin, Package, Clock, AlertCircle, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { CourierLiveMap } from "@/components/couriers/courier-live-map";
 import { DeliveryTimeline } from "@/components/couriers/delivery-timeline";
 import { CourierAssignmentPanel } from "@/components/couriers/courier-assignment-panel";
 import { DispatchStatsBar } from "@/components/couriers/dispatch-stats-bar";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import type {
   DeliveryStatus,
   DriverPosition,
@@ -17,7 +19,7 @@ import type {
   RecipientInfo,
 } from "@witylogix/core/integrations/couriers";
 
-// Mock types for the dispatch console
+// Types for the dispatch console
 interface Courier {
   id: string;
   name: string;
@@ -59,151 +61,24 @@ interface DeliveryEvent {
   notes?: string;
 }
 
-interface DispatchStats {
-  activeCouriers: number;
-  pendingDeliveries: number;
-  inTransitCount: number;
-  completedToday: number;
-  avgDeliveryTime: number;
-  onTimePercentage: number;
-}
-
-// Mock data
-const MOCK_COURIERS: Courier[] = [
-  {
-    id: "courier-1",
-    name: "Alex Johnson",
-    partner: "onfleet",
-    status: "en-route",
-    currentLoad: 3,
-    maxCapacity: 8,
-    rating: 4.8,
-    location: { latitude: 40.7128, longitude: -74.006, lastUpdatedAt: new Date() },
-    currentDeliveryId: "delivery-1",
-    completedToday: 12,
-    phone: "+1-555-0101",
-  },
-  {
-    id: "courier-2",
-    name: "Maria Garcia",
-    partner: "stuart",
-    status: "idle",
-    currentLoad: 0,
-    maxCapacity: 6,
-    rating: 4.9,
-    location: { latitude: 40.7489, longitude: -73.9680, lastUpdatedAt: new Date() },
-    completedToday: 8,
-    phone: "+1-555-0102",
-  },
-  {
-    id: "courier-3",
-    name: "James Chen",
-    partner: "uber",
-    status: "delivering",
-    currentLoad: 1,
-    maxCapacity: 10,
-    rating: 4.7,
-    location: { latitude: 40.7505, longitude: -73.9972, lastUpdatedAt: new Date() },
-    currentDeliveryId: "delivery-2",
-    completedToday: 15,
-    phone: "+1-555-0103",
-  },
-];
-
-const MOCK_DELIVERIES: Delivery[] = [
-  {
-    id: "delivery-1",
-    orderId: "ORD-001",
-    courierId: "courier-1",
-    status: "in_transit",
-    pickup: {
-      latitude: 40.7128,
-      longitude: -74.006,
-      address: "123 Main St, New York, NY",
-      name: "Warehouse A",
-    },
-    dropoff: {
-      latitude: 40.7489,
-      longitude: -73.968,
-      address: "456 Park Ave, New York, NY",
-      name: "Customer Home",
-    },
-    package: { weight: 2, itemCount: 1, transportType: "car" },
-    recipient: { name: "John Doe", phone: "+1-555-0201" },
-    createdAt: new Date(Date.now() - 30 * 60000),
-    assignedAt: new Date(Date.now() - 25 * 60000),
-    pickedUpAt: new Date(Date.now() - 20 * 60000),
-    estimatedDeliveryTime: new Date(Date.now() + 15 * 60000),
-    timeline: [
-      { id: "e1", type: "requested", timestamp: new Date(Date.now() - 30 * 60000) },
-      { id: "e2", type: "assigned", timestamp: new Date(Date.now() - 25 * 60000), courierName: "Alex Johnson" },
-      { id: "e3", type: "pickup", timestamp: new Date(Date.now() - 20 * 60000), courierName: "Alex Johnson" },
-      { id: "e4", type: "in_transit", timestamp: new Date(Date.now() - 5 * 60000), courierName: "Alex Johnson" },
-    ],
-  },
-  {
-    id: "delivery-2",
-    orderId: "ORD-002",
-    courierId: "courier-3",
-    status: "delivered",
-    pickup: {
-      latitude: 40.7128,
-      longitude: -74.006,
-      address: "123 Main St, New York, NY",
-      name: "Warehouse A",
-    },
-    dropoff: {
-      latitude: 40.7505,
-      longitude: -73.9972,
-      address: "789 Fifth Ave, New York, NY",
-      name: "Office Building",
-    },
-    package: { weight: 1.5, itemCount: 3, transportType: "car" },
-    recipient: { name: "Jane Smith", phone: "+1-555-0202" },
-    createdAt: new Date(Date.now() - 120 * 60000),
-    assignedAt: new Date(Date.now() - 115 * 60000),
-    pickedUpAt: new Date(Date.now() - 110 * 60000),
-    deliveredAt: new Date(Date.now() - 5 * 60000),
-    timeline: [
-      { id: "e5", type: "requested", timestamp: new Date(Date.now() - 120 * 60000) },
-      { id: "e6", type: "assigned", timestamp: new Date(Date.now() - 115 * 60000), courierName: "James Chen" },
-      { id: "e7", type: "pickup", timestamp: new Date(Date.now() - 110 * 60000), courierName: "James Chen" },
-      { id: "e8", type: "in_transit", timestamp: new Date(Date.now() - 50 * 60000), courierName: "James Chen" },
-      { id: "e9", type: "delivered", timestamp: new Date(Date.now() - 5 * 60000), courierName: "James Chen" },
-    ],
-  },
-  {
-    id: "delivery-3",
-    orderId: "ORD-003",
-    status: "pending",
-    pickup: {
-      latitude: 40.7128,
-      longitude: -74.006,
-      address: "123 Main St, New York, NY",
-      name: "Warehouse A",
-    },
-    dropoff: {
-      latitude: 40.7614,
-      longitude: -73.9776,
-      address: "999 Madison Ave, New York, NY",
-      name: "Retail Store",
-    },
-    package: { weight: 3, itemCount: 5, transportType: "van" },
-    recipient: { name: "Bob Wilson", phone: "+1-555-0203" },
-    createdAt: new Date(Date.now() - 10 * 60000),
-    timeline: [
-      { id: "e10", type: "requested", timestamp: new Date(Date.now() - 10 * 60000) },
-    ],
-  },
-];
-
 export default function CourierDispatchPage() {
-  const [deliveries, setDeliveries] = useState<Delivery[]>(MOCK_DELIVERIES);
-  const [couriers, setCouriers] = useState<Courier[]>(MOCK_COURIERS);
-  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(MOCK_DELIVERIES[0]);
+  const { items: couriers, loading: couriersLoading, error: couriersError, refetch: refetchCouriers } = useApiList<Courier>('/api/v4/couriers');
+  const { items: deliveries, loading: deliveriesLoading, error: deliveriesError, refetch: refetchDeliveries } = useApiList<Delivery>('/api/v4/deliveries');
+  const { execute: assignDelivery, loading: assigningLoading } = useApiMutation<Delivery>('PATCH', '/api/v4/deliveries/:id/assign');
+
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
   const [assignmentPanelOpen, setAssignmentPanelOpen] = useState(false);
   const [dispatchStrategy, setDispatchStrategy] = useState<"cheapest" | "fastest" | "preferred" | "auto">("auto");
   const [isDispatching, setIsDispatching] = useState(false);
+
+  interface DispatchStats {
+    activeCouriers: number;
+    pendingDeliveries: number;
+    inTransitCount: number;
+    completedToday: number;
+    avgDeliveryTime: number;
+    onTimePercentage: number;
+  }
 
   // Calculate dispatch stats
   const stats = useMemo<DispatchStats>(() => {
@@ -232,69 +107,32 @@ export default function CourierDispatchPage() {
   // Handle auto-dispatch
   const handleAutoDispatch = useCallback(async () => {
     setIsDispatching(true);
-    // Simulate dispatch API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     const pendingDelivery = deliveries.find((d) => d.status === "pending");
     if (pendingDelivery && couriers.length > 0) {
       const assignedCourier = couriers.find((c) => c.status === "idle") || couriers[0];
-      setDeliveries((prev) =>
-        prev.map((d) =>
-          d.id === pendingDelivery.id
-            ? {
-                ...d,
-                courierId: assignedCourier.id,
-                status: "assigned",
-                assignedAt: new Date(),
-                timeline: [
-                  ...d.timeline,
-                  {
-                    id: `e${Math.random()}`,
-                    type: "assigned",
-                    timestamp: new Date(),
-                    courierName: assignedCourier.name,
-                  },
-                ],
-              }
-            : d
-        )
-      );
-      setSelectedDelivery(pendingDelivery);
+      try {
+        await assignDelivery({ courierId: assignedCourier.id });
+        setSelectedDelivery(pendingDelivery);
+        refetchDeliveries();
+      } catch (err) {
+        console.error("Auto-dispatch failed:", err);
+      }
     }
     setIsDispatching(false);
-  }, [deliveries, couriers]);
+  }, [deliveries, couriers, assignDelivery, refetchDeliveries]);
 
   // Handle manual assignment
-  const handleAssignDelivery = useCallback((courierId: string) => {
+  const handleAssignDelivery = useCallback(async (courierId: string) => {
     if (!selectedDelivery) return;
 
-    const courier = couriers.find((c) => c.id === courierId);
-    if (!courier) return;
-
-    setDeliveries((prev) =>
-      prev.map((d) =>
-        d.id === selectedDelivery.id
-          ? {
-              ...d,
-              courierId,
-              status: "assigned",
-              assignedAt: new Date(),
-              timeline: [
-                ...d.timeline,
-                {
-                  id: `e${Math.random()}`,
-                  type: "assigned",
-                  timestamp: new Date(),
-                  courierName: courier.name,
-                },
-              ],
-            }
-          : d
-      )
-    );
-
-    setAssignmentPanelOpen(false);
-  }, [selectedDelivery, couriers]);
+    try {
+      await assignDelivery({ courierId });
+      setAssignmentPanelOpen(false);
+      refetchDeliveries();
+    } catch (err) {
+      console.error("Assignment failed:", err);
+    }
+  }, [selectedDelivery, assignDelivery, refetchDeliveries]);
 
   // Get pending deliveries for left panel
   const pendingDeliveries = useMemo(
@@ -307,6 +145,10 @@ export default function CourierDispatchPage() {
     () => couriers.filter((c) => c.currentLoad < c.maxCapacity),
     [couriers]
   );
+
+  if (couriersError || deliveriesError) {
+    return <ErrorState error={couriersError || deliveriesError} onRetry={() => { refetchCouriers(); refetchDeliveries(); }} />;
+  }
 
   const getStatusBadgeVariant = (status: DeliveryStatus) => {
     switch (status) {
@@ -362,6 +204,10 @@ export default function CourierDispatchPage() {
         return "text-wl-text-tertiary";
     }
   };
+
+  if (couriersLoading || deliveriesLoading) {
+    return <LoadingSkeleton type="list" />;
+  }
 
   return (
     <div className="flex flex-col h-screen bg-wl-bg-primary">

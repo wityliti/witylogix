@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   Package,
   MapPin,
@@ -21,29 +25,6 @@ import {
   GripVertical,
 } from 'lucide-react';
 
-// Mock data
-const mockShipments = [
-  { id: 'SHP-001', customer: 'John Doe', address: '123 Broadway, NYC', weight: 2.5, items: 3, priority: 'high', eta: '2:30 PM', assigned: false },
-  { id: 'SHP-002', customer: 'Jane Smith', address: '456 5th Ave, NYC', weight: 1.2, items: 1, priority: 'normal', eta: '3:15 PM', assigned: false },
-  { id: 'SHP-003', customer: 'Bob Johnson', address: '789 Park Ave, NYC', weight: 3.8, items: 5, priority: 'normal', eta: '4:00 PM', assigned: false },
-  { id: 'SHP-004', customer: 'Alice Brown', address: '321 Madison Ave, NYC', weight: 0.8, items: 1, priority: 'low', eta: '4:45 PM', assigned: false },
-  { id: 'SHP-005', customer: 'Charlie Wilson', address: '654 3rd Ave, NYC', weight: 2.1, items: 2, priority: 'high', eta: '2:15 PM', assigned: false },
-  { id: 'SHP-006', customer: 'Diana Martinez', address: '987 2nd Ave, NYC', weight: 1.5, items: 2, priority: 'normal', eta: '5:00 PM', assigned: false },
-];
-
-const mockRoute = {
-  id: 'RTE-001',
-  name: 'Manhattan North Loop',
-  driver: { id: 'DRV-001', name: 'Michael Brown', vehicle: 'Van-001', capacity: 50 },
-  currentStops: 5,
-  maxStops: 15,
-  currentWeight: 18.5,
-  maxWeight: 100,
-  currentCapacity: 37,
-  eta: '6:30 PM',
-  status: 'active',
-};
-
 interface Shipment {
   id: string;
   customer: string;
@@ -55,20 +36,64 @@ interface Shipment {
   assigned: boolean;
 }
 
+interface Route {
+  id: string;
+  name: string;
+  driver: { id: string; name: string; vehicle: string; capacity: number };
+  currentStops: number;
+  maxStops: number;
+  currentWeight: number;
+  maxWeight: number;
+  currentCapacity: number;
+  eta: string;
+  status: string;
+}
+
 const getPriorityColor = (priority: string) => {
   if (priority === 'high') return 'danger';
   if (priority === 'low') return 'info';
   return 'default';
 };
 
-export default function RouteAssignPage({ params }: { params: { id: string } }) {
-  const routeId = params.id || 'RTE-001';
+export default function RouteAssignPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  const { data: route, loading: routeLoading, error: routeError, refetch: refetchRoute } = useApiQuery<Route>(
+    id ? `/api/v4/routes/${id}` : null
+  );
+  const { data: shipments, loading: shipmentsLoading, error: shipmentsError } = useApiQuery<Shipment[]>(
+    `/api/v4/shipments?unassigned=true`
+  );
+  const { execute: assignShipment } = useApiMutation<Shipment>('PATCH', `/api/v4/shipments`);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [shipments, setShipments] = useState<Shipment[]>(mockShipments);
   const [assignedShipments, setAssignedShipments] = useState<Shipment[]>([]);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
-  const [currentCapacity, setCurrentCapacity] = useState(mockRoute.currentCapacity);
-  const [currentWeight, setCurrentWeight] = useState(mockRoute.currentWeight);
+
+  if (routeLoading || shipmentsLoading) {
+    return (
+      <div className="p-6 min-h-screen bg-wl-bg">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (routeError) {
+    return (
+      <div className="p-6 min-h-screen bg-wl-bg">
+        <ErrorState error={routeError} onRetry={refetchRoute} />
+      </div>
+    );
+  }
+
+  if (!route || !shipments) {
+    return (
+      <div className="p-6 min-h-screen bg-wl-bg">
+        <div className="text-center text-wl-muted">Data not found</div>
+      </div>
+    );
+  }
 
   const filteredShipments = searchQuery
     ? shipments.filter(
@@ -79,26 +104,25 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
       )
     : shipments;
 
-  const handleAssign = (shipment: Shipment) => {
-    const newCapacity = currentCapacity - 1;
-    const newWeight = currentWeight + shipment.weight;
+  const handleAssign = async (shipment: Shipment) => {
+    const newCapacity = route.currentCapacity - 1;
+    const newWeight = route.currentWeight + shipment.weight;
 
-    if (newCapacity < 0 || newWeight > mockRoute.maxWeight) {
+    if (newCapacity < 0 || newWeight > route.maxWeight) {
       return;
     }
 
-    setAssignedShipments([...assignedShipments, shipment]);
-    setShipments(shipments.filter((s) => s.id !== shipment.id));
-    setCurrentCapacity(newCapacity);
-    setCurrentWeight(newWeight);
-    setSelectedShipment(null);
+    try {
+      await assignShipment({ id: shipment.id, routeId: route.id });
+      setAssignedShipments([...assignedShipments, shipment]);
+      setSelectedShipment(null);
+    } catch (err) {
+      console.error('Failed to assign shipment:', err);
+    }
   };
 
   const handleUnassign = (shipment: Shipment) => {
     setAssignedShipments(assignedShipments.filter((s) => s.id !== shipment.id));
-    setShipments([...shipments, shipment]);
-    setCurrentCapacity(currentCapacity + 1);
-    setCurrentWeight(currentWeight - shipment.weight);
   };
 
   const handleOptimize = () => {
@@ -110,20 +134,20 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
   };
 
   const totalAssignedWeight = assignedShipments.reduce((sum, s) => sum + s.weight, 0);
-  const capacityUsed = ((mockRoute.currentWeight + totalAssignedWeight) / mockRoute.maxWeight) * 100;
-  const stopsUsed = (mockRoute.currentStops + assignedShipments.length) / mockRoute.maxStops;
+  const capacityUsed = ((route.currentWeight + totalAssignedWeight) / route.maxWeight) * 100;
+  const stopsUsed = (route.currentStops + assignedShipments.length) / route.maxStops;
 
   return (
     <div className={cn("p-6 min-h-screen bg-wl-bg-root")}>
       {/* Header */}
       <div className={cn("mb-6")}>
-        <h1 className={cn("text-4xl font-bold text-wl-text-primary mb-2")}>{mockRoute.name}</h1>
+        <h1 className={cn("text-4xl font-bold text-wl-text-primary mb-2")}>{route.name}</h1>
         <p className={cn("text-wl-text-secondary mb-4")}>Assign shipments to this route</p>
         <div className={cn("flex gap-3 items-center flex-wrap")}>
           <Badge variant="success">ACTIVE</Badge>
-          <span className={cn("text-xs text-wl-text-secondary")}>Driver: {mockRoute.driver.name}</span>
-          <span className={cn("text-xs text-wl-text-secondary")}>Vehicle: {mockRoute.driver.vehicle}</span>
-          <span className={cn("text-xs text-wl-text-secondary")}>ETA: {mockRoute.eta}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>Driver: {route.driver.name}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>Vehicle: {route.driver.vehicle}</span>
+          <span className={cn("text-xs text-wl-text-secondary")}>ETA: {route.eta}</span>
         </div>
       </div>
 
@@ -221,7 +245,7 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
                 <div className={cn("flex justify-between mb-1.5")}>
                   <span className={cn("text-xs text-wl-text-secondary")}>Stops</span>
                   <span className={cn("text-xs font-semibold text-wl-text-primary")}>
-                    {mockRoute.currentStops + assignedShipments.length}/{mockRoute.maxStops}
+                    {route.currentStops + assignedShipments.length}/{route.maxStops}
                   </span>
                 </div>
                 <div
@@ -245,7 +269,7 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
                 <div className={cn("flex justify-between mb-1.5")}>
                   <span className={cn("text-xs text-wl-text-secondary")}>Weight</span>
                   <span className={cn("text-xs font-semibold text-wl-text-primary")}>
-                    {(mockRoute.currentWeight + totalAssignedWeight).toFixed(1)}/{mockRoute.maxWeight} kg
+                    {(route.currentWeight + totalAssignedWeight).toFixed(1)}/{route.maxWeight} kg
                   </span>
                 </div>
                 <div
@@ -269,7 +293,7 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
                 className={cn("p-3 bg-wl-bg-root rounded border border-wl-border-default")}
               >
                 <p className={cn("text-xs text-wl-text-secondary mb-1")}>Remaining Capacity</p>
-                <p className={cn("text-sm font-semibold text-wl-primary-500")}>{currentCapacity} slots</p>
+                <p className={cn("text-sm font-semibold text-wl-primary-500")}>{route.currentCapacity - assignedShipments.length} slots</p>
               </div>
             </CardContent>
           </Card>
@@ -286,7 +310,7 @@ export default function RouteAssignPage({ params }: { params: { id: string } }) 
                 className={cn("p-3 bg-wl-bg-root rounded border border-wl-border-default")}
               >
                 <p className={cn("text-xs text-wl-text-secondary mb-1")}>Current Route ETA</p>
-                <p className={cn("text-base font-semibold text-wl-success-500")}>{mockRoute.eta}</p>
+                <p className={cn("text-base font-semibold text-wl-success-500")}>{route.eta}</p>
                 <p className={cn("text-xs text-wl-text-secondary mt-1.5")}>+{assignedShipments.length * 8} min estimated</p>
               </div>
             </CardContent>

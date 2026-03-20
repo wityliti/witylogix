@@ -1,12 +1,40 @@
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ChevronLeft, Clock, MapPin, DollarSign, Weight } from "lucide-react";
+'use client';
+
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { ChevronLeft, Clock, MapPin, DollarSign, Weight } from 'lucide-react';
+
+interface GeneralSettings {
+  companyName: string;
+  industry: string;
+  description: string;
+  supportEmail: string;
+  supportPhone: string;
+  country: string;
+  state: string;
+  city: string;
+  postalCode: string;
+  address: string;
+  timezone: string;
+  language: string;
+  currency: string;
+  weightUnit: string;
+  distanceUnit: string;
+  dateFormat: string;
+  businessHours: Array<{ day: string; open: string; close: string; closed: boolean }>;
+}
 
 export default function GeneralSettingsPage() {
-  const businessHours = [
+  const { data: settings, loading, error, refetch } = useApiQuery<GeneralSettings>('/api/v4/settings/general');
+  const { execute: updateSettings } = useApiMutation('PATCH', '/api/v4/settings/general');
+
+  const businessHours = settings?.businessHours ?? [
     { day: "Monday", open: "09:00 AM", close: "06:00 PM", closed: false },
     { day: "Tuesday", open: "09:00 AM", close: "06:00 PM", closed: false },
     { day: "Wednesday", open: "09:00 AM", close: "06:00 PM", closed: false },
@@ -15,6 +43,9 @@ export default function GeneralSettingsPage() {
     { day: "Saturday", open: "10:00 AM", close: "04:00 PM", closed: false },
     { day: "Sunday", open: "Closed", close: "", closed: true },
   ];
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">

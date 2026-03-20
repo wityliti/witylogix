@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useCallback, useEffect } from "react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Search,
   Grid3x3,
@@ -15,7 +16,7 @@ import {
   X,
   Loader2,
   ChevronDown,
-} from "lucide-react";
+} from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION MARKETPLACE — Catalog Page

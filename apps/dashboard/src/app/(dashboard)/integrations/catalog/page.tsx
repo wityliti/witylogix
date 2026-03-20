@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, Search, Package, Zap } from "lucide-react";
+import { useState, useMemo } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, Search, Package, Zap } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    INTEGRATION CATALOG — Comprehensive provider marketplace

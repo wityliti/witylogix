@@ -1,6 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiQuery } from '@/hooks/use-api';
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -29,7 +32,18 @@ interface Session {
   current: boolean;
 }
 
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  timezone: string;
+  role: string;
+}
+
 export default function ProfilePage() {
+  const { data: userProfile, loading, error, refetch } = useApiQuery<User>('/api/v4/users/me');
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -37,14 +51,17 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
 
-  const [profile, setProfile] = useState({
-    firstName: "Arjun",
-    lastName: "Rajput",
-    email: "arjun@witylogix.com",
-    phone: "+1 (555) 123-4567",
-    timezone: "America/New_York",
-    role: "CTO",
-  });
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const profile = userProfile || {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    timezone: 'America/New_York',
+    role: 'User',
+  };
 
   const [editForm, setEditForm] = useState({ ...profile });
 

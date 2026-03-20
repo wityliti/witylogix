@@ -1,13 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { useIntegrationStatus } from "@/hooks/use-integration-status";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { useIntegrationStatus } from '@/hooks/use-integration-status';
+import { useApiList } from '@/hooks/use-api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Search,
   Filter,
@@ -21,7 +22,7 @@ import {
   Clock,
   Gauge,
   AlertTriangle,
-} from "lucide-react";
+} from 'lucide-react';
 
 type StatusFilter = "all" | "healthy" | "warning" | "error";
 type SortBy = "name" | "lastSync" | "errorCount";

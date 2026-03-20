@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { StopListEditor, RouteSummary, RouteOptimizerControls } from '@/components/routes';
 import { useRoutePlanner } from '@/hooks/use-route-planner';
+import { useApiList } from '@/hooks/use-api';
 
 type StepType = 'stops' | 'constraints' | 'optimize' | 'review' | 'dispatch';
 

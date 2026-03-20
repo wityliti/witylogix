@@ -1,11 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 import {
   LogIn,
   ShoppingCart,
@@ -15,9 +18,7 @@ import {
   Lock,
   FileText,
   Download,
-  Calendar,
-  Filter,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ActivityLog {
   id: string;
@@ -25,7 +26,7 @@ interface ActivityLog {
   userName: string;
   userEmail: string;
   userAvatar: string;
-  type: "login" | "order_created" | "route_planned" | "setting_changed" | "logout" | "permission_changed" | "export" | "payment";
+  type: 'login' | 'order_created' | 'route_planned' | 'setting_changed' | 'logout' | 'permission_changed' | 'export' | 'payment';
   action: string;
   timestamp: string;
   metadata?: Record<string, any>;
@@ -209,26 +210,30 @@ function UserAvatar({ name }: { name: string }) {
 }
 
 export default function ActivityPage() {
+  const { items: activities, loading, error, refetch } = useApiList<ActivityLog>('/api/v4/admin/activity');
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState("all");
+  const [dateRange, setDateRange] = useState('all');
 
   const activityTypes = [
-    { id: "login", label: "Login" },
-    { id: "order_created", label: "Orders" },
-    { id: "route_planned", label: "Routes" },
-    { id: "setting_changed", label: "Settings" },
-    { id: "logout", label: "Logout" },
-    { id: "permission_changed", label: "Permissions" },
-    { id: "export", label: "Exports" },
-    { id: "payment", label: "Payments" },
+    { id: 'login', label: 'Login' },
+    { id: 'order_created', label: 'Orders' },
+    { id: 'route_planned', label: 'Routes' },
+    { id: 'setting_changed', label: 'Settings' },
+    { id: 'logout', label: 'Logout' },
+    { id: 'permission_changed', label: 'Permissions' },
+    { id: 'export', label: 'Exports' },
+    { id: 'payment', label: 'Payments' },
   ];
 
   const filteredActivities = useMemo(() => {
-    return mockActivities.filter(activity => {
+    return activities.filter(activity => {
       if (selectedType && activity.type !== selectedType) return false;
       return true;
     });
-  }, [selectedType]);
+  }, [selectedType, activities]);
+
+  if (loading && activities.length === 0) return <LoadingSkeleton />;
+  if (error && activities.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-surface">
@@ -254,7 +259,7 @@ export default function ActivityPage() {
                 Total Activities (24h)
               </p>
               <span className="text-3xl font-bold text-wl-text-primary">
-                {mockActivities.length}
+                {activities.length}
               </span>
             </CardContent>
           </Card>
@@ -265,7 +270,7 @@ export default function ActivityPage() {
                 Unique Users
               </p>
               <span className="text-3xl font-bold text-wl-text-primary">
-                {new Set(mockActivities.map(a => a.userId)).size}
+                {new Set(activities.map(a => a.userId)).size}
               </span>
             </CardContent>
           </Card>
@@ -276,7 +281,7 @@ export default function ActivityPage() {
                 Login/Logout
               </p>
               <span className="text-3xl font-bold text-wl-text-primary">
-                {mockActivities.filter(a => a.type === "login" || a.type === "logout").length}
+                {activities.filter(a => a.type === 'login' || a.type === 'logout').length}
               </span>
             </CardContent>
           </Card>
@@ -287,7 +292,7 @@ export default function ActivityPage() {
                 Orders Created
               </p>
               <span className="text-3xl font-bold text-wl-text-primary">
-                {mockActivities.filter(a => a.type === "order_created").length}
+                {activities.filter(a => a.type === 'order_created').length}
               </span>
             </CardContent>
           </Card>

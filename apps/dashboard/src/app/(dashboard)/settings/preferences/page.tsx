@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,17 +12,26 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import {
   Save,
   MapPin,
   Globe,
   Calendar,
   Weight,
-} from "lucide-react";
+} from 'lucide-react';
+
+interface UserPreferences {
+  timezone: string;
+  language: string;
+  dateFormat: string;
+  distanceUnit: string;
+  weightUnit: string;
+  dashboardView: string;
+}
 
 const TIMEZONES = [
   { value: "America/New_York", label: "Eastern Time (ET)" },
@@ -55,16 +67,22 @@ const DATE_FORMATS = [
 ];
 
 export default function PreferencesPage() {
-  const [preferences, setPreferences] = useState({
-    timezone: "America/New_York",
-    language: "en",
-    dateFormat: "MM/DD/YYYY",
-    distanceUnit: "miles",
-    weightUnit: "lbs",
-    dashboardView: "grid",
+  const { data: prefs, loading, error, refetch } = useApiQuery<UserPreferences>('/api/v4/settings/preferences');
+  const { execute: updatePrefs } = useApiMutation('PATCH', '/api/v4/settings/preferences');
+
+  const [preferences, setPreferences] = useState(prefs || {
+    timezone: 'America/New_York',
+    language: 'en',
+    dateFormat: 'MM/DD/YYYY',
+    distanceUnit: 'miles',
+    weightUnit: 'lbs',
+    dashboardView: 'grid',
   });
 
   const [isSaving, setIsSaving] = useState(false);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const detectTimezone = () => {
     const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -73,8 +91,14 @@ export default function PreferencesPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      await updatePrefs(preferences);
+      refetch();
+    } catch (err) {
+      console.error('Failed to update preferences:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useConflicts, type SyncPlatform, type SyncConflict } from "@/hooks/use-order-sync";
+import { useApiList } from '@/hooks/use-api';
 
 /* ═══════════════════════════════════════════════════════════
    CONFLICT RESOLUTION PAGE — Side-by-side diff view with

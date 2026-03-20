@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Copy, Edit2, Trash2, Eye, MoreVertical, Plus } from "lucide-react";
+import { useApiList } from '@/hooks/use-api';
 
 /* ═══════════════════════════════════════════════════════════
    SAVED VIEWS PAGE — Reusable filter/sort/column presets

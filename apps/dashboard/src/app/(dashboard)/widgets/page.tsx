@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Settings, Maximize2, Trash2, Plus, BarChart3, LineChart, PieChart, Table2, MapPin, Activity, Calendar } from "lucide-react";
+import { useApiList } from '@/hooks/use-api';
 
 /* ═══════════════════════════════════════════════════════════
    WIDGETS PAGE — Dashboard widget configuration & layout

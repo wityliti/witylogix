@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   ChevronRight,
   Plus,
@@ -18,7 +19,7 @@ import {
   BarChart3,
   RotateCw,
   Trash2,
-} from "lucide-react";
+} from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    E-COMMERCE PLATFORM CONFIGURATION PAGE

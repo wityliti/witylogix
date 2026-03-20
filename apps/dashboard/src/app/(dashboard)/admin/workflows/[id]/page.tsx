@@ -21,6 +21,8 @@ import {
   User,
   Hash,
 } from "lucide-react";
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 /* ═══════════════════════════════════════════════════════════
    WORKFLOW EXECUTION DETAIL PAGE — Monitor step-by-step execution

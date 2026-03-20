@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
+import { useApiList } from '@/hooks/use-api';
 
 /* ═══════════════════════════════════════════════════════════
    SHIPPING PROFILES PAGE — Delivery method & rate management

@@ -1,12 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
+import { cn } from '@/lib/utils';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 import {
   Users,
   UserCheck,
@@ -353,18 +356,22 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
 
 // Users Table
 export default function AdminUsersPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { items: users, loading, error, refetch } = useApiList<User>('/api/v4/users');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
+  if (loading && users.length === 0) return <LoadingSkeleton />;
+  if (error && users.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const filteredUsers = useMemo(() => {
-    return mockUsers.filter(
+    return users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [mockUsers, searchTerm]);
+  }, [users, searchTerm]);
 
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
@@ -395,7 +402,7 @@ export default function AdminUsersPage() {
                     Total Users
                   </p>
                   <p className="text-wl-text-primary text-2xl font-bold m-0">
-                    {mockUsers.length}
+                    {users.length}
                   </p>
                 </div>
                 <Users className="w-6 h-6 text-wl-primary-500" />
@@ -411,7 +418,7 @@ export default function AdminUsersPage() {
                     Active
                   </p>
                   <p className="text-wl-text-primary text-2xl font-bold m-0">
-                    {mockUsers.filter((u) => u.status === "active").length}
+                    {users.filter((u) => u.status === 'active').length}
                   </p>
                 </div>
                 <UserCheck className="w-6 h-6 text-green-500" />
@@ -427,7 +434,7 @@ export default function AdminUsersPage() {
                     Admins
                   </p>
                   <p className="text-wl-text-primary text-2xl font-bold m-0">
-                    {mockUsers.filter((u) => u.role === "admin").length}
+                    {users.filter((u) => u.role === 'admin').length}
                   </p>
                 </div>
                 <Shield className="w-6 h-6 text-red-500" />
@@ -443,7 +450,7 @@ export default function AdminUsersPage() {
                     Pending Invites
                   </p>
                   <p className="text-wl-text-primary text-2xl font-bold m-0">
-                    {mockUsers.filter((u) => u.status === "invited").length}
+                    {users.filter((u) => u.status === 'invited').length}
                   </p>
                 </div>
                 <Mail className="w-6 h-6 text-amber-500" />

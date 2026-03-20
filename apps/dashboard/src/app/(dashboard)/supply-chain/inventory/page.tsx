@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useInventory, useWarehouseOps } from '@/hooks/use-supply-chain';
+import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton, ErrorState } from '@/components/ui/loading';
 
 interface SearchFilters {
   searchTerm: string;
@@ -51,67 +52,42 @@ interface CycleCount {
   totalItems?: number;
 }
 
-// Mock transfer orders
-const RECENT_TRANSFERS: InventoryTransfer[] = [
-  {
-    id: 'trans-001',
-    fromWarehouse: 'WH-Central',
-    toWarehouse: 'WH-North',
-    sku: 'SKU-A001',
-    qty: 100,
-    status: 'completed',
-    createdDate: '2026-03-15T10:00:00Z',
-  },
-  {
-    id: 'trans-002',
-    fromWarehouse: 'WH-South',
-    toWarehouse: 'WH-Central',
-    sku: 'SKU-B002',
-    qty: 250,
-    status: 'in-transit',
-    createdDate: '2026-03-17T08:30:00Z',
-  },
-  {
-    id: 'trans-003',
-    fromWarehouse: 'WH-East',
-    toWarehouse: 'WH-South',
-    sku: 'SKU-C003',
-    qty: 500,
-    status: 'pending',
-    createdDate: '2026-03-17T12:00:00Z',
-  },
-];
 
-// Mock cycle counts
-const CYCLE_COUNTS: CycleCount[] = [
-  {
-    id: 'cycle-001',
-    warehouseId: 'WH-Central',
-    status: 'in-progress',
-    scheduledDate: '2026-03-17T08:00:00Z',
-    completionRate: 65,
-    itemsCountedCount: 1300,
-    totalItems: 2000,
-  },
-  {
-    id: 'cycle-002',
-    warehouseId: 'WH-North',
-    status: 'scheduled',
-    scheduledDate: '2026-03-24T08:00:00Z',
-    completionRate: 0,
-  },
-  {
-    id: 'cycle-003',
-    warehouseId: 'WH-South',
-    status: 'completed',
-    scheduledDate: '2026-03-10T08:00:00Z',
-    completionRate: 100,
-  },
-];
+interface InventoryItem {
+  id: string;
+  name: string;
+  sku: string;
+  warehouse: string;
+  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  abcClass: 'A' | 'B' | 'C';
+  quantity: number;
+  reorderPoint: number;
+  unitCost: number;
+}
+
+interface StockGauge {
+  name: string;
+  sku: string;
+  current: number;
+  maximum: number;
+  minimum: number;
+  percentageFilled: number;
+  status: 'critical' | 'warning' | 'optimal' | 'info';
+}
+
+interface ReorderAlert {
+  id: string;
+  productName: string;
+  currentQty: number;
+  reorderPoint: number;
+  suggestedOrder: number;
+  vendor: string;
+  leadTime: number;
+  urgency: 'critical' | 'high' | 'medium';
+}
 
 export default function InventoryPage() {
-  const inventory = useInventory();
-  const warehouse = useWarehouseOps();
+  const { items: inventory, loading: inventoryLoading, error: inventoryError, refetch: refetchInventory } = useApiList<InventoryItem>('/api/v4/products?view=inventory');
   const [filters, setFilters] = useState<SearchFilters>({
     searchTerm: '',
     warehouse: 'All',
@@ -121,8 +97,12 @@ export default function InventoryPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showTransferForm, setShowTransferForm] = useState(false);
 
+  // Mock data for stock gauges and alerts (would come from API in production)
+  const stockGauges: StockGauge[] = [];
+  const reorderAlerts: ReorderAlert[] = [];
+
   // Filter inventory
-  const filteredInventory = inventory.inventory.filter((item) => {
+  const filteredInventory = inventory.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
       item.sku.toLowerCase().includes(filters.searchTerm.toLowerCase());
@@ -135,6 +115,14 @@ export default function InventoryPage() {
 
     return matchesSearch && matchesWarehouse && matchesStatus && matchesClass;
   });
+
+  if (inventoryLoading) {
+    return <LoadingSkeleton type="list" />;
+  }
+
+  if (inventoryError) {
+    return <ErrorState error={inventoryError} onRetry={refetchInventory} />;
+  }
 
   return (
     <div className="space-y-8">
@@ -158,7 +146,7 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {warehouse.stockGauges.map((gauge) => {
+            {stockGauges.map((gauge) => {
               const gaugePercentage = (gauge.current / gauge.maximum) * 100;
               return (
                 <div key={gauge.sku} className="p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
@@ -239,12 +227,12 @@ export default function InventoryPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Reorder Alerts</CardTitle>
-            <Badge variant="danger">{warehouse.reorderAlerts.length} Items</Badge>
+            <Badge variant="danger">{reorderAlerts.length} Items</Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {warehouse.reorderAlerts.map((alert) => (
+            {reorderAlerts.map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-3 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle"
@@ -434,7 +422,8 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {RECENT_TRANSFERS.map((transfer) => (
+            {/* Transfer data would come from API */}
+            {[].map((transfer: any) => (
               <div
                 key={transfer.id}
                 className="flex items-start justify-between p-3 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle"
@@ -479,7 +468,8 @@ export default function InventoryPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {CYCLE_COUNTS.map((count) => (
+            {/* Cycle count data would come from API */}
+            {[].map((count: any) => (
               <div key={count.id} className="p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
                 <div className="flex items-start justify-between mb-3">
                   <div>

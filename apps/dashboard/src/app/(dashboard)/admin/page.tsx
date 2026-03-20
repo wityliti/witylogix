@@ -1,145 +1,43 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 import {
   BarChart3,
   Users,
   ShoppingCart,
   TrendingUp,
   Search,
-  Filter,
   MoreVertical,
   ActivitySquare,
   Server,
   Database,
   Zap,
-  AlertCircle,
   CheckCircle2,
   Plus,
-  Eye,
-  LogOut,
-  TrendingDown,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Types
 interface Store {
   id: string;
   name: string;
   domain: string;
-  planTier: "free" | "starter" | "growth" | "enterprise";
+  planTier: 'free' | 'starter' | 'growth' | 'enterprise';
   owner: string;
   ordersThisMonth: number;
   revenue: number;
-  status: "active" | "suspended" | "trial";
+  status: 'active' | 'suspended' | 'trial';
   lastActive: string;
   totalUsers: number;
 }
-
-// Mock stores data
-const mockStores: Store[] = [
-  {
-    id: "store-001",
-    name: "Elegant Boutique",
-    domain: "elegantboutique.com",
-    planTier: "enterprise",
-    owner: "Sarah Anderson",
-    ordersThisMonth: 450,
-    revenue: 145000,
-    status: "active",
-    lastActive: "2026-03-07 14:32:10",
-    totalUsers: 12,
-  },
-  {
-    id: "store-002",
-    name: "Tech Gadgets Hub",
-    domain: "techgadgetshub.com",
-    planTier: "growth",
-    owner: "Michael Chen",
-    ordersThisMonth: 215,
-    revenue: 87500,
-    status: "active",
-    lastActive: "2026-03-07 13:15:42",
-    totalUsers: 5,
-  },
-  {
-    id: "store-003",
-    name: "Organic Wellness",
-    domain: "organicwellness.io",
-    planTier: "starter",
-    owner: "Emma Rodriguez",
-    ordersThisMonth: 85,
-    revenue: 28900,
-    status: "trial",
-    lastActive: "2026-03-07 11:20:15",
-    totalUsers: 2,
-  },
-  {
-    id: "store-004",
-    name: "Fashion Forward",
-    domain: "fashionforward.store",
-    planTier: "enterprise",
-    owner: "James Mitchell",
-    ordersThisMonth: 523,
-    revenue: 210000,
-    status: "active",
-    lastActive: "2026-03-07 15:45:30",
-    totalUsers: 15,
-  },
-  {
-    id: "store-005",
-    name: "Sports Paradise",
-    domain: "sportsparadise.net",
-    planTier: "growth",
-    owner: "Lisa Thompson",
-    ordersThisMonth: 178,
-    revenue: 65000,
-    status: "suspended",
-    lastActive: "2026-03-05 09:12:22",
-    totalUsers: 4,
-  },
-  {
-    id: "store-006",
-    name: "Home & Garden",
-    domain: "homeandgarden.co",
-    planTier: "starter",
-    owner: "David Kim",
-    ordersThisMonth: 42,
-    revenue: 15600,
-    status: "active",
-    lastActive: "2026-03-07 12:30:45",
-    totalUsers: 1,
-  },
-  {
-    id: "store-007",
-    name: "Artisan Crafts",
-    domain: "artisancrafts.shop",
-    planTier: "free",
-    owner: "Nina Patel",
-    ordersThisMonth: 14,
-    revenue: 4200,
-    status: "active",
-    lastActive: "2026-03-06 10:15:20",
-    totalUsers: 1,
-  },
-  {
-    id: "store-008",
-    name: "Beauty & Cosmetics",
-    domain: "beautycosmetics.com",
-    planTier: "growth",
-    owner: "Victoria Hayes",
-    ordersThisMonth: 342,
-    revenue: 112300,
-    status: "active",
-    lastActive: "2026-03-07 14:50:15",
-    totalUsers: 6,
-  },
-];
 
 // Helper functions
 const getPlanColor = (plan: string): string => {
@@ -308,8 +206,11 @@ const QuickActions = () => {
 };
 
 // Stores Table
-const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[]; loading: boolean; error: Error | null; onRetry: () => void }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  if (loading) return <TableSkeleton rows={5} columns={8} className="mb-6" />;
+  if (error) return <ErrorState message={error.message} onRetry={onRetry} />;
 
   const filteredStores = useMemo(() => {
     return stores.filter(
@@ -343,7 +244,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
-                {["Store", "Plan", "Orders (30d)", "Revenue", "Users", "Status", "Last Active", "Actions"].map((header) => (
+                {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
                   <th
                     key={header}
                     className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider"
@@ -357,9 +258,9 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className={cn("border-b border-wl-border-subtle transition-all duration-200 hover:bg-wl-bg-surface", {
-                    "bg-wl-bg-base": idx % 2 === 0,
-                    "bg-wl-bg-surface": idx % 2 !== 0,
+                  className={cn('border-b border-wl-border-subtle transition-all duration-200 hover:bg-wl-bg-surface', {
+                    'bg-wl-bg-base': idx % 2 === 0,
+                    'bg-wl-bg-surface': idx % 2 !== 0,
                   })}
                 >
                   <td className="p-3">
@@ -377,9 +278,9 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                     <Badge
                       variant="default"
                       style={{
-                        backgroundColor: getPlanColor(store.planTier) + "20",
+                        backgroundColor: getPlanColor(store.planTier) + '20',
                         color: getPlanColor(store.planTier),
-                        fontSize: "var(--wl-text-xs)",
+                        fontSize: 'var(--wl-text-xs)',
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >
@@ -397,7 +298,7 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
                   </td>
                   <td className="p-3">
                     <Badge
-                      variant={store.status === "active" ? "success" : store.status === "suspended" ? "danger" : "info"}
+                      variant={store.status === 'active' ? 'success' : store.status === 'suspended' ? 'danger' : 'info'}
                       className="text-xs capitalize"
                     >
                       {store.status}
@@ -423,6 +324,10 @@ const StoresHealthTable = ({ stores }: { stores: Store[] }) => {
 
 // Main Page
 export default function AdminDashboardPage() {
+  const { items: stores, loading, error, refetch } = useApiList<Store>('/api/v4/shops');
+
+  if (loading && stores.length === 0) return <LoadingSkeleton />;
+
   return (
     <div className="bg-wl-bg-base">
       <Header
@@ -432,7 +337,7 @@ export default function AdminDashboardPage() {
 
       <main className="flex-1 p-6 max-w-6xl mx-auto">
         {/* Key Metrics */}
-        <MetricsBar stores={mockStores} />
+        <MetricsBar stores={stores} />
 
         {/* System Health */}
         <SystemHealth />
@@ -441,7 +346,7 @@ export default function AdminDashboardPage() {
         <QuickActions />
 
         {/* Stores Health Table */}
-        <StoresHealthTable stores={mockStores} />
+        <StoresHealthTable stores={stores} loading={loading} error={error} onRetry={refetch} />
       </main>
 
       <style>{`

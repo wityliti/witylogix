@@ -7,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 
 /* ═══════════════════════════════════════════════════════════
    DRIVER PERFORMANCE LEADERBOARD
@@ -32,203 +34,6 @@ interface DriverPerformance {
   deliveriesCount: number;
 }
 
-const DRIVER_LEADERBOARD: DriverPerformance[] = [
-  {
-    id: "drv-001",
-    rank: 1,
-    name: "Sarah Chen",
-    compositeScore: 98.5,
-    tier: "platinum",
-    trendDirection: "up",
-    trendPercent: 3.2,
-    onTimePercent: 99.2,
-    customerRating: 4.9,
-    podCompliance: 99.8,
-    deliveriesCount: 342,
-  },
-  {
-    id: "drv-002",
-    rank: 2,
-    name: "Marcus Johnson",
-    compositeScore: 96.2,
-    tier: "platinum",
-    trendDirection: "up",
-    trendPercent: 2.1,
-    onTimePercent: 97.8,
-    customerRating: 4.8,
-    podCompliance: 98.5,
-    deliveriesCount: 318,
-  },
-  {
-    id: "drv-003",
-    rank: 3,
-    name: "Elena Rodriguez",
-    compositeScore: 94.8,
-    tier: "gold",
-    trendDirection: "stable",
-    trendPercent: 0.5,
-    onTimePercent: 96.5,
-    customerRating: 4.7,
-    podCompliance: 97.2,
-    deliveriesCount: 295,
-  },
-  {
-    id: "drv-004",
-    rank: 4,
-    name: "James Liu",
-    compositeScore: 92.1,
-    tier: "gold",
-    trendDirection: "up",
-    trendPercent: 1.8,
-    onTimePercent: 94.2,
-    customerRating: 4.6,
-    podCompliance: 95.8,
-    deliveriesCount: 267,
-  },
-  {
-    id: "drv-005",
-    rank: 5,
-    name: "Priya Kapoor",
-    compositeScore: 90.3,
-    tier: "gold",
-    trendDirection: "down",
-    trendPercent: -1.2,
-    onTimePercent: 92.1,
-    customerRating: 4.5,
-    podCompliance: 94.3,
-    deliveriesCount: 248,
-  },
-  {
-    id: "drv-006",
-    rank: 6,
-    name: "Michael Torres",
-    compositeScore: 88.7,
-    tier: "silver",
-    trendDirection: "up",
-    trendPercent: 2.3,
-    onTimePercent: 90.5,
-    customerRating: 4.4,
-    podCompliance: 92.1,
-    deliveriesCount: 231,
-  },
-  {
-    id: "drv-007",
-    rank: 7,
-    name: "Yuki Tanaka",
-    compositeScore: 87.2,
-    tier: "silver",
-    trendDirection: "stable",
-    trendPercent: 0.1,
-    onTimePercent: 88.9,
-    customerRating: 4.3,
-    podCompliance: 90.7,
-    deliveriesCount: 219,
-  },
-  {
-    id: "drv-008",
-    rank: 8,
-    name: "Carlos Martinez",
-    compositeScore: 85.9,
-    tier: "silver",
-    trendDirection: "down",
-    trendPercent: -2.1,
-    onTimePercent: 87.3,
-    customerRating: 4.2,
-    podCompliance: 89.2,
-    deliveriesCount: 203,
-  },
-  {
-    id: "drv-009",
-    rank: 9,
-    name: "Jessica Williams",
-    compositeScore: 83.4,
-    tier: "bronze",
-    trendDirection: "up",
-    trendPercent: 3.5,
-    onTimePercent: 85.1,
-    customerRating: 4.1,
-    podCompliance: 87.5,
-    deliveriesCount: 187,
-  },
-  {
-    id: "drv-010",
-    rank: 10,
-    name: "David Kim",
-    compositeScore: 81.6,
-    tier: "bronze",
-    trendDirection: "down",
-    trendPercent: -1.8,
-    onTimePercent: 83.2,
-    customerRating: 4.0,
-    podCompliance: 85.8,
-    deliveriesCount: 172,
-  },
-  {
-    id: "drv-011",
-    rank: 11,
-    name: "Olivia Martin",
-    compositeScore: 79.8,
-    tier: "bronze",
-    trendDirection: "stable",
-    trendPercent: 0.3,
-    onTimePercent: 81.5,
-    customerRating: 3.9,
-    podCompliance: 84.1,
-    deliveriesCount: 156,
-  },
-  {
-    id: "drv-012",
-    rank: 12,
-    name: "Robert Anderson",
-    compositeScore: 77.5,
-    tier: "bronze",
-    trendDirection: "down",
-    trendPercent: -2.4,
-    onTimePercent: 79.2,
-    customerRating: 3.8,
-    podCompliance: 82.3,
-    deliveriesCount: 141,
-  },
-  {
-    id: "drv-013",
-    rank: 13,
-    name: "Emma Thompson",
-    compositeScore: 75.2,
-    tier: "bronze",
-    trendDirection: "up",
-    trendPercent: 1.5,
-    onTimePercent: 77.8,
-    customerRating: 3.7,
-    podCompliance: 80.5,
-    deliveriesCount: 128,
-  },
-  {
-    id: "drv-014",
-    rank: 14,
-    name: "Alexander Petrov",
-    compositeScore: 73.1,
-    tier: "bronze",
-    trendDirection: "down",
-    trendPercent: -3.2,
-    onTimePercent: 75.3,
-    customerRating: 3.6,
-    podCompliance: 78.7,
-    deliveriesCount: 115,
-  },
-  {
-    id: "drv-015",
-    rank: 15,
-    name: "Lisa Zhang",
-    compositeScore: 71.4,
-    tier: "bronze",
-    trendDirection: "stable",
-    trendPercent: 0.0,
-    onTimePercent: 73.5,
-    customerRating: 3.5,
-    podCompliance: 76.9,
-    deliveriesCount: 102,
-  },
-];
 
 // ─── Helper Functions ──────────────────────────────────────
 
@@ -269,22 +74,29 @@ const formatRating = (rating: number): string => rating.toFixed(1);
 // ─── Main Component ────────────────────────────────────────
 
 export default function DriverPerformancePage() {
+  const { items: drivers, loading, error, refetch } = useApiList<DriverPerformance>('/api/v4/driver-scoring');
   const [period, setPeriod] = useState<ScoringPeriod>("weekly");
-  const [selectedDriver, setSelectedDriver] = useState<DriverPerformance | null>(
-    DRIVER_LEADERBOARD[0] || null
-  );
+  const [selectedDriver, setSelectedDriver] = useState<DriverPerformance | null>(null);
 
   // Calculate stats
-  const topThree = DRIVER_LEADERBOARD.slice(0, 3);
+  const topThree = drivers.slice(0, 3);
   const avgScore =
-    DRIVER_LEADERBOARD.length > 0
-      ? (DRIVER_LEADERBOARD.reduce((sum, d) => sum + d.compositeScore, 0) / DRIVER_LEADERBOARD.length).toFixed(1)
+    drivers.length > 0
+      ? (drivers.reduce((sum, d) => sum + d.compositeScore, 0) / drivers.length).toFixed(1)
       : "0";
   const avgOnTime =
-    DRIVER_LEADERBOARD.length > 0
-      ? (DRIVER_LEADERBOARD.reduce((sum, d) => sum + d.onTimePercent, 0) / DRIVER_LEADERBOARD.length).toFixed(1)
+    drivers.length > 0
+      ? (drivers.reduce((sum, d) => sum + d.onTimePercent, 0) / drivers.length).toFixed(1)
       : "0";
-  const totalDeliveries = DRIVER_LEADERBOARD.reduce((sum, d) => sum + d.deliveriesCount, 0);
+  const totalDeliveries = drivers.reduce((sum, d) => sum + d.deliveriesCount, 0);
+
+  if (loading) {
+    return <LoadingSkeleton type="list" />;
+  }
+
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
 
   return (
     <>
@@ -350,7 +162,7 @@ export default function DriverPerformancePage() {
           />
           <StatCard
             label="Top Tier Drivers"
-            value={DRIVER_LEADERBOARD.filter((d) => d.tier === "platinum" || d.tier === "gold").length}
+            value={drivers.filter((d) => d.tier === "platinum" || d.tier === "gold").length}
             change={{ value: 0.5, label: "vs last period" }}
             accentColor="var(--wl-warning-400)"
             index={3}
@@ -441,7 +253,7 @@ export default function DriverPerformancePage() {
                 </tr>
               </thead>
               <tbody>
-                {DRIVER_LEADERBOARD.map((driver, idx) => (
+                {drivers.map((driver, idx) => (
                   <tr
                     key={driver.id}
                     onClick={() => setSelectedDriver(driver)}

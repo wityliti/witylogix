@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
 import {
   Card,
@@ -53,7 +56,15 @@ interface GatewayConfig {
   monthlyVolume?: number;
 }
 
-const mockGatewayConfigs: GatewayConfig[] = [
+export default function PaymentSettingsPage(): JSX.Element {
+  const { items: gateways, loading, error, refetch } = useApiList<GatewayConfig>('/api/v4/payments/gateways');
+  const { execute: setDefault } = useApiMutation('PATCH', '/api/v4/payments/gateways/:id/default');
+  const { execute: disconnect } = useApiMutation('DELETE', '/api/v4/payments/gateways/:id');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const mockGatewayConfigs: GatewayConfig[] = gateways ?? [
   {
     id: 'stripe-prod',
     name: 'Stripe',
@@ -122,25 +133,19 @@ const mockGatewayConfigs: GatewayConfig[] = [
   },
 ];
 
-const transactionFeesComparison = [
-  { gateway: 'Stripe', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
-  { gateway: 'PayPal', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
-  { gateway: 'Square', percent: 2.6, fixed: 0, for100: 260, for1000: 2600 },
-];
+  const transactionFeesComparison = [
+    { gateway: 'Stripe', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
+    { gateway: 'PayPal', percent: 2.9, fixed: 30, for100: 319, for1000: 2930 },
+    { gateway: 'Square', percent: 2.6, fixed: 0, for100: 260, for1000: 2600 },
+  ];
 
-export default function PaymentSettingsPage(): JSX.Element {
-  const [gateways, setGateways] = useState<GatewayConfig[]>(mockGatewayConfigs);
   const [isTestPaymentLoading, setIsTestPaymentLoading] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   const handleSetDefault = async (gatewayCode: string): Promise<void> => {
     try {
-      setGateways(
-        gateways.map((g) => ({
-          ...g,
-          isDefault: g.code === gatewayCode,
-        })),
-      );
+      await setDefault({ code: gatewayCode });
+      refetch();
     } catch (error) {
       console.error('Failed to set default gateway:', error);
     }
@@ -148,15 +153,8 @@ export default function PaymentSettingsPage(): JSX.Element {
 
   const handleDisconnect = async (id: string): Promise<void> => {
     try {
-      setGateways(
-        gateways.map((g) =>
-          g.id === id
-            ? {
-                ...g,
-                status: 'disconnected',
-                config: undefined,
-              }
-            : g,
+      await disconnect({ id });
+      refetch();
         ),
       );
     } catch (error) {

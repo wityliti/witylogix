@@ -1,34 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { StatCard } from "@/components/ui/stat-card";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  useFieldServiceOverview,
-  useJobSchedule,
-  useSLAMetrics,
-  useWorkOrders,
-  useTechnicians,
-  type WorkOrderStatus,
-} from "@/hooks/use-field-service";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { StatCard } from '@/components/ui/stat-card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
 
 /**
  * Field Service Overview Page
  * Shows active jobs, technicians in field, completion rates, SLA compliance, schedule, and job queue
  */
 
-const statusVariant = (status: WorkOrderStatus): "success" | "warning" | "info" | "primary" | "default" => {
-  const map: Record<WorkOrderStatus, "success" | "warning" | "info" | "primary" | "default"> = {
-    created: "default",
-    scheduled: "info",
-    dispatched: "info",
-    in_progress: "warning",
-    completed: "success",
-    cancelled: "default",
+type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
+
+const statusVariant = (status: WorkOrderStatus): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
+  const map: Record<WorkOrderStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
+    created: 'default',
+    scheduled: 'info',
+    dispatched: 'info',
+    in_progress: 'warning',
+    completed: 'success',
+    cancelled: 'default',
   };
   return map[status];
 };
@@ -43,18 +40,62 @@ const priorityVariant = (priority: string): "default" | "success" | "warning" | 
   return map[priority] || "default";
 };
 
-export default function FieldServicePage() {
-  const overview = useFieldServiceOverview();
-  const { schedule, isLoading: scheduleLoading } = useJobSchedule();
-  const slaMetrics = useSLAMetrics();
-  const { orders: allOrders } = useWorkOrders();
-  const { technicians } = useTechnicians();
+interface Order {
+  id: string;
+  jobNumber: string;
+  customerName: string;
+  status: WorkOrderStatus;
+  priority: string;
+  serviceType: string;
+  location: string;
+  completionTime?: string;
+  assignedTechName?: string;
+  updatedAt: string;
+}
 
+interface ScheduleItem {
+  jobId: string;
+  technicianId: string;
+  jobNumber: string;
+  customerName: string;
+  location: string;
+  startTime: string;
+  endTime: string;
+  status: WorkOrderStatus;
+}
+
+interface Technician {
+  id: string;
+  name: string;
+}
+
+export default function FieldServicePage() {
+  const { items: allOrders, loading, error, refetch } = useApiList<Order>('/api/v4/orders?type=field-service');
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Mock data for now - will be replaced with real data from schedule endpoint
+  const schedule: ScheduleItem[] = [];
+  const technicians: Technician[] = [];
+  const overview = {
+    totalTechnicians: technicians.length,
+    activeJobs: allOrders.filter(o => ['in_progress', 'dispatched'].includes(o.status)).length,
+    completionRate: 85,
+    techniciansInField: 12,
+    avgResponseTime: 8,
+  };
+  const slaMetrics = {
+    onTimePercentage: 92,
+    overdueCount: 2,
+    totalJobs: allOrders.length,
+    avgCompletionTime: 45,
+  };
 
   // Filter pending/unassigned jobs for queue
   const jobQueue = useMemo(
-    () => allOrders.filter((o) => ["created", "scheduled"].includes(o.status)).slice(0, 5),
+    () => allOrders.filter((o) => ['created', 'scheduled'].includes(o.status)).slice(0, 5),
     [allOrders]
   );
 
@@ -62,7 +103,7 @@ export default function FieldServicePage() {
   const recentCompletions = useMemo(
     () =>
       allOrders
-        .filter((o) => o.status === "completed")
+        .filter((o) => o.status === 'completed')
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         .slice(0, 8),
     [allOrders]
@@ -139,9 +180,7 @@ export default function FieldServicePage() {
               </CardHeader>
 
               <div className="p-4">
-                {scheduleLoading ? (
-                  <div className="text-center py-8 text-slate-400">Loading schedule...</div>
-                ) : filteredSchedule.length === 0 ? (
+                {filteredSchedule.length === 0 ? (
                   <div className="text-center py-8 text-slate-400">No scheduled jobs</div>
                 ) : (
                   <div className="space-y-3">

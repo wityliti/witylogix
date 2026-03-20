@@ -1,8 +1,13 @@
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+'use client';
+
+import { useApiQuery } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import {
   ChevronLeft,
   CreditCard,
@@ -11,19 +16,39 @@ import {
   ArrowUpRight,
   Calendar,
   AlertCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Invoice {
   id: string;
   date: string;
   period: string;
   amount: number;
-  status: "paid" | "pending" | "overdue";
+  status: 'paid' | 'pending' | 'overdue';
   downloadUrl: string;
 }
 
-const mockInvoices: Invoice[] = [
+interface BillingData {
+  invoices: Invoice[];
+  usageMetrics: Array<{
+    name: string;
+    current: number;
+    limit: number;
+    percentage: number;
+    unit: string;
+  }>;
+  plan: string;
+  monthlyPrice: number;
+  renewalDate: string;
+}
+
+export default function BillingPage() {
+  const { data: billingData, loading, error, refetch } = useApiQuery<BillingData>('/api/v4/billing');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const mockInvoices: Invoice[] = billingData?.invoices ?? [
   {
     id: "inv-2026-03",
     date: "2026-03-01",
@@ -58,38 +83,7 @@ const mockInvoices: Invoice[] = [
   },
 ];
 
-const usageMetrics = [
-  {
-    name: "API Calls",
-    current: 2400000,
-    limit: 10000000,
-    percentage: 24,
-    unit: "calls/month",
-  },
-  {
-    name: "Shipments Processed",
-    current: 4521,
-    limit: 10000,
-    percentage: 45,
-    unit: "shipments/month",
-  },
-  {
-    name: "Active Drivers",
-    current: 125,
-    limit: 500,
-    percentage: 25,
-    unit: "drivers",
-  },
-  {
-    name: "Storage Used",
-    current: 85,
-    limit: 1000,
-    percentage: 8,
-    unit: "GB",
-  },
-];
-
-export default function BillingPage() {
+  const usageMetrics = billingData?.usageMetrics ?? [
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
       <Header

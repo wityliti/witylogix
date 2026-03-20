@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useFHIRResources } from "@/hooks/use-healthcare";
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
 function Icon({ d, size = 24 }: { d: string; size?: number }) {
   return (
@@ -130,13 +132,27 @@ function FHIRResourceBrowser({ resources }: { resources: any[] }) {
   );
 }
 
+interface Record {
+  id: string;
+  type: string;
+  title: string;
+  patientName: string;
+  author: string;
+  date: string;
+  summary: string;
+  isSigned: boolean;
+}
+
 export default function RecordsPage() {
-  const { resources } = useFHIRResources();
-  const [recordTypeFilter, setRecordTypeFilter] = useState<string>("ALL");
+  const { items: apiRecords, loading, error, refetch } = useApiList<Record>('/api/v4/orders?type=healthcare&view=records');
+  const [recordTypeFilter, setRecordTypeFilter] = useState<string>('ALL');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 
-  // Mock clinical records
-  const mockRecords = [
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Use API records or mock data as fallback
+  const mockRecords: Record[] = apiRecords.length > 0 ? apiRecords : [
     {
       id: "rec-001",
       type: "PROGRESS_NOTE",
@@ -189,9 +205,9 @@ export default function RecordsPage() {
     },
   ];
 
-  const recordTypes = ["ALL", "PROGRESS_NOTE", "LAB_RESULT", "IMAGING_REPORT", "PRESCRIPTION", "DISCHARGE_SUMMARY"];
+  const recordTypes = ['ALL', 'PROGRESS_NOTE', 'LAB_RESULT', 'IMAGING_REPORT', 'PRESCRIPTION', 'DISCHARGE_SUMMARY'];
   const filteredRecords =
-    recordTypeFilter === "ALL"
+    recordTypeFilter === 'ALL'
       ? mockRecords
       : mockRecords.filter((r) => r.type === recordTypeFilter);
 

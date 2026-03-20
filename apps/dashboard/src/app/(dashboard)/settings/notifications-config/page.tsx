@@ -1,8 +1,13 @@
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+'use client';
+
+import { useApiList } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import {
   ChevronLeft,
   Bell,
@@ -10,7 +15,7 @@ import {
   MessageSquare,
   Smartphone,
   Webhook,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface NotificationEvent {
   id: string;
@@ -24,7 +29,11 @@ interface NotificationEvent {
   };
 }
 
-const notificationEvents: NotificationEvent[] = [
+export default function NotificationsConfigPage() {
+  const { items: notificationEvents, loading, error, refetch } = useApiList<NotificationEvent>('/api/v4/settings/notification-events');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   {
     id: "shipment-created",
     name: "Shipment Created",
@@ -87,34 +96,32 @@ const notificationEvents: NotificationEvent[] = [
   },
 ];
 
-const channelInfo = [
-  {
-    icon: Mail,
-    name: "Email",
-    id: "email",
-    description: "Send notifications via email",
-  },
-  {
-    icon: MessageSquare,
-    name: "SMS",
-    id: "sms",
-    description: "Send notifications via SMS",
-  },
-  {
-    icon: Smartphone,
-    name: "Push",
-    id: "push",
-    description: "Send push notifications to mobile apps",
-  },
-  {
-    icon: Webhook,
-    name: "Webhook",
-    id: "webhook",
-    description: "Send notifications to custom webhooks",
-  },
-];
-
-export default function NotificationsConfigPage() {
+  const channelInfo = [
+    {
+      icon: Mail,
+      name: 'Email',
+      id: 'email',
+      description: 'Send notifications via email',
+    },
+    {
+      icon: MessageSquare,
+      name: 'SMS',
+      id: 'sms',
+      description: 'Send notifications via SMS',
+    },
+    {
+      icon: Smartphone,
+      name: 'Push',
+      id: 'push',
+      description: 'Send push notifications to mobile apps',
+    },
+    {
+      icon: Webhook,
+      name: 'Webhook',
+      id: 'webhook',
+      description: 'Send notifications to custom webhooks',
+    },
+  ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
       <Header

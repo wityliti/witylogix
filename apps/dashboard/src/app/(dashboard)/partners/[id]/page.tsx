@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 interface PartnerDetail {
   id: string;

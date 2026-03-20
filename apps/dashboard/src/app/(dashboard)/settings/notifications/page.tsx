@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,12 +12,12 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Mail,
   MessageSquare,
@@ -22,7 +25,7 @@ import {
   Smartphone,
   Save,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface NotificationPrefs {
   [key: string]: {
@@ -30,65 +33,44 @@ interface NotificationPrefs {
   };
 }
 
+interface QuietHours {
+  enabled: boolean;
+  start: string;
+  end: string;
+}
+
+interface NotificationSettings {
+  preferences: NotificationPrefs;
+  quietHours: QuietHours;
+}
+
 const CHANNELS = [
-  { id: "email", label: "Email", icon: <Mail className="w-4 h-4" /> },
-  { id: "sms", label: "SMS", icon: <MessageSquare className="w-4 h-4" /> },
-  { id: "push", label: "Push", icon: <Bell className="w-4 h-4" /> },
-  { id: "whatsapp", label: "WhatsApp", icon: <Smartphone className="w-4 h-4" /> },
-  { id: "in-app", label: "In-App", icon: <Bell className="w-4 h-4" /> },
+  { id: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
+  { id: 'sms', label: 'SMS', icon: <MessageSquare className="w-4 h-4" /> },
+  { id: 'push', label: 'Push', icon: <Bell className="w-4 h-4" /> },
+  { id: 'whatsapp', label: 'WhatsApp', icon: <Smartphone className="w-4 h-4" /> },
+  { id: 'in-app', label: 'In-App', icon: <Bell className="w-4 h-4" /> },
 ];
 
 const EVENT_CATEGORIES = [
-  "Orders",
-  "Deliveries",
-  "Drivers",
-  "System Alerts",
-  "Billing",
+  'Orders',
+  'Deliveries',
+  'Drivers',
+  'System Alerts',
+  'Billing',
 ];
 
-const INITIAL_PREFS: NotificationPrefs = {
-  email: {
-    orders: true,
-    deliveries: true,
-    drivers: false,
-    systemAlerts: true,
-    billing: true,
-  },
-  sms: {
-    orders: true,
-    deliveries: true,
-    drivers: true,
-    systemAlerts: false,
-    billing: false,
-  },
-  push: {
-    orders: true,
-    deliveries: true,
-    drivers: true,
-    systemAlerts: true,
-    billing: false,
-  },
-  whatsapp: {
-    orders: false,
-    deliveries: false,
-    drivers: false,
-    systemAlerts: false,
-    billing: false,
-  },
-  "in-app": {
-    orders: true,
-    deliveries: true,
-    drivers: true,
-    systemAlerts: true,
-    billing: true,
-  },
-};
-
 export default function NotificationsPage() {
-  const [preferences, setPreferences] = useState<NotificationPrefs>(INITIAL_PREFS);
-  const [quietHours, setQuietHours] = useState({ enabled: true, start: "22:00", end: "08:00" });
+  const { data: settings, loading, error, refetch } = useApiQuery<NotificationSettings>('/api/v4/settings/notifications');
+  const { execute: updateSettings } = useApiMutation('PATCH', '/api/v4/settings/notifications');
+
+  const [preferences, setPreferences] = useState<NotificationPrefs>(settings?.preferences ?? {});
+  const [quietHours, setQuietHours] = useState<QuietHours>(settings?.quietHours ?? { enabled: true, start: '22:00', end: '08:00' });
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const handlePreferenceChange = (channel: string, category: string) => {
     setPreferences((prev) => ({

@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface Stop {
   id: string;
@@ -22,87 +26,66 @@ interface RouteFormData {
   stops: Stop[];
 }
 
-const mockDrivers = [
-  { id: "D001", name: "John Martinez" },
-  { id: "D002", name: "Sarah Chen" },
-  { id: "D003", name: "Marcus Johnson" },
-  { id: "D004", name: "Elena Rodriguez" },
-];
+interface Driver {
+  id: string;
+  name: string;
+}
 
-const mockVehicles = [
-  { id: "V001", name: "Van-01", capacity: "1000kg" },
-  { id: "V002", name: "Truck-02", capacity: "5000kg" },
-  { id: "V003", name: "Van-03", capacity: "1200kg" },
-];
+interface Vehicle {
+  id: string;
+  name: string;
+  capacity: string;
+}
 
-const mockAvailableOrders = [
-  {
-    id: "ORD-2024-007",
-    address: "111 Market St, Shopping District",
-    timeWindow: { start: "15:00", end: "17:00" },
-    priority: "medium" as const,
-  },
-  {
-    id: "ORD-2024-008",
-    address: "222 Park Ave, Riverside",
-    timeWindow: { start: "15:30", end: "17:30" },
-    priority: "low" as const,
-  },
-  {
-    id: "ORD-2024-009",
-    address: "333 Harbor Rd, Port Area",
-    timeWindow: { start: "14:00", end: "16:00" },
-    priority: "high" as const,
-  },
-];
-
-const initialRoute: RouteFormData = {
-  name: "Downtown Delivery Route A",
-  date: "2024-03-06",
-  driverId: "D001",
-  vehicleId: "V001",
-  stops: [
-    {
-      id: "stop_1",
-      orderId: "ORD-2024-001",
-      address: "123 Main St, Downtown",
-      timeWindow: { start: "09:00", end: "11:00" },
-      priority: "high",
-    },
-    {
-      id: "stop_2",
-      orderId: "ORD-2024-002",
-      address: "456 Oak Ave, Midtown",
-      timeWindow: { start: "10:00", end: "12:00" },
-      priority: "medium",
-    },
-    {
-      id: "stop_3",
-      orderId: "ORD-2024-003",
-      address: "789 Elm Rd, North District",
-      timeWindow: { start: "11:00", end: "13:00" },
-      priority: "low",
-    },
-    {
-      id: "stop_4",
-      orderId: "ORD-2024-004",
-      address: "321 Pine St, Uptown",
-      timeWindow: { start: "13:00", end: "15:00" },
-      priority: "medium",
-    },
-  ],
-};
+interface AvailableOrder {
+  id: string;
+  address: string;
+  timeWindow: { start: string; end: string };
+  priority: "low" | "medium" | "high";
+}
 
 export default function EditRoutePage() {
-  const [formData, setFormData] = useState<RouteFormData>(initialRoute);
+  const params = useParams();
+  const id = params.id as string;
+
+  const { data: route, loading, error, refetch } = useApiQuery<RouteFormData>(
+    id ? `/api/v4/routes/${id}` : null
+  );
+  const { data: drivers } = useApiQuery<Driver[]>(`/api/v4/drivers`);
+  const { data: vehicles } = useApiQuery<Vehicle[]>(`/api/v4/vehicles`);
+  const { data: availableOrders } = useApiQuery<AvailableOrder[]>(`/api/v4/orders?available=true`);
+  const { execute: updateRoute } = useApiMutation<RouteFormData>("PATCH", `/api/v4/routes/${id}`);
+
+  const [formData, setFormData] = useState<RouteFormData | null>(null);
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
   const [showAddStop, setShowAddStop] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const currentFormData = formData || route || { name: '', date: '', driverId: '', vehicleId: '', stops: [] };
+  const driversList = drivers || [];
+  const vehiclesList = vehicles || [];
+  const ordersList = availableOrders || [];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-6">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-6">
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
-      ...prev,
+      ...(prev || currentFormData),
       [name]: value,
     }));
     setHasChanges(true);
@@ -110,13 +93,13 @@ export default function EditRoutePage() {
 
   const handleRemoveStop = (stopId: string) => {
     setFormData((prev) => ({
-      ...prev,
-      stops: prev.stops.filter((stop) => stop.id !== stopId),
+      ...(prev || currentFormData),
+      stops: (prev || currentFormData).stops.filter((stop) => stop.id !== stopId),
     }));
     setHasChanges(true);
   };
 
-  const handleAddStop = (order: (typeof mockAvailableOrders)[0]) => {
+  const handleAddStop = (order: AvailableOrder) => {
     const newStop: Stop = {
       id: `stop_${Date.now()}`,
       orderId: order.id,
@@ -125,8 +108,8 @@ export default function EditRoutePage() {
       priority: order.priority,
     };
     setFormData((prev) => ({
-      ...prev,
-      stops: [...prev.stops, newStop],
+      ...(prev || currentFormData),
+      stops: [...(prev || currentFormData).stops, newStop],
     }));
     setHasChanges(true);
     setShowAddStop(false);
@@ -143,12 +126,12 @@ export default function EditRoutePage() {
   const handleDrop = (targetIndex: number) => {
     if (draggedStop === null || draggedStop === targetIndex) return;
 
-    const stops = [...formData.stops];
+    const stops = [...currentFormData.stops];
     const [draggedItem] = stops.splice(draggedStop, 1);
     stops.splice(targetIndex, 0, draggedItem);
 
     setFormData((prev) => ({
-      ...prev,
+      ...(prev || currentFormData),
       stops,
     }));
     setDraggedStop(null);
@@ -157,8 +140,8 @@ export default function EditRoutePage() {
 
   const handleReoptimize = () => {
     setFormData((prev) => ({
-      ...prev,
-      stops: [...prev.stops].sort((a, b) => {
+      ...(prev || currentFormData),
+      stops: [...(prev || currentFormData).stops].sort((a, b) => {
         const priorityOrder = { high: 0, medium: 1, low: 2 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       }),
@@ -167,12 +150,12 @@ export default function EditRoutePage() {
   };
 
   const handleCancel = () => {
-    setFormData(initialRoute);
+    setFormData(null);
     setHasChanges(false);
   };
 
-  const estimatedDistance = formData.stops.length * 3.5;
-  const estimatedDuration = formData.stops.length * 15 + 30;
+  const estimatedDistance = currentFormData.stops.length * 3.5;
+  const estimatedDuration = currentFormData.stops.length * 15 + 30;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -208,7 +191,7 @@ export default function EditRoutePage() {
                     <input
                       type="text"
                       name="name"
-                      value={formData.name}
+                      value={currentFormData.name}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     />
@@ -218,7 +201,7 @@ export default function EditRoutePage() {
                     <input
                       type="date"
                       name="date"
-                      value={formData.date}
+                      value={currentFormData.date}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     />
@@ -229,11 +212,11 @@ export default function EditRoutePage() {
                     <label className="block text-wl-text text-sm font-semibold mb-2">Assign Driver</label>
                     <select
                       name="driverId"
-                      value={formData.driverId}
+                      value={currentFormData.driverId}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     >
-                      {mockDrivers.map((driver) => (
+                      {driversList.map((driver) => (
                         <option key={driver.id} value={driver.id}>
                           {driver.name}
                         </option>
@@ -244,11 +227,11 @@ export default function EditRoutePage() {
                     <label className="block text-wl-text text-sm font-semibold mb-2">Vehicle</label>
                     <select
                       name="vehicleId"
-                      value={formData.vehicleId}
+                      value={currentFormData.vehicleId}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
                     >
-                      {mockVehicles.map((vehicle) => (
+                      {vehiclesList.map((vehicle) => (
                         <option key={vehicle.id} value={vehicle.id}>
                           {vehicle.name} ({vehicle.capacity})
                         </option>
@@ -266,7 +249,7 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
-                    <div className="text-lg font-bold text-wl-primary mb-0.5">{formData.stops.length}</div>
+                    <div className="text-lg font-bold text-wl-primary mb-0.5">{currentFormData.stops.length}</div>
                     <div className="text-xs text-wl-muted">Total Stops</div>
                   </div>
                   <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
@@ -280,7 +263,7 @@ export default function EditRoutePage() {
                 </div>
 
                 <div className="flex flex-col gap-2 mb-4">
-                  {formData.stops.map((stop, idx) => (
+                  {currentFormData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
                       className="p-3 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center cursor-grab transition-all"
@@ -340,7 +323,7 @@ export default function EditRoutePage() {
                   <div className="mt-4 p-4 rounded-md bg-wl-surface border border-wl-border">
                     <h4 className="text-wl-text text-sm font-semibold mb-3">Available Orders</h4>
                     <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
-                      {mockAvailableOrders.map((order) => (
+                      {ordersList.map((order) => (
                         <div
                           key={order.id}
                           className="p-3 rounded-md bg-wl-bg border border-wl-border cursor-pointer text-xs transition-all hover:bg-wl-surface hover:border-wl-primary"
@@ -373,10 +356,10 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
                   <div className="text-wl-text text-sm font-semibold mb-2">
-                    {mockDrivers.find((d) => d.id === formData.driverId)?.name}
+                    {driversList.find((d) => d.id === currentFormData.driverId)?.name}
                   </div>
                   <div className="text-wl-muted text-xs leading-relaxed">
-                    <div>ID: {formData.driverId}</div>
+                    <div>ID: {currentFormData.driverId}</div>
                     <div className="mt-2">Status: Active</div>
                   </div>
                 </div>
@@ -390,11 +373,11 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
                   <div className="text-wl-text text-sm font-semibold mb-2">
-                    {mockVehicles.find((v) => v.id === formData.vehicleId)?.name}
+                    {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.name}
                   </div>
                   <div className="text-wl-muted text-xs leading-relaxed">
                     <div>
-                      Capacity: {mockVehicles.find((v) => v.id === formData.vehicleId)?.capacity}
+                      Capacity: {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.capacity}
                     </div>
                     <div className="mt-2">Status: Available</div>
                   </div>
@@ -409,13 +392,13 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-surface border border-wl-border text-wl-muted text-xs leading-relaxed">
                   <div>
-                    <strong>Name:</strong> {formData.name}
+                    <strong>Name:</strong> {currentFormData.name}
                   </div>
                   <div>
-                    <strong>Date:</strong> {formData.date}
+                    <strong>Date:</strong> {currentFormData.date}
                   </div>
                   <div>
-                    <strong>Stops:</strong> {formData.stops.length}
+                    <strong>Stops:</strong> {currentFormData.stops.length}
                   </div>
                   <div>
                     <strong>Distance:</strong> {estimatedDistance.toFixed(1)}km

@@ -1,18 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { Header } from "@/components/layout/header";
+import { useState, useEffect, useCallback } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import {
   Activity,
   ChevronRight,
@@ -24,14 +27,14 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface WebhookEvent {
   id: string;
   timestamp: Date;
   eventType: string;
   endpointUrl: string;
-  status: "success" | "failed" | "pending" | "retrying";
+  status: 'success' | 'failed' | 'pending' | 'retrying';
   duration: number;
   statusCode?: number;
   error?: string;
@@ -47,53 +50,34 @@ interface WebhookStats {
 }
 
 export default function WebhooksDebuggerPage() {
-  const [events, setEvents] = useState<WebhookEvent[]>([]);
+  const { items: webhookEvents, loading, error, refetch } = useApiList<WebhookEvent>('/api/v4/webhooks/events');
+  const { data: webhookStats } = useApiList<WebhookStats>('/api/v4/webhooks/stats');
+
+  const [events, setEvents] = useState<WebhookEvent[]>(webhookEvents ?? []);
   const [filteredEvents, setFilteredEvents] = useState<WebhookEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<WebhookEvent | null>(null);
-  const [stats, setStats] = useState<WebhookStats>({
-    successRate: 0,
-    avgDeliveryTime: 0,
-    eventsPerHour: 0,
-    totalEvents: 0,
-  });
+  const [stats, setStats] = useState<WebhookStats>(
+    webhookStats?.items?.[0] ?? {
+      successRate: 0,
+      avgDeliveryTime: 0,
+      eventsPerHour: 0,
+      totalEvents: 0,
+    }
+  );
 
   // Filters
   const [filters, setFilters] = useState({
-    eventType: "all",
-    status: "all",
-    endpoint: "",
-    startDate: "",
-    endDate: "",
+    eventType: 'all',
+    status: 'all',
+    endpoint: '',
+    startDate: '',
+    endDate: '',
   });
 
   const [isLiveSubscribed, setIsLiveSubscribed] = useState(true);
 
-  // Mock WebSocket subscription
-  useEffect(() => {
-    if (!isLiveSubscribed) return;
-
-    const interval = setInterval(() => {
-      const newEvent: WebhookEvent = {
-        id: `evt-${Date.now()}`,
-        timestamp: new Date(),
-        eventType: ["shipment.created", "order.created", "driver.assigned"][
-          Math.floor(Math.random() * 3)
-        ],
-        endpointUrl: `https://webhook.example.com/events`,
-        status: ["success", "pending", "failed"][
-          Math.floor(Math.random() * 3)
-        ] as any,
-        duration: Math.floor(Math.random() * 500) + 50,
-        statusCode: Math.random() > 0.1 ? 200 : 500,
-        attempt: Math.floor(Math.random() * 3) + 1,
-        maxAttempts: 3,
-      };
-
-      setEvents((prev) => [newEvent, ...prev.slice(0, 499)]);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [isLiveSubscribed]);
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Apply filters
   useEffect(() => {

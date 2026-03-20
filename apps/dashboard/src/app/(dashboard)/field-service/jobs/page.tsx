@@ -1,70 +1,97 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  useWorkOrders,
-  useTechnicians,
-  type WorkOrderStatus,
-  type WorkOrderPriority,
-  type WorkOrderType,
-} from "@/hooks/use-field-service";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
 
 /**
  * Work Order Management Page
  * Table view with filters, create form, and detail drawer
  */
 
-const statusVariant = (status: WorkOrderStatus): "success" | "warning" | "info" | "primary" | "default" => {
-  const map: Record<WorkOrderStatus, "success" | "warning" | "info" | "primary" | "default"> = {
-    created: "default",
-    scheduled: "info",
-    dispatched: "info",
-    in_progress: "warning",
-    completed: "success",
-    cancelled: "default",
+type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
+type WorkOrderPriority = 'low' | 'medium' | 'high' | 'urgent';
+type WorkOrderType = 'installation' | 'maintenance' | 'repair' | 'inspection';
+
+interface WorkOrder {
+  id: string;
+  jobNumber: string;
+  customerName: string;
+  customerPhone: string;
+  status: WorkOrderStatus;
+  priority: WorkOrderPriority;
+  serviceType: WorkOrderType;
+  location: string;
+  description: string;
+  estimatedDuration: number;
+  requiredSkills: string[];
+  assignedTechName?: string;
+  eta?: string;
+  notes: string[];
+}
+
+interface Technician {
+  id: string;
+  name: string;
+}
+
+const statusVariant = (status: WorkOrderStatus): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
+  const map: Record<WorkOrderStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
+    created: 'default',
+    scheduled: 'info',
+    dispatched: 'info',
+    in_progress: 'warning',
+    completed: 'success',
+    cancelled: 'default',
   };
   return map[status];
 };
 
-const priorityVariant = (priority: WorkOrderPriority): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
-  const map: Record<WorkOrderPriority, "default" | "success" | "warning" | "danger" | "info" | "primary"> = {
-    low: "default",
-    medium: "info",
-    high: "warning",
-    urgent: "danger",
+const priorityVariant = (priority: WorkOrderPriority): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
+  const map: Record<WorkOrderPriority, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
+    low: 'default',
+    medium: 'info',
+    high: 'warning',
+    urgent: 'danger',
   };
   return map[priority];
 };
 
 export default function JobsPage() {
-  const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<WorkOrderPriority | "all">("all");
-  const [typeFilter, setTypeFilter] = useState<WorkOrderType | "all">("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | 'all'>('all');
+  const [priorityFilter, setPriorityFilter] = useState<WorkOrderPriority | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<WorkOrderType | 'all'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const { orders: allOrders } = useWorkOrders();
-  const { technicians } = useTechnicians();
+  const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>('/api/v4/orders?type=field-service&view=jobs');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  // Mock technicians for now
+  const technicians: Technician[] = [];
 
   // Apply filters
   const filteredOrders = useMemo(() => {
     let result = [...allOrders];
 
-    if (statusFilter !== "all") {
+    if (statusFilter !== 'all') {
       result = result.filter((o) => o.status === statusFilter);
     }
 
-    if (priorityFilter !== "all") {
+    if (priorityFilter !== 'all') {
       result = result.filter((o) => o.priority === priorityFilter);
     }
 
-    if (typeFilter !== "all") {
+    if (typeFilter !== 'all') {
       result = result.filter((o) => o.serviceType === typeFilter);
     }
 

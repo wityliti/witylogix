@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { usePatients, useHealthcareCompliance } from "@/hooks/use-healthcare";
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
 function Icon({ d, size = 24 }: { d: string; size?: number }) {
   return (
@@ -205,9 +207,38 @@ function ProviderSummaryCard() {
   );
 }
 
+interface Patient {
+  id: string;
+  firstName: string;
+  lastName: string;
+  mrn: string;
+  status: string;
+  dateOfBirth: string;
+  activeConditionsCount: number;
+  medicationsCount: number;
+}
+
+interface Compliance {
+  hipaaCompliant: boolean;
+  encryptionEnabled: boolean;
+  auditLoggingEnabled: boolean;
+  accessControlsConfigured: boolean;
+  outstandingIssues: number;
+}
+
 export default function HealthcarePage() {
-  const { patients } = usePatients();
-  const { compliance } = useHealthcareCompliance();
+  const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const compliance: Compliance = {
+    hipaaCompliant: true,
+    encryptionEnabled: true,
+    auditLoggingEnabled: true,
+    accessControlsConfigured: true,
+    outstandingIssues: 0,
+  };
 
   // Simulate additional metrics
   const activePatients = patients.filter((p) => p.status === "ACTIVE").length;

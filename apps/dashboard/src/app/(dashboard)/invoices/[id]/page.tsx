@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 

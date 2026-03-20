@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from 'react';
 import {
   Search,
   Plus,
@@ -9,18 +9,21 @@ import {
   CheckCircle,
   FilterX,
   Eye,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { MetricCard } from "@/components/ui/metric-card";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { MetricCard } from '@/components/ui/metric-card';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
-type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
 interface Invoice {
   id: string;
@@ -29,145 +32,30 @@ interface Invoice {
   customerName: string;
   amount: number;
   status: InvoiceStatus;
-  dueDate: Date;
-  sentDate: Date | null;
-  paidDate: Date | null;
+  dueDate: string;
+  sentDate: string | null;
+  paidDate: string | null;
   taxAmount: number;
   discountAmount: number;
   lineItemsCount: number;
 }
 
-const MOCK_INVOICES: Invoice[] = [
-  {
-    id: "inv-001",
-    number: "INV-2024-001",
-    customerId: "cust-001",
-    customerName: "Acme Corp",
-    amount: 2500.0,
-    status: "paid",
-    dueDate: new Date("2024-02-15"),
-    sentDate: new Date("2024-01-15"),
-    paidDate: new Date("2024-02-10"),
-    taxAmount: 250.0,
-    discountAmount: 0,
-    lineItemsCount: 4,
-  },
-  {
-    id: "inv-002",
-    number: "INV-2024-002",
-    customerId: "cust-002",
-    customerName: "Beta Inc",
-    amount: 1850.5,
-    status: "overdue",
-    dueDate: new Date("2024-02-01"),
-    sentDate: new Date("2024-01-20"),
-    paidDate: null,
-    taxAmount: 185.05,
-    discountAmount: 50.0,
-    lineItemsCount: 3,
-  },
-  {
-    id: "inv-003",
-    number: "INV-2024-003",
-    customerId: "cust-003",
-    customerName: "Gamma Ltd",
-    amount: 3200.0,
-    status: "sent",
-    dueDate: new Date("2024-03-15"),
-    sentDate: new Date("2024-02-20"),
-    paidDate: null,
-    taxAmount: 320.0,
-    discountAmount: 0,
-    lineItemsCount: 5,
-  },
-  {
-    id: "inv-004",
-    number: "INV-2024-004",
-    customerId: "cust-001",
-    customerName: "Acme Corp",
-    amount: 1600.0,
-    status: "draft",
-    dueDate: new Date("2024-03-30"),
-    sentDate: null,
-    paidDate: null,
-    taxAmount: 160.0,
-    discountAmount: 100.0,
-    lineItemsCount: 2,
-  },
-  {
-    id: "inv-005",
-    number: "INV-2024-005",
-    customerId: "cust-004",
-    customerName: "Delta Logistics",
-    amount: 4500.0,
-    status: "paid",
-    dueDate: new Date("2024-01-30"),
-    sentDate: new Date("2024-01-05"),
-    paidDate: new Date("2024-01-28"),
-    taxAmount: 450.0,
-    discountAmount: 200.0,
-    lineItemsCount: 8,
-  },
-  {
-    id: "inv-006",
-    number: "INV-2024-006",
-    customerId: "cust-005",
-    customerName: "Echo Distribution",
-    amount: 2200.0,
-    status: "overdue",
-    dueDate: new Date("2024-02-05"),
-    sentDate: new Date("2024-01-25"),
-    paidDate: null,
-    taxAmount: 220.0,
-    discountAmount: 0,
-    lineItemsCount: 3,
-  },
-  {
-    id: "inv-007",
-    number: "INV-2024-007",
-    customerId: "cust-002",
-    customerName: "Beta Inc",
-    amount: 3050.0,
-    status: "sent",
-    dueDate: new Date("2024-03-20"),
-    sentDate: new Date("2024-02-25"),
-    paidDate: null,
-    taxAmount: 305.0,
-    discountAmount: 150.0,
-    lineItemsCount: 6,
-  },
-  {
-    id: "inv-008",
-    number: "INV-2024-008",
-    customerId: "cust-003",
-    customerName: "Gamma Ltd",
-    amount: 1450.0,
-    status: "paid",
-    dueDate: new Date("2024-02-20"),
-    sentDate: new Date("2024-02-01"),
-    paidDate: new Date("2024-02-18"),
-    taxAmount: 145.0,
-    discountAmount: 50.0,
-    lineItemsCount: 2,
-  },
-];
-
 const getStatusBadgeVariant = (
   status: InvoiceStatus
-): "default" | "success" | "warning" | "danger" | "info" | "primary" => {
+): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
   switch (status) {
-    case "paid":
-      return "success";
-    case "sent":
-      return "info";
-    case "draft":
-      return "default";
-    case "overdue":
-      return "danger";
-    case "cancelled":
-      return "warning";
+    case 'paid':
+      return 'success';
+    case 'sent':
+      return 'info';
+    case 'draft':
+      return 'default';
+    case 'overdue':
+      return 'danger';
+    case 'cancelled':
+      return 'warning';
     default:
-      return "default";
+      return 'default';
   }
 };
 
@@ -177,32 +65,30 @@ const getStatusLabel = (status: InvoiceStatus): string => {
 
 export default function InvoicesPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | "">(
-    ""
-  );
-  const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [amountMin, setAmountMin] = useState("");
-  const [amountMax, setAmountMax] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "status" | "due">(
-    "date"
-  );
+  const { items: invoices, loading, error, refetch } = useApiList<Invoice>('/api/v4/invoices');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | ''>('');
+  const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [amountMin, setAmountMin] = useState('');
+  const [amountMax, setAmountMax] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status' | 'due'>('date');
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   // Get unique customers
   const customers = useMemo(() => {
-    return Array.from(new Set(MOCK_INVOICES.map((i) => i.customerName))).sort();
-  }, []);
+    return Array.from(new Set(invoices.map((i) => i.customerName))).sort();
+  }, [invoices]);
 
   // Filter invoices
   const filtered = useMemo(() => {
-    let result = MOCK_INVOICES;
+    let result = invoices;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -223,12 +109,12 @@ export default function InvoicesPage() {
 
     if (dateFrom) {
       const fromDate = new Date(dateFrom);
-      result = result.filter((i) => i.sentDate && i.sentDate >= fromDate);
+      result = result.filter((i) => i.sentDate && new Date(i.sentDate) >= fromDate);
     }
 
     if (dateTo) {
       const toDate = new Date(dateTo);
-      result = result.filter((i) => i.sentDate && i.sentDate <= toDate);
+      result = result.filter((i) => i.sentDate && new Date(i.sentDate) <= toDate);
     }
 
     if (amountMin) {
@@ -243,43 +129,34 @@ export default function InvoicesPage() {
 
     // Sort
     const sorted = [...result];
-    if (sortBy === "date") {
-      sorted.sort((a, b) => (b.sentDate?.getTime() || 0) - (a.sentDate?.getTime() || 0));
-    } else if (sortBy === "amount") {
+    if (sortBy === 'date') {
+      sorted.sort((a, b) => (b.sentDate ? new Date(b.sentDate).getTime() : 0) - (a.sentDate ? new Date(a.sentDate).getTime() : 0));
+    } else if (sortBy === 'amount') {
       sorted.sort((a, b) => b.amount - a.amount);
-    } else if (sortBy === "status") {
+    } else if (sortBy === 'status') {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
-    } else if (sortBy === "due") {
-      sorted.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
+    } else if (sortBy === 'due') {
+      sorted.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
     }
 
     return sorted;
-  }, [
-    searchQuery,
-    selectedStatus,
-    selectedCustomer,
-    dateFrom,
-    dateTo,
-    amountMin,
-    amountMax,
-    sortBy,
-  ]);
+  }, [invoices, searchQuery, selectedStatus, selectedCustomer, dateFrom, dateTo, amountMin, amountMax, sortBy]);
 
   // Calculate summary stats
   const stats = useMemo(() => {
-    const paidInvoices = MOCK_INVOICES.filter((i) => i.status === "paid");
-    const overdueInvoices = MOCK_INVOICES.filter((i) => i.status === "overdue");
-    const thisMonth = MOCK_INVOICES.filter((i) => {
+    const paidInvoices = invoices.filter((i) => i.status === 'paid');
+    const overdueInvoices = invoices.filter((i) => i.status === 'overdue');
+    const thisMonth = invoices.filter((i) => {
       const now = new Date();
       return (
         i.paidDate &&
-        i.paidDate.getMonth() === now.getMonth() &&
-        i.paidDate.getFullYear() === now.getFullYear()
+        new Date(i.paidDate).getMonth() === now.getMonth() &&
+        new Date(i.paidDate).getFullYear() === now.getFullYear()
       );
     });
 
-    const totalOutstanding = MOCK_INVOICES.filter(
-      (i) => i.status === "sent" || i.status === "draft"
+    const totalOutstanding = invoices.filter(
+      (i) => i.status === 'sent' || i.status === 'draft'
     ).reduce((sum, i) => sum + i.amount, 0);
 
     const totalOverdue = overdueInvoices.reduce((sum, i) => sum + i.amount, 0);
@@ -288,9 +165,9 @@ export default function InvoicesPage() {
     const avgDaysToPay =
       paidInvoices.length > 0
         ? paidInvoices.reduce((sum, i) => {
-            const days =
-              (i.paidDate!.getTime() - i.sentDate!.getTime()) /
-              (1000 * 60 * 60 * 24);
+            const days = i.paidDate && i.sentDate
+              ? (new Date(i.paidDate).getTime() - new Date(i.sentDate).getTime()) / (1000 * 60 * 60 * 24)
+              : 0;
             return sum + days;
           }, 0) / paidInvoices.length
         : 0;
@@ -301,7 +178,7 @@ export default function InvoicesPage() {
       paidThisMonth,
       avgDaysToPay: Math.round(avgDaysToPay),
     };
-  }, []);
+  }, [invoices]);
 
   // Pagination
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -311,11 +188,11 @@ export default function InvoicesPage() {
   );
 
   const handleViewInvoice = useCallback((id: string) => {
-    router.push(`/dashboard/invoices/${id}`);
+    router.push(`/invoices/${id}`);
   }, [router]);
 
   const handleCreateInvoice = useCallback(() => {
-    router.push("/dashboard/invoices/create");
+    router.push('/invoices/create');
   }, [router]);
 
   const handleSelectInvoice = useCallback(
@@ -496,11 +373,11 @@ export default function InvoicesPage() {
             className="w-32"
           >
             <option value="">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="sent">Sent</option>
-            <option value="paid">Paid</option>
-            <option value="overdue">Overdue</option>
-            <option value="cancelled">Cancelled</option>
+            <option value='draft'>Draft</option>
+            <option value='sent'>Sent</option>
+            <option value='paid'>Paid</option>
+            <option value='overdue'>Overdue</option>
+            <option value='cancelled'>Cancelled</option>
           </Select>
 
           <Select
@@ -528,10 +405,10 @@ export default function InvoicesPage() {
             label="Sort By"
             className="w-32"
           >
-            <option value="date">Date</option>
-            <option value="amount">Amount</option>
-            <option value="status">Status</option>
-            <option value="due">Due Date</option>
+            <option value='date'>Date</option>
+            <option value='amount'>Amount</option>
+            <option value='status'>Status</option>
+            <option value='due'>Due Date</option>
           </Select>
 
           <Button variant="secondary" size="sm" onClick={handleExportCSV}>
@@ -690,7 +567,7 @@ export default function InvoicesPage() {
                   header: "Due Date",
                   render: (item: any) => (
                     <div className="text-sm">
-                      {item.dueDate.toLocaleDateString()}
+                      {new Date(item.dueDate).toLocaleDateString()}
                     </div>
                   ),
                   sortable: true,
@@ -701,7 +578,7 @@ export default function InvoicesPage() {
                   header: "Sent Date",
                   render: (item: any) => (
                     <div className="text-sm">
-                      {item.sentDate?.toLocaleDateString() || "-"}
+                      {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
                   ),
                   width: 110,

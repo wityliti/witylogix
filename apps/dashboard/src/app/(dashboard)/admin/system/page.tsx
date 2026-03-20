@@ -19,6 +19,9 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react";
+import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
 interface ServiceHealth {
   name: string;

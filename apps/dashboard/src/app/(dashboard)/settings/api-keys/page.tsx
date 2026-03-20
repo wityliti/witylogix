@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,11 +12,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Plus,
   Copy,
@@ -22,7 +25,7 @@ import {
   Calendar,
   Clock,
   AlertCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface APIKey {
   id: string;
@@ -35,34 +38,14 @@ interface APIKey {
   requestsPerDay: number;
 }
 
-const INITIAL_KEYS: APIKey[] = [
-  {
-    id: "key-001",
-    name: "Production API Key",
-    key: "wl_live_51234567890abcdef",
-    masked: "wl_live_••••••••••••••••••••••••••••••••",
-    createdAt: "2025-01-15",
-    lastUsed: "2 hours ago",
-    scopes: ["orders:read", "orders:write", "deliveries:read"],
-    requestsPerDay: 5240,
-  },
-  {
-    id: "key-002",
-    name: "Development API Key",
-    key: "wl_test_test1234567890abcdef",
-    masked: "wl_test_••••••••••••••••••••••••••••••••",
-    createdAt: "2025-02-10",
-    lastUsed: "30 minutes ago",
-    scopes: ["*"],
-    requestsPerDay: 342,
-  },
-];
-
 export default function APIKeysPage() {
-  const [apiKeys, setApiKeys] = useState<APIKey[]>(INITIAL_KEYS);
+  const { items: apiKeys, loading, error, refetch } = useApiList<APIKey>('/api/v4/api-keys');
+  const { execute: deleteKey } = useApiMutation('DELETE', '/api/v4/api-keys/:id');
+  const { execute: createKey } = useApiMutation('POST', '/api/v4/api-keys');
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyName, setNewKeyName] = useState('');
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -83,26 +66,30 @@ export default function APIKeysPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleCreateKey = () => {
+  const handleCreateKey = async () => {
     if (!newKeyName) return;
-    const newKey: APIKey = {
-      id: `key-${Date.now()}`,
-      name: newKeyName,
-      key: `wl_live_${Math.random().toString(36).substring(2, 18)}`,
-      masked: "wl_live_••••••••••••••••••••••••••••••••",
-      createdAt: new Date().toISOString().split("T")[0],
-      scopes: selectedScopes.length > 0 ? selectedScopes : ["*"],
-      requestsPerDay: 0,
-    };
-    setApiKeys([...apiKeys, newKey]);
-    setNewKeyName("");
-    setSelectedScopes([]);
-    setShowCreateDialog(false);
+    try {
+      await createKey({
+        name: newKeyName,
+        scopes: selectedScopes.length > 0 ? selectedScopes : ['*'],
+      });
+      setNewKeyName('');
+      setSelectedScopes([]);
+      setShowCreateDialog(false);
+      refetch();
+    } catch (err) {
+      console.error('Failed to create API key:', err);
+    }
   };
 
-  const revokeKey = (id: string) => {
-    setApiKeys((prev) => prev.filter((key) => key.id !== id));
-    setDeleteConfirmId(null);
+  const revokeKey = async (id: string) => {
+    try {
+      await deleteKey({ id });
+      setDeleteConfirmId(null);
+      refetch();
+    } catch (err) {
+      console.error('Failed to delete API key:', err);
+    }
   };
 
   const toggleScope = (scope: string) => {
@@ -110,6 +97,9 @@ export default function APIKeysPage() {
       prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope]
     );
   };
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[var(--wl-bg-primary)]">

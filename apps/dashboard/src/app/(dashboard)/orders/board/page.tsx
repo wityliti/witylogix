@@ -1,18 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { KanbanColumn, OrderStatus } from "@/components/orders/kanban-column";
+import { useState, useCallback, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
+import { KanbanColumn, OrderStatus } from '@/components/orders/kanban-column';
 import {
   Search,
   Users,
   RefreshCw,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface Order {
   id: string;
@@ -232,14 +235,14 @@ const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
 ];
 
 export default function OrderBoardPage() {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { items: orders, loading, error, refetch } = useApiList<Order>('/api/v4/orders?view=board');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [collapsedColumns, setCollapsedColumns] = useState<Set<OrderStatus>>(
-    new Set(["FAILED", "CANCELLED"])
+    new Set(['FAILED', 'CANCELLED'])
   );
-  const [sortBy, setSortBy] = useState<"time" | "priority">("time");
+  const [sortBy, setSortBy] = useState<'time' | 'priority'>('time');
 
   // Get unique drivers for filter
   const drivers = useMemo(() => {
@@ -338,6 +341,9 @@ export default function OrderBoardPage() {
 
   const totalOrders = filteredOrders.length;
   const totalValue = filteredOrders.reduce((sum, order) => sum + order.value, 0);
+
+  if (loading && orders.length === 0) return <LoadingSkeleton />;
+  if (error && orders.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>

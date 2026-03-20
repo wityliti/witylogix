@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface Stop {
   id: string;
@@ -31,81 +35,38 @@ interface Route {
   currentLocation: { lat: number; lng: number };
 }
 
-const mockRoute: Route = {
-  id: "ROUTE-2024-045",
-  name: "Downtown Delivery Route A",
-  status: "IN_PROGRESS",
-  driver: { id: "D001", name: "John Martinez", phone: "+1-555-0142" },
-  vehicle: { id: "V001", name: "Van-01", capacity: "1000kg" },
-  date: "2024-03-06",
-  startTime: "09:15",
-  currentLocation: { lat: 40.7128, lng: -74.006 },
-  stops: [
-    {
-      id: "stop_1",
-      orderId: "ORD-2024-001",
-      address: "123 Main St, Downtown",
-      timeWindow: { start: "09:00", end: "11:00" },
-      priority: "high",
-      status: "COMPLETED",
-      eta: "09:25",
-      actualTime: "09:23",
-      completedAt: "09:28",
-    },
-    {
-      id: "stop_2",
-      orderId: "ORD-2024-002",
-      address: "456 Oak Ave, Midtown",
-      timeWindow: { start: "10:00", end: "12:00" },
-      priority: "medium",
-      status: "COMPLETED",
-      eta: "10:15",
-      actualTime: "10:12",
-      completedAt: "10:18",
-    },
-    {
-      id: "stop_3",
-      orderId: "ORD-2024-003",
-      address: "789 Elm Rd, North District",
-      timeWindow: { start: "11:00", end: "13:00" },
-      priority: "low",
-      status: "ARRIVED",
-      eta: "10:58",
-      actualTime: "10:56",
-    },
-    {
-      id: "stop_4",
-      orderId: "ORD-2024-004",
-      address: "321 Pine St, Uptown",
-      timeWindow: { start: "13:00", end: "15:00" },
-      priority: "medium",
-      status: "PENDING",
-      eta: "11:45",
-    },
-    {
-      id: "stop_5",
-      orderId: "ORD-2024-005",
-      address: "654 Maple Dr, East Side",
-      timeWindow: { start: "14:00", end: "16:00" },
-      priority: "low",
-      status: "PENDING",
-      eta: "12:30",
-    },
-    {
-      id: "stop_6",
-      orderId: "ORD-2024-006",
-      address: "987 Cedar Ln, West Side",
-      timeWindow: { start: "09:30", end: "11:30" },
-      priority: "high",
-      status: "FAILED",
-      eta: "09:40",
-    },
-  ],
-};
-
 export default function RouteDetailPage() {
-  const [route, setRoute] = useState<Route>(mockRoute);
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const params = useParams();
+  const id = params.id as string;
+
+  const { data: route, loading, error, refetch } = useApiQuery<Route>(
+    id ? `/api/v4/routes/${id}` : null
+  );
+  const { execute: updateStatus } = useApiMutation<Route>("PATCH", `/api/v4/routes/${id}`);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-6">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-6">
+        <ErrorState error={error} onRetry={refetch} />
+      </div>
+    );
+  }
+
+  if (!route) {
+    return (
+      <div className="min-h-screen bg-wl-bg p-6">
+        <div className="text-center text-wl-muted">Route not found</div>
+      </div>
+    );
+  }
 
   const completedStops = route.stops.filter((s) => s.status === "COMPLETED").length;
   const totalStops = route.stops.length;
@@ -113,8 +74,8 @@ export default function RouteDetailPage() {
     .filter((s) => s.status === "COMPLETED" && s.completedAt && s.actualTime)
     .filter((s) => {
       if (!s.completedAt || !s.timeWindow) return false;
-      const completedTime = new Date(`2024-03-06T${s.completedAt}`);
-      const windowEnd = new Date(`2024-03-06T${s.timeWindow.end}`);
+      const completedTime = new Date(`${route.date}T${s.completedAt}`);
+      const windowEnd = new Date(`${route.date}T${s.timeWindow.end}`);
       return completedTime <= windowEnd;
     }).length;
   const onTimePercent = totalStops > 0 ? Math.round((onTimeCount / completedStops) * 100) : 0;
@@ -154,7 +115,7 @@ export default function RouteDetailPage() {
           <h1 className="text-4xl font-bold text-wl-text mb-2">{route.name}</h1>
           <div className="flex gap-4 mt-2 text-sm text-wl-muted">
             <div className="flex items-center gap-1.5">
-              <Badge>{route.status}</Badge>
+              <Badge variant="default">{route.status}</Badge>
               {route.date}
             </div>
           </div>

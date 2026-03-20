@@ -23,6 +23,8 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 interface ShopDetail {
   id: string;

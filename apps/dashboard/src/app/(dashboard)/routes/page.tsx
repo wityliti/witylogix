@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 
 interface RouteItem {
   id: string;
@@ -109,12 +112,16 @@ const statusLabel = (s: string): string => {
 };
 
 export default function RoutesPage() {
+  const { items: routes, loading, error, refetch } = useApiList<RouteItem>('/api/v4/routes');
   const [filter, setFilter] = useState<'all' | 'active' | 'templates' | 'completed'>('all');
   const [search, setSearch] = useState('');
 
+  if (loading && routes.length === 0) return <LoadingSkeleton />;
+  if (error && routes.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+
   // Filter routes
   const filtered = useMemo(() => {
-    let result = SAMPLE_ROUTES;
+    let result = routes;
 
     if (filter === 'active') {
       result = result.filter((r) => r.status === 'active' || r.status === 'scheduled');

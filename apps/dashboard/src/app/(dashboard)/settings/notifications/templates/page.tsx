@@ -1,17 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -19,8 +22,8 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
   Copy,
   Eye,
@@ -32,18 +35,18 @@ import {
   Smartphone,
   Clock,
   Plus,
-} from "lucide-react";
+} from 'lucide-react';
 
 type EventType =
-  | "order_confirmed"
-  | "delivery_scheduled"
-  | "out_for_delivery"
-  | "delivery_arriving"
-  | "delivered"
-  | "delivery_failed"
-  | "rescheduled";
+  | 'order_confirmed'
+  | 'delivery_scheduled'
+  | 'out_for_delivery'
+  | 'delivery_arriving'
+  | 'delivered'
+  | 'delivery_failed'
+  | 'rescheduled';
 
-type Channel = "email" | "sms" | "whatsapp" | "push";
+type Channel = 'email' | 'sms' | 'whatsapp' | 'push';
 
 interface NotificationTemplate {
   id: string;
@@ -51,12 +54,19 @@ interface NotificationTemplate {
   channel: Channel;
   name: string;
   preview: string;
-  status: "active" | "draft";
+  status: 'active' | 'draft';
   lastEdited: Date;
   createdAt: Date;
 }
 
-const TEMPLATES: NotificationTemplate[] = [
+export default function NotificationTemplatesPage() {
+  const { items: templates, loading, error, refetch } = useApiList<NotificationTemplate>('/api/v4/notification-templates');
+  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notification-templates/:id');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const TEMPLATES: NotificationTemplate[] = templates ?? [
   {
     id: "t1",
     eventType: "order_confirmed",

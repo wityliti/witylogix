@@ -27,6 +27,8 @@ import {
   Home,
   MessageSquare,
 } from 'lucide-react';
+import { useApiQuery } from '@/hooks/use-api';
+import { useParams } from 'next/navigation';
 
 // Mock shipment data
 const mockShipments: Record<string, any> = {

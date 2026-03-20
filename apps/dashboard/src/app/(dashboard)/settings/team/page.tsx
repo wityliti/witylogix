@@ -1,7 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,11 +12,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Plus,
   Mail,
@@ -22,13 +25,13 @@ import {
   AlertCircle,
   Send,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: "owner" | "admin" | "member" | "viewer";
+  role: 'owner' | 'admin' | 'member' | 'viewer';
   avatar: string;
   lastActive: string;
   joinedAt: string;
@@ -37,52 +40,15 @@ interface TeamMember {
 interface PendingInvitation {
   id: string;
   email: string;
-  role: "admin" | "member" | "viewer";
+  role: 'admin' | 'member' | 'viewer';
   invitedAt: string;
 }
 
-const INITIAL_MEMBERS: TeamMember[] = [
-  {
-    id: "user-001",
-    name: "Sarah Chen",
-    email: "sarah.chen@witylogix.com",
-    role: "owner",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-    lastActive: "2 hours ago",
-    joinedAt: "2024-01-15",
-  },
-  {
-    id: "user-002",
-    name: "Marcus Johnson",
-    email: "marcus.johnson@witylogix.com",
-    role: "admin",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=marcus",
-    lastActive: "30 minutes ago",
-    joinedAt: "2024-02-20",
-  },
-  {
-    id: "user-003",
-    name: "Emily Rodriguez",
-    email: "emily.rodriguez@witylogix.com",
-    role: "member",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emily",
-    lastActive: "4 hours ago",
-    joinedAt: "2024-06-10",
-  },
-];
-
-const INITIAL_INVITATIONS: PendingInvitation[] = [
-  {
-    id: "inv-001",
-    email: "david.smith@example.com",
-    role: "member",
-    invitedAt: "2025-03-10",
-  },
-];
-
 export default function TeamPage() {
-  const [members, setMembers] = useState<TeamMember[]>(INITIAL_MEMBERS);
-  const [invitations, setInvitations] = useState<PendingInvitation[]>(INITIAL_INVITATIONS);
+  const { items: members, loading, error, refetch } = useApiList<TeamMember>('/api/v4/users');
+  const { items: invitations } = useApiList<PendingInvitation>('/api/v4/invitations');
+  const { execute: removeMember } = useApiMutation('DELETE', '/api/v4/users/:id');
+  const { execute: inviteMember } = useApiMutation('POST', '/api/v4/invitations');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member" | "viewer">("member");
@@ -97,7 +63,10 @@ export default function TeamPage() {
     viewer: { variant: "info" as const, label: "Viewer" },
   };
 
-  const handleInviteMember = () => {
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const handleInviteMember = async () => {
     if (!inviteEmail) return;
     const newInvitation: PendingInvitation = {
       id: `inv-${Date.now()}`,

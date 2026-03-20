@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
+import { useState } from 'react';
+import { useApiMutation } from '@/hooks/use-api';
+import { Header } from '@/components/layout/header';
 import {
   Card,
   CardHeader,
@@ -9,11 +10,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Send,
   Copy,
@@ -22,14 +23,14 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface TestSend {
   id: string;
   timestamp: Date;
   eventType: string;
   endpoint: string;
-  status: "success" | "failed" | "pending";
+  status: 'success' | 'failed' | 'pending';
   statusCode?: number;
   duration: number;
   responseBody?: string;
@@ -75,11 +76,13 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, any>> = {
 };
 
 export default function WebhookTestPage() {
-  const [selectedEvent, setSelectedEvent] = useState("shipment.created");
-  const [endpoint, setEndpoint] = useState("https://webhook.example.com/events");
+  const { execute: sendTestWebhook } = useApiMutation('POST', '/api/v4/webhooks/test');
+
+  const [selectedEvent, setSelectedEvent] = useState('shipment.created');
+  const [endpoint, setEndpoint] = useState('https://webhook.example.com/events');
   const [customPayload, setCustomPayload] = useState(
     JSON.stringify(
-      SAMPLE_PAYLOADS["shipment.created"] || {},
+      SAMPLE_PAYLOADS['shipment.created'] || {},
       null,
       2
     )

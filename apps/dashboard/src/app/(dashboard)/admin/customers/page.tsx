@@ -1,12 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
-import { cn } from "@/lib/utils";
+import { useState, useMemo } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
+import { cn } from '@/lib/utils';
+import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from '@/hooks/use-api';
 import {
   Users,
   ShoppingCart,
@@ -424,9 +427,10 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
 };
 
 // Stats Bar
-const StatsBar = ({ customers }: { customers: Customer[] }) => {
-  const activeCustomers = customers.filter((c) => c.status !== "inactive").length;
-  const vipCustomers = customers.filter((c) => c.status === "vip").length;
+const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: boolean }) => {
+  if (loading) return <TableSkeleton rows={1} columns={4} />;
+  const activeCustomers = customers.filter((c) => c.status !== 'inactive').length;
+  const vipCustomers = customers.filter((c) => c.status === 'vip').length;
   const totalSpent = customers.reduce((sum, c) => sum + c.totalSpent, 0);
   const avgOrders = Math.round(customers.reduce((sum, c) => sum + c.ordersCount, 0) / customers.length);
 
@@ -474,27 +478,28 @@ const StatsBar = ({ customers }: { customers: Customer[] }) => {
 
 // Main Page
 export default function AdminCustomersPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [storeFilter, setStoreFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "vip">("all");
+  const { items: customers, loading, error, refetch } = useApiList<Customer>('/api/v4/customers');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [storeFilter, setStoreFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'vip'>('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredCustomers = useMemo(() => {
-    return mockCustomers.filter((customer) => {
+    return customers.filter((customer) => {
       const matchesSearch =
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.phone.includes(searchTerm);
 
-      const matchesStore = storeFilter === "all" || customer.store === storeFilter;
-      const matchesStatus = statusFilter === "all" || customer.status === statusFilter;
+      const matchesStore = storeFilter === 'all' || customer.store === storeFilter;
+      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
 
       return matchesSearch && matchesStore && matchesStatus;
     });
-  }, [searchTerm, storeFilter, statusFilter]);
+  }, [searchTerm, storeFilter, statusFilter, customers]);
 
-  const stores = ["all", ...new Set(mockCustomers.map((c) => c.store))];
+  const stores = ['all', ...new Set(customers.map((c) => c.store))];
 
   const handleCustomerClick = (customer: Customer) => {
     setSelectedCustomer(customer);
@@ -515,6 +520,9 @@ export default function AdminCustomersPage() {
     a.click();
   };
 
+  if (loading && customers.length === 0) return <LoadingSkeleton />;
+  if (error && customers.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+
   return (
     <div className="bg-wl-bg-base">
       <Header
@@ -529,7 +537,7 @@ export default function AdminCustomersPage() {
       />
 
       <main className="flex-1 p-6 max-w-7xl mx-auto">
-        <StatsBar customers={mockCustomers} />
+        <StatsBar customers={customers} loading={loading} />
 
         <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
           <CardContent className="p-4">
@@ -595,7 +603,7 @@ export default function AdminCustomersPage() {
           {filteredCustomers.length > 0 ? (
             <>
               <div className="p-3 border-b border-wl-border-subtle text-xs text-wl-text-secondary">
-                Showing {filteredCustomers.length} of {mockCustomers.length} customers
+                Showing {filteredCustomers.length} of {customers.length} customers
               </div>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">

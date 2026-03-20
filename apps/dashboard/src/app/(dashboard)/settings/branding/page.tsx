@@ -1,7 +1,12 @@
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+'use client';
+
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   ChevronLeft,
   Upload,
@@ -9,9 +14,22 @@ import {
   Eye,
   Paintbrush,
   Globe,
-} from "lucide-react";
+} from 'lucide-react';
+
+interface BrandingSettings {
+  primaryLogo?: string;
+  favicon?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  [key: string]: unknown;
+}
 
 export default function BrandingPage() {
+  const { data: branding, loading, error, refetch } = useApiQuery<BrandingSettings>('/api/v4/settings/branding');
+  const { execute: updateBranding } = useApiMutation('PATCH', '/api/v4/settings/branding');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
       <Header

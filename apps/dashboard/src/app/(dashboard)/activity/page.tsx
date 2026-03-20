@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -13,25 +13,28 @@ import {
   GitBranch,
   Search,
   X,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { EventTimeline } from "./components/event-timeline";
-import { EventFilters } from "./components/event-filters";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { EventTimeline } from './components/event-timeline';
+import { EventFilters } from './components/event-filters';
+import { useApiList } from '@/hooks/use-api';
 
 // Types
 export interface ActivityEvent {
   id: string;
-  type: "order" | "shipment" | "driver" | "system" | "webhook" | "workflow";
-  severity: "info" | "warning" | "error" | "success";
+  type: 'order' | 'shipment' | 'driver' | 'system' | 'webhook' | 'workflow';
+  severity: 'info' | 'warning' | 'error' | 'success';
   title: string;
   description: string;
-  timestamp: Date;
+  timestamp: string;
   user?: {
     id: string;
     name: string;
@@ -45,142 +48,16 @@ export interface ActivityEvent {
   metadata?: Record<string, any>;
 }
 
-// Mock data generator
+// Mock data generator (for now - will be replaced with API data)
 const generateMockEvents = (): ActivityEvent[] => {
   const now = new Date();
-  const events: ActivityEvent[] = [
-    {
-      id: "evt-1",
-      type: "order",
-      severity: "success",
-      title: "Order Created",
-      description: "New order #ORD-2024-001 created successfully",
-      timestamp: new Date(now.getTime() - 2 * 60000),
-      user: {
-        id: "user-1",
-        name: "Sarah Chen",
-        avatar: "SC",
-      },
-      entity: {
-        type: "order",
-        id: "ORD-2024-001",
-        name: "Order ORD-2024-001",
-      },
-    },
-    {
-      id: "evt-2",
-      type: "shipment",
-      severity: "info",
-      title: "Shipment Dispatched",
-      description: "Shipment SHP-2024-045 picked up by carrier",
-      timestamp: new Date(now.getTime() - 5 * 60000),
-      user: {
-        id: "user-2",
-        name: "Marcus Liu",
-        avatar: "ML",
-      },
-      entity: {
-        type: "shipment",
-        id: "SHP-2024-045",
-        name: "Shipment SHP-2024-045",
-      },
-    },
-    {
-      id: "evt-3",
-      type: "driver",
-      severity: "warning",
-      title: "Driver Delayed",
-      description: "Driver DRV-2024-012 running 15 minutes behind schedule",
-      timestamp: new Date(now.getTime() - 12 * 60000),
-      user: {
-        id: "system",
-        name: "System",
-      },
-      entity: {
-        type: "driver",
-        id: "DRV-2024-012",
-        name: "Driver DRV-2024-012",
-      },
-    },
-    {
-      id: "evt-4",
-      type: "workflow",
-      severity: "success",
-      title: "Workflow Completed",
-      description: "Batch processing workflow finished with 2,847 items",
-      timestamp: new Date(now.getTime() - 18 * 60000),
-      user: {
-        id: "system",
-        name: "System",
-      },
-      entity: {
-        type: "workflow",
-        id: "WF-2024-087",
-        name: "Batch Processing Job",
-      },
-    },
-    {
-      id: "evt-5",
-      type: "webhook",
-      severity: "error",
-      title: "Webhook Failed",
-      description: "Payment confirmation webhook returned HTTP 500 error",
-      timestamp: new Date(now.getTime() - 25 * 60000),
-      user: {
-        id: "system",
-        name: "System",
-      },
-      entity: {
-        type: "webhook",
-        id: "WH-2024-034",
-        name: "Payment Service",
-      },
-    },
-    {
-      id: "evt-6",
-      type: "system",
-      severity: "info",
-      title: "System Update",
-      description: "Database migration completed successfully",
-      timestamp: new Date(now.getTime() - 45 * 60000),
-      user: {
-        id: "user-3",
-        name: "Alex Johnson",
-        avatar: "AJ",
-      },
-      entity: {
-        type: "system",
-        id: "SYS-2024-001",
-        name: "Database",
-      },
-    },
-    {
-      id: "evt-7",
-      type: "order",
-      severity: "info",
-      title: "Payment Processed",
-      description: "Payment of $2,450.00 processed for order #ORD-2024-001",
-      timestamp: new Date(now.getTime() - 52 * 60000),
-      user: {
-        id: "system",
-        name: "System",
-      },
-      entity: {
-        type: "order",
-        id: "ORD-2024-001",
-        name: "Order ORD-2024-001",
-      },
-    },
-  ];
-
-  return events.sort(
-    (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-  );
+  const events: ActivityEvent[] = [];
+  return events;
 };
 
 export default function ActivityPage() {
-  const [events, setEvents] = useState<ActivityEvent[]>(generateMockEvents());
-  const [searchQuery, setSearchQuery] = useState("");
+  const { items: apiEvents, loading, error, refetch } = useApiList<ActivityEvent>('/api/v4/activity-logs');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isLiveMode, setIsLiveMode] = useState(true);
   const [filters, setFilters] = useState({
@@ -190,6 +67,10 @@ export default function ActivityPage() {
     endDate: null as Date | null,
     userId: null as string | null,
   });
+  const [events, setEvents] = useState<ActivityEvent[]>(apiEvents);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -197,7 +78,7 @@ export default function ActivityPage() {
 
   // Filter and search logic
   const filteredEvents = useCallback(() => {
-    return events.filter((event) => {
+    return (events || []).filter((event) => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -223,10 +104,10 @@ export default function ActivityPage() {
       }
 
       // Date range filter
-      if (filters.startDate && event.timestamp < filters.startDate) {
+      if (filters.startDate && new Date(event.timestamp) < filters.startDate) {
         return false;
       }
-      if (filters.endDate && event.timestamp > filters.endDate) {
+      if (filters.endDate && new Date(event.timestamp) > filters.endDate) {
         return false;
       }
 
@@ -319,20 +200,20 @@ export default function ActivityPage() {
   };
 
   // Get event icon
-  const getEventIcon = (type: ActivityEvent["type"]) => {
-    const iconProps = "w-4 h-4";
+  const getEventIcon = (type: ActivityEvent['type']) => {
+    const iconProps = 'w-4 h-4';
     switch (type) {
-      case "order":
+      case 'order':
         return <Package className={iconProps} />;
-      case "shipment":
+      case 'shipment':
         return <Truck className={iconProps} />;
-      case "driver":
+      case 'driver':
         return <Users className={iconProps} />;
-      case "system":
+      case 'system':
         return <Zap className={iconProps} />;
-      case "webhook":
+      case 'webhook':
         return <Webhook className={iconProps} />;
-      case "workflow":
+      case 'workflow':
         return <GitBranch className={iconProps} />;
       default:
         return <AlertCircle className={iconProps} />;
@@ -340,18 +221,18 @@ export default function ActivityPage() {
   };
 
   // Get severity badge variant
-  const getSeverityBadgeVariant = (severity: ActivityEvent["severity"]) => {
+  const getSeverityBadgeVariant = (severity: ActivityEvent['severity']) => {
     switch (severity) {
-      case "error":
-        return "danger";
-      case "warning":
-        return "warning";
-      case "success":
-        return "success";
-      case "info":
-        return "info";
+      case 'error':
+        return 'danger';
+      case 'warning':
+        return 'warning';
+      case 'success':
+        return 'success';
+      case 'info':
+        return 'info';
       default:
-        return "default";
+        return 'default';
     }
   };
 
@@ -646,7 +527,7 @@ export default function ActivityPage() {
                         Timestamp
                       </p>
                       <p className="text-sm text-wl-text-primary">
-                        {selectedEvent.timestamp.toLocaleString()}
+                        {new Date(selectedEvent.timestamp).toLocaleString()}
                       </p>
                     </div>
 

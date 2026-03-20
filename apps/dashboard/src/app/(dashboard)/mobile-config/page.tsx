@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
+import { useApiQuery } from '@/hooks/use-api';
   Smartphone,
   Palette,
   Zap,

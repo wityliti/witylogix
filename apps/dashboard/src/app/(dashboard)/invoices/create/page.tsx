@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
+import { useApiMutation } from '@/hooks/use-api';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 

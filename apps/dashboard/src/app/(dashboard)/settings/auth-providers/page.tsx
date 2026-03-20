@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Modal } from "@/components/ui/modal";
-import { Tabs } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Modal } from '@/components/ui/modal';
+import { Tabs } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import {
   CheckCircle,
   AlertCircle,
@@ -22,13 +25,13 @@ import {
   Server,
   TestTube,
   ChevronRight,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface AuthProvider {
   id: string;
   name: string;
-  type: "auth0" | "clerk" | "cognito" | "firebase" | "oidc" | "saml";
-  status: "connected" | "disconnected";
+  type: 'auth0' | 'clerk' | 'cognito' | 'firebase' | 'oidc' | 'saml';
+  status: 'connected' | 'disconnected';
   icon: string;
   capabilities: string[];
   config?: {
@@ -39,7 +42,15 @@ interface AuthProvider {
   };
 }
 
-const mockProviders: AuthProvider[] = [
+export default function AuthProvidersPage() {
+  const { items: providers, loading, error, refetch } = useApiList<AuthProvider>('/api/v4/auth-providers');
+  const { execute: updateProvider } = useApiMutation('PATCH', '/api/v4/auth-providers/:id');
+  const { execute: deleteProvider } = useApiMutation('DELETE', '/api/v4/auth-providers/:id');
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+  const mockProviders: AuthProvider[] = providers ?? [
   {
     id: "auth0-prod",
     name: "Auth0",
