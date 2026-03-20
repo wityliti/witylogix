@@ -102,6 +102,12 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Workflow integration (auto-trigger workflows from API operations)
   await app.register(import("./plugins/workflow-integration.js"));
 
+  // WebSocket real-time events
+  await app.register(import("./plugins/websocket.js"));
+
+  // Server-Sent Events fallback
+  await app.register(import("./plugins/sse.js"));
+
   // ─── Health & Readiness ─────────────────────────────────────
 
   app.get("/health", async () => {

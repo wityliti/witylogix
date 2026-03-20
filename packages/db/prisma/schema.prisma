@@ -1,5 +1,14 @@
-// Root schema file that references the split schema folder
-// All models and configurations are in ./schema/*.prisma
+// Root schema file for Prisma with split schema folder support.
+// All models are defined in ./schema/*.prisma files.
+// Generator and datasource configurations are provided for multi-file schema support.
 
-// This file is intentionally minimal and empty beyond comments.
-// See the ./schema/ directory for the full schema definition.
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

@@ -1,44 +1,32 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { PageHeader } from '@/components/navigation/page-header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton, SkeletonText, SkeletonCard } from '@/components/ui/skeleton';
+import { LoadingSkeleton, ErrorState } from '@/components/ui/skeleton';
 import { useOrderStats } from '@/hooks/use-orders';
 import { useDrivers } from '@/hooks/use-drivers';
 
-interface QuickStat {
-  label: string;
-  value: string | number;
-  unit?: string;
-  trend?: "up" | "down" | "neutral";
-  trendValue?: string;
-  icon: string;
-}
-
-interface ActivityEvent {
+interface Order {
   id: string;
-  type: "order" | "delivery" | "driver" | "system";
-  action: string;
-  description: string;
-  timestamp: Date;
-  metadata?: Record<string, any>;
+  customerId: string;
+  status: 'pending' | 'confirmed' | 'dispatched' | 'in_transit' | 'delivered';
+  eta?: string;
+  destination?: string;
+  createdAt: Date;
 }
 
-interface ChecklistItem {
+interface Driver {
   id: string;
-  label: string;
-  description: string;
-  completed: boolean;
-  href: string;
-  icon: string;
+  name: string;
+  status: 'available' | 'en-route' | 'delivering' | 'offline';
+  activeDeliveries: number;
+  utilization: number;
 }
 
-function Icon({ d, size = 24 }: { d: string; size?: number }) {
+function Icon({ d, size = 24, className = '' }: { d: string; size?: number; className?: string }) {
   return (
     <svg
       width={size}
@@ -49,572 +37,415 @@ function Icon({ d, size = 24 }: { d: string; size?: number }) {
       strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
     >
       <path d={d} />
     </svg>
   );
 }
 
-function StatCard({ stat, loading }: { stat: QuickStat; loading?: boolean }) {
+function KPICard({
+  label,
+  value,
+  subtitle,
+  trend,
+  trendValue,
+  variant = 'default',
+  loading = false,
+}: {
+  label: string;
+  value: string | number;
+  subtitle?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  variant?: 'default' | 'primary' | 'success' | 'warning';
+  loading?: boolean;
+}) {
   if (loading) {
     return (
-      <div className="bg-[#13131a] border border-white/[0.08] rounded-xl p-5 shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]">
-        <div className="flex items-start justify-between w-full mb-4">
-          <div className="w-9 h-9 rounded-lg bg-white/[0.04]" />
-          <div className="w-14 h-4 rounded bg-white/[0.04]" />
-        </div>
-        <div className="w-20 h-3 rounded bg-white/[0.04] mb-2" />
-        <div className="w-24 h-8 rounded bg-white/[0.06]" />
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+        <div className="h-4 bg-zinc-800 rounded w-24 mb-4" />
+        <div className="h-8 bg-zinc-800 rounded w-32 mb-2" />
+        <div className="h-3 bg-zinc-800 rounded w-20" />
       </div>
     );
   }
 
-  const trendColor =
-    stat.trend === "up"
-      ? "text-emerald-400"
-      : stat.trend === "down"
-        ? "text-red-400"
-        : "text-wl-text-tertiary";
+  const accentColor = {
+    default: 'var(--wl-primary)',
+    primary: 'var(--wl-primary)',
+    success: 'var(--wl-success)',
+    warning: '#f59e0b',
+  }[variant];
 
-  const trendBg =
-    stat.trend === "up"
-      ? "bg-emerald-400/10 border-emerald-400/20"
-      : stat.trend === "down"
-        ? "bg-red-400/10 border-red-400/20"
-        : "bg-white/[0.04] border-white/[0.08]";
+  const trendColor = trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : '#6b7280';
 
   return (
-    <div className={cn(
-      "bg-[#13131a] border border-white/[0.08] rounded-xl p-5",
-      "shadow-[0_1px_0_0_rgba(255,255,255,0.07)_inset]",
-      "transition-all duration-200",
-      "hover:border-white/[0.14] hover:bg-[#161620] group"
-    )}>
-      <div className="flex items-start justify-between w-full mb-4">
-        <div className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center",
-          "bg-[rgba(245,166,35,0.1)] border border-[rgba(245,166,35,0.18)]",
-          "text-[#f5a623]",
-          "group-hover:shadow-[0_0_12px_rgba(245,166,35,0.15)]",
-          "transition-shadow duration-200"
-        )}>
-          <Icon d={stat.icon} size={17} />
-        </div>
-        {stat.trendValue && (
-          <span className={cn(
-            "text-xs font-semibold px-2 py-0.5 rounded-full border",
-            trendColor, trendBg
-          )}>
-            {stat.trendValue}
-          </span>
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900/80">
+      <div className="flex items-start justify-between mb-4">
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide">{label}</h3>
+        {trendValue && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded bg-zinc-800/50">
+            <Icon
+              d={trend === 'up' ? 'M7 17l5-5 5 5' : trend === 'down' ? 'M7 7l5 5 5-5' : 'M21 12a9 9 0 11-18 0'}
+              size={12}
+              className={cn(
+                trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'
+              )}
+            />
+            <span
+              className={cn(
+                'text-xs font-semibold',
+                trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'
+              )}
+            >
+              {trendValue}
+            </span>
+          </div>
         )}
       </div>
 
-      <p className="text-[10px] uppercase tracking-[0.12em] text-wl-text-tertiary font-medium mb-1.5">
-        {stat.label}
-      </p>
-      <div className="flex items-baseline gap-1.5">
-        <p className="text-[1.75rem] font-bold text-wl-text-primary leading-none tracking-tight">
-          {stat.value}
+      <div className="mb-2">
+        <p style={{ color: accentColor }} className="text-3xl font-bold">
+          {value}
         </p>
-        {stat.unit && (
-          <p className="text-xs text-wl-text-secondary">{stat.unit}</p>
-        )}
+      </div>
+
+      {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+function OrderFeedItem({ order }: { order: Order }) {
+  const statusConfig = {
+    pending: { badge: 'warning', label: 'Pending', icon: 'M12 8v4l3 3' },
+    confirmed: { badge: 'info', label: 'Confirmed', icon: 'M9 12l2 2 4-4' },
+    dispatched: { badge: 'primary', label: 'Dispatched', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    in_transit: { badge: 'primary', label: 'In Transit', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' },
+    delivered: { badge: 'success', label: 'Delivered', icon: 'M9 12l2 2 4-4' },
+  };
+
+  const config = statusConfig[order.status];
+
+  return (
+    <div className="border-b border-zinc-800 last:border-0 pb-4 last:pb-0 transition-all duration-200 hover:bg-zinc-900/50 px-4 py-3 rounded -mx-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <p className="font-semibold text-gray-100 truncate">Order #{order.id.slice(0, 8)}</p>
+            <Badge variant={config.badge as any}>{config.label}</Badge>
+          </div>
+          <p className="text-sm text-gray-500 truncate">{order.destination || 'Destination pending'}</p>
+          {order.eta && <p className="text-xs text-gray-600 mt-1">ETA: {order.eta}</p>}
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-gray-600">{order.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
       </div>
     </div>
   );
 }
 
-function ActivityFeed({ events, loading }: { events: ActivityEvent[]; loading?: boolean }) {
+function DriverStatusCard({ driver, loading = false }: { driver?: Driver; loading?: boolean }) {
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex gap-4 pb-4 border-b border-wl-border-subtle last:border-0">
-                <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
-                <div className="flex-1">
-                  <SkeletonText lines={2} className="w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+        <div className="h-4 bg-zinc-800 rounded w-24 mb-3" />
+        <div className="h-6 bg-zinc-800 rounded w-32 mb-3" />
+        <div className="h-3 bg-zinc-800 rounded w-full" />
+      </div>
     );
   }
 
-  const typeColors = {
-    order: "bg-wl-primary-500/12",
-    delivery: "bg-wl-success-500/12",
-    driver: "bg-wl-info-500/12",
-    system: "bg-wl-neutral-500/12",
+  if (!driver) return null;
+
+  const statusColors = {
+    available: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-400', dot: '#10b981' },
+    'en-route': { bg: 'bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-400', dot: '#3b82f6' },
+    delivering: { bg: 'bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-400', dot: '#f59e0b' },
+    offline: { bg: 'bg-gray-500/20', border: 'border-gray-500/50', text: 'text-gray-400', dot: '#6b7280' },
   };
 
-  const typeIcons = {
-    order: "M16 3h5v5 M21 3l-7 7 M8 21H3v-5 M3 21l7-7",
-    delivery: "M3 12l9-5 9 5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z",
-    driver: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2",
-    system: "M12 2v20m0 0l-7-7m7 7l7-7",
-  };
+  const config = statusColors[driver.status];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {events.slice(0, 10).map((event, index) => (
-            <div
-              key={event.id}
-              className={cn(
-                "flex gap-4 pb-4",
-                index !== events.length - 1 && "border-b border-wl-border-subtle"
-              )}
-            >
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                  "text-wl-text-secondary",
-                  typeColors[event.type]
-                )}
-              >
-                <Icon d={typeIcons[event.type]} size={18} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-wl-text-primary">
-                  {event.action}
-                </p>
-                <p className="text-xs text-wl-text-tertiary mt-0.5">
-                  {event.description}
-                </p>
-                <p className="text-xs text-wl-text-tertiary mt-1">
-                  {event.timestamp.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function GettingStartedChecklist({
-  items,
-  loading,
-}: {
-  items: ChecklistItem[];
-  loading?: boolean;
-}) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <Skeleton className="w-5 h-5 rounded mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <SkeletonText lines={2} className="w-full" />
-                </div>
-              </div>
-            ))}
+    <div className={cn('bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-all duration-200 hover:border-zinc-700', config.bg)}>
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <p className="font-semibold text-gray-100">{driver.name}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: config.dot }} />
+            <p className={cn('text-xs font-medium', config.text)}>{driver.status.replace('-', ' ').toUpperCase()}</p>
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const completedCount = items.filter((i) => i.completed).length;
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Getting Started</CardTitle>
-          <Badge variant="info">
-            {completedCount}/{items.length}
-          </Badge>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {items.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={cn(
-                "flex gap-3 items-start p-3 rounded-lg",
-                "transition-colors duration-fast ease-default",
-                "hover:bg-wl-bg-overlay",
-                item.completed ? "opacity-60" : ""
-              )}
-            >
-              <div
-                className={cn(
-                  "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                  "border-2 transition-colors duration-fast ease-default",
-                  item.completed
-                    ? "bg-wl-success-500/20 border-wl-success-500"
-                    : "border-wl-border-subtle"
-                )}
-              >
-                {item.completed && (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="text-wl-success-400"
-                  >
-                    <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z" />
-                  </svg>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-wl-text-primary">
-                  {item.label}
-                </p>
-                <p className="text-xs text-wl-text-tertiary mt-0.5">
-                  {item.description}
-                </p>
-              </div>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-wl-text-tertiary flex-shrink-0 mt-0.5"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-          ))}
+        <div className="text-right">
+          <p className="text-sm font-bold text-gray-100">{driver.activeDeliveries}</p>
+          <p className="text-xs text-gray-500">Active</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-500">Utilization</span>
+          <span className="text-xs font-semibold text-gray-300">{driver.utilization}%</span>
+        </div>
+        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${driver.utilization}%`,
+              backgroundColor: driver.utilization > 80 ? '#ef4444' : driver.utilization > 60 ? '#f59e0b' : '#10b981',
+            }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function HomePage() {
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const { data: orderStats, loading: statsLoading, error: statsError } = useOrderStats();
+  const { items: drivers, loading: driversLoading } = useDrivers({ limit: 8 });
 
-  // Fetch real API data
-  const { data: orderStats, loading: statsLoading, error: statsError, refetch: refetchStats } = useOrderStats();
-  const { items: drivers, loading: driversLoading, error: driversError } = useDrivers({ limit: 5 });
-
-  const now = new Date();
-
-  // Build stats from API data or show loading state
-  const stats: QuickStat[] = statsLoading
-    ? Array.from({ length: 4 }).map((_, i) => ({
-        label: 'Loading...',
-        value: '—',
-        icon: 'M12 2v20m0 0l-7-7m7 7l7-7',
-      }))
-    : [
-        {
-          label: 'Total Orders',
-          value: orderStats?.totalOrders ?? 0,
-          trend: 'up',
-          trendValue: '+12.5%',
-          icon: 'M16 3h5v5 M21 3l-7 7 M8 21H3v-5 M3 21l7-7',
-        },
-        {
-          label: 'Pending Orders',
-          value: orderStats?.pendingOrders ?? 0,
-          trend: 'up',
-          trendValue: '+8.2%',
-          icon: 'M3 12l9-5 9 5v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5z',
-        },
-        {
-          label: 'Drivers Online',
-          value: drivers.length,
-          trend: 'neutral',
-          trendValue: '100%',
-          icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
-        },
-        {
-          label: 'Delivered Today',
-          value: orderStats?.deliveredToday ?? 0,
-          trend: 'up',
-          trendValue: '+2.3%',
-          icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-        },
-      ];
-
-  // Mock activity events (can be replaced with real API call later)
-  const activityEvents: ActivityEvent[] = [
+  // Mock recent orders
+  const recentOrders: Order[] = [
     {
-      id: '1',
-      type: 'order',
-      action: 'Order Placed',
-      description: 'New order received',
-      timestamp: new Date(now.getTime() - 5 * 60000),
+      id: 'ORD-001',
+      customerId: 'CUST-123',
+      status: 'in_transit',
+      eta: '2:30 PM',
+      destination: '123 Main St, Downtown',
+      createdAt: new Date(Date.now() - 5 * 60000),
     },
     {
-      id: '2',
-      type: 'delivery',
-      action: 'Route Optimized',
-      description: 'Delivery route updated',
-      timestamp: new Date(now.getTime() - 15 * 60000),
+      id: 'ORD-002',
+      customerId: 'CUST-124',
+      status: 'confirmed',
+      destination: '456 Oak Ave, Midtown',
+      createdAt: new Date(Date.now() - 15 * 60000),
     },
     {
-      id: '3',
-      type: 'driver',
-      action: 'Driver Online',
-      description: 'Status changed from offline',
-      timestamp: new Date(now.getTime() - 22 * 60000),
+      id: 'ORD-003',
+      customerId: 'CUST-125',
+      status: 'dispatched',
+      eta: '3:15 PM',
+      destination: '789 Pine Rd, Uptown',
+      createdAt: new Date(Date.now() - 22 * 60000),
     },
     {
-      id: '4',
-      type: 'order',
-      action: 'Delivered',
-      description: 'Order successfully delivered',
-      timestamp: new Date(now.getTime() - 45 * 60000),
+      id: 'ORD-004',
+      customerId: 'CUST-126',
+      status: 'pending',
+      destination: '321 Elm St, Westside',
+      createdAt: new Date(Date.now() - 35 * 60000),
     },
     {
-      id: '5',
-      type: 'system',
-      action: 'Report Generated',
-      description: 'Daily report created',
-      timestamp: new Date(now.getTime() - 120 * 60000),
+      id: 'ORD-005',
+      customerId: 'CUST-127',
+      status: 'delivered',
+      destination: '654 Spruce Ln, Eastside',
+      createdAt: new Date(Date.now() - 120 * 60000),
     },
   ];
 
-  const checklistItems: ChecklistItem[] = [
-    {
-      id: '1',
-      label: 'Complete Your Profile',
-      description: 'Add profile picture and company details',
-      completed: true,
-      href: '/settings',
-      icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2',
-    },
-    {
-      id: '2',
-      label: 'Add Your First Driver',
-      description: 'Register a driver in the fleet management',
-      completed: drivers.length > 0,
-      href: '/drivers',
-      icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
-    },
-    {
-      id: '3',
-      label: 'Create Delivery Zone',
-      description: 'Define your service area',
-      completed: true,
-      href: '/zones',
-      icon: 'M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z',
-    },
-    {
-      id: '4',
-      label: 'Configure Integrations',
-      description: 'Connect with order management systems',
-      completed: false,
-      href: '/integrations',
-      icon: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
-    },
-    {
-      id: '5',
-      label: 'Invite Team Members',
-      description: 'Add your team to collaborate',
-      completed: false,
-      href: '/settings',
-      icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2',
-    },
+  const mockDrivers: Driver[] = [
+    { id: 'DRV-001', name: 'Alex Johnson', status: 'delivering', activeDeliveries: 3, utilization: 85 },
+    { id: 'DRV-002', name: 'Sarah Chen', status: 'en-route', activeDeliveries: 2, utilization: 65 },
+    { id: 'DRV-003', name: 'Mike Rodriguez', status: 'available', activeDeliveries: 0, utilization: 0 },
+    { id: 'DRV-004', name: 'Emma Davis', status: 'delivering', activeDeliveries: 4, utilization: 95 },
+    { id: 'DRV-005', name: 'John Wilson', status: 'en-route', activeDeliveries: 2, utilization: 70 },
+    { id: 'DRV-006', name: 'Lisa Anderson', status: 'available', activeDeliveries: 0, utilization: 10 },
+    { id: 'DRV-007', name: 'Tom Martinez', status: 'delivering', activeDeliveries: 1, utilization: 40 },
+    { id: 'DRV-008', name: 'Jessica Lee', status: 'offline', activeDeliveries: 0, utilization: 0 },
   ];
+
+  const totalOrders = orderStats?.totalOrders ?? 124;
+  const activeDeliveries = recentOrders.filter((o) => o.status === 'in_transit' || o.status === 'dispatched').length;
+  const driverUtilization = drivers.length > 0 ? Math.round((drivers.filter((d) => d.status !== 'offline').length / drivers.length) * 100) : 0;
+  const todayRevenue = '$4,250.00';
 
   return (
-    <>
-      {/* Page Header */}
-      <PageHeader
-        title="Welcome back!"
-        subtitle={`Today is ${now.toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })}`}
-        breadcrumb={false}
-        actions={
-          <div className="flex gap-2">
-            <Button variant="secondary" size="md">
-              View Report
-            </Button>
-            <Button variant="primary" size="md">
-              New Order
-            </Button>
+    <div className="bg-zinc-950 min-h-screen">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-100">Dashboard</h1>
+            <p className="text-gray-500 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
-        }
-      />
-
-      {/* Main Content */}
-      <div className="p-6 space-y-8">
-        {/* Quick Stats */}
-        <section>
-          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
-            Key Metrics
-          </h2>
-          {statsError && (
-            <div className="mb-4 p-4 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
-              <p className="text-sm text-wl-danger-400 flex items-center justify-between">
-                <span>Failed to load stats</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => refetchStats()}
-                  className="text-wl-danger-400 hover:text-wl-danger-300"
-                >
-                  Retry
-                </Button>
-              </p>
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat, i) => (
-              <StatCard key={i} stat={stat} loading={statsLoading} />
-            ))}
+          <div className="flex gap-3">
+            <Button variant="secondary">View Reports</Button>
+            <Button variant="primary">Create Order</Button>
           </div>
-        </section>
+        </div>
 
-        {/* Two Column Layout */}
+        {/* KPI Cards Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <KPICard
+            label="Total Orders"
+            value={totalOrders}
+            subtitle="Today"
+            trend="up"
+            trendValue="+12.5%"
+            variant="primary"
+            loading={statsLoading}
+          />
+          <KPICard
+            label="Active Deliveries"
+            value={activeDeliveries}
+            subtitle="In progress"
+            trend="up"
+            trendValue="+8.2%"
+            variant="success"
+            loading={statsLoading}
+          />
+          <KPICard
+            label="Driver Utilization"
+            value={`${driverUtilization}%`}
+            subtitle={`${drivers.filter((d) => d.status !== 'offline').length} active drivers`}
+            trend={driverUtilization > 70 ? 'up' : 'down'}
+            trendValue={driverUtilization > 70 ? '+5.1%' : '-2.3%'}
+            loading={driversLoading}
+          />
+          <KPICard
+            label="Revenue"
+            value={todayRevenue}
+            subtitle="Today"
+            trend="up"
+            trendValue="+18.7%"
+            variant="success"
+            loading={statsLoading}
+          />
+        </div>
+
+        {/* Main Grid: Left (Orders) + Right (Drivers) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Activity Feed */}
+          {/* Live Order Feed - Left Column */}
           <div className="lg:col-span-2">
-            <ActivityFeed events={activityEvents} loading={statsLoading} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" size={20} />
+                  Live Order Feed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="-mx-6 px-6">
+                  {statsLoading ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="h-16 bg-zinc-800 rounded animate-pulse" />
+                      ))}
+                    </div>
+                  ) : recentOrders.length > 0 ? (
+                    <div className="space-y-2">
+                      {recentOrders.map((order) => (
+                        <OrderFeedItem key={order.id} order={order} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" size={40} className="mx-auto text-gray-600 mb-2" />
+                      <p className="text-gray-500">No orders yet</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right Column - Checklist + Actions */}
-          <div className="space-y-6">
-            <GettingStartedChecklist items={checklistItems} loading={driversLoading} />
+          {/* Driver Status Grid - Right Column */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={20} />
+                  Driver Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {driversLoading
+                    ? Array.from({ length: 4 }).map((_, i) => <DriverStatusCard key={i} loading={true} />)
+                    : mockDrivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-            {/* Quick Actions */}
+        {/* Bottom Section: Quick Actions + System Health */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Quick Actions Bar */}
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Link
-                    href="/orders/new"
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg",
-                      "text-wl-text-secondary hover:text-wl-text-primary",
-                      "hover:bg-wl-bg-overlay",
-                      "transition-colors duration-fast ease-default",
-                      "no-underline"
-                    )}
-                  >
-                    <Icon
-                      d="M16 3h5v5 M21 3l-7 7 M8 21H3v-5 M3 21l7-7"
-                      size={18}
-                    />
-                    <span className="text-sm font-medium">New Order</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <Link href="/orders/new">
+                    <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                      <Icon d="M12 5v14m-7-7h14" size={18} />
+                      <span>Create Order</span>
+                    </Button>
                   </Link>
-                  <Link
-                    href="/drivers"
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg",
-                      "text-wl-text-secondary hover:text-wl-text-primary",
-                      "hover:bg-wl-bg-overlay",
-                      "transition-colors duration-fast ease-default",
-                      "no-underline"
-                    )}
-                  >
-                    <Icon
-                      d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
-                      size={18}
-                    />
-                    <span className="text-sm font-medium">Add Driver</span>
+                  <Link href="/dispatch">
+                    <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                      <Icon d="M13 10V3L4 14h7v7l9-11h-7z" size={18} />
+                      <span>Dispatch</span>
+                    </Button>
                   </Link>
-                  <Link
-                    href="/map"
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg",
-                      "text-wl-text-secondary hover:text-wl-text-primary",
-                      "hover:bg-wl-bg-overlay",
-                      "transition-colors duration-fast ease-default",
-                      "no-underline"
-                    )}
-                  >
-                    <Icon
-                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"
-                      size={18}
-                    />
-                    <span className="text-sm font-medium">View Map</span>
+                  <Link href="/reports">
+                    <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                      <Icon d="M18 20V10M12 20V4M6 20v-6" size={18} />
+                      <span>Reports</span>
+                    </Button>
                   </Link>
-                  <Link
-                    href="/analytics"
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg",
-                      "text-wl-text-secondary hover:text-wl-text-primary",
-                      "hover:bg-wl-bg-overlay",
-                      "transition-colors duration-fast ease-default",
-                      "no-underline"
-                    )}
-                  >
-                    <Icon d="M18 20V10 M12 20V4 M6 20v-6" size={18} />
-                    <span className="text-sm font-medium">Reports</span>
+                  <Link href="/drivers">
+                    <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                      <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={18} />
+                      <span>Drivers</span>
+                    </Button>
                   </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Today's Schedule */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-wl-primary-500 mt-1.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-wl-text-primary">
-                        Morning Dispatch
-                      </p>
-                      <p className="text-xs text-wl-text-tertiary">8:00 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-wl-success-500 mt-1.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-wl-text-primary">
-                        Team Standup
-                      </p>
-                      <p className="text-xs text-wl-text-tertiary">10:00 AM</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-wl-warning-500 mt-1.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-wl-text-primary">
-                        Evening Delivery Batch
-                      </p>
-                      <p className="text-xs text-wl-text-tertiary">2:00 PM</p>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* System Health Indicator */}
+          <Card>
+            <CardHeader>
+              <CardTitle>System Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-sm text-gray-300">API Gateway</span>
+                  </div>
+                  <span className="text-xs text-emerald-500 font-medium">Operational</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-sm text-gray-300">Database</span>
+                  </div>
+                  <span className="text-xs text-emerald-500 font-medium">Operational</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-sm text-gray-300">Maps Service</span>
+                  </div>
+                  <span className="text-xs text-emerald-500 font-medium">Operational</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 }

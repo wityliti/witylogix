@@ -19,7 +19,7 @@
  *   const dualDb = forTenantInOrg(shopId, orgId);
  */
 
-import { PrismaClient } from "./generated/prisma";
+import { PrismaClient, Prisma } from "./generated/prisma";
 
 // Singleton Prisma client
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
@@ -36,6 +36,10 @@ export const prisma =
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+// Re-export Prisma types
+export { PrismaClient };
+export type { Prisma };
 
 /**
  * Shop-scoped Prisma client — sets `app.current_shop_id`.
@@ -99,6 +103,3 @@ export function forTenantInOrg(shopId: string, orgId: string) {
     },
   });
 }
-
-// Re-export Prisma types for consumers
-export * from "./generated/prisma";
