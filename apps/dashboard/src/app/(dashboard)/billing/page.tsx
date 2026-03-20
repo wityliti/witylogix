@@ -1,12 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Table } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Table } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 import {
   CreditCard,
   TrendingUp,
@@ -14,11 +16,7 @@ import {
   ArrowUpRight,
   Check,
   X,
-} from "lucide-react";
-
-/* ═══════════════════════════════════════════════════════════
-   BILLING PAGE — Billing & Subscription Management
-   ═══════════════════════════════════════════════════════════ */
+} from 'lucide-react';
 
 interface QuotaResource {
   name: string;
@@ -31,7 +29,7 @@ interface PricingPlan {
   id: string;
   name: string;
   price: number;
-  interval: "month" | "year";
+  interval: 'month' | 'year';
   features: { name: string; included: boolean }[];
   isCurrent?: boolean;
 }
@@ -41,156 +39,27 @@ interface Invoice {
   date: string;
   period: string;
   amount: number;
-  status: "paid" | "pending" | "failed";
+  status: 'paid' | 'pending' | 'failed';
 }
 
-const CURRENT_PLAN = {
-  name: "Professional",
-  price: 799,
-  interval: "month" as const,
-  billingDate: "March 1, 2026",
-  nextBillingDate: "April 1, 2026",
-};
-
-const QUOTA_RESOURCES: QuotaResource[] = [
-  {
-    name: "Orders",
-    current: 2400,
-    limit: 5000,
-    unit: "orders/month",
-  },
-  {
-    name: "Shipments",
-    current: 4521,
-    limit: 10000,
-    unit: "shipments/month",
-  },
-  {
-    name: "API Calls",
-    current: 2400000,
-    limit: 10000000,
-    unit: "calls/month",
-  },
-  {
-    name: "Storage",
-    current: 85,
-    limit: 1000,
-    unit: "GB",
-  },
-  {
-    name: "Active Drivers",
-    current: 125,
-    limit: 500,
-    unit: "drivers",
-  },
-];
-
-const PRICING_PLANS: PricingPlan[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 299,
-    interval: "month",
-    features: [
-      { name: "Up to 1,000 orders/month", included: true },
-      { name: "Basic delivery tracking", included: true },
-      { name: "Mobile app (web-based)", included: true },
-      { name: "Email support", included: true },
-      { name: "API access", included: false },
-      { name: "Advanced analytics", included: false },
-      { name: "Custom integrations", included: false },
-      { name: "Dedicated account manager", included: false },
-    ],
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    price: 799,
-    interval: "month",
-    features: [
-      { name: "Up to 10,000 orders/month", included: true },
-      { name: "Real-time delivery tracking", included: true },
-      { name: "Native mobile app", included: true },
-      { name: "Priority email & chat support", included: true },
-      { name: "API access", included: true },
-      { name: "Advanced analytics & reports", included: true },
-      { name: "Custom integrations", included: true },
-      { name: "Dedicated account manager", included: false },
-    ],
-    isCurrent: true,
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: 1999,
-    interval: "month",
-    features: [
-      { name: "Unlimited orders/month", included: true },
-      { name: "White-label solution", included: true },
-      { name: "Custom mobile app", included: true },
-      { name: "24/7 phone & dedicated support", included: true },
-      { name: "API access (unlimited)", included: true },
-      { name: "Custom analytics", included: true },
-      { name: "Priority integrations", included: true },
-      { name: "Dedicated account manager", included: true },
-    ],
-  },
-];
-
-const INVOICES: Invoice[] = [
-  {
-    id: "inv-2026-03",
-    date: "2026-03-01",
-    period: "March 2026",
-    amount: 799.99,
-    status: "paid",
-  },
-  {
-    id: "inv-2026-02",
-    date: "2026-02-01",
-    period: "February 2026",
-    amount: 799.99,
-    status: "paid",
-  },
-  {
-    id: "inv-2026-01",
-    date: "2026-01-01",
-    period: "January 2026",
-    amount: 799.99,
-    status: "paid",
-  },
-  {
-    id: "inv-2025-12",
-    date: "2025-12-01",
-    period: "December 2025",
-    amount: 699.99,
-    status: "paid",
-  },
-  {
-    id: "inv-2025-11",
-    date: "2025-11-01",
-    period: "November 2025",
-    amount: 699.99,
-    status: "paid",
-  },
-  {
-    id: "inv-2025-10",
-    date: "2025-10-01",
-    period: "October 2025",
-    amount: 499.99,
-    status: "paid",
-  },
-];
-
-// Helper function to determine quota percentage and color
-const getQuotaColor = (percentage: number): "success" | "warning" | "danger" => {
-  if (percentage >= 80) return "danger";
-  if (percentage >= 60) return "warning";
-  return "success";
+const getQuotaColor = (percentage: number): 'success' | 'warning' | 'danger' => {
+  if (percentage >= 80) return 'danger';
+  if (percentage >= 60) return 'warning';
+  return 'success';
 };
 
 export default function BillingPage() {
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+  const { items: quotas, loading: quotasLoading, error: quotasError } = useApiList<QuotaResource>('/api/v4/billing/quotas');
+  const { items: plans, loading: plansLoading, error: plansError } = useApiList<PricingPlan>('/api/v4/billing/plans');
+  const { items: invoices, loading: invoicesLoading, error: invoicesError } = useApiList<Invoice>('/api/v4/billing/invoices');
+
+  if (quotasError || plansError || invoicesError) {
+    return (
+      <ErrorState
+        message={quotasError?.message || plansError?.message || invoicesError?.message || 'Failed to load billing data'}
+      />
+    );
 
   return (
     <>

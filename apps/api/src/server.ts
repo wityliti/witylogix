@@ -177,6 +177,28 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(import("./routes/widget-config.js"), { prefix: "/api/v4/widgets" });
   await app.register(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
   await app.register(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
+  await app.register(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
+  await app.register(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
+  await app.register(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
+  await app.register(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
+  await app.register(import("./routes/health.js"), { prefix: "/api/v4/health" });
+  await app.register(import("./routes/invoices.js"), { prefix: "/api/v4/invoices" });
+  await app.register(import("./routes/magento-webhooks.js"), { prefix: "/api/v4/magento-webhooks" });
+  await app.register(import("./routes/notification-preferences.js"), { prefix: "/api/v4/notification-preferences" });
+  await app.register(import("./routes/notifications-v2.js"), { prefix: "/api/v4/notifications" });
+  await app.register(import("./routes/outbound-webhooks.js"), { prefix: "/api/v4/outbound-webhooks" });
+  await app.register(import("./routes/payments-v2.js"), { prefix: "/api/v4/payments/v2" });
+  await app.register(import("./routes/pod.js"), { prefix: "/api/v4/pod" });
+  await app.register(import("./routes/returns.js"), { prefix: "/api/v4/returns" });
+  await app.register(import("./routes/settings.js"), { prefix: "/api/v4/settings" });
+  await app.register(import("./routes/shopify-webhooks.js"), { prefix: "/api/v4/shopify/webhooks" });
+  await app.register(import("./routes/shopify-workflow-bridge.js"), { prefix: "/api/v4/shopify/workflow-bridge" });
+  await app.register(import("./routes/webhook-deliveries.js"), { prefix: "/api/v4/webhook-deliveries" });
+  await app.register(import("./routes/woocommerce-webhooks.js"), { prefix: "/api/v4/woocommerce/webhooks" });
+  await app.register(import("./routes/workflow-delivery.js"), { prefix: "/api/v4/workflow/delivery" });
+  await app.register(import("./routes/workflow-drivers.js"), { prefix: "/api/v4/workflow/drivers" });
+  await app.register(import("./routes/workflow-executions.js"), { prefix: "/api/v4/workflow/executions" });
+  await app.register(import("./routes/workflow-orders.js"), { prefix: "/api/v4/workflow/orders" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

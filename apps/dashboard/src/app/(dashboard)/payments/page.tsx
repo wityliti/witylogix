@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from 'react';
 import {
   Search,
   Download,
@@ -9,18 +9,20 @@ import {
   TrendingUp,
   DollarSign,
   Clock,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { MetricCard } from "@/components/ui/metric-card";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { MetricCard } from '@/components/ui/metric-card';
+import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
-type PaymentMethod = "bank_transfer" | "card" | "cash" | "check";
-type PaymentStatus = "completed" | "pending" | "failed" | "cancelled";
+type PaymentMethod = 'bank_transfer' | 'card' | 'cash' | 'check';
+type PaymentStatus = 'completed' | 'pending' | 'failed' | 'cancelled';
 
 interface Payment {
   id: string;
@@ -29,7 +31,7 @@ interface Payment {
   amount: number;
   method: PaymentMethod;
   status: PaymentStatus;
-  date: Date;
+  date: string;
   reference: string;
   metadata?: Record<string, unknown>;
 }
@@ -268,22 +270,27 @@ const RevenueChart = ({ data }: { data: MonthlyRevenue[] }) => {
 };
 
 export default function PaymentsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | "">(
-    ""
-  );
-  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | "">(
-    ""
-  );
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "status">(
-    "date"
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<PaymentStatus | ''>('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
+
+  const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
+
+  if (error) {
+    return (
+      <ErrorState
+        message={error.message || 'Failed to load payments'}
+        onRetry={refetch}
+      />
+    );
+  }
 
   // Filter payments
   const filtered = useMemo(() => {
-    let result = MOCK_PAYMENTS;
+    let result = payments;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -305,32 +312,32 @@ export default function PaymentsPage() {
 
     if (dateFrom) {
       const fromDate = new Date(dateFrom);
-      result = result.filter((p) => p.date >= fromDate);
+      result = result.filter((p) => new Date(p.date) >= fromDate);
     }
 
     if (dateTo) {
       const toDate = new Date(dateTo);
-      result = result.filter((p) => p.date <= toDate);
+      result = result.filter((p) => new Date(p.date) <= toDate);
     }
 
     // Sort
     const sorted = [...result];
-    if (sortBy === "date") {
-      sorted.sort((a, b) => b.date.getTime() - a.date.getTime());
-    } else if (sortBy === "amount") {
+    if (sortBy === 'date') {
+      sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else if (sortBy === 'amount') {
       sorted.sort((a, b) => b.amount - a.amount);
-    } else if (sortBy === "status") {
+    } else if (sortBy === 'status') {
       sorted.sort((a, b) => a.status.localeCompare(b.status));
     }
 
     return sorted;
-  }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy]);
+  }, [searchQuery, selectedMethod, selectedStatus, dateFrom, dateTo, sortBy, payments]);
 
   // Calculate summary stats
   const stats = useMemo(() => {
-    const completed = MOCK_PAYMENTS.filter((p) => p.status === "completed");
-    const pending = MOCK_PAYMENTS.filter((p) => p.status === "pending");
-    const failed = MOCK_PAYMENTS.filter((p) => p.status === "failed");
+    const completed = payments.filter((p) => p.status === 'completed');
+    const pending = payments.filter((p) => p.status === 'pending');
+    const failed = payments.filter((p) => p.status === 'failed');
 
     const totalCompleted = completed.reduce((sum, p) => sum + p.amount, 0);
     const totalPending = pending.reduce((sum, p) => sum + p.amount, 0);
@@ -347,7 +354,7 @@ export default function PaymentsPage() {
       completedCount: completed.length,
       pendingCount: pending.length,
     };
-  }, []);
+  }, [payments]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -365,7 +372,7 @@ export default function PaymentsPage() {
       p.amount.toFixed(2),
       getMethodLabel(p.method),
       getStatusLabel(p.status),
-      p.date.toLocaleDateString(),
+      new Date(p.date).toLocaleDateString(),
       p.reference,
     ]);
 
@@ -378,18 +385,18 @@ export default function PaymentsPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `payments-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `payments-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   }, [filtered]);
 
   const handleClearFilters = useCallback(() => {
-    setSearchQuery("");
-    setSelectedMethod("");
-    setSelectedStatus("");
-    setDateFrom("");
-    setDateTo("");
-    setSortBy("date");
+    setSearchQuery('');
+    setSelectedMethod('');
+    setSelectedStatus('');
+    setDateFrom('');
+    setDateTo('');
+    setSortBy('date');
   }, []);
 
   const hasActiveFilters = Boolean(

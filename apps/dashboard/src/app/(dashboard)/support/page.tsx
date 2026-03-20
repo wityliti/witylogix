@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   CardDescription,
   CardHeader,
   CardTitle,
@@ -70,88 +73,7 @@ export default function SupportPage() {
     },
   ]);
 
-  const faqs = [
-    {
-      category: "Delivery",
-      items: [
-        {
-          id: "delivery-1",
-          q: "How can I track my deliveries in real-time?",
-          a: "You can track deliveries through our live tracking page. Each order gets a unique tracking link that displays the driver's real-time location, ETA, and delivery status updates.",
-        },
-        {
-          id: "delivery-2",
-          q: "Can customers update delivery preferences after order placement?",
-          a: "Yes, customers can update delivery instructions, preferred time slots, and contact information up to 2 hours before estimated delivery.",
-        },
-        {
-          id: "delivery-3",
-          q: "What happens if there's a delivery delay?",
-          a: "The system automatically sends notifications to customers about delays. You can also manually update the status and send custom messages through the dashboard.",
-        },
-      ],
-    },
-    {
-      category: "Billing",
-      items: [
-        {
-          id: "billing-1",
-          q: "How am I charged for the platform?",
-          a: "We offer flexible billing plans: per-delivery, monthly subscription, or enterprise custom pricing. Choose based on your volume and needs.",
-        },
-        {
-          id: "billing-2",
-          q: "When do I receive my invoice?",
-          a: "Invoices are generated at the end of each billing cycle and sent automatically to your registered email. You can also download invoices from the billing section.",
-        },
-        {
-          id: "billing-3",
-          q: "Can I change my billing plan anytime?",
-          a: "Yes, you can upgrade, downgrade, or switch plans at any time. Changes take effect at the start of your next billing cycle.",
-        },
-      ],
-    },
-    {
-      category: "Integrations",
-      items: [
-        {
-          id: "integration-1",
-          q: "Which platforms does Witylogix integrate with?",
-          a: "We integrate with Shopify, WooCommerce, Magento, custom APIs, and major shipping carriers. Check our integrations page for the complete list.",
-        },
-        {
-          id: "integration-2",
-          q: "How do I set up API access?",
-          a: "Generate API keys from the Settings page. Use our comprehensive documentation to implement webhooks and REST endpoints in your application.",
-        },
-        {
-          id: "integration-3",
-          q: "Is webhook support available?",
-          a: "Yes, we support webhooks for order updates, delivery status changes, and rating submissions. Configure them in the Integrations settings.",
-        },
-      ],
-    },
-    {
-      category: "Troubleshooting",
-      items: [
-        {
-          id: "trouble-1",
-          q: "Why isn't my widget displaying on my website?",
-          a: "Check that your API key is correct and the embed code is placed before the closing body tag. Clear your browser cache and check console for errors.",
-        },
-        {
-          id: "trouble-2",
-          q: "Live map is not showing on tracking page",
-          a: "Ensure the 'Live Map' feature is enabled in Tracking Configuration. Verify that driver location tracking is active for the delivery.",
-        },
-        {
-          id: "trouble-3",
-          q: "I'm not receiving webhook notifications",
-          a: "Verify your webhook URL is publicly accessible and returning a 200 status code. Check the webhook logs in the Integrations section.",
-        },
-      ],
-    },
-  ];
+  
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -159,6 +81,11 @@ export default function SupportPage() {
       "in-progress": { backgroundColor: "#3b82f6", color: "#fff" },
       resolved: { backgroundColor: "#22c55e", color: "#fff" },
     };
+  const { items: data, loading, error, refetch, pagination } = useApiList<SupportTicket>('/api/v4/support');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
     return styles[status as keyof typeof styles] || styles.open;
   };
 

@@ -264,7 +264,7 @@ export default function QueuesPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-semibold">{queue.name}</CardTitle>
                   {queue.paused && (
-                    <Badge variant="destructive">Paused</Badge>
+                    <Badge variant="danger">Paused</Badge>
                   )}
                 </div>
               </CardHeader>
@@ -359,19 +359,19 @@ export default function QueuesPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" className="gap-2">
+                  <Button size="sm" variant="secondary" className="gap-2">
                     <Play className="w-4 h-4" />
                     Resume
                   </Button>
-                  <Button size="sm" variant="outline" className="gap-2">
+                  <Button size="sm" variant="secondary" className="gap-2">
                     <Pause className="w-4 h-4" />
                     Pause
                   </Button>
-                  <Button size="sm" variant="outline" className="gap-2">
+                  <Button size="sm" variant="secondary" className="gap-2">
                     <RefreshCw className="w-4 h-4" />
                     Refresh Stats
                   </Button>
-                  <Button size="sm" variant="destructive" className="gap-2">
+                  <Button size="sm" variant="danger" className="gap-2">
                     <Trash2 className="w-4 h-4" />
                     Clear Completed
                   </Button>
@@ -481,11 +481,11 @@ export default function QueuesPage() {
                 Dead Letter Queue ({mockDLQ.length})
               </CardTitle>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="gap-2">
+                <Button size="sm" variant="secondary" className="gap-2">
                   <RotateCw className="w-4 h-4" />
                   Retry All
                 </Button>
-                <Button size="sm" variant="destructive" className="gap-2">
+                <Button size="sm" variant="danger" className="gap-2">
                   <Trash2 className="w-4 h-4" />
                   Purge
                 </Button>
@@ -509,13 +509,13 @@ export default function QueuesPage() {
                         <p className="font-semibold text-sm">{item.jobName}</p>
                         <p className="text-xs text-gray-600">ID: {item.jobId}</p>
                       </div>
-                      <Badge variant="destructive">{item.category}</Badge>
+                      <Badge variant="danger">{item.category}</Badge>
                     </div>
                     <p className="text-sm text-gray-700 mb-3">{item.failedReason}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-600">{item.failedAt}</span>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="gap-1 text-xs">
+                        <Button size="sm" variant="secondary" className="gap-1 text-xs">
                           <RotateCw className="w-3 h-3" />
                           Retry
                         </Button>
@@ -548,9 +548,9 @@ export default function QueuesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       {job.enabled ? (
-                        <Badge className="bg-emerald-100 text-emerald-800">Enabled</Badge>
+                        <Badge variant="success">Enabled</Badge>
                       ) : (
-                        <Badge variant="secondary">Disabled</Badge>
+                        <Badge variant="default">Disabled</Badge>
                       )}
                       {job.lastRunStatus && (
                         <Badge
@@ -575,7 +575,7 @@ export default function QueuesPage() {
                       <p className="font-semibold text-xs">{job.lastRunTime || "Never"}</p>
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <Button size="sm" variant="outline" className="gap-1 text-xs">
+                      <Button size="sm" variant="secondary" className="gap-1 text-xs">
                         {job.enabled ? (
                           <>
                             <Pause className="w-3 h-3" />

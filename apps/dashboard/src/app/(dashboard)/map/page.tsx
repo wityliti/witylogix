@@ -2,6 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,55 +23,13 @@ import {
 } from 'lucide-react';
 
 // Mock data
-const mockOrders = [
-  { id: 'ORD-001', lat: 40.7128, lng: -74.006, status: 'pending', address: '123 Broadway, NYC', customer: 'John Doe' },
-  { id: 'ORD-002', lat: 40.758, lng: -73.9855, status: 'in-transit', address: '456 5th Ave, NYC', customer: 'Jane Smith' },
-  { id: 'ORD-003', lat: 40.7489, lng: -73.968, status: 'delivered', address: '789 Park Ave, NYC', customer: 'Bob Johnson' },
-  { id: 'ORD-004', lat: 40.7505, lng: -73.9972, status: 'pending', address: '321 Madison Ave, NYC', customer: 'Alice Brown' },
-  { id: 'ORD-005', lat: 40.7614, lng: -73.9776, status: 'in-transit', address: '654 3rd Ave, NYC', customer: 'Charlie Wilson' },
-  { id: 'ORD-006', lat: 40.7549, lng: -73.9840, status: 'delivered', address: '987 2nd Ave, NYC', customer: 'Diana Martinez' },
-  { id: 'ORD-007', lat: 40.7505, lng: -73.9680, status: 'pending', address: '246 1st Ave, NYC', customer: 'Eve Davis' },
-  { id: 'ORD-008', lat: 40.7614, lng: -73.9680, status: 'failed', address: '135 Lexington Ave, NYC', customer: 'Frank Miller' },
-  { id: 'ORD-009', lat: 40.7480, lng: -73.9862, status: 'in-transit', address: '357 Broadway, NYC', customer: 'Grace Lee' },
-  { id: 'ORD-010', lat: 40.7549, lng: -73.9945, status: 'delivered', address: '789 5th Ave, NYC', customer: 'Henry White' },
-  { id: 'ORD-011', lat: 40.7614, lng: -73.9862, status: 'pending', address: '456 Park Ave, NYC', customer: 'Iris Garcia' },
-  { id: 'ORD-012', lat: 40.7489, lng: -73.9945, status: 'in-transit', address: '123 Madison Ave, NYC', customer: 'Jack Robinson' },
-  { id: 'ORD-013', lat: 40.7480, lng: -73.9776, status: 'delivered', address: '654 3rd Ave, NYC', customer: 'Karen Thomas' },
-  { id: 'ORD-014', lat: 40.7505, lng: -73.9862, status: 'failed', address: '987 2nd Ave, NYC', customer: 'Leo Jackson' },
-  { id: 'ORD-015', lat: 40.7549, lng: -73.9680, status: 'pending', address: '246 1st Ave, NYC', customer: 'Mia Anderson' },
-];
 
-const mockShipments = [
-  { id: 'SHP-001', lat: 40.7205, lng: -74.0098, status: 'in-transit', carrier: 'FedEx', eta: '2:30 PM' },
-  { id: 'SHP-002', lat: 40.7300, lng: -73.9900, status: 'in-transit', carrier: 'UPS', eta: '3:15 PM' },
-  { id: 'SHP-003', lat: 40.7400, lng: -73.9750, status: 'in-transit', carrier: 'DHL', eta: '4:00 PM' },
-  { id: 'SHP-004', lat: 40.7500, lng: -73.9650, status: 'pending', carrier: 'FedEx', eta: 'TBD' },
-  { id: 'SHP-005', lat: 40.7600, lng: -73.9550, status: 'in-transit', carrier: 'UPS', eta: '1:45 PM' },
-  { id: 'SHP-006', lat: 40.7700, lng: -73.9450, status: 'in-transit', carrier: 'DHL', eta: '2:00 PM' },
-  { id: 'SHP-007', lat: 40.7300, lng: -74.0000, status: 'in-transit', carrier: 'FedEx', eta: '3:30 PM' },
-  { id: 'SHP-008', lat: 40.7450, lng: -73.9800, status: 'pending', carrier: 'UPS', eta: 'TBD' },
-  { id: 'SHP-009', lat: 40.7550, lng: -73.9700, status: 'in-transit', carrier: 'DHL', eta: '4:15 PM' },
-  { id: 'SHP-010', lat: 40.7650, lng: -73.9600, status: 'in-transit', carrier: 'FedEx', eta: '1:30 PM' },
-];
 
-const mockRoutes = [
-  { id: 'RTE-001', name: 'Manhattan North Loop', stops: 12, status: 'active', driver: 'Michael Brown', lat: 40.7614, lng: -73.9776 },
-  { id: 'RTE-002', name: 'Midtown Express', stops: 8, status: 'active', driver: 'Sarah Connor', lat: 40.7505, lng: -73.9880 },
-  { id: 'RTE-003', name: 'Downtown Circuit', stops: 15, status: 'active', driver: 'Tom Hardy', lat: 40.7128, lng: -74.006 },
-  { id: 'RTE-004', name: 'Upper East Side', stops: 10, status: 'completed', driver: 'Emma Stone', lat: 40.7700, lng: -73.9500 },
-  { id: 'RTE-005', name: 'West Side Coverage', stops: 11, status: 'active', driver: 'Ryan Gosling', lat: 40.7450, lng: -74.0050 },
-];
 
-const mockDrivers = [
-  { id: 'DRV-001', name: 'Michael Brown', status: 'on-duty', lat: 40.7614, lng: -73.9776, speed: 25, destination: 'Times Square' },
-  { id: 'DRV-002', name: 'Sarah Connor', status: 'on-duty', lat: 40.7505, lng: -73.9880, speed: 18, destination: 'Central Park' },
-  { id: 'DRV-003', name: 'Tom Hardy', status: 'on-duty', lat: 40.7128, lng: -74.006, speed: 22, destination: 'Battery Park' },
-  { id: 'DRV-004', name: 'Emma Stone', status: 'on-break', lat: 40.7700, lng: -73.9500, speed: 0, destination: 'Lunch Break' },
-  { id: 'DRV-005', name: 'Ryan Gosling', status: 'on-duty', lat: 40.7450, lng: -74.0050, speed: 30, destination: 'Hudson Yards' },
-  { id: 'DRV-006', name: 'Zoe Saldana', status: 'off-duty', lat: 40.7680, lng: -73.9810, speed: 0, destination: 'Depot' },
-  { id: 'DRV-007', name: 'Chris Evans', status: 'on-duty', lat: 40.7549, lng: -73.9840, speed: 20, destination: 'Bryant Park' },
-  { id: 'DRV-008', name: 'Scarlett Johansson', status: 'on-duty', lat: 40.7480, lng: -73.9862, speed: 28, destination: 'Grand Central' },
-];
+
+
+
+
 
 type ViewTab = 'orders' | 'shipments' | 'routes' | 'drivers';
 type StatusFilter = 'all' | 'pending' | 'in-transit' | 'delivered' | 'failed' | 'active' | 'completed' | 'on-duty' | 'on-break' | 'off-duty';

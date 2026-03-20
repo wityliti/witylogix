@@ -6,6 +6,9 @@ import {
   Card,
   CardHeader,
   CardTitle,
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
@@ -72,6 +75,11 @@ export default function NotificationsPage() {
 
   // Filter notifications
   const filteredNotifications = useMemo(() => {
+  const { items: data, loading, error, refetch, pagination } = useApiList<Notification>('/api/v4/notifications');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
     return notifications.filter((n) => {
       if (activeTab === "unread" && n.status !== "UNREAD") return false;
       if (activeTab === "read" && n.status !== "READ") return false;
@@ -88,11 +96,7 @@ export default function NotificationsPage() {
   const allCount = notifications.length;
 
   // Tab configuration
-  const tabs = [
-    { id: "all", label: "All", count: allCount },
-    { id: "unread", label: "Unread", count: unreadCount },
-    { id: "read", label: "Read", count: readCount },
-  ];
+  
 
   // Category chips
   const categories: { id: NotificationCategory | "ALL"; label: string }[] = [

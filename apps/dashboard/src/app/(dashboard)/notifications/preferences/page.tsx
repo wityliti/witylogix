@@ -6,6 +6,9 @@ import {
   Card,
   CardHeader,
   CardTitle,
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   CardContent,
   CardDescription,
   CardFooter,
@@ -70,22 +73,9 @@ export default function NotificationPreferencesPage() {
     "ALERTS",
   ];
 
-  const timezoneOptions = [
-    { value: "America/New_York", label: "Eastern Time" },
-    { value: "America/Chicago", label: "Central Time" },
-    { value: "America/Denver", label: "Mountain Time" },
-    { value: "America/Los_Angeles", label: "Pacific Time" },
-    { value: "Europe/London", label: "London" },
-    { value: "Europe/Paris", label: "Paris" },
-    { value: "Asia/Tokyo", label: "Tokyo" },
-    { value: "Australia/Sydney", label: "Sydney" },
-  ];
+  
 
-  const frequencyOptions = [
-    { value: "IMMEDIATE", label: "Immediate" },
-    { value: "HOURLY", label: "Hourly" },
-    { value: "DAILY", label: "Daily" },
-  ];
+  
 
   // Local state for form
   const [quietHours, setQuietHours] = useState(
@@ -106,6 +96,11 @@ export default function NotificationPreferencesPage() {
   );
 
   const enabledCount = useMemo(() => {
+  const { items: data, loading, error, refetch, pagination } = useApiList<NotificationPreference>('/api/v4/notification-preferences');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
     return (
       preferences?.channelMatrix.filter((p) => p.enabled).length || 0
     );

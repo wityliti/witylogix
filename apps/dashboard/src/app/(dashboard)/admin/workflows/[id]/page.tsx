@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../../components/ui/card";
-import { StatCard } from "../../../../components/ui/stat-card";
-import { Badge } from "../../../../components/ui/badge";
-import { Button } from "../../../../components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../../../components/ui/card";
+import { StatCard } from "../../../../../components/ui/stat-card";
+import { Badge } from "../../../../../components/ui/badge";
+import { Button } from "../../../../../components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,

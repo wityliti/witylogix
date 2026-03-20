@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -26,16 +29,7 @@ import {
    Edit request workflow, personal conveyance toggle
    ═══════════════════════════════════════════════════════════ */
 
-const DRIVER_OPTIONS = [
-  { id: "drv-1", name: "Carlos Martinez" },
-  { id: "drv-2", name: "Sofia Lindberg" },
-  { id: "drv-3", name: "Ahmed Khalil" },
-  { id: "drv-4", name: "Lisa Thompson" },
-  { id: "drv-5", name: "Marcus Johnson" },
-  { id: "drv-6", name: "Yuki Tanaka" },
-  { id: "drv-7", name: "Priya Patel" },
-  { id: "drv-8", name: "Diego Fernandez" },
-];
+
 
 interface DailyLogEntry {
   hour: number;
@@ -111,7 +105,12 @@ export default function HOSPage() {
   const selectedDriver = DRIVER_OPTIONS.find((d) => d.id === selectedDriverId);
   const filteredDrivers = useMemo(() => {
     if (!searchQuery) return DRIVER_OPTIONS;
-    return DRIVER_OPTIONS.filter((d) =>
+  const { items: data, loading, error, refetch, pagination } = useApiList<HOSRecord>('/api/v4/eld/hos');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
+    return data.filter((d) =>
       d.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery]);

@@ -8,9 +8,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, GripVertical, Edit2, Trash2, Image as ImageIcon } from "lucide-react";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
-   COLLECTIONS PAGE — Product collections from Shopify sync
+   items PAGE — Product collections from Shopify sync
    ═══════════════════════════════════════════════════════════ */
 
 interface Collection {
@@ -26,125 +29,7 @@ interface Collection {
   products?: { id: string; title: string; sku: string }[];
 }
 
-const COLLECTIONS: Collection[] = [
-  {
-    id: "coll-001",
-    title: "Summer Sale",
-    type: "manual",
-    productCount: 24,
-    status: "active",
-    lastUpdated: "2026-03-05T14:30:00Z",
-    description: "Seasonal summer products and clearance items",
-    sortRules: [],
-    products: [
-      { id: "prod-001", title: "Beach Towel Set", sku: "BTS-001" },
-      { id: "prod-002", title: "Sunscreen SPF 50", sku: "SUN-050" },
-      { id: "prod-003", title: "Swim Trunks", sku: "SWIM-001" },
-      { id: "prod-004", title: "Beach Umbrella", sku: "UMB-001" },
-    ],
-  },
-  {
-    id: "coll-002",
-    title: "Best Sellers",
-    type: "auto",
-    productCount: 32,
-    status: "active",
-    lastUpdated: "2026-03-06T09:15:00Z",
-    description: "Top-performing products based on sales volume",
-    sortRules: ["sales > 100 units/month", "rating >= 4.5 stars"],
-    products: [
-      { id: "prod-005", title: "Wireless Earbuds", sku: "EARB-001" },
-      { id: "prod-006", title: "Phone Case Pro", sku: "CASE-PRO" },
-      { id: "prod-007", title: "Portable Charger", sku: "CHAR-PORT" },
-      { id: "prod-008", title: "Screen Protector", sku: "SCRN-PROT" },
-    ],
-  },
-  {
-    id: "coll-003",
-    title: "New Arrivals",
-    type: "auto",
-    productCount: 18,
-    status: "active",
-    lastUpdated: "2026-03-06T08:45:00Z",
-    description: "Recently added products to the store",
-    sortRules: ["created_at > 30 days ago"],
-    products: [
-      { id: "prod-009", title: "Smart Watch", sku: "WATCH-001" },
-      { id: "prod-010", title: "Laptop Stand", sku: "STAND-001" },
-      { id: "prod-011", title: "Mechanical Keyboard", sku: "KEYB-001" },
-    ],
-  },
-  {
-    id: "coll-004",
-    title: "Premium Products",
-    type: "auto",
-    productCount: 16,
-    status: "active",
-    lastUpdated: "2026-03-04T16:20:00Z",
-    description: "High-end and luxury items",
-    sortRules: ["price > $500", "tag contains premium"],
-    products: [
-      { id: "prod-012", title: "Premium Headphones", sku: "HEAD-PREM" },
-      { id: "prod-013", title: "Designer Backpack", sku: "BAG-DES" },
-    ],
-  },
-  {
-    id: "coll-005",
-    title: "Clearance",
-    type: "manual",
-    productCount: 42,
-    status: "active",
-    lastUpdated: "2026-03-03T11:00:00Z",
-    description: "Discounted and clearance items",
-    sortRules: [],
-    products: [
-      { id: "prod-014", title: "Clearance Shirts", sku: "SHIRT-CLR" },
-      { id: "prod-015", title: "Discounted Shoes", sku: "SHOE-DIS" },
-    ],
-  },
-  {
-    id: "coll-006",
-    title: "Gift Ideas",
-    type: "manual",
-    productCount: 28,
-    status: "active",
-    lastUpdated: "2026-02-28T13:45:00Z",
-    description: "Curated gift recommendations",
-    sortRules: [],
-    products: [
-      { id: "prod-016", title: "Gift Set Bundle", sku: "GIFT-001" },
-      { id: "prod-017", title: "Luxury Candle", sku: "CAND-LUX" },
-    ],
-  },
-  {
-    id: "coll-007",
-    title: "Seasonal",
-    type: "auto",
-    productCount: 35,
-    status: "active",
-    lastUpdated: "2026-03-02T10:30:00Z",
-    description: "Products for current season",
-    sortRules: ["tag contains seasonal", "stock > 5"],
-    products: [
-      { id: "prod-018", title: "Spring Collection", sku: "SPRI-001" },
-      { id: "prod-019", title: "Easter Specials", sku: "EAST-001" },
-    ],
-  },
-  {
-    id: "coll-008",
-    title: "Featured",
-    type: "manual",
-    productCount: 12,
-    status: "draft",
-    lastUpdated: "2026-02-25T15:10:00Z",
-    description: "Highlighted products for home page",
-    sortRules: [],
-    products: [
-      { id: "prod-020", title: "Featured Item 1", sku: "FEAT-001" },
-      { id: "prod-021", title: "Featured Item 2", sku: "FEAT-002" },
-    ],
-  },
-];
+
 
 const formatDateTime = (isoStr: string): string => {
   const date = new Date(isoStr);
@@ -161,6 +46,11 @@ const formatDateTime = (isoStr: string): string => {
 };
 
 export default function CollectionsPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<Collection>('/api/v4/collections');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "auto" | "manual">("all");
   const [expandedCollection, setExpandedCollection] = useState<string | null>(null);
@@ -170,14 +60,14 @@ export default function CollectionsPage() {
   const pageSize = 10;
 
   // Calculate stats
-  const totalCollections = COLLECTIONS.length;
-  const totalProducts = COLLECTIONS.reduce((sum, c) => sum + c.productCount, 0);
-  const autoCollections = COLLECTIONS.filter((c) => c.type === "auto").length;
-  const manualCollections = COLLECTIONS.filter((c) => c.type === "manual").length;
+  const totalCollections = items.length;
+  const totalProducts = items.reduce((sum, c) => sum + c.productCount, 0);
+  const autoCollections = items.filter((c) => c.type === "auto").length;
+  const manualCollections = items.filter((c) => c.type === "manual").length;
 
   // Filter and sort
   const filtered = useMemo(() => {
-    let result = COLLECTIONS.filter((c) => {
+    let result = items.filter((c) => {
       if (typeFilter !== "all" && c.type !== typeFilter) return false;
       if (search) {
         const q = search.toLowerCase();

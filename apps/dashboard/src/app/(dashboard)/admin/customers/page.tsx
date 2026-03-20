@@ -196,7 +196,7 @@ const getStatusBadgeVariant = (status: Customer["status"]): "success" | "warning
     case "inactive":
       return "warning";
     case "vip":
-      return "primary";
+      return "info";
     default:
       return "default";
   }

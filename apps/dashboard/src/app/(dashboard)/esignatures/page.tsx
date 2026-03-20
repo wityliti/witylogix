@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -237,12 +240,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
 }
 
 function TemplateUsageCard() {
-  const mockTemplates = [
-    { name: "NDA Template", count: 24 },
-    { name: "Employment Agreement", count: 18 },
-    { name: "Service Agreement", count: 32 },
-    { name: "Loan Agreement", count: 12 },
-  ];
+  
 
   return (
     <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
@@ -303,6 +301,11 @@ export default function ESignaturesPage() {
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     },
   ];
+  const { items: data, loading, error, refetch, pagination } = useApiList<ESignature>('/api/v4/esignatures');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
 
   return (
     <div className={cn("p-6 space-y-6")}>

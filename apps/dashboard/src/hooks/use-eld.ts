@@ -1,28 +1,26 @@
-import { useState, useEffect, useCallback } from "react";
+'use client';
 
-/* ═══════════════════════════════════════════════════════════
-   ELD HOOKS — Real-time HOS, violations, DVIR, and compliance
-   ═══════════════════════════════════════════════════════════ */
+import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiQueryResult, UseApiListResult, UseApiMutationResult } from './use-api';
 
 // Types
-export type DutyStatus = "OFF_DUTY" | "SLEEPER" | "DRIVING" | "ON_DUTY";
-export type ViolationType = "HOURS_EXCEEDED" | "NO_BREAK" | "FATIGUE" | "FALSIFIED" | "LOGGED_EDIT";
-export type DefectSeverity = "CRITICAL" | "MAJOR" | "MINOR";
-export type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
-export type InspectionType = "PRE_TRIP" | "POST_TRIP";
-export type InspectionStatus = "PASSED" | "FAILED";
+export type DutyStatus = 'OFF_DUTY' | 'SLEEPER' | 'DRIVING' | 'ON_DUTY';
+export type ViolationType = 'HOURS_EXCEEDED' | 'NO_BREAK' | 'FATIGUE' | 'FALSIFIED' | 'LOGGED_EDIT';
+export type DefectSeverity = 'CRITICAL' | 'MAJOR' | 'MINOR';
+export type DefectStatus = 'REPORTED' | 'ACKNOWLEDGED' | 'REPAIRED' | 'CERTIFIED';
+export type InspectionType = 'PRE_TRIP' | 'POST_TRIP';
+export type InspectionStatus = 'PASSED' | 'FAILED';
 
 export interface DriverHOS {
   driverId: string;
   driverName: string;
   currentStatus: DutyStatus;
-  drivingTimeRemaining: number; // minutes
-  onDutyWindowRemaining: number; // minutes (14h window)
-  cycleHours: number; // 70h/8d or 60h/7d
+  drivingTimeRemaining: number;
+  onDutyWindowRemaining: number;
+  cycleHours: number;
   cycleHoursUsed: number;
-  breakStatus: "TAKEN" | "REQUIRED" | "NOT_REQUIRED";
-  breakTimeRemaining: number; // minutes (30-min break required)
-  lastStatusChange: string; // ISO timestamp
+  breakStatus: 'TAKEN' | 'REQUIRED' | 'NOT_REQUIRED';
+  breakTimeRemaining: number;
+  lastStatusChange: string;
   personalConveyance: boolean;
   yardMove: boolean;
 }
@@ -32,10 +30,10 @@ export interface HosViolation {
   driverId: string;
   driverName: string;
   type: ViolationType;
-  severity: "CRITICAL" | "WARNING" | "INFO";
-  timestamp: string; // ISO timestamp
-  duration: number; // minutes
-  resolvedAt?: string; // ISO timestamp
+  severity: 'CRITICAL' | 'WARNING' | 'INFO';
+  timestamp: string;
+  duration: number;
+  resolvedAt?: string;
   description: string;
   suggestedAction: string;
 }
@@ -43,11 +41,11 @@ export interface HosViolation {
 export interface DvirDefect {
   id: string;
   vehicleId: string;
-  component: string; // "tire", "brake", "light", "coupling", "engine", "body", "other"
+  component: string;
   description: string;
   severity: DefectSeverity;
   status: DefectStatus;
-  reportedAt: string; // ISO timestamp
+  reportedAt: string;
   photoUrl?: string;
   driverId: string;
   driverName: string;
@@ -61,15 +59,15 @@ export interface DvirDefect {
 export interface DvirInspection {
   id: string;
   vehicleId: string;
-  vehicleNumber: string; // e.g., "WTY-4501"
+  vehicleNumber: string;
   type: InspectionType;
   status: InspectionStatus;
   driverId: string;
   driverName: string;
-  inspectionDate: string; // ISO timestamp
+  inspectionDate: string;
   items: {
     name: string;
-    status: "PASS" | "FAIL" | "N/A";
+    status: 'PASS' | 'FAIL' | 'N/A';
     notes?: string;
   }[];
   defects: DvirDefect[];
@@ -81,8 +79,8 @@ export interface EldEvent {
   id: string;
   driverId: string;
   driverName: string;
-  type: "STATUS_CHANGE" | "VIOLATION" | "EDIT_REQUEST" | "DVIR_COMPLETION";
-  timestamp: string; // ISO timestamp
+  type: 'STATUS_CHANGE' | 'VIOLATION' | 'EDIT_REQUEST' | 'DVIR_COMPLETION';
+  timestamp: string;
   description: string;
   data?: Record<string, unknown>;
 }
@@ -92,267 +90,40 @@ export interface FleetCompliance {
   compliantDrivers: number;
   compliancePercentage: number;
   activeViolations: number;
-  dvirCompletionRate: number; // percentage
+  dvirCompletionRate: number;
   openDefects: number;
   criticalDefects: number;
 }
 
-// Mock data generators
-const generateMockHOS = (driverId: string, driverName: string): DriverHOS => {
-  const statuses: DutyStatus[] = ["OFF_DUTY", "SLEEPER", "DRIVING", "ON_DUTY"];
-  const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-
-  return {
-    driverId,
-    driverName,
-    currentStatus: randomStatus,
-    drivingTimeRemaining: Math.floor(Math.random() * 660) + 60, // 1-11 hours
-    onDutyWindowRemaining: Math.floor(Math.random() * 840) + 120, // 2-14 hours
-    cycleHours: 70,
-    cycleHoursUsed: Math.floor(Math.random() * 70),
-    breakStatus: Math.random() > 0.5 ? "TAKEN" : "REQUIRED",
-    breakTimeRemaining: Math.random() > 0.5 ? 0 : 30,
-    lastStatusChange: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-    personalConveyance: false,
-    yardMove: false,
-  };
-};
-
-const generateMockViolations = (count: number): HosViolation[] => {
-  const violationTypes: ViolationType[] = [
-    "HOURS_EXCEEDED",
-    "NO_BREAK",
-    "FATIGUE",
-    "FALSIFIED",
-    "LOGGED_EDIT",
-  ];
-  const violations: HosViolation[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const type = violationTypes[Math.floor(Math.random() * violationTypes.length)];
-    violations.push({
-      id: `vio-${i + 1}`,
-      driverId: `drv-${Math.floor(Math.random() * 8) + 1}`,
-      driverName: ["Carlos Martinez", "Sofia Lindberg", "Ahmed Khalil"][
-        Math.floor(Math.random() * 3)
-      ],
-      type,
-      severity:
-        type === "HOURS_EXCEEDED" ? "CRITICAL" : type === "NO_BREAK" ? "WARNING" : "INFO",
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-      duration: Math.floor(Math.random() * 120) + 15,
-      description: `Driver exceeded ${type.replace(/_/g, " ").toLowerCase()} limits`,
-      suggestedAction:
-        type === "HOURS_EXCEEDED"
-          ? "Immediate stop required. Driver must rest."
-          : "Schedule 30-minute break before next driving",
-    });
-  }
-
-  return violations;
-};
-
-const generateMockDvirDefects = (count: number): DvirDefect[] => {
-  const components = ["tire", "brake", "light", "coupling", "engine", "body", "other"];
-  const defects: DvirDefect[] = [];
-
-  for (let i = 0; i < count; i++) {
-    defects.push({
-      id: `def-${i + 1}`,
-      vehicleId: `veh-${Math.floor(Math.random() * 20) + 1}`,
-      component: components[Math.floor(Math.random() * components.length)],
-      description: `Component defect requiring attention`,
-      severity: ["CRITICAL", "MAJOR", "MINOR"][Math.floor(Math.random() * 3)] as DefectSeverity,
-      status: ["REPORTED", "ACKNOWLEDGED", "REPAIRED", "CERTIFIED"][
-        Math.floor(Math.random() * 4)
-      ] as DefectStatus,
-      reportedAt: new Date(Date.now() - Math.random() * 604800000).toISOString(),
-      driverId: `drv-${Math.floor(Math.random() * 8) + 1}`,
-      driverName: ["Carlos Martinez", "Sofia Lindberg", "Ahmed Khalil"][
-        Math.floor(Math.random() * 3)
-      ],
-    });
-  }
-
-  return defects;
-};
-
-const generateMockEldEvents = (count: number): EldEvent[] => {
-  const eventTypes: Array<EldEvent["type"]> = [
-    "STATUS_CHANGE",
-    "VIOLATION",
-    "EDIT_REQUEST",
-    "DVIR_COMPLETION",
-  ];
-  const events: EldEvent[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    events.push({
-      id: `evt-${i + 1}`,
-      driverId: `drv-${Math.floor(Math.random() * 8) + 1}`,
-      driverName: ["Carlos Martinez", "Sofia Lindberg", "Ahmed Khalil", "Lisa Thompson"][
-        Math.floor(Math.random() * 4)
-      ],
-      type,
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-      description:
-        type === "STATUS_CHANGE"
-          ? "Changed duty status from DRIVING to ON_DUTY"
-          : type === "VIOLATION"
-            ? "Exceeded maximum driving hours"
-            : type === "EDIT_REQUEST"
-              ? "Requested log edit for 2 hours"
-              : "Completed pre-trip inspection",
-    });
-  }
-
-  return events.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-};
-
 // Hooks
-export const useDriverHOS = (driverId?: string) => {
-  const [hos, setHos] = useState<DriverHOS | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      if (driverId) {
-        setHos(generateMockHOS(driverId, "Selected Driver"));
-      } else {
-        setHos(generateMockHOS("drv-1", "Carlos Martinez"));
-      }
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [driverId]);
-
-  const updateHOS = useCallback((updatedHos: DriverHOS) => {
-    setHos(updatedHos);
-  }, []);
-
-  return { hos, isLoading, updateHOS };
+export const useDriverHOS = (driverId: string | null): UseApiQueryResult<DriverHOS> => {
+  return useApiQuery<DriverHOS>(driverId ? `/api/v4/eld/drivers/${driverId}/hos` : null);
 };
 
-export const useViolations = (driverId?: string, limit = 10) => {
-  const [violations, setViolations] = useState<HosViolation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      let allViolations = generateMockViolations(15);
-      if (driverId) {
-        allViolations = allViolations.filter((v) => v.driverId === driverId);
-      }
-      setViolations(allViolations.slice(0, limit));
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [driverId, limit]);
-
-  return { violations, isLoading };
+export const useViolations = (filters?: ApiFilters): UseApiListResult<HosViolation> => {
+  return useApiList<HosViolation>('/api/v4/eld/violations', filters);
 };
 
-export const useDVIR = () => {
-  const [defects, setDefects] = useState<DvirDefect[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setDefects(generateMockDvirDefects(8));
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const addDefect = useCallback((defect: DvirDefect) => {
-    setDefects((prev) => [defect, ...prev]);
-  }, []);
-
-  const updateDefectStatus = useCallback((defectId: string, status: DefectStatus) => {
-    setDefects((prev) =>
-      prev.map((d) => (d.id === defectId ? { ...d, status } : d))
-    );
-  }, []);
-
-  return { defects, isLoading, addDefect, updateDefectStatus };
+export const useDVIRDefects = (filters?: ApiFilters): UseApiListResult<DvirDefect> => {
+  return useApiList<DvirDefect>('/api/v4/eld/defects', filters);
 };
 
-export const useELDEvents = (limit = 20) => {
-  const [events, setEvents] = useState<EldEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setEvents(generateMockEldEvents(limit));
-      setIsLoading(false);
-    }, 300);
-
-    const pollInterval = setInterval(() => {
-      setEvents((prev) => {
-        const newEvents = generateMockEldEvents(1);
-        return [...newEvents, ...prev].slice(0, limit);
-      });
-    }, 30000); // Poll every 30s
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(pollInterval);
-    };
-  }, [limit]);
-
-  return { events, isLoading };
+export const useDvirInspection = (id: string | null): UseApiQueryResult<DvirInspection> => {
+  return useApiQuery<DvirInspection>(id ? `/api/v4/eld/inspections/${id}` : null);
 };
 
-export const useFleetCompliance = () => {
-  const [compliance, setCompliance] = useState<FleetCompliance | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const useCreateDvirDefect = (): UseApiMutationResult<DvirDefect> => {
+  return useApiMutation<DvirDefect>('POST', '/api/v4/eld/defects');
+};
 
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      const totalDrivers = 8;
-      const compliantDrivers = Math.floor(totalDrivers * 0.875); // 87.5%
-      setCompliance({
-        totalDrivers,
-        compliantDrivers,
-        compliancePercentage: 87.5,
-        activeViolations: 5,
-        dvirCompletionRate: 92.3,
-        openDefects: 3,
-        criticalDefects: 1,
-      });
-      setIsLoading(false);
-    }, 300);
+export const useUpdateDvirDefectStatus = (id: string): UseApiMutationResult<DvirDefect> => {
+  return useApiMutation<DvirDefect>('PATCH', `/api/v4/eld/defects/${id}/status`);
+};
 
-    const pollInterval = setInterval(() => {
-      setCompliance((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          compliancePercentage: Math.max(
-            70,
-            prev.compliancePercentage + (Math.random() - 0.5) * 2
-          ),
-          activeViolations: Math.max(0, prev.activeViolations + Math.floor(Math.random() * 3) - 1),
-        };
-      });
-    }, 10000); // Poll every 10s
+export const useELDEvents = (filters?: ApiFilters): UseApiListResult<EldEvent> => {
+  return useApiList<EldEvent>('/api/v4/eld/events', filters);
+};
 
-    return () => {
-      clearTimeout(timer);
-      clearInterval(pollInterval);
-    };
-  }, []);
-
-  return { compliance, isLoading };
+export const useFleetCompliance = (): UseApiQueryResult<FleetCompliance> => {
+  return useApiQuery<FleetCompliance>('/api/v4/eld/compliance');
 };

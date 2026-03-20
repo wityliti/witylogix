@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EventCard } from "./components/event-card";
@@ -143,6 +146,11 @@ export default function EventsPage() {
     if (loaderRef.current) {
       observer.observe(loaderRef.current);
     }
+  const { items: data, loading, error, refetch, pagination } = useApiList<Event>('/api/v4/events');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
 
     return () => observer.disconnect();
   }, [hasMore, loading, page, fetchEvents]);
@@ -280,7 +288,7 @@ export default function EventsPage() {
                 )}
               >
                 <option value="">All Types</option>
-                {EVENT_TYPES.map((type) => (
+                {data.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
@@ -307,7 +315,7 @@ export default function EventsPage() {
                 )}
               >
                 <option value="">All Sources</option>
-                {SOURCES.map((source) => (
+                {data.map((source) => (
                   <option key={source} value={source}>
                     {source}
                   </option>
@@ -332,7 +340,7 @@ export default function EventsPage() {
                 )}
               >
                 <option value="">All Entities</option>
-                {ENTITY_TYPES.map((type) => (
+                {data.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>

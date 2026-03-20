@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -432,6 +435,11 @@ export default function TemplatesPage() {
     filterCategory === "ALL"
       ? templates
       : templates.filter((t) => t.category === filterCategory);
+  const { items: data, loading, error, refetch, pagination } = useApiList<ESignatureTemplate>('/api/v4/esignatures/templates');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
 
   return (
     <div className={cn("p-6 space-y-6")}>

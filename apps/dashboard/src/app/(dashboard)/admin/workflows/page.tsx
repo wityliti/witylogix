@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Header } from "../../../components/layout/header";
-import { StatCard } from "../../../components/ui/stat-card";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/card";
-import { Badge } from "../../../components/ui/badge";
-import { Button } from "../../../components/ui/button";
+import { Header } from "../../../../components/layout/header";
+import { StatCard } from "../../../../components/ui/stat-card";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../../components/ui/card";
+import { Badge } from "../../../../components/ui/badge";
+import { Button } from "../../../../components/ui/button";
 import { ArrowRight, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -375,7 +375,7 @@ export default function WorkflowExecutionsPage() {
                         {execution.duration}
                       </td>
                       <td className="p-3 px-4 text-center">
-                        <Button variant="ghost" size="sm" onClick={(e) => {
+                        <Button variant="ghost" size="sm" onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           router.push(`/admin/workflows/${execution.id}`);
                         }}>

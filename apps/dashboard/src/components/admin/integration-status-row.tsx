@@ -18,7 +18,7 @@ export function IntegrationStatusRow({
 }: IntegrationStatusRowProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const statusColor: Record<ConnectionStatus, string> = {
+  const statusColor: Record<ConnectionStatus, "success" | "default" | "danger" | "info"> = {
     connected: "success",
     disconnected: "default",
     error: "danger",

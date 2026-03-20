@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   MapPin,
   Clock,
@@ -10,19 +10,20 @@ import {
   Package,
   RefreshCw,
   ChevronDown,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useApiList } from '@/hooks/use-api';
+import { ErrorState } from '@/components/ui/error-state';
 
-// Mock types
 interface UnassignedOrder {
   id: string;
   orderNumber: string;
   customerName: string;
   address: string;
-  priority: "high" | "medium" | "low";
-  createdAt: Date;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: string;
   deliveryWindow: { start: string; end: string };
   itemCount: number;
 }
@@ -30,279 +31,27 @@ interface UnassignedOrder {
 interface Driver {
   id: string;
   name: string;
-  status: "available" | "busy" | "offline";
+  status: 'available' | 'busy' | 'offline';
   location: string;
   activeDeliveries: number;
-  vehicleType: "car" | "van" | "truck";
+  vehicleType: 'car' | 'van' | 'truck';
 }
 
-// Mock data
-const MOCK_UNASSIGNED_ORDERS: UnassignedOrder[] = [
-  {
-    id: "ORD-001",
-    orderNumber: "ORD-2024-5521",
-    customerName: "Sarah Chen",
-    address: "145 Market St, San Francisco, CA 94102",
-    priority: "high",
-    createdAt: new Date(Date.now() - 15 * 60000),
-    deliveryWindow: { start: "09:00", end: "10:30" },
-    itemCount: 3,
-  },
-  {
-    id: "ORD-002",
-    orderNumber: "ORD-2024-5522",
-    customerName: "James Rodriguez",
-    address: "823 Valencia St, San Francisco, CA 94110",
-    priority: "high",
-    createdAt: new Date(Date.now() - 8 * 60000),
-    deliveryWindow: { start: "08:30", end: "09:45" },
-    itemCount: 1,
-  },
-  {
-    id: "ORD-003",
-    orderNumber: "ORD-2024-5523",
-    customerName: "Emily Watson",
-    address: "520 Kearny St, San Francisco, CA 94108",
-    priority: "medium",
-    createdAt: new Date(Date.now() - 42 * 60000),
-    deliveryWindow: { start: "10:00", end: "12:00" },
-    itemCount: 2,
-  },
-  {
-    id: "ORD-004",
-    orderNumber: "ORD-2024-5524",
-    customerName: "Michael Lee",
-    address: "1 Ferry Building, San Francisco, CA 94111",
-    priority: "medium",
-    createdAt: new Date(Date.now() - 35 * 60000),
-    deliveryWindow: { start: "11:00", end: "13:00" },
-    itemCount: 4,
-  },
-  {
-    id: "ORD-005",
-    orderNumber: "ORD-2024-5525",
-    customerName: "Lisa Thompson",
-    address: "500 Terry Francois St, San Francisco, CA 94158",
-    priority: "low",
-    createdAt: new Date(Date.now() - 65 * 60000),
-    deliveryWindow: { start: "14:00", end: "16:00" },
-    itemCount: 2,
-  },
-  {
-    id: "ORD-006",
-    orderNumber: "ORD-2024-5526",
-    customerName: "David Park",
-    address: "555 California St, San Francisco, CA 94104",
-    priority: "medium",
-    createdAt: new Date(Date.now() - 28 * 60000),
-    deliveryWindow: { start: "13:00", end: "15:00" },
-    itemCount: 1,
-  },
-  {
-    id: "ORD-007",
-    orderNumber: "ORD-2024-5527",
-    customerName: "Jessica Martin",
-    address: "333 Bush St, San Francisco, CA 94104",
-    priority: "high",
-    createdAt: new Date(Date.now() - 12 * 60000),
-    deliveryWindow: { start: "09:30", end: "11:00" },
-    itemCount: 5,
-  },
-  {
-    id: "ORD-008",
-    orderNumber: "ORD-2024-5528",
-    customerName: "Robert Chang",
-    address: "601 Mission St, San Francisco, CA 94105",
-    priority: "low",
-    createdAt: new Date(Date.now() - 88 * 60000),
-    deliveryWindow: { start: "15:00", end: "17:00" },
-    itemCount: 1,
-  },
-  {
-    id: "ORD-009",
-    orderNumber: "ORD-2024-5529",
-    customerName: "Amanda Foster",
-    address: "101 California St, San Francisco, CA 94111",
-    priority: "medium",
-    createdAt: new Date(Date.now() - 52 * 60000),
-    deliveryWindow: { start: "10:30", end: "12:30" },
-    itemCount: 3,
-  },
-  {
-    id: "ORD-010",
-    orderNumber: "ORD-2024-5530",
-    customerName: "Kevin Johnson",
-    address: "275 Battery St, San Francisco, CA 94111",
-    priority: "low",
-    createdAt: new Date(Date.now() - 105 * 60000),
-    deliveryWindow: { start: "16:00", end: "18:00" },
-    itemCount: 2,
-  },
-  {
-    id: "ORD-011",
-    orderNumber: "ORD-2024-5531",
-    customerName: "Nicole Garcia",
-    address: "345 California St, San Francisco, CA 94104",
-    priority: "high",
-    createdAt: new Date(Date.now() - 5 * 60000),
-    deliveryWindow: { start: "09:00", end: "10:00" },
-    itemCount: 2,
-  },
-  {
-    id: "ORD-012",
-    orderNumber: "ORD-2024-5532",
-    customerName: "Thomas White",
-    address: "212 Van Ness Ave, San Francisco, CA 94102",
-    priority: "medium",
-    createdAt: new Date(Date.now() - 38 * 60000),
-    deliveryWindow: { start: "12:00", end: "14:00" },
-    itemCount: 1,
-  },
-];
+type FilterType = 'all' | 'urgent' | 'standard' | 'scheduled';
+type SortType = 'time' | 'priority' | 'distance';
 
-const MOCK_DRIVERS: Driver[] = [
-  {
-    id: "DRV-001",
-    name: "Alex Martinez",
-    status: "available",
-    location: "Downtown District",
-    activeDeliveries: 0,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-002",
-    name: "Sophie Chen",
-    status: "available",
-    location: "Financial District",
-    activeDeliveries: 0,
-    vehicleType: "car",
-  },
-  {
-    id: "DRV-003",
-    name: "Marcus Thompson",
-    status: "busy",
-    location: "Mission District",
-    activeDeliveries: 3,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-004",
-    name: "Jennifer Lopez",
-    status: "available",
-    location: "Bay Area Hub",
-    activeDeliveries: 0,
-    vehicleType: "truck",
-  },
-  {
-    id: "DRV-005",
-    name: "David Park",
-    status: "busy",
-    location: "SOMA",
-    activeDeliveries: 2,
-    vehicleType: "car",
-  },
-  {
-    id: "DRV-006",
-    name: "Rachel Kim",
-    status: "available",
-    location: "North Beach",
-    activeDeliveries: 0,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-007",
-    name: "Christopher Brown",
-    status: "busy",
-    location: "Richmond District",
-    activeDeliveries: 4,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-008",
-    name: "Amanda White",
-    status: "offline",
-    location: "Unknown",
-    activeDeliveries: 0,
-    vehicleType: "car",
-  },
-  {
-    id: "DRV-009",
-    name: "Kevin Wilson",
-    status: "available",
-    location: "Sunset District",
-    activeDeliveries: 0,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-010",
-    name: "Lisa Anderson",
-    status: "busy",
-    location: "Castro District",
-    activeDeliveries: 5,
-    vehicleType: "truck",
-  },
-  {
-    id: "DRV-011",
-    name: "James Garcia",
-    status: "available",
-    location: "Marina District",
-    activeDeliveries: 0,
-    vehicleType: "car",
-  },
-  {
-    id: "DRV-012",
-    name: "Michelle Torres",
-    status: "busy",
-    location: "Chinatown",
-    activeDeliveries: 1,
-    vehicleType: "van",
-  },
-  {
-    id: "DRV-013",
-    name: "Robert Johnson",
-    status: "offline",
-    location: "Unknown",
-    activeDeliveries: 0,
-    vehicleType: "truck",
-  },
-  {
-    id: "DRV-014",
-    name: "Stephanie Lee",
-    status: "available",
-    location: "Haight-Ashbury",
-    activeDeliveries: 0,
-    vehicleType: "car",
-  },
-  {
-    id: "DRV-015",
-    name: "Daniel Martinez",
-    status: "busy",
-    location: "Tenderloin",
-    activeDeliveries: 2,
-    vehicleType: "van",
-  },
-];
-
-type FilterType = "all" | "urgent" | "standard" | "scheduled";
-type SortType = "time" | "priority" | "distance";
-
-/**
- * Live Dispatch Command Center
- *
- * Full-screen split layout for real-time order and driver management.
- * Features:
- * - Left panel: Unassigned orders queue with filtering and sorting
- * - Right panel: Live map placeholder and active drivers grid
- * - Top bar: Live clock, stats, and auto-refresh toggle
- */
 export default function DispatchPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<FilterType>("all");
-  const [sortType, setSortType] = useState<SortType>("time");
+  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [sortType, setSortType] = useState<SortType>('time');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showDriverPicker, setShowDriverPicker] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Fetch orders and drivers
+  const { items: orders, loading: ordersLoading, error: ordersError, refetch: refetchOrders } = useApiList<UnassignedOrder>('/api/v4/dispatch/orders');
+  const { items: drivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useApiList<Driver>('/api/v4/dispatch/drivers');
 
   // Update clock every second
   useEffect(() => {
@@ -312,21 +61,21 @@ export default function DispatchPage() {
 
   // Filter orders
   const filteredOrders = useMemo(() => {
-    return MOCK_UNASSIGNED_ORDERS.filter((order) => {
-      if (filterType === "all") return true;
-      if (filterType === "urgent") return order.priority === "high";
-      if (filterType === "standard") return order.priority === "medium";
-      if (filterType === "scheduled") return order.priority === "low";
+    return orders.filter((order) => {
+      if (filterType === 'all') return true;
+      if (filterType === 'urgent') return order.priority === 'high';
+      if (filterType === 'standard') return order.priority === 'medium';
+      if (filterType === 'scheduled') return order.priority === 'low';
       return true;
     });
-  }, [filterType]);
+  }, [filterType, orders]);
 
   // Sort orders
   const sortedOrders = useMemo(() => {
     const sorted = [...filteredOrders];
-    if (sortType === "time") {
-      sorted.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    } else if (sortType === "priority") {
+    if (sortType === 'time') {
+      sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortType === 'priority') {
       const priorityMap = { high: 0, medium: 1, low: 2 };
       sorted.sort((a, b) => priorityMap[a.priority] - priorityMap[b.priority]);
     }
@@ -338,21 +87,22 @@ export default function DispatchPage() {
     const inTransit = Math.floor(Math.random() * 20) + 8;
     const completedToday = Math.floor(Math.random() * 45) + 25;
     return {
-      unassigned: MOCK_UNASSIGNED_ORDERS.length,
+      unassigned: orders.length,
       inTransit,
       completedToday,
     };
-  }, []);
+  }, [orders.length]);
 
   const driverStats = useMemo(() => {
-    const available = MOCK_DRIVERS.filter((d) => d.status === "available").length;
-    const busy = MOCK_DRIVERS.filter((d) => d.status === "busy").length;
-    const offline = MOCK_DRIVERS.filter((d) => d.status === "offline").length;
-    return { available, busy, offline, total: MOCK_DRIVERS.length };
-  }, []);
+    const available = drivers.filter((d) => d.status === 'available').length;
+    const busy = drivers.filter((d) => d.status === 'busy').length;
+    const offline = drivers.filter((d) => d.status === 'offline').length;
+    return { available, busy, offline, total: drivers.length };
+  }, [drivers]);
 
   // Format time elapsed
-  const formatTimeElapsed = (date: Date): string => {
+  const formatTimeElapsed = (dateStr: string): string => {
+    const date = new Date(dateStr);
     const elapsed = Math.floor((currentTime.getTime() - date.getTime()) / 1000);
     if (elapsed < 60) return `${elapsed}s ago`;
     if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m ago`;
@@ -368,6 +118,18 @@ export default function DispatchPage() {
     },
     []
   );
+
+  if (ordersError || driversError) {
+    return (
+      <ErrorState
+        message={ordersError?.message || driversError?.message || 'Failed to load dispatch data'}
+        onRetry={() => {
+          refetchOrders();
+          refetchDrivers();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[var(--wl-bg-primary)]">
@@ -479,8 +241,15 @@ export default function DispatchPage() {
 
           {/* Orders List */}
           <div className="flex-1 overflow-y-auto">
-            <div className="space-y-2 p-4">
-              {sortedOrders.map((order) => (
+            {ordersLoading ? (
+              <div className="p-4 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-32 bg-wl-bg-elevated rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 p-4">
+                {sortedOrders.map((order) => (
                 <div
                   key={order.id}
                   onClick={() => setSelectedOrderId(order.id)}
@@ -561,7 +330,7 @@ export default function DispatchPage() {
                         Select a driver:
                       </div>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {MOCK_DRIVERS.filter((d) => d.status === "available").map((driver) => (
+                        {drivers.filter((d) => d.status === 'available').map((driver) => (
                           <button
                             key={driver.id}
                             onClick={() => handleAssignDriver(order.id, driver.id)}
@@ -575,7 +344,8 @@ export default function DispatchPage() {
                   )}
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -606,8 +376,15 @@ export default function DispatchPage() {
 
             {/* Drivers Grid */}
             <div className="flex-1 overflow-y-auto p-4">
-              <div className="grid grid-cols-2 gap-3">
-                {MOCK_DRIVERS.map((driver) => (
+              {driversLoading ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-40 bg-wl-bg-elevated rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {drivers.map((driver) => (
                   <div
                     key={driver.id}
                     onClick={() => setSelectedDriverId(driver.id)}
@@ -657,7 +434,8 @@ export default function DispatchPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Stats Footer */}

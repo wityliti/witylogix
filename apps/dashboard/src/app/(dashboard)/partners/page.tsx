@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import {
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   PartnerCard,
   PartnerStatsWidget,
   type PartnerStatus,
@@ -28,108 +31,16 @@ interface Partner {
   totalRatings: number;
 }
 
-const MOCK_PARTNERS: Partner[] = [
-  {
-    id: "onfleet-001",
-    name: "Onfleet",
-    category: "courier",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 25,
-    successRate: 98.5,
-    activeDeliveries: 156,
-    rating: 4.8,
-    totalRatings: 2341,
-  },
-  {
-    id: "stuart-001",
-    name: "Stuart",
-    category: "same-day",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 28,
-    successRate: 97.2,
-    activeDeliveries: 89,
-    rating: 4.6,
-    totalRatings: 1256,
-  },
-  {
-    id: "uber-direct-001",
-    name: "Uber Direct",
-    category: "courier",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 22,
-    successRate: 99.1,
-    activeDeliveries: 203,
-    rating: 4.9,
-    totalRatings: 3567,
-  },
-  {
-    id: "dhl-001",
-    name: "DHL Express",
-    category: "freight",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 120,
-    successRate: 99.8,
-    activeDeliveries: 34,
-    rating: 4.7,
-    totalRatings: 890,
-  },
-  {
-    id: "fedex-001",
-    name: "FedEx",
-    category: "freight",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 140,
-    successRate: 99.6,
-    activeDeliveries: 28,
-    rating: 4.5,
-    totalRatings: 745,
-  },
-  {
-    id: "local-courier-001",
-    name: "Local Courier Co",
-    category: "scheduled",
-    status: "pending",
-    logoUrl: undefined,
-    averageDeliveryTime: 45,
-    successRate: 94.3,
-    activeDeliveries: 12,
-    rating: 4.2,
-    totalRatings: 234,
-  },
-  {
-    id: "gofox-001",
-    name: "GoFox",
-    category: "same-day",
-    status: "inactive",
-    logoUrl: undefined,
-    averageDeliveryTime: 35,
-    successRate: 92.1,
-    activeDeliveries: 0,
-    rating: 3.8,
-    totalRatings: 567,
-  },
-  {
-    id: "roadrunner-001",
-    name: "Road Runner",
-    category: "courier",
-    status: "active",
-    logoUrl: undefined,
-    averageDeliveryTime: 31,
-    successRate: 96.8,
-    activeDeliveries: 74,
-    rating: 4.4,
-    totalRatings: 612,
-  },
-];
+
 
 type ViewMode = "grid" | "list";
 
 export default function PartnersPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<Partner>('/api/v4/partners');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");

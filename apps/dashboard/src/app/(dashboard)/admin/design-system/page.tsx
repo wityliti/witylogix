@@ -337,22 +337,22 @@ const ComponentsShowcase = () => {
               label="Total Orders"
               value="2,345"
               icon={<Filter className="w-5 h-5" />}
-              trend={{ value: 12.5, direction: "up" as const }}
-              color="#f5a623"
+              change={{ value: 12.5, label: "vs last month" }}
+              accentColor="#f5a623"
             />
             <StatCard
               label="Active Drivers"
               value="128"
               icon={<CheckCircle2 className="w-5 h-5" />}
-              trend={{ value: 8.2, direction: "up" as const }}
-              color="#10b981"
+              change={{ value: 8.2, label: "vs last month" }}
+              accentColor="#10b981"
             />
             <StatCard
               label="Pending Shipments"
               value="43"
               icon={<AlertCircle className="w-5 h-5" />}
-              trend={{ value: 5.1, direction: "down" as const }}
-              color="#ef4444"
+              change={{ value: -5.1, label: "vs last month" }}
+              accentColor="#ef4444"
             />
           </div>
         </CardContent>
@@ -388,7 +388,7 @@ const ComponentsShowcase = () => {
             Open Modal
           </Button>
           {modalOpen && (
-            <Modal onClose={() => setModalOpen(false)}>
+            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
               <div className="p-6">
                 <h2 className="text-xl font-bold text-wl-text-primary m-0 mb-3">
                   Modal Example

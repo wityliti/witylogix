@@ -14,7 +14,7 @@ export function ServiceHealthCard({
   data,
   className,
 }: ServiceHealthCardProps) {
-  const statusColor: Record<ServiceStatus, string> = {
+  const statusColor: Record<ServiceStatus, "success" | "warning" | "danger"> = {
     healthy: "success",
     degraded: "warning",
     unhealthy: "danger",

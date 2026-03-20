@@ -7,6 +7,9 @@ import { DeliveryMap } from "@/components/maps/delivery-map";
 import { DeliverySidebar } from "@/components/maps/delivery-sidebar";
 import { useMapTracking } from "@/hooks/use-map-tracking";
 import type {
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   Driver,
   Delivery,
   DriverStatus,
@@ -28,6 +31,11 @@ import type {
  * - Clustering at low zoom levels
  */
 export default function TrackingPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<TrackingInfo>('/api/v4/tracking');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   // State
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(

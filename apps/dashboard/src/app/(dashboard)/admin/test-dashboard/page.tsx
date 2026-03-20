@@ -332,7 +332,7 @@ export default function TestDashboardPage() {
                                   ? "success"
                                   : category.coverage >= 60
                                     ? "warning"
-                                    : "error"
+                                    : "danger"
                               }
                             >
                               {category.coverage}%
@@ -463,7 +463,7 @@ export default function TestDashboardPage() {
               <CardTitle>Recent Test Runs</CardTitle>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
               >
@@ -537,7 +537,7 @@ export default function TestDashboardPage() {
                                 ? "success"
                                 : run.coverage >= 60
                                   ? "warning"
-                                  : "error"
+                                  : "danger"
                             }
                           >
                             {run.coverage}%

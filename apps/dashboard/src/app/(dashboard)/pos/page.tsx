@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   usePOSOverview,
   useTransactions,
   useTerminals,
@@ -49,6 +52,11 @@ const paymentMethodIcon: Record<string, string> = {
 };
 
 export default function POSPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<POSTerminal>('/api/v4/pos');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const overview = usePOSOverview();
   const { transactions: liveTransactions } = useTransactions();
   const { terminals } = useTerminals();

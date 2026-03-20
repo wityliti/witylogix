@@ -13,6 +13,9 @@ import {
   DutyStatus,
 } from "@/hooks/use-eld";
 import {
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   TrendingUp,
   AlertTriangle,
   CheckCircle,
@@ -44,88 +47,7 @@ interface DriverStatusInfo {
   lastUpdate: string;
 }
 
-const MOCK_DRIVERS: DriverStatusInfo[] = [
-  {
-    driverId: "drv-1",
-    name: "Carlos Martinez",
-    status: "COMPLIANT",
-    currentDuty: "DRIVING",
-    drivingRemaining: 8.5,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "now",
-  },
-  {
-    driverId: "drv-2",
-    name: "Sofia Lindberg",
-    status: "COMPLIANT",
-    currentDuty: "DRIVING",
-    drivingRemaining: 9.2,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "now",
-  },
-  {
-    driverId: "drv-3",
-    name: "Ahmed Khalil",
-    status: "WARNING",
-    currentDuty: "ON_DUTY",
-    drivingRemaining: 1.5,
-    breakStatus: "REQUIRED",
-    violations: 0,
-    lastUpdate: "2m ago",
-  },
-  {
-    driverId: "drv-4",
-    name: "Lisa Thompson",
-    status: "COMPLIANT",
-    currentDuty: "OFF_DUTY",
-    drivingRemaining: 11,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "15m ago",
-  },
-  {
-    driverId: "drv-5",
-    name: "Marcus Johnson",
-    status: "VIOLATION",
-    currentDuty: "SLEEPER",
-    drivingRemaining: 0,
-    breakStatus: "NOT_REQUIRED",
-    violations: 1,
-    lastUpdate: "1h ago",
-  },
-  {
-    driverId: "drv-6",
-    name: "Yuki Tanaka",
-    status: "OFFLINE",
-    currentDuty: "OFF_DUTY",
-    drivingRemaining: 11,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "3h ago",
-  },
-  {
-    driverId: "drv-7",
-    name: "Priya Patel",
-    status: "COMPLIANT",
-    currentDuty: "DRIVING",
-    drivingRemaining: 7.8,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "now",
-  },
-  {
-    driverId: "drv-8",
-    name: "Diego Fernandez",
-    status: "WARNING",
-    currentDuty: "ON_DUTY",
-    drivingRemaining: 2.3,
-    breakStatus: "TAKEN",
-    violations: 0,
-    lastUpdate: "now",
-  },
-];
+
 
 const statusVariant = (status: DriverStatus): "success" | "warning" | "danger" | "info" | "default" => {
   const map: Record<DriverStatus, "success" | "warning" | "danger" | "info" | "default"> = {
@@ -155,6 +77,11 @@ const dutyStatusColor = (duty: DutyStatus): string => {
 };
 
 export default function ELDOverviewPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<ELDRecord>('/api/v4/eld');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const { compliance, isLoading: complianceLoading } = useFleetCompliance();
   const { violations, isLoading: violationsLoading } = useViolations(undefined, 5);
   const { events, isLoading: eventsLoading } = useELDEvents(8);

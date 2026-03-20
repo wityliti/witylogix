@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,19 +22,9 @@ import {
 } from 'lucide-react';
 
 // Mock data
-const mockActiveDeliveries = [
-  { id: 'DLV-001', trackingId: 'ORD-001', driver: 'Michael Brown', status: 'out-for-delivery', eta: '2:15 PM', progress: 85, address: '123 Broadway, NYC', priority: 'normal' },
-  { id: 'DLV-002', trackingId: 'ORD-002', driver: 'Sarah Connor', status: 'out-for-delivery', eta: '1:45 PM', progress: 65, address: '456 5th Ave, NYC', priority: 'high' },
-  { id: 'DLV-003', trackingId: 'ORD-005', driver: 'Charlie Wilson', status: 'in-transit', eta: '3:30 PM', progress: 45, address: '654 3rd Ave, NYC', priority: 'normal' },
-  { id: 'DLV-004', trackingId: 'ORD-009', driver: 'Grace Lee', status: 'out-for-delivery', eta: '2:45 PM', progress: 75, address: '357 Broadway, NYC', priority: 'normal' },
-  { id: 'DLV-005', trackingId: 'ORD-012', driver: 'Jack Robinson', status: 'in-transit', eta: '4:00 PM', progress: 30, address: '123 Madison Ave, NYC', priority: 'low' },
-];
 
-const mockAlerts = [
-  { id: 'ALT-001', trackingId: 'ORD-002', type: 'delayed', message: 'Delivery delayed by 15 minutes due to traffic', severity: 'warning', timestamp: '12:45 PM' },
-  { id: 'ALT-002', trackingId: 'ORD-005', type: 'at-risk', message: 'Customer not responding to calls', severity: 'critical', timestamp: '12:50 PM' },
-  { id: 'ALT-003', trackingId: 'ORD-012', type: 'exception', message: 'Package requires signature but not available', severity: 'warning', timestamp: '1:00 PM' },
-];
+
+
 
 interface MockDelivery {
   id: string;
@@ -49,13 +42,7 @@ interface MockDelivery {
 }
 
 const StatusTimeline = ({ trackingId }: { trackingId: string }) => {
-  const events = [
-    { status: 'Order Placed', time: '11:00 AM', completed: true },
-    { status: 'Picked Up', time: '11:30 AM', completed: true },
-    { status: 'In Transit', time: '12:00 PM', completed: true },
-    { status: 'Out for Delivery', time: '1:30 PM', completed: true },
-    { status: 'Delivered', time: 'Est. 2:15 PM', completed: false },
-  ];
+  
 
   return (
     <div>

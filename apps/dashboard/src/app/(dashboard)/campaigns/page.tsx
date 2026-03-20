@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn, formatRelativeTime, formatNumber } from "@/lib/utils";
 import {
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   Mail,
   MessageSquare,
   MessageCircle,
@@ -25,7 +28,7 @@ import {
 } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
-   CAMPAIGNS PAGE — Campaign management dashboard
+   items PAGE — Campaign management dashboard
    ═══════════════════════════════════════════════════════════ */
 
 type CampaignType = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
@@ -44,113 +47,7 @@ interface Campaign {
   sentAt?: string;
 }
 
-const CAMPAIGNS: Campaign[] = [
-  {
-    id: "camp-1",
-    name: "Spring Collection Launch",
-    type: "EMAIL",
-    status: "COMPLETED",
-    recipients: 5234,
-    sent: 5234,
-    opened: 1847,
-    clicked: 234,
-    createdAt: "2026-02-28T10:30:00Z",
-    sentAt: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "camp-2",
-    name: "Flash Sale - 24 Hours",
-    type: "SMS",
-    status: "SENDING",
-    recipients: 8900,
-    sent: 4450,
-    opened: 2670,
-    clicked: 535,
-    createdAt: "2026-03-06T14:15:00Z",
-    sentAt: "2026-03-06T15:00:00Z",
-  },
-  {
-    id: "camp-3",
-    name: "Loyalty Program Benefits",
-    type: "WHATSAPP",
-    status: "COMPLETED",
-    recipients: 3456,
-    sent: 3456,
-    opened: 2347,
-    clicked: 412,
-    createdAt: "2026-03-03T09:45:00Z",
-    sentAt: "2026-03-04T10:00:00Z",
-  },
-  {
-    id: "camp-4",
-    name: "Weekend Delivery Reminder",
-    type: "PUSH",
-    status: "SCHEDULED",
-    recipients: 12000,
-    sent: 0,
-    opened: 0,
-    clicked: 0,
-    createdAt: "2026-03-05T16:20:00Z",
-  },
-  {
-    id: "camp-5",
-    name: "New Product Alert",
-    type: "EMAIL",
-    status: "DRAFT",
-    recipients: 0,
-    sent: 0,
-    opened: 0,
-    clicked: 0,
-    createdAt: "2026-03-06T11:00:00Z",
-  },
-  {
-    id: "camp-6",
-    name: "Order Status Updates",
-    type: "SMS",
-    status: "COMPLETED",
-    recipients: 15670,
-    sent: 15670,
-    opened: 0,
-    clicked: 3134,
-    createdAt: "2026-03-01T08:00:00Z",
-    sentAt: "2026-03-02T09:00:00Z",
-  },
-  {
-    id: "camp-7",
-    name: "Customer Feedback Survey",
-    type: "WHATSAPP",
-    status: "SENDING",
-    recipients: 4500,
-    sent: 2250,
-    opened: 1576,
-    clicked: 281,
-    createdAt: "2026-03-04T13:30:00Z",
-    sentAt: "2026-03-05T14:00:00Z",
-  },
-  {
-    id: "camp-8",
-    name: "App Download Promotion",
-    type: "PUSH",
-    status: "COMPLETED",
-    recipients: 28000,
-    sent: 28000,
-    opened: 16800,
-    clicked: 4200,
-    createdAt: "2026-02-25T10:00:00Z",
-    sentAt: "2026-02-26T12:00:00Z",
-  },
-  {
-    id: "camp-9",
-    name: "Re-engagement Campaign",
-    type: "EMAIL",
-    status: "SCHEDULED",
-    recipients: 6800,
-    sent: 0,
-    opened: 0,
-    clicked: 0,
-    createdAt: "2026-03-02T15:45:00Z",
-  },
-];
+
 
 const typeVariant = (t: CampaignType): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
   const map: Record<CampaignType, "success" | "warning" | "danger" | "info" | "primary" | "default"> = {
@@ -183,6 +80,11 @@ const typeIcon = (t: CampaignType) => {
 };
 
 export default function CampaignsPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<Campaign>('/api/v4/campaigns');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterType, setFilterType] = useState<CampaignType | "ALL">("ALL");
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "ALL">("ALL");
@@ -192,7 +94,7 @@ export default function CampaignsPage() {
   const [selectedId, setSelectedId] = useState<string | undefined>();
 
   const filteredCampaigns = useMemo(() => {
-    return CAMPAIGNS.filter(
+    return items.filter(
       (c) =>
         (filterType === "ALL" || c.type === filterType) &&
         (filterStatus === "ALL" || c.status === filterStatus)
@@ -200,10 +102,10 @@ export default function CampaignsPage() {
   }, [filterType, filterStatus]);
 
   const stats = useMemo(() => {
-    const active = CAMPAIGNS.filter((c) => c.status !== "DRAFT").length;
-    const totalSent = CAMPAIGNS.reduce((sum, c) => sum + c.sent, 0);
-    const totalOpened = CAMPAIGNS.reduce((sum, c) => sum + c.opened, 0);
-    const totalClicked = CAMPAIGNS.reduce((sum, c) => sum + c.clicked, 0);
+    const active = items.filter((c) => c.status !== "DRAFT").length;
+    const totalSent = items.reduce((sum, c) => sum + c.sent, 0);
+    const totalOpened = items.reduce((sum, c) => sum + c.opened, 0);
+    const totalClicked = items.reduce((sum, c) => sum + c.clicked, 0);
 
     const avgOpenRate = totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : "0";
     const avgClickRate = totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : "0";

@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
   CardDescription,
   CardHeader,
   CardTitle,
@@ -144,6 +147,11 @@ export default function InventoryPage() {
   const filteredProducts = products.filter((p) => {
     const warehouseMatch = selectedWarehouse === "all" || p.warehouse === selectedWarehouse;
     const statusMatch = selectedStatus === "all" || p.status === selectedStatus;
+  const { items: data, loading, error, refetch, pagination } = useApiList<InventoryItem>('/api/v4/inventory');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
     return warehouseMatch && statusMatch;
   });
 

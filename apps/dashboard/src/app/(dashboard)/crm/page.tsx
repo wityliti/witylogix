@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useCrmConnection, useCrmMetrics } from "@/hooks/use-crm-connection";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
    CRM Dashboard — Connected CRM overview with sync activity
@@ -39,80 +42,9 @@ interface SyncEvent {
 }
 
 // Mock data - in production these would come from API
-const MOCK_CONNECTED_CRMS: ConnectedCRM[] = [
-  {
-    id: "conn-sf-001",
-    platformId: "salesforce",
-    platformName: "Salesforce",
-    status: "connected",
-    lastSync: "2026-03-17T14:32:00Z",
-    nextSync: "2026-03-17T15:32:00Z",
-    contactsSynced: 3420,
-    dealsSynced: 156,
-    companiesSynced: 234,
-    syncDirection: "bidirectional",
-  },
-  {
-    id: "conn-hs-001",
-    platformId: "hubspot",
-    platformName: "HubSpot",
-    status: "connected",
-    lastSync: "2026-03-17T14:15:00Z",
-    nextSync: "2026-03-17T15:15:00Z",
-    contactsSynced: 2190,
-    dealsSynced: 98,
-    companiesSynced: 145,
-    syncDirection: "in",
-  },
-];
 
-const MOCK_SYNC_EVENTS: SyncEvent[] = [
-  {
-    id: "evt-001",
-    timestamp: "2026-03-17T14:32:00Z",
-    type: "contact",
-    direction: "in",
-    status: "success",
-    recordsAffected: 42,
-    details: "Synced new contacts from Salesforce",
-  },
-  {
-    id: "evt-002",
-    timestamp: "2026-03-17T14:15:00Z",
-    type: "deal",
-    direction: "out",
-    status: "success",
-    recordsAffected: 8,
-    details: "Updated deals in HubSpot",
-  },
-  {
-    id: "evt-003",
-    timestamp: "2026-03-17T14:00:00Z",
-    type: "contact",
-    direction: "in",
-    status: "success",
-    recordsAffected: 25,
-    details: "Synced contact updates from Salesforce",
-  },
-  {
-    id: "evt-004",
-    timestamp: "2026-03-17T13:45:00Z",
-    type: "company",
-    direction: "in",
-    status: "success",
-    recordsAffected: 12,
-    details: "Synced company information from HubSpot",
-  },
-  {
-    id: "evt-005",
-    timestamp: "2026-03-17T13:30:00Z",
-    type: "contact",
-    direction: "out",
-    status: "failed",
-    recordsAffected: 3,
-    details: "Failed to sync 3 contacts due to validation errors",
-  },
-];
+
+
 
 function getStatusColor(status: string): "success" | "warning" | "danger" | "info" {
   switch (status) {
@@ -155,6 +87,11 @@ function formatDate(dateString: string): string {
 }
 
 export default function CrmDashboardPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<CRMContact>('/api/v4/crm');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const router = useRouter();
   const { metrics } = useCrmMetrics();
   const [connectedCrms] = useState<ConnectedCRM[]>(MOCK_CONNECTED_CRMS);

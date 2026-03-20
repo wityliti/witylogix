@@ -7,9 +7,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 /* ═══════════════════════════════════════════════════════════
-   PRODUCTS PAGE — Product cache & sync management
+   items PAGE — Product cache & sync management
    ═══════════════════════════════════════════════════════════ */
 
 interface Product {
@@ -26,164 +29,7 @@ interface Product {
   createdAt: string;
 }
 
-const PRODUCTS: Product[] = [
-  {
-    id: "prod-001",
-    shopifyId: "gid://shopify/Product/6789123456",
-    title: "Cardboard Shipping Box - Medium",
-    productType: "Packaging",
-    vendor: "PackPro",
-    weight: 0.5,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 245,
-    lastSyncAt: "2026-03-06T09:15:00Z",
-    createdAt: "2025-10-12T08:00:00Z",
-  },
-  {
-    id: "prod-002",
-    shopifyId: "gid://shopify/Product/7890234567",
-    title: "Protective Air Bubble Wrap",
-    productType: "Packaging",
-    vendor: "BubbleMax",
-    weight: 0.8,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 189,
-    lastSyncAt: "2026-03-06T09:20:00Z",
-    createdAt: "2025-11-05T10:30:00Z",
-  },
-  {
-    id: "prod-003",
-    shopifyId: "gid://shopify/Product/8901345678",
-    title: "Thermal Shipping Labels - 4x6",
-    productType: "Labels",
-    vendor: "LabelTech",
-    weight: null,
-    weightUnit: "lbs",
-    requiresShipping: false,
-    inventoryQty: 512,
-    lastSyncAt: "2026-03-06T09:10:00Z",
-    createdAt: "2025-12-01T14:20:00Z",
-  },
-  {
-    id: "prod-004",
-    shopifyId: "gid://shopify/Product/9012456789",
-    title: "Kraft Paper Mailers",
-    productType: "Packaging",
-    vendor: "PackPro",
-    weight: 0.3,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 78,
-    lastSyncAt: "2026-03-05T16:45:00Z",
-    createdAt: "2025-09-18T11:00:00Z",
-  },
-  {
-    id: "prod-005",
-    shopifyId: "gid://shopify/Product/0123567890",
-    title: "Foam Corner Protectors",
-    productType: "Packaging",
-    vendor: "ProtectIt",
-    weight: null,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 320,
-    lastSyncAt: "2026-03-04T13:30:00Z",
-    createdAt: "2025-10-25T09:45:00Z",
-  },
-  {
-    id: "prod-006",
-    shopifyId: "gid://shopify/Product/1234678901",
-    title: "Packing Tape - 2 inch",
-    productType: "Supplies",
-    vendor: "TapeMaster",
-    weight: 0.6,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 156,
-    lastSyncAt: "2026-03-06T08:50:00Z",
-    createdAt: "2025-11-14T15:20:00Z",
-  },
-  {
-    id: "prod-007",
-    shopifyId: "gid://shopify/Product/2345789012",
-    title: "Poly Mailer Bags - 10x13",
-    productType: "Packaging",
-    vendor: "PolyPack",
-    weight: 0.2,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 467,
-    lastSyncAt: "2026-03-06T09:25:00Z",
-    createdAt: "2025-12-08T12:10:00Z",
-  },
-  {
-    id: "prod-008",
-    shopifyId: "gid://shopify/Product/3456890123",
-    title: "Insulated Shipping Box - Large",
-    productType: "Packaging",
-    vendor: "CoolBox",
-    weight: 1.2,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 42,
-    lastSyncAt: "2026-03-03T10:00:00Z",
-    createdAt: "2025-08-30T08:30:00Z",
-  },
-  {
-    id: "prod-009",
-    shopifyId: "gid://shopify/Product/4567901234",
-    title: "Fragile Handling Labels",
-    productType: "Labels",
-    vendor: "LabelTech",
-    weight: null,
-    weightUnit: "lbs",
-    requiresShipping: false,
-    inventoryQty: 892,
-    lastSyncAt: "2026-03-06T09:05:00Z",
-    createdAt: "2025-11-20T16:15:00Z",
-  },
-  {
-    id: "prod-010",
-    shopifyId: "gid://shopify/Product/5678012345",
-    title: "Tissue Paper - White Roll",
-    productType: "Packaging",
-    vendor: "PackPro",
-    weight: 0.4,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 203,
-    lastSyncAt: "2026-03-06T09:18:00Z",
-    createdAt: "2025-10-05T13:45:00Z",
-  },
-  {
-    id: "prod-011",
-    shopifyId: "gid://shopify/Product/6789123457",
-    title: "Shipping Labels - Blank Stock",
-    productType: "Labels",
-    vendor: "LabelTech",
-    weight: null,
-    weightUnit: "lbs",
-    requiresShipping: false,
-    inventoryQty: 1205,
-    lastSyncAt: "2026-03-05T14:20:00Z",
-    createdAt: "2025-09-10T10:00:00Z",
-  },
-  {
-    id: "prod-012",
-    shopifyId: "gid://shopify/Product/7890234568",
-    title: "Corrugated Cardboard Sheet",
-    productType: "Packaging",
-    vendor: "CardSource",
-    weight: null,
-    weightUnit: "lbs",
-    requiresShipping: true,
-    inventoryQty: 85,
-    lastSyncAt: "2026-03-02T11:30:00Z",
-    createdAt: "2025-07-22T09:20:00Z",
-  },
-];
+
 
 const formatDateTime = (isoStr: string): string => {
   const date = new Date(isoStr);
@@ -200,6 +46,11 @@ const formatDateTime = (isoStr: string): string => {
 };
 
 export default function ProductsPage() {
+  const { items, loading, error, refetch, pagination } = useApiList<Product>('/api/v4/products');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"title" | "type" | "lastSyncAt">("title");
   const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
@@ -209,17 +60,17 @@ export default function ProductsPage() {
   const pageSize = 10;
 
   // Calculate stats
-  const syncedToday = PRODUCTS.filter((p) => {
+  const syncedToday = items.filter((p) => {
     const syncDate = new Date(p.lastSyncAt);
     const today = new Date();
     return syncDate.toLocaleDateString() === today.toLocaleDateString();
   }).length;
-  const missingWeight = PRODUCTS.filter((p) => p.weight === null && p.requiresShipping).length;
-  const missingType = PRODUCTS.filter((p) => !p.productType).length;
+  const missingWeight = items.filter((p) => p.weight === null && p.requiresShipping).length;
+  const missingType = items.filter((p) => !p.productType).length;
 
   // Filter and sort
   const filtered = useMemo(() => {
-    let result = PRODUCTS.filter((p) => {
+    let result = items.filter((p) => {
       if (search) {
         const q = search.toLowerCase();
         if (
@@ -287,13 +138,13 @@ export default function ProductsPage() {
     setSelectedProducts(newSelected);
   };
 
-  const vendors = Array.from(new Set(PRODUCTS.map((p) => p.vendor)));
+  const vendors = Array.from(new Set(items.map((p) => p.vendor)));
 
   return (
     <>
       <Header
         title="Products"
-        subtitle={`${PRODUCTS.length} total · ${syncedToday} synced today`}
+        subtitle={`${items.length} total · ${syncedToday} synced today`}
         actions={
           <div className="flex gap-2">
             <Button variant="secondary" size="md">
@@ -311,7 +162,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Products"
-            value={PRODUCTS.length}
+            value={items.length}
             change={{ value: 8.5, label: "vs last month" }}
             accentColor="var(--wl-primary-500)"
             index={0}

@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -41,14 +44,7 @@ interface InspectionHistory {
   criticalDefects: number;
 }
 
-const VEHICLES = [
-  { id: "veh-1", number: "WTY-4501" },
-  { id: "veh-2", number: "WTY-2201" },
-  { id: "veh-3", number: "WTY-1101" },
-  { id: "veh-4", number: "WTY-2202" },
-  { id: "veh-5", number: "WTY-4502" },
-  { id: "veh-6", number: "WTY-6001" },
-];
+
 
 const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
   {
@@ -141,6 +137,11 @@ export default function DVIRPage() {
         d.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+  const { items: data, loading, error, refetch, pagination } = useApiList<DVIRRecord>('/api/v4/eld/dvir');
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+
 
     return result;
   }, [defects, filterStatus, searchQuery]);
@@ -365,7 +366,7 @@ export default function DVIRPage() {
 
                 {showVehicleSearch && (
                   <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] rounded-lg shadow-lg">
-                    {VEHICLES.map((vehicle) => (
+                    {data.map((vehicle) => (
                       <button
                         key={vehicle.id}
                         onClick={() => {
