@@ -149,18 +149,18 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
   }) => (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+        <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
           {label}
         </span>
         {Icon && (
-          <div className="w-8 h-8 rounded bg-wl-primary-500/20 flex items-center justify-center text-wl-primary-400">
+          <div className="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-blue-400">
             <Icon className="w-4 h-4" />
           </div>
         )}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-wl-text-primary">{value}</span>
-        {suffix && <span className="text-sm text-wl-text-secondary">{suffix}</span>}
+        <span className="text-2xl font-bold text-white">{value}</span>
+        {suffix && <span className="text-sm text-gray-300">{suffix}</span>}
       </div>
     </Card>
   );
@@ -180,10 +180,10 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
         </Button>
 
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-wl-text-primary">
+          <h1 className="text-3xl font-bold text-white">
             {MOCK_PARTNER.name}
           </h1>
-          <p className="text-wl-text-secondary">
+          <p className="text-gray-300">
             {MOCK_PARTNER.category} • {MOCK_PARTNER.status}
           </p>
         </div>
@@ -231,10 +231,10 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               <CardTitle>Service Coverage Map</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="w-full h-96 bg-gradient-to-br from-wl-primary-500/10 to-wl-info-500/10 rounded-lg flex items-center justify-center border border-wl-border-subtle">
+              <div className="w-full h-96 bg-gradient-to-br from-blue-500/10 to-blue-500/10 rounded-lg flex items-center justify-center border border-[#1e1e2e]">
                 <div className="text-center">
-                  <MapPin className="w-12 h-12 text-wl-text-secondary/50 mx-auto mb-2" />
-                  <p className="text-wl-text-secondary">
+                  <MapPin className="w-12 h-12 text-gray-300/50 mx-auto mb-2" />
+                  <p className="text-gray-300">
                     Service areas: {MOCK_PARTNER.serviceAreas.join(", ")}
                   </p>
                 </div>
@@ -251,23 +251,23 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-wl-border-subtle">
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Shipment
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Route
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Distance
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Time
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Cost
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Status
                       </th>
                     </tr>
@@ -276,21 +276,21 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                     {MOCK_RECENT_DELIVERIES.map((delivery) => (
                       <tr
                         key={delivery.id}
-                        className="hover:bg-wl-bg-surface/50 transition-colors"
+                        className="hover:bg-[#12121a]/50 transition-colors"
                       >
-                        <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                        <td className="px-4 py-3 font-semibold text-white">
                           {delivery.shipmentId}
                         </td>
-                        <td className="px-4 py-3 text-sm text-wl-text-secondary">
+                        <td className="px-4 py-3 text-sm text-gray-300">
                           {delivery.origin} → {delivery.destination}
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           {delivery.distance} km
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           {delivery.time > 0 ? `${delivery.time}m` : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           ${delivery.cost.toFixed(2)}
                         </td>
                         <td className="px-4 py-3">
@@ -298,10 +298,10 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                             className={cn(
                               "inline-flex items-center px-2 py-1 rounded text-xs font-semibold",
                               delivery.status === "delivered"
-                                ? "bg-wl-success-500/20 text-wl-success-400"
+                                ? "bg-emerald-500/20 text-emerald-400"
                                 : delivery.status === "in_transit"
-                                  ? "bg-wl-primary-500/20 text-wl-primary-400"
-                                  : "bg-wl-danger-500/20 text-wl-danger-400"
+                                  ? "bg-blue-500/20 text-blue-400"
+                                  : "bg-red-500/20 text-red-400"
                             )}
                           >
                             {delivery.status.replace("_", " ").toUpperCase()}
@@ -326,23 +326,23 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-wl-border-subtle">
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Shipment
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Route
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Distance
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Time
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Cost
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                         Status
                       </th>
                     </tr>
@@ -351,21 +351,21 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                     {MOCK_RECENT_DELIVERIES.map((delivery) => (
                       <tr
                         key={delivery.id}
-                        className="hover:bg-wl-bg-surface/50 transition-colors"
+                        className="hover:bg-[#12121a]/50 transition-colors"
                       >
-                        <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                        <td className="px-4 py-3 font-semibold text-white">
                           {delivery.shipmentId}
                         </td>
-                        <td className="px-4 py-3 text-sm text-wl-text-secondary">
+                        <td className="px-4 py-3 text-sm text-gray-300">
                           {delivery.origin} → {delivery.destination}
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           {delivery.distance} km
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           {delivery.time > 0 ? `${delivery.time}m` : "-"}
                         </td>
-                        <td className="px-4 py-3 text-right text-wl-text-primary">
+                        <td className="px-4 py-3 text-right text-white">
                           ${delivery.cost.toFixed(2)}
                         </td>
                         <td className="px-4 py-3">
@@ -373,10 +373,10 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                             className={cn(
                               "inline-flex items-center px-2 py-1 rounded text-xs font-semibold",
                               delivery.status === "delivered"
-                                ? "bg-wl-success-500/20 text-wl-success-400"
+                                ? "bg-emerald-500/20 text-emerald-400"
                                 : delivery.status === "in_transit"
-                                  ? "bg-wl-primary-500/20 text-wl-primary-400"
-                                  : "bg-wl-danger-500/20 text-wl-danger-400"
+                                  ? "bg-blue-500/20 text-blue-400"
+                                  : "bg-red-500/20 text-red-400"
                             )}
                           >
                             {delivery.status.replace("_", " ").toUpperCase()}
@@ -400,7 +400,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   API Key
                 </label>
                 <div className="flex gap-2">
@@ -436,7 +436,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   API Secret
                 </label>
                 <div className="flex gap-2">
@@ -471,7 +471,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-wl-border-subtle">
+              <div className="pt-4 border-t border-[#1e1e2e]">
                 <Button variant="danger" size="md">
                   Regenerate Credentials
                 </Button>
@@ -486,7 +486,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Webhook URL
                 </label>
                 <div className="flex gap-2">
@@ -511,7 +511,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Webhook Secret
                 </label>
                 <div className="flex gap-2">
@@ -538,7 +538,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Base URL
                 </label>
                 <Input
@@ -559,31 +559,31 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-wl-text-primary">
+                  <label className="text-sm font-semibold text-white">
                     Base Rate
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded bg-wl-bg-surface">
-                    <span className="font-mono text-wl-text-primary">
+                  <div className="flex items-center gap-2 p-3 rounded bg-[#12121a]">
+                    <span className="font-mono text-white">
                       ${MOCK_PARTNER.rateCard.baseRate.toFixed(2)}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-wl-text-primary">
+                  <label className="text-sm font-semibold text-white">
                     Per KM Rate
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded bg-wl-bg-surface">
-                    <span className="font-mono text-wl-text-primary">
+                  <div className="flex items-center gap-2 p-3 rounded bg-[#12121a]">
+                    <span className="font-mono text-white">
                       ${MOCK_PARTNER.rateCard.perKmRate.toFixed(2)}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-wl-text-primary">
+                  <label className="text-sm font-semibold text-white">
                     Surcharge
                   </label>
-                  <div className="flex items-center gap-2 p-3 rounded bg-wl-bg-surface">
-                    <span className="font-mono text-wl-text-primary">
+                  <div className="flex items-center gap-2 p-3 rounded bg-[#12121a]">
+                    <span className="font-mono text-white">
                       ${MOCK_PARTNER.rateCard.surcharge.toFixed(2)}
                     </span>
                   </div>
@@ -602,7 +602,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
                 {MOCK_PARTNER.serviceAreas.map((area) => (
                   <span
                     key={area}
-                    className="inline-flex items-center px-3 py-2 rounded-full bg-wl-primary-500/20 text-wl-primary-400 text-sm font-medium"
+                    className="inline-flex items-center px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium"
                   >
                     {area}
                   </span>
@@ -625,26 +625,26 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-subtle">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
                     Target Delivery Time
                   </span>
-                  <p className="text-2xl font-bold text-wl-text-primary mt-2">
+                  <p className="text-2xl font-bold text-white mt-2">
                     24 hours
                   </p>
                 </div>
-                <div className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-subtle">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
                     Min Success Rate
                   </span>
-                  <p className="text-2xl font-bold text-wl-text-primary mt-2">
+                  <p className="text-2xl font-bold text-white mt-2">
                     98%
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg bg-wl-success-500/10 border border-wl-success-500/20">
-                <p className="text-sm text-wl-success-400">
+              <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-sm text-emerald-400">
                   Current performance meets SLA requirements
                 </p>
               </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useApiQuery } from '@/hooks/use-api';
+import { useApiQuery } from "@/hooks/use-api";
 
 /* ═══════════════════════════════════════════════════════════
    PLATFORM HEALTH DASHBOARD — System Status Overview
@@ -259,10 +259,10 @@ function HealthScoreGauge({ score }: { score: number }) {
  */
 function ServiceRow({ service }: { service: ServiceStatus }) {
   return (
-    <div className="flex items-center justify-between py-3 px-4 border-b border-wl-border last:border-0">
+    <div className="flex items-center justify-between py-3 px-4 border-b border-[#1e1e2e] last:border-0">
       <div className="flex-1">
-        <h4 className="font-medium text-sm">{service.name}</h4>
-        <p className="text-xs text-muted-foreground mt-1">
+        <h4 className="font-medium text-sm text-white">{service.name}</h4>
+        <p className="text-xs text-gray-400 mt-1">
           Last checked: {new Date(service.lastChecked).toLocaleTimeString()}
         </p>
       </div>
@@ -270,19 +270,19 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
       <div className="flex items-center gap-4">
         {service.responseTime && (
           <div className="text-right">
-            <p className="text-xs font-mono text-muted-foreground">{service.responseTime}ms</p>
+            <p className="text-xs font-mono text-gray-400">{service.responseTime}ms</p>
           </div>
         )}
         <div className="text-right w-20">
-          <p className="text-sm font-semibold">{service.uptime.toFixed(2)}%</p>
-          <div className="w-16 h-1 bg-muted rounded-full overflow-hidden mt-1 mx-auto">
+          <p className="text-sm font-semibold text-white">{service.uptime.toFixed(2)}%</p>
+          <div className="w-16 h-1 bg-[#1a1a2e] rounded-full overflow-hidden mt-1 mx-auto">
             <div
               className={cn(
                 "h-full",
                 service.uptime >= 99.5
-                  ? "bg-green-500"
+                  ? "bg-emerald-500"
                   : service.uptime >= 99
-                    ? "bg-yellow-500"
+                    ? "bg-amber-500"
                     : "bg-red-500"
               )}
               style={{ width: `${Math.min(service.uptime, 100)}%` }}
@@ -311,11 +311,11 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
  */
 function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
   return (
-    <div className="border border-wl-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+    <div className="border border-[#1e1e2e] rounded-lg p-4 hover:bg-[#1a1a2e] transition-colors bg-[#12121a]">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h4 className="font-semibold text-sm">{integration.name}</h4>
-          <p className="text-xs text-muted-foreground capitalize">{integration.provider}</p>
+          <h4 className="font-semibold text-sm text-white">{integration.name}</h4>
+          <p className="text-xs text-gray-400 capitalize">{integration.provider}</p>
         </div>
         <Badge
           variant={
@@ -336,17 +336,17 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
 
       <div className="space-y-2 text-xs">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Accounts:</span>
-          <span className="font-medium">{integration.accountsConnected}</span>
+          <span className="text-gray-400">Accounts:</span>
+          <span className="font-medium text-white">{integration.accountsConnected}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Last Sync:</span>
-          <span className="font-mono text-muted-foreground">
+          <span className="text-gray-400">Last Sync:</span>
+          <span className="font-mono text-gray-400">
             {new Date(integration.lastSync).toLocaleTimeString()}
           </span>
         </div>
         {integration.error && (
-          <div className="text-red-500 mt-2 p-2 bg-red-50 rounded text-xs">{integration.error}</div>
+          <div className="text-red-400 mt-2 p-2 bg-red-500/10 rounded text-xs">{integration.error}</div>
         )}
       </div>
     </div>
@@ -360,7 +360,7 @@ function AlertItem({ alert }: { alert: PlatformAlert }) {
   const [acknowledged, setAcknowledged] = useState(alert.acknowledged);
 
   return (
-    <div className="border border-wl-border rounded-lg p-4 mb-3 last:mb-0">
+    <div className="border border-[#1e1e2e] rounded-lg p-4 mb-3 last:mb-0 bg-[#12121a]">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-start gap-3 flex-1">
           <Badge
@@ -375,9 +375,9 @@ function AlertItem({ alert }: { alert: PlatformAlert }) {
             {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
           </Badge>
           <div>
-            <h4 className="font-semibold text-sm">{alert.title}</h4>
-            <p className="text-xs text-muted-foreground mt-1">{alert.description}</p>
-            <p className="text-xs text-muted-foreground mt-2">
+            <h4 className="font-semibold text-sm text-white">{alert.title}</h4>
+            <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
+            <p className="text-xs text-gray-400 mt-2">
               {new Date(alert.timestamp).toLocaleString()}
             </p>
           </div>
@@ -418,15 +418,15 @@ function MetricCard({
   trend?: "up" | "down" | "neutral";
 }) {
   return (
-    <Card className="bg-muted/50">
+    <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardContent className="pt-6">
-        <p className="text-xs font-medium text-muted-foreground mb-1">{label}</p>
+        <p className="text-xs font-medium text-gray-400 mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
-          <p className="text-2xl font-bold">{value}</p>
-          {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
+          <p className="text-2xl font-bold text-white">{value}</p>
+          {unit && <span className="text-xs text-gray-400">{unit}</span>}
         </div>
         {trend && (
-          <p className={cn("text-xs mt-2", trend === "up" ? "text-red-500" : "text-green-500")}>
+          <p className={cn("text-xs mt-2", trend === "up" ? "text-red-500" : "text-emerald-500")}>
             {trend === "up" ? "↑" : trend === "down" ? "↓" : "→"} vs 1h avg
           </p>
         )}
@@ -452,14 +452,14 @@ export default function PlatformHealthPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-[#0a0a0f] min-h-screen p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Platform Health</h1>
-          <p className="text-muted-foreground mt-2">System status overview and integration monitoring</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
+          <p className="text-gray-400 mt-2">System status overview and integration monitoring</p>
         </div>
-        <Button onClick={handleRefresh} disabled={loading} variant="outline">
+        <Button onClick={handleRefresh} disabled={loading} variant="primary">
           {loading ? "Refreshing..." : "Refresh Status"}
         </Button>
       </div>
@@ -467,7 +467,7 @@ export default function PlatformHealthPage() {
       {/* Top Row: Health Score + Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardContent className="pt-6">
               <HealthScoreGauge score={healthScore} />
             </CardContent>
@@ -491,12 +491,12 @@ export default function PlatformHealthPage() {
       </div>
 
       {/* Service Status Section */}
-      <Card>
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle>Service Status ({SERVICES.length} monitored)</CardTitle>
+          <CardTitle className="text-white">Service Status ({SERVICES.length} monitored)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-wl-border">
+          <div className="divide-y divide-[#1e1e2e]">
             {SERVICES.map((service) => (
               <ServiceRow key={service.name} service={service} />
             ))}
@@ -505,9 +505,9 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Integrations Section */}
-      <Card>
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-white">
             Third-Party Integrations ({INTEGRATIONS.filter((i) => i.status === "connected").length} connected)
           </CardTitle>
         </CardHeader>
@@ -521,9 +521,9 @@ export default function PlatformHealthPage() {
       </Card>
 
       {/* Alerts Section */}
-      <Card>
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-white">
             Recent Alerts &amp; Incidents ({ALERTS.filter((a) => !a.acknowledged).length} pending)
           </CardTitle>
         </CardHeader>
@@ -532,14 +532,14 @@ export default function PlatformHealthPage() {
             {ALERTS.length > 0 ? (
               ALERTS.map((alert) => <AlertItem key={alert.id} alert={alert} />)
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">No active alerts</p>
+              <p className="text-sm text-gray-400 text-center py-8">No active alerts</p>
             )}
           </div>
         </CardContent>
       </Card>
 
       {/* Footer Info */}
-      <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-4">
+      <div className="text-xs text-gray-400 bg-[#1a1a2e] rounded-lg p-4 border border-[#1e1e2e]">
         <p>
           Last updated: {new Date().toLocaleString()} • Status page updated every 60 seconds • For detailed logs, see
           the System Logs page

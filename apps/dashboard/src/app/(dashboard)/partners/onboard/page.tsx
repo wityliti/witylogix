@@ -177,10 +177,10 @@ export default function OnboardPage() {
       <div className="max-w-2xl mx-auto w-full">
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Onboard New Courier Partner
           </h1>
-          <p className="text-wl-text-secondary">
+          <p className="text-gray-300">
             Set up a new delivery partner integration in 3 easy steps
           </p>
         </div>
@@ -199,10 +199,10 @@ export default function OnboardPage() {
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all",
                       isCompleted
-                        ? "bg-wl-success-500/20 text-wl-success-400"
+                        ? "bg-emerald-500/20 text-emerald-400"
                         : isActive
-                          ? "bg-wl-primary-500/20 text-wl-primary-400 ring-2 ring-wl-primary-400"
-                          : "bg-wl-bg-surface text-wl-text-secondary"
+                          ? "bg-blue-500/20 text-blue-400 ring-2 ring-blue-400"
+                          : "bg-[#12121a] text-gray-300"
                     )}
                   >
                     {isCompleted ? (
@@ -211,7 +211,7 @@ export default function OnboardPage() {
                       <Icon className="w-5 h-5" />
                     )}
                   </div>
-                  <p className="text-xs font-medium text-center text-wl-text-secondary">
+                  <p className="text-xs font-medium text-center text-gray-300">
                     {config.title}
                   </p>
                 </div>
@@ -245,37 +245,37 @@ export default function OnboardPage() {
                       className={cn(
                         "p-4 rounded-lg border-2 transition-all flex gap-4 items-start",
                         isSelected
-                          ? "border-wl-primary-400 bg-wl-primary-500/10"
-                          : "border-wl-border-subtle hover:border-wl-border-default"
+                          ? "border-blue-400 bg-blue-500/10"
+                          : "border-[#1e1e2e] hover:border-[#1e1e2e]"
                       )}
                     >
                       <div
                         className={cn(
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
-                            ? "bg-wl-primary-500/20 text-wl-primary-400"
-                            : "bg-wl-bg-surface text-wl-text-secondary"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-[#12121a] text-gray-300"
                         )}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-wl-text-primary">
+                        <h3 className="font-semibold text-white">
                           {partner.name}
                         </h3>
-                        <p className="text-sm text-wl-text-secondary">
+                        <p className="text-sm text-gray-300">
                           {partner.description}
                         </p>
                       </div>
                       {isSelected && (
-                        <CheckCircle className="w-5 h-5 text-wl-success-400 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                       )}
                     </button>
                   );
                 })}
               </div>
               {errors.partnerType && (
-                <p className="text-sm text-wl-danger-400">{errors.partnerType}</p>
+                <p className="text-sm text-red-400">{errors.partnerType}</p>
               )}
             </CardContent>
           </Card>
@@ -356,7 +356,7 @@ export default function OnboardPage() {
             <CardContent className="space-y-6">
               {/* Service Areas */}
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Service Areas
                 </label>
                 <div className="flex gap-2">
@@ -380,18 +380,18 @@ export default function OnboardPage() {
                   </Button>
                 </div>
                 {errors.serviceAreas && (
-                  <p className="text-sm text-wl-danger-400">{errors.serviceAreas}</p>
+                  <p className="text-sm text-red-400">{errors.serviceAreas}</p>
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {formData.serviceAreas.map((area) => (
                     <div
                       key={area}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-wl-primary-500/20 text-wl-primary-400 text-sm"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-500/20 text-blue-400 text-sm"
                     >
                       {area}
                       <button
                         onClick={() => handleRemoveServiceArea(area)}
-                        className="hover:text-wl-primary-300 transition-colors"
+                        className="hover:text-blue-300 transition-colors"
                       >
                         ×
                       </button>
@@ -402,7 +402,7 @@ export default function OnboardPage() {
 
               {/* Max Distance */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Max Delivery Distance (km)
                 </label>
                 <Input
@@ -423,7 +423,7 @@ export default function OnboardPage() {
 
               {/* Max Delivery Time */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Max Delivery Time (minutes)
                 </label>
                 <Input
@@ -444,7 +444,7 @@ export default function OnboardPage() {
 
               {/* Insurance */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-wl-text-primary">
+                <label className="text-sm font-semibold text-white">
                   Offer Insurance
                 </label>
                 <select
@@ -459,8 +459,8 @@ export default function OnboardPage() {
                     }))
                   }
                   className={cn(
-                    "w-full px-4 py-2 rounded-md bg-wl-bg-surface text-wl-text-primary",
-                    "border border-wl-border-subtle focus:border-wl-primary-400 outline-none"
+                    "w-full px-4 py-2 rounded-md bg-[#12121a] text-white",
+                    "border border-[#1e1e2e] focus:border-blue-400 outline-none"
                   )}
                 >
                   <option value="no">No</option>

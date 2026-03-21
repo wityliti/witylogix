@@ -199,7 +199,7 @@ function TeamCollaborationPage() {
   }, [collaboration.messages]);
 
   return (
-    <div className="flex h-screen w-full bg-wl-bg-base">
+    <div className="flex h-screen w-full bg-[#0a0a0f]">
       {/* Left Sidebar: Channels & DMs */}
       <ChannelSidebar
         channels={collaboration.channels}
@@ -217,13 +217,13 @@ function TeamCollaborationPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         {collaboration.currentChannel && (
-          <div className="px-6 py-4 border-b border-wl-border-default flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-[#1e1e2e] flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-wl-text-primary">
+              <h1 className="text-lg font-semibold text-white">
                 #{collaboration.currentChannel.name}
               </h1>
               {collaboration.currentChannel.description && (
-                <p className="text-sm text-wl-text-tertiary mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   {collaboration.currentChannel.description}
                 </p>
               )}
@@ -261,7 +261,7 @@ function TeamCollaborationPage() {
 
             {/* Typing Indicators */}
             {collaboration.typingUsers.length > 0 && (
-              <div className="px-4 py-2 text-xs text-wl-text-tertiary border-t border-wl-border-subtle">
+              <div className="px-4 py-2 text-xs text-gray-400 border-t border-[#1e1e2e]">
                 {collaboration.typingUsers
                   .map((u) => u.userName)
                   .join(", ")} {collaboration.typingUsers.length === 1 ? "is" : "are"} typing...
@@ -277,7 +277,7 @@ function TeamCollaborationPage() {
                 <ComposerToolbar />
                 <ComposerAttachments />
                 <div className="px-3 py-2 flex items-center justify-between">
-                  <div className="text-xs text-wl-text-tertiary">
+                  <div className="text-xs text-gray-400">
                     Shift+Enter for new line
                   </div>
                   <Button
@@ -338,9 +338,9 @@ function TeamCollaborationPage() {
         <div
           ref={mentionInputRef}
           className={cn(
-            "absolute bottom-64 left-64 z-50 bg-wl-bg-elevated border border-wl-border-default",
+            "absolute bottom-64 left-64 z-50 bg-[#12121a] border border-[#1e1e2e]",
             "rounded-lg shadow-lg max-h-48 overflow-y-auto",
-            "scrollbar-thin scrollbar-thumb-wl-border-strong"
+            "scrollbar-thin scrollbar-thumb-[#1e1e2e]"
           )}
         >
           {mentionSuggestions.map((user) => (
@@ -363,9 +363,9 @@ function TeamCollaborationPage() {
               }}
               className={cn(
                 "w-full text-left px-4 py-2 text-sm",
-                "hover:bg-wl-bg-overlay transition-colors",
-                "border-b border-wl-border-subtle last:border-b-0",
-                "text-wl-text-primary"
+                "hover:bg-[#1a1a2e] transition-colors",
+                "border-b border-[#1e1e2e] last:border-b-0",
+                "text-white"
               )}
             >
               <div className="flex items-center gap-2">
@@ -404,13 +404,13 @@ function RightSidebar({
   >("details");
 
   return (
-    <div className="w-64 border-l border-wl-border-default bg-wl-bg-surface flex flex-col">
+    <div className="w-64 border-l border-[#1e1e2e] bg-[#12121a] flex flex-col">
       {/* Channel Details */}
-      <div className="px-4 py-4 border-b border-wl-border-default">
-        <h2 className="text-sm font-semibold text-wl-text-primary mb-3">
+      <div className="px-4 py-4 border-b border-[#1e1e2e]">
+        <h2 className="text-sm font-semibold text-white mb-3">
           {channel.name}
         </h2>
-        <div className="space-y-2 text-xs text-wl-text-secondary">
+        <div className="space-y-2 text-xs text-gray-300">
           <p>
             <strong>Members:</strong> {memberCount}
           </p>
@@ -423,10 +423,10 @@ function RightSidebar({
       </div>
 
       {/* Pinned Messages */}
-      <div className="px-4 py-4 border-b border-wl-border-default">
+      <div className="px-4 py-4 border-b border-[#1e1e2e]">
         <button
           onClick={() => setExpandedSection("pinned")}
-          className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider w-full text-left mb-2"
+          className="text-xs font-semibold text-white uppercase tracking-wider w-full text-left mb-2"
         >
           📌 Pinned ({pinnedMessages.length})
         </button>
@@ -435,12 +435,12 @@ function RightSidebar({
             {pinnedMessages.map((msg) => (
               <div
                 key={msg.id}
-                className="p-2 rounded bg-wl-bg-overlay border border-wl-border-subtle text-xs"
+                className="p-2 rounded bg-[#1a1a2e] border border-[#1e1e2e] text-xs"
               >
-                <p className="font-medium text-wl-text-secondary">
+                <p className="font-medium text-gray-300">
                   {msg.userName}
                 </p>
-                <p className="text-wl-text-tertiary truncate">{msg.content}</p>
+                <p className="text-gray-400 truncate">{msg.content}</p>
               </div>
             ))}
           </div>
@@ -451,7 +451,7 @@ function RightSidebar({
       <div className="px-4 py-4">
         <button
           onClick={() => setExpandedSection("files")}
-          className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider w-full text-left mb-2"
+          className="text-xs font-semibold text-white uppercase tracking-wider w-full text-left mb-2"
         >
           📎 Shared Files ({sharedFiles.length})
         </button>
@@ -463,7 +463,7 @@ function RightSidebar({
                 href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 rounded bg-wl-bg-overlay border border-wl-border-subtle hover:border-wl-primary-500 text-xs text-wl-primary-400 truncate"
+                className="block p-2 rounded bg-[#1a1a2e] border border-[#1e1e2e] hover:border-blue-500 text-xs text-blue-400 truncate"
               >
                 📄 {file.name}
               </a>
@@ -493,27 +493,27 @@ function ThreadPanel({
   const [replyContent, setReplyContent] = useState("");
 
   return (
-    <div className="w-80 border-l border-wl-border-default bg-wl-bg-surface flex flex-col animate-slide-in">
+    <div className="w-80 border-l border-[#1e1e2e] bg-[#12121a] flex flex-col animate-slide-in">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-wl-border-default flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-wl-text-primary">
+      <div className="px-4 py-4 border-b border-[#1e1e2e] flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-white">
           Thread
         </h2>
         <button
           onClick={onClose}
-          className="text-wl-text-tertiary hover:text-wl-text-primary"
+          className="text-gray-400 hover:text-white"
         >
           ✕
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-wl-border-strong">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-[#1e1e2e]">
         {messages.map((msg) => (
           <div key={msg.id} className="text-xs">
-            <p className="font-medium text-wl-text-primary">{msg.userName}</p>
-            <p className="text-wl-text-secondary">{msg.content}</p>
-            <p className="text-wl-text-tertiary mt-1">
+            <p className="font-medium text-white">{msg.userName}</p>
+            <p className="text-gray-300">{msg.content}</p>
+            <p className="text-gray-400 mt-1">
               {new Date(msg.createdAt).toLocaleTimeString()}
             </p>
           </div>
@@ -521,15 +521,15 @@ function ThreadPanel({
       </div>
 
       {/* Reply Input */}
-      <div className="px-4 py-3 border-t border-wl-border-default">
+      <div className="px-4 py-3 border-t border-[#1e1e2e]">
         <textarea
           value={replyContent}
           onChange={(e) => setReplyContent(e.target.value)}
           placeholder="Reply in thread..."
           className={cn(
             "w-full p-2 text-xs resize-none rounded",
-            "bg-wl-bg-overlay border border-wl-border-default",
-            "text-wl-text-primary placeholder-wl-text-tertiary",
+            "bg-[#1a1a2e] border border-[#1e1e2e]",
+            "text-white placeholder-wl-text-tertiary",
             "focus-visible:outline-none focus-visible:ring-2",
             "focus-visible:ring-wl-primary-500"
           )}
@@ -571,14 +571,14 @@ function CreateChannelModal({
 }: CreateChannelModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-wl-bg-elevated border border-wl-border-default rounded-lg p-6 w-96 shadow-xl">
-        <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 w-96 shadow-xl">
+        <h2 className="text-lg font-semibold text-white mb-4">
           Create New Channel
         </h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Channel Name
             </label>
             <input
@@ -588,8 +588,8 @@ function CreateChannelModal({
               placeholder="e.g., urgent-orders"
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
-                "bg-wl-bg-surface border border-wl-border-default",
-                "text-wl-text-primary placeholder-wl-text-tertiary",
+                "bg-[#12121a] border border-[#1e1e2e]",
+                "text-white placeholder-wl-text-tertiary",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"
               )}
@@ -597,7 +597,7 @@ function CreateChannelModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Category
             </label>
             <select
@@ -607,8 +607,8 @@ function CreateChannelModal({
               }
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
-                "bg-wl-bg-surface border border-wl-border-default",
-                "text-wl-text-primary",
+                "bg-[#12121a] border border-[#1e1e2e]",
+                "text-white",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"
               )}

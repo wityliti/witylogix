@@ -218,7 +218,7 @@ export default function SavedViewsPage() {
   };
 
   return (
-    <>
+    <div className="w-full bg-[#0a0a0f] min-h-screen">
       <Header
         title="Saved Views"
         subtitle={`${SAVED_VIEWS.length} total views · 4 shared with team`}
@@ -232,24 +232,24 @@ export default function SavedViewsPage() {
       <div className="p-6">
         {/* My Views Grid */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <h2 className="text-lg font-semibold text-white mb-4">
             My Views
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {SAVED_VIEWS.map((view) => (
-              <Card key={view.id} className="flex flex-col">
+              <Card key={view.id} className="bg-[#12121a] border-[#1e1e2e] flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex-1">
-                      <CardTitle className="text-base mb-2">
+                      <CardTitle className="text-base mb-2 text-white">
                         {view.name}
                       </CardTitle>
-                      <p className="text-sm text-wl-text-secondary">
+                      <p className="text-sm text-gray-400">
                         {view.targetTable}
                       </p>
                     </div>
                     <button
-                      className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary"
+                      className="bg-transparent border-0 cursor-pointer p-0 text-gray-500 hover:text-gray-300 transition-colors"
                     >
                       <MoreVertical size={18} />
                     </button>
@@ -265,14 +265,14 @@ export default function SavedViewsPage() {
                   {/* Stats */}
                   <div className="mb-4">
                     <div className="flex justify-between mb-2">
-                      <span className="text-xs text-wl-text-secondary">Filters</span>
-                      <span className="text-sm font-semibold text-wl-text-primary">
+                      <span className="text-xs text-gray-400">Filters</span>
+                      <span className="text-sm font-semibold text-white">
                         {view.filters.length}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs text-wl-text-secondary">Visible Columns</span>
-                      <span className="text-sm font-semibold text-wl-text-primary">
+                      <span className="text-xs text-gray-400">Visible Columns</span>
+                      <span className="text-sm font-semibold text-white">
                         {view.visibleColumns.length}
                       </span>
                     </div>
@@ -300,7 +300,7 @@ export default function SavedViewsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full mt-3 text-xs"
+                      className="w-full mt-3 text-xs text-gray-400 hover:text-white"
                       onClick={() => alert("Set as default (mock)")}
                     >
                       Set as Default
@@ -320,17 +320,17 @@ export default function SavedViewsPage() {
           onClick={() => setShowCreateModal(false)}
         >
           <Card
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl bg-[#12121a] border-[#1e1e2e]"
             onClick={(e) => e.stopPropagation()}
           >
             <CardHeader>
-              <CardTitle>Create New Saved View</CardTitle>
+              <CardTitle className="text-white">Create New Saved View</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-6">
                 {/* Name Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     View Name
                   </label>
                   <input
@@ -338,19 +338,19 @@ export default function SavedViewsPage() {
                     placeholder="e.g., Today's Priority Orders"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 </div>
 
                 {/* Target Table Select */}
                 <div>
-                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Target Table
                   </label>
                   <select
                     value={formData.targetTable}
                     onChange={(e) => handleTableChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                   >
                     {TABLE_OPTIONS.map((table) => (
                       <option key={table} value={table}>
@@ -362,7 +362,7 @@ export default function SavedViewsPage() {
 
                 {/* Filters Section */}
                 <div>
-                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Filters
                   </label>
                   <div className="flex flex-col gap-3">
@@ -371,7 +371,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.column}
                           onChange={(e) => updateFilter(idx, "column", e.target.value)}
-                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
+                          className="flex-1 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                         >
                           <option value="">Select Column</option>
                           {availableColumns.map((col) => (
@@ -383,7 +383,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.operator}
                           onChange={(e) => updateFilter(idx, "operator", e.target.value)}
-                          className="flex-0.8 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
+                          className="flex-0.8 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                         >
                           <option value="equals">equals</option>
                           <option value="not_equals">not equals</option>
@@ -400,7 +400,7 @@ export default function SavedViewsPage() {
                           placeholder="Value"
                           value={filter.value}
                           onChange={(e) => updateFilter(idx, "value", e.target.value)}
-                          className="flex-0.8 px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none"
+                          className="flex-0.8 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                         />
                         {formData.filters.length > 1 && (
                           <Button
@@ -427,14 +427,14 @@ export default function SavedViewsPage() {
 
                 {/* Column Visibility */}
                 <div>
-                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-white mb-2">
                     Visible Columns
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {availableColumns.map((col) => (
                       <label
                         key={col}
-                        className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-primary"
+                        className="flex items-center gap-2 cursor-pointer text-sm text-gray-300 hover:text-white transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -451,13 +451,13 @@ export default function SavedViewsPage() {
                 {/* Sort Configuration */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                    <label className="block text-sm font-semibold text-white mb-2">
                       Sort Column
                     </label>
                     <select
                       value={formData.sortColumn}
                       onChange={(e) => setFormData({ ...formData, sortColumn: e.target.value })}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                     >
                       <option value="">None</option>
                       {availableColumns.map((col) => (
@@ -468,13 +468,13 @@ export default function SavedViewsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                    <label className="block text-sm font-semibold text-white mb-2">
                       Direction
                     </label>
                     <select
                       value={formData.sortDirection}
                       onChange={(e) => setFormData({ ...formData, sortDirection: e.target.value as "asc" | "desc" })}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                     >
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>
@@ -484,7 +484,7 @@ export default function SavedViewsPage() {
 
                 {/* Share with Team */}
                 <label
-                  className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-primary"
+                  className="flex items-center gap-2 cursor-pointer text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -496,7 +496,7 @@ export default function SavedViewsPage() {
                 </label>
 
                 {/* Modal Actions */}
-                <div className="flex gap-3 justify-end pt-4 border-t border-wl-border-subtle">
+                <div className="flex gap-3 justify-end pt-4 border-t border-[#1e1e2e]">
                   <Button
                     variant="secondary"
                     size="md"
@@ -517,6 +517,6 @@ export default function SavedViewsPage() {
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }

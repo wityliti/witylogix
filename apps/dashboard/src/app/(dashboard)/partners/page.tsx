@@ -118,10 +118,10 @@ export default function PartnersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-wl-text-primary">
+          <h1 className="text-3xl font-bold text-white">
             Courier Partners
           </h1>
-          <p className="text-wl-text-secondary">
+          <p className="text-gray-300">
             Manage and monitor your delivery partners
           </p>
         </div>
@@ -204,14 +204,14 @@ export default function PartnersPage() {
             <option value="deliveries">Active Deliveries</option>
           </Select>
 
-          <div className="flex items-center gap-2 border border-wl-border-subtle rounded-md p-2">
+          <div className="flex items-center gap-2 border border-[#1e1e2e] rounded-md p-2">
             <button
               onClick={() => setViewMode("grid")}
               className={cn(
                 "p-1.5 rounded transition-colors",
                 viewMode === "grid"
-                  ? "bg-wl-primary-500/20 text-wl-primary-400"
-                  : "text-wl-text-secondary hover:text-wl-text-primary"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "text-gray-300 hover:text-white"
               )}
               title="Grid view"
             >
@@ -222,8 +222,8 @@ export default function PartnersPage() {
               className={cn(
                 "p-1.5 rounded transition-colors",
                 viewMode === "list"
-                  ? "bg-wl-primary-500/20 text-wl-primary-400"
-                  : "text-wl-text-secondary hover:text-wl-text-primary"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "text-gray-300 hover:text-white"
               )}
               title="List view"
             >
@@ -237,17 +237,17 @@ export default function PartnersPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="h-96 animate-pulse bg-wl-bg-surface" />
+            <Card key={i} className="h-96 animate-pulse bg-[#12121a]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center gap-4 py-16">
-          <Filter className="w-12 h-12 text-wl-text-secondary/50" />
+          <Filter className="w-12 h-12 text-gray-300/50" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-wl-text-secondary">
+            <h3 className="text-lg font-semibold text-gray-300">
               No partners found
             </h3>
-            <p className="text-sm text-wl-text-secondary/75">
+            <p className="text-sm text-gray-300/75">
               Try adjusting your search filters
             </p>
           </div>
@@ -272,7 +272,7 @@ export default function PartnersPage() {
             >
               <div className="flex items-center gap-4 flex-1">
                 {partner.logoUrl ? (
-                  <div className="w-12 h-12 rounded-md bg-wl-bg-surface flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-md bg-[#12121a] flex items-center justify-center">
                     <img
                       src={partner.logoUrl}
                       alt={partner.name}
@@ -280,16 +280,16 @@ export default function PartnersPage() {
                     />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-wl-primary-500 to-wl-primary-600 flex items-center justify-center text-wl-text-inverse font-bold text-sm">
+                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-black font-bold text-sm">
                     {partner.name.substring(0, 2).toUpperCase()}
                   </div>
                 )}
 
                 <div className="flex-1">
-                  <h3 className="font-semibold text-wl-text-primary">
+                  <h3 className="font-semibold text-white">
                     {partner.name}
                   </h3>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-300">
                     {partner.activeDeliveries} active deliveries • {partner.successRate}%
                     success rate • {partner.rating.toFixed(1)}★
                   </p>
@@ -318,7 +318,7 @@ export default function PartnersPage() {
       )}
 
       {/* Results count */}
-      <div className="text-sm text-wl-text-secondary text-center">
+      <div className="text-sm text-gray-300 text-center">
         Showing {filtered.length} of {MOCK_PARTNERS.length} partners
       </div>
     </div>

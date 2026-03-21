@@ -1,20 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Header } from "@/components/layout/header";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
-import { Table } from "@/components/ui/table";
-import { Modal } from "@/components/ui/modal";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { cn, formatRelativeTime, formatNumber } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
   Mail,
   MessageSquare,
   MessageCircle,
@@ -26,10 +21,6 @@ import { ErrorState } from '@/components/ui/error-state';
   TrendingUp,
   Send,
 } from "lucide-react";
-
-/* ═══════════════════════════════════════════════════════════
-   items PAGE — Campaign management dashboard
-   ═══════════════════════════════════════════════════════════ */
 
 type CampaignType = "EMAIL" | "SMS" | "WHATSAPP" | "PUSH";
 type CampaignStatus = "DRAFT" | "SCHEDULED" | "SENDING" | "COMPLETED";
@@ -46,8 +37,6 @@ interface Campaign {
   createdAt: string;
   sentAt?: string;
 }
-
-
 
 const typeVariant = (t: CampaignType): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
   const map: Record<CampaignType, "success" | "warning" | "danger" | "info" | "primary" | "default"> = {
@@ -80,7 +69,7 @@ const typeIcon = (t: CampaignType) => {
 };
 
 export default function CampaignsPage() {
-  const { items, loading, error, refetch, pagination } = useApiList<Campaign>('/api/v4/campaigns');
+  const { items, loading, error, refetch } = useApiList<Campaign>("/api/v4/campaigns");
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -88,9 +77,6 @@ export default function CampaignsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterType, setFilterType] = useState<CampaignType | "ALL">("ALL");
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "ALL">("ALL");
-  const [newCampaignName, setNewCampaignName] = useState("");
-  const [newCampaignType, setNewCampaignType] = useState<CampaignType>("EMAIL");
-  const [newCampaignTemplate, setNewCampaignTemplate] = useState("");
   const [selectedId, setSelectedId] = useState<string | undefined>();
 
   const filteredCampaigns = useMemo(() => {
@@ -99,7 +85,7 @@ export default function CampaignsPage() {
         (filterType === "ALL" || c.type === filterType) &&
         (filterStatus === "ALL" || c.status === filterStatus)
     );
-  }, [filterType, filterStatus]);
+  }, [items, filterType, filterStatus]);
 
   const stats = useMemo(() => {
     const active = items.filter((c) => c.status !== "DRAFT").length;
@@ -111,36 +97,19 @@ export default function CampaignsPage() {
     const avgClickRate = totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : "0";
 
     return { active, totalSent, avgOpenRate, avgClickRate };
-  }, []);
-
-  const handleCreateCampaign = () => {
-    if (newCampaignName.trim()) {
-      console.log("Creating campaign:", { newCampaignName, newCampaignType, newCampaignTemplate });
-      setIsCreateOpen(false);
-      setNewCampaignName("");
-      setNewCampaignTemplate("");
-    }
-  };
-
-  const handleDuplicate = (campaign: Campaign) => {
-    console.log("Duplicating campaign:", campaign.id);
-  };
-
-  const handlePause = (campaign: Campaign) => {
-    console.log("Pausing campaign:", campaign.id);
-  };
-
-  const handleDelete = (campaign: Campaign) => {
-    console.log("Deleting campaign:", campaign.id);
-  };
+  }, [items]);
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
-      <Header title="Campaigns" description="Create and manage marketing campaigns" />
+    <div className="min-h-screen bg-[#0a0a0f] p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Campaigns</h1>
+          <p className="text-gray-400">Create and manage marketing campaigns</p>
+        </div>
 
-      <div className="p-8 w-full mx-auto">
         {/* Stats Row */}
-        <div className="grid grid-cols-auto-fit gap-4 mb-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             label="Active Campaigns"
             value={stats.active}
@@ -172,228 +141,133 @@ export default function CampaignsPage() {
         </div>
 
         {/* Controls Card */}
-        <Card className="mb-6">
+        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
           <CardHeader>
-            <CardTitle>Filters & Actions</CardTitle>
-            <Button
-              onClick={() => setIsCreateOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus size={16} />
-              New Campaign
-            </Button>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">Filters & Actions</CardTitle>
+              <Button variant="primary" onClick={() => setIsCreateOpen(true)}>
+                <Plus size={16} className="mr-2" />
+                New Campaign
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-auto-fit gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-              <Select
-                label="Campaign Type"
-                value={filterType}
-                onChange={(v) => setFilterType(v as CampaignType | "ALL")}
-                options={[
-                  { value: "ALL", label: "All Types" },
-                  { value: "EMAIL", label: "Email" },
-                  { value: "SMS", label: "SMS" },
-                  { value: "WHATSAPP", label: "WhatsApp" },
-                  { value: "PUSH", label: "Push" },
-                ]}
-              />
-              <Select
-                label="Status"
-                value={filterStatus}
-                onChange={(v) => setFilterStatus(v as CampaignStatus | "ALL")}
-                options={[
-                  { value: "ALL", label: "All Statuses" },
-                  { value: "DRAFT", label: "Draft" },
-                  { value: "SCHEDULED", label: "Scheduled" },
-                  { value: "SENDING", label: "Sending" },
-                  { value: "COMPLETED", label: "Completed" },
-                ]}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase">Campaign Type</label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as CampaignType | "ALL")}
+                  className="w-full px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+                >
+                  <option value="ALL">All Types</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="SMS">SMS</option>
+                  <option value="WHATSAPP">WhatsApp</option>
+                  <option value="PUSH">Push</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase">Status</label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as CampaignStatus | "ALL")}
+                  className="w-full px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white text-sm"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="SCHEDULED">Scheduled</option>
+                  <option value="SENDING">Sending</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Campaigns Table */}
-        <Card>
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle>Campaigns ({filteredCampaigns.length})</CardTitle>
+            <CardTitle className="text-white">Campaigns ({filteredCampaigns.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table
-              columns={[
-                {
-                  key: "name",
-                  header: "Campaign Name",
-                  render: (c: Campaign) => (
-                    <div className="flex items-center gap-2">
-                      <span>{c.name}</span>
-                    </div>
-                  ),
-                  width: "25%",
-                },
-                {
-                  key: "type",
-                  header: "Type",
-                  render: (c: Campaign) => (
-                    <Badge variant={typeVariant(c.type)} className="inline-flex items-center gap-1">
-                      {typeIcon(c.type)}
-                      {c.type}
-                    </Badge>
-                  ),
-                  width: "12%",
-                },
-                {
-                  key: "status",
-                  header: "Status",
-                  render: (c: Campaign) => <Badge variant={statusVariant(c.status)}>{c.status}</Badge>,
-                  width: "12%",
-                },
-                {
-                  key: "recipients",
-                  header: "Recipients",
-                  render: (c: Campaign) => formatNumber(c.recipients),
-                  width: "12%",
-                  align: "right",
-                },
-                {
-                  key: "sent",
-                  header: "Sent",
-                  render: (c: Campaign) => formatNumber(c.sent),
-                  width: "10%",
-                  align: "right",
-                },
-                {
-                  key: "opened",
-                  header: "Opened",
-                  render: (c: Campaign) => {
-                    const rate = c.sent > 0 ? ((c.opened / c.sent) * 100).toFixed(0) : "0";
-                    return `${formatNumber(c.opened)} (${rate}%)`;
-                  },
-                  width: "10%",
-                  align: "right",
-                },
-                {
-                  key: "clicked",
-                  header: "Clicked",
-                  render: (c: Campaign) => {
-                    const rate = c.sent > 0 ? ((c.clicked / c.sent) * 100).toFixed(0) : "0";
-                    return `${formatNumber(c.clicked)} (${rate}%)`;
-                  },
-                  width: "10%",
-                  align: "right",
-                },
-                {
-                  key: "createdAt",
-                  header: "Created",
-                  render: (c: Campaign) => formatRelativeTime(c.createdAt),
-                  width: "12%",
-                  align: "right",
-                },
-                {
-                  key: "actions",
-                  header: "Actions",
-                  render: (c: Campaign) => (
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDuplicate(c)}
-                        className="px-2 py-1"
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Campaign Name</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Type</th>
+                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Status</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Recipients</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Sent</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Opened</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Clicked</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Created</th>
+                    <th className="text-right py-3 px-4 text-gray-400 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCampaigns.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center py-8 text-gray-400">
+                        No campaigns found. Create your first campaign to get started.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCampaigns.map((campaign) => (
+                      <tr
+                        key={campaign.id}
+                        className={cn(
+                          "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors",
+                          selectedId === campaign.id && "bg-blue-500/10"
+                        )}
+                        onClick={() => setSelectedId(campaign.id)}
                       >
-                        <Copy size={14} />
-                      </Button>
-                      {c.status === "SENDING" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePause(c)}
-                          className="px-2 py-1"
-                        >
-                          <Pause size={14} />
-                        </Button>
-                      )}
-                      {c.status === "DRAFT" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(c)}
-                          className="px-2 py-1 text-wl-danger-400"
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      )}
-                    </div>
-                  ),
-                  width: "10%",
-                  align: "right",
-                },
-              ]}
-              data={filteredCampaigns}
-              selectedId={selectedId}
-              onRowClick={(campaign) => setSelectedId(campaign.id)}
-              emptyMessage="No campaigns found. Create your first campaign to get started."
-            />
+                        <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant={typeVariant(campaign.type)} className="inline-flex items-center gap-1">
+                            {typeIcon(campaign.type)}
+                            {campaign.type}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant={statusVariant(campaign.status)}>{campaign.status}</Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-300">{formatNumber(campaign.recipients)}</td>
+                        <td className="py-3 px-4 text-right text-gray-300">{formatNumber(campaign.sent)}</td>
+                        <td className="py-3 px-4 text-right text-gray-300">
+                          {formatNumber(campaign.opened)} ({campaign.sent > 0 ? ((campaign.opened / campaign.sent) * 100).toFixed(0) : "0"}%)
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-300">
+                          {formatNumber(campaign.clicked)} ({campaign.sent > 0 ? ((campaign.clicked / campaign.sent) * 100).toFixed(0) : "0"}%)
+                        </td>
+                        <td className="py-3 px-4 text-right text-gray-400 text-xs">{formatRelativeTime(campaign.createdAt)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="ghost" size="sm" className="p-1">
+                              <Copy size={14} className="text-gray-400" />
+                            </Button>
+                            {campaign.status === "SENDING" && (
+                              <Button variant="ghost" size="sm" className="p-1">
+                                <Pause size={14} className="text-gray-400" />
+                              </Button>
+                            )}
+                            {campaign.status === "DRAFT" && (
+                              <Button variant="ghost" size="sm" className="p-1">
+                                <Trash2 size={14} className="text-red-500" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Create Campaign Modal */}
-      <Modal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        title="Create New Campaign"
-        size="md"
-        footer={
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsCreateOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateCampaign}
-              disabled={!newCampaignName.trim()}
-              className="flex-1"
-            >
-              Create Campaign
-            </Button>
-          </div>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Input
-            label="Campaign Name"
-            placeholder="e.g., Spring Sale 2026"
-            value={newCampaignName}
-            onChange={setNewCampaignName}
-          />
-          <Select
-            label="Channel"
-            value={newCampaignType}
-            onChange={(v) => setNewCampaignType(v as CampaignType)}
-            options={[
-              { value: "EMAIL", label: "Email" },
-              { value: "SMS", label: "SMS" },
-              { value: "WHATSAPP", label: "WhatsApp" },
-              { value: "PUSH", label: "Push Notification" },
-            ]}
-          />
-          <Select
-            label="Template"
-            value={newCampaignTemplate}
-            onChange={setNewCampaignTemplate}
-            options={[
-              { value: "", label: "Select a template..." },
-              { value: "promotional", label: "Promotional" },
-              { value: "transactional", label: "Transactional" },
-              { value: "newsletter", label: "Newsletter" },
-              { value: "blank", label: "Blank" },
-            ]}
-          />
-        </div>
-      </Modal>
     </div>
   );
 }

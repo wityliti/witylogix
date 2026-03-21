@@ -256,10 +256,10 @@ export default function CustomersPage() {
       <div className="p-6">
         {/* Error State */}
         {error && (
-          <div className="mb-4 p-4 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-lg">
-            <p className="text-sm text-wl-danger-400 flex items-center justify-between">
+          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-red-400 flex items-center justify-between">
               <span>Failed to load customers</span>
-              <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-wl-danger-400">
+              <Button variant="ghost" size="sm" onClick={() => refetch()} className="text-red-400">
                 Retry
               </Button>
             </p>
@@ -310,7 +310,7 @@ export default function CustomersPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
+              className="w-full p-2 px-4 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none"
             />
           </div>
 
@@ -326,8 +326,8 @@ export default function CustomersPage() {
                 className={cn(
                   'p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-fast',
                   statusFilter === status
-                    ? 'bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500'
-                    : 'bg-transparent text-wl-text-tertiary border-wl-border-default',
+                    ? 'bg-blue-500 text-black border-blue-500'
+                    : 'bg-transparent text-gray-400 border-[#1e1e2e]',
                   'capitalize'
                 )}
               >
@@ -343,7 +343,7 @@ export default function CustomersPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className="p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans cursor-pointer outline-none"
+            className="p-1 px-3 bg-[#12121a] border border-[#1e1e2e] rounded-md text-white text-sm font-sans cursor-pointer outline-none"
           >
             <option value="name">Sort by Name</option>
             <option value="totalSpent">Sort by Total Spent</option>
@@ -356,7 +356,7 @@ export default function CustomersPage() {
         <Card className="mb-5 p-4">
           <div className="flex gap-4 flex-wrap items-center">
             <div>
-              <h3 className="m-0 text-sm font-semibold text-wl-text-primary">Customer Tiers</h3>
+              <h3 className="m-0 text-sm font-semibold text-white">Customer Tiers</h3>
             </div>
             {(['standard', 'premium', 'enterprise'] as const).map((tier) => {
               const count = customers.filter((c) => c.tier === tier).length;
@@ -365,7 +365,7 @@ export default function CustomersPage() {
                   key={tier}
                   className={cn(
                     'p-2 px-3 rounded-md border text-xs font-semibold cursor-pointer font-sans capitalize',
-                    'bg-transparent text-wl-text-secondary border-wl-border-subtle'
+                    'bg-transparent text-gray-300 border-[#1e1e2e]'
                   )}
                 >
                   {tier} <span className="ml-1.5 opacity-70">({count})</span>
@@ -380,27 +380,27 @@ export default function CustomersPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Name</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Email</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Phone</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Orders</th>
-                  <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">Total Spent</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Tier</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Name</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Email</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Phone</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Orders</th>
+                  <th className="p-3 px-4 text-right font-semibold text-gray-300">Total Spent</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">Tier</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="border-b border-wl-border-subtle">
-                      <td colSpan={8} className="px-4 py-3 h-12 bg-wl-bg-overlay/50 animate-pulse" />
+                    <tr key={i} className="border-b border-[#1e1e2e]">
+                      <td colSpan={8} className="px-4 py-3 h-12 bg-[#1a1a2e]/50 animate-pulse" />
                     </tr>
                   ))
                 ) : paginatedItems.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-wl-text-tertiary">
+                    <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                       No customers found
                     </td>
                   </tr>
@@ -409,17 +409,17 @@ export default function CustomersPage() {
                     <tr
                       key={customer.id}
                       className={cn(
-                        'border-b border-wl-border-subtle transition-colors duration-fast',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay'
+                        'border-b border-[#1e1e2e] transition-colors duration-fast',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]'
                       )}
                     >
-                      <td className="p-3 px-4 text-wl-text-primary font-semibold">{customer.name}</td>
-                      <td className="p-3 px-4 text-wl-text-secondary">{customer.email}</td>
-                      <td className="p-3 px-4 text-wl-text-secondary">{customer.phone}</td>
-                      <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                      <td className="p-3 px-4 text-white font-semibold">{customer.name}</td>
+                      <td className="p-3 px-4 text-gray-300">{customer.email}</td>
+                      <td className="p-3 px-4 text-gray-300">{customer.phone}</td>
+                      <td className="p-3 px-4 text-center text-white font-semibold">
                         {customer.totalOrders}
                       </td>
-                      <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">
+                      <td className="p-3 px-4 text-right text-white font-semibold">
                         {formatCurrency(customer.totalSpent)}
                       </td>
                       <td className="p-3 px-4 text-left">
@@ -448,7 +448,7 @@ export default function CustomersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
+          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-300">
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, pagination.total)} of {pagination.total}

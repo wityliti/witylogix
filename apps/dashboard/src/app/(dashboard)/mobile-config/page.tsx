@@ -174,11 +174,11 @@ export default function MobileConfigPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* App Branding Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Palette className="w-5 h-5" />
               App Branding
             </CardTitle>
@@ -187,28 +187,28 @@ export default function MobileConfigPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Logo Upload */}
               <div>
-                <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                <label className="block text-sm font-semibold text-white mb-3">
                   App Logo
                 </label>
                 <div
-                  className="border-2 border-dashed border-wl-border-subtle rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-surface hover:border-wl-primary-500 hover:bg-wl-primary-500/8"
+                  className="border-2 border-dashed border-[#1e1e2e] rounded-lg p-8 text-center cursor-pointer transition-all bg-[#1a1a2e] hover:border-blue-500 hover:bg-blue-500/8"
                 >
-                  <Upload className="w-8 h-8 mx-auto mb-2 text-wl-text-secondary" />
-                  <p className="text-sm font-medium text-wl-text-primary">
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm font-medium text-white">
                     Drag logo or click to upload
                   </p>
-                  <p className="text-xs text-wl-text-tertiary mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     PNG, JPG, WEBP (Max 2MB)
                   </p>
                 </div>
                 {logoUrl && (
-                  <div className="mt-3 p-3 bg-wl-bg-surface rounded-lg text-center">
+                  <div className="mt-3 p-3 bg-[#1a1a2e] rounded-lg text-center">
                     <div
-                      className="w-15 h-15 mx-auto mb-2 bg-wl-bg-elevated rounded-lg flex items-center justify-center text-xs text-wl-text-tertiary"
+                      className="w-15 h-15 mx-auto mb-2 bg-[#0a0a0f] rounded-lg flex items-center justify-center text-xs text-gray-400"
                     >
                       LOGO
                     </div>
-                    <p className="text-xs text-wl-text-secondary">
+                    <p className="text-xs text-gray-400">
                       {logoUrl}
                     </p>
                   </div>
@@ -217,23 +217,23 @@ export default function MobileConfigPage() {
 
               {/* App Name */}
               <div>
-                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   App Name
                 </label>
                 <input
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  className="w-full px-3 py-2 border border-wl-border-subtle rounded-lg bg-wl-bg-surface text-wl-text-primary text-sm outline-none transition-colors focus:border-wl-primary-500"
+                  className="w-full px-3 py-2 border border-[#1e1e2e] rounded-lg bg-[#1a1a2e] text-white text-sm outline-none transition-colors focus:border-blue-500"
                 />
-                <p className="text-xs text-wl-text-tertiary mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   Displayed on home screen
                 </p>
               </div>
 
               {/* Primary Color */}
               <div>
-                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Primary Color (Hex)
                 </label>
                 <div className="flex gap-2">
@@ -241,13 +241,13 @@ export default function MobileConfigPage() {
                     type="color"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-15 h-10 border border-wl-border-subtle rounded-lg cursor-pointer"
+                    className="w-15 h-10 border border-[#1e1e2e] rounded-lg cursor-pointer"
                   />
                   <input
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-wl-border-subtle rounded-lg bg-wl-bg-surface text-wl-text-primary text-sm font-mono outline-none transition-colors focus:border-wl-primary-500"
+                    className="flex-1 px-3 py-2 border border-[#1e1e2e] rounded-lg bg-[#1a1a2e] text-white text-sm font-mono outline-none transition-colors focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -256,9 +256,9 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Feature Toggles Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Zap className="w-5 h-5" />
               Feature Toggles
             </CardTitle>
@@ -268,13 +268,13 @@ export default function MobileConfigPage() {
               {features.map((feature) => (
                 <div
                   key={feature.id}
-                  className="flex items-center justify-between p-3 bg-wl-bg-surface rounded-lg border border-wl-border-subtle"
+                  className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-wl-text-primary">
+                    <p className="text-sm font-semibold text-white">
                       {feature.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       {feature.description}
                     </p>
                   </div>
@@ -285,15 +285,15 @@ export default function MobileConfigPage() {
                       type="checkbox"
                       checked={feature.enabled}
                       onChange={() => toggleFeature(feature.id)}
-                      className="w-5 h-5 cursor-pointer accent-wl-primary-500"
+                      className="w-5 h-5 cursor-pointer accent-blue-500"
                     />
                   </label>
                 </div>
               ))}
 
               {/* Route Navigation Options */}
-              <div className="mt-4 pt-4 border-t border-wl-border-subtle">
-                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
+              <div className="mt-4 pt-4 border-t border-[#1e1e2e]">
+                <label className="block text-sm font-semibold text-white mb-2">
                   Route Navigation Service
                 </label>
                 <Select
@@ -305,7 +305,7 @@ export default function MobileConfigPage() {
                     { value: "apple-maps", label: "Apple Maps" },
                   ]}
                 />
-                <p className="text-xs text-wl-text-tertiary mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   Default navigation app for route guidance
                 </p>
               </div>
@@ -314,9 +314,9 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Notification Settings Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Bell className="w-5 h-5" />
               Notification Settings
             </CardTitle>
@@ -326,13 +326,13 @@ export default function MobileConfigPage() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-center justify-between p-3 bg-wl-bg-surface rounded-lg border border-wl-border-subtle"
+                  className="flex items-center justify-between p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-wl-text-primary">
+                    <p className="text-sm font-semibold text-white">
                       {notification.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       {notification.description}
                     </p>
                   </div>
@@ -343,7 +343,7 @@ export default function MobileConfigPage() {
                       type="checkbox"
                       checked={notification.enabled}
                       onChange={() => toggleNotification(notification.id)}
-                      className="w-5 h-5 cursor-pointer accent-wl-primary-500"
+                      className="w-5 h-5 cursor-pointer accent-blue-500"
                     />
                   </label>
                 </div>
@@ -353,9 +353,9 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* GPS Settings Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               GPS Settings
             </CardTitle>
@@ -406,9 +406,9 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Offline Mode Section */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Smartphone className="w-5 h-5" />
               Offline Mode
             </CardTitle>
@@ -460,9 +460,9 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Configuration Summary */}
-        <Card className="bg-green-900/8 border-green-400">
+        <Card className="bg-emerald-900/20 border border-emerald-400">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-400">
+            <CardTitle className="flex items-center gap-2 text-emerald-400">
               <CheckCircle className="w-5 h-5" />
               Ready to Deploy
             </CardTitle>
@@ -470,23 +470,23 @@ export default function MobileConfigPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
-                <p className="text-xs text-wl-text-tertiary">
+                <p className="text-xs text-gray-400">
                   Features Enabled
                 </p>
-                <p className="text-lg font-bold text-wl-text-primary mt-1">
+                <p className="text-lg font-bold text-white mt-1">
                   {features.filter((f) => f.enabled).length} / {features.length}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-tertiary">
+                <p className="text-xs text-gray-400">
                   Notifications Enabled
                 </p>
-                <p className="text-lg font-bold text-wl-text-primary mt-1">
+                <p className="text-lg font-bold text-white mt-1">
                   {notifications.filter((n) => n.enabled).length} / {notifications.length}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-tertiary">
+                <p className="text-xs text-gray-400">
                   Configuration Status
                 </p>
                 <Badge variant="success" className="mt-1">
@@ -495,11 +495,11 @@ export default function MobileConfigPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-wl-bg-surface rounded-lg mb-4">
-              <p className="text-xs font-semibold text-wl-text-secondary mb-2">
+            <div className="p-3 bg-[#1a1a2e] rounded-lg mb-4">
+              <p className="text-xs font-semibold text-gray-400 mb-2">
                 DEPLOYMENT NOTES
               </p>
-              <p className="text-sm text-wl-text-secondary">
+              <p className="text-sm text-gray-400">
                 All configurations are ready for deployment to production. Click "Save Configuration" to apply these settings to the driver mobile app.
               </p>
             </div>

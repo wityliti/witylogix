@@ -29,28 +29,25 @@ export default function TimeSlotsPage() {
         actions={<Button variant="primary" size="md">+ Create Slot</Button>}
       />
 
-      <div className="p-6">
-        <div className="flex flex-col gap-4">&nbsp;
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
+        <div className="flex flex-col gap-4">
           {SLOTS.map((slot, i) => {
             const usage = (slot.currentBookings / slot.maxCapacity) * 100;
-            const usageColor = usage > 85 ? "var(--wl-danger-400)" : usage > 60 ? "var(--wl-warning-400)" : "var(--wl-success-400)";
+            const usageColor = usage > 85 ? "#ef4444" : usage > 60 ? "#f59e0b" : "#10b981";
 
             return (
               <Card
                 key={slot.id}
-                className={cn("wl-animate-in", slot.isActive ? "opacity-100" : "opacity-50")}
-                style={{
-                  animationDelay: `${i * 50}ms`,
-                }}
+                className={cn("bg-[#12121a] border border-[#1e1e2e]", slot.isActive ? "opacity-100" : "opacity-50")}
               >
-                <div className="flex items-center gap-5">&nbsp;
+                <div className="p-4 flex items-center gap-5">
                   {/* Time display */}
-                  <div className="w-24 text-center p-1 bg-slate-900 rounded border border-slate-700 shrink-0">
-                    <div className="text-xs font-bold font-mono text-indigo-400">
+                  <div className="w-24 text-center p-1 bg-[#1a1a2e] rounded border border-[#1e1e2e] shrink-0">
+                    <div className="text-xs font-bold font-mono text-blue-400">
                       {slot.start}
                     </div>
-                    <div className="text-xs text-slate-500 my-0.5">to</div>
-                    <div className="text-xs font-bold font-mono text-indigo-400">
+                    <div className="text-xs text-gray-400 my-0.5">to</div>
+                    <div className="text-xs font-bold font-mono text-blue-400">
                       {slot.end}
                     </div>
                   </div>
@@ -58,13 +55,13 @@ export default function TimeSlotsPage() {
                   {/* Details */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-base font-bold text-slate-100">{slot.name}</span>
+                      <span className="text-base font-bold text-white">{slot.name}</span>
                       <Badge variant={slot.isActive ? "success" : "default"} dot>{slot.isActive ? "Active" : "Inactive"}</Badge>
                       {slot.surcharge > 0 && <Badge variant="primary">{formatCurrency(slot.surcharge)} surcharge</Badge>}
                     </div>
 
                     {/* Days */}
-                    <div className="flex gap-1 mb-2">&nbsp;
+                    <div className="flex gap-1 mb-2">
                       {DAYS.map((day, di) => {
                         const dayNum = di === 6 ? 0 : di + 1;
                         const active = slot.days.includes(dayNum);
@@ -74,8 +71,8 @@ export default function TimeSlotsPage() {
                             className={cn(
                               'w-7 h-5.5 rounded-sm text-xs font-semibold flex items-center justify-center',
                               active
-                                ? 'bg-amber-500/10 text-amber-400'
-                                : 'bg-slate-900 text-slate-500'
+                                ? 'bg-amber-500/20 text-amber-400'
+                                : 'bg-[#1a1a2e] text-gray-400'
                             )}
                           >
                             {day}
@@ -84,18 +81,18 @@ export default function TimeSlotsPage() {
                       })}
                     </div>
 
-                    <span className="text-xs text-slate-500">{slot.zone}</span>
+                    <span className="text-xs text-gray-400">{slot.zone}</span>
                   </div>
 
                   {/* Capacity bar */}
                   <div className="w-40 shrink-0">
                     <div className="flex justify-between mb-1">
-                      <span className="text-xs text-slate-500">Capacity</span>
+                      <span className="text-xs text-gray-400">Capacity</span>
                       <span className="text-xs font-mono" style={{ color: usageColor }}>
                         {slot.currentBookings}/{slot.maxCapacity}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all"
                         style={{

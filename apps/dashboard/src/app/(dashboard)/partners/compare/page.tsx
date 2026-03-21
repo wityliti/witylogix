@@ -154,10 +154,10 @@ export default function ComparePage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-wl-text-primary">
+        <h1 className="text-3xl font-bold text-white">
           Compare Couriers
         </h1>
-        <p className="text-wl-text-secondary">
+        <p className="text-gray-300">
           Select up to 4 couriers to compare side-by-side
         </p>
       </div>
@@ -175,13 +175,13 @@ export default function ComparePage() {
               onClick={() => !isDisabled && handleToggleCourier(courier.id)}
               className={cn(
                 "cursor-pointer transition-all",
-                isSelected && "ring-2 ring-wl-primary-400 bg-wl-primary-500/10"
+                isSelected && "ring-2 ring-blue-400 bg-blue-500/10"
               )}
             >
               <CardContent className="pt-0">
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-wl-text-primary">
+                    <h3 className="font-semibold text-white">
                       {courier.name}
                     </h3>
                     <div className="flex items-center gap-1 mt-1">
@@ -191,48 +191,48 @@ export default function ComparePage() {
                           className={cn(
                             "w-3 h-3",
                             i < Math.floor(courier.rating)
-                              ? "fill-wl-warning-400 text-wl-warning-400"
-                              : "text-wl-border-subtle"
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-[#1e1e2e]"
                           )}
                         />
                       ))}
-                      <span className="text-xs text-wl-text-secondary ml-1">
+                      <span className="text-xs text-gray-300 ml-1">
                         {courier.rating.toFixed(1)}
                       </span>
                     </div>
                   </div>
 
                   {isSelected ? (
-                    <div className="w-6 h-6 rounded-full bg-wl-primary-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-wl-text-inverse" />
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-black" />
                     </div>
                   ) : (
-                    <div className="w-6 h-6 rounded-full border-2 border-wl-border-subtle flex-shrink-0" />
+                    <div className="w-6 h-6 rounded-full border-2 border-[#1e1e2e] flex-shrink-0" />
                   )}
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">Price Range:</span>
-                    <span className="text-wl-text-primary font-medium">
+                    <span className="text-gray-300">Price Range:</span>
+                    <span className="text-white font-medium">
                       ${courier.priceRange.min} - ${courier.priceRange.max}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">Speed:</span>
-                    <span className="text-wl-text-primary font-medium">
+                    <span className="text-gray-300">Speed:</span>
+                    <span className="text-white font-medium">
                       {courier.deliverySpeed}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">Coverage:</span>
-                    <span className="text-wl-text-primary font-medium">
+                    <span className="text-gray-300">Coverage:</span>
+                    <span className="text-white font-medium">
                       {courier.coverageAreas} areas
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-wl-text-secondary">Success Rate:</span>
-                    <span className="text-wl-text-primary font-medium">
+                    <span className="text-gray-300">Success Rate:</span>
+                    <span className="text-white font-medium">
                       {courier.successRate}%
                     </span>
                   </div>
@@ -253,14 +253,14 @@ export default function ComparePage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-wl-border-subtle">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-300">
                       Feature
                     </th>
                     {comparisonCouriers.map((courier) => (
                       <th
                         key={courier.id}
-                        className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-wl-text-secondary"
+                        className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-300"
                       >
                         <div className="flex items-center justify-center gap-2">
                           {courier.name}
@@ -269,7 +269,7 @@ export default function ComparePage() {
                               e.stopPropagation();
                               handleToggleCourier(courier.id);
                             }}
-                            className="hover:text-wl-danger-400 transition-colors"
+                            className="hover:text-red-400 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -281,15 +281,15 @@ export default function ComparePage() {
                 <tbody className="divide-y divide-wl-border-subtle">
                   {/* Price Range */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Price Range
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
-                        <span className="inline-flex items-center px-2 py-1 rounded bg-wl-info-500/20 text-wl-info-400 text-xs font-semibold">
+                        <span className="inline-flex items-center px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-semibold">
                           ${courier.priceRange.min} - ${courier.priceRange.max}
                         </span>
                       </td>
@@ -298,13 +298,13 @@ export default function ComparePage() {
 
                   {/* Delivery Speed */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Delivery Speed
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         {courier.deliverySpeed}
                       </td>
@@ -313,13 +313,13 @@ export default function ComparePage() {
 
                   {/* Coverage Areas */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Coverage Areas
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         {courier.coverageAreas}
                       </td>
@@ -328,15 +328,15 @@ export default function ComparePage() {
 
                   {/* Success Rate */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Success Rate
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
-                        <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold">
+                        <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
                           {courier.successRate}%
                         </span>
                       </td>
@@ -345,13 +345,13 @@ export default function ComparePage() {
 
                   {/* Rating */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Rating
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         <div className="flex items-center justify-center gap-2">
                           <div className="flex items-center gap-1">
@@ -361,8 +361,8 @@ export default function ComparePage() {
                                 className={cn(
                                   "w-3 h-3",
                                   i < Math.floor(courier.rating)
-                                    ? "fill-wl-warning-400 text-wl-warning-400"
-                                    : "text-wl-border-subtle"
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-[#1e1e2e]"
                                 )}
                               />
                             ))}
@@ -377,21 +377,21 @@ export default function ComparePage() {
 
                   {/* Real-time Tracking */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Real-time Tracking
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         {courier.features.realTimeTracking ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">
+                          <span className="text-gray-300 text-sm">
                             No
                           </span>
                         )}
@@ -401,21 +401,21 @@ export default function ComparePage() {
 
                   {/* Proof of Delivery */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Proof of Delivery
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         {courier.features.proofOfDelivery ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">
+                          <span className="text-gray-300 text-sm">
                             No
                           </span>
                         )}
@@ -425,21 +425,21 @@ export default function ComparePage() {
 
                   {/* Insurance */}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-wl-text-primary">
+                    <td className="px-4 py-3 font-semibold text-white">
                       Insurance
                     </td>
                     {comparisonCouriers.map((courier) => (
                       <td
                         key={courier.id}
-                        className="px-4 py-3 text-center text-wl-text-primary"
+                        className="px-4 py-3 text-center text-white"
                       >
                         {courier.features.insurance ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="text-wl-text-secondary text-sm">
+                          <span className="text-gray-300 text-sm">
                             No
                           </span>
                         )}
@@ -456,7 +456,7 @@ export default function ComparePage() {
       {comparisonCouriers.length === 0 && (
         <Card className="py-12 text-center">
           <div className="flex flex-col items-center gap-2">
-            <p className="text-wl-text-secondary">
+            <p className="text-gray-300">
               Select couriers above to compare them
             </p>
           </div>

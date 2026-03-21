@@ -123,19 +123,19 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-wl-bg min-h-screen">
+    <div className="bg-[#0a0a0f] min-h-screen">
       <Header title="Profile Settings" subtitle="Manage your account and security settings" />
 
       <main className="flex-1 p-6 max-w-4xl mx-auto">
         {/* Personal Information */}
-        <Card className="bg-wl-card border border-wl-border mb-6">
+        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
           <CardHeader>
-            <CardTitle className="text-wl-text flex items-center justify-between">
+            <CardTitle className="text-white flex items-center justify-between">
               Personal Information
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="text-sm font-medium text-wl-primary bg-wl-primary bg-opacity-10 px-3 py-1.5 rounded hover:opacity-80"
+                  className="text-sm font-medium text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded hover:bg-blue-500/20 transition-colors"
                 >
                   Edit
                 </button>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   First Name
                 </label>
                 {isEditing ? (
@@ -153,15 +153,15 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.firstName}
                     onChange={(e) => handleEditChange("firstName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-wl-text">{profile.firstName}</p>
+                  <p className="text-white">{profile.firstName}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Last Name
                 </label>
                 {isEditing ? (
@@ -169,15 +169,15 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.lastName}
                     onChange={(e) => handleEditChange("lastName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-wl-text">{profile.lastName}</p>
+                  <p className="text-white">{profile.lastName}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Email
                 </label>
                 {isEditing ? (
@@ -185,15 +185,15 @@ export default function ProfilePage() {
                     type="email"
                     value={editForm.email}
                     onChange={(e) => handleEditChange("email", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-wl-text">{profile.email}</p>
+                  <p className="text-white">{profile.email}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Phone
                 </label>
                 {isEditing ? (
@@ -201,22 +201,22 @@ export default function ProfilePage() {
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => handleEditChange("phone", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-wl-text">{profile.phone}</p>
+                  <p className="text-white">{profile.phone}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Timezone
                 </label>
                 {isEditing ? (
                   <select
                     value={editForm.timezone}
                     onChange={(e) => handleEditChange("timezone", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 cursor-pointer transition-colors"
                   >
                     <option>America/New_York</option>
                     <option>America/Chicago</option>
@@ -224,29 +224,29 @@ export default function ProfilePage() {
                     <option>America/Los_Angeles</option>
                   </select>
                 ) : (
-                  <p className="text-wl-text">{profile.timezone}</p>
+                  <p className="text-white">{profile.timezone}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Role
                 </label>
-                <p className="text-wl-text">{profile.role}</p>
+                <p className="text-white">{profile.role}</p>
               </div>
             </div>
 
             {isEditing && (
-              <div className="flex gap-3 pt-4 border-t border-wl-border">
+              <div className="flex gap-3 pt-4 border-t border-[#1e1e2e]">
                 <button
                   onClick={handleSaveProfile}
-                  className="px-4 py-2 bg-wl-primary text-white rounded text-sm font-medium cursor-pointer hover:opacity-90"
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-wl-border text-wl-text rounded text-sm font-medium cursor-pointer hover:opacity-90"
+                  className="px-4 py-2 bg-[#1e1e2e] text-gray-300 rounded text-sm font-medium cursor-pointer hover:bg-[#2e2e3e] transition-colors"
                 >
                   Cancel
                 </button>
@@ -256,9 +256,9 @@ export default function ProfilePage() {
         </Card>
 
         {/* Security Settings */}
-        <Card className="bg-wl-card border border-wl-border mb-6">
+        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
           <CardHeader>
-            <CardTitle className="text-wl-text flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Shield size={20} />
               Security Settings
             </CardTitle>
@@ -266,12 +266,12 @@ export default function ProfilePage() {
           <CardContent className="space-y-6">
             {/* Change Password */}
             <div>
-              <h4 className="text-base font-semibold text-wl-text mb-3">
+              <h4 className="text-base font-semibold text-white mb-3">
                 Change Password
               </h4>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-wl-text mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Current Password
                   </label>
                   <div className="relative">
@@ -281,11 +281,11 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-wl-text mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     New Password
                   </label>
                   <div className="relative">
@@ -303,11 +303,11 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
                     >
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-wl-text mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Confirm Password
                   </label>
                   <div className="relative">
@@ -325,29 +325,29 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-sm pr-10"
+                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-muted cursor-pointer hover:opacity-70"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-300 transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
               </div>
-              <button className="mt-4 px-4 py-2 bg-wl-primary text-white rounded text-sm font-medium cursor-pointer hover:opacity-90">
+              <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors">
                 Update Password
               </button>
             </div>
 
-            <div className="border-t border-wl-border pt-6">
+            <div className="border-t border-[#1e1e2e] pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-base font-semibold text-wl-text mb-1">
+                  <h4 className="text-base font-semibold text-white mb-1">
                     Two-Factor Authentication
                   </h4>
-                  <p className="text-wl-muted text-sm">
+                  <p className="text-gray-400 text-sm">
                     {twoFAEnabled
                       ? "Your account is protected with 2FA"
                       : "Add an extra layer of security to your account"}
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   onClick={() => setTwoFAEnabled(!twoFAEnabled)}
                   className={cn(
                     "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
-                    twoFAEnabled ? "bg-wl-success" : "bg-wl-border"
+                    twoFAEnabled ? "bg-emerald-500" : "bg-[#1e1e2e]"
                   )}
                 />
               </div>
@@ -366,9 +366,9 @@ export default function ProfilePage() {
         </Card>
 
         {/* Active Sessions */}
-        <Card className="bg-wl-card border border-wl-border mb-6">
+        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
           <CardHeader>
-            <CardTitle className="text-wl-text flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
               <Globe size={20} />
               Active Sessions
             </CardTitle>
@@ -379,27 +379,27 @@ export default function ProfilePage() {
                 <div
                   key={session.id}
                   className={cn(
-                    "flex items-center justify-between p-4 bg-wl-bg rounded border border-wl-border",
+                    "flex items-center justify-between p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e]",
                     index !== sessions.length - 1 && "mb-2"
                   )}
                 >
                   <div className="flex items-center gap-4 flex-1">
-                    <Smartphone size={20} className="text-wl-primary flex-shrink-0" />
+                    <Smartphone size={20} className="text-blue-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-wl-text">
+                        <p className="text-sm font-medium text-white">
                           {session.browser} on {session.platform}
                         </p>
                         {session.current && (
-                          <Badge className="bg-wl-success text-white text-xs">
+                          <Badge variant="success" className="text-xs">
                             Current
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-wl-muted">
+                      <p className="text-xs text-gray-400">
                         {session.location} • {session.ip}
                       </p>
-                      <p className="text-xs text-wl-muted">
+                      <p className="text-xs text-gray-400">
                         Last active: {session.lastActive}
                       </p>
                     </div>
@@ -407,7 +407,7 @@ export default function ProfilePage() {
                   {!session.current && (
                     <button
                       onClick={() => handleLogoutSession(session.id)}
-                      className="text-wl-danger text-xs font-medium hover:opacity-70 cursor-pointer"
+                      className="text-red-500 text-xs font-medium hover:text-red-400 cursor-pointer transition-colors"
                     >
                       Log Out
                     </button>
@@ -419,38 +419,38 @@ export default function ProfilePage() {
         </Card>
 
         {/* Delete Account */}
-        <Card className="bg-wl-card border border-wl-border">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="text-wl-text flex items-center gap-2">
-              <AlertTriangle size={20} className="text-wl-danger" />
+            <CardTitle className="text-white flex items-center gap-2">
+              <AlertTriangle size={20} className="text-red-500" />
               Delete Account
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-wl-muted text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-4">
               Once you delete your account, there is no going back. Please be certain.
             </p>
             {!showDeleteConfirm && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 bg-wl-danger text-white rounded text-sm font-medium cursor-pointer hover:opacity-90"
+                className="px-4 py-2 bg-red-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-red-600 transition-colors"
               >
                 Delete Account
               </button>
             )}
             {showDeleteConfirm && (
-              <div className="p-4 bg-wl-bg rounded border border-wl-danger border-opacity-30">
-                <p className="text-wl-text text-sm mb-4">
+              <div className="p-4 bg-[#1a1a2e] rounded border border-red-500/30">
+                <p className="text-white text-sm mb-4">
                   Are you absolutely sure? This action cannot be undone.
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 bg-wl-border text-wl-text rounded text-sm font-medium cursor-pointer hover:opacity-90"
+                    className="px-4 py-2 bg-[#1e1e2e] text-gray-300 rounded text-sm font-medium cursor-pointer hover:bg-[#2e2e3e] transition-colors"
                   >
                     Cancel
                   </button>
-                  <button className="px-4 py-2 bg-wl-danger text-white rounded text-sm font-medium cursor-pointer hover:opacity-90">
+                  <button className="px-4 py-2 bg-red-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-red-600 transition-colors">
                     Delete My Account
                   </button>
                 </div>

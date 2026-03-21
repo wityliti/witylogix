@@ -15,7 +15,6 @@ import { DataImport } from "./steps/data-import";
 import { ReviewSummary } from "./steps/review-summary";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import type {
-import { useApiQuery } from '@/hooks/use-api';
   OnboardingData,
   OnboardingStep,
   OnboardingSubStep,
@@ -189,7 +188,7 @@ export default function OnboardingPage() {
     currentSubStep === "review";
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto bg-[#0a0a0f] min-h-screen p-6">
       {/* Progress Bar */}
       <div className="mb-8">
         {/* Main Steps */}
@@ -208,8 +207,8 @@ export default function OnboardingPage() {
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
-                      ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-wl-bg-overlay text-wl-text-tertiary border border-wl-border-default"
+                      ? "bg-blue-500 text-white"
+                      : "bg-[#1a1a2e] text-gray-500 border border-[#1e1e2e]"
                   )}
                 >
                   {isCompleted ? <Check size={20} /> : idx + 1}
@@ -218,7 +217,7 @@ export default function OnboardingPage() {
                   <p
                     className={cn(
                       "text-xs font-semibold",
-                      isActive ? "text-wl-text-primary" : "text-wl-text-tertiary"
+                      isActive ? "text-white" : "text-gray-400"
                     )}
                   >
                     {step.label}
@@ -230,9 +229,9 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress Line */}
-        <div className="w-full h-1 bg-wl-bg-overlay rounded-full overflow-hidden mb-6">
+        <div className="w-full h-1 bg-[#1a1a2e] rounded-full overflow-hidden mb-6">
           <div
-            className="h-full bg-wl-primary-500 transition-all duration-500"
+            className="h-full bg-blue-500 transition-all duration-500"
             style={{
               width: `${Math.round(overallProgress)}%`,
             }}
@@ -253,10 +252,10 @@ export default function OnboardingPage() {
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0",
                     isActive
-                      ? "bg-wl-primary-500 text-wl-text-inverse"
+                      ? "bg-blue-500 text-white"
                       : isCompleted
-                        ? "bg-wl-success-500/20 text-wl-success-400 border border-wl-success-400/30"
-                        : "bg-wl-bg-overlay text-wl-text-tertiary border border-wl-border-default hover:border-wl-border-strong"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
+                        : "bg-[#1a1a2e] text-gray-400 border border-[#1e1e2e] hover:border-[#2e2e3e]"
                   )}
                 >
                   {step.label}
@@ -268,16 +267,16 @@ export default function OnboardingPage() {
       </div>
 
       {/* Content Card */}
-      <div className="rounded-lg border border-wl-border-default bg-wl-bg-surface p-8 mb-6 animate-in fade-in duration-300">
+      <div className="rounded-lg border border-[#1e1e2e] bg-[#12121a] p-8 mb-6 animate-in fade-in duration-300">
         {/* Step Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-wl-text-primary m-0">
+          <h1 className="text-2xl font-bold text-white m-0">
             {currentMainStep === "verify-email" && "Verify your email"}
             {currentMainStep === "choose-deployment" && "Choose deployment"}
             {currentMainStep === "configure-workspace" &&
               (subSteps.find((s) => s.id === currentSubStep)?.label || "")}
           </h1>
-          <p className="text-sm text-wl-text-secondary mt-1 m-0">
+          <p className="text-sm text-gray-400 mt-1 m-0">
             Step {mainStepIndex + 1} of {totalMainSteps}
             {currentMainStep === "configure-workspace" &&
               ` • Sub-step ${subStepIndex} of ${totalSubSteps}`}

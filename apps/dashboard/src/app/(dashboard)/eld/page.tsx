@@ -6,16 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
+import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
-  useFleetCompliance,
-  useViolations,
-  useELDEvents,
-  DutyStatus,
-} from "@/hooks/use-eld";
-import {
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
   TrendingUp,
   AlertTriangle,
   CheckCircle,
@@ -105,7 +100,7 @@ export default function ELDOverviewPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -146,7 +141,7 @@ export default function ELDOverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Driver Status Grid */}
         <div className="lg:col-span-2">
-          <Card className="border-[var(--wl-border)]">
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -171,18 +166,18 @@ export default function ELDOverviewPage() {
                     onClick={() => setSelectedDriver(driver.driverId)}
                     className={cn(
                       "p-3 rounded-lg border transition-all text-left",
-                      "hover:border-wl-primary-500/30 hover:bg-[var(--wl-bg-secondary)]",
+                      "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
                       selectedDriver === driver.driverId
-                        ? "border-wl-primary-500/50 bg-wl-primary-500/5"
-                        : "border-[var(--wl-border)]"
+                        ? "border-blue-500/50 bg-blue-500/5"
+                        : "border-[#1e1e2e]"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-wl-text-primary">
+                        <p className="text-sm font-semibold text-white">
                           {driver.name}
                         </p>
-                        <p className="text-xs text-wl-text-secondary mt-0.5">
+                        <p className="text-xs text-gray-400 mt-0.5">
                           {driver.driverId}
                         </p>
                       </div>
@@ -201,22 +196,22 @@ export default function ELDOverviewPage() {
                       <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
                         {dutyStatusIcon[driver.currentDuty]}
                       </span>
-                      <span className="text-wl-text-secondary">
+                      <span className="text-gray-400">
                         {driver.currentDuty.replace(/_/g, " ")}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3 text-xs">
                       <div className="flex-1">
-                        <span className="text-wl-text-secondary">Driving: </span>
+                        <span className="text-gray-400">Driving: </span>
                         <span
                           className={cn(
                             "font-semibold",
                             driver.drivingRemaining > 4
-                              ? "text-wl-success-400"
+                              ? "text-emerald-500"
                               : driver.drivingRemaining > 2
-                                ? "text-wl-warning-400"
-                                : "text-wl-danger-400"
+                                ? "text-amber-500"
+                                : "text-red-500"
                           )}
                         >
                           {driver.drivingRemaining.toFixed(1)}h
@@ -229,7 +224,7 @@ export default function ELDOverviewPage() {
                       )}
                     </div>
 
-                    <div className="text-xs text-wl-text-secondary mt-2 pt-2 border-t border-[var(--wl-border)]">
+                    <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-[#1e1e2e]">
                       Updated {driver.lastUpdate}
                     </div>
                   </button>
@@ -240,7 +235,7 @@ export default function ELDOverviewPage() {
         </div>
 
         {/* Violations Summary */}
-        <Card className="border-[var(--wl-border)]">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-wl-danger-400" />
@@ -263,10 +258,10 @@ export default function ELDOverviewPage() {
                 {violations.map((violation) => (
                   <div
                     key={violation.id}
-                    className="p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]"
+                    className="p-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-xs font-semibold text-wl-text-primary">
+                      <p className="text-xs font-semibold text-white">
                         {violation.type.replace(/_/g, " ")}
                       </p>
                       <Badge
@@ -282,10 +277,10 @@ export default function ELDOverviewPage() {
                         {violation.severity === "CRITICAL" ? "⚠" : "ℹ"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-wl-text-secondary">
+                    <p className="text-xs text-gray-400">
                       {violation.driverName}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {violation.duration}m ago
                     </p>
                   </div>
@@ -299,27 +294,27 @@ export default function ELDOverviewPage() {
       {/* DVIR Status & Recent Events */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* DVIR Summary */}
-        <Card className="border-[var(--wl-border)]">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Wrench className="w-5 h-5 text-wl-info-400" />
+            <CardTitle className="text-lg flex items-center gap-2 text-white">
+              <Wrench className="w-5 h-5 text-blue-500" />
               DVIR Status
             </CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+            <div className="p-3 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-wl-text-secondary">
+                <span className="text-xs font-semibold text-gray-400">
                   Completion Rate
                 </span>
-                <span className="text-lg font-bold text-wl-success-400">
+                <span className="text-lg font-bold text-emerald-500">
                   {(compliance?.dvirCompletionRate ?? 0).toFixed(1)}%
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
                 <div
-                  className="h-full bg-wl-success-500 transition-all"
+                  className="h-full bg-emerald-500 transition-all"
                   style={{ width: `${compliance?.dvirCompletionRate ?? 0}%` }}
                 />
               </div>
@@ -327,14 +322,14 @@ export default function ELDOverviewPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-wl-text-secondary">Open Defects</span>
-                <span className="font-semibold text-wl-warning-400">
+                <span className="text-gray-400">Open Defects</span>
+                <span className="font-semibold text-amber-500">
                   {compliance?.openDefects ?? 0}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-wl-text-secondary">Critical Issues</span>
-                <span className="font-semibold text-wl-danger-400">
+                <span className="text-gray-400">Critical Issues</span>
+                <span className="font-semibold text-red-500">
                   {compliance?.criticalDefects ?? 0}
                 </span>
               </div>
@@ -349,10 +344,10 @@ export default function ELDOverviewPage() {
 
         {/* Recent Events */}
         <div className="lg:col-span-2">
-          <Card className="border-[var(--wl-border)]">
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Activity className="w-5 h-5 text-wl-primary-400" />
+              <CardTitle className="text-lg flex items-center gap-2 text-white">
+                <Activity className="w-5 h-5 text-blue-500" />
                 Recent ELD Events
               </CardTitle>
             </CardHeader>
@@ -360,14 +355,14 @@ export default function ELDOverviewPage() {
             <CardContent>
               {eventsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-wl-primary-500/30 border-t-wl-primary-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-2">
                   {events.map((event) => (
                     <div
                       key={event.id}
-                      className="p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] text-xs"
+                      className="p-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-xs"
                     >
                       <div className="flex items-start gap-2">
                         <span className="text-lg mt-0.5">
@@ -380,11 +375,11 @@ export default function ELDOverviewPage() {
                                 : "✓"}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-wl-text-primary">
+                          <p className="font-semibold text-white">
                             {event.driverName}
                           </p>
-                          <p className="text-wl-text-secondary">{event.description}</p>
-                          <p className="text-wl-text-tertiary mt-0.5">
+                          <p className="text-gray-400">{event.description}</p>
+                          <p className="text-gray-500 mt-0.5">
                             {new Date(event.timestamp).toLocaleDateString()} at{" "}
                             {new Date(event.timestamp).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -403,9 +398,9 @@ export default function ELDOverviewPage() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="border-[var(--wl-border)]">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
+          <CardTitle className="text-lg text-white">Quick Actions</CardTitle>
         </CardHeader>
 
         <CardContent>

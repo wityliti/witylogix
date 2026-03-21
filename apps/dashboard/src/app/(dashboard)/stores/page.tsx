@@ -2,13 +2,10 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-import { useApiList } from '@/hooks/use-api';
-  Plus,
+import { Plus,
   Store,
   Globe,
   RefreshCw,
@@ -224,53 +221,54 @@ export default function StoresManagement() {
   };
 
   return (
-    <div className="bg-wl-bg">
+    <div className="bg-[#0a0a0f] min-h-screen">
       {/* Header */}
-      <div className="px-6 py-8 border-b border-wl-border flex justify-between items-center">
+      <div className="px-6 py-8 border-b border-[#1e1e2e] flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-wl-text mb-2">
+          <h1 className="text-2xl font-bold text-white mb-2">
             Connected Stores
           </h1>
-          <p className="text-wl-muted text-sm">
+          <p className="text-gray-400 text-sm">
             Manage all your connected e-commerce stores in one place
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddStoreModal(!showAddStoreModal)}
-          className="bg-wl-primary text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 cursor-pointer hover:opacity-90"
+          variant="primary"
+          className="flex items-center gap-2"
         >
           <Plus size={16} />
           Add Store
-        </button>
+        </Button>
       </div>
 
       <div className="p-6">
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-wl-card border border-wl-border">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-muted mb-2 text-xs">
+                  <p className="text-gray-400 mb-2 text-xs">
                     Connected Stores
                   </p>
-                  <p className="text-2xl font-bold text-wl-text">
+                  <p className="text-2xl font-bold text-white">
                     {mockStores.filter((s) => s.status !== "disconnected").length}
                   </p>
                 </div>
-                <Store size={28} className="text-wl-primary" />
+                <Store size={28} className="text-blue-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-card border border-wl-border">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-muted mb-2 text-xs">
+                  <p className="text-gray-400 mb-2 text-xs">
                     Total Products
                   </p>
-                  <p className="text-2xl font-bold text-wl-text">
+                  <p className="text-2xl font-bold text-white">
                     {mockStores.reduce((sum, s) => sum + s.productCount, 0).toLocaleString()}
                   </p>
                 </div>
@@ -279,14 +277,14 @@ export default function StoresManagement() {
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-card border border-wl-border">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-muted mb-2 text-xs">
+                  <p className="text-gray-400 mb-2 text-xs">
                     Total Orders
                   </p>
-                  <p className="text-2xl font-bold text-wl-text">
+                  <p className="text-2xl font-bold text-white">
                     {mockStores.reduce((sum, s) => sum + s.orderCount, 0).toLocaleString()}
                   </p>
                 </div>
@@ -295,18 +293,18 @@ export default function StoresManagement() {
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-card border border-wl-border">
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardContent className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-wl-muted mb-2 text-xs">
+                  <p className="text-gray-400 mb-2 text-xs">
                     Active Webhooks
                   </p>
-                  <p className="text-2xl font-bold text-wl-text">
+                  <p className="text-2xl font-bold text-white">
                     {mockStores.reduce((sum, s) => sum + s.webhooksActive, 0)}
                   </p>
                 </div>
-                <Zap size={28} className="text-wl-success" />
+                <Zap size={28} className="text-emerald-500" />
               </div>
             </CardContent>
           </Card>
@@ -314,38 +312,38 @@ export default function StoresManagement() {
 
         {/* Add Store Modal */}
         {showAddStoreModal && (
-          <Card className="bg-wl-card border border-wl-border mb-6">
+          <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
             <CardContent className="p-5">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-semibold text-wl-text">
+                <h3 className="text-base font-semibold text-white">
                   Connect New Store
                 </h3>
                 <button
                   onClick={() => setShowAddStoreModal(false)}
-                  className="bg-transparent border-none text-wl-muted cursor-pointer text-xl hover:opacity-70"
+                  className="bg-transparent border-none text-gray-400 cursor-pointer text-xl hover:opacity-70"
                 >
                   ✕
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
-                  <Store size={24} className="text-wl-primary" />
-                  <span className="text-wl-text text-sm font-medium">
+                <button className="p-4 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-blue-500 hover:bg-[#1a1a2e]">
+                  <Store size={24} className="text-blue-500" />
+                  <span className="text-white text-sm font-medium">
                     Connect Shopify
                   </span>
                 </button>
 
-                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
-                  <Globe size={24} className="text-wl-primary" />
-                  <span className="text-wl-text text-sm font-medium">
+                <button className="p-4 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-blue-500 hover:bg-[#1a1a2e]">
+                  <Globe size={24} className="text-blue-500" />
+                  <span className="text-white text-sm font-medium">
                     Connect WooCommerce
                   </span>
                 </button>
 
-                <button className="p-4 bg-wl-bg border border-wl-border rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-wl-primary hover:bg-opacity-5">
-                  <Zap size={24} className="text-wl-primary" />
-                  <span className="text-wl-text text-sm font-medium">
+                <button className="p-4 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg cursor-pointer flex flex-col items-center gap-2 transition-all hover:border-blue-500 hover:bg-[#1a1a2e]">
+                  <Zap size={24} className="text-blue-500" />
+                  <span className="text-white text-sm font-medium">
                     Custom API
                   </span>
                 </button>
@@ -359,24 +357,24 @@ export default function StoresManagement() {
           {mockStores.map((store) => (
             <Card
               key={store.id}
-              className="bg-wl-card border border-wl-border cursor-pointer transition-all hover:border-wl-primary"
+              className="bg-[#12121a] border border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500"
             >
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-base font-semibold text-wl-text mb-1">
+                    <h3 className="text-base font-semibold text-white mb-1">
                       {store.name}
                     </h3>
-                    <p className="text-wl-muted text-xs">
+                    <p className="text-gray-400 text-xs">
                       {getPlatformIcon(store.platform)}
                     </p>
                   </div>
-                  <button className="bg-transparent border-none text-wl-muted cursor-pointer p-1 hover:opacity-70">
+                  <button className="bg-transparent border-none text-gray-400 cursor-pointer p-1 hover:opacity-70">
                     <MoreVertical size={16} />
                   </button>
                 </div>
 
-                <p className="text-wl-muted mb-4 text-xs break-all">
+                <p className="text-gray-400 mb-4 text-xs break-all">
                   {store.domain}
                 </p>
 
@@ -407,36 +405,36 @@ export default function StoresManagement() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-wl-border">
+                <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-[#1e1e2e]">
                   <div>
-                    <p className="text-wl-muted mb-1 text-xs">
+                    <p className="text-gray-400 mb-1 text-xs">
                       Products
                     </p>
-                    <p className="text-wl-text font-semibold">
+                    <p className="text-white font-semibold">
                       {store.productCount.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-wl-muted mb-1 text-xs">
+                    <p className="text-gray-400 mb-1 text-xs">
                       Orders
                     </p>
-                    <p className="text-wl-text font-semibold">
+                    <p className="text-white font-semibold">
                       {store.orderCount.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-wl-muted mb-1 text-xs">
+                    <p className="text-gray-400 mb-1 text-xs">
                       Webhooks
                     </p>
-                    <p className="text-wl-text font-semibold">
+                    <p className="text-white font-semibold">
                       {store.webhooksActive}
                     </p>
                   </div>
                   <div>
-                    <p className="text-wl-muted mb-1 text-xs">
+                    <p className="text-gray-400 mb-1 text-xs">
                       Last Sync
                     </p>
-                    <p className="text-wl-text font-semibold">
+                    <p className="text-white font-semibold">
                       {store.lastSyncDuration}
                     </p>
                   </div>
@@ -444,14 +442,14 @@ export default function StoresManagement() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <button className="flex-1 px-2 py-2 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-medium cursor-pointer flex items-center justify-center gap-1 hover:opacity-80">
+                  <Button variant="secondary" size="sm" className="flex-1 flex items-center justify-center gap-1">
                     <RefreshCw size={12} />
                     Sync Now
-                  </button>
-                  <button className="flex-1 px-2 py-2 bg-wl-primary bg-opacity-10 border border-wl-primary rounded text-wl-primary text-xs font-medium cursor-pointer flex items-center justify-center gap-1 hover:opacity-80">
+                  </Button>
+                  <Button variant="primary" size="sm" className="flex-1 flex items-center justify-center gap-1">
                     <Settings size={12} />
                     Settings
-                  </button>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -459,32 +457,32 @@ export default function StoresManagement() {
         </div>
 
         {/* Sync History */}
-        <Card className="bg-wl-card border border-wl-border">
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-wl-text mb-4">
+            <h3 className="text-base font-semibold text-white mb-4">
               Recent Sync Activity
             </h3>
 
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border">
-                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="px-3 py-3 text-left text-gray-400 font-medium text-xs uppercase">
                       Store
                     </th>
-                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
+                    <th className="px-3 py-3 text-left text-gray-400 font-medium text-xs uppercase">
                       Time
                     </th>
-                    <th className="px-3 py-3 text-center text-wl-muted font-medium text-xs uppercase">
+                    <th className="px-3 py-3 text-center text-gray-400 font-medium text-xs uppercase">
                       Status
                     </th>
-                    <th className="px-3 py-3 text-right text-wl-muted font-medium text-xs uppercase">
+                    <th className="px-3 py-3 text-right text-gray-400 font-medium text-xs uppercase">
                       Items
                     </th>
-                    <th className="px-3 py-3 text-right text-wl-muted font-medium text-xs uppercase">
+                    <th className="px-3 py-3 text-right text-gray-400 font-medium text-xs uppercase">
                       Duration
                     </th>
-                    <th className="px-3 py-3 text-left text-wl-muted font-medium text-xs uppercase">
+                    <th className="px-3 py-3 text-left text-gray-400 font-medium text-xs uppercase">
                       Message
                     </th>
                   </tr>
@@ -497,12 +495,12 @@ export default function StoresManagement() {
                     return (
                       <tr
                         key={history.id}
-                        className="border-b border-wl-border transition-all hover:bg-wl-primary hover:bg-opacity-5"
+                        className="border-b border-[#1e1e2e] transition-all hover:bg-[#1a1a2e]"
                       >
-                        <td className="px-3 py-3 text-wl-text font-medium">
+                        <td className="px-3 py-3 text-white font-medium">
                           {store?.name}
                         </td>
-                        <td className="px-3 py-3 text-wl-muted text-sm">
+                        <td className="px-3 py-3 text-gray-400 text-sm">
                           {new Date(history.timestamp).toLocaleString()}
                         </td>
                         <td className="px-3 py-3 text-center">
@@ -516,13 +514,13 @@ export default function StoresManagement() {
                             {history.status.charAt(0).toUpperCase() + history.status.slice(1)}
                           </Badge>
                         </td>
-                        <td className="px-3 py-3 text-right text-wl-text">
+                        <td className="px-3 py-3 text-right text-white">
                           {history.itemsSynced.toLocaleString()}
                         </td>
-                        <td className="px-3 py-3 text-right text-wl-muted text-sm">
+                        <td className="px-3 py-3 text-right text-gray-400 text-sm">
                           {history.duration}
                         </td>
-                        <td className="px-3 py-3 text-wl-muted text-sm">
+                        <td className="px-3 py-3 text-gray-400 text-sm">
                           {history.message}
                         </td>
                       </tr>

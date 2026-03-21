@@ -67,14 +67,14 @@ export default function WidgetConfigPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
+    <div className="min-h-screen bg-[#0a0a0f] p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-100 mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Widget Configuration
           </h1>
-          <p className="text-slate-400 text-sm">
+          <p className="text-gray-400 text-sm">
             Configure and customize your storefront widget
           </p>
         </div>
@@ -83,44 +83,44 @@ export default function WidgetConfigPage() {
           {/* Left Column - Settings */}
           <div className="flex flex-col gap-6">
             {/* Widget Features */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100">Widget Features</CardTitle>
-                <CardDescription className="text-slate-400">Enable widget features</CardDescription>
+                <CardTitle className="text-white">Widget Features</CardTitle>
+                <CardDescription className="text-gray-400">Enable widget features</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Cart Selector Toggle */}
-                <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-700">
+                <div className="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
                   <div className="flex items-center gap-3">
-                    <Settings size={18} className="text-indigo-400" />
+                    <Settings size={18} className="text-blue-400" />
                     <div>
-                      <p className="text-slate-100 text-sm font-medium">Cart Delivery Selector</p>
-                      <p className="text-slate-400 text-xs">Show delivery options</p>
+                      <p className="text-white text-sm font-medium">Cart Delivery Selector</p>
+                      <p className="text-gray-400 text-xs">Show delivery options</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCartSelectorEnabled(!cartSelectorEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      cartSelectorEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                      cartSelectorEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
                     )}
                   />
                 </div>
 
                 {/* Shipping Calculator Toggle */}
-                <div className="flex items-center justify-between p-3 bg-slate-950 rounded-lg border border-slate-700">
+                <div className="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
                   <div className="flex items-center gap-3">
-                    <Globe size={18} className="text-indigo-400" />
+                    <Globe size={18} className="text-blue-400" />
                     <div>
-                      <p className="text-slate-100 text-sm font-medium">Shipping Calculator</p>
-                      <p className="text-slate-400 text-xs">Calculate shipping costs</p>
+                      <p className="text-white text-sm font-medium">Shipping Calculator</p>
+                      <p className="text-gray-400 text-xs">Calculate shipping costs</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShippingCalcEnabled(!shippingCalcEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      shippingCalcEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                      shippingCalcEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
                     )}
                   />
                 </div>
@@ -128,21 +128,21 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Widget Appearance */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100">Appearance</CardTitle>
-                <CardDescription className="text-slate-400">Customize widget look and feel</CardDescription>
+                <CardTitle className="text-white">Appearance</CardTitle>
+                <CardDescription className="text-gray-400">Customize widget look and feel</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Position */}
                 <div>
-                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                  <label className="block text-white text-xs font-medium mb-1.5">
                     Position
                   </label>
                   <select
                     value={widgetPosition}
                     onChange={(e) => setWidgetPosition(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer hover:border-slate-600"
+                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer hover:border-[#2a2a3e]"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -154,7 +154,7 @@ export default function WidgetConfigPage() {
                 {/* Dimensions */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                    <label className="block text-white text-xs font-medium mb-1.5">
                       Width (px)
                     </label>
                     <input
@@ -163,11 +163,11 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetWidth(e.target.value)}
                       min="250"
                       max="600"
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs"
+                      className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                    <label className="block text-white text-xs font-medium mb-1.5">
                       Height (px)
                     </label>
                     <input
@@ -176,14 +176,14 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetHeight(e.target.value)}
                       min="400"
                       max="900"
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs"
+                      className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs"
                     />
                   </div>
                 </div>
 
                 {/* Border Radius */}
                 <div>
-                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                  <label className="block text-white text-xs font-medium mb-1.5">
                     Border Radius: {borderRadius}px
                   </label>
                   <input
@@ -197,26 +197,26 @@ export default function WidgetConfigPage() {
                 </div>
 
                 {/* Shadow Toggle */}
-                <div className="flex items-center justify-between p-2.5 bg-slate-950 rounded">
-                  <span className="text-slate-100 text-xs">Drop Shadow</span>
+                <div className="flex items-center justify-between p-2.5 bg-[#0a0a0f] rounded">
+                  <span className="text-white text-xs">Drop Shadow</span>
                   <button
                     onClick={() => setShadowEnabled(!shadowEnabled)}
                     className={cn(
                       'w-11 h-6 rounded-full border-none cursor-pointer transition-colors',
-                      shadowEnabled ? 'bg-indigo-500' : 'bg-slate-700'
+                      shadowEnabled ? 'bg-blue-500' : 'bg-[#1a1a2e]'
                     )}
                   />
                 </div>
 
                 {/* Font */}
                 <div>
-                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                  <label className="block text-white text-xs font-medium mb-1.5">
                     Font Family
                   </label>
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer"
                   >
                     <option value="system">System Default</option>
                     <option value="inter">Inter</option>
@@ -227,13 +227,13 @@ export default function WidgetConfigPage() {
 
                 {/* Language */}
                 <div>
-                  <label className="block text-slate-100 text-xs font-medium mb-1.5">
+                  <label className="block text-white text-xs font-medium mb-1.5">
                     Language
                   </label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer"
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -246,16 +246,16 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Color Scheme */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <Palette size={18} />
                   Colors
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-wl-text text-xs font-medium mb-2">
+                  <label className="block text-white text-xs font-medium mb-2">
                     Primary Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -263,19 +263,19 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
+                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
                     />
                     <input
                       type="text"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-wl-text text-xs font-medium mb-2">
+                  <label className="block text-white text-xs font-medium mb-2">
                     Background Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -283,19 +283,19 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
+                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
                     />
                     <input
                       type="text"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-wl-text text-xs font-medium mb-2">
+                  <label className="block text-white text-xs font-medium mb-2">
                     Text Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -303,13 +303,13 @@ export default function WidgetConfigPage() {
                       type="color"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      className="w-12 h-10 rounded border border-wl-border cursor-pointer"
+                      className="w-12 h-10 rounded border border-[#1e1e2e] cursor-pointer"
                     />
                     <input
                       type="text"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg border border-wl-border rounded text-wl-text text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-white text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -320,15 +320,15 @@ export default function WidgetConfigPage() {
           {/* Right Column - Preview & Code */}
           <div className="flex flex-col gap-6">
             {/* Widget Preview */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <Eye size={18} />
                   Widget Preview
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-wl-bg rounded-lg border border-wl-border p-4 min-h-96 flex items-center justify-center">
+                <div className="bg-[#0a0a0f] rounded-lg border border-[#1e1e2e] p-4 min-h-96 flex items-center justify-center">
                   <div
                     className="flex flex-col gap-3 overflow-hidden rounded"
                     style={{
@@ -372,51 +372,52 @@ export default function WidgetConfigPage() {
             </Card>
 
             {/* Embed Code */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100 flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2">
                   <Code size={18} />
                   Embed Code
                 </CardTitle>
-                <CardDescription className="text-slate-400">Copy and paste to your website</CardDescription>
+                <CardDescription className="text-gray-400">Copy and paste to your website</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <div className="bg-wl-bg rounded border border-wl-border p-3 max-h-64 overflow-y-auto">
-                  <pre className="text-wl-primary text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
+                <div className="bg-[#0a0a0f] rounded border border-[#1e1e2e] p-3 max-h-64 overflow-y-auto">
+                  <pre className="text-blue-400 text-xs font-mono m-0 leading-relaxed whitespace-pre-wrap break-words">
                     {embedCode}
                   </pre>
                 </div>
-                <button
+                <Button
                   onClick={handleCopyCode}
-                  className="w-full px-2 py-2 bg-wl-primary border-none rounded text-white cursor-pointer flex items-center justify-center gap-1.5 text-sm font-medium"
+                  variant="primary"
+                  className="w-full flex items-center justify-center gap-1.5"
                 >
                   {copiedCode ? <Check size={16} /> : <Copy size={16} />}
                   {copiedCode ? "Copied!" : "Copy Code"}
-                </button>
+                </Button>
               </CardContent>
             </Card>
 
             {/* Documentation */}
-            <Card className="bg-slate-900 border border-slate-700">
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="text-slate-100">Installation</CardTitle>
+                <CardTitle className="text-white">Installation</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2.5">
                 <div>
-                  <p className="text-wl-text text-xs font-medium mb-1">
+                  <p className="text-white text-xs font-medium mb-1">
                     1. Copy the embed code above
                   </p>
-                  <p className="text-wl-text text-xs font-medium mb-1">
+                  <p className="text-white text-xs font-medium mb-1">
                     2. Paste before closing &lt;/body&gt; tag
                   </p>
-                  <p className="text-wl-text text-xs font-medium mb-1">
+                  <p className="text-white text-xs font-medium mb-1">
                     3. Replace 'your-api-key-here' with your API key
                   </p>
-                  <p className="text-wl-text text-xs font-medium">
+                  <p className="text-white text-xs font-medium">
                     4. Test on your website
                   </p>
                 </div>
-                <Button className="w-full bg-wl-primary text-white border-none px-2 py-2 rounded cursor-pointer text-sm font-medium">
+                <Button variant="primary" className="w-full">
                   View Full Documentation
                 </Button>
               </CardContent>
@@ -426,14 +427,10 @@ export default function WidgetConfigPage() {
 
         {/* Save Button */}
         <div className="flex gap-3 justify-end">
-          <Button
-            className="px-5 py-2 bg-slate-700 text-slate-100 border-none rounded cursor-pointer text-sm font-medium hover:bg-slate-600"
-          >
+          <Button variant="secondary">
             Discard
           </Button>
-          <Button
-            className="px-5 py-2 bg-indigo-500 text-white border-none rounded cursor-pointer text-sm font-medium hover:bg-indigo-600"
-          >
+          <Button variant="primary">
             Save Configuration
           </Button>
         </div>

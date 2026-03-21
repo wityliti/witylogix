@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { useCrmConnection, useCrmMetrics } from "@/hooks/use-crm-connection";
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 /* ═══════════════════════════════════════════════════════════
    CRM Dashboard — Connected CRM overview with sync activity
@@ -128,12 +128,12 @@ export default function CrmDashboardPage() {
   }, []);
 
   return (
-    <div className={cn("flex flex-col min-h-screen", "bg-wl-bg-root")}>
+    <div className={cn("flex flex-col min-h-screen", "bg-[#0a0a0f]")}>
       <Header
         title="CRM Integrations"
         subtitle="Manage your connected CRM platforms and sync activity"
         actions={
-          <Button onClick={() => router.push("/dashboard/crm/connect")}>
+          <Button variant="primary" onClick={() => router.push("/dashboard/crm/connect")}>
             Add Integration
           </Button>
         }
@@ -175,7 +175,7 @@ export default function CrmDashboardPage() {
             <CardContent>
               {connectedCrms.length === 0 ? (
                 <div className={cn("py-12 text-center")}>
-                  <p className={cn("text-wl-text-tertiary mb-4")}>
+                  <p className={cn("text-gray-400 mb-4")}>
                     No CRM platforms connected yet
                   </p>
                   <Button onClick={() => router.push("/dashboard/crm/connect")}>
@@ -188,9 +188,9 @@ export default function CrmDashboardPage() {
                     <div
                       key={crm.id}
                       className={cn(
-                        "border border-wl-border-subtle rounded-lg p-4",
-                        "bg-wl-bg-surface hover:bg-wl-bg-overlay",
-                        "transition-colors duration-base"
+                        "border border-[#1e1e2e] rounded-lg p-4",
+                        "bg-[#12121a] hover:bg-[#1a1a2e]",
+                        "transition-colors duration-200"
                       )}
                     >
                       <div className={cn("flex items-start justify-between mb-4")}>
@@ -198,7 +198,7 @@ export default function CrmDashboardPage() {
                           <h4
                             className={cn(
                               "text-base font-semibold",
-                              "text-wl-text-primary"
+                              "text-white"
                             )}
                           >
                             {crm.platformName}
@@ -231,39 +231,39 @@ export default function CrmDashboardPage() {
 
                       <div className={cn("grid grid-cols-3 gap-4 text-sm")}>
                         <div>
-                          <p className={cn("text-wl-text-tertiary", "mb-1")}>
+                          <p className={cn("text-gray-400", "mb-1")}>
                             Contacts
                           </p>
                           <p
                             className={cn(
                               "text-lg font-bold",
-                              "text-wl-text-primary"
+                              "text-white"
                             )}
                           >
                             {crm.contactsSynced.toLocaleString()}
                           </p>
                         </div>
                         <div>
-                          <p className={cn("text-wl-text-tertiary", "mb-1")}>
+                          <p className={cn("text-gray-400", "mb-1")}>
                             Deals
                           </p>
                           <p
                             className={cn(
                               "text-lg font-bold",
-                              "text-wl-text-primary"
+                              "text-white"
                             )}
                           >
                             {crm.dealsSynced}
                           </p>
                         </div>
                         <div>
-                          <p className={cn("text-wl-text-tertiary", "mb-1")}>
+                          <p className={cn("text-gray-400", "mb-1")}>
                             Companies
                           </p>
                           <p
                             className={cn(
                               "text-lg font-bold",
-                              "text-wl-text-primary"
+                              "text-white"
                             )}
                           >
                             {crm.companiesSynced}
@@ -273,20 +273,20 @@ export default function CrmDashboardPage() {
 
                       <div
                         className={cn(
-                          "border-t border-wl-border-subtle",
+                          "border-t border-[#1e1e2e]",
                           "mt-4 pt-4",
-                          "text-xs text-wl-text-tertiary"
+                          "text-xs text-gray-400"
                         )}
                       >
                         <p>
                           Last sync:{" "}
-                          <span className={cn("text-wl-text-secondary")}>
+                          <span className={cn("text-gray-300")}>
                             {formatDate(crm.lastSync)}
                           </span>
                         </p>
                         <p>
                           Next sync:{" "}
-                          <span className={cn("text-wl-text-secondary")}>
+                          <span className={cn("text-gray-300")}>
                             {formatDate(crm.nextSync)}
                           </span>
                         </p>
@@ -311,9 +311,9 @@ export default function CrmDashboardPage() {
                     className={cn(
                       "flex items-center justify-between",
                       "px-4 py-3",
-                      "border border-wl-border-subtle rounded-md",
-                      "hover:bg-wl-bg-overlay",
-                      "transition-colors duration-base"
+                      "border border-[#1e1e2e] rounded-md",
+                      "hover:bg-[#1a1a2e]",
+                      "transition-colors duration-200"
                     )}
                   >
                     <div className={cn("flex-1")}>
@@ -325,17 +325,17 @@ export default function CrmDashboardPage() {
                         >
                           {event.status}
                         </Badge>
-                        <span className={cn("text-sm font-medium", "text-wl-text-primary")}>
+                        <span className={cn("text-sm font-medium", "text-white")}>
                           {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                         </span>
-                        <span className={cn("text-xs", "text-wl-text-tertiary")}>
+                        <span className={cn("text-xs", "text-gray-400")}>
                           ({event.direction.toUpperCase()})
                         </span>
                       </div>
-                      <p className={cn("text-sm text-wl-text-tertiary", "m-0")}>
+                      <p className={cn("text-sm text-gray-400", "m-0")}>
                         {event.details}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary", "mt-1", "m-0")}>
+                      <p className={cn("text-xs text-gray-400", "mt-1", "m-0")}>
                         {formatDate(event.timestamp)} • {event.recordsAffected} record
                         {event.recordsAffected !== 1 ? "s" : ""}
                       </p>
@@ -358,7 +358,7 @@ export default function CrmDashboardPage() {
 
           {/* Error Summary */}
           {aggregateStats.failedSyncs > 0 && (
-            <Card className={cn("border-wl-danger-500/20", "bg-wl-danger-500/5")}>
+            <Card className={cn("border-red-500/20", "bg-red-500/5")}>
               <CardHeader>
                 <CardTitle>Recent Errors</CardTitle>
               </CardHeader>
@@ -372,19 +372,19 @@ export default function CrmDashboardPage() {
                         className={cn(
                           "flex items-center justify-between",
                           "p-3 rounded-md",
-                          "bg-wl-danger-500/10 border border-wl-danger-500/20"
+                          "bg-red-500/10 border border-red-500/20"
                         )}
                       >
                         <div>
                           <p
                             className={cn(
                               "text-sm font-medium",
-                              "text-wl-danger-400"
+                              "text-red-400"
                             )}
                           >
                             {event.details}
                           </p>
-                          <p className={cn("text-xs text-wl-danger-300", "mt-1")}>
+                          <p className={cn("text-xs text-red-300", "mt-1")}>
                             {formatDate(event.timestamp)}
                           </p>
                         </div>

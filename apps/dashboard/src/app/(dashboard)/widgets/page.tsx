@@ -183,29 +183,29 @@ export default function WidgetsPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* Active Widgets Section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <h2 className="text-lg font-semibold text-white mb-4">
             Active Widgets
           </h2>
           <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
             {activeWidgets.map((widget, idx) => (
-              <Card key={widget.id} className="flex flex-col">
+              <Card key={widget.id} className="bg-[#12121a] border border-[#1e1e2e] flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="flex gap-2 items-center flex-1">
                       <div
-                        className="p-2 rounded-md flex items-center justify-center text-wl-text-primary"
+                        className="p-2 rounded-md flex items-center justify-center text-white"
                         style={{ background: getWidgetColor(idx) }}
                       >
                         {getWidgetIcon(widget.type)}
                       </div>
                       <div>
-                        <CardTitle className="text-base">
+                        <CardTitle className="text-base text-white">
                           {widget.name}
                         </CardTitle>
-                        <p className="text-xs text-wl-text-secondary mt-1">
+                        <p className="text-xs text-gray-400 mt-1">
                           {widget.size}
                         </p>
                       </div>
@@ -220,7 +220,7 @@ export default function WidgetsPage() {
 
                   {/* Widget Preview Placeholder */}
                   <div
-                    className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary h-30"
+                    className="border border-dashed border-[#1e1e2e] rounded-md flex items-center justify-center mb-4 text-xs text-gray-400 h-30"
                     style={{ background: getWidgetColor(idx) }}
                   >
                     Widget Preview
@@ -252,34 +252,34 @@ export default function WidgetsPage() {
         {/* Widget Gallery Section */}
         {showGallery && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+            <h2 className="text-lg font-semibold text-white mb-4">
               Widget Gallery
             </h2>
             <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
               {AVAILABLE_WIDGETS.map((widget, idx) => (
-                <Card key={widget.id} className="flex flex-col">
+                <Card key={widget.id} className="bg-[#12121a] border border-[#1e1e2e] flex flex-col">
                   <CardHeader className="pb-3">
                     <div className="flex gap-2 items-center">
                       <div
-                        className="p-2 rounded-md flex items-center justify-center text-wl-text-primary"
+                        className="p-2 rounded-md flex items-center justify-center text-white"
                         style={{ background: getWidgetColor(idx) }}
                       >
                         {getWidgetIcon(widget.type)}
                       </div>
-                      <CardTitle className="text-base">
+                      <CardTitle className="text-base text-white">
                         {widget.name}
                       </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="flex-1 pt-0 pb-4 flex flex-col">
                     {/* Description */}
-                    <p className="text-sm text-wl-text-secondary mb-4 flex-1">
+                    <p className="text-sm text-gray-400 mb-4 flex-1">
                       {widget.description}
                     </p>
 
                     {/* Preview Placeholder */}
                     <div
-                      className="border border-dashed border-wl-border-default rounded-md flex items-center justify-center mb-4 text-xs text-wl-text-secondary h-25"
+                      className="border border-dashed border-[#1e1e2e] rounded-md flex items-center justify-center mb-4 text-xs text-gray-400 h-25"
                       style={{ background: getWidgetColor(idx) }}
                     >
                       Preview
@@ -304,10 +304,10 @@ export default function WidgetsPage() {
 
         {/* Layout Preview */}
         <div>
-          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <h2 className="text-lg font-semibold text-white mb-4">
             Layout Preview
           </h2>
-          <Card className="p-6">
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
             <div
               className="grid gap-3"
               style={{
@@ -324,7 +324,7 @@ export default function WidgetsPage() {
                 return (
                   <div
                     key={widget.id}
-                    className="border-2 border-wl-border-default rounded-md p-3 flex items-center justify-center flex-col gap-2 text-sm font-semibold text-wl-text-primary text-center"
+                    className="border-2 border-[#1e1e2e] rounded-md p-3 flex items-center justify-center flex-col gap-2 text-sm font-semibold text-white text-center"
                     style={{
                       gridColumn: `span ${colSpan}`,
                       gridRow: `span ${rowSpan}`,
@@ -337,7 +337,7 @@ export default function WidgetsPage() {
                       {getWidgetIcon(widget.type)}
                       {widget.name}
                     </div>
-                    <span className="text-xs text-wl-text-secondary">
+                    <span className="text-xs text-gray-400">
                       {widget.size}
                     </span>
                   </div>
@@ -347,11 +347,11 @@ export default function WidgetsPage() {
           </Card>
 
           {/* Grid Legend */}
-          <div className="mt-4 p-4 bg-wl-bg-overlay rounded-md">
-            <p className="text-sm text-wl-text-secondary m-0 mb-2">
+          <div className="mt-4 p-4 bg-[#1a1a2e] rounded-md border border-[#1e1e2e]">
+            <p className="text-sm text-gray-400 m-0 mb-2">
               Grid: 4 columns x 3 rows - Widget sizes: 1x1, 2x1, 1x2, 2x2
             </p>
-            <p className="text-xs text-wl-text-tertiary m-0">
+            <p className="text-xs text-gray-500 m-0">
               Drag widgets to reorder. Colors indicate different widget types.
             </p>
           </div>

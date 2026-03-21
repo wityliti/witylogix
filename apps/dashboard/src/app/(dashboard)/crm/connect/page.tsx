@@ -172,7 +172,7 @@ mport { ErrorState } from '@/components/ui/error-state';
   return (
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-    <div className={cn("flex h-screen bg-wl-bg-root")}>
+    <div className={cn("flex h-screen bg-[#0a0a0f]")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
       {/* Sidebar Navigation */}
@@ -184,10 +184,10 @@ mport { ErrorState } from '@/components/ui/error-state';
         className={cn(
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-          "w-64 border-r border-wl-border-subtle",
+          "w-64 border-r border-[#1e1e2e]",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-          "bg-wl-bg-elevated overflow-y-auto",
+          "bg-[#12121a] overflow-y-auto",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
           "flex flex-col"
@@ -265,7 +265,7 @@ mport { ErrorState } from '@/components/ui/error-state';
           "text-xs font-bold",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-          "text-wl-text-secondary uppercase",
+          "text-gray-300 uppercase",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
           "tracking-wider mb-4 px-3"
@@ -319,10 +319,10 @@ mport { ErrorState } from '@/components/ui/error-state';
               step.isActive
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                ? "bg-wl-primary-500/20 border border-wl-primary-500"
+                ? "bg-blue-500/20 border border-blue-500"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                : "hover:bg-wl-bg-overlay",
+                : "hover:bg-[#1a1a2e]",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
               !step.isAccessible && "opacity-50 cursor-not-allowed"
@@ -358,16 +358,16 @@ mport { ErrorState } from '@/components/ui/error-state';
                   step.isComplete
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    ? "bg-wl-success-500 text-white"
+                    ? "bg-emerald-500 text-white"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                     : step.isActive
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      ? "bg-wl-primary-500 text-white"
+                      ? "bg-blue-500 text-white"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      : "bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary"
+                      : "bg-[#12121a] border border-[#1e1e2e] text-gray-300"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                 )}
@@ -442,7 +442,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     "truncate",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    step.isActive ? "text-wl-text-primary" : "text-wl-text-secondary"
+                    step.isActive ? "text-white" : "text-gray-300"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                   )}
@@ -484,10 +484,10 @@ mport { ErrorState } from '@/components/ui/error-state';
                 "ml-7 h-2 w-0.5",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                "bg-wl-border-subtle",
+                "bg-[#1e1e2e]",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                step.isComplete && "bg-wl-success-500"
+                step.isComplete && "bg-emerald-500"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
               )}
@@ -1182,7 +1182,7 @@ mport { ErrorState } from '@/components/ui/error-state';
             <div className={cn("space-y-6")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-              <p className={cn("text-wl-text-secondary", "leading-relaxed")}>
+              <p className={cn("text-gray-300", "leading-relaxed")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                 Choose which CRM platform you want to connect to Witylogix.
@@ -1314,7 +1314,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                 <CardContent className={cn("space-y-4")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                  <p className={cn("text-wl-text-secondary")}>
+                  <p className={cn("text-gray-300")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                     You'll be redirected to {platforms.find((p) => p.id === selectedPlatform)?.name} to authorize
@@ -1335,7 +1335,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     className={cn(
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      "bg-wl-info-500/10 border border-wl-info-500/30",
+                      "bg-blue-500/10 border border-blue-500/30",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                       "rounded-md p-4"
@@ -1347,7 +1347,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                   >
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    <p className={cn("text-sm text-wl-info-400", "m-0")}>
+                    <p className={cn("text-sm text-blue-400", "m-0")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                       We're requesting access to manage contacts, deals, and company records.
@@ -1503,10 +1503,10 @@ mport { ErrorState } from '@/components/ui/error-state';
                           syncConfig.direction === option.value
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                            ? "border-wl-primary-500 bg-wl-primary-500/10"
+                            ? "border-blue-500 bg-blue-500/10"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                            : "border-wl-border-subtle hover:border-wl-border-default"
+                            : "border-[#1e1e2e] hover:border-[#1e1e2e]"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         )}
@@ -1554,7 +1554,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                         <div>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          <p className={cn("font-semibold text-wl-text-primary", "m-0")}>
+                          <p className={cn("font-semibold text-white", "m-0")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                             {option.label}
@@ -1563,7 +1563,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                           </p>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          <p className={cn("text-sm text-wl-text-tertiary", "mt-0.5")}>
+                          <p className={cn("text-sm text-gray-400", "mt-0.5")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                             {option.desc}
@@ -1656,7 +1656,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                       />
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      <span className={cn("capitalize text-wl-text-primary", "font-medium")}>
+                      <span className={cn("capitalize text-white", "font-medium")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         {obj}
@@ -1728,7 +1728,7 @@ mport { ErrorState } from '@/components/ui/error-state';
             <div className={cn("space-y-6 max-w-2xl")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-              <p className={cn("text-wl-text-secondary")}>
+              <p className={cn("text-gray-300")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                 Verify your connection and pull sample data from your CRM.
@@ -1749,7 +1749,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                   className={cn(
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    testResults.success && "border-wl-success-500 bg-wl-success-500/5"
+                    testResults.success && "border-emerald-500 bg-emerald-500/5"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                   )}
@@ -1794,7 +1794,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                           strokeLinejoin="round"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          className="text-wl-success-400 mt-0.5 flex-shrink-0"
+                          className="text-emerald-400 mt-0.5 flex-shrink-0"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         >
@@ -1830,7 +1830,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                           strokeWidth="2"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          className="text-wl-danger-400 mt-0.5 flex-shrink-0"
+                          className="text-red-400 mt-0.5 flex-shrink-0"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         >
@@ -1863,10 +1863,10 @@ mport { ErrorState } from '@/components/ui/error-state';
                           testResults.success
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                            ? "text-wl-success-400"
+                            ? "text-emerald-400"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                            : "text-wl-danger-400"
+                            : "text-red-400"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         )}
@@ -1980,7 +1980,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     <div>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      <p className={cn("text-sm text-wl-text-tertiary", "mb-1")}>
+                      <p className={cn("text-sm text-gray-400", "mb-1")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         Platform
@@ -1989,7 +1989,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                       </p>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      <p className={cn("font-semibold text-wl-text-primary")}>
+                      <p className={cn("font-semibold text-white")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         {platforms.find((p) => p.id === selectedPlatform)?.name}
@@ -2004,7 +2004,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     <div>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      <p className={cn("text-sm text-wl-text-tertiary", "mb-1")}>
+                      <p className={cn("text-sm text-gray-400", "mb-1")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         Sync Direction
@@ -2034,7 +2034,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                   <div>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    <p className={cn("text-sm text-wl-text-tertiary", "mb-2")}>
+                    <p className={cn("text-sm text-gray-400", "mb-2")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                       Objects
@@ -2109,7 +2109,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     />
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                    <span className={cn("text-wl-text-primary", "font-medium")}>
+                    <span className={cn("text-white", "font-medium")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                       Enable this integration
@@ -2130,7 +2130,7 @@ mport { ErrorState } from '@/components/ui/error-state';
                     <div>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                      <label className={cn("block text-sm text-wl-text-secondary mb-2")}>
+                      <label className={cn("block text-sm text-gray-300 mb-2")}>
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         Sync Schedule
@@ -2154,13 +2154,13 @@ mport { ErrorState } from '@/components/ui/error-state';
                           "w-full px-3 py-2 rounded-md",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          "bg-wl-bg-surface border border-wl-border-default",
+                          "bg-[#12121a] border border-[#1e1e2e]",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          "text-wl-text-primary",
+                          "text-white",
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
-                          "focus:outline-none focus:border-wl-primary-500"
+                          "focus:outline-none focus:border-blue-500"
 mport { TableSkeleton } from '@/components/ui/loading-skeleton';
 mport { ErrorState } from '@/components/ui/error-state';
                         )}
