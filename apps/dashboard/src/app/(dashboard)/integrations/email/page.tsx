@@ -372,8 +372,8 @@ export default function EmailProviderPage() {
               className={cn(
                 "px-4 py-2 rounded-lg border transition-all whitespace-nowrap flex items-center gap-2",
                 activeProvider === provider.id
-                  ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-600"
-                  : "border-wl-neutral-700 text-wl-text-secondary hover:border-wl-primary-500/50"
+                  ? "bg-blue-500 text-white border-blue-600"
+                  : "border-[#1e1e2e] text-gray-400 hover:border-blue-500/50"
               )}
             >
               <span className="text-lg">{provider.icon}</span>
@@ -389,7 +389,7 @@ export default function EmailProviderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Left: Provider Config */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Configuration</span>
@@ -407,19 +407,19 @@ export default function EmailProviderPage() {
               <CardContent className="space-y-6">
                 {/* API Key / OAuth Config */}
                 <div>
-                  <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+                  <h4 className="text-sm font-semibold text-white mb-3">
                     Authentication Method
                   </h4>
-                  <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700">
-                    <div className="text-sm text-wl-text-secondary mb-2">
+                  <div className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+                    <div className="text-sm text-gray-400 mb-2">
                       {activeProviderData.configType === "api_key"
                         ? "API Key"
                         : "OAuth 2.0"}
                     </div>
                     {activeProviderData.apiKey && (
-                      <div className="font-mono text-xs text-wl-text-tertiary flex items-center justify-between p-2 bg-wl-bg-primary rounded">
+                      <div className="font-mono text-xs text-gray-500 flex items-center justify-between p-2 bg-[#0a0a0f] rounded">
                         <span>{activeProviderData.apiKey}</span>
-                        <Copy className="w-4 h-4 cursor-pointer hover:text-wl-text-secondary" />
+                        <Copy className="w-4 h-4 cursor-pointer hover:text-gray-400" />
                       </div>
                     )}
                   </div>
@@ -428,7 +428,7 @@ export default function EmailProviderPage() {
                 {/* Verified Domains */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-wl-text-primary">
+                    <h4 className="text-sm font-semibold text-white">
                       Verified Domains ({activeProviderData.domains.length})
                     </h4>
                     <Button variant="secondary" size="sm">
@@ -440,10 +440,10 @@ export default function EmailProviderPage() {
                     {activeProviderData.domains.map((domain, idx) => (
                       <div
                         key={idx}
-                        className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700"
+                        className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
                       >
                         <div className="flex items-center justify-between mb-3">
-                          <div className="font-mono text-sm text-wl-text-primary">
+                          <div className="font-mono text-sm text-white">
                             {domain.domain}
                           </div>
                           <Badge variant={domain.verified ? "success" : "warning"}>
@@ -455,15 +455,15 @@ export default function EmailProviderPage() {
                             {domain.dnsRecords.map((record, ridx) => (
                               <div
                                 key={ridx}
-                                className="text-xs p-2 bg-wl-bg-primary rounded font-mono text-wl-text-tertiary"
+                                className="text-xs p-2 bg-[#0a0a0f] rounded font-mono text-gray-500"
                               >
                                 <div>
-                                  <span className="text-wl-info-400">
+                                  <span className="text-cyan-400">
                                     {record.type}
                                   </span>{" "}
                                   {record.name}
                                 </div>
-                                <div className="text-wl-text-secondary mt-1">
+                                <div className="text-gray-400 mt-1">
                                   {record.value}
                                 </div>
                               </div>
@@ -477,31 +477,31 @@ export default function EmailProviderPage() {
 
                 {/* Sending Limits */}
                 <div>
-                  <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+                  <h4 className="text-sm font-semibold text-white mb-3">
                     Sending Limits
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700">
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                    <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">
                         Per Day
                       </div>
-                      <div className="text-lg font-bold text-wl-text-primary mt-1">
+                      <div className="text-lg font-bold text-white mt-1">
                         {activeProviderData.sendingLimits.perDay.toLocaleString()}
                       </div>
                     </div>
-                    <div className="p-3 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700">
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                    <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">
                         Per Second
                       </div>
-                      <div className="text-lg font-bold text-wl-text-primary mt-1">
+                      <div className="text-lg font-bold text-white mt-1">
                         {activeProviderData.sendingLimits.perSecond}
                       </div>
                     </div>
-                    <div className="p-3 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700">
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                    <div className="p-3 bg-[#12121a] rounded-lg border border-[#1e1e2e]">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">
                         Sent (24h)
                       </div>
-                      <div className="text-lg font-bold text-wl-text-primary mt-1">
+                      <div className="text-lg font-bold text-white mt-1">
                         {activeProviderData.sendingLimits.sent.toLocaleString()}
                       </div>
                     </div>
@@ -509,7 +509,7 @@ export default function EmailProviderPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-4 border-t border-wl-neutral-700">
+                <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
                   {activeProviderData.status === "active" && (
                     <>
                       <Button variant="secondary" size="sm">
@@ -533,58 +533,58 @@ export default function EmailProviderPage() {
 
           {/* Right: Quick Stats */}
           <div className="space-y-4">
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardContent className="pt-6">
-                <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
+                <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
                   Delivery Rate (24h)
                 </h4>
-                <div className="text-3xl font-bold text-wl-success-400">
+                <div className="text-3xl font-bold text-emerald-400">
                   {deliveryRate}%
                 </div>
-                <div className="text-xs text-wl-text-tertiary mt-2">
+                <div className="text-xs text-gray-500 mt-2">
                   {aggregateMetrics.delivered.toLocaleString()} of{" "}
                   {aggregateMetrics.sent.toLocaleString()} delivered
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardContent className="pt-6">
-                <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
+                <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
                   Open Rate (24h)
                 </h4>
-                <div className="text-3xl font-bold text-wl-info-400">
+                <div className="text-3xl font-bold text-cyan-400">
                   {openRate}%
                 </div>
-                <div className="text-xs text-wl-text-tertiary mt-2">
+                <div className="text-xs text-gray-500 mt-2">
                   {aggregateMetrics.opened.toLocaleString()} opens
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardContent className="pt-6">
-                <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
+                <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
                   Click Rate (24h)
                 </h4>
-                <div className="text-3xl font-bold text-wl-primary-400">
+                <div className="text-3xl font-bold text-blue-400">
                   {clickRate}%
                 </div>
-                <div className="text-xs text-wl-text-tertiary mt-2">
+                <div className="text-xs text-gray-500 mt-2">
                   {aggregateMetrics.clicked.toLocaleString()} clicks
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-wl-bg-secondary border border-wl-danger-500/20">
+            <Card className="bg-[#12121a] border border-red-500/20">
               <CardContent className="pt-6">
-                <h4 className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold mb-3">
+                <h4 className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-3">
                   Bounced (24h)
                 </h4>
-                <div className="text-3xl font-bold text-wl-danger-400">
+                <div className="text-3xl font-bold text-red-400">
                   {aggregateMetrics.bounced}
                 </div>
-                <Button variant="ghost" size="sm" className="w-full mt-3 text-wl-text-tertiary">
+                <Button variant="ghost" size="sm" className="w-full mt-3 text-gray-500">
                   Manage Suppression List
                 </Button>
               </CardContent>
@@ -594,7 +594,7 @@ export default function EmailProviderPage() {
 
         {/* Email Templates Section */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-wl-text-primary">
+          <h2 className="text-xl font-bold text-white">
             Email Templates
           </h2>
 
@@ -609,14 +609,14 @@ export default function EmailProviderPage() {
                     className={cn(
                       "w-full text-left p-4 rounded-lg border transition-all",
                       selectedTemplate === template.id
-                        ? "bg-wl-primary-500/10 border-wl-primary-500"
-                        : "bg-wl-bg-tertiary border-wl-neutral-700 hover:border-wl-primary-500/50"
+                        ? "bg-blue-500/10 border-blue-500"
+                        : "bg-[#1a1a2e] border-[#1e1e2e] hover:border-blue-500/50"
                     )}
                   >
-                    <div className="font-medium text-wl-text-primary">
+                    <div className="font-medium text-white">
                       {template.name}
                     </div>
-                    <div className="text-xs text-wl-text-tertiary mt-1">
+                    <div className="text-xs text-gray-500 mt-1">
                       {template.type.replace(/_/g, " ")}
                     </div>
                   </button>
@@ -626,7 +626,7 @@ export default function EmailProviderPage() {
 
             {/* Template Preview */}
             <div className="lg:col-span-2">
-              <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+              <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{selectedTemplateData.name}</span>
@@ -648,27 +648,27 @@ export default function EmailProviderPage() {
                 <CardContent className="space-y-4">
                   {/* Subject Line */}
                   <div>
-                    <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
+                    <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
                       Subject
                     </label>
-                    <div className="text-sm text-wl-text-primary mt-2 p-3 bg-wl-bg-secondary rounded border border-wl-neutral-700 font-mono">
+                    <div className="text-sm text-white mt-2 p-3 bg-[#12121a] rounded border border-[#1e1e2e] font-mono">
                       {selectedTemplateData.subject}
                     </div>
                   </div>
 
                   {/* Preview */}
                   <div>
-                    <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
+                    <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
                       Preview
                     </label>
-                    <div className="text-sm text-wl-text-secondary mt-2 p-4 bg-wl-bg-secondary rounded border border-wl-neutral-700">
+                    <div className="text-sm text-gray-400 mt-2 p-4 bg-[#12121a] rounded border border-[#1e1e2e]">
                       {selectedTemplateData.preview}
                     </div>
                   </div>
 
                   {/* Variables */}
                   <div>
-                    <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
+                    <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
                       Available Variables
                     </label>
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -682,15 +682,15 @@ export default function EmailProviderPage() {
 
                   {/* Test Email Form */}
                   {showTestEmail && (
-                    <div className="p-4 bg-wl-bg-secondary rounded border border-wl-primary-500/30 space-y-3">
+                    <div className="p-4 bg-[#12121a] rounded border border-blue-500/30 space-y-3">
                       <div>
-                        <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold block mb-2">
+                        <label className="text-xs uppercase tracking-wide text-gray-500 font-semibold block mb-2">
                           Recipient Email
                         </label>
                         <input
                           type="email"
                           placeholder="test@example.com"
-                          className="w-full px-3 py-2 bg-wl-bg-primary border border-wl-neutral-700 rounded text-sm text-wl-text-primary placeholder-wl-text-tertiary"
+                          className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white placeholder-wl-text-tertiary"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -711,11 +711,11 @@ export default function EmailProviderPage() {
 
         {/* Delivery Analytics */}
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-wl-text-primary">
+          <h2 className="text-xl font-bold text-white">
             Delivery Analytics (24h)
           </h2>
 
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {DELIVERY_METRICS.map((metric) => {
@@ -739,21 +739,21 @@ export default function EmailProviderPage() {
                   return (
                     <div
                       key={metric.template}
-                      className="border border-wl-neutral-700 rounded-lg p-4"
+                      className="border border-[#1e1e2e] rounded-lg p-4"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-wl-text-primary">
+                        <h4 className="font-medium text-white">
                           {metric.template}
                         </h4>
-                        <span className="text-sm text-wl-text-tertiary">
+                        <span className="text-sm text-gray-500">
                           {metric.sent.toLocaleString()} sent
                         </span>
                       </div>
 
                       {/* Stacked Bar Chart */}
-                      <div className="flex h-8 rounded-lg overflow-hidden bg-wl-bg-secondary">
+                      <div className="flex h-8 rounded-lg overflow-hidden bg-[#12121a]">
                         <div
-                          className="bg-wl-success-500 flex items-center justify-center text-xs font-bold text-white"
+                          className="bg-emerald-500 flex items-center justify-center text-xs font-bold text-white"
                           style={{
                             width: `${delivered}%`,
                           }}
@@ -762,7 +762,7 @@ export default function EmailProviderPage() {
                           {delivered > 15 && `${delivered}%`}
                         </div>
                         <div
-                          className="bg-wl-info-500 flex items-center justify-center text-xs font-bold text-white"
+                          className="bg-cyan-500 flex items-center justify-center text-xs font-bold text-white"
                           style={{
                             width: `${(metric.opened / metric.sent) * 100}%`,
                           }}
@@ -772,7 +772,7 @@ export default function EmailProviderPage() {
                             `${((metric.opened / metric.sent) * 100).toFixed(0)}%`}
                         </div>
                         <div
-                          className="bg-wl-primary-500 flex items-center justify-center text-xs font-bold text-white"
+                          className="bg-blue-500 flex items-center justify-center text-xs font-bold text-white"
                           style={{
                             width: `${(metric.clicked / metric.sent) * 100}%`,
                           }}
@@ -782,7 +782,7 @@ export default function EmailProviderPage() {
                             `${((metric.clicked / metric.sent) * 100).toFixed(0)}%`}
                         </div>
                         <div
-                          className="bg-wl-danger-500 flex items-center justify-center text-xs font-bold text-white"
+                          className="bg-red-500 flex items-center justify-center text-xs font-bold text-white"
                           style={{
                             width: `${bounced}%`,
                           }}
@@ -795,26 +795,26 @@ export default function EmailProviderPage() {
                       {/* Metrics */}
                       <div className="grid grid-cols-4 gap-2 mt-3 text-xs">
                         <div>
-                          <span className="inline-block w-2 h-2 bg-wl-success-500 rounded-full mr-1" />
-                          <span className="text-wl-text-tertiary">
+                          <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1" />
+                          <span className="text-gray-500">
                             Delivered: {metric.delivered}
                           </span>
                         </div>
                         <div>
-                          <span className="inline-block w-2 h-2 bg-wl-info-500 rounded-full mr-1" />
-                          <span className="text-wl-text-tertiary">
+                          <span className="inline-block w-2 h-2 bg-cyan-500 rounded-full mr-1" />
+                          <span className="text-gray-500">
                             Opened: {metric.opened}
                           </span>
                         </div>
                         <div>
-                          <span className="inline-block w-2 h-2 bg-wl-primary-500 rounded-full mr-1" />
-                          <span className="text-wl-text-tertiary">
+                          <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-1" />
+                          <span className="text-gray-500">
                             Clicked: {metric.clicked}
                           </span>
                         </div>
                         <div>
-                          <span className="inline-block w-2 h-2 bg-wl-danger-500 rounded-full mr-1" />
-                          <span className="text-wl-text-tertiary">
+                          <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-1" />
+                          <span className="text-gray-500">
                             Bounced: {metric.bounced}
                           </span>
                         </div>

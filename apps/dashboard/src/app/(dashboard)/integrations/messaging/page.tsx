@@ -174,7 +174,7 @@ function BarChart({ data, height = 120 }: { data: number[]; height?: number }) {
               y={y}
               width={16}
               height={barHeight}
-              fill="var(--wl-primary-500)"
+              fill="#3b82f6"
               opacity="0.8"
             />
           </g>
@@ -210,7 +210,7 @@ export default function MessagingPage() {
         actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn("p-6 space-y-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
         {/* Channel Tabs */}
         <div className={cn("flex gap-2 mb-4")}>
           {(["SMS", "PUSH", "CHAT"] as const).map((channel) => (
@@ -220,8 +220,8 @@ export default function MessagingPage() {
               className={cn(
                 "px-4 py-2 rounded-md font-semibold text-sm transition",
                 selectedChannel === channel
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-wl-bg-elevated text-wl-text-secondary hover:bg-wl-bg-surface"
+                  ? "bg-blue-500 text-white"
+                  : "bg-[#1a1a2e] text-gray-400 hover:bg-[#12121a]"
               )}
             >
               {channel}
@@ -236,11 +236,11 @@ export default function MessagingPage() {
               <CardTitle className="text-sm">Total Sent</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {(channelProviders.reduce((sum, p) => sum + p.deliveryStats.sent, 0) / 1000).toFixed(0)}
-                <span className="text-xs text-wl-text-tertiary">k</span>
+                <span className="text-xs text-gray-300">k</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>messages sent</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>messages sent</p>
             </div>
           </Card>
 
@@ -249,15 +249,15 @@ export default function MessagingPage() {
               <CardTitle className="text-sm">Delivered</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-success-500")}>
+              <div className={cn("text-2xl font-bold text-emerald-500")}>
                 {(
                   (channelProviders.reduce((sum, p) => sum + p.deliveryStats.delivered, 0) /
                     channelProviders.reduce((sum, p) => sum + p.deliveryStats.sent, 0)) *
                   100
                 ).toFixed(1)}
-                <span className="text-xs text-wl-text-tertiary">%</span>
+                <span className="text-xs text-gray-300">%</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>delivery rate</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>delivery rate</p>
             </div>
           </Card>
 
@@ -266,10 +266,10 @@ export default function MessagingPage() {
               <CardTitle className="text-sm">Failed</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-warning-500")}>
+              <div className={cn("text-2xl font-bold text-amber-500")}>
                 {channelProviders.reduce((sum, p) => sum + p.deliveryStats.failed, 0)}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>messages failed</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>messages failed</p>
             </div>
           </Card>
 
@@ -278,14 +278,14 @@ export default function MessagingPage() {
               <CardTitle className="text-sm">Bounce Rate</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {(
                   channelProviders.reduce((sum, p) => sum + p.deliveryStats.bounceRate, 0) /
                   channelProviders.length
                 ).toFixed(2)}
-                <span className="text-xs text-wl-text-tertiary">%</span>
+                <span className="text-xs text-gray-300">%</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>avg bounce rate</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>avg bounce rate</p>
             </div>
           </Card>
         </div>
@@ -300,12 +300,12 @@ export default function MessagingPage() {
               </CardHeader>
               <div className={cn("p-4 pt-0 space-y-4")}>
                 <div>
-                  <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                     Primary Provider for {selectedChannel}
                   </label>
                   <select
                     className={cn(
-                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                     )}
                     defaultValue={channelProviders[0]?.id || ""}
                   >
@@ -318,14 +318,14 @@ export default function MessagingPage() {
                 </div>
 
                 <div>
-                  <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                     Fallback Providers
                   </label>
                   <div className={cn("space-y-2")}>
                     {channelProviders.map((provider) => (
                       <label key={provider.id} className={cn("flex items-center gap-2")}>
                         <input type="checkbox" className={cn("w-4 h-4")} defaultChecked />
-                        <span className={cn("text-sm text-wl-text-primary")}>{provider.name}</span>
+                        <span className={cn("text-sm text-white")}>{provider.name}</span>
                       </label>
                     ))}
                   </div>
@@ -343,13 +343,13 @@ export default function MessagingPage() {
                   <div
                     key={provider.id}
                     className={cn(
-                      "p-4 rounded border border-wl-border-subtle hover:border-wl-primary-400 transition"
+                      "p-4 rounded border border-[#1e1e2e] hover:border-blue-400 transition"
                     )}
                   >
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div>
-                        <h4 className={cn("font-semibold text-wl-text-primary")}>{provider.name}</h4>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>
+                        <h4 className={cn("font-semibold text-white")}>{provider.name}</h4>
+                        <p className={cn("text-xs text-gray-300")}>
                           Rate limit: {provider.rateLimit.toLocaleString()} messages/day
                         </p>
                       </div>
@@ -358,32 +358,32 @@ export default function MessagingPage() {
 
                     <div className={cn("grid grid-cols-4 gap-3 text-sm mb-3")}>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Sent</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-xs text-gray-300")}>Sent</p>
+                        <p className={cn("font-semibold text-white")}>
                           {(provider.deliveryStats.sent / 1000).toFixed(1)}k
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Delivered</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-xs text-gray-300")}>Delivered</p>
+                        <p className={cn("font-semibold text-white")}>
                           {(provider.deliveryStats.delivered / 1000).toFixed(1)}k
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Failed</p>
-                        <p className={cn("font-semibold text-wl-warning-500")}>
+                        <p className={cn("text-xs text-gray-300")}>Failed</p>
+                        <p className={cn("font-semibold text-amber-500")}>
                           {provider.deliveryStats.failed}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Bounce</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-xs text-gray-300")}>Bounce</p>
+                        <p className={cn("font-semibold text-white")}>
                           {provider.deliveryStats.bounceRate.toFixed(2)}%
                         </p>
                       </div>
                     </div>
 
-                    <div className={cn("h-12 bg-wl-bg-surface rounded mb-3")}>
+                    <div className={cn("h-12 bg-[#12121a] rounded mb-3")}>
                       <BarChart data={[45, 38, 52, 48, 55, 42, 50]} height={48} />
                     </div>
 
@@ -410,14 +410,14 @@ export default function MessagingPage() {
               </CardHeader>
               <div className={cn("p-4 pt-0 space-y-3")}>
                 <div>
-                  <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                     Channel
                   </label>
                   <select
                     value={testChannel}
                     onChange={(e) => setTestChannel(e.target.value as ChannelType)}
                     className={cn(
-                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                     )}
                   >
                     {(["SMS", "PUSH", "CHAT"] as const).map((ch) => (
@@ -429,7 +429,7 @@ export default function MessagingPage() {
                 </div>
 
                 <div>
-                  <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                     {testChannel === "SMS" ? "Phone Number" : testChannel === "PUSH" ? "Device Token" : "User ID"}
                   </label>
                   <input
@@ -444,20 +444,20 @@ export default function MessagingPage() {
                           : "user_id_..."
                     }
                     className={cn(
-                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                     )}
                   />
                 </div>
 
                 <div>
-                  <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                  <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                     Message Content
                   </label>
                   <textarea
                     placeholder="Test message content..."
                     rows={3}
                     className={cn(
-                      "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                      "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                     )}
                   />
                 </div>
@@ -476,17 +476,17 @@ export default function MessagingPage() {
               <div className={cn("p-4 pt-0 space-y-3")}>
                 {channelProviders.map((provider) => (
                   <div key={provider.id}>
-                    <p className={cn("text-xs font-semibold text-wl-text-secondary mb-1")}>
+                    <p className={cn("text-xs font-semibold text-gray-400 mb-1")}>
                       {provider.name}
                     </p>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("flex-1 h-2 rounded bg-wl-bg-surface overflow-hidden")}>
+                      <div className={cn("flex-1 h-2 rounded bg-[#12121a] overflow-hidden")}>
                         <div
-                          className={cn("h-full bg-wl-primary-500")}
+                          className={cn("h-full bg-blue-500")}
                           style={{ width: "65%" }}
                         />
                       </div>
-                      <span className={cn("text-xs text-wl-text-tertiary")}>650/1000</span>
+                      <span className={cn("text-xs text-gray-300")}>650/1000</span>
                     </div>
                   </div>
                 ))}
@@ -510,16 +510,16 @@ export default function MessagingPage() {
                     className={cn(
                       "p-3 rounded cursor-pointer transition",
                       selectedTemplate === template.id
-                        ? "bg-wl-primary-500/10 border border-wl-primary-400"
-                        : "bg-wl-bg-surface border border-wl-border-subtle hover:border-wl-primary-400"
+                        ? "bg-blue-500/10 border border-blue-400"
+                        : "bg-[#12121a] border border-[#1e1e2e] hover:border-blue-400"
                     )}
                   >
-                    <p className={cn("font-semibold text-wl-text-primary text-sm")}>{template.name}</p>
+                    <p className={cn("font-semibold text-white text-sm")}>{template.name}</p>
                     <div className={cn("flex items-center gap-2 mt-1")}>
                       <Badge variant="primary" className="text-xs">
                         {template.channel}
                       </Badge>
-                      <span className={cn("text-xs text-wl-text-tertiary")}>{template.lastModified}</span>
+                      <span className={cn("text-xs text-gray-300")}>{template.lastModified}</span>
                     </div>
                   </div>
                 ))}
@@ -528,42 +528,42 @@ export default function MessagingPage() {
               {selected && (
                 <div className={cn("lg:col-span-2 space-y-4")}>
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       Template Name
                     </label>
                     <input
                       type="text"
                       value={selected.name}
                       className={cn(
-                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                       )}
                       readOnly
                     />
                   </div>
 
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       Channel
                     </label>
-                    <p className={cn("text-sm text-wl-text-primary")}>{selected.channel}</p>
+                    <p className={cn("text-sm text-white")}>{selected.channel}</p>
                   </div>
 
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       Content
                     </label>
                     <textarea
                       value={selected.content}
                       rows={4}
                       className={cn(
-                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none font-mono"
+                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none font-mono"
                       )}
                       readOnly
                     />
                   </div>
 
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       Variables
                     </label>
                     <div className={cn("flex flex-wrap gap-2")}>

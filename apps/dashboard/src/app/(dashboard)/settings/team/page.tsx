@@ -103,7 +103,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Team Management"
         subtitle="Manage team members and their roles"
@@ -121,14 +121,14 @@ export default function TeamPage() {
 
           {/* Invite Dialog */}
           {showInviteDialog && (
-            <Card className="border-[var(--wl-primary)]/50 bg-[var(--wl-bg-secondary)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle>Invite Team Member</CardTitle>
                 <CardDescription>Add a new member to your team</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Email Address
                   </label>
                   <Input
@@ -139,13 +139,13 @@ export default function TeamPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Role
                   </label>
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
-                    className="w-full px-3 py-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
                   >
                     <option value="viewer">Viewer - Read-only access</option>
                     <option value="member">Member - Can edit content</option>
@@ -177,7 +177,7 @@ export default function TeamPage() {
           )}
 
           {/* Team Members */}
-          <Card>
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardHeader>
               <CardTitle>Team Members ({members.length})</CardTitle>
               <CardDescription>Manage your team and their permissions</CardDescription>
@@ -187,7 +187,7 @@ export default function TeamPage() {
                 {members.map((member) => (
                   <div
                     key={member.id}
-                    className="p-4 border border-[var(--wl-border)] rounded-lg hover:bg-[var(--wl-bg-secondary)]/50 transition-all"
+                    className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e] transition-all"
                   >
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex items-start gap-3 flex-1">
@@ -197,10 +197,10 @@ export default function TeamPage() {
                           className="w-10 h-10 rounded-full"
                         />
                         <div className="flex-1">
-                          <p className="font-semibold text-[var(--wl-text-primary)]">
+                          <p className="font-semibold text-white">
                             {member.name}
                           </p>
-                          <p className="text-xs text-[var(--wl-text-secondary)]">
+                          <p className="text-xs text-gray-400">
                             {member.email}
                           </p>
                         </div>
@@ -210,7 +210,7 @@ export default function TeamPage() {
                           <select
                             value={newRole}
                             onChange={(e) => setNewRole(e.target.value as typeof newRole)}
-                            className="px-2 py-1 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded text-sm"
+                            className="px-2 py-1 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded text-sm"
                           >
                             <option value="viewer">Viewer</option>
                             <option value="member">Member</option>
@@ -262,7 +262,7 @@ export default function TeamPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-[var(--wl-text-secondary)]">
+                    <div className="flex items-center gap-4 text-xs text-gray-400">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         <span>Last active: {member.lastActive}</span>
@@ -271,8 +271,8 @@ export default function TeamPage() {
                     </div>
 
                     {removeConfirmId === member.id && (
-                      <div className="mt-3 p-3 bg-[var(--wl-danger)]/10 border border-[var(--wl-danger)]/30 rounded-lg flex items-center justify-between gap-3">
-                        <p className="text-xs text-[var(--wl-text-primary)]">
+                      <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between gap-3">
+                        <p className="text-xs text-white">
                           Remove this member from the team?
                         </p>
                         <div className="flex gap-2">
@@ -301,7 +301,7 @@ export default function TeamPage() {
 
           {/* Pending Invitations */}
           {invitations.length > 0 && (
-            <Card>
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle>Pending Invitations ({invitations.length})</CardTitle>
                 <CardDescription>Awaiting acceptance</CardDescription>
@@ -311,16 +311,16 @@ export default function TeamPage() {
                   {invitations.map((invitation) => (
                     <div
                       key={invitation.id}
-                      className="p-4 border border-[var(--wl-border)] rounded-lg hover:bg-[var(--wl-bg-secondary)]/50 transition-all"
+                      className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e] transition-all"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 flex-1">
-                          <Mail className="w-5 h-5 text-[var(--wl-text-secondary)]" />
+                          <Mail className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="font-semibold text-[var(--wl-text-primary)]">
+                            <p className="font-semibold text-white">
                               {invitation.email}
                             </p>
-                            <p className="text-xs text-[var(--wl-text-secondary)]">
+                            <p className="text-xs text-gray-400">
                               Invited: {invitation.invitedAt}
                             </p>
                           </div>
@@ -353,15 +353,15 @@ export default function TeamPage() {
           )}
 
           {/* Info */}
-          <Card className="bg-[var(--wl-info)]/5 border border-[var(--wl-info)]/30">
+          <Card className="bg-blue-500/5 border border-blue-500/30">
             <CardContent className="pt-6">
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-[var(--wl-info)] flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
+                  <p className="text-sm font-semibold text-white mb-1">
                     Role Permissions
                   </p>
-                  <ul className="text-xs text-[var(--wl-text-secondary)] space-y-1">
+                  <ul className="text-xs text-gray-400 space-y-1">
                     <li><strong>Owner:</strong> Full access, can manage team and billing</li>
                     <li><strong>Admin:</strong> Full access to all features and settings</li>
                     <li><strong>Member:</strong> Can create and edit content</li>

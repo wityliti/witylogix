@@ -496,7 +496,7 @@ export default function FreightIntegrationsPage() {
         }
       />
 
-      <div className={cn("p-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f]")}>
         {/* Top Stats */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
@@ -504,7 +504,7 @@ export default function FreightIntegrationsPage() {
             value={totalLoadsAvailable.toLocaleString()}
             change={{ value: 18, label: "this week" }}
             icon={<Truck size={16} />}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
@@ -512,7 +512,7 @@ export default function FreightIntegrationsPage() {
             value={totalLoadsBooked}
             change={{ value: 22, label: "vs last month" }}
             icon={<CheckCircle size={16} />}
-            accentColor="var(--wl-success-500)"
+            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
@@ -520,7 +520,7 @@ export default function FreightIntegrationsPage() {
             value={`$${bestRate}/mi`}
             change={{ value: -4, label: "vs avg" }}
             icon={<TrendingDown size={16} />}
-            accentColor="var(--wl-info-500)"
+            accentColor="#3b82f6"
             index={2}
           />
           <StatCard
@@ -528,7 +528,7 @@ export default function FreightIntegrationsPage() {
             value={`$${avgRate}/mi`}
             change={{ value: 2, label: "vs week ago" }}
             icon={<TrendingUp size={16} />}
-            accentColor="var(--wl-warning-500)"
+            accentColor="#3b82f6"
             index={3}
           />
         </div>
@@ -540,7 +540,7 @@ export default function FreightIntegrationsPage() {
             return (
               <Card
                 key={conn.id}
-                className={cn("wl-animate-in")}
+                className={cn("blue-500")}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <div className={cn("p-3")}>
@@ -548,19 +548,19 @@ export default function FreightIntegrationsPage() {
                     <span className={cn("text-lg")}>{provider?.icon}</span>
                     <Badge variant="success" dot>Connected</Badge>
                   </div>
-                  <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
+                  <p className={cn("text-xs font-semibold text-white mb-2")}>
                     {provider?.name}
                   </p>
                   <div className={cn("text-xs space-y-1")}>
                     <div className={cn("flex justify-between")}>
-                      <span className={cn("text-wl-text-tertiary")}>Available:</span>
-                      <span className={cn("font-bold text-wl-text-primary")}>
+                      <span className={cn("text-gray-300")}>Available:</span>
+                      <span className={cn("font-bold text-white")}>
                         {conn.loadsAvailable.toLocaleString()}
                       </span>
                     </div>
                     <div className={cn("flex justify-between")}>
-                      <span className={cn("text-wl-text-tertiary")}>Booked:</span>
-                      <span className={cn("font-bold text-wl-success-400")}>
+                      <span className={cn("text-gray-300")}>Booked:</span>
+                      <span className={cn("font-bold text-emerald-500")}>
                         {conn.loadsBooked}
                       </span>
                     </div>
@@ -572,7 +572,7 @@ export default function FreightIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-wl-bg-overlay rounded-md p-1 w-fit flex-wrap")}>
+        <div className={cn("flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit flex-wrap")}>
           {(["loads", "rates", "bookings", "compliance"] as const).map((v) => (
             <button
               key={v}
@@ -580,8 +580,8 @@ export default function FreightIntegrationsPage() {
               className={cn(
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-transparent text-wl-text-tertiary"
+                  ? "bg-blue-500 text-white"
+                  : "bg-transparent text-gray-300"
               )}
             >
               {v}
@@ -593,7 +593,7 @@ export default function FreightIntegrationsPage() {
         {view === "loads" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Aggregated Load Board ({AGGREGATED_LOADS.length})
               </h3>
               <Button variant="secondary" size="sm">
@@ -610,8 +610,8 @@ export default function FreightIntegrationsPage() {
                 <Card
                   key={load.id}
                   className={cn(
-                    "cursor-pointer transition-all wl-animate-in",
-                    isExpanded && "ring-1 ring-wl-primary-400"
+                    "cursor-pointer transition-all blue-500",
+                    isExpanded && "ring-1 ring-blue-400"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                   onClick={() => setExpandedLoad(isExpanded ? null : load.id)}
@@ -620,20 +620,20 @@ export default function FreightIntegrationsPage() {
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div className={cn("flex-1 min-w-0")}>
                         <div className={cn("flex items-center gap-2 mb-1")}>
-                          <Map size={14} className={cn("text-wl-primary-400 shrink-0")} />
-                          <p className={cn("text-sm font-semibold text-wl-text-primary truncate")}>
+                          <Map size={14} className={cn("text-blue-400 shrink-0")} />
+                          <p className={cn("text-sm font-semibold text-white truncate")}>
                             {load.origin} → {load.destination}
                           </p>
                         </div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>
+                        <p className={cn("text-xs text-gray-300")}>
                           {load.distance} mi • {load.weight.toLocaleString()} lbs • {load.equipment}
                         </p>
                       </div>
                       <div className={cn("text-right shrink-0")}>
-                        <p className={cn("text-xl font-bold text-wl-primary-400")}>
+                        <p className={cn("text-xl font-bold text-blue-400")}>
                           ${load.bestRate.toLocaleString()}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>
+                        <p className={cn("text-xs text-gray-300")}>
                           ${pcpm}/mi
                         </p>
                       </div>
@@ -646,42 +646,42 @@ export default function FreightIntegrationsPage() {
                           <span
                             key={source}
                             className={cn(
-                              "text-xs px-1.5 py-0.5 rounded bg-wl-bg-surface text-wl-text-tertiary font-medium"
+                              "text-xs px-1.5 py-0.5 rounded bg-[#12121a] text-gray-300 font-medium"
                             )}
                           >
                             {prov?.name.split(" ")[0]}
                           </span>
                         );
                       })}
-                      <span className={cn("text-xs text-wl-text-tertiary ml-auto")}>
+                      <span className={cn("text-xs text-gray-300 ml-auto")}>
                         {load.posted}
                       </span>
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-wl-border-subtle pt-3 mt-3 space-y-3")}>
+                      <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
                         <div className={cn("grid grid-cols-4 gap-2 text-xs")}>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Best Rate</p>
-                            <p className={cn("font-bold text-wl-primary-400")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Best Rate</p>
+                            <p className={cn("font-bold text-blue-400")}>
                               ${load.bestRate.toLocaleString()}
                             </p>
                           </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Avg Rate</p>
-                            <p className={cn("font-bold text-wl-text-primary")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Avg Rate</p>
+                            <p className={cn("font-bold text-white")}>
                               ${load.avgRate.toLocaleString()}
                             </p>
                           </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Carriers</p>
-                            <p className={cn("font-bold text-wl-text-primary")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Carriers</p>
+                            <p className={cn("font-bold text-white")}>
                               {load.carriers}
                             </p>
                           </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Pickup</p>
-                            <p className={cn("font-bold text-wl-text-primary text-xs")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Pickup</p>
+                            <p className={cn("font-bold text-white text-xs")}>
                               {load.pickup}
                             </p>
                           </div>
@@ -711,7 +711,7 @@ export default function FreightIntegrationsPage() {
         {/* Rates View */}
         {view === "rates" && (
           <div className={cn("space-y-4")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Rate Comparison Matrix
             </h3>
 
@@ -724,8 +724,8 @@ export default function FreightIntegrationsPage() {
                   className={cn(
                     "px-3 py-1.5 rounded border text-xs font-semibold cursor-pointer transition-all",
                     selectedLane === comp.lane
-                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                      : "border-wl-border-subtle text-wl-text-tertiary hover:border-wl-primary-400"
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "border-[#1e1e2e] text-gray-300 hover:border-blue-400"
                   )}
                 >
                   {comp.lane}
@@ -740,23 +740,23 @@ export default function FreightIntegrationsPage() {
               return (
                 <Card
                   key={`rate-detail-${comp.lane}`}
-                  className={cn("mb-6 wl-animate-in")}
+                  className={cn("mb-6 blue-500")}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-center justify-between mb-4")}>
                       <div>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-sm font-semibold text-white")}>
                           {comp.origin} → {comp.destination}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                        <p className={cn("text-xs text-gray-300 mt-1")}>
                           {comp.count_last_30} loads in last 30 days
                         </p>
                       </div>
                       <div className={cn("text-right")}>
-                        <p className={cn("text-2xl font-bold text-wl-text-primary")}>
+                        <p className={cn("text-2xl font-bold text-white")}>
                           ${comp.market_avg.toLocaleString()}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Market Avg</p>
+                        <p className={cn("text-xs text-gray-300")}>Market Avg</p>
                       </div>
                     </div>
 
@@ -777,20 +777,20 @@ export default function FreightIntegrationsPage() {
                             className={cn(
                               "p-3 rounded border",
                               isAbove
-                                ? "border-wl-danger-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]"
-                                : "border-wl-success-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]"
+                                ? "border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]"
+                                : "border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]"
                             )}
                           >
-                            <p className={cn("text-xs font-semibold text-wl-text-primary")}>
+                            <p className={cn("text-xs font-semibold text-white")}>
                               {source.name}
                             </p>
-                            <p className={cn("text-lg font-bold text-wl-text-primary mt-1")}>
+                            <p className={cn("text-lg font-bold text-white mt-1")}>
                               ${source.rate.toLocaleString()}
                             </p>
                             <p
                               className={cn(
                                 "text-xs font-semibold mt-1",
-                                isAbove ? "text-wl-danger-400" : "text-wl-success-400"
+                                isAbove ? "text-red-500" : "text-emerald-500"
                               )}
                             >
                               {isAbove ? "+" : "-"}${Math.abs(diff).toLocaleString()} ({diffPercent}%)
@@ -815,53 +815,53 @@ export default function FreightIntegrationsPage() {
 
             {/* Market Trends */}
             <div className={cn("mt-6")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+              <h3 className={cn("text-sm font-semibold text-white mb-4")}>
                 Market Rate Trends
               </h3>
 
               {MARKET_TRENDS.map((trend, idx) => (
                 <Card
                   key={`trend-${trend.lane}`}
-                  className={cn("mb-3 wl-animate-in")}
+                  className={cn("mb-3 blue-500")}
                   style={{ animationDelay: `${(RATE_COMPARISONS.length + idx) * 40}ms` }}
                 >
                   <div className={cn("p-3 flex items-center justify-between")}>
                     <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {trend.lane}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-0.5")}>
+                      <p className={cn("text-xs text-gray-300 mt-0.5")}>
                         {trend.volume} loads
                       </p>
                     </div>
                     <div className={cn("flex items-center gap-6 text-right shrink-0")}>
                       <div>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                        <p className={cn("text-lg font-bold text-white")}>
                           ${trend.current.toLocaleString()}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Current</p>
+                        <p className={cn("text-xs text-gray-300")}>Current</p>
                       </div>
                       <div>
                         <p
                           className={cn(
                             "font-bold text-sm",
-                            trend.change_week < 0 ? "text-wl-success-400" : "text-wl-danger-400"
+                            trend.change_week < 0 ? "text-emerald-500" : "text-red-500"
                           )}
                         >
                           {trend.change_week > 0 ? "+" : ""}{trend.change_week}%
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Week</p>
+                        <p className={cn("text-xs text-gray-300")}>Week</p>
                       </div>
                       <div>
                         <p
                           className={cn(
                             "font-bold text-sm",
-                            trend.change_month < 0 ? "text-wl-success-400" : "text-wl-danger-400"
+                            trend.change_month < 0 ? "text-emerald-500" : "text-red-500"
                           )}
                         >
                           {trend.change_month > 0 ? "+" : ""}{trend.change_month}%
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Month</p>
+                        <p className={cn("text-xs text-gray-300")}>Month</p>
                       </div>
                     </div>
                   </div>
@@ -875,7 +875,7 @@ export default function FreightIntegrationsPage() {
         {view === "bookings" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Recent Bookings ({RECENT_BOOKINGS.length})
               </h3>
               <Button variant="primary" size="sm">
@@ -887,21 +887,21 @@ export default function FreightIntegrationsPage() {
             {RECENT_BOOKINGS.map((booking, idx) => (
               <Card
                 key={booking.id}
-                className={cn("wl-animate-in")}
+                className={cn("blue-500")}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
                     <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {booking.carrier}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>
                         {booking.origin} → {booking.destination}
                       </p>
                     </div>
                     <div className={cn("text-right shrink-0")}>
-                      <p className={cn("text-lg font-bold text-wl-primary-400")}>
+                      <p className={cn("text-lg font-bold text-blue-400")}>
                         ${booking.rate.toLocaleString()}
                       </p>
                       <Badge variant={bookingStatusVariant(booking.status)} dot>
@@ -910,23 +910,23 @@ export default function FreightIntegrationsPage() {
                     </div>
                   </div>
 
-                  <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
+                  <div className={cn("bg-[#12121a] rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Booked</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-gray-300 mb-1")}>Booked</p>
+                        <p className={cn("font-semibold text-white")}>
                           {booking.booked}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Pickup</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-gray-300 mb-1")}>Pickup</p>
+                        <p className={cn("font-semibold text-white")}>
                           {booking.pickup}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Delivery</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-gray-300 mb-1")}>Delivery</p>
+                        <p className={cn("font-semibold text-white")}>
                           {booking.delivery}
                         </p>
                       </div>
@@ -934,8 +934,8 @@ export default function FreightIntegrationsPage() {
                   </div>
 
                   {booking.confirmation !== "PENDING" && (
-                    <div className={cn("mb-3 p-2 rounded bg-[rgba(16,185,129,0.1)] border border-wl-success-400 border-opacity-30")}>
-                      <p className={cn("text-xs text-wl-success-400 font-semibold")}>
+                    <div className={cn("mb-3 p-2 rounded bg-[rgba(16,185,129,0.1)] border border-emerald-400 border-opacity-30")}>
+                      <p className={cn("text-xs text-emerald-500 font-semibold")}>
                         <CheckCircle size={12} className={cn("inline mr-1")} />
                         Confirmed: {booking.confirmation}
                       </p>
@@ -966,7 +966,7 @@ export default function FreightIntegrationsPage() {
         {/* Compliance View */}
         {view === "compliance" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Compliance Documentation
             </h3>
 
@@ -982,19 +982,19 @@ export default function FreightIntegrationsPage() {
                 <Card
                   key={doc.id}
                   className={cn(
-                    "wl-animate-in",
-                    isExpiringSoon && "border-wl-warning-400 border-opacity-30"
+                    "blue-500",
+                    isExpiringSoon && "border-amber-400 border-opacity-30"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   <div className={cn("p-4 flex items-start justify-between")}>
                     <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
-                      <Lock size={16} className={cn("text-wl-primary-400 shrink-0")} />
+                      <Lock size={16} className={cn("text-blue-400 shrink-0")} />
                       <div className={cn("min-w-0")}>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-sm font-semibold text-white")}>
                           {doc.name}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                        <p className={cn("text-xs text-gray-300 mt-1")}>
                           {doc.type.replace(/_/g, " ")} • Issued {doc.uploadedDate}
                         </p>
                         {doc.expiryDate && (
@@ -1002,10 +1002,10 @@ export default function FreightIntegrationsPage() {
                             className={cn(
                               "text-xs font-semibold mt-1",
                               doc.status === "EXPIRED"
-                                ? "text-wl-danger-400"
+                                ? "text-red-500"
                                 : isExpiringSoon
-                                  ? "text-wl-warning-400"
-                                  : "text-wl-success-400"
+                                  ? "text-amber-500"
+                                  : "text-emerald-500"
                             )}
                           >
                             Expires {doc.expiryDate}
@@ -1022,8 +1022,8 @@ export default function FreightIntegrationsPage() {
               );
             })}
 
-            <div className={cn("mt-6 p-4 rounded bg-[rgba(59,130,246,0.1)] border border-wl-info-400 border-opacity-30")}>
-              <p className={cn("text-xs text-wl-info-400 font-semibold")}>
+            <div className={cn("mt-6 p-4 rounded bg-[rgba(59,130,246,0.1)] border border-blue-400 border-opacity-30")}>
+              <p className={cn("text-xs text-blue-400 font-semibold")}>
                 💡 Keep all compliance documents current. Expired documents may block load access.
               </p>
             </div>

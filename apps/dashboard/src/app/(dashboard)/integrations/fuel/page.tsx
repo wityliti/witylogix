@@ -511,7 +511,7 @@ export default function FuelIntegrationsPage() {
         }
       />
 
-      <div className={cn("p-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f]")}>
         {/* Top Stats */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
@@ -519,7 +519,7 @@ export default function FuelIntegrationsPage() {
             value={activeCards.length}
             change={{ value: 1, label: "pending" }}
             icon={<Fuel size={16} />}
-            accentColor="var(--wl-success-500)"
+            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
@@ -530,7 +530,7 @@ export default function FuelIntegrationsPage() {
               label: "vs last month",
             }}
             icon={<DollarSign size={16} />}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
@@ -538,7 +538,7 @@ export default function FuelIntegrationsPage() {
             value={totalTransactions}
             change={{ value: 6, label: "this week" }}
             icon={<Clock size={16} />}
-            accentColor="var(--wl-info-500)"
+            accentColor="#3b82f6"
             index={2}
           />
           <StatCard
@@ -546,13 +546,13 @@ export default function FuelIntegrationsPage() {
             value={flaggedTransactions}
             change={{ value: 1, label: "pending review" }}
             icon={<AlertTriangle size={16} />}
-            accentColor="var(--wl-warning-500)"
+            accentColor="#3b82f6"
             index={3}
           />
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-wl-bg-overlay rounded-md p-1 w-fit flex-wrap")}>
+        <div className={cn("flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit flex-wrap")}>
           {(["cards", "transactions", "analytics", "stations", "reports"] as const).map((v) => (
             <button
               key={v}
@@ -560,8 +560,8 @@ export default function FuelIntegrationsPage() {
               className={cn(
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-transparent text-wl-text-tertiary"
+                  ? "bg-blue-500 text-white"
+                  : "bg-transparent text-gray-300"
               )}
             >
               {v}
@@ -573,38 +573,38 @@ export default function FuelIntegrationsPage() {
         {view === "cards" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Fuel Cards ({FUEL_CARDS.length})
               </h3>
-              <span className={cn("text-xs text-wl-text-tertiary")}>
+              <span className={cn("text-xs text-gray-300")}>
                 {activeCards.length} active
               </span>
             </div>
 
             {/* Card Assignment Matrix */}
-            <Card className={cn("mb-6 bg-gradient-to-r from-wl-bg-elevated to-wl-bg-surface")}>
+            <Card className={cn("mb-6 bg-gradient-to-r from-[#0a0a0f]elevated to-[#0a0a0f]surface")}>
               <div className={cn("p-4")}>
-                <p className={cn("text-xs font-semibold text-wl-text-primary mb-4")}>
+                <p className={cn("text-xs font-semibold text-white mb-4")}>
                   Card Assignment Overview
                 </p>
                 <div className={cn("grid grid-cols-3 gap-4")}>
                   <div className={cn("text-center")}>
-                    <p className={cn("text-2xl font-bold text-wl-primary-400")}>
+                    <p className={cn("text-2xl font-bold text-blue-400")}>
                       {FUEL_CARDS.filter((c) => c.assignmentType === "DRIVER").length}
                     </p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Driver Assigned</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>Driver Assigned</p>
                   </div>
                   <div className={cn("text-center")}>
-                    <p className={cn("text-2xl font-bold text-wl-success-400")}>
+                    <p className={cn("text-2xl font-bold text-emerald-500")}>
                       {FUEL_CARDS.filter((c) => c.assignmentType === "VEHICLE").length}
                     </p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Vehicle Assigned</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>Vehicle Assigned</p>
                   </div>
                   <div className={cn("text-center")}>
-                    <p className={cn("text-2xl font-bold text-wl-warning-400")}>
+                    <p className={cn("text-2xl font-bold text-amber-500")}>
                       {FUEL_CARDS.filter((c) => c.status === "PENDING").length}
                     </p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Pending Setup</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>Pending Setup</p>
                   </div>
                 </div>
               </div>
@@ -620,8 +620,8 @@ export default function FuelIntegrationsPage() {
                 <Card
                   key={card.id}
                   className={cn(
-                    "cursor-pointer transition-all wl-animate-in",
-                    isExpanded && "ring-1 ring-wl-primary-400"
+                    "cursor-pointer transition-all blue-500",
+                    isExpanded && "ring-1 ring-blue-400"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                   onClick={() => setExpandedCard(isExpanded ? null : card.id)}
@@ -631,10 +631,10 @@ export default function FuelIntegrationsPage() {
                       <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
                         <span className={cn("text-2xl shrink-0")}>{provider?.icon}</span>
                         <div className={cn("min-w-0")}>
-                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                          <p className={cn("text-sm font-semibold text-white")}>
                             {card.cardNumber}
                           </p>
-                          <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                          <p className={cn("text-xs text-gray-300 mt-1")}>
                             {card.assignedTo}
                           </p>
                         </div>
@@ -647,58 +647,58 @@ export default function FuelIntegrationsPage() {
                     {/* Spend Progress Bar */}
                     <div className={cn("mb-3")}>
                       <div className={cn("flex items-center justify-between mb-1")}>
-                        <span className={cn("text-xs text-wl-text-tertiary")}>
+                        <span className={cn("text-xs text-gray-300")}>
                           Monthly Spend
                         </span>
-                        <span className={cn("text-xs font-semibold text-wl-text-primary")}>
+                        <span className={cn("text-xs font-semibold text-white")}>
                           ${card.monthlySpend} / ${card.monthlyLimit}
                         </span>
                       </div>
-                      <div className={cn("w-full h-2 rounded-full bg-wl-bg-surface overflow-hidden")}>
+                      <div className={cn("w-full h-2 rounded-full bg-[#12121a] overflow-hidden")}>
                         <div
                           className={cn(
                             "h-full transition-all",
                             spendPercentage > 80
-                              ? "bg-wl-danger-400"
+                              ? "bg-red-500"
                               : spendPercentage > 60
-                                ? "bg-wl-warning-400"
-                                : "bg-wl-success-400"
+                                ? "bg-amber-500"
+                                : "bg-emerald-500"
                           )}
                           style={{ width: `${Math.min(spendPercentage, 100)}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className={cn("flex items-center justify-between text-xs text-wl-text-tertiary")}>
+                    <div className={cn("flex items-center justify-between text-xs text-gray-300")}>
                       <span>Last used: {card.lastUsed}</span>
                       <span>{card.transactions} transactions</span>
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-wl-border-subtle pt-3 mt-3 space-y-3")}>
+                      <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
                         <div className={cn("grid grid-cols-3 gap-2 text-xs")}>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Provider</p>
-                            <p className={cn("font-bold text-wl-text-primary")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Provider</p>
+                            <p className={cn("font-bold text-white")}>
                               {provider?.name}
                             </p>
                           </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Issued</p>
-                            <p className={cn("font-bold text-wl-text-primary")}>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Issued</p>
+                            <p className={cn("font-bold text-white")}>
                               {card.createdDate}
                             </p>
                           </div>
-                          <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                            <p className={cn("text-wl-text-tertiary mb-1")}>Usage</p>
+                          <div className={cn("bg-[#12121a] rounded p-2")}>
+                            <p className={cn("text-gray-300 mb-1")}>Usage</p>
                             <p
                               className={cn(
                                 "font-bold",
                                 spendPercentage > 80
-                                  ? "text-wl-danger-400"
+                                  ? "text-red-500"
                                   : spendPercentage > 60
-                                    ? "text-wl-warning-400"
-                                    : "text-wl-success-400"
+                                    ? "text-amber-500"
+                                    : "text-emerald-500"
                               )}
                             >
                               {spendPercentage.toFixed(0)}%
@@ -722,7 +722,7 @@ export default function FuelIntegrationsPage() {
                           </Button>
                           {card.status !== "ACTIVE" && (
                             <Button variant="ghost" size="sm">
-                              <Trash2 size={14} className={cn("text-wl-danger-400")} />
+                              <Trash2 size={14} className={cn("text-red-500")} />
                             </Button>
                           )}
                         </div>
@@ -739,7 +739,7 @@ export default function FuelIntegrationsPage() {
         {view === "transactions" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Recent Transactions ({RECENT_TRANSACTIONS.length})
               </h3>
               {flaggedTransactions > 0 && (
@@ -760,24 +760,24 @@ export default function FuelIntegrationsPage() {
                 <Card
                   key={txn.id}
                   className={cn(
-                    "wl-animate-in",
+                    "blue-500",
                     (txn.fraudRisk === "HIGH" || txn.fraudRisk === "CRITICAL") &&
-                    "border-wl-danger-400 border-opacity-30"
+                    "border-red-400 border-opacity-30"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div className={cn("flex-1 min-w-0")}>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-sm font-semibold text-white")}>
                           {txn.location}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                        <p className={cn("text-xs text-gray-300 mt-1")}>
                           {txn.date}
                         </p>
                       </div>
                       <div className={cn("text-right shrink-0")}>
-                        <p className={cn("text-lg font-bold text-wl-primary-400")}>
+                        <p className={cn("text-lg font-bold text-blue-400")}>
                           ${txn.totalCost.toFixed(2)}
                         </p>
                         <Badge variant={transactionStatusVariant(txn.status)} dot size="sm">
@@ -786,36 +786,36 @@ export default function FuelIntegrationsPage() {
                       </div>
                     </div>
 
-                    <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
+                    <div className={cn("bg-[#12121a] rounded p-3 mb-3")}>
                       <div className={cn("grid grid-cols-4 gap-3 text-xs")}>
                         <div>
-                          <p className={cn("text-wl-text-tertiary mb-1")}>Gallons</p>
-                          <p className={cn("font-bold text-wl-text-primary")}>
+                          <p className={cn("text-gray-300 mb-1")}>Gallons</p>
+                          <p className={cn("font-bold text-white")}>
                             {txn.gallons.toFixed(1)}
                           </p>
                         </div>
                         <div>
-                          <p className={cn("text-wl-text-tertiary mb-1")}>Price/Gal</p>
-                          <p className={cn("font-bold text-wl-text-primary")}>
+                          <p className={cn("text-gray-300 mb-1")}>Price/Gal</p>
+                          <p className={cn("font-bold text-white")}>
                             ${txn.costPerGallon.toFixed(2)}
                           </p>
                         </div>
                         <div>
-                          <p className={cn("text-wl-text-tertiary mb-1")}>Provider</p>
-                          <p className={cn("font-bold text-wl-text-primary")}>
+                          <p className={cn("text-gray-300 mb-1")}>Provider</p>
+                          <p className={cn("font-bold text-white")}>
                             {provider?.name}
                           </p>
                         </div>
                         <div>
-                          <p className={cn("text-wl-text-tertiary mb-1")}>Fraud Risk</p>
+                          <p className={cn("text-gray-300 mb-1")}>Fraud Risk</p>
                           <p
                             className={cn(
                               "font-bold",
                               txn.fraudRisk === "LOW"
-                                ? "text-wl-success-400"
+                                ? "text-emerald-500"
                                 : txn.fraudRisk === "MEDIUM"
-                                  ? "text-wl-warning-400"
-                                  : "text-wl-danger-400"
+                                  ? "text-amber-500"
+                                  : "text-red-500"
                             )}
                           >
                             {txn.fraudRisk}
@@ -829,16 +829,16 @@ export default function FuelIntegrationsPage() {
                         className={cn(
                           "mb-3 p-2 rounded border",
                           txn.fraudRisk === "MEDIUM"
-                            ? "bg-[rgba(245,158,11,0.1)] border-wl-warning-400 border-opacity-30"
-                            : "bg-[rgba(239,68,68,0.1)] border-wl-danger-400 border-opacity-30"
+                            ? "bg-[rgba(245,158,11,0.1)] border-amber-400 border-opacity-30"
+                            : "bg-[rgba(239,68,68,0.1)] border-red-400 border-opacity-30"
                         )}
                       >
                         <p
                           className={cn(
                             "text-xs font-semibold",
                             txn.fraudRisk === "MEDIUM"
-                              ? "text-wl-warning-400"
-                              : "text-wl-danger-400"
+                              ? "text-amber-500"
+                              : "text-red-500"
                           )}
                         >
                           {txn.fraudRisk === "MEDIUM"
@@ -868,7 +868,7 @@ export default function FuelIntegrationsPage() {
         {/* Analytics View */}
         {view === "analytics" && (
           <div className={cn("space-y-4")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Fuel Cost Analytics
             </h3>
 
@@ -888,17 +888,17 @@ export default function FuelIntegrationsPage() {
                 <Card
                   key={`analytics-${analytics.month}`}
                   className={cn(
-                    "wl-animate-in",
-                    isCurrentMonth && "ring-1 ring-wl-primary-400"
+                    "blue-500",
+                    isCurrentMonth && "ring-1 ring-blue-400"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-center justify-between mb-4")}>
-                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {analytics.month}
                         {isCurrentMonth && (
-                          <span className={cn("ml-2 text-xs px-2 py-0.5 rounded bg-wl-primary-500 text-wl-text-inverse")}>
+                          <span className={cn("ml-2 text-xs px-2 py-0.5 rounded bg-blue-500 text-white")}>
                             Current
                           </span>
                         )}
@@ -906,17 +906,17 @@ export default function FuelIntegrationsPage() {
                     </div>
 
                     <div className={cn("grid grid-cols-2 md:grid-cols-5 gap-3 mb-4")}>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Cost</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Total Cost</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           ${analytics.totalCost.toLocaleString("en-US", {
                             maximumFractionDigits: 0,
                           })}
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Gallons</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Gallons</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           {analytics.totalGallons.toLocaleString()}
                         </p>
                         {previous && (
@@ -924,23 +924,23 @@ export default function FuelIntegrationsPage() {
                             className={cn(
                               "text-xs font-semibold mt-1",
                               parseFloat(gallonChange) > 0
-                                ? "text-wl-danger-400"
-                                : "text-wl-success-400"
+                                ? "text-red-500"
+                                : "text-emerald-500"
                             )}
                           >
                             {parseFloat(gallonChange) > 0 ? "+" : ""}{gallonChange}%
                           </p>
                         )}
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg Price/Gal</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Avg Price/Gal</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           ${analytics.avgPricePerGallon.toFixed(2)}
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Avg MPG</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Avg MPG</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           {analytics.avgMPG.toFixed(1)}
                         </p>
                         {previous && (
@@ -948,32 +948,32 @@ export default function FuelIntegrationsPage() {
                             className={cn(
                               "text-xs font-semibold mt-1",
                               parseFloat(mpgChange) > 0
-                                ? "text-wl-success-400"
-                                : "text-wl-danger-400"
+                                ? "text-emerald-500"
+                                : "text-red-500"
                             )}
                           >
                             {parseFloat(mpgChange) > 0 ? "+" : ""}{mpgChange}
                           </p>
                         )}
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Estimated Waste</p>
-                        <p className={cn("text-lg font-bold text-wl-warning-400")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Estimated Waste</p>
+                        <p className={cn("text-lg font-bold text-amber-500")}>
                           {analytics.estimatedWaste} gal
                         </p>
                       </div>
                     </div>
 
-                    <div className={cn("grid grid-cols-3 gap-3 text-xs text-wl-text-tertiary")}>
+                    <div className={cn("grid grid-cols-3 gap-3 text-xs text-gray-300")}>
                       <span>
                         Transactions:{" "}
-                        <span className={cn("font-semibold text-wl-text-primary")}>
+                        <span className={cn("font-semibold text-white")}>
                           {analytics.transactionCount}
                         </span>
                       </span>
                       <span>
                         Locations:{" "}
-                        <span className={cn("font-semibold text-wl-text-primary")}>
+                        <span className={cn("font-semibold text-white")}>
                           {analytics.uniqueLocations}
                         </span>
                       </span>
@@ -993,30 +993,30 @@ export default function FuelIntegrationsPage() {
         {/* Stations View */}
         {view === "stations" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Nearby Station Network ({STATION_NETWORK.length})
             </h3>
 
             {STATION_NETWORK.map((station, idx) => (
-              <Card key={station.id} className={cn("wl-animate-in")} style={{ animationDelay: `${idx * 40}ms` }}>
+              <Card key={station.id} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
                     <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
-                      <MapPin size={16} className={cn("text-wl-primary-400 shrink-0")} />
+                      <MapPin size={16} className={cn("text-blue-400 shrink-0")} />
                       <div className={cn("min-w-0")}>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-sm font-semibold text-white")}>
                           {station.name}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                        <p className={cn("text-xs text-gray-300 mt-1")}>
                           {station.distance} mi away • {station.location}
                         </p>
                       </div>
                     </div>
                     <div className={cn("text-right shrink-0")}>
-                      <p className={cn("text-lg font-bold text-wl-primary-400")}>
+                      <p className={cn("text-lg font-bold text-blue-400")}>
                         ${station.pricePerGallon.toFixed(2)}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary")}>per gallon</p>
+                      <p className={cn("text-xs text-gray-300")}>per gallon</p>
                     </div>
                   </div>
 
@@ -1032,7 +1032,7 @@ export default function FuelIntegrationsPage() {
                         />
                       ))}
                     </div>
-                    <span className={cn("text-xs text-wl-text-tertiary")}>
+                    <span className={cn("text-xs text-gray-300")}>
                       {station.rating.toFixed(1)}
                     </span>
                     {station.partnered && (
@@ -1044,13 +1044,13 @@ export default function FuelIntegrationsPage() {
 
                   {station.amenities.length > 0 && (
                     <div className={cn("mb-3")}>
-                      <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Amenities:</p>
+                      <p className={cn("text-xs text-gray-300 mb-1")}>Amenities:</p>
                       <div className={cn("flex flex-wrap gap-1")}>
                         {station.amenities.map((amenity) => (
                           <span
                             key={amenity}
                             className={cn(
-                              "text-xs px-2 py-0.5 rounded bg-wl-bg-surface text-wl-text-tertiary"
+                              "text-xs px-2 py-0.5 rounded bg-[#12121a] text-gray-300"
                             )}
                           >
                             {amenity}
@@ -1060,7 +1060,7 @@ export default function FuelIntegrationsPage() {
                     </div>
                   )}
 
-                  <p className={cn("text-xs text-wl-text-tertiary mb-3")}>
+                  <p className={cn("text-xs text-gray-300 mb-3")}>
                     Last updated: {station.lastPriceUpdate}
                   </p>
 
@@ -1077,7 +1077,7 @@ export default function FuelIntegrationsPage() {
         {view === "reports" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Monthly Reports
               </h3>
               <Button variant="secondary" size="sm">
@@ -1089,12 +1089,12 @@ export default function FuelIntegrationsPage() {
             {MONTHLY_REPORTS.map((report, idx) => (
               <Card
                 key={`report-${report.month}`}
-                className={cn("wl-animate-in")}
+                className={cn("blue-500")}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-center justify-between mb-4")}>
-                    <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                    <p className={cn("text-sm font-semibold text-white")}>
                       {report.month}
                     </p>
                     <Button variant="ghost" size="sm">
@@ -1104,14 +1104,14 @@ export default function FuelIntegrationsPage() {
 
                   <div className={cn("grid grid-cols-2 md:grid-cols-5 gap-3 mb-4")}>
                     {[
-                      { label: "Total Cost", value: `$${report.totalCost.toLocaleString("en-US", { maximumFractionDigits: 0 })}`, color: "text-wl-primary-400" },
-                      { label: "Gallons", value: report.totalGallons.toLocaleString(), color: "text-wl-text-primary" },
-                      { label: "Avg MPG", value: report.avgMPG.toFixed(1), color: "text-wl-success-400" },
-                      { label: "Compliance", value: `${report.complianceScore}%`, color: "text-wl-info-400" },
-                      { label: "Fraud Alerts", value: report.fraudAlerts, color: report.fraudAlerts > 0 ? "text-wl-danger-400" : "text-wl-text-primary" },
+                      { label: "Total Cost", value: `$${report.totalCost.toLocaleString("en-US", { maximumFractionDigits: 0 })}`, color: "text-blue-400" },
+                      { label: "Gallons", value: report.totalGallons.toLocaleString(), color: "text-white" },
+                      { label: "Avg MPG", value: report.avgMPG.toFixed(1), color: "text-emerald-500" },
+                      { label: "Compliance", value: `${report.complianceScore}%`, color: "text-blue-400" },
+                      { label: "Fraud Alerts", value: report.fraudAlerts, color: report.fraudAlerts > 0 ? "text-red-500" : "text-white" },
                     ].map((stat) => (
-                      <div key={stat.label} className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>
+                      <div key={stat.label} className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>
                           {stat.label}
                         </p>
                         <p className={cn(`text-lg font-bold ${stat.color}`)}>
@@ -1121,7 +1121,7 @@ export default function FuelIntegrationsPage() {
                     ))}
                   </div>
 
-                  <div className={cn("text-xs text-wl-text-tertiary")}>
+                  <div className={cn("text-xs text-gray-300")}>
                     {report.driverCount} drivers • {report.vehicleCount} vehicles
                   </div>
                 </div>

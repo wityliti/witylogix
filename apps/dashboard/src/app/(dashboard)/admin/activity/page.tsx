@@ -148,18 +148,18 @@ function ActivityIcon({ type }: { type: string }) {
 
   const Icon = icons[type] || LogIn;
   const colors: Record<string, string> = {
-    login: "text-wl-info-400",
-    order_created: "text-wl-success-400",
-    route_planned: "text-wl-primary-400",
-    setting_changed: "text-wl-warning-400",
-    logout: "text-wl-text-tertiary",
-    permission_changed: "text-wl-danger-400",
-    export: "text-wl-primary-400",
-    payment: "text-wl-success-400",
+    login: "text-blue-500",
+    order_created: "text-emerald-500",
+    route_planned: "text-blue-500",
+    setting_changed: "text-amber-500",
+    logout: "text-gray-400",
+    permission_changed: "text-red-500",
+    export: "text-blue-500",
+    payment: "text-emerald-500",
   };
 
   return (
-    <Icon className={cn("w-5 h-5", colors[type] || "text-wl-text-secondary")} />
+    <Icon className={cn("w-5 h-5", colors[type] || "text-gray-400")} />
   );
 }
 
@@ -188,10 +188,10 @@ function UserAvatar({ name }: { name: string }) {
     .toUpperCase();
 
   const colors = [
-    "bg-wl-primary-500/20 text-wl-primary-400",
-    "bg-wl-success-500/20 text-wl-success-400",
-    "bg-wl-warning-500/20 text-wl-warning-400",
-    "bg-wl-info-500/20 text-wl-info-400",
+    "bg-blue-600/20 text-blue-500",
+    "bg-emerald-600/20 text-emerald-500",
+    "bg-amber-600/20 text-amber-500",
+    "bg-blue-600/20 text-blue-500",
   ];
 
   const colorIndex =
@@ -236,7 +236,7 @@ export default function ActivityPage() {
   if (error && activities.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-wl-bg-surface">
+    <div className="min-h-screen bg-[#12121a]">
       <Header
         title="User Activity"
         subtitle="Monitor user actions and system events"
@@ -255,10 +255,10 @@ export default function ActivityPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-5">
-              <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                 Total Activities (24h)
               </p>
-              <span className="text-3xl font-bold text-wl-text-primary">
+              <span className="text-3xl font-bold text-white">
                 {activities.length}
               </span>
             </CardContent>
@@ -266,10 +266,10 @@ export default function ActivityPage() {
 
           <Card>
             <CardContent className="pt-5">
-              <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                 Unique Users
               </p>
-              <span className="text-3xl font-bold text-wl-text-primary">
+              <span className="text-3xl font-bold text-white">
                 {new Set(activities.map(a => a.userId)).size}
               </span>
             </CardContent>
@@ -277,10 +277,10 @@ export default function ActivityPage() {
 
           <Card>
             <CardContent className="pt-5">
-              <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                 Login/Logout
               </p>
-              <span className="text-3xl font-bold text-wl-text-primary">
+              <span className="text-3xl font-bold text-white">
                 {activities.filter(a => a.type === 'login' || a.type === 'logout').length}
               </span>
             </CardContent>
@@ -288,10 +288,10 @@ export default function ActivityPage() {
 
           <Card>
             <CardContent className="pt-5">
-              <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-2">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                 Orders Created
               </p>
-              <span className="text-3xl font-bold text-wl-text-primary">
+              <span className="text-3xl font-bold text-white">
                 {activities.filter(a => a.type === 'order_created').length}
               </span>
             </CardContent>
@@ -302,7 +302,7 @@ export default function ActivityPage() {
         <Card>
           <CardContent className="pt-5 space-y-4">
             <div>
-              <label className="text-xs text-wl-text-tertiary uppercase tracking-wider block mb-3 font-semibold">
+              <label className="text-xs text-gray-400 uppercase tracking-wider block mb-3 font-semibold">
                 Activity Type
               </label>
               <div className="flex gap-2 flex-wrap">
@@ -311,8 +311,8 @@ export default function ActivityPage() {
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     !selectedType
-                      ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-border-subtle"
+                      ? "bg-blue-600 text-white"
+                      : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
                   )}
                 >
                   All Activities
@@ -324,8 +324,8 @@ export default function ActivityPage() {
                     className={cn(
                       "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                       selectedType === type.id
-                        ? "bg-wl-primary-500 text-wl-text-inverse"
-                        : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-border-subtle"
+                        ? "bg-blue-600 text-white"
+                        : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
                     )}
                   >
                     {type.label}
@@ -336,13 +336,13 @@ export default function ActivityPage() {
 
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="text-xs text-wl-text-tertiary uppercase tracking-wider block mb-2 font-semibold">
+                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2 font-semibold">
                   Date Range
                 </label>
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-border-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-[#1e1e2e]-focus"
                 >
                   <option value="all">All Time</option>
                   <option value="24h">Last 24 Hours</option>
@@ -366,18 +366,18 @@ export default function ActivityPage() {
                 <div
                   key={activity.id}
                   className={cn(
-                    "px-5 py-4 flex gap-4 hover:bg-wl-bg-overlay transition-colors",
+                    "px-5 py-4 flex gap-4 hover:bg-[#1a1a2e] transition-colors",
                     idx !== filteredActivities.length - 1 &&
-                    "border-b border-wl-border-subtle"
+                    "border-b border-[#1e1e2e]"
                   )}
                 >
                   {/* Timeline */}
                   <div className="flex flex-col items-center pt-1">
-                    <div className="p-2 bg-wl-bg-overlay rounded-lg">
+                    <div className="p-2 bg-[#1a1a2e] rounded-lg">
                       <ActivityIcon type={activity.type} />
                     </div>
                     {idx !== filteredActivities.length - 1 && (
-                      <div className="w-0.5 h-12 bg-wl-border-subtle my-2" />
+                      <div className="w-0.5 h-12 bg-[#1e1e2e] my-2" />
                     )}
                   </div>
 
@@ -388,24 +388,24 @@ export default function ActivityPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <UserAvatar name={activity.userName} />
                           <div>
-                            <p className="text-sm font-semibold text-wl-text-primary">
+                            <p className="text-sm font-semibold text-white">
                               {activity.userName}
                             </p>
-                            <p className="text-xs text-wl-text-tertiary">
+                            <p className="text-xs text-gray-400">
                               {activity.userEmail}
                             </p>
                           </div>
                         </div>
-                        <p className="text-sm text-wl-text-secondary mt-2">
+                        <p className="text-sm text-gray-400 mt-2">
                           {activity.action}
                         </p>
 
                         {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                          <div className="mt-2 p-2 bg-wl-bg-elevated rounded text-xs text-wl-text-tertiary space-y-1">
+                          <div className="mt-2 p-2 bg-[#1a1a2e] rounded text-xs text-gray-400 space-y-1">
                             {Object.entries(activity.metadata).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
                                 <span>{key}:</span>
-                                <span className="text-wl-text-secondary font-medium">
+                                <span className="text-gray-400 font-medium">
                                   {typeof value === "object"
                                     ? JSON.stringify(value)
                                     : String(value)}
@@ -418,7 +418,7 @@ export default function ActivityPage() {
 
                       <div className="text-right flex-shrink-0">
                         <ActivityTypeLabel type={activity.type} />
-                        <p className="text-xs text-wl-text-tertiary mt-2 whitespace-nowrap">
+                        <p className="text-xs text-gray-400 mt-2 whitespace-nowrap">
                           {activity.timestamp}
                         </p>
                       </div>
@@ -428,7 +428,7 @@ export default function ActivityPage() {
               ))}
 
               {filteredActivities.length === 0 && (
-                <div className="p-8 text-center text-wl-text-tertiary">
+                <div className="p-8 text-center text-gray-400">
                   <p>No activities found for the selected filters.</p>
                 </div>
               )}

@@ -64,9 +64,9 @@ const getTrendIndicator = (direction: TrendDirection, percent: number): string =
 };
 
 const getTrendColor = (direction: TrendDirection): string => {
-  if (direction === "up") return "text-wl-success-400";
-  if (direction === "down") return "text-wl-danger-400";
-  return "text-wl-text-tertiary";
+  if (direction === "up") return "text-emerald-500";
+  if (direction === "down") return "text-red-500";
+  return "text-gray-400";
 };
 
 const formatRating = (rating: number): string => rating.toFixed(1);
@@ -125,8 +125,8 @@ export default function DriverPerformancePage() {
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-all duration-fast",
                 period === p
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary"
+                  ? "bg-blue-500 text-white"
+                  : "bg-[#1a1a2e] text-gray-300 hover:text-white"
               )}
             >
               {p === "daily" && "Daily"}
@@ -143,35 +143,35 @@ export default function DriverPerformancePage() {
             label="Average Score"
             value={avgScore}
             change={{ value: 2.1, label: "vs last period" }}
-            accentColor="var(--wl-primary-500)"
+            accentColor="var(--blue-500)"
             index={0}
           />
           <StatCard
             label="Avg On-Time %"
             value={`${avgOnTime}%`}
             change={{ value: 1.3, label: "vs last period" }}
-            accentColor="var(--wl-success-400)"
+            accentColor="var(--emerald-500)"
             index={1}
           />
           <StatCard
             label="Total Deliveries"
             value={totalDeliveries}
             change={{ value: 8.5, label: "this period" }}
-            accentColor="var(--wl-info-400)"
+            accentColor="var(--blue-500)"
             index={2}
           />
           <StatCard
             label="Top Tier Drivers"
             value={drivers.filter((d) => d.tier === "platinum" || d.tier === "gold").length}
             change={{ value: 0.5, label: "vs last period" }}
-            accentColor="var(--wl-warning-400)"
+            accentColor="var(--amber-500)"
             index={3}
           />
         </div>
 
         {/* Podium Section */}
         <Card className="mb-6 p-6">
-          <h3 className="text-lg font-semibold text-wl-text-primary mb-4">Top 3 Drivers</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Top 3 Drivers</h3>
           <div className="flex gap-4 items-flex-end justify-center">
             {/* Silver (2nd) */}
             {topThree[1] && (
@@ -180,8 +180,8 @@ export default function DriverPerformancePage() {
                   <span className="text-xl font-bold text-white">2</span>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-wl-text-primary">{topThree[1].name}</p>
-                  <p className="text-xs text-wl-text-secondary">{topThree[1].compositeScore}</p>
+                  <p className="text-sm font-semibold text-white">{topThree[1].name}</p>
+                  <p className="text-xs text-gray-300">{topThree[1].compositeScore}</p>
                 </div>
               </div>
             )}
@@ -193,8 +193,8 @@ export default function DriverPerformancePage() {
                   <span className="text-2xl font-bold text-white">🏆</span>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-wl-text-primary">{topThree[0].name}</p>
-                  <p className="text-xs text-wl-text-secondary">{topThree[0].compositeScore}</p>
+                  <p className="text-sm font-semibold text-white">{topThree[0].name}</p>
+                  <p className="text-xs text-gray-300">{topThree[0].compositeScore}</p>
                 </div>
               </div>
             )}
@@ -206,8 +206,8 @@ export default function DriverPerformancePage() {
                   <span className="text-xl font-bold text-white">3</span>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-wl-text-primary">{topThree[2].name}</p>
-                  <p className="text-xs text-wl-text-secondary">{topThree[2].compositeScore}</p>
+                  <p className="text-sm font-semibold text-white">{topThree[2].name}</p>
+                  <p className="text-xs text-gray-300">{topThree[2].compositeScore}</p>
                 </div>
               </div>
             )}
@@ -219,35 +219,35 @@ export default function DriverPerformancePage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary w-12">
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300 w-12">
                     Rank
                   </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-300">
                     Driver Name
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Composite Score
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Tier
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     On-Time %
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Rating
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     POD %
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Trend
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Deliveries
                   </th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                  <th className="p-3 px-4 text-center font-semibold text-gray-300">
                     Actions
                   </th>
                 </tr>
@@ -258,46 +258,46 @@ export default function DriverPerformancePage() {
                     key={driver.id}
                     onClick={() => setSelectedDriver(driver)}
                     className={cn(
-                      "border-b border-wl-border-subtle transition-colors duration-fast cursor-pointer",
-                      idx % 2 === 0 ? "bg-transparent hover:bg-wl-bg-overlay/50" : "bg-wl-bg-overlay hover:bg-wl-bg-elevated",
-                      selectedDriver?.id === driver.id && "bg-wl-bg-elevated ring-1 ring-wl-primary-500"
+                      "border-b border-[#1e1e2e] transition-colors duration-fast cursor-pointer",
+                      idx % 2 === 0 ? "bg-transparent hover:bg-[#1a1a2e]/50" : "bg-[#1a1a2e] hover:bg-[#12121a]",
+                      selectedDriver?.id === driver.id && "bg-[#12121a] ring-1 ring-blue-500"
                     )}
                   >
-                    <td className="p-3 px-4 text-center font-bold text-wl-text-primary">
+                    <td className="p-3 px-4 text-center font-bold text-white">
                       #{driver.rank}
                     </td>
-                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
+                    <td className="p-3 px-4 text-white font-semibold">
                       {driver.name}
                     </td>
                     <td className="p-3 px-4 text-center">
-                      <span className="font-bold text-wl-text-primary">
+                      <span className="font-bold text-white">
                         {driver.compositeScore.toFixed(1)}
                       </span>
-                      <span className="text-xs text-wl-text-tertiary ml-1">/100</span>
+                      <span className="text-xs text-gray-400 ml-1">/100</span>
                     </td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={getTierColor(driver.tier)} className="capitalize">
                         {driver.tier}
                       </Badge>
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                    <td className="p-3 px-4 text-center text-white font-semibold">
                       {driver.onTimePercent.toFixed(1)}%
                     </td>
                     <td className="p-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <span className="text-wl-text-primary font-semibold">
+                        <span className="text-white font-semibold">
                           {formatRating(driver.customerRating)}
                         </span>
-                        <span className="text-wl-text-secondary">⭐</span>
+                        <span className="text-gray-300">⭐</span>
                       </div>
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                    <td className="p-3 px-4 text-center text-white font-semibold">
                       {driver.podCompliance.toFixed(1)}%
                     </td>
                     <td className={cn("p-3 px-4 text-center font-semibold", getTrendColor(driver.trendDirection))}>
                       {getTrendIndicator(driver.trendDirection, driver.trendPercent)}
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                    <td className="p-3 px-4 text-center text-white font-semibold">
                       {driver.deliveriesCount}
                     </td>
                     <td className="p-3 px-4 text-center">
@@ -315,73 +315,73 @@ export default function DriverPerformancePage() {
         {/* Score Breakdown Chart for Selected Driver */}
         {selectedDriver && (
           <Card className="mt-6 p-6">
-            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Score Breakdown: {selectedDriver.name}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* On-Time Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-subtle flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
                   style={{
-                    background: `conic-gradient(var(--wl-success-400) 0deg ${selectedDriver.onTimePercent * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.onTimePercent * 3.6}deg)`,
+                    background: `conic-gradient(var(--emerald-500) 0deg ${selectedDriver.onTimePercent * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.onTimePercent * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                    <span className="font-bold text-wl-text-primary">{selectedDriver.onTimePercent.toFixed(0)}</span>
+                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                    <span className="font-bold text-white">{selectedDriver.onTimePercent.toFixed(0)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-wl-text-secondary">On-Time</p>
+                <p className="text-sm font-semibold text-gray-300">On-Time</p>
               </div>
 
               {/* Rating Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-subtle flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
                   style={{
-                    background: `conic-gradient(var(--wl-primary-500) 0deg ${(selectedDriver.customerRating / 5) * 360}deg, var(--wl-bg-overlay) ${(selectedDriver.customerRating / 5) * 360}deg)`,
+                    background: `conic-gradient(var(--blue-500) 0deg ${(selectedDriver.customerRating / 5) * 360}deg, var(--wl-bg-overlay) ${(selectedDriver.customerRating / 5) * 360}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                    <span className="font-bold text-wl-text-primary">{formatRating(selectedDriver.customerRating)}</span>
+                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                    <span className="font-bold text-white">{formatRating(selectedDriver.customerRating)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-wl-text-secondary">Rating</p>
+                <p className="text-sm font-semibold text-gray-300">Rating</p>
               </div>
 
               {/* POD Compliance */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-subtle flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
                   style={{
-                    background: `conic-gradient(var(--wl-warning-400) 0deg ${selectedDriver.podCompliance * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.podCompliance * 3.6}deg)`,
+                    background: `conic-gradient(var(--amber-500) 0deg ${selectedDriver.podCompliance * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.podCompliance * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                    <span className="font-bold text-wl-text-primary">{selectedDriver.podCompliance.toFixed(0)}</span>
+                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center">
+                    <span className="font-bold text-white">{selectedDriver.podCompliance.toFixed(0)}</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-wl-text-secondary">POD %</p>
+                <p className="text-sm font-semibold text-gray-300">POD %</p>
               </div>
 
               {/* Deliveries */}
               <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-full border-4 border-wl-border-subtle flex items-center justify-center bg-wl-bg-overlay">
-                  <span className="text-2xl font-bold text-wl-text-primary">{selectedDriver.deliveriesCount}</span>
+                <div className="w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center bg-[#1a1a2e]">
+                  <span className="text-2xl font-bold text-white">{selectedDriver.deliveriesCount}</span>
                 </div>
-                <p className="text-sm font-semibold text-wl-text-secondary">Deliveries</p>
+                <p className="text-sm font-semibold text-gray-300">Deliveries</p>
               </div>
 
               {/* Composite Score */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-24 h-24 rounded-full border-4 border-wl-border-subtle flex items-center justify-center"
+                <div className="relative w-24 h-24 rounded-full border-4 border-[#1e1e2e] flex items-center justify-center"
                   style={{
-                    background: `conic-gradient(var(--wl-info-400) 0deg ${selectedDriver.compositeScore * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.compositeScore * 3.6}deg)`,
+                    background: `conic-gradient(var(--blue-500) 0deg ${selectedDriver.compositeScore * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.compositeScore * 3.6}deg)`,
                   }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center flex-col">
-                    <span className="font-bold text-wl-text-primary">{selectedDriver.compositeScore.toFixed(0)}</span>
-                    <span className="text-xs text-wl-text-tertiary">/100</span>
+                  <div className="w-20 h-20 rounded-full bg-[#12121a] flex items-center justify-center flex-col">
+                    <span className="font-bold text-white">{selectedDriver.compositeScore.toFixed(0)}</span>
+                    <span className="text-xs text-gray-400">/100</span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-wl-text-secondary">Score</p>
+                <p className="text-sm font-semibold text-gray-300">Score</p>
               </div>
             </div>
           </Card>

@@ -139,20 +139,20 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
   const Icon = iconMap[service.name];
 
   return (
-    <Card className="border border-wl-border-subtle">
+    <Card className="border border-[#1e1e2e]">
       <CardContent className="pt-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             {Icon && (
-              <div className="p-2 bg-wl-primary-500/10 rounded-lg">
-                <Icon className="w-5 h-5 text-wl-primary-400" />
+              <div className="p-2 bg-blue-600/10 rounded-lg">
+                <Icon className="w-5 h-5 text-blue-500" />
               </div>
             )}
             <div>
-              <h4 className="text-sm font-semibold text-wl-text-primary">
+              <h4 className="text-sm font-semibold text-white">
                 {service.name}
               </h4>
-              <p className="text-xs text-wl-text-tertiary mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5">
                 {service.responseTime}ms avg response time
               </p>
             </div>
@@ -160,34 +160,34 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
           <StatusBadge status={service.status} />
         </div>
 
-        <div className="grid grid-cols-3 gap-3 py-4 border-t border-wl-border-subtle">
+        <div className="grid grid-cols-3 gap-3 py-4 border-t border-[#1e1e2e]">
           <div>
-            <p className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">
               24h Uptime
             </p>
-            <p className="text-sm font-semibold text-wl-text-primary mt-1">
+            <p className="text-sm font-semibold text-white mt-1">
               {service.uptime24h}%
             </p>
           </div>
           <div>
-            <p className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">
               7d Uptime
             </p>
-            <p className="text-sm font-semibold text-wl-text-primary mt-1">
+            <p className="text-sm font-semibold text-white mt-1">
               {service.uptime7d}%
             </p>
           </div>
           <div>
-            <p className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">
               30d Uptime
             </p>
-            <p className="text-sm font-semibold text-wl-text-primary mt-1">
+            <p className="text-sm font-semibold text-white mt-1">
               {service.uptime30d}%
             </p>
           </div>
         </div>
 
-        <div className="text-xs text-wl-text-tertiary pt-3 border-t border-wl-border-subtle">
+        <div className="text-xs text-gray-400 pt-3 border-t border-[#1e1e2e]">
           Last checked: {service.lastChecked}
         </div>
       </CardContent>
@@ -236,20 +236,20 @@ function ResponseTimeChart() {
         <CardTitle>Response Time (24h)</CardTitle>
         <div className="flex gap-4 ml-auto">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-wl-primary-400 rounded-full" />
-            <span className="text-xs text-wl-text-tertiary">API</span>
+            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+            <span className="text-xs text-gray-400">API</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-wl-success-400 rounded-full" />
-            <span className="text-xs text-wl-text-tertiary">Dashboard</span>
+            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+            <span className="text-xs text-gray-400">Dashboard</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-wl-warning-400 rounded-full" />
-            <span className="text-xs text-wl-text-tertiary">Worker</span>
+            <div className="w-2 h-2 bg-amber-500 rounded-full" />
+            <span className="text-xs text-gray-400">Worker</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-wl-info-400 rounded-full" />
-            <span className="text-xs text-wl-text-tertiary">Database</span>
+            <div className="w-2 h-2 bg-blue-500 rounded-full" />
+            <span className="text-xs text-gray-400">Database</span>
           </div>
         </div>
       </CardHeader>
@@ -263,8 +263,8 @@ function ResponseTimeChart() {
         >
           <defs>
             <linearGradient id="grad-bg" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="var(--wl-primary-500)" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="var(--wl-primary-500)" stopOpacity="0" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -276,16 +276,16 @@ function ResponseTimeChart() {
               y1={10 + (chartHeight - 50) * (i / 4)}
               x2={chartWidth - 10}
               y2={10 + (chartHeight - 50) * (i / 4)}
-              stroke="var(--wl-border-subtle)"
+              stroke="#1e1e2e"
               strokeWidth="1"
             />
           ))}
 
           {/* Y-axis */}
-          <line x1="20" y1="10" x2="20" y2={chartHeight - 30} stroke="var(--wl-border-subtle)" strokeWidth="1" />
+          <line x1="20" y1="10" x2="20" y2={chartHeight - 30} stroke="#1e1e2e" strokeWidth="1" />
 
           {/* X-axis */}
-          <line x1="20" y1={chartHeight - 30} x2={chartWidth - 10} y2={chartHeight - 30} stroke="var(--wl-border-subtle)" strokeWidth="1" />
+          <line x1="20" y1={chartHeight - 30} x2={chartWidth - 10} y2={chartHeight - 30} stroke="#1e1e2e" strokeWidth="1" />
 
           {/* Lines */}
           {createPath("api", "#8B5CF6")}
@@ -301,14 +301,14 @@ function ResponseTimeChart() {
               y={chartHeight - 10}
               textAnchor="middle"
               fontSize="11"
-              fill="var(--wl-text-tertiary)"
+              fill="#9ca3af"
             >
               {d.time}
             </text>
           ))}
         </svg>
 
-        <div className="text-xs text-wl-text-tertiary">
+        <div className="text-xs text-gray-400">
           Response times in milliseconds. Lower is better.
         </div>
       </CardContent>
@@ -326,15 +326,15 @@ function UsageGauge({
   icon: any;
 }) {
   const getColor = (val: number) => {
-    if (val < 50) return "text-wl-success-400";
-    if (val < 75) return "text-wl-warning-400";
-    return "text-wl-danger-400";
+    if (val < 50) return "text-emerald-500";
+    if (val < 75) return "text-amber-500";
+    return "text-red-500";
   };
 
   const getBgColor = (val: number) => {
-    if (val < 50) return "bg-wl-success-500/20";
-    if (val < 75) return "bg-wl-warning-500/20";
-    return "bg-wl-danger-500/20";
+    if (val < 50) return "bg-emerald-600/20";
+    if (val < 75) return "bg-amber-600/20";
+    return "bg-red-600/20";
   };
 
   const circumference = 2 * Math.PI * 45;
@@ -344,7 +344,7 @@ function UsageGauge({
     <Card>
       <CardContent className="pt-5 flex flex-col items-center">
         <Icon className={cn("w-6 h-6 mb-3", getColor(value))} />
-        <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-4">
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">
           {label}
         </p>
 
@@ -355,7 +355,7 @@ function UsageGauge({
               cy="50"
               r="45"
               fill="none"
-              stroke="var(--wl-border-subtle)"
+              stroke="#1e1e2e"
               strokeWidth="3"
             />
             <circle
@@ -403,7 +403,7 @@ export default function SystemPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg-surface">
+    <div className="min-h-screen bg-[#12121a]">
       <Header
         title="System Health"
         subtitle="Monitor service status, uptime, and system metrics"
@@ -432,7 +432,7 @@ export default function SystemPage() {
       <div className="p-6 space-y-6">
         {/* Service Status Grid */}
         <div>
-          <h2 className="text-lg font-bold text-wl-text-primary mb-4">
+          <h2 className="text-lg font-bold text-white mb-4">
             Service Status
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -460,16 +460,16 @@ export default function SystemPage() {
 
           <Card>
             <CardContent className="pt-5">
-              <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-4">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-4">
                 Active Connections
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-wl-text-primary">
+                <span className="text-3xl font-bold text-white">
                   {mockMetrics.activeConnections.toLocaleString()}
                 </span>
-                <span className="text-sm text-wl-success-400">+12%</span>
+                <span className="text-sm text-emerald-500">+12%</span>
               </div>
-              <p className="text-xs text-wl-text-tertiary mt-4">
+              <p className="text-xs text-gray-400 mt-4">
                 Connected clients across all services
               </p>
             </CardContent>
@@ -484,11 +484,11 @@ export default function SystemPage() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-wl-text-primary flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-wl-success-400" />
+                <p className="text-sm font-semibold text-white flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   Version {mockMetrics.deploymentVersion}
                 </p>
-                <p className="text-sm text-wl-text-tertiary mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   Deployed on {mockMetrics.deploymentTime}
                 </p>
               </div>
@@ -500,15 +500,15 @@ export default function SystemPage() {
         </Card>
 
         {/* Health Check Alerts */}
-        <Card className="border border-wl-warning-500/30 bg-wl-warning-bg/40">
+        <Card className="border border-amber-600/30 bg-amber-600/40">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-wl-warning-400 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-wl-warning-400">
+                <h4 className="text-sm font-semibold text-amber-500">
                   Degraded Performance on Nginx Load Balancer
                 </h4>
-                <p className="text-sm text-wl-text-secondary mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   Response times are elevated (average 12ms). Consider investigating connection pooling or scaling horizontal load balancing capacity.
                 </p>
                 <Button variant="secondary" size="sm" className="mt-3">

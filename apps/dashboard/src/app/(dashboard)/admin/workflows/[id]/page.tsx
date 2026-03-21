@@ -156,13 +156,13 @@ const MOCK_EXECUTION: WorkflowExecutionDetail = {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "completed":
-      return <CheckCircle2 size={20} className="text-wl-success-400" />;
+      return <CheckCircle2 size={20} className="text-emerald-500" />;
     case "failed":
-      return <AlertCircle size={20} className="text-wl-danger-400" />;
+      return <AlertCircle size={20} className="text-red-500" />;
     case "running":
-      return <Loader2 size={20} className="text-wl-info-400 animate-spin" />;
+      return <Loader2 size={20} className="text-blue-500 animate-spin" />;
     case "compensating":
-      return <RotateCcw size={20} className="text-wl-warning-400" />;
+      return <RotateCcw size={20} className="text-amber-500" />;
     default:
       return null;
   }
@@ -199,7 +199,7 @@ const formatDateTime = (isoStr: string): string => {
 
 function JsonViewer({ data }: { data: Record<string, any> }) {
   return (
-    <pre className="bg-wl-bg-overlay border border-wl-border-subtle rounded-lg p-3 text-xs text-wl-text-secondary overflow-auto font-mono leading-relaxed">
+    <pre className="bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg p-3 text-xs text-gray-400 overflow-auto font-mono leading-relaxed">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -211,7 +211,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   return (
     <div className="relative pl-6">
       {/* Vertical line */}
-      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-wl-border-subtle" />
+      <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-[#1e1e2e]" />
 
       {steps.map((step, idx) => (
         <div
@@ -219,18 +219,18 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
           className={cn("relative", idx < steps.length - 1 ? "mb-5" : "")}
         >
           {/* Timeline dot */}
-          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-wl-bg-primary border-4 border-wl-border-subtle flex items-center justify-center">
+          <div className="absolute -left-5 top-2 w-4.5 h-4.5 rounded-full bg-[#0a0a0f] border-4 border-[#1e1e2e] flex items-center justify-center">
             <div
               className="w-2 h-2 rounded-full"
               style={{
                 background:
                   step.status === "completed"
-                    ? "var(--wl-success-400)"
+                    ? "#10b981"
                     : step.status === "failed"
-                    ? "var(--wl-danger-400)"
+                    ? "#ef4444"
                     : step.status === "running"
-                    ? "var(--wl-info-400)"
-                    : "var(--wl-warning-400)",
+                    ? "#3b82f6"
+                    : "#f59e0b",
               }}
             />
           </div>
@@ -238,11 +238,11 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
           {/* Step card */}
           <Card
             onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
-            className="cursor-pointer transition-all"
+            className="cursor-pointer transition-all bg-[#12121a] border border-[#1e1e2e]"
             style={{
-              borderColor: expandedStep === step.id ? "var(--wl-accent)" : undefined,
+              borderColor: expandedStep === step.id ? "#3b82f6" : undefined,
               background:
-                expandedStep === step.id ? "var(--wl-bg-tertiary)" : "var(--wl-bg-elevated)",
+                expandedStep === step.id ? "#1a1a2e" : "#12121a",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -252,10 +252,10 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-wl-text-tertiary font-semibold">
+                    <span className="text-xs text-gray-400 font-semibold">
                       Step {step.number}
                     </span>
-                    <h4 className="m-0 text-sm font-semibold text-wl-text-primary">
+                    <h4 className="m-0 text-sm font-semibold text-white">
                       {step.name}
                     </h4>
                     <Badge
@@ -272,7 +272,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                       {step.status}
                     </Badge>
                   </div>
-                  <span className="text-xs text-wl-text-tertiary">
+                  <span className="text-xs text-gray-400">
                     Duration: {step.duration}
                   </span>
                 </div>
@@ -280,19 +280,19 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
               <div className="flex items-center gap-2">
                 {expandedStep === step.id ? (
-                  <ChevronUp size={18} className="text-wl-text-tertiary"  />
+                  <ChevronUp size={18} className="text-gray-400"  />
                 ) : (
-                  <ChevronDown size={18} className="text-wl-text-tertiary"  />
+                  <ChevronDown size={18} className="text-gray-400"  />
                 )}
               </div>
             </div>
 
             {/* Expanded content */}
             {expandedStep === step.id && (
-              <div className="mt-4 pt-4 border-t border-wl-border-subtle">
+              <div className="mt-4 pt-4 border-t border-[#1e1e2e]">
                 {step.input && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
                       Input
                     </h5>
                     <JsonViewer data={step.input} />
@@ -301,7 +301,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
                 {step.output && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
                       Output
                     </h5>
                     <JsonViewer data={step.output} />
@@ -310,15 +310,15 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
                 {step.error && (
                   <div className="mb-4">
-                    <h5 className="text-xs font-semibold text-wl-danger-400 uppercase mb-2 tracking-wider">
+                    <h5 className="text-xs font-semibold text-red-500 uppercase mb-2 tracking-wider">
                       Error Details
                     </h5>
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                      <p className="m-0 mb-2 text-wl-danger-400 text-sm font-medium">
+                      <p className="m-0 mb-2 text-red-500 text-sm font-medium">
                         {step.error.message}
                       </p>
                       {step.error.stack && (
-                        <pre className="m-0 text-xs text-wl-text-tertiary font-mono overflow-auto whitespace-pre-wrap break-words">
+                        <pre className="m-0 text-xs text-gray-400 font-mono overflow-auto whitespace-pre-wrap break-words">
                           {step.error.stack}
                         </pre>
                       )}
@@ -328,7 +328,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
 
                 {step.compensationStatus && (
                   <div>
-                    <h5 className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 tracking-wider">
+                    <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2 tracking-wider">
                       Compensation Status
                     </h5>
                     <Badge
@@ -356,24 +356,24 @@ export default function WorkflowExecutionDetailPage({
   const execution = MOCK_EXECUTION;
 
   return (
-    <div>
+    <div className="bg-[#0a0a0f] min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-5 px-6 border-b border-wl-border-subtle bg-wl-bg-surface backdrop-blur-sm sticky top-0 z-40">
+      <div className="flex items-center justify-between p-5 px-6 border-b border-[#1e1e2e] bg-[#12121a] backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/admin/workflows")}
-            className="flex items-center gap-1" 
+            className="flex items-center gap-1"
           >
             <ChevronLeft size={18} />
             Back
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-wl-text-primary m-0 tracking-tight">
+            <h1 className="text-xl font-bold text-white m-0 tracking-tight">
               {execution.workflowName}
             </h1>
-            <p className="text-sm text-wl-text-tertiary m-0 mt-0.5">
+            <p className="text-sm text-gray-400 m-0 mt-0.5">
               {execution.executionId}
             </p>
           </div>
@@ -404,33 +404,33 @@ export default function WorkflowExecutionDetailPage({
           <StatCard
             label="Total Steps"
             value={execution.totalSteps}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Completed"
             value={execution.completedSteps}
-            accentColor="var(--wl-success-400)"
+            accentColor="#10b981"
             index={1}
           />
           <StatCard
             label="Failed"
             value={execution.failedSteps}
-            accentColor="var(--wl-danger-400)"
+            accentColor="#ef4444"
             index={2}
           />
           <StatCard
             label="Duration"
             value={execution.totalDuration}
-            accentColor="var(--wl-info-400)"
+            accentColor="#3b82f6"
             index={3}
           />
         </div>
 
         {/* Step Timeline */}
-        <Card className="mb-6" >
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle>Step Timeline</CardTitle>
+            <CardTitle className="text-white">Step Timeline</CardTitle>
           </CardHeader>
           <CardContent>
             <StepTimeline steps={execution.steps} />
@@ -440,9 +440,9 @@ export default function WorkflowExecutionDetailPage({
         {/* Execution Metadata */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
           {/* Input Data */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Input Data</CardTitle>
+              <CardTitle className="text-white">Input Data</CardTitle>
             </CardHeader>
             <CardContent>
               <JsonViewer data={execution.input} />
@@ -450,18 +450,18 @@ export default function WorkflowExecutionDetailPage({
           </Card>
 
           {/* Execution Context */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Execution Context</CardTitle>
+              <CardTitle className="text-white">Execution Context</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 {Object.entries(execution.context).map(([key, value]) => (
                   <div key={key} className="flex gap-2">
-                    <span className="text-xs font-semibold text-wl-text-secondary min-w-20 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-gray-400 min-w-20 uppercase tracking-wider">
                       {key}
                     </span>
-                    <span className="text-sm text-wl-text-primary font-mono">
+                    <span className="text-sm text-white font-mono">
                       {value}
                     </span>
                   </div>
@@ -471,55 +471,55 @@ export default function WorkflowExecutionDetailPage({
           </Card>
 
           {/* Timestamps */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Timeline</CardTitle>
+              <CardTitle className="text-white">Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar size={14} className="text-wl-text-tertiary" />
-                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
+                    <Calendar size={14} className="text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Started
                     </span>
                   </div>
-                  <span className="text-sm text-wl-text-primary block ml-5">
+                  <span className="text-sm text-white block ml-5">
                     {formatDateTime(execution.startedAt)}
                   </span>
                 </div>
                 {execution.completedAt && (
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle2 size={14} className="text-wl-success-400" />
-                      <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
+                      <CheckCircle2 size={14} className="text-emerald-500" />
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Completed
                       </span>
                     </div>
-                    <span className="text-sm text-wl-text-primary block ml-5">
+                    <span className="text-sm text-white block ml-5">
                       {formatDateTime(execution.completedAt)}
                     </span>
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <User size={14} className="text-wl-text-tertiary" />
-                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
+                    <User size={14} className="text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Created By
                     </span>
                   </div>
-                  <span className="text-sm text-wl-text-primary block ml-5 capitalize">
+                  <span className="text-sm text-white block ml-5 capitalize">
                     {execution.createdBy}
                   </span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <RotateCcw size={14} className="text-wl-text-tertiary" />
-                    <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
+                    <RotateCcw size={14} className="text-gray-400" />
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Retry Count
                     </span>
                   </div>
-                  <span className="text-sm text-wl-text-primary block ml-5">
+                  <span className="text-sm text-white block ml-5">
                     {execution.retryCount}
                   </span>
                 </div>
@@ -531,11 +531,11 @@ export default function WorkflowExecutionDetailPage({
         {/* Error Details Card (if failed) */}
         {execution.status === "failed" && execution.steps.some((s) => s.error) && (
           <Card
-            className="border-l-4 border-l-wl-danger-400 mb-6"
+            className="border-l-4 border-l-red-500 mb-6"
           >
             <CardHeader>
               <div className="flex items-center gap-2">
-                <AlertCircle size={20} className="text-wl-danger-400" />
+                <AlertCircle size={20} className="text-red-500" />
                 <CardTitle>Error Summary</CardTitle>
               </div>
             </CardHeader>
@@ -544,10 +544,10 @@ export default function WorkflowExecutionDetailPage({
                 .filter((s) => s.error)
                 .map((step) => (
                   <div key={step.id} className="mb-3">
-                    <p className="m-0 mb-1 text-wl-danger-400 text-sm font-semibold">
+                    <p className="m-0 mb-1 text-red-500 text-sm font-semibold">
                       Step {step.number}: {step.name}
                     </p>
-                    <p className="m-0 text-wl-text-secondary text-sm">
+                    <p className="m-0 text-gray-400 text-sm">
                       {step.error?.message}
                     </p>
                   </div>

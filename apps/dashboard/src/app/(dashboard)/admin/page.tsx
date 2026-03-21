@@ -89,7 +89,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
         return (
           <Card
             key={idx}
-            className="bg-wl-bg-surface border-wl-border-subtle"
+            className="bg-[#12121a] border border-[#1e1e2e]"
             style={{
               animation: `fadeInUp 0.4s ease-out ${idx * 50}ms both`,
             }}
@@ -104,10 +104,10 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
                 <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
               </div>
               <div className="flex-1">
-                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wider">
+                <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wider">
                   {metric.label}
                 </p>
-                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
+                <p className="text-white text-lg font-bold m-0 mt-1">
                   {metric.value}
                 </p>
               </div>
@@ -129,10 +129,10 @@ const SystemHealth = () => {
   ];
 
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+    <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Server className="w-5 h-5 text-wl-text-secondary" />
+          <Server className="w-5 h-5 text-gray-400" />
           System Health
         </CardTitle>
       </CardHeader>
@@ -151,10 +151,10 @@ const SystemHealth = () => {
                   <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
                 </div>
                 <div>
-                  <p className="text-xs text-wl-text-secondary m-0 mb-0.5 font-semibold uppercase">
+                  <p className="text-xs text-gray-400 m-0 mb-0.5 font-semibold uppercase">
                     {metric.label}
                   </p>
-                  <p className="text-wl-text-primary font-semibold m-0 text-sm">
+                  <p className="text-white font-semibold m-0 text-sm">
                     {metric.value}
                   </p>
                 </div>
@@ -170,10 +170,10 @@ const SystemHealth = () => {
 // Quick Actions
 const QuickActions = () => {
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+    <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-wl-text-secondary" />
+          <Zap className="w-5 h-5 text-gray-400" />
           Quick Actions
         </CardTitle>
       </CardHeader>
@@ -222,7 +222,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
   }, [stores, searchTerm]);
 
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle">
+    <Card className="bg-[#12121a] border border-[#1e1e2e]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle>Store Health</CardTitle>
@@ -232,9 +232,9 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               placeholder="Search stores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pl-8 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
+              className="w-full p-2 pl-8 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
             />
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
         </div>
       </CardHeader>
@@ -243,11 +243,11 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
+              <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
                 {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
                   <th
                     key={header}
-                    className="p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wider"
+                    className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider"
                   >
                     {header}
                   </th>
@@ -258,19 +258,19 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className={cn('border-b border-wl-border-subtle transition-all duration-200 hover:bg-wl-bg-surface', {
-                    'bg-wl-bg-base': idx % 2 === 0,
-                    'bg-wl-bg-surface': idx % 2 !== 0,
+                  className={cn('border-b border-[#1e1e2e] transition-all duration-200 hover:bg-[#1a1a2e]', {
+                    'bg-[#0a0a0f]': idx % 2 === 0,
+                    'bg-[#12121a]': idx % 2 !== 0,
                   })}
                 >
                   <td className="p-3">
                     <Link
                       href={`/admin/shops/${store.id}`}
-                      className="text-wl-brand-primary no-underline font-medium"
+                      className="text-blue-500 no-underline font-medium"
                     >
                       {store.name}
                     </Link>
-                    <p className="text-wl-text-secondary m-0 mt-0.5 text-xs">
+                    <p className="text-gray-400 m-0 mt-0.5 text-xs">
                       {store.domain}
                     </p>
                   </td>
@@ -280,20 +280,20 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                       style={{
                         backgroundColor: getPlanColor(store.planTier) + '20',
                         color: getPlanColor(store.planTier),
-                        fontSize: 'var(--wl-text-xs)',
+                        fontSize: ''0.75rem'',
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >
                       {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
                     </Badge>
                   </td>
-                  <td className="p-3 text-wl-text-primary font-medium">
+                  <td className="p-3 text-white font-medium">
                     {store.ordersThisMonth}
                   </td>
-                  <td className="p-3 text-wl-brand-primary font-semibold">
+                  <td className="p-3 text-blue-500 font-semibold">
                     ${store.revenue.toLocaleString()}
                   </td>
-                  <td className="p-3 text-wl-text-primary font-medium">
+                  <td className="p-3 text-white font-medium">
                     {store.totalUsers}
                   </td>
                   <td className="p-3">
@@ -304,11 +304,11 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                       {store.status}
                     </Badge>
                   </td>
-                  <td className="p-3 text-wl-text-secondary text-xs">
+                  <td className="p-3 text-gray-400 text-xs">
                     {store.lastActive}
                   </td>
                   <td className="p-3 text-center">
-                    <button className="bg-transparent border-0 text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-wl-text-primary">
+                    <button className="bg-transparent border-0 text-gray-400 cursor-pointer p-1 inline-flex items-center justify-center transition-all duration-200 hover:text-white">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>
@@ -329,7 +329,7 @@ export default function AdminDashboardPage() {
   if (loading && stores.length === 0) return <LoadingSkeleton />;
 
   return (
-    <div className="bg-wl-bg-base">
+    <div className="bg-[#0a0a0f] min-h-screen">
       <Header
         title="Platform Admin"
         subtitle="Manage all stores, users, and platform operations"

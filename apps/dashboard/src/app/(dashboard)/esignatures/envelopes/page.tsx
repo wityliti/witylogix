@@ -1,38 +1,42 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useEnvelopes, useAuditTrail } from "@/hooks/use-esignatures";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { FileText, Plus, Trash2 } from 'lucide-react';
 
-function Icon({ d, size = 24 }: { d: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={d} />
-    </svg>
-  );
+interface Envelope {
+  id: string;
+  name: string;
+  status: string;
+  sender: {
+    name: string;
+    email: string;
+  };
+  recipients: Array<{
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+    role?: string;
+  }>;
+  createdDate: string;
+  sentDate?: string;
+  completedDate?: string;
+  documentCount: number;
+  completionRate: number;
 }
 
-function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
+function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [detailEnvelopeId, setDetailEnvelopeId] = useState<string | null>(null);
 
   const selectedEnvelope = envelopes.find((e) => e.id === detailEnvelopeId);
-  const { events: auditEvents } = useAuditTrail(detailEnvelopeId || "");
 
   const toggleSelect = (id: string) => {
     const newSet = new Set(selectedIds);
@@ -54,21 +58,19 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
 
   return (
     <>
-      <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
-        <CardHeader className={cn("border-b border-wl-border-subtle")}>
-          <div
-            className={cn("flex items-center justify-between")}
-          >
-            <CardTitle className={cn("text-base")}>
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <CardHeader className="border-b border-[#1e1e2e]">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base text-white">
               Envelopes ({envelopes.length})
             </CardTitle>
             {selectedIds.size > 0 && (
-              <div className={cn("flex items-center gap-2")}>
-                <span className={cn("text-sm text-wl-text-secondary")}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">
                   {selectedIds.size} selected
                 </span>
-                <Button variant="secondary" size="sm">
-                  Delete
+                <Button variant="secondary" size="sm" className="flex items-center gap-2">
+                  <Trash2 size={14} /> Delete
                 </Button>
                 <Button variant="secondary" size="sm">
                   Void
@@ -78,91 +80,52 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className={cn("overflow-x-auto")}>
-            <table className={cn("w-full text-sm")}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
-                <tr className={cn("border-b border-wl-border-subtle")}>
-                  <th className={cn("text-left py-3 px-4 w-10")}>
+                <tr className="border-b border-[#1e1e2e]">
+                  <th className="text-left py-3 px-4 w-10">
                     <input
                       type="checkbox"
                       checked={selectedIds.size === envelopes.length && envelopes.length > 0}
                       onChange={toggleSelectAll}
-                      className={cn("w-4 h-4 rounded border-wl-border-subtle")}
+                      className="w-4 h-4 rounded border-[#1e1e2e] accent-blue-500"
                     />
                   </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Name
-                  </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Sender
-                  </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Status
-                  </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Signers
-                  </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Completion
-                  </th>
-                  <th
-                    className={cn(
-                      "text-left py-3 px-4 font-medium text-wl-text-secondary"
-                    )}
-                  >
-                    Created
-                  </th>
-                  <th className={cn("w-10")}></th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Sender</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Signers</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Completion</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">Created</th>
                 </tr>
               </thead>
               <tbody>
                 {envelopes.map((env) => (
                   <tr
                     key={env.id}
-                    className={cn(
-                      "border-b border-wl-border-subtle hover:bg-wl-bg-overlay transition-colors"
-                    )}
+                    className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                   >
-                    <td className={cn("py-3 px-4")}>
+                    <td className="py-3 px-4">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(env.id)}
                         onChange={() => toggleSelect(env.id)}
-                        className={cn("w-4 h-4 rounded border-wl-border-subtle")}
+                        className="w-4 h-4 rounded border-[#1e1e2e] accent-blue-500"
                       />
                     </td>
-                    <td className={cn("py-3 px-4 text-wl-text-primary font-medium")}>
+                    <td className="py-3 px-4 text-white font-medium">
                       <button
                         onClick={() => setDetailEnvelopeId(env.id)}
-                        className={cn("hover:underline text-wl-brand")}
+                        className="hover:underline text-blue-500"
                       >
                         {env.name}
                       </button>
                     </td>
-                    <td className={cn("py-3 px-4 text-wl-text-secondary")}>
+                    <td className="py-3 px-4 text-gray-400">
                       {env.sender.name}
                     </td>
-                    <td className={cn("py-3 px-4")}>
+                    <td className="py-3 px-4">
                       <Badge
                         variant={
                           env.status === "COMPLETED"
@@ -179,29 +142,24 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
                         {env.status}
                       </Badge>
                     </td>
-                    <td className={cn("py-3 px-4 text-wl-text-secondary")}>
+                    <td className="py-3 px-4 text-gray-400">
                       {env.recipients.length}
                     </td>
-                    <td className={cn("py-3 px-4")}>
-                      <div className={cn("flex items-center gap-2")}>
-                        <div className={cn("w-20 h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden")}>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden">
                           <div
-                            className={cn("h-full bg-wl-status-success transition-all")}
+                            className="h-full bg-emerald-500 transition-all"
                             style={{ width: `${env.completionRate}%` }}
                           />
                         </div>
-                        <span className={cn("text-xs text-wl-text-secondary min-w-fit")}>
+                        <span className="text-xs text-gray-400 min-w-fit">
                           {env.completionRate}%
                         </span>
                       </div>
                     </td>
-                    <td className={cn("py-3 px-4 text-wl-text-secondary text-xs")}>
+                    <td className="py-3 px-4 text-gray-400 text-xs">
                       {new Date(env.createdDate).toLocaleDateString()}
-                    </td>
-                    <td className={cn("py-3 px-4")}>
-                      <button className={cn("text-wl-text-secondary hover:text-wl-text-primary")}>
-                        <Icon d="M12 5v14m7-7H5" size={16} />
-                      </button>
                     </td>
                   </tr>
                 ))}
@@ -213,56 +171,48 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
 
       {/* Detail Drawer */}
       {selectedEnvelope && (
-        <Card className={cn("mt-6 bg-wl-bg-elevated border-wl-border-subtle")}>
-          <CardHeader className={cn("border-b border-wl-border-subtle flex flex-row items-center justify-between")}>
+        <Card className="mt-6 bg-[#12121a] border-[#1e1e2e]">
+          <CardHeader className="border-b border-[#1e1e2e] flex flex-row items-center justify-between">
             <div>
-              <CardTitle className={cn("text-base")}>
+              <CardTitle className="text-base text-white">
                 {selectedEnvelope.name}
               </CardTitle>
-              <p className={cn("text-xs text-wl-text-secondary mt-1")}>
+              <p className="text-xs text-gray-400 mt-1">
                 ID: {selectedEnvelope.id}
               </p>
             </div>
             <button
               onClick={() => setDetailEnvelopeId(null)}
-              className={cn("text-wl-text-secondary hover:text-wl-text-primary")}
+              className="text-gray-400 hover:text-white transition-colors"
             >
               ✕
             </button>
           </CardHeader>
-          <CardContent className={cn("pt-6")}>
-            <div className={cn("grid grid-cols-2 gap-6")}>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 gap-6">
               {/* Left Column */}
-              <div className={cn("space-y-6")}>
+              <div className="space-y-6">
                 <div>
-                  <h3 className={cn("text-sm font-semibold text-wl-text-secondary mb-3")}>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
                     Recipients
                   </h3>
-                  <div className={cn("space-y-2")}>
-                    {selectedEnvelope.recipients.map((r: any) => (
+                  <div className="space-y-2">
+                    {selectedEnvelope.recipients.map((r) => (
                       <div
                         key={r.id}
-                        className={cn(
-                          "p-3 bg-wl-bg-overlay rounded-md border border-wl-border-subtle"
-                        )}
+                        className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
                       >
-                        <div
-                          className={cn(
-                            "flex items-center justify-between mb-1"
-                          )}
-                        >
-                          <p className={cn("text-sm font-medium text-wl-text-primary")}>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-sm font-medium text-white">
                             {r.name}
                           </p>
                           <Badge variant={r.status === "SIGNED" ? "success" : "warning"}>
                             {r.status}
                           </Badge>
                         </div>
-                        <p className={cn("text-xs text-wl-text-secondary")}>
-                          {r.email}
-                        </p>
+                        <p className="text-xs text-gray-400">{r.email}</p>
                         {r.role && (
-                          <p className={cn("text-xs text-wl-text-secondary mt-1")}>
+                          <p className="text-xs text-gray-400 mt-1">
                             Role: {r.role}
                           </p>
                         )}
@@ -272,35 +222,35 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
                 </div>
 
                 <div>
-                  <h3 className={cn("text-sm font-semibold text-wl-text-secondary mb-3")}>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3">
                     Details
                   </h3>
-                  <div className={cn("space-y-2 text-sm")}>
-                    <div className={cn("flex justify-between")}>
-                      <span className={cn("text-wl-text-secondary")}>Created:</span>
-                      <span className={cn("text-wl-text-primary font-medium")}>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Created:</span>
+                      <span className="text-white font-medium">
                         {new Date(selectedEnvelope.createdDate).toLocaleDateString()}
                       </span>
                     </div>
                     {selectedEnvelope.sentDate && (
-                      <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-secondary")}>Sent:</span>
-                        <span className={cn("text-wl-text-primary font-medium")}>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Sent:</span>
+                        <span className="text-white font-medium">
                           {new Date(selectedEnvelope.sentDate).toLocaleDateString()}
                         </span>
                       </div>
                     )}
                     {selectedEnvelope.completedDate && (
-                      <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-secondary")}>Completed:</span>
-                        <span className={cn("text-wl-text-primary font-medium")}>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Completed:</span>
+                        <span className="text-white font-medium">
                           {new Date(selectedEnvelope.completedDate).toLocaleDateString()}
                         </span>
                       </div>
                     )}
-                    <div className={cn("flex justify-between")}>
-                      <span className={cn("text-wl-text-secondary")}>Documents:</span>
-                      <span className={cn("text-wl-text-primary font-medium")}>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Documents:</span>
+                      <span className="text-white font-medium">
                         {selectedEnvelope.documentCount}
                       </span>
                     </div>
@@ -308,33 +258,23 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
                 </div>
               </div>
 
-              {/* Right Column - Audit Trail */}
-              <div>
-                <h3 className={cn("text-sm font-semibold text-wl-text-secondary mb-3")}>
-                  Timeline
+              {/* Right Column - Actions */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                  Actions
                 </h3>
-                <div className={cn("space-y-3")}>
-                  {auditEvents.slice(0, 6).map((evt: any) => (
-                    <div
-                      key={evt.id}
-                      className={cn(
-                        "p-3 bg-wl-bg-overlay rounded-md border-l-2 border-wl-border-active"
-                      )}
-                    >
-                      <div className={cn("flex items-start justify-between mb-1")}>
-                        <p className={cn("text-xs font-semibold text-wl-text-primary")}>
-                          {evt.action}
-                        </p>
-                        <span className={cn("text-xs text-wl-text-secondary")}>
-                          {new Date(evt.timestamp).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className={cn("text-xs text-wl-text-secondary")}>
-                        by {evt.actor.name}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                <Button variant="primary" className="w-full text-xs">
+                  Download Documents
+                </Button>
+                <Button variant="secondary" className="w-full text-xs">
+                  Send Reminder
+                </Button>
+                <Button variant="secondary" className="w-full text-xs">
+                  View Timeline
+                </Button>
+                <Button variant="ghost" className="w-full text-xs">
+                  Cancel Envelope
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -345,8 +285,8 @@ function EnvelopeTable({ envelopes }: { envelopes: any[] }) {
 }
 
 export default function EnvelopesPage() {
-  const { envelopes, loading } = useEnvelopes();
-  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const { items: data, loading, error, refetch } = useApiList<Envelope>('/api/v4/esignatures/envelopes');
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
   const statusOptions = [
     "ALL",
@@ -358,41 +298,83 @@ export default function EnvelopesPage() {
     "EXPIRED",
   ];
 
-  const filteredEnvelopes =
-    filterStatus === "ALL"
-      ? envelopes
-      : envelopes.filter((e) => e.status === filterStatus);
-  const { items: data, loading, error, refetch, pagination } = useApiList<Envelope>('/api/v4/esignatures/envelopes');
+  const filteredEnvelopes = filterStatus === "ALL" ? data : data.filter((e) => e.status === filterStatus);
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-
   return (
-    <div className={cn("p-6 space-y-6")}>
+    <div className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
       {/* Header */}
-      <div className={cn("flex items-center justify-between")}>
-        <div>
-          <h1 className={cn("text-2xl font-bold text-wl-text-primary")}>
-            Envelope Management
-          </h1>
-          <p className={cn("text-sm text-wl-text-secondary mt-1")}>
-            Create, send, and track document envelopes
-          </p>
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Envelope Management</h1>
+            <p className="text-gray-400">Create, send, and track document envelopes</p>
+          </div>
+          <Button variant="primary" className="flex items-center gap-2">
+            <Plus size={16} /> Create Envelope
+          </Button>
         </div>
-        <Button variant="primary">
-          Create Envelope
-        </Button>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Total Envelopes</span>
+              <FileText className="text-blue-500" size={20} />
+            </div>
+            <p className="text-3xl font-bold text-white">{data.length}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Completed</span>
+              <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
+            </div>
+            <p className="text-3xl font-bold text-white">
+              {data.filter(e => e.status === 'COMPLETED').length}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Pending</span>
+              <div className="w-5 h-5 rounded-full bg-amber-500"></div>
+            </div>
+            <p className="text-3xl font-bold text-white">
+              {data.filter(e => ['DRAFT', 'SENT', 'VIEWED'].includes(e.status)).length}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Avg. Completion</span>
+              <div className="w-5 h-5 rounded-full bg-blue-500"></div>
+            </div>
+            <p className="text-3xl font-bold text-white">
+              {data.length > 0 ? Math.round(data.reduce((sum, e) => sum + e.completionRate, 0) / data.length) : 0}%
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
-      <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle")}>
-        <CardContent className={cn("pt-6")}>
-          <div className={cn("flex items-center gap-4")}>
-            <label className={cn("text-sm font-medium text-wl-text-secondary")}>
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-400">
               Filter by Status:
             </label>
-            <div className={cn("flex gap-2")}>
+            <div className="flex gap-2 flex-wrap">
               {statusOptions.map((status) => (
                 <button
                   key={status}
@@ -400,8 +382,8 @@ export default function EnvelopesPage() {
                   className={cn(
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     filterStatus === status
-                      ? "bg-wl-brand text-white"
-                      : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary"
+                      ? "bg-blue-500 text-white"
+                      : "bg-[#1a1a2e] text-gray-400 hover:text-white"
                   )}
                 >
                   {status}
@@ -415,15 +397,15 @@ export default function EnvelopesPage() {
       {/* Envelopes Table */}
       <EnvelopeTable envelopes={filteredEnvelopes} />
 
-      {/* Create Envelope Wizard Info */}
-      <Card className={cn("bg-wl-bg-elevated border-wl-border-subtle border-2 border-wl-status-info")}>
+      {/* Info Card */}
+      <Card className="bg-[#12121a] border-[#1e1e2e] border-2 border-blue-500/20">
         <CardHeader>
-          <CardTitle className={cn("text-base text-wl-status-info")}>
+          <CardTitle className="text-base text-blue-400">
             Envelope Creation Wizard
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ol className={cn("space-y-2 text-sm text-wl-text-secondary")}>
+          <ol className="space-y-2 text-sm text-gray-400">
             <li>
               <strong>Step 1:</strong> Upload documents (PDF, DOCX, or images)
             </li>
@@ -437,7 +419,7 @@ export default function EnvelopesPage() {
               <strong>Step 4:</strong> Review settings and send envelope
             </li>
           </ol>
-          <p className={cn("text-xs text-wl-text-secondary mt-4")}>
+          <p className="text-xs text-gray-400 mt-4">
             Click "Create Envelope" button above to start the process.
           </p>
         </CardContent>

@@ -331,13 +331,13 @@ export default function IntegrationOverviewPage() {
         {/* Health Dashboard */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Overall Health Score - SVG Gauge */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-wl-text-primary">
+                <h3 className="font-semibold text-white">
                   System Health
                 </h3>
-                <Activity className="w-5 h-5 text-wl-primary-400" />
+                <Activity className="w-5 h-5 text-blue-500" />
               </div>
 
               {/* SVG Gauge */}
@@ -351,7 +351,7 @@ export default function IntegrationOverviewPage() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="8"
-                  className="text-wl-neutral-700"
+                  className="text-[#1e1e2e]"
                 />
                 {/* Health arc */}
                 <path
@@ -362,10 +362,10 @@ export default function IntegrationOverviewPage() {
                   strokeDasharray={`${(healthScore / 100) * 220} 220`}
                   className={
                     healthScore > 80
-                      ? "text-wl-success-400"
+                      ? "text-emerald-500"
                       : healthScore > 60
-                        ? "text-wl-warning-400"
-                        : "text-wl-danger-400"
+                        ? "text-amber-500"
+                        : "text-red-500"
                   }
                 />
                 {/* Center text */}
@@ -375,7 +375,7 @@ export default function IntegrationOverviewPage() {
                   textAnchor="middle"
                   className="font-bold text-2xl"
                   fill="currentColor"
-                  style={{ color: "var(--wl-text-primary)" }}
+                  style={{ color: "white" }}
                 >
                   {healthScore}
                 </text>
@@ -394,15 +394,15 @@ export default function IntegrationOverviewPage() {
           </Card>
 
           {/* API Usage */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <h3 className="font-semibold text-wl-text-primary mb-4">
+              <h3 className="font-semibold text-white mb-4">
                 API Usage (24h)
               </h3>
-              <div className="text-3xl font-bold text-wl-primary-400">
+              <div className="text-3xl font-bold text-blue-500">
                 {totalApiCalls.toLocaleString()}
               </div>
-              <div className="text-sm text-wl-text-tertiary mt-2">
+              <div className="text-sm text-gray-500 mt-2">
                 {totalErrors} errors ({errorRate}% error rate)
               </div>
 
@@ -416,7 +416,7 @@ export default function IntegrationOverviewPage() {
                   return (
                     <div
                       key={idx}
-                      className="flex-1 bg-wl-primary-500/40 rounded-t text-xs text-wl-text-tertiary text-center"
+                      className="flex-1 bg-blue-500/40 rounded-t text-xs text-gray-500 text-center"
                       style={{ height: `${height}%`, minHeight: "4px" }}
                       title={`${data.calls} calls, ${data.errors} errors`}
                     />
@@ -427,15 +427,15 @@ export default function IntegrationOverviewPage() {
           </Card>
 
           {/* Error Rate Trend */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <h3 className="font-semibold text-wl-text-primary mb-4">
+              <h3 className="font-semibold text-white mb-4">
                 Error Rate Trend
               </h3>
-              <div className="text-3xl font-bold text-wl-danger-400">
+              <div className="text-3xl font-bold text-red-500">
                 {errorRate}%
               </div>
-              <div className="text-sm text-wl-text-tertiary mt-2">
+              <div className="text-sm text-gray-500 mt-2">
                 {totalErrors} errors in last 24 hours
               </div>
 
@@ -450,7 +450,7 @@ export default function IntegrationOverviewPage() {
                   return (
                     <div
                       key={idx}
-                      className="flex-1 bg-wl-danger-500/40 rounded-t"
+                      className="flex-1 bg-red-500/40 rounded-t"
                       style={{ height: `${Math.max(height, 5)}%`, minHeight: "4px" }}
                       title={`${rate.toFixed(2)}% error rate`}
                     />
@@ -464,13 +464,13 @@ export default function IntegrationOverviewPage() {
         {/* Search and Filter */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-wl-text-tertiary" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
             <input
               type="text"
               placeholder="Search integrations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-wl-bg-overlay border border-wl-neutral-700 rounded-lg text-sm text-wl-text-primary placeholder-wl-text-tertiary focus:border-wl-primary-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-sm text-white placeholder-gray-500 focus:border-blue-500 outline-none"
             />
           </div>
 
@@ -482,8 +482,8 @@ export default function IntegrationOverviewPage() {
                 className={cn(
                   "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
                   filterStatus === status
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-600"
-                    : "border-wl-neutral-700 text-wl-text-secondary hover:border-wl-primary-500/50"
+                    ? "bg-blue-500 text-black border-blue-600"
+                    : "border-[#1e1e2e] text-gray-400 hover:border-blue-500/50"
                 )}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -499,7 +499,7 @@ export default function IntegrationOverviewPage() {
 
         {/* Category Grid */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-wl-text-primary">
+          <h2 className="text-xl font-bold text-white">
             Integration Categories
           </h2>
 
@@ -507,19 +507,19 @@ export default function IntegrationOverviewPage() {
             {filteredCategories.map((category) => {
               const statusIcon =
                 category.health === "critical" ? (
-                  <AlertCircle className="w-5 h-5 text-wl-danger-400" />
+                  <AlertCircle className="w-5 h-5 text-red-500" />
                 ) : category.health === "warning" ? (
-                  <AlertCircle className="w-5 h-5 text-wl-warning-400" />
+                  <AlertCircle className="w-5 h-5 text-amber-500" />
                 ) : (
-                  <CheckCircle className="w-5 h-5 text-wl-success-400" />
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
                 );
 
               return (
                 <Card
                   key={category.id}
                   className={cn(
-                    "bg-wl-bg-tertiary border-wl-neutral-700 cursor-pointer transition-all hover:border-wl-primary-500/50",
-                    selectedCategory === category.id && "ring-1 ring-wl-primary-500"
+                    "bg-[#1a1a2e] border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500/50",
+                    selectedCategory === category.id && "ring-1 ring-blue-500"
                   )}
                   onClick={() =>
                     setSelectedCategory(
@@ -533,10 +533,10 @@ export default function IntegrationOverviewPage() {
                       <div className="flex items-center gap-3">
                         <div className="text-4xl">{category.icon}</div>
                         <div>
-                          <h3 className="font-semibold text-wl-text-primary">
+                          <h3 className="font-semibold text-white">
                             {category.name}
                           </h3>
-                          <div className="text-xs text-wl-text-tertiary mt-1">
+                          <div className="text-xs text-gray-500 mt-1">
                             {category.active} of {category.providers} active
                           </div>
                         </div>
@@ -545,30 +545,30 @@ export default function IntegrationOverviewPage() {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-wl-neutral-700">
+                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#1e1e2e]">
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">
                           API Calls
                         </div>
-                        <div className="font-bold text-wl-text-primary mt-1">
+                        <div className="font-bold text-white mt-1">
                           {category.apiCallsLast24h > 0
                             ? `${(category.apiCallsLast24h / 1000).toFixed(0)}k`
                             : "0"}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">
                           Error Rate
                         </div>
-                        <div className="font-bold text-wl-text-primary mt-1">
+                        <div className="font-bold text-white mt-1">
                           {category.errorRate.toFixed(2)}%
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">
                           Avg Response
                         </div>
-                        <div className="font-bold text-wl-text-primary mt-1">
+                        <div className="font-bold text-white mt-1">
                           {category.avgResponseTime}ms
                         </div>
                       </div>
@@ -583,26 +583,26 @@ export default function IntegrationOverviewPage() {
         {/* Recent Activity Feed */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-wl-text-primary">
+            <h2 className="text-xl font-bold text-white">
               Recent Activity
             </h2>
-            <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
+            <Button variant="ghost" size="sm" className="text-gray-500">
               View All
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
 
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {ACTIVITY_FEED.map((event, idx) => {
                   const statusIcon =
                     event.status === "success" ? (
-                      <CheckCircle className="w-5 h-5 text-wl-success-400" />
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
                     ) : event.status === "warning" ? (
-                      <AlertCircle className="w-5 h-5 text-wl-warning-400" />
+                      <AlertCircle className="w-5 h-5 text-amber-500" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-wl-danger-400" />
+                      <AlertCircle className="w-5 h-5 text-red-500" />
                     );
 
                   const timeAgo = new Date(event.timestamp);
@@ -621,29 +621,29 @@ export default function IntegrationOverviewPage() {
                       className={cn(
                         "p-4 rounded-lg border",
                         event.status === "success"
-                          ? "border-wl-success-500/20 bg-wl-success-500/5"
+                          ? "border-emerald-500/20 bg-emerald-500/5"
                           : event.status === "warning"
-                            ? "border-wl-warning-500/20 bg-wl-warning-500/5"
-                            : "border-wl-danger-500/20 bg-wl-danger-500/5"
+                            ? "border-amber-500/20 bg-amber-500/5"
+                            : "border-red-500/20 bg-red-500/5"
                       )}
                     >
                       <div className="flex items-start gap-3">
                         {statusIcon}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-wl-text-primary">
+                          <h4 className="font-medium text-white">
                             {event.title}
                           </h4>
-                          <p className="text-sm text-wl-text-secondary mt-1">
+                          <p className="text-sm text-gray-400 mt-1">
                             {event.description}
                           </p>
                           {event.details && (
-                            <div className="text-xs text-wl-text-tertiary mt-2 font-mono bg-wl-bg-primary px-2 py-1 rounded w-fit">
+                            <div className="text-xs text-gray-500 mt-2 font-mono bg-[#0a0a0f] px-2 py-1 rounded w-fit">
                               {event.details}
                             </div>
                           )}
                         </div>
                         <div className="flex-shrink-0 text-right">
-                          <div className="text-xs text-wl-text-tertiary flex items-center gap-1">
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {timeStr}
                           </div>
@@ -662,49 +662,49 @@ export default function IntegrationOverviewPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-          <Card className="bg-wl-bg-secondary border border-wl-primary-500/20 cursor-pointer hover:border-wl-primary-500/50 transition-all">
+          <Card className="bg-[#12121a] border border-blue-500/20 cursor-pointer hover:border-blue-500/50 transition-all">
             <CardContent className="pt-6">
-              <Plus className="w-6 h-6 text-wl-primary-400 mb-3" />
-              <h3 className="font-semibold text-wl-text-primary">
+              <Plus className="w-6 h-6 text-blue-500 mb-3" />
+              <h3 className="font-semibold text-white">
                 Connect New
               </h3>
-              <p className="text-xs text-wl-text-tertiary mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Add a new integration
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-secondary border border-wl-primary-500/20 cursor-pointer hover:border-wl-primary-500/50 transition-all">
+          <Card className="bg-[#12121a] border border-blue-500/20 cursor-pointer hover:border-blue-500/50 transition-all">
             <CardContent className="pt-6">
-              <Zap className="w-6 h-6 text-wl-primary-400 mb-3" />
-              <h3 className="font-semibold text-wl-text-primary">
+              <Zap className="w-6 h-6 text-blue-500 mb-3" />
+              <h3 className="font-semibold text-white">
                 Run Sync
               </h3>
-              <p className="text-xs text-wl-text-tertiary mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Manually trigger sync
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-secondary border border-wl-primary-500/20 cursor-pointer hover:border-wl-primary-500/50 transition-all">
+          <Card className="bg-[#12121a] border border-blue-500/20 cursor-pointer hover:border-blue-500/50 transition-all">
             <CardContent className="pt-6">
-              <Activity className="w-6 h-6 text-wl-primary-400 mb-3" />
-              <h3 className="font-semibold text-wl-text-primary">
+              <Activity className="w-6 h-6 text-blue-500 mb-3" />
+              <h3 className="font-semibold text-white">
                 View Logs
               </h3>
-              <p className="text-xs text-wl-text-tertiary mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Integration logs
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-secondary border border-wl-primary-500/20 cursor-pointer hover:border-wl-primary-500/50 transition-all">
+          <Card className="bg-[#12121a] border border-blue-500/20 cursor-pointer hover:border-blue-500/50 transition-all">
             <CardContent className="pt-6">
-              <Settings className="w-6 h-6 text-wl-primary-400 mb-3" />
-              <h3 className="font-semibold text-wl-text-primary">
+              <Settings className="w-6 h-6 text-blue-500 mb-3" />
+              <h3 className="font-semibold text-white">
                 Settings
               </h3>
-              <p className="text-xs text-wl-text-tertiary mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Global integration config
               </p>
             </CardContent>

@@ -135,21 +135,22 @@ export default function MapsSettingsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen bg-[#0a0a0f] p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-wl-text-primary">Google Maps Settings</h1>
-        <p className="text-wl-text-secondary mt-2">
+        <h1 className="text-3xl font-bold text-white">Google Maps Settings</h1>
+        <p className="text-gray-400 mt-2">
           Configure your Google Maps API and customize default map behavior
         </p>
       </div>
 
       {/* API Key Section */}
-      <section className="bg-wl-bg-overlay border border-wl-border-default rounded-lg p-6 space-y-4">
+      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-wl-text-primary">API Configuration</h2>
-            <p className="text-sm text-wl-text-secondary mt-1">
+            <h2 className="text-xl font-semibold text-white">API Configuration</h2>
+            <p className="text-sm text-gray-400 mt-1">
               Get your API key from Google Cloud Console
             </p>
           </div>
@@ -157,7 +158,7 @@ export default function MapsSettingsPage() {
             href="https://console.cloud.google.com/apis/credentials"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-wl-primary-500 hover:text-wl-primary-600 font-medium"
+            className="text-sm text-blue-400 hover:text-blue-300 font-medium"
           >
             Google Cloud Console →
           </a>
@@ -165,13 +166,13 @@ export default function MapsSettingsPage() {
 
         {/* API Key Input */}
         <div>
-          <label className="text-sm font-semibold text-wl-text-secondary uppercase block mb-2">
+          <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
             API Key
           </label>
 
           {!isEditingApiKey ? (
             <div className="flex items-center gap-3">
-              <div className="flex-1 px-4 py-2.5 rounded-md bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary font-mono text-sm">
+              <div className="flex-1 px-4 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-gray-400 font-mono text-sm">
                 {apiKeyMasked || 'No API key configured'}
               </div>
               <Button
@@ -193,9 +194,9 @@ export default function MapsSettingsPage() {
                 placeholder="Paste your Google Maps API key here..."
                 className={cn(
                   'w-full px-4 py-2.5 rounded-md',
-                  'bg-wl-bg-surface border border-wl-border-default',
-                  'text-wl-text-primary placeholder-wl-text-secondary',
-                  'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent',
+                  'bg-[#0a0a0f] border border-[#1e1e2e]',
+                  'text-white placeholder:text-gray-500',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                   'font-mono text-sm'
                 )}
               />
@@ -222,7 +223,7 @@ export default function MapsSettingsPage() {
         </div>
 
         {/* Test Connection */}
-        <div className="pt-4 border-t border-wl-border-default">
+        <div className="pt-4 border-t border-[#1e1e2e]">
           <Button
             variant="secondary"
             onClick={testConnection}
@@ -237,21 +238,21 @@ export default function MapsSettingsPage() {
 
           {/* Connection Status */}
           {connectionStatus === 'success' && (
-            <div className="mt-3 p-3 bg-wl-success-bg border border-wl-success-400/30 rounded-md flex items-center gap-2">
-              <svg className="w-5 h-5 text-wl-success-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-md flex items-center gap-2">
+              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                   clipRule="evenodd"
                 />
               </svg>
-              <span className="text-sm text-wl-success-400">Connection successful!</span>
+              <span className="text-sm text-emerald-400">Connection successful!</span>
             </div>
           )}
 
           {connectionStatus === 'error' && (
-            <div className="mt-3 p-3 bg-wl-danger-bg border border-wl-danger-400/30 rounded-md">
-              <p className="text-sm text-wl-danger-400">
+            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-md">
+              <p className="text-sm text-red-400">
                 <strong>Connection failed:</strong> {connectionError}
               </p>
             </div>
@@ -260,13 +261,13 @@ export default function MapsSettingsPage() {
       </section>
 
       {/* Default Map Settings */}
-      <section className="bg-wl-bg-overlay border border-wl-border-default rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-wl-text-primary mb-6">Default Map Settings</h2>
+      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-white mb-6">Default Map Settings</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Default Center */}
           <div>
-            <label className="text-sm font-semibold text-wl-text-secondary uppercase block mb-2">
+            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
               Default Center - Latitude
             </label>
             <input
@@ -281,15 +282,15 @@ export default function MapsSettingsPage() {
               step="0.0001"
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-surface border border-wl-border-default',
-                'text-wl-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent'
+                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'text-white',
+                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
             />
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-wl-text-secondary uppercase block mb-2">
+            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
               Default Center - Longitude
             </label>
             <input
@@ -304,16 +305,16 @@ export default function MapsSettingsPage() {
               step="0.0001"
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-surface border border-wl-border-default',
-                'text-wl-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent'
+                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'text-white',
+                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
             />
           </div>
 
           {/* Default Zoom */}
           <div>
-            <label className="text-sm font-semibold text-wl-text-secondary uppercase block mb-2">
+            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
               Default Zoom Level
             </label>
             <div className="flex items-center gap-3">
@@ -327,7 +328,7 @@ export default function MapsSettingsPage() {
                 }
                 className="flex-1"
               />
-              <span className="text-sm font-semibold text-wl-text-primary w-12 text-center">
+              <span className="text-sm font-semibold text-white w-12 text-center">
                 {settings.defaultZoom}
               </span>
             </div>
@@ -335,7 +336,7 @@ export default function MapsSettingsPage() {
 
           {/* Map Style */}
           <div>
-            <label className="text-sm font-semibold text-wl-text-secondary uppercase block mb-2">
+            <label className="text-sm font-semibold text-gray-400 uppercase block mb-2">
               Map Style
             </label>
             <select
@@ -345,9 +346,9 @@ export default function MapsSettingsPage() {
               }
               className={cn(
                 'w-full px-4 py-2.5 rounded-md',
-                'bg-wl-bg-surface border border-wl-border-default',
-                'text-wl-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent'
+                'bg-[#0a0a0f] border border-[#1e1e2e]',
+                'text-white',
+                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
               )}
             >
               <option value="standard">Standard</option>
@@ -359,8 +360,8 @@ export default function MapsSettingsPage() {
       </section>
 
       {/* Feature Toggles */}
-      <section className="bg-wl-bg-overlay border border-wl-border-default rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-wl-text-primary mb-6">Feature Toggles</h2>
+      <section className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-white mb-6">Feature Toggles</h2>
 
         <div className="space-y-3">
           {[
@@ -390,10 +391,10 @@ export default function MapsSettingsPage() {
               description: 'Display bike lanes and routes',
             },
           ].map((feature) => (
-            <div key={feature.key} className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong transition-colors">
+            <div key={feature.key} className="flex items-center justify-between p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e] hover:border-blue-500/30 transition-colors">
               <div>
-                <p className="text-sm font-semibold text-wl-text-primary">{feature.label}</p>
-                <p className="text-xs text-wl-text-secondary mt-1">{feature.description}</p>
+                <p className="text-sm font-semibold text-white">{feature.label}</p>
+                <p className="text-xs text-gray-400 mt-1">{feature.description}</p>
               </div>
               <label className="flex items-center cursor-pointer">
                 <input
@@ -402,7 +403,7 @@ export default function MapsSettingsPage() {
                   onChange={(e) =>
                     handleSettingChange(feature.key as keyof MapsSettings, e.target.checked)
                   }
-                  className="w-5 h-5 rounded border-wl-border-default accent-wl-primary-500"
+                  className="w-5 h-5 rounded border-[#1e1e2e] accent-blue-500"
                 />
               </label>
             </div>
@@ -414,7 +415,7 @@ export default function MapsSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           {saveSuccess && (
-            <div className="flex items-center gap-2 text-wl-success-400">
+            <div className="flex items-center gap-2 text-emerald-400">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"

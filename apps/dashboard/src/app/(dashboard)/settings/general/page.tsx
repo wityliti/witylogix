@@ -48,7 +48,7 @@ export default function GeneralSettingsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="General Settings"
         subtitle="Configure your tenant information and preferences"
@@ -59,7 +59,7 @@ export default function GeneralSettingsPage() {
         <Link href="/settings">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-gray-400 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
@@ -67,30 +67,30 @@ export default function GeneralSettingsPage() {
         </Link>
 
         {/* Company Information */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle>Company Information</CardTitle>
+            <CardTitle className="text-white">Company Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Company Name
                 </label>
                 <input
                   type="text"
                   defaultValue="Witylogix Inc."
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Industry
                 </label>
                 <input
                   type="text"
                   defaultValue="Logistics & Supply Chain"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -108,23 +108,23 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Support Email
                 </label>
                 <input
                   type="email"
                   defaultValue="support@witylogix.com"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Support Phone
                 </label>
                 <input
                   type="tel"
                   defaultValue="+1 (555) 123-4567"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -132,9 +132,9 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Regional Settings */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <MapPin className="w-5 h-5" />
               Regional Settings
             </CardTitle>
@@ -142,10 +142,10 @@ export default function GeneralSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Country
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>United States</option>
                   <option>Canada</option>
                   <option>United Kingdom</option>
@@ -153,36 +153,36 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   State / Province
                 </label>
                 <input
                   type="text"
                   defaultValue="California"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   City
                 </label>
                 <input
                   type="text"
                   defaultValue="San Francisco"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Postal Code
                 </label>
                 <input
                   type="text"
                   defaultValue="94105"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
               </div>
             </div>
@@ -201,9 +201,9 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Localization */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <DollarSign className="w-5 h-5" />
               Localization & Units
             </CardTitle>
@@ -211,10 +211,10 @@ export default function GeneralSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Timezone
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>America/Los_Angeles</option>
                   <option>America/Chicago</option>
                   <option>America/New_York</option>
@@ -223,10 +223,10 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Language
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>English (US)</option>
                   <option>English (UK)</option>
                   <option>Spanish</option>
@@ -238,10 +238,10 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Default Currency
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>USD - US Dollar</option>
                   <option>EUR - Euro</option>
                   <option>GBP - British Pound</option>
@@ -249,10 +249,10 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Weight Unit
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>Pounds (lbs)</option>
                   <option>Kilograms (kg)</option>
                 </select>
@@ -261,19 +261,19 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Distance Unit
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>Miles (mi)</option>
                   <option>Kilometers (km)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Date Format
                 </label>
-                <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+                <select className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                   <option>MM/DD/YYYY</option>
                   <option>DD/MM/YYYY</option>
                   <option>YYYY-MM-DD</option>
@@ -284,9 +284,9 @@ export default function GeneralSettingsPage() {
         </Card>
 
         {/* Business Hours */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Clock className="w-5 h-5" />
               Business Hours
             </CardTitle>
@@ -296,10 +296,10 @@ export default function GeneralSettingsPage() {
               {businessHours.map((day, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 rounded-lg border border-[var(--wl-border)] hover:bg-[var(--wl-bg-tertiary)] transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-[var(--wl-text-primary)]">
+                    <p className="font-medium text-white">
                       {day.day}
                     </p>
                   </div>
@@ -310,13 +310,13 @@ export default function GeneralSettingsPage() {
                       <input
                         type="time"
                         defaultValue={day.open.replace(/[AP]M/, "").trim()}
-                        className="px-3 py-1 text-sm rounded border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)]"
+                        className="px-3 py-1 text-sm rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white"
                       />
-                      <span className="text-[var(--wl-text-tertiary)]">to</span>
+                      <span className="text-gray-400">to</span>
                       <input
                         type="time"
                         defaultValue={day.close.replace(/[AP]M/, "").trim()}
-                        className="px-3 py-1 text-sm rounded border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)]"
+                        className="px-3 py-1 text-sm rounded border border-[#1e1e2e] bg-[#0a0a0f] text-white"
                       />
                     </div>
                   )}
@@ -329,12 +329,12 @@ export default function GeneralSettingsPage() {
         {/* Action Buttons */}
         <div className="flex gap-4 justify-end">
           <Button
-            variant="outline"
-            className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+            variant="secondary"
+            className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
           >
             Cancel
           </Button>
-          <Button className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90">
+          <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
             Save Changes
           </Button>
         </div>

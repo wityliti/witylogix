@@ -137,20 +137,20 @@ export default function IntegrationDetailPage() {
       <div className="space-y-8">
         <Link
           href="/integrations/connected"
-          className="text-wl-primary-400 hover:text-wl-primary-300 inline-flex items-center gap-2"
+          className="text-blue-500 hover:text-blue-400 inline-flex items-center gap-2"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to Connected Integrations
         </Link>
 
-        <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+        <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <AlertCircle className="w-12 h-12 text-wl-danger-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-wl-text-primary mb-2">
+              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-white mb-2">
                 Integration not found
               </h2>
-              <p className="text-wl-text-secondary mb-4">
+              <p className="text-gray-400 mb-4">
                 The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
               </p>
               <Button variant="primary" asChild>
@@ -171,7 +171,7 @@ export default function IntegrationDetailPage() {
       {/* Breadcrumb */}
       <Link
         href="/integrations/connected"
-        className="text-wl-primary-400 hover:text-wl-primary-300 inline-flex items-center gap-2"
+        className="text-blue-500 hover:text-blue-400 inline-flex items-center gap-2"
       >
         <ChevronLeft className="w-4 h-4" />
         Back to Connected Integrations
@@ -180,11 +180,11 @@ export default function IntegrationDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-wl-primary-500/10 flex items-center justify-center">
-            <CheckCircle className="w-6 h-6 text-wl-primary-400" />
+          <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-wl-text-primary">
+            <h1 className="text-3xl font-bold text-white">
               {connection.providerName}
             </h1>
             <div className="flex items-center gap-3 mt-2">
@@ -194,7 +194,7 @@ export default function IntegrationDetailPage() {
                 {connection.status.charAt(0).toUpperCase() +
                   connection.status.slice(1)}
               </Badge>
-              <span className="text-sm text-wl-text-secondary">
+              <span className="text-sm text-gray-400">
                 Uptime: {connection.uptime}%
               </span>
             </div>
@@ -222,16 +222,16 @@ export default function IntegrationDetailPage() {
         {mockUsageMetrics.map((metric) => (
           <Card
             key={`${metric.label}-${metric.period}`}
-            className="bg-wl-bg-tertiary border-wl-neutral-700"
+            className="bg-[#1a1a2e] border-[#1e1e2e]"
           >
             <CardContent className="pt-6">
-              <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-2">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
                 {metric.label} ({metric.period})
               </div>
-              <div className="text-2xl font-bold text-wl-text-primary">
+              <div className="text-2xl font-bold text-white">
                 {metric.value.toLocaleString()}
               </div>
-              <div className="text-xs text-wl-text-tertiary mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 {metric.unit}
               </div>
             </CardContent>
@@ -243,7 +243,7 @@ export default function IntegrationDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Sync Controls */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Sync Controls</CardTitle>
             </CardHeader>
@@ -275,7 +275,7 @@ export default function IntegrationDetailPage() {
                 </Button>
               </div>
 
-              <div className="pt-4 border-t border-wl-neutral-700">
+              <div className="pt-4 border-t border-[#1e1e2e]">
                 <Button
                   variant="ghost"
                   className="w-full justify-center"
@@ -308,26 +308,26 @@ export default function IntegrationDetailPage() {
           {showTestResult && (
             <Card
               className={cn(
-                "bg-wl-bg-tertiary border",
+                "bg-[#1a1a2e] border",
                 showTestResult.success
-                  ? "border-wl-success-500/20"
-                  : "border-wl-danger-500/20"
+                  ? "border-emerald-500/20"
+                  : "border-red-500/20"
               )}
             >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
                   {showTestResult.success ? (
-                    <CheckCheck className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
+                    <CheckCheck className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                   ) : (
-                    <AlertCircle className="w-5 h-5 text-wl-danger-400 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm text-wl-text-primary">
+                    <p className="text-sm text-white">
                       {showTestResult.message}
                     </p>
                     <button
                       onClick={() => setShowTestResult(null)}
-                      className="text-xs text-wl-text-tertiary hover:text-wl-text-secondary mt-2"
+                      className="text-xs text-gray-500 hover:text-gray-400 mt-2"
                     >
                       Dismiss
                     </button>
@@ -338,7 +338,7 @@ export default function IntegrationDetailPage() {
           )}
 
           {/* Recent Activity */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
@@ -371,20 +371,20 @@ export default function IntegrationDetailPage() {
                     className={cn(
                       "p-3 rounded-lg border-l-2",
                       entry.status === "success"
-                        ? "border-l-wl-success-400 bg-wl-success-500/5"
-                        : "border-l-wl-warning-400 bg-wl-warning-500/5"
+                        ? "border-l-emerald-500 bg-emerald-500/5"
+                        : "border-l-amber-500 bg-amber-500/5"
                     )}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-wl-text-primary">
+                        <p className="text-sm font-medium text-white">
                           {entry.type.replace(/_/g, " ")}
                         </p>
-                        <p className="text-xs text-wl-text-tertiary mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           {entry.description}
                         </p>
                       </div>
-                      <span className="text-xs text-wl-text-tertiary whitespace-nowrap ml-2">
+                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                         {timeStr}
                       </span>
                     </div>
@@ -396,9 +396,9 @@ export default function IntegrationDetailPage() {
 
           {/* Error Log */}
           {mockErrors.length > 0 && (
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-wl-danger-400">
+                <CardTitle className="flex items-center gap-2 text-red-500">
                   <AlertTriangle className="w-5 h-5" />
                   Error Log
                 </CardTitle>
@@ -410,7 +410,7 @@ export default function IntegrationDetailPage() {
                   return (
                     <div
                       key={error.id}
-                      className="border border-wl-danger-500/20 rounded-lg bg-wl-danger-500/5"
+                      className="border border-red-500/20 rounded-lg bg-red-500/5"
                     >
                       <button
                         onClick={() => {
@@ -422,28 +422,28 @@ export default function IntegrationDetailPage() {
                           }
                           setExpandedErrors(newSet);
                         }}
-                        className="w-full p-3 text-left hover:bg-wl-danger-500/10 transition-colors"
+                        className="w-full p-3 text-left hover:bg-red-500/10 transition-colors"
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-wl-danger-400">
+                            <p className="text-sm font-medium text-red-500">
                               {error.error}
                             </p>
                             {error.context && (
-                              <p className="text-xs text-wl-text-tertiary mt-1">
+                              <p className="text-xs text-gray-500 mt-1">
                                 {error.context}
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-wl-text-tertiary ml-2">
+                          <span className="text-xs text-gray-500 ml-2">
                             {new Date(error.timestamp).toLocaleString()}
                           </span>
                         </div>
                       </button>
 
                       {isExpanded && (
-                        <div className="border-t border-wl-danger-500/20 p-3 bg-wl-bg-primary">
-                          <pre className="text-xs text-wl-text-secondary font-mono overflow-auto bg-wl-bg-overlay p-2 rounded border border-wl-neutral-700">
+                        <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
+                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
                             {error.stackTrace}
                           </pre>
                         </div>
@@ -459,13 +459,13 @@ export default function IntegrationDetailPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Webhook Configuration */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Webhook Configuration</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                <label className="text-xs text-gray-500 uppercase tracking-wide">
                   Webhook URL
                 </label>
                 <div className="mt-2 flex items-center gap-2">
@@ -473,16 +473,16 @@ export default function IntegrationDetailPage() {
                     type="text"
                     value={`https://api.example.com/webhooks/${connectionId}`}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-wl-bg-primary border border-wl-neutral-700 rounded text-xs text-wl-text-secondary font-mono"
+                    className="flex-1 px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-xs text-gray-400 font-mono"
                   />
-                  <button className="p-2 hover:bg-wl-bg-overlay rounded transition-colors">
-                    <Copy className="w-4 h-4 text-wl-text-tertiary" />
+                  <button className="p-2 hover:bg-[#1a1a2e] rounded transition-colors">
+                    <Copy className="w-4 h-4 text-gray-500" />
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-wl-text-tertiary uppercase tracking-wide block mb-2">
+                <label className="text-xs text-gray-500 uppercase tracking-wide block mb-2">
                   Subscribed Events
                 </label>
                 <div className="space-y-2">
@@ -497,7 +497,7 @@ export default function IntegrationDetailPage() {
                           defaultChecked
                           className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-wl-text-secondary">
+                        <span className="text-sm text-gray-400">
                           {event}
                         </span>
                       </label>
@@ -509,31 +509,31 @@ export default function IntegrationDetailPage() {
           </Card>
 
           {/* Connection Info */}
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Connection Info</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-wl-text-tertiary mb-1">Provider</p>
-                <p className="text-wl-text-primary font-medium">
+                <p className="text-gray-500 mb-1">Provider</p>
+                <p className="text-white font-medium">
                   {connection.providerName}
                 </p>
               </div>
               <div>
-                <p className="text-wl-text-tertiary mb-1">Category</p>
-                <p className="text-wl-text-primary font-medium">
+                <p className="text-gray-500 mb-1">Category</p>
+                <p className="text-white font-medium">
                   {connection.category}
                 </p>
               </div>
               <div>
-                <p className="text-wl-text-tertiary mb-1">Status</p>
+                <p className="text-gray-500 mb-1">Status</p>
                 <Badge variant="success">Connected</Badge>
               </div>
               {connection.credentialsExpireAt && (
                 <div>
-                  <p className="text-wl-text-tertiary mb-1">Credentials Expire</p>
-                  <p className="text-wl-text-primary font-medium">
+                  <p className="text-gray-500 mb-1">Credentials Expire</p>
+                  <p className="text-white font-medium">
                     {new Date(connection.credentialsExpireAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -542,9 +542,9 @@ export default function IntegrationDetailPage() {
           </Card>
 
           {/* Documentation */}
-          <Card className="bg-wl-primary-500/10 border border-wl-primary-500/20">
+          <Card className="bg-blue-500/10 border border-blue-500/20">
             <CardContent className="pt-6">
-              <p className="text-sm text-wl-text-secondary mb-4">
+              <p className="text-sm text-gray-400 mb-4">
                 Need help? Check the integration documentation.
               </p>
               <Button
@@ -575,10 +575,10 @@ export default function IntegrationDetailPage() {
           onOpenChange={setShowDisconnectModal}
         >
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-wl-text-primary">
+            <h2 className="text-xl font-bold text-white">
               Disconnect {connection.providerName}?
             </h2>
-            <p className="text-wl-text-secondary">
+            <p className="text-gray-400">
               This will stop syncing data from {connection.providerName}. You can reconnect anytime.
             </p>
             <div className="flex gap-3 pt-4">

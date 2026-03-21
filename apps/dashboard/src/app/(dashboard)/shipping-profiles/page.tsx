@@ -251,7 +251,7 @@ export default function ShippingProfilesPage() {
               placeholder="Search profiles, descriptions..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans outline-none")}
+              className={cn("w-full p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm font-sans outline-none")}
             />
           </div>
 
@@ -267,8 +267,8 @@ export default function ShippingProfilesPage() {
                   className={cn(
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200",
                     deliveryFilter === m
-                      ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                      : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                      ? "bg-blue-500 text-gray-900 border-blue-500"
+                      : "bg-transparent text-gray-400 border-[#1e1e2e]"
                   )}
                 >
                   {m === "ALL" ? "All Methods" : deliveryMethodLabel(m as DeliveryMethod).split(" ")[0]}
@@ -291,8 +291,8 @@ export default function ShippingProfilesPage() {
                 className={cn(
                   "px-3 py-1 rounded-lg border text-xs font-semibold cursor-pointer font-sans transition-all",
                   rateTypeFilter === r
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                    : "bg-transparent text-wl-text-tertiary border-wl-border-default"
+                    ? "bg-blue-500 text-gray-900 border-blue-500"
+                    : "bg-transparent text-gray-400 border-[#1e1e2e]"
                 )}
               >
                 {r === "ALL" ? "All Rate Types" : rateTypeLabel(r as RateType).split(" ")[0]}
@@ -324,7 +324,7 @@ export default function ShippingProfilesPage() {
                 <div
                   className={cn(
                     "absolute top-0 left-0 right-0 h-0.5",
-                    profile.isActive ? "bg-wl-success-400" : "bg-wl-danger-400"
+                    profile.isActive ? "bg-emerald-500" : "bg-red-500"
                   )}
                 />
 
@@ -333,11 +333,11 @@ export default function ShippingProfilesPage() {
                 <div className={cn("flex justify-between items-start mb-3")}>
                   <div className={cn("flex-1 min-w-0")}>
                     <div className={cn("flex gap-2 items-center mb-1")}>
-                      <span className={cn("text-base font-bold text-wl-text-primary")}>
+                      <span className={cn("text-base font-bold text-white")}>
                         {profile.name}
                       </span>
                       {profile.isDefault && (
-                        <span className={cn("opacity-80 text-wl-primary-400")}>★</span>
+                        <span className={cn("opacity-80 text-blue-500")}>★</span>
                       )}
                     </div>
                     <div className={cn("flex gap-2 flex-wrap")}>
@@ -350,7 +350,7 @@ export default function ShippingProfilesPage() {
 
                 {/* Description */}
                 {profile.description && (
-                  <div className={cn("text-xs text-wl-text-secondary mb-3 leading-relaxed")}>
+                  <div className={cn("text-xs text-gray-300 mb-3 leading-relaxed")}>
                     {profile.description}
                   </div>
                 )}
@@ -367,37 +367,37 @@ export default function ShippingProfilesPage() {
                 </div>
 
                 {/* Rate & Thresholds */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 bg-wl-bg-surface rounded-lg mb-3")}>
+                <div className={cn("grid grid-cols-2 gap-3 p-3 bg-[#12121a] rounded-lg mb-3")}>
                   <div>
-                      <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Flat Rate</div>
+                      <div className={cn("text-[10px] text-gray-400 mb-1")}>Flat Rate</div>
                     <div className={cn(
                       "text-base font-bold font-mono",
-                      profile.flatRate && profile.flatRate > 0 ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                      profile.flatRate && profile.flatRate > 0 ? "text-blue-500" : "text-gray-400"
                     )}>
                       {profile.flatRate !== null ? (profile.flatRate > 0 ? formatCurrency(profile.flatRate) : "FREE") : "—"}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Free Above</div>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Free Above</div>
                     <div className={cn(
                       "text-base font-bold font-mono",
-                      profile.freeShippingAbove ? "text-wl-success-400" : "text-wl-text-tertiary"
+                      profile.freeShippingAbove ? "text-emerald-500" : "text-gray-400"
                     )}>
                       {profile.freeShippingAbove ? formatCurrency(profile.freeShippingAbove) : "—"}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Processing Time</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-text-secondary")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Processing Time</div>
+                    <div className={cn("text-base font-bold font-mono text-gray-300")}>
                       {profile.processingTimeHours}h
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Min Order</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-text-secondary")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Min Order</div>
+                    <div className={cn("text-base font-bold font-mono text-gray-300")}>
                       {profile.minOrderAmount ? formatCurrency(profile.minOrderAmount) : "—"}
                     </div>
                   </div>
@@ -405,31 +405,31 @@ export default function ShippingProfilesPage() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-wl-border-subtle mb-3")}>
+                <div className={cn("grid grid-cols-2 gap-3 p-3 border-t border-b border-[#1e1e2e] mb-3")}>
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Linked Locations</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-primary-400")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Linked Locations</div>
+                    <div className={cn("text-base font-bold font-mono text-blue-500")}>
                       {profile.linkedLocations}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Total Shipments</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-success-400")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Total Shipments</div>
+                    <div className={cn("text-base font-bold font-mono text-emerald-500")}>
                       {profile.totalShipments}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Revenue</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-info-400")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Revenue</div>
+                    <div className={cn("text-base font-bold font-mono text-blue-500")}>
                       {formatCurrency(profile.revenue)}
                     </div>
                   </div>
 
                   <div>
-                    <div className={cn("text-[10px] text-wl-text-tertiary mb-1")}>Calendar Rules</div>
-                    <div className={cn("text-base font-bold font-mono text-wl-warning-400")}>
+                    <div className={cn("text-[10px] text-gray-400 mb-1")}>Calendar Rules</div>
+                    <div className={cn("text-base font-bold font-mono text-amber-500")}>
                       {profile.calendarRules}
                     </div>
                   </div>
@@ -451,11 +451,11 @@ export default function ShippingProfilesPage() {
               <div className={cn("flex justify-between items-start mb-4")}>
                 <div>
                   <div className={cn("flex gap-2 items-center mb-1")}>
-                    <span className={cn("text-lg font-bold text-wl-text-primary")}>
+                    <span className={cn("text-lg font-bold text-white")}>
                       {selectedProfile.name}
                     </span>
                     {selectedProfile.isDefault && (
-                      <span className={cn("text-wl-primary-400")}>★</span>
+                      <span className={cn("text-blue-500")}>★</span>
                     )}
                   </div>
                   <Badge variant={selectedProfile.isActive ? "success" : "default"} dot>
@@ -464,7 +464,7 @@ export default function ShippingProfilesPage() {
                 </div>
                 <button
                   onClick={() => setSelectedProfile(null)}
-                  className={cn("bg-none border-none text-wl-text-tertiary cursor-pointer text-lg font-sans")}
+                  className={cn("bg-none border-none text-gray-400 cursor-pointer text-lg font-sans")}
                 >
                   ✕
                 </button>
@@ -474,80 +474,80 @@ export default function ShippingProfilesPage() {
                 {/* Description */}
                 {selectedProfile.description && (
                   <div>
-                    <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-2")}>
+                    <div className={cn("text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2")}>
                       Description
                     </div>
-                    <div className={cn("text-sm text-wl-text-primary leading-relaxed")}>
+                    <div className={cn("text-sm text-white leading-relaxed")}>
                       {selectedProfile.description}
                     </div>
 
                   </div>
                 )}
 
-                <div className={cn("h-px bg-wl-border-subtle")} />
+                <div className={cn("h-px border-[#1e1e2e]")} />
 
                 {/* Delivery Method & Rate Type */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-2")}>
+                  <div className={cn("text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2")}>
                     Configuration
                   </div>
                   <div className={cn("grid grid-cols-2 gap-2 mb-3")}>
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Delivery Method</div>
-                      <div className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Delivery Method</div>
+                      <div className={cn("text-sm font-semibold text-white")}>
                         {deliveryMethodEmoji(selectedProfile.deliveryMethod)} {deliveryMethodLabel(selectedProfile.deliveryMethod)}
                       </div>
                     </div>
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Rate Type</div>
-                      <div className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Rate Type</div>
+                      <div className={cn("text-sm font-semibold text-white")}>
                         {rateTypeLabel(selectedProfile.rateType)}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-wl-border-subtle")} />
+                <div className={cn("h-px border-[#1e1e2e]")} />
 
                 {/* Rate Configuration */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-3")}>
+                  <div className={cn("text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3")}>
                     Rate Configuration
                   </div>
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Flat Rate</div>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Flat Rate</div>
                       <div className={cn(
                         "text-base font-bold font-mono",
-                        selectedProfile.flatRate && selectedProfile.flatRate > 0 ? "text-wl-primary-400" : "text-wl-text-tertiary"
+                        selectedProfile.flatRate && selectedProfile.flatRate > 0 ? "text-blue-500" : "text-gray-400"
                       )}>
                         {selectedProfile.flatRate !== null ? (selectedProfile.flatRate > 0 ? formatCurrency(selectedProfile.flatRate) : "FREE") : "—"}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Free Shipping Above</div>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Free Shipping Above</div>
                       <div className={cn(
                         "text-base font-bold font-mono",
-                        selectedProfile.freeShippingAbove ? "text-wl-success-400" : "text-wl-text-tertiary"
+                        selectedProfile.freeShippingAbove ? "text-emerald-500" : "text-gray-400"
                       )}>
                         {selectedProfile.freeShippingAbove ? formatCurrency(selectedProfile.freeShippingAbove) : "—"}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Min Order Amount</div>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Min Order Amount</div>
                       <div className={cn(
                         "text-base font-bold font-mono",
-                        selectedProfile.minOrderAmount ? "text-wl-text-primary" : "text-wl-text-tertiary"
+                        selectedProfile.minOrderAmount ? "text-white" : "text-gray-400"
                       )}>
                         {selectedProfile.minOrderAmount ? formatCurrency(selectedProfile.minOrderAmount) : "—"}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Processing Time</div>
-                      <div className={cn("text-base font-bold font-mono text-wl-text-primary")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Processing Time</div>
+                      <div className={cn("text-base font-bold font-mono text-white")}>
                         {selectedProfile.processingTimeHours}h
                       </div>
                     </div>
@@ -555,28 +555,28 @@ export default function ShippingProfilesPage() {
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-wl-border-subtle")} />
+                <div className={cn("h-px border-[#1e1e2e]")} />
 
                 {/* Linked Locations */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-2")}>
+                  <div className={cn("text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2")}>
                     Linked Locations
                   </div>
-                  <div className={cn("bg-wl-bg-overlay border border-wl-border-default rounded-lg p-3 flex flex-col gap-2")}>
+                  <div className={cn("hover:bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg p-3 flex flex-col gap-2")}>
                     <div className={cn("flex items-center gap-2")}>
-                      <div className={cn("text-sm font-bold font-mono text-wl-primary-400")}>
+                      <div className={cn("text-sm font-bold font-mono text-blue-500")}>
                         {selectedProfile.linkedLocations}
                       </div>
 
-                      <div className={cn("text-sm text-wl-text-secondary")}>
+                      <div className={cn("text-sm text-gray-300")}>
                         location{selectedProfile.linkedLocations !== 1 ? "s" : ""} active
                       </div>
                     </div>
-                    <div className={cn("text-xs text-wl-text-tertiary grid grid-cols-2 gap-2")}>
+                    <div className={cn("text-xs text-gray-400 grid grid-cols-2 gap-2")}>
                       {Array.from({ length: selectedProfile.linkedLocations }, (_, i) => (
                         <div
                           key={i}
-                          className={cn("p-2 bg-wl-bg-surface rounded text-xs text-wl-text-secondary")}
+                          className={cn("p-2 bg-[#12121a] rounded text-xs text-gray-300")}
                         >
                           Location {i + 1}
                         </div>
@@ -585,31 +585,31 @@ export default function ShippingProfilesPage() {
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-wl-border-subtle")} />
+                <div className={cn("h-px border-[#1e1e2e]")} />
 
                 {/* Performance Stats */}
                 <div>
-                  <div className={cn("text-xs font-semibold text-wl-text-tertiary uppercase tracking-widest mb-3")}>
+                  <div className={cn("text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3")}>
                     Performance
                   </div>
                   <div className={cn("grid grid-cols-2 gap-3")}>
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Total Shipments</div>
-                      <div className={cn("text-lg font-bold font-mono text-wl-success-400")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Total Shipments</div>
+                      <div className={cn("text-lg font-bold font-mono text-emerald-500")}>
                         {selectedProfile.totalShipments}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Revenue</div>
-                      <div className={cn("text-lg font-bold font-mono text-wl-info-400")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Revenue</div>
+                      <div className={cn("text-lg font-bold font-mono text-blue-500")}>
                         {formatCurrency(selectedProfile.revenue)}
                       </div>
                     </div>
 
                     <div>
-                      <div className={cn("text-xs text-wl-text-tertiary mb-1")}>Calendar Rules</div>
-                      <div className={cn("text-lg font-bold font-mono text-wl-warning-400")}>
+                      <div className={cn("text-xs text-gray-400 mb-1")}>Calendar Rules</div>
+                      <div className={cn("text-lg font-bold font-mono text-amber-500")}>
                         {selectedProfile.calendarRules}
                       </div>
                     </div>
@@ -617,10 +617,10 @@ export default function ShippingProfilesPage() {
                   </div>
                 </div>
 
-                <div className={cn("h-px bg-wl-border-subtle")} />
+                <div className={cn("h-px border-[#1e1e2e]")} />
 
                 {/* Action Buttons */}
-                <div className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-wl-border-subtle")}>
+                <div className={cn("flex gap-2 flex-wrap mt-auto pt-4 border-t border-[#1e1e2e]")}>
                   <Button variant="primary" size="sm">
                     Edit
                   </Button>

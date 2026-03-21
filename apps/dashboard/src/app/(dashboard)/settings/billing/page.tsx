@@ -84,8 +84,13 @@ export default function BillingPage() {
 ];
 
   const usageMetrics = billingData?.usageMetrics ?? [
+    { name: "API Requests", current: 450000, limit: 500000, percentage: 90, unit: "requests" },
+    { name: "Webhooks", current: 1200, limit: 2000, percentage: 60, unit: "calls" },
+    { name: "Storage", current: 4.5, limit: 100, percentage: 4.5, unit: "GB" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Billing & Plans"
         subtitle="Manage your subscription and payment information"
@@ -96,7 +101,7 @@ export default function BillingPage() {
         <Link href="/settings">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-gray-400 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
@@ -104,60 +109,60 @@ export default function BillingPage() {
         </Link>
 
         {/* Current Plan Card */}
-        <Card className="mb-8 bg-gradient-to-r from-[var(--wl-primary)]/10 to-[var(--wl-primary)]/5 border-[var(--wl-primary)]/30">
+        <Card className="mb-8 bg-gradient-to-r from-blue-500/10 to-blue-500/5 border-blue-500/30 bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="pt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-sm font-medium text-[var(--wl-text-tertiary)] uppercase">
+                <p className="text-sm font-medium text-gray-500 uppercase">
                   Current Plan
                 </p>
-                <h3 className="text-3xl font-bold text-[var(--wl-text-primary)] mt-2">
+                <h3 className="text-3xl font-bold text-white mt-2">
                   Pro
                 </h3>
-                <p className="text-[var(--wl-text-secondary)] mt-2">
+                <p className="text-gray-400 mt-2">
                   Professional tier for growing businesses
                 </p>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-[var(--wl-text-tertiary)] uppercase">
+                <p className="text-sm font-medium text-gray-500 uppercase">
                   Monthly Cost
                 </p>
-                <h3 className="text-3xl font-bold text-[var(--wl-text-primary)] mt-2">
+                <h3 className="text-3xl font-bold text-white mt-2">
                   $499.99
                 </h3>
-                <p className="text-[var(--wl-text-secondary)] mt-2">
+                <p className="text-gray-400 mt-2">
                   Billed on 1st of each month
                 </p>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-[var(--wl-text-tertiary)] uppercase">
+                <p className="text-sm font-medium text-gray-500 uppercase">
                   Renewal Date
                 </p>
-                <h3 className="text-3xl font-bold text-[var(--wl-text-primary)] mt-2">
+                <h3 className="text-3xl font-bold text-white mt-2">
                   April 1
                 </h3>
-                <p className="text-[var(--wl-text-secondary)] mt-2">
+                <p className="text-gray-400 mt-2">
                   Next billing cycle
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-4 mt-8 pt-8 border-t border-[var(--wl-border)]">
-              <Button className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90">
+            <div className="flex gap-4 mt-8 pt-8 border-t border-[#1e1e2e]">
+              <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
               <Button
-                variant="outline"
-                className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                variant="secondary"
+                className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
               >
                 Downgrade Plan
               </Button>
               <Button
                 variant="ghost"
-                className="text-[var(--wl-error)]"
+                className="text-red-400"
               >
                 Cancel Subscription
               </Button>
@@ -166,9 +171,9 @@ export default function BillingPage() {
         </Card>
 
         {/* Usage Metrics */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <TrendingUp className="w-5 h-5" />
               Usage This Month
             </CardTitle>
@@ -177,21 +182,21 @@ export default function BillingPage() {
             {usageMetrics.map((metric) => (
               <div key={metric.name}>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-[var(--wl-text-primary)]">
+                  <p className="font-medium text-white">
                     {metric.name}
                   </p>
-                  <span className="text-sm text-[var(--wl-text-tertiary)]">
+                  <span className="text-sm text-gray-500">
                     {metric.current.toLocaleString()} / {metric.limit.toLocaleString()}{" "}
                     {metric.unit}
                   </span>
                 </div>
-                <div className="w-full bg-[var(--wl-bg-tertiary)] rounded-full h-2">
+                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
                   <div
-                    className="bg-[var(--wl-primary)] h-2 rounded-full transition-all"
+                    className="bg-blue-500 h-2 rounded-full transition-all"
                     style={{ width: `${metric.percentage}%` }}
                   />
                 </div>
-                <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                <p className="text-xs text-gray-500 mt-1">
                   {metric.percentage}% of limit used
                 </p>
               </div>
@@ -200,43 +205,43 @@ export default function BillingPage() {
         </Card>
 
         {/* Payment Method */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <CreditCard className="w-5 h-5" />
               Payment Method
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-[var(--wl-bg-tertiary)] rounded-lg p-6 mb-6 border border-[var(--wl-border)]">
+            <div className="bg-[#1a1a2e] rounded-lg p-6 mb-6 border border-[#1e1e2e]">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-8 bg-gradient-to-br from-[#1434CB] to-[#0066FF] rounded flex items-center justify-center">
                     <span className="text-white text-xs font-bold">VISA</span>
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--wl-text-primary)]">
+                    <p className="font-medium text-white">
                       Visa ending in 4242
                     </p>
-                    <p className="text-sm text-[var(--wl-text-tertiary)]">
+                    <p className="text-sm text-gray-500">
                       Expires 12/27
                     </p>
                   </div>
                 </div>
-                <Badge variant="default" className="bg-[var(--wl-success)]">
+                <Badge variant="success" className="bg-emerald-500">
                   Active
                 </Badge>
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
-                  className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-secondary)]"
+                  variant="secondary"
+                  className="border-[#1e1e2e] text-white hover:bg-[#0a0a0f]"
                 >
                   Update
                 </Button>
                 <Button
                   variant="ghost"
-                  className="text-[var(--wl-error)]"
+                  className="text-red-400"
                 >
                   Remove
                 </Button>
@@ -244,8 +249,8 @@ export default function BillingPage() {
             </div>
 
             <Button
-              variant="outline"
-              className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-secondary)]"
+              variant="secondary"
+              className="border-[#1e1e2e] text-white hover:bg-[#1a1a2e]"
             >
               Add Payment Method
             </Button>
@@ -253,90 +258,90 @@ export default function BillingPage() {
         </Card>
 
         {/* Billing Address */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle>Billing Address</CardTitle>
+            <CardTitle className="text-white">Billing Address</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Full Name
                   </label>
                   <input
                     type="text"
                     defaultValue="Sarah Johnson"
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Company
                   </label>
                   <input
                     type="text"
                     defaultValue="Witylogix Inc."
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Address
                 </label>
                 <input
                   type="text"
                   defaultValue="123 Logistics Boulevard, Suite 456"
-                  className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     City
                   </label>
                   <input
                     type="text"
                     defaultValue="San Francisco"
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     State
                   </label>
                   <input
                     type="text"
                     defaultValue="CA"
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Postal Code
                   </label>
                   <input
                     type="text"
                     defaultValue="94105"
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                    className="w-full px-4 py-2 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
             </div>
 
-            <Button className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90">
+            <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
               Update Billing Address
             </Button>
           </CardContent>
         </Card>
 
         {/* Invoice History */}
-        <Card>
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Calendar className="w-5 h-5" />
               Invoice History
             </CardTitle>
@@ -346,33 +351,33 @@ export default function BillingPage() {
               {mockInvoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-[var(--wl-border)] hover:bg-[var(--wl-bg-tertiary)] transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-[var(--wl-text-primary)]">
+                    <p className="font-medium text-white">
                       {invoice.period}
                     </p>
-                    <p className="text-sm text-[var(--wl-text-tertiary)]">
+                    <p className="text-sm text-gray-500">
                       {new Date(invoice.date).toLocaleDateString()}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="font-medium text-[var(--wl-text-primary)]">
+                      <p className="font-medium text-white">
                         ${invoice.amount.toFixed(2)}
                       </p>
                       <Badge
                         variant={
                           invoice.status === "paid"
-                            ? "default"
+                            ? "success"
                             : invoice.status === "pending"
-                              ? "secondary"
-                              : "destructive"
+                              ? "warning"
+                              : "danger"
                         }
                         className={
                           invoice.status === "paid"
-                            ? "bg-[var(--wl-success)] text-white"
+                            ? "bg-emerald-500 text-white"
                             : ""
                         }
                       >
@@ -384,7 +389,7 @@ export default function BillingPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-[var(--wl-primary)] hover:bg-[var(--wl-bg-secondary)]"
+                      className="text-blue-400 hover:bg-[#1a1a2e]"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Download</span>
@@ -397,9 +402,9 @@ export default function BillingPage() {
         </Card>
 
         {/* Auto-renewal Notice */}
-        <div className="mt-8 p-4 rounded-lg border border-[var(--wl-warning)]/30 bg-[var(--wl-warning)]/5 flex gap-3">
-          <AlertCircle className="w-5 h-5 text-[var(--wl-warning)] flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-[var(--wl-text-secondary)]">
+        <div className="mt-8 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 flex gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gray-400">
             Your subscription will automatically renew on{" "}
             <strong>April 1, 2026</strong> at $499.99. You can cancel anytime
             before the renewal date.

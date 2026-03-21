@@ -64,13 +64,13 @@ export default function RealtimePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary">
-      <div className="sticky top-0 z-10 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default">
+    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">Realtime Activity</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Live event feed</p>
+              <h1 className="text-2xl font-bold text-white">Realtime Activity</h1>
+              <p className="text-sm text-gray-300 mt-1">Live event feed</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -109,8 +109,8 @@ export default function RealtimePage() {
                   className={cn(
                     'px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
                     selectedType === type
-                      ? 'bg-wl-primary-500 text-white'
-                      : 'bg-wl-bg-overlay text-wl-text-secondary'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-[#1a1a2e] text-gray-300'
                   )}
                 >
                   {type === 'all' ? 'All' : type.replace('.', ' ')} ({count})
@@ -124,28 +124,28 @@ export default function RealtimePage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-3 max-w-4xl">
           {filtered.length === 0 ? (
-            <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
-              <p className="text-wl-text-secondary">No events</p>
+            <Card className="p-12 bg-[#12121a] border-[#1e1e2e] text-center">
+              <p className="text-gray-300">No events</p>
             </Card>
           ) : (
             <div className="space-y-2">
               {filtered.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start gap-3 p-4 bg-wl-bg-surface border border-wl-border-default rounded-md hover:border-wl-border-strong transition-colors"
+                  className="flex items-start gap-3 p-4 bg-[#12121a] border border-[#1e1e2e] rounded-md hover:border-[#2a2a3e] transition-colors"
                 >
-                  <div className="mt-1 text-wl-text-secondary">
+                  <div className="mt-1 text-gray-300">
                     {getEventIcon(event.type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-wl-text-primary break-words">{event.actor}</p>
+                      <p className="font-medium text-white break-words">{event.actor}</p>
                       <Badge variant={getStatusBadgeVariant(event.status) as any}>
                         {event.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-wl-text-secondary break-words">{event.description}</p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">
+                    <p className="text-sm text-gray-300 break-words">{event.description}</p>
+                    <p className="text-xs text-gray-400 mt-1">
                       {new Date(event.timestamp).toLocaleTimeString()}
                     </p>
                   </div>

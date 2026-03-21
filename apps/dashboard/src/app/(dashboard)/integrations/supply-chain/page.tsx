@@ -442,7 +442,7 @@ export default function SupplyChainIntegrationsPage() {
         }
       />
 
-      <div className={cn("p-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f]")}>
         {/* Top Stats */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4 mb-6")}>
           <StatCard
@@ -450,7 +450,7 @@ export default function SupplyChainIntegrationsPage() {
             value={totalWarehouses}
             change={{ value: 2, label: "active" }}
             icon={<Warehouse size={16} />}
-            accentColor="var(--wl-success-500)"
+            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
@@ -458,7 +458,7 @@ export default function SupplyChainIntegrationsPage() {
             value={`${Math.floor(totalItems / 1000)}K`}
             change={{ value: 5, label: "this month" }}
             icon={<Package size={16} />}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
@@ -466,7 +466,7 @@ export default function SupplyChainIntegrationsPage() {
             value={`${avgFulfillmentRate}%`}
             change={{ value: 2, label: "vs last month" }}
             icon={<TrendingUp size={16} />}
-            accentColor="var(--wl-success-500)"
+            accentColor="#3b82f6"
             index={2}
           />
           <StatCard
@@ -474,13 +474,13 @@ export default function SupplyChainIntegrationsPage() {
             value={totalOutOfStock}
             change={{ value: -3, label: "vs yesterday" }}
             icon={<AlertTriangle size={16} />}
-            accentColor="var(--wl-warning-500)"
+            accentColor="#3b82f6"
             index={3}
           />
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-wl-bg-overlay rounded-md p-1 w-fit flex-wrap")}>
+        <div className={cn("flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit flex-wrap")}>
           {(["warehouses", "inventory", "fulfillment", "health"] as const).map((v) => (
             <button
               key={v}
@@ -488,8 +488,8 @@ export default function SupplyChainIntegrationsPage() {
               className={cn(
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-transparent text-wl-text-tertiary"
+                  ? "bg-blue-500 text-white"
+                  : "bg-transparent text-gray-300"
               )}
             >
               {v}
@@ -501,41 +501,41 @@ export default function SupplyChainIntegrationsPage() {
         {view === "warehouses" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 Warehouse Connections ({WAREHOUSE_CONNECTIONS.length})
               </h3>
-              <span className={cn("text-xs text-wl-text-tertiary")}>
+              <span className={cn("text-xs text-gray-300")}>
                 {syncedCount} synced
               </span>
             </div>
 
             {/* Order Flow Diagram */}
-            <Card className={cn("mb-6 bg-gradient-to-r from-wl-bg-elevated to-wl-bg-surface")}>
+            <Card className={cn("mb-6 bg-gradient-to-r from-[#0a0a0f]elevated to-[#0a0a0f]surface")}>
               <div className={cn("p-4")}>
-                <p className={cn("text-xs font-semibold text-wl-text-primary mb-4")}>
+                <p className={cn("text-xs font-semibold text-white mb-4")}>
                   Order Flow Pipeline
                 </p>
                 <div className={cn("flex items-center justify-between text-center")}>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📥</p>
-                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Inbound</p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>PO Receipt</p>
+                    <p className={cn("text-xs font-semibold text-white")}>Inbound</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>PO Receipt</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
-                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-wl-primary-400 to-transparent")} />
+                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-blue-400 to-transparent")} />
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>🏭</p>
-                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Warehouse</p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Storage & QC</p>
+                    <p className={cn("text-xs font-semibold text-white")}>Warehouse</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>Storage & QC</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
-                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-transparent to-wl-success-400")} />
+                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-transparent to-emerald-400")} />
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📤</p>
-                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Outbound</p>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Shipping</p>
+                    <p className={cn("text-xs font-semibold text-white")}>Outbound</p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>Shipping</p>
                   </div>
                 </div>
               </div>
@@ -552,8 +552,8 @@ export default function SupplyChainIntegrationsPage() {
                 <Card
                   key={warehouse.id}
                   className={cn(
-                    "cursor-pointer transition-all wl-animate-in",
-                    isExpanded && "ring-1 ring-wl-primary-400"
+                    "cursor-pointer transition-all blue-500",
+                    isExpanded && "ring-1 ring-blue-400"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                   onClick={() =>
@@ -565,10 +565,10 @@ export default function SupplyChainIntegrationsPage() {
                       <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
                         <span className={cn("text-2xl shrink-0")}>{provider?.icon}</span>
                         <div className={cn("min-w-0")}>
-                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                          <p className={cn("text-sm font-semibold text-white")}>
                             {warehouse.name}
                           </p>
-                          <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                          <p className={cn("text-xs text-gray-300 mt-1")}>
                             {warehouse.warehouseCount} locations
                           </p>
                         </div>
@@ -584,20 +584,20 @@ export default function SupplyChainIntegrationsPage() {
                       </Badge>
                     </div>
 
-                    <div className={cn("flex items-center justify-between text-xs text-wl-text-tertiary mb-3")}>
+                    <div className={cn("flex items-center justify-between text-xs text-gray-300 mb-3")}>
                       <span>Last sync: {warehouse.lastSync}</span>
                       {warehouse.errorCount > 0 && (
-                        <span className={cn("text-wl-danger-400 font-semibold")}>
+                        <span className={cn("text-red-500 font-semibold")}>
                           {warehouse.errorCount} error{warehouse.errorCount !== 1 ? "s" : ""}
                         </span>
                       )}
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-wl-border-subtle pt-3 mt-3 space-y-3")}>
+                      <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
                         {/* Location Mapping */}
                         <div>
-                          <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
+                          <p className={cn("text-xs font-semibold text-white mb-2")}>
                             Mapped Locations
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2")}>
@@ -605,11 +605,11 @@ export default function SupplyChainIntegrationsPage() {
                               <div
                                 key={i}
                                 className={cn(
-                                  "p-2 rounded bg-wl-bg-surface border border-wl-border-subtle flex items-center gap-2"
+                                  "p-2 rounded bg-[#12121a] border border-[#1e1e2e] flex items-center gap-2"
                                 )}
                               >
-                                <Warehouse size={14} className={cn("text-wl-primary-400")} />
-                                <span className={cn("text-xs text-wl-text-secondary")}>
+                                <Warehouse size={14} className={cn("text-blue-400")} />
+                                <span className={cn("text-xs text-gray-400")}>
                                   Location {i + 1}
                                 </span>
                               </div>
@@ -618,20 +618,20 @@ export default function SupplyChainIntegrationsPage() {
                         </div>
 
                         {/* Sync Configuration */}
-                        <div className={cn("bg-wl-bg-surface rounded p-3")}>
-                          <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
+                        <div className={cn("bg-[#12121a] rounded p-3")}>
+                          <p className={cn("text-xs font-semibold text-white mb-2")}>
                             Sync Details
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2 text-xs")}>
                             <div>
-                              <p className={cn("text-wl-text-tertiary")}>Last Sync</p>
-                              <p className={cn("font-semibold text-wl-text-primary")}>
+                              <p className={cn("text-gray-300")}>Last Sync</p>
+                              <p className={cn("font-semibold text-white")}>
                                 {warehouse.lastSync}
                               </p>
                             </div>
                             <div>
-                              <p className={cn("text-wl-text-tertiary")}>Next Sync</p>
-                              <p className={cn("font-semibold text-wl-text-primary")}>
+                              <p className={cn("text-gray-300")}>Next Sync</p>
+                              <p className={cn("font-semibold text-white")}>
                                 {warehouse.nextSync}
                               </p>
                             </div>
@@ -671,20 +671,20 @@ export default function SupplyChainIntegrationsPage() {
         {/* Inventory View */}
         {view === "inventory" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Inventory Sync Configuration
             </h3>
 
             {INVENTORY_SYNCS.map((sync, idx) => (
-              <Card key={sync.id} className={cn("wl-animate-in")} style={{ animationDelay: `${idx * 40}ms` }}>
+              <Card key={sync.id} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
                     <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {sync.warehouse}
                       </p>
-                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-wl-text-tertiary")}>
-                        <span className={cn("px-2 py-1 rounded bg-wl-bg-surface font-medium")}>
+                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-gray-300")}>
+                        <span className={cn("px-2 py-1 rounded bg-[#12121a] font-medium")}>
                           {sync.mode.replace(/_/g, " ")}
                         </span>
                         {sync.interval && (
@@ -703,23 +703,23 @@ export default function SupplyChainIntegrationsPage() {
                     </Badge>
                   </div>
 
-                  <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
+                  <div className={cn("bg-[#12121a] rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Items Tracked</p>
-                        <p className={cn("font-bold text-wl-text-primary")}>
+                        <p className={cn("text-gray-300 mb-1")}>Items Tracked</p>
+                        <p className={cn("font-bold text-white")}>
                           {(sync.itemsTracked / 1000).toFixed(1)}K
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Last Update</p>
-                        <p className={cn("font-bold text-wl-text-primary")}>
+                        <p className={cn("text-gray-300 mb-1")}>Last Update</p>
+                        <p className={cn("font-bold text-white")}>
                           {sync.lastUpdate}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-text-tertiary mb-1")}>Success Rate</p>
-                        <p className={cn("font-bold text-wl-success-400")}>
+                        <p className={cn("text-gray-300 mb-1")}>Success Rate</p>
+                        <p className={cn("font-bold text-emerald-500")}>
                           {sync.successRate}%
                         </p>
                       </div>
@@ -756,55 +756,55 @@ export default function SupplyChainIntegrationsPage() {
         {/* Fulfillment View */}
         {view === "fulfillment" && (
           <div className={cn("space-y-4")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Fulfillment SLA Dashboard
             </h3>
 
             {FULFILLMENT_METRICS.map((metric, idx) => (
-              <Card key={metric.warehouse} className={cn("wl-animate-in")} style={{ animationDelay: `${idx * 40}ms` }}>
+              <Card key={metric.warehouse} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-center justify-between mb-4")}>
-                    <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                    <p className={cn("text-sm font-semibold text-white")}>
                       {metric.warehouse}
                     </p>
                     <div className={cn("text-right")}>
-                      <p className={cn("text-2xl font-bold text-wl-success-400")}>
+                      <p className={cn("text-2xl font-bold text-emerald-500")}>
                         {metric.fulfillmentRate}%
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary")}>Fulfillment Rate</p>
+                      <p className={cn("text-xs text-gray-300")}>Fulfillment Rate</p>
                     </div>
                   </div>
 
                   <div className={cn("grid grid-cols-4 gap-3 mb-4")}>
-                    <div className={cn("bg-wl-bg-surface rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-wl-success-400")}>
+                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
+                      <p className={cn("text-2xl font-bold text-emerald-500")}>
                         {metric.onTime}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>On Time</p>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>On Time</p>
                     </div>
-                    <div className={cn("bg-wl-bg-surface rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-wl-warning-400")}>
+                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
+                      <p className={cn("text-2xl font-bold text-amber-500")}>
                         {metric.atRisk}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>At Risk</p>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>At Risk</p>
                     </div>
-                    <div className={cn("bg-wl-bg-surface rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-wl-danger-400")}>
+                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
+                      <p className={cn("text-2xl font-bold text-red-500")}>
                         {metric.late}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Late</p>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>Late</p>
                     </div>
-                    <div className={cn("bg-wl-bg-surface rounded p-2 text-center")}>
-                      <p className={cn("text-2xl font-bold text-wl-text-primary")}>
+                    <div className={cn("bg-[#12121a] rounded p-2 text-center")}>
+                      <p className={cn("text-2xl font-bold text-white")}>
                         {metric.avgProcessingTime}h
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>Avg Process</p>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>Avg Process</p>
                     </div>
                   </div>
 
                   {metric.atRisk > 0 && (
-                    <div className={cn("bg-[rgba(245,158,11,0.1)] border border-wl-warning-400 border-opacity-30 rounded p-2 mb-3")}>
-                      <p className={cn("text-xs text-wl-warning-400 font-semibold")}>
+                    <div className={cn("bg-[rgba(245,158,11,0.1)] border border-amber-400 border-opacity-30 rounded p-2 mb-3")}>
+                      <p className={cn("text-xs text-amber-500 font-semibold")}>
                         ⚠️ {metric.atRisk} order{metric.atRisk !== 1 ? "s" : ""} at risk of missing SLA
                       </p>
                     </div>
@@ -825,39 +825,39 @@ export default function SupplyChainIntegrationsPage() {
 
             {/* Stock Levels by Warehouse */}
             <div className={cn("mt-6")}>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+              <h3 className={cn("text-sm font-semibold text-white mb-4")}>
                 Stock Level Summary
               </h3>
 
               {STOCK_LEVELS.map((stock, idx) => (
-                <Card key={stock.warehouse} className={cn("mb-3 wl-animate-in")} style={{ animationDelay: `${(FULFILLMENT_METRICS.length + idx) * 40}ms` }}>
+                <Card key={stock.warehouse} className={cn("mb-3 blue-500")} style={{ animationDelay: `${(FULFILLMENT_METRICS.length + idx) * 40}ms` }}>
                   <div className={cn("p-3 flex items-center justify-between")}>
                     <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                      <p className={cn("text-sm font-semibold text-white")}>
                         {stock.warehouse}
                       </p>
-                      <p className={cn("text-xs text-wl-text-tertiary mt-1")}>
+                      <p className={cn("text-xs text-gray-300 mt-1")}>
                         {stock.totalSku.toLocaleString()} SKUs
                       </p>
                     </div>
                     <div className={cn("flex items-center gap-4 text-right shrink-0")}>
                       <div>
-                        <p className={cn("text-sm font-bold text-wl-success-400")}>
+                        <p className={cn("text-sm font-bold text-emerald-500")}>
                           {stock.inStock}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>In Stock</p>
+                        <p className={cn("text-xs text-gray-300")}>In Stock</p>
                       </div>
                       <div>
-                        <p className={cn("text-sm font-bold text-wl-warning-400")}>
+                        <p className={cn("text-sm font-bold text-amber-500")}>
                           {stock.lowStock}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Low</p>
+                        <p className={cn("text-xs text-gray-300")}>Low</p>
                       </div>
                       <div>
-                        <p className={cn("text-sm font-bold text-wl-danger-400")}>
+                        <p className={cn("text-sm font-bold text-red-500")}>
                           {stock.outOfStock}
                         </p>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Out</p>
+                        <p className={cn("text-xs text-gray-300")}>Out</p>
                       </div>
                     </div>
                   </div>
@@ -870,7 +870,7 @@ export default function SupplyChainIntegrationsPage() {
         {/* Health View */}
         {view === "health" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
               Integration Health & Error Logs
             </h3>
 
@@ -884,8 +884,8 @@ export default function SupplyChainIntegrationsPage() {
                 <Card
                   key={`health-${health.provider}`}
                   className={cn(
-                    "wl-animate-in",
-                    hasAlerts && "border-wl-warning-400 border-opacity-30"
+                    "blue-500",
+                    hasAlerts && "border-amber-400 border-opacity-30"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                 >
@@ -894,7 +894,7 @@ export default function SupplyChainIntegrationsPage() {
                       <div className={cn("flex items-center gap-3")}>
                         <span className={cn("text-xl")}>{provider?.icon}</span>
                         <div>
-                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                          <p className={cn("text-sm font-semibold text-white")}>
                             {provider?.name}
                           </p>
                         </div>
@@ -915,47 +915,47 @@ export default function SupplyChainIntegrationsPage() {
                     </div>
 
                     <div className={cn("grid grid-cols-3 md:grid-cols-6 gap-3 mb-3")}>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Uptime</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Uptime</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           {health.uptime}%
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Error Rate</p>
-                        <p className={cn("text-lg font-bold text-wl-danger-400")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Error Rate</p>
+                        <p className={cn("text-lg font-bold text-red-500")}>
                           {health.errorRate}%
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Latency</p>
-                        <p className={cn("text-lg font-bold text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Latency</p>
+                        <p className={cn("text-lg font-bold text-white")}>
                           {health.avgLatency}ms
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Sync Success</p>
-                        <p className={cn("text-lg font-bold text-wl-success-400")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Sync Success</p>
+                        <p className={cn("text-lg font-bold text-emerald-500")}>
                           {health.syncSuccess}%
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Warnings</p>
-                        <p className={cn("text-lg font-bold", health.warnings > 0 ? "text-wl-warning-400" : "text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Warnings</p>
+                        <p className={cn("text-lg font-bold", health.warnings > 0 ? "text-amber-500" : "text-white")}>
                           {health.warnings}
                         </p>
                       </div>
-                      <div className={cn("bg-wl-bg-surface rounded p-2")}>
-                        <p className={cn("text-xs text-wl-text-tertiary mb-1")}>Alerts</p>
-                        <p className={cn("text-lg font-bold", health.alerts > 0 ? "text-wl-danger-400" : "text-wl-text-primary")}>
+                      <div className={cn("bg-[#12121a] rounded p-2")}>
+                        <p className={cn("text-xs text-gray-300 mb-1")}>Alerts</p>
+                        <p className={cn("text-lg font-bold", health.alerts > 0 ? "text-red-500" : "text-white")}>
                           {health.alerts}
                         </p>
                       </div>
                     </div>
 
                     {hasAlerts && (
-                      <div className={cn("bg-[rgba(245,158,11,0.1)] border border-wl-warning-400 border-opacity-30 rounded p-2 mb-2")}>
-                        <p className={cn("text-xs text-wl-warning-400 font-semibold")}>
+                      <div className={cn("bg-[rgba(245,158,11,0.1)] border border-amber-400 border-opacity-30 rounded p-2 mb-2")}>
+                        <p className={cn("text-xs text-amber-500 font-semibold")}>
                           {health.warnings} warning{health.warnings !== 1 ? "s" : ""} · {health.alerts} active alert{health.alerts !== 1 ? "s" : ""}
                         </p>
                       </div>

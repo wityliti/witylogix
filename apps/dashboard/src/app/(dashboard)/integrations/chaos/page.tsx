@@ -102,17 +102,17 @@ export default function ChaosDashboard() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-[var(--wl-bg-primary)]">
+    <div className="flex h-screen flex-col bg-[#0a0a0f]">
       {/* Header */}
-      <div className="border-b border-[var(--wl-border-primary)] bg-[var(--wl-bg-primary)] px-8 py-6">
-        <h1 className="text-3xl font-bold text-[var(--wl-text-primary)]">Chaos Testing Dashboard</h1>
-        <p className="mt-2 text-[var(--wl-text-secondary)]">
+      <div className="border-b border-[#1e1e2e] bg-[#0a0a0f] px-8 py-6">
+        <h1 className="text-3xl font-bold text-white">Chaos Testing Dashboard</h1>
+        <p className="mt-2 text-gray-400">
           Test provider resilience with controlled fault injection
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[var(--wl-border-primary)] px-8">
+      <div className="border-b border-[#1e1e2e] px-8">
         <div className="flex gap-8">
           {(['builder', 'execution', 'results', 'history'] as const).map((tab) => (
             <button
@@ -121,8 +121,8 @@ export default function ChaosDashboard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-[var(--wl-primary)] text-[var(--wl-primary)]'
-                  : 'border-transparent text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]'
+                  ? 'border-blue-500 text-blue-500'
+                  : 'border-transparent text-gray-400 hover:text-white'
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -136,8 +136,8 @@ export default function ChaosDashboard() {
         {activeTab === 'builder' && (
           <div className="space-y-6">
             {/* Predefined Scenarios */}
-            <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
-              <h2 className="mb-4 text-lg font-semibold text-[var(--wl-text-primary)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+              <h2 className="mb-4 text-lg font-semibold text-white">
                 Predefined Scenarios
               </h2>
               <div className="grid grid-cols-2 gap-3">
@@ -149,8 +149,8 @@ export default function ChaosDashboard() {
                     className="h-auto justify-between p-4 text-left"
                   >
                     <div>
-                      <div className="font-medium text-[var(--wl-text-primary)]">{scenario.name}</div>
-                      <div className="text-xs text-[var(--wl-text-secondary)]">{scenario.faultType}</div>
+                      <div className="font-medium text-[#ffffff]">{scenario.name}</div>
+                      <div className="text-xs text-[#9ca3af]">{scenario.faultType}</div>
                     </div>
                     <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
                   </Button>
@@ -159,28 +159,28 @@ export default function ChaosDashboard() {
             </Card>
 
             {/* Custom Scenario Builder */}
-            <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
-              <h2 className="mb-6 text-lg font-semibold text-[var(--wl-text-primary)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+              <h2 className="mb-6 text-lg font-semibold text-[#ffffff]">
                 Custom Scenario Builder
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Scenario Name</Label>
+                    <Label className="text-[#ffffff]">Scenario Name</Label>
                     <Input
                       value={builderForm.name}
                       onChange={(e) => setBuilderForm({ ...builderForm, name: e.target.value })}
                       placeholder="e.g., Black Friday Load Test"
-                      className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]"
+                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
                     />
                   </div>
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Provider</Label>
+                    <Label className="text-[#ffffff]">Provider</Label>
                     <Select
                       value={builderForm.provider}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, provider: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]">
+                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
                         <SelectValue placeholder="Select provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -196,12 +196,12 @@ export default function ChaosDashboard() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Fault Type</Label>
+                    <Label className="text-[#ffffff]">Fault Type</Label>
                     <Select
                       value={builderForm.faultType}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, faultType: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]">
+                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
                         <SelectValue placeholder="Select fault type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -214,12 +214,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Severity</Label>
+                    <Label className="text-[#ffffff]">Severity</Label>
                     <Select
                       value={builderForm.severity}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, severity: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]">
+                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -232,7 +232,7 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Duration (seconds)</Label>
+                    <Label className="text-[#ffffff]">Duration (seconds)</Label>
                     <Input
                       type="number"
                       value={builderForm.duration}
@@ -241,18 +241,18 @@ export default function ChaosDashboard() {
                       }
                       min="10"
                       max="3600"
-                      className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]"
+                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-[var(--wl-text-primary)]">Target Endpoints (comma-separated)</Label>
+                  <Label className="text-[#ffffff]">Target Endpoints (comma-separated)</Label>
                   <Input
                     value={builderForm.endpoints}
                     onChange={(e) => setBuilderForm({ ...builderForm, endpoints: e.target.value })}
                     placeholder="/api/checkout, /api/payment"
-                    className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]"
+                    className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
                   />
                 </div>
 
@@ -263,16 +263,16 @@ export default function ChaosDashboard() {
             </Card>
 
             {/* Recurring Schedules */}
-            <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
-              <h2 className="mb-6 text-lg font-semibold text-[var(--wl-text-primary)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+              <h2 className="mb-6 text-lg font-semibold text-[#ffffff]">
                 Schedule Recurring Tests
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Frequency</Label>
+                    <Label className="text-[#ffffff]">Frequency</Label>
                     <Select value={recurringForm.frequency}>
-                      <SelectTrigger className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]">
+                      <SelectTrigger className="mt-2 bg-[#0a0a0f] text-[#ffffff]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -283,12 +283,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[var(--wl-text-primary)]">Time</Label>
+                    <Label className="text-[#ffffff]">Time</Label>
                     <Input
                       type="time"
                       value={recurringForm.time}
                       onChange={(e) => setRecurringForm({ ...recurringForm, time: e.target.value })}
-                      className="mt-2 bg-[var(--wl-bg-primary)] text-[var(--wl-text-primary)]"
+                      className="mt-2 bg-[#0a0a0f] text-[#ffffff]"
                     />
                   </div>
                 </div>
@@ -316,20 +316,20 @@ export default function ChaosDashboard() {
 
 function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
   return (
-    <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
+    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--wl-text-primary)]">Execution Progress</h2>
+            <h2 className="text-lg font-semibold text-[#ffffff]">Execution Progress</h2>
             <Badge variant={execution.status as any}>{execution.status}</Badge>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--wl-bg-primary)]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
             <div
-              className="h-full bg-[var(--wl-primary)] transition-all"
+              className="h-full bg-blue-500 transition-all"
               style={{ width: `${execution.progress}%` }}
             />
           </div>
-          <div className="mt-2 text-sm text-[var(--wl-text-secondary)]">{execution.progress}% complete</div>
+          <div className="mt-2 text-sm text-[#9ca3af]">{execution.progress}% complete</div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -340,14 +340,14 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
         </div>
 
         <div>
-          <h3 className="mb-3 font-semibold text-[var(--wl-text-primary)]">Assertions</h3>
+          <h3 className="mb-3 font-semibold text-[#ffffff]">Assertions</h3>
           <div className="space-y-2">
             {execution.assertions.map((assertion, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between rounded border border-[var(--wl-border-primary)] bg-[var(--wl-bg-primary)] p-3"
+                className="flex items-center justify-between rounded border border-[#1e1e2e] bg-[#0a0a0f] p-3"
               >
-                <div className="text-sm text-[var(--wl-text-primary)]">{assertion.name}</div>
+                <div className="text-sm text-[#ffffff]">{assertion.name}</div>
                 <Badge variant={assertion.passed ? 'success' : 'danger'}>
                   {assertion.passed ? 'Passed' : 'Failed'}
                 </Badge>
@@ -364,8 +364,8 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
 
 function ResultsViewer({ executionId }: { executionId: string }) {
   return (
-    <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
-      <div className="text-center text-[var(--wl-text-secondary)]">Results for execution {executionId}</div>
+    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+      <div className="text-center text-[#9ca3af]">Results for execution {executionId}</div>
     </Card>
   );
 }
@@ -378,25 +378,25 @@ function HistoryTable({
   onExecute: (id: string) => void;
 }) {
   return (
-    <Card className="border border-[var(--wl-border-primary)] bg-[var(--wl-bg-secondary)] p-6">
-      <h2 className="mb-4 text-lg font-semibold text-[var(--wl-text-primary)]">Scenario History</h2>
+    <Card className="border border-[#1e1e2e] bg-[#12121a] p-6">
+      <h2 className="mb-4 text-lg font-semibold text-[#ffffff]">Scenario History</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--wl-border-primary)]">
-              <th className="px-4 py-2 text-left text-[var(--wl-text-primary)]">Name</th>
-              <th className="px-4 py-2 text-left text-[var(--wl-text-primary)]">Provider</th>
-              <th className="px-4 py-2 text-left text-[var(--wl-text-primary)]">Fault Type</th>
-              <th className="px-4 py-2 text-left text-[var(--wl-text-primary)]">Severity</th>
-              <th className="px-4 py-2 text-left text-[var(--wl-text-primary)]">Actions</th>
+            <tr className="border-b border-[#1e1e2e]">
+              <th className="px-4 py-2 text-left text-[#ffffff]">Name</th>
+              <th className="px-4 py-2 text-left text-[#ffffff]">Provider</th>
+              <th className="px-4 py-2 text-left text-[#ffffff]">Fault Type</th>
+              <th className="px-4 py-2 text-left text-[#ffffff]">Severity</th>
+              <th className="px-4 py-2 text-left text-[#ffffff]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {scenarios.map((scenario) => (
-              <tr key={scenario.id} className="border-b border-[var(--wl-border-primary)]">
-                <td className="px-4 py-2 text-[var(--wl-text-primary)]">{scenario.name}</td>
-                <td className="px-4 py-2 text-[var(--wl-text-secondary)]">{scenario.provider}</td>
-                <td className="px-4 py-2 text-[var(--wl-text-secondary)]">{scenario.faultType}</td>
+              <tr key={scenario.id} className="border-b border-[#1e1e2e]">
+                <td className="px-4 py-2 text-[#ffffff]">{scenario.name}</td>
+                <td className="px-4 py-2 text-[#9ca3af]">{scenario.provider}</td>
+                <td className="px-4 py-2 text-[#9ca3af]">{scenario.faultType}</td>
                 <td className="px-4 py-2">
                   <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
                 </td>
@@ -420,9 +420,9 @@ function HistoryTable({
 
 function MetricCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded border border-[var(--wl-border-primary)] bg-[var(--wl-bg-primary)] p-4">
-      <div className="text-xs text-[var(--wl-text-secondary)]">{label}</div>
-      <div className="mt-1 text-2xl font-bold text-[var(--wl-primary)]">{value}</div>
+    <div className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
+      <div className="text-xs text-[#9ca3af]">{label}</div>
+      <div className="mt-1 text-2xl font-bold text-blue-500">{value}</div>
     </div>
   );
 }

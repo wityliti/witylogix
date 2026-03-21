@@ -188,7 +188,7 @@ export default function PaymentSettingsPage(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
       <Header
         title="Payment Gateways"
         description="Configure and manage payment processing providers"
@@ -196,7 +196,7 @@ export default function PaymentSettingsPage(): JSX.Element {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-[#1a1a2e] border border-[#1e1e2e]">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="configuration">Configuration</TabsTrigger>
             <TabsTrigger value="fees">Fee Comparison</TabsTrigger>
@@ -208,10 +208,10 @@ export default function PaymentSettingsPage(): JSX.Element {
                 <Card
                   key={gateway.id}
                   className={cn(
-                    'border-2 transition-all',
+                    'border-2 transition-all bg-[#12121a]',
                     gateway.isDefault
-                      ? 'border-[var(--wl-primary)] bg-[var(--wl-primary)]/5'
-                      : 'border-[var(--wl-border)]',
+                      ? 'border-blue-500 bg-blue-500/5'
+                      : 'border-[#1e1e2e]',
                   )}
                 >
                   <CardHeader>
@@ -228,7 +228,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                       {gateway.isDefault && (
                         <Badge
                           variant="primary"
-                          className="bg-[var(--wl-primary)] text-white"
+                          className="bg-blue-500 text-white"
                         >
                           DEFAULT
                         </Badge>
@@ -238,7 +238,7 @@ export default function PaymentSettingsPage(): JSX.Element {
 
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-[var(--wl-text-secondary)]">
+                      <span className="text-sm text-gray-400">
                         Status
                       </span>
                       <div className="flex items-center gap-2">
@@ -261,7 +261,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                     </div>
 
                     <div>
-                      <span className="text-sm text-[var(--wl-text-secondary)] block mb-2">
+                      <span className="text-sm text-gray-400 block mb-2">
                         Supported Methods
                       </span>
                       <div className="flex flex-wrap gap-1">
@@ -269,7 +269,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                           <Badge
                             key={method}
                             variant="secondary"
-                            className="text-xs capitalize bg-[var(--wl-bg-secondary)]"
+                            className="text-xs capitalize bg-[#1a1a2e]"
                           >
                             {method.replace('_', ' ')}
                           </Badge>
@@ -279,22 +279,22 @@ export default function PaymentSettingsPage(): JSX.Element {
 
                     <div className="grid grid-cols-2 gap-3">
                       {gateway.healthScore !== undefined && (
-                        <div className="bg-[var(--wl-bg-secondary)] rounded-lg p-3">
-                          <span className="text-xs text-[var(--wl-text-secondary)]">
+                        <div className="bg-[#1a1a2e] rounded-lg p-3">
+                          <span className="text-xs text-gray-400">
                             Health Score
                           </span>
-                          <p className="text-lg font-semibold text-[var(--wl-primary)] mt-1">
+                          <p className="text-lg font-semibold text-blue-500 mt-1">
                             {gateway.healthScore}%
                           </p>
                         </div>
                       )}
 
                       {gateway.monthlyVolume !== undefined && (
-                        <div className="bg-[var(--wl-bg-secondary)] rounded-lg p-3">
-                          <span className="text-xs text-[var(--wl-text-secondary)]">
+                        <div className="bg-[#1a1a2e] rounded-lg p-3">
+                          <span className="text-xs text-gray-400">
                             Monthly Volume
                           </span>
-                          <p className="text-lg font-semibold text-[var(--wl-primary)] mt-1">
+                          <p className="text-lg font-semibold text-blue-500 mt-1">
                             ${(gateway.monthlyVolume / 100000).toFixed(0)}K
                           </p>
                         </div>
@@ -348,14 +348,14 @@ export default function PaymentSettingsPage(): JSX.Element {
               ))}
             </div>
 
-            <Card className="border-dashed border-2 border-[var(--wl-border)]">
+            <Card className="border-dashed border-2 border-[#1e1e2e] bg-[#12121a]">
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <Plus className="w-8 h-8 mx-auto text-[var(--wl-text-secondary)] mb-3" />
-                  <p className="text-sm font-medium text-[var(--wl-text-primary)] mb-2">
+                  <Plus className="w-8 h-8 mx-auto text-gray-400 mb-3" />
+                  <p className="text-sm font-medium text-white mb-2">
                     Add Payment Gateway
                   </p>
-                  <p className="text-xs text-[var(--wl-text-secondary)] mb-4">
+                  <p className="text-xs text-gray-400 mb-4">
                     Connect another payment processor
                   </p>
                   <Button variant="primary" size="sm">
@@ -388,7 +388,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                     {gateway.code === 'stripe' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium text-white mb-2">
                             Public Key
                           </label>
                           <div className="flex gap-2">
@@ -396,7 +396,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                               type="text"
                               value={gateway.config?.publicKey || ''}
                               readOnly
-                              className="bg-[var(--wl-bg-secondary)]"
+                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                             />
                             <Button
                               variant="secondary"
@@ -415,7 +415,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                     {gateway.code === 'paypal' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium text-white mb-2">
                             Client ID
                           </label>
                           <div className="flex gap-2">
@@ -423,7 +423,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                               type={showSecrets[gateway.id] ? 'text' : 'password'}
                               value={gateway.config?.clientId || ''}
                               readOnly
-                              className="bg-[var(--wl-bg-secondary)]"
+                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                             />
                             <Button
                               variant="secondary"
@@ -453,7 +453,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                     {gateway.code === 'square' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium text-white mb-2">
                             Access Token
                           </label>
                           <div className="flex gap-2">
@@ -461,7 +461,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                               type={showSecrets[gateway.id] ? 'text' : 'password'}
                               value={gateway.config?.accessToken || ''}
                               readOnly
-                              className="bg-[var(--wl-bg-secondary)]"
+                              className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                             />
                             <Button
                               variant="secondary"
@@ -477,21 +477,21 @@ export default function PaymentSettingsPage(): JSX.Element {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium text-white mb-2">
                             Location ID
                           </label>
                           <Input
                             type="text"
                             value={gateway.config?.locationId || ''}
                             readOnly
-                            className="bg-[var(--wl-bg-secondary)]"
+                            className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                           />
                         </div>
                       </>
                     )}
 
-                    <div className="pt-4 border-t border-[var(--wl-border)]">
-                      <p className="text-xs text-[var(--wl-text-secondary)]">
+                    <div className="pt-4 border-t border-[#1e1e2e]">
+                      <p className="text-xs text-gray-400">
                         <Shield className="w-3 h-3 inline mr-1" />
                         Credentials are encrypted and never displayed in full
                       </p>
@@ -514,20 +514,20 @@ export default function PaymentSettingsPage(): JSX.Element {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-[var(--wl-border)]">
-                        <th className="text-left py-3 px-4 font-medium">
+                      <tr className="border-b border-[#1e1e2e]">
+                        <th className="text-left py-3 px-4 font-medium text-white">
                           Gateway
                         </th>
-                        <th className="text-right py-3 px-4 font-medium">
+                        <th className="text-right py-3 px-4 font-medium text-white">
                           Rate
                         </th>
-                        <th className="text-right py-3 px-4 font-medium">
+                        <th className="text-right py-3 px-4 font-medium text-white">
                           Fee on $100
                         </th>
-                        <th className="text-right py-3 px-4 font-medium">
+                        <th className="text-right py-3 px-4 font-medium text-white">
                           Fee on $1,000
                         </th>
-                        <th className="text-right py-3 px-4 font-medium">
+                        <th className="text-right py-3 px-4 font-medium text-white">
                           Savings vs Highest
                         </th>
                       </tr>
@@ -542,29 +542,29 @@ export default function PaymentSettingsPage(): JSX.Element {
                         return (
                           <tr
                             key={i}
-                            className="border-b border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)] transition"
+                            className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition"
                           >
                             <td className="py-3 px-4">
-                              <span className="font-medium">
+                              <span className="font-medium text-white">
                                 {row.gateway}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-right">
+                            <td className="py-3 px-4 text-right text-white">
                               {row.percent}% + ${(row.fixed / 100).toFixed(2)}
                             </td>
-                            <td className="py-3 px-4 text-right">
+                            <td className="py-3 px-4 text-right text-white">
                               ${(row.for100 / 100).toFixed(2)}
                             </td>
-                            <td className="py-3 px-4 text-right">
+                            <td className="py-3 px-4 text-right text-white">
                               ${(row.for1000 / 100).toFixed(2)}
                             </td>
                             <td className="py-3 px-4 text-right">
                               {savings100 > 0 ? (
-                                <span className="text-green-600 font-medium">
+                                <span className="text-emerald-500 font-medium">
                                   +${(savings100 / 100).toFixed(2)}
                                 </span>
                               ) : (
-                                <span className="text-[var(--wl-text-secondary)]">
+                                <span className="text-gray-400">
                                   —
                                 </span>
                               )}
@@ -576,8 +576,8 @@ export default function PaymentSettingsPage(): JSX.Element {
                   </table>
                 </div>
 
-                <div className="mt-6 p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
-                  <p className="text-xs text-[var(--wl-text-secondary)]">
+                <div className="mt-6 p-4 bg-[#1a1a2e] rounded-lg">
+                  <p className="text-xs text-gray-400">
                     <DollarSign className="w-3 h-3 inline mr-2" />
                     Fees shown are estimates. Actual fees may vary based on
                     payment method, region, and volume discounts.

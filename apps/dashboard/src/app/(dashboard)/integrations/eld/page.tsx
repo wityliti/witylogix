@@ -366,7 +366,7 @@ export default function ELDPage() {
   const totalViolations = drivers.reduce((sum, d) => sum + d.hosViolations, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
       <Header
         title="ELD Integrations"
         subtitle="Manage electronic logging devices, HOS compliance, and vehicle inspection reports"
@@ -377,7 +377,7 @@ export default function ELDPage() {
         <Link href="/integrations">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-gray-400 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Integrations
@@ -391,16 +391,16 @@ export default function ELDPage() {
             onClick={() => toggleSection("providers")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 ELD Providers
               </h2>
-              <Badge variant="primary" className="bg-[var(--wl-primary)]/30 text-[var(--wl-primary)]">
+              <Badge variant="primary" className="bg-blue-500/30 text-blue-500">
                 {providers.filter((p) => p.status === "connected").length} connected
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.providers ? "rotate-90" : ""
               )}
             />
@@ -409,14 +409,14 @@ export default function ELDPage() {
           {expandedSections.providers && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {providers.map((provider) => (
-                <Card key={provider.id} className="hover:border-[var(--wl-primary)]/50">
+                <Card key={provider.id} className="hover:border-blue-500/50">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="text-[var(--wl-primary)] text-2xl">{provider.icon}</div>
+                        <div className="text-blue-500 text-2xl">{provider.icon}</div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="text-lg font-semibold text-white">
                             {provider.name}
                           </h3>
                         </div>
@@ -446,30 +446,30 @@ export default function ELDPage() {
 
                     {provider.status === "connected" && (
                       <>
-                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Drivers
                             </p>
-                            <p className="text-2xl font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-2xl font-bold text-white mt-1">
                               {provider.drivers}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Vehicles
                             </p>
-                            <p className="text-2xl font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-2xl font-bold text-white mt-1">
                               {provider.vehicles}
                             </p>
                           </div>
                         </div>
 
                         <div className="mb-6">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Last Sync
                           </p>
-                          <p className="text-sm text-[var(--wl-text-primary)] mt-1 flex items-center gap-2">
+                          <p className="text-sm text-white mt-1 flex items-center gap-2">
                             <Clock className="w-3 h-3 text-green-500" />
                             {provider.lastSync}
                           </p>
@@ -484,7 +484,7 @@ export default function ELDPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Settings
@@ -502,7 +502,7 @@ export default function ELDPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Connect
@@ -523,7 +523,7 @@ export default function ELDPage() {
             onClick={() => toggleSection("drivers")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Driver Status Board
               </h2>
               <Badge variant="warning" className="bg-yellow-500/20 text-yellow-400">
@@ -532,7 +532,7 @@ export default function ELDPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.drivers ? "rotate-90" : ""
               )}
             />
@@ -541,20 +541,20 @@ export default function ELDPage() {
           {expandedSections.drivers && (
             <div className="space-y-4">
               {drivers.map((driver) => (
-                <Card key={driver.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={driver.id} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="text-lg font-semibold text-white">
                             {driver.name}
                           </h3>
                           <Badge variant="default" className="font-mono text-xs">
                             {driver.driverId}
                           </Badge>
                         </div>
-                        <p className="text-xs text-[var(--wl-text-tertiary)]">
+                        <p className="text-xs text-gray-500">
                           Vehicle: {driver.vehicle} • {driver.location}
                         </p>
                       </div>
@@ -568,9 +568,9 @@ export default function ELDPage() {
                     </div>
 
                     {/* HOS Stats Grid */}
-                    <div className="grid grid-cols-4 gap-3 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                    <div className="grid grid-cols-4 gap-3 mb-6 pb-6 border-b border-[#1e1e2e]">
                       <div className="text-center">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Driving
                         </p>
                         <p className="text-lg font-bold text-blue-400 mt-1">
@@ -578,7 +578,7 @@ export default function ELDPage() {
                         </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           On-Duty
                         </p>
                         <p className="text-lg font-bold text-yellow-400 mt-1">
@@ -586,7 +586,7 @@ export default function ELDPage() {
                         </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Sleeper
                         </p>
                         <p className="text-lg font-bold text-purple-400 mt-1">
@@ -594,7 +594,7 @@ export default function ELDPage() {
                         </p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Off-Duty
                         </p>
                         <p className="text-lg font-bold text-green-400 mt-1">
@@ -604,9 +604,9 @@ export default function ELDPage() {
                     </div>
 
                     {/* Break Status */}
-                    <div className="mb-4 pb-4 border-b border-[var(--wl-border)]">
+                    <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Break Status
                         </p>
                         <p className={cn("text-sm font-semibold",
@@ -629,7 +629,7 @@ export default function ELDPage() {
                         <Button
                           variant="secondary"
                           size="sm"
-                          className="bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                          className="bg-[#12121a] hover:bg-[#1a1a2e]"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Details
@@ -650,7 +650,7 @@ export default function ELDPage() {
             onClick={() => toggleSection("dvir")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 DVIR Reports
               </h2>
               <Badge variant="danger" className="bg-red-500/20 text-red-400">
@@ -659,7 +659,7 @@ export default function ELDPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.dvir ? "rotate-90" : ""
               )}
             />
@@ -668,15 +668,15 @@ export default function ELDPage() {
           {expandedSections.dvir && (
             <div className="space-y-4">
               {dvirReports.map((report) => (
-                <Card key={report.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={report.id} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="text-base font-semibold text-white">
                           {report.vehicle}
                         </h3>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           {report.driverName} • {report.date}
                         </p>
                       </div>
@@ -695,26 +695,26 @@ export default function ELDPage() {
 
                     {/* Issues */}
                     {report.issues.length > 0 && (
-                      <div className="mb-4 pb-4 border-b border-[var(--wl-border)]">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-3">
+                      <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+                        <p className="text-xs font-medium text-gray-500 uppercase mb-3">
                           Reported Issues
                         </p>
                         <div className="space-y-2">
                           {report.issues.map((issue) => (
-                            <div key={issue.id} className="flex items-start gap-3 p-3 bg-[var(--wl-bg-secondary)] rounded-lg">
+                            <div key={issue.id} className="flex items-start gap-3 p-3 bg-[#12121a] rounded-lg">
                               <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
                                 issue.severity === "critical" ? "bg-red-500" : issue.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
                               )} />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <p className="font-semibold text-sm text-[var(--wl-text-primary)]">
+                                  <p className="font-semibold text-sm text-white">
                                     {issue.category}
                                   </p>
                                   <Badge variant="secondary" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>
                                     {issue.severity}
                                   </Badge>
                                 </div>
-                                <p className="text-xs text-[var(--wl-text-tertiary)]">
+                                <p className="text-xs text-gray-500">
                                   {issue.description}
                                 </p>
                               </div>
@@ -729,7 +729,7 @@ export default function ELDPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View Report
@@ -737,7 +737,7 @@ export default function ELDPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Download
@@ -757,7 +757,7 @@ export default function ELDPage() {
             onClick={() => toggleSection("compliance")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Compliance Metrics
               </h2>
               <Badge variant="success" className="bg-green-500/20 text-green-400">
@@ -766,7 +766,7 @@ export default function ELDPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.compliance ? "rotate-90" : ""
               )}
             />
@@ -778,10 +778,10 @@ export default function ELDPage() {
                 const difference = metric.value - metric.target;
                 const percentage = (metric.value / 100) * 100;
                 return (
-                  <Card key={metric.metric} className="bg-[var(--wl-bg-tertiary)]">
+                  <Card key={metric.metric} className="bg-[#1a1a2e]">
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="text-base font-semibold text-white">
                           {metric.metric}
                         </h3>
                         <Badge
@@ -796,10 +796,10 @@ export default function ELDPage() {
 
                       <div className="flex items-end gap-4 mb-4">
                         <div>
-                          <p className="text-3xl font-bold text-[var(--wl-text-primary)]">
+                          <p className="text-3xl font-bold text-white">
                             {metric.value}%
                           </p>
-                          <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             Target: {metric.target}%
                           </p>
                         </div>
@@ -816,7 +816,7 @@ export default function ELDPage() {
                         )}
                       </div>
 
-                      <div className="w-full h-2 bg-[var(--wl-bg-secondary)] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
                         <div
                           className={cn("h-full transition-all",
                             metric.status === "compliant" ? "bg-gradient-to-r from-green-500 to-green-400" : "bg-gradient-to-r from-yellow-500 to-yellow-400"
@@ -839,7 +839,7 @@ export default function ELDPage() {
             onClick={() => toggleSection("violations")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Violation Alerts
               </h2>
               <Badge variant="danger" className="bg-red-500/20 text-red-400">
@@ -848,7 +848,7 @@ export default function ELDPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.violations ? "rotate-90" : ""
               )}
             />
@@ -858,7 +858,7 @@ export default function ELDPage() {
             <div className="space-y-4">
               {violationAlerts.map((alert) => (
                 <Card key={alert.id} className={cn(
-                  "bg-[var(--wl-bg-tertiary)]",
+                  "bg-[#1a1a2e]",
                   alert.severity === "critical" && "border-red-500/50"
                 )}>
                   <CardContent className="pt-6">
@@ -869,10 +869,10 @@ export default function ELDPage() {
                           alert.severity === "critical" ? "bg-red-500" : alert.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
                         )} />
                         <div className="flex-1">
-                          <h4 className="font-semibold text-[var(--wl-text-primary)]">
+                          <h4 className="font-semibold text-white">
                             {alert.type}
                           </h4>
-                          <p className="text-sm text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-sm text-gray-500 mt-1">
                             {alert.driverName} • {alert.timestamp}
                           </p>
                         </div>
@@ -888,7 +888,7 @@ export default function ELDPage() {
                       </Badge>
                     </div>
 
-                    <p className="text-sm text-[var(--wl-text-primary)] mb-4 p-3 bg-[var(--wl-bg-secondary)] rounded">
+                    <p className="text-sm text-white mb-4 p-3 bg-[#12121a] rounded">
                       {alert.details}
                     </p>
 
@@ -900,7 +900,7 @@ export default function ELDPage() {
                           "flex-1",
                           alert.severity === "critical"
                             ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                            : "bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                            : "bg-blue-500 hover:bg-blue-500/90"
                         )}
                       >
                         {alert.severity === "critical" ? "Take Action" : "Review"}
@@ -908,7 +908,7 @@ export default function ELDPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+                        className="text-gray-400 hover:text-white"
                       >
                         Dismiss
                       </Button>

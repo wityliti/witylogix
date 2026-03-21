@@ -214,7 +214,7 @@ export default function TestDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header title="Test Results Dashboard" />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -225,10 +225,10 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">
+                  <p className="text-sm text-gray-400 mb-2">
                     Total Tests
                   </p>
-                  <p className="text-3xl font-bold text-wl-text-primary">
+                  <p className="text-3xl font-bold text-white">
                     {mockTestStats.total}
                   </p>
                 </div>
@@ -242,11 +242,11 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">Passed</p>
+                  <p className="text-sm text-gray-400 mb-2">Passed</p>
                   <p className="text-3xl font-bold text-green-600">
                     {mockTestStats.passed}
                   </p>
-                  <p className="text-xs text-wl-text-secondary mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     {passRate}% pass rate
                   </p>
                 </div>
@@ -260,11 +260,11 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">Failed</p>
+                  <p className="text-sm text-gray-400 mb-2">Failed</p>
                   <p className="text-3xl font-bold text-red-600">
                     {mockTestStats.failed}
                   </p>
-                  <p className="text-xs text-wl-text-secondary mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     {failRate}% fail rate
                   </p>
                 </div>
@@ -278,10 +278,10 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">
+                  <p className="text-sm text-gray-400 mb-2">
                     Avg Coverage
                   </p>
-                  <p className="text-3xl font-bold text-wl-text-primary">
+                  <p className="text-3xl font-bold text-white">
                     {avgCoverage}%
                   </p>
                 </div>
@@ -295,10 +295,10 @@ export default function TestDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-wl-text-secondary mb-2">
+                  <p className="text-sm text-gray-400 mb-2">
                     Duration
                   </p>
-                  <p className="text-3xl font-bold text-wl-text-primary">
+                  <p className="text-3xl font-bold text-white">
                     {mockTestStats.duration}s
                   </p>
                 </div>
@@ -321,11 +321,11 @@ export default function TestDashboardPage() {
                   return (
                     <div key={category.name}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="capitalize font-medium text-wl-text-primary">
+                        <span className="capitalize font-medium text-white">
                           {category.name}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-wl-text-secondary">
+                          <span className="text-sm text-gray-400">
                             {category.count} tests
                           </span>
                           {category.coverage > 0 && (
@@ -343,13 +343,13 @@ export default function TestDashboardPage() {
                           )}
                         </div>
                       </div>
-                      <div className="w-full bg-wl-bg-subtle rounded-full h-2">
+                      <div className="w-full bg-[#0a0a0f]-subtle rounded-full h-2">
                         <div
                           className="bg-green-500 h-2 rounded-full transition-all"
                           style={{ width: `${passRate}%` }}
                         />
                       </div>
-                      <p className="text-xs text-wl-text-secondary mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         {category.passed}/{category.count} passed ({passRate}%)
                       </p>
                     </div>
@@ -369,19 +369,19 @@ export default function TestDashboardPage() {
                 {mockPackages.map((pkg) => (
                   <div
                     key={pkg.name}
-                    className="flex items-center justify-between p-3 bg-wl-bg-subtle rounded-lg"
+                    className="flex items-center justify-between p-3 bg-[#0a0a0f]-subtle rounded-lg"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-wl-text-primary capitalize">
+                      <p className="font-medium text-white capitalize">
                         {pkg.name}
                       </p>
-                      <p className="text-xs text-wl-text-secondary">
+                      <p className="text-xs text-gray-400">
                         {pkg.tests} tests • {pkg.lastRun}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-20 bg-wl-bg-elevated rounded-full h-1.5">
+                        <div className="w-20 bg-[#1a1a2e] rounded-full h-1.5">
                           <div
                             className={cn(
                               "h-1.5 rounded-full transition-all",
@@ -394,7 +394,7 @@ export default function TestDashboardPage() {
                             style={{ width: `${pkg.coverage}%` }}
                           />
                         </div>
-                        <span className="text-sm font-semibold text-wl-text-primary w-10 text-right">
+                        <span className="text-sm font-semibold text-white w-10 text-right">
                           {pkg.coverage}%
                         </span>
                       </div>
@@ -420,7 +420,7 @@ export default function TestDashboardPage() {
             </CardHeader>
             <CardContent>
               {mockFlakyTests.length === 0 ? (
-                <p className="text-sm text-wl-text-secondary text-center py-4">
+                <p className="text-sm text-gray-400 text-center py-4">
                   No flaky tests detected
                 </p>
               ) : (
@@ -431,23 +431,23 @@ export default function TestDashboardPage() {
                       className="p-4 border border-yellow-500/20 bg-yellow-500/5 rounded-lg"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-wl-text-primary">
+                        <h4 className="font-medium text-white">
                           {test.name}
                         </h4>
                         <Badge variant="warning">{test.flakiness}% flaky</Badge>
                       </div>
-                      <p className="text-xs text-wl-text-secondary mb-2">
+                      <p className="text-xs text-gray-400 mb-2">
                         {test.file}
                       </p>
-                      <p className="text-sm text-wl-text-secondary mb-3">
+                      <p className="text-sm text-gray-400 mb-3">
                         Last Passed: {test.lastPassed} • Last Failed:{" "}
                         {test.lastFailed}
                       </p>
                       <div className="bg-white/5 rounded p-2">
-                        <p className="text-xs font-medium mb-1 text-wl-text-secondary">
+                        <p className="text-xs font-medium mb-1 text-gray-400">
                           Suggestion:
                         </p>
-                        <p className="text-xs text-wl-text-secondary">
+                        <p className="text-xs text-gray-400">
                           {test.suggestion}
                         </p>
                       </div>
@@ -483,23 +483,23 @@ export default function TestDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-wl-border-subtle">
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Timestamp
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Total
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Passed
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Failed
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Coverage
                       </th>
-                      <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">
+                      <th className="text-left py-3 px-4 font-medium text-gray-400">
                         Duration
                       </th>
                     </tr>
@@ -508,12 +508,12 @@ export default function TestDashboardPage() {
                     {mockTestRuns.map((run) => (
                       <tr
                         key={run.id}
-                        className="border-b border-wl-border-subtle hover:bg-wl-bg-subtle transition-colors"
+                        className="border-b border-[#1e1e2e] hover:bg-[#0a0a0f]-subtle transition-colors"
                       >
-                        <td className="py-3 px-4 text-wl-text-primary">
+                        <td className="py-3 px-4 text-white">
                           {run.timestamp}
                         </td>
-                        <td className="py-3 px-4 text-wl-text-secondary">
+                        <td className="py-3 px-4 text-gray-400">
                           {run.totalTests}
                         </td>
                         <td className="py-3 px-4">
@@ -546,7 +546,7 @@ export default function TestDashboardPage() {
                             {run.coverage}%
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 text-wl-text-secondary">
+                        <td className="py-3 px-4 text-gray-400">
                           {run.duration}s
                         </td>
                       </tr>
@@ -582,17 +582,17 @@ export default function TestDashboardPage() {
                         style={{ height: `${height}px` }}
                         title={`${passRate}% pass rate`}
                       />
-                      <p className="text-xs text-wl-text-secondary mt-2">
+                      <p className="text-xs text-gray-400 mt-2">
                         {run.timestamp.split(" ")[1]}
                       </p>
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-4 p-4 bg-wl-bg-subtle rounded-lg">
-                <p className="text-sm text-wl-text-secondary">
+              <div className="mt-4 p-4 bg-[#0a0a0f]-subtle rounded-lg">
+                <p className="text-sm text-gray-400">
                   Average Pass Rate:{" "}
-                  <span className="font-semibold text-wl-text-primary">
+                  <span className="font-semibold text-white">
                     {Math.round(
                       mockTestRuns.reduce(
                         (sum, run) => sum + (run.passed / run.totalTests) * 100,

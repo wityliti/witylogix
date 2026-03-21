@@ -213,7 +213,7 @@ export default function NotificationTemplatesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Templates"
         subtitle="Manage and customize notification templates"
@@ -221,11 +221,11 @@ export default function NotificationTemplatesPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter Bar */}
-        <Card className="border border-[var(--wl-border)] mb-8">
+        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex-1">
-                <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
                   Filter by Event
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -236,8 +236,8 @@ export default function NotificationTemplatesPage() {
                       className={cn(
                         "px-3 py-2 rounded-lg text-sm font-medium transition-all",
                         selectedEvent === eventType
-                          ? "bg-[var(--wl-primary)] text-white"
-                          : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                          ? "bg-blue-500 text-white"
+                          : "bg-[#1a1a2e] text-white hover:bg-[#1e1e2e]"
                       )}
                     >
                       {eventType === "all"
@@ -258,7 +258,7 @@ export default function NotificationTemplatesPage() {
         </Card>
 
         {/* Templates Table */}
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-[#1e1e2e] bg-[#12121a]">
           <CardHeader>
             <CardTitle>
               {filteredTemplates.length} Template
@@ -287,7 +287,7 @@ export default function NotificationTemplatesPage() {
                   {filteredTemplates.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        <p className="text-[var(--wl-text-secondary)] text-sm">
+                        <p className="text-gray-400 text-sm">
                           No templates found
                         </p>
                       </TableCell>
@@ -296,26 +296,26 @@ export default function NotificationTemplatesPage() {
                     filteredTemplates.map((template) => (
                       <TableRow key={template.id}>
                         <TableCell>
-                          <span className="text-sm font-medium text-[var(--wl-text-primary)]">
+                          <span className="text-sm font-medium text-white">
                             {EVENT_TYPE_LABELS[template.eventType]}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="text-[var(--wl-text-secondary)]">
+                            <span className="text-gray-400">
                               {CHANNEL_ICONS[template.channel]}
                             </span>
-                            <span className="text-sm capitalize text-[var(--wl-text-primary)]">
+                            <span className="text-sm capitalize text-white">
                               {template.channel}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="text-sm font-medium text-[var(--wl-text-primary)]">
+                            <p className="text-sm font-medium text-white">
                               {template.name}
                             </p>
-                            <p className="text-xs text-[var(--wl-text-secondary)] mt-1 truncate">
+                            <p className="text-xs text-gray-400 mt-1 truncate">
                               {template.preview}
                             </p>
                           </div>
@@ -334,7 +334,7 @@ export default function NotificationTemplatesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-xs text-[var(--wl-text-secondary)]">
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
                             <Clock className="w-3 h-3" />
                             {template.lastEdited.toLocaleDateString()}
                           </div>
@@ -344,27 +344,27 @@ export default function NotificationTemplatesPage() {
                             <Link
                               href={`/settings/notifications/templates/${template.id}`}
                             >
-                              <button className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors">
-                                <Edit className="w-4 h-4 text-[var(--wl-text-secondary)]" />
+                              <button className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors">
+                                <Edit className="w-4 h-4 text-gray-400" />
                               </button>
                             </Link>
                             <button
                               onClick={() => handleDuplicate(template)}
-                              className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors"
+                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
                             >
-                              <Copy className="w-4 h-4 text-[var(--wl-text-secondary)]" />
+                              <Copy className="w-4 h-4 text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleToggleStatus(template.id)}
-                              className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors"
+                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
                             >
-                              <Eye className="w-4 h-4 text-[var(--wl-text-secondary)]" />
+                              <Eye className="w-4 h-4 text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleDelete(template.id)}
-                              className="p-2 hover:bg-[var(--wl-danger)]/10 rounded-lg transition-colors"
+                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4 text-[var(--wl-danger)]" />
+                              <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
                           </div>
                         </TableCell>
@@ -379,42 +379,42 @@ export default function NotificationTemplatesPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Total Templates
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <p className="text-2xl font-bold text-white">
                 {templates.length}
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Active
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-success)]">
+              <p className="text-2xl font-bold text-emerald-500">
                 {templates.filter((t) => t.status === "active").length}
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Draft
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-warning)]">
+              <p className="text-2xl font-bold text-amber-500">
                 {templates.filter((t) => t.status === "draft").length}
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Event Types
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <p className="text-2xl font-bold text-white">
                 {new Set(templates.map((t) => t.eventType)).size}
               </p>
             </CardContent>

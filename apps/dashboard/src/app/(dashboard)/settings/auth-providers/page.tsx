@@ -158,7 +158,7 @@ export default function AuthProvidersPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Authentication Providers"
         subtitle="Configure SSO providers, role mapping, and authentication settings"
@@ -175,7 +175,7 @@ export default function AuthProvidersPage() {
           <div>
             {/* Active Provider Info */}
             {providers.find((p) => p.id === activeProvider) && (
-              <Card className="mb-8 border-l-4 border-l-[var(--wl-success)]">
+              <Card className="mb-8 border-l-4 border-l-emerald-500 bg-[#12121a] border border-[#1e1e2e]">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
@@ -198,12 +198,13 @@ export default function AuthProvidersPage() {
                 <Card
                   key={provider.id}
                   className={cn(
-                    activeProvider === provider.id && "border-2 border-[var(--wl-success)]"
+                    "bg-[#12121a] border border-[#1e1e2e]",
+                    activeProvider === provider.id && "border-2 border-emerald-500"
                   )}
                 >
                   {/* Active Indicator */}
                   {activeProvider === provider.id && (
-                    <div className="absolute -top-0.5 right-4 bg-[var(--wl-success)] text-white px-3 py-1 rounded-b text-xs font-semibold">
+                    <div className="absolute -top-0.5 right-4 bg-emerald-500 text-white px-3 py-1 rounded-b text-xs font-semibold">
                       ACTIVE
                     </div>
                   )}
@@ -219,13 +220,13 @@ export default function AuthProvidersPage() {
                         )}
                       </div>
                     </div>
-                    <CardTitle className="text-xl mb-1">{provider.name}</CardTitle>
-                    <CardDescription>Provider ID: {provider.id}</CardDescription>
+                    <CardTitle className="text-xl mb-1 text-white">{provider.name}</CardTitle>
+                    <CardDescription className="text-gray-400">Provider ID: {provider.id}</CardDescription>
                   </CardHeader>
 
                   <CardContent>
                     <div className="mb-6">
-                      <div className="text-sm font-semibold text-[var(--wl-text-secondary)] mb-2">
+                      <div className="text-sm font-semibold text-gray-400 mb-2">
                         Capabilities
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -238,19 +239,19 @@ export default function AuthProvidersPage() {
                     </div>
 
                     {provider.config && (
-                      <div className="bg-[var(--wl-bg-tertiary)] p-4 rounded-lg mb-4">
+                      <div className="bg-[#1a1a2e] p-4 rounded-lg mb-4">
                         {provider.config.domain && (
-                          <div className="text-sm text-[var(--wl-text-secondary)] mb-2">
+                          <div className="text-sm text-gray-400 mb-2">
                             <strong>Domain:</strong> {provider.config.domain}
                           </div>
                         )}
                         {provider.config.clientId && (
-                          <div className="text-sm text-[var(--wl-text-secondary)] mb-2">
+                          <div className="text-sm text-gray-400 mb-2">
                             <strong>Client ID:</strong> {provider.config.clientId}
                           </div>
                         )}
                         {provider.config.callbackUrl && (
-                          <div className="text-sm text-[var(--wl-text-secondary)]">
+                          <div className="text-sm text-gray-400">
                             <strong>Callback URL:</strong> {provider.config.callbackUrl}
                           </div>
                         )}
@@ -295,24 +296,24 @@ export default function AuthProvidersPage() {
             {testResult && (
               <Card
                 className={cn(
-                  "mb-8 border-l-4",
+                  "mb-8 border-l-4 bg-[#12121a] border border-[#1e1e2e]",
                   testResult.status === "success"
-                    ? "border-l-[var(--wl-success)]"
-                    : "border-l-[var(--wl-danger)]"
+                    ? "border-l-emerald-500"
+                    : "border-l-red-500"
                 )}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-4">
                     {testResult.status === "success" ? (
-                      <CheckCircle className="w-6 h-6 text-[var(--wl-success)] flex-shrink-0" />
+                      <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
                     ) : (
-                      <AlertCircle className="w-6 h-6 text-[var(--wl-danger)] flex-shrink-0" />
+                      <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
                     )}
                     <div>
-                      <div className="text-sm font-semibold text-[var(--wl-text-primary)]">
+                      <div className="text-sm font-semibold text-white">
                         {testResult.status === "success" ? "Connection Successful" : "Connection Failed"}
                       </div>
-                      <div className="text-sm text-[var(--wl-text-secondary)]">
+                      <div className="text-sm text-gray-400">
                         {testResult.message}
                       </div>
                     </div>
@@ -326,10 +327,10 @@ export default function AuthProvidersPage() {
         {/* ROLE MAPPING TAB */}
         {activeTab === "role-mapping" && (
           <div>
-            <Card className="mb-8">
+            <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Role Mapping Configuration</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">Role Mapping Configuration</CardTitle>
+                <CardDescription className="text-gray-400">
                   Map external authentication provider roles to Witylogix platform roles
                 </CardDescription>
               </CardHeader>
@@ -337,17 +338,17 @@ export default function AuthProvidersPage() {
                 <div className="overflow-x-auto mb-6">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b-2 border-[var(--wl-border)]">
-                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
+                      <tr className="border-b-2 border-[#1e1e2e]">
+                        <th className="py-4 px-4 text-left text-gray-400 font-semibold">
                           External Role
                         </th>
-                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
+                        <th className="py-4 px-4 text-left text-gray-400 font-semibold">
                           Witylogix Role
                         </th>
-                        <th className="py-4 px-4 text-left text-[var(--wl-text-secondary)] font-semibold">
+                        <th className="py-4 px-4 text-left text-gray-400 font-semibold">
                           Permissions
                         </th>
-                        <th className="py-4 px-4 text-center text-[var(--wl-text-secondary)] font-semibold">
+                        <th className="py-4 px-4 text-center text-gray-400 font-semibold">
                           Action
                         </th>
                       </tr>
@@ -357,19 +358,19 @@ export default function AuthProvidersPage() {
                         <tr
                           key={idx}
                           className={cn(
-                            "border-b border-[var(--wl-border)]",
-                            idx % 2 === 1 && "bg-[var(--wl-bg-tertiary)]"
+                            "border-b border-[#1e1e2e]",
+                            idx % 2 === 1 && "bg-[#1a1a2e]"
                           )}
                         >
-                          <td className="py-4 px-4 text-[var(--wl-text-primary)]">
-                            <code className="bg-[var(--wl-bg-secondary)] px-2 py-1 rounded text-xs">
+                          <td className="py-4 px-4 text-white">
+                            <code className="bg-[#0a0a0f] px-2 py-1 rounded text-xs text-gray-400">
                               {mapping.externalRole}
                             </code>
                           </td>
-                          <td className="py-4 px-4 text-[var(--wl-text-primary)]">
+                          <td className="py-4 px-4 text-white">
                             <Badge variant="primary">{mapping.witylogixRole}</Badge>
                           </td>
-                          <td className="py-4 px-4 text-[var(--wl-text-secondary)] text-xs">
+                          <td className="py-4 px-4 text-gray-400 text-xs">
                             {mapping.witylogixRole === "SUPER_ADMIN" && "Full access"}
                             {mapping.witylogixRole === "ADMIN" && "Manage team, config"}
                             {mapping.witylogixRole === "DISPATCHER" && "Dispatch, track"}
@@ -401,20 +402,20 @@ export default function AuthProvidersPage() {
         {/* SETTINGS TAB */}
         {activeTab === "settings" && (
           <div>
-            <Card className="mb-8">
+            <Card className="mb-8 bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Authentication Settings</CardTitle>
-                <CardDescription>Configure global SSO and security options</CardDescription>
+                <CardTitle className="text-white">Authentication Settings</CardTitle>
+                <CardDescription className="text-gray-400">Configure global SSO and security options</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-8">
                   {/* JIT Provisioning */}
-                  <div className="flex items-center justify-between pb-6 border-b border-[var(--wl-border)]">
+                  <div className="flex items-center justify-between pb-6 border-b border-[#1e1e2e]">
                     <div>
-                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
+                      <div className="text-sm font-semibold text-white mb-1">
                         Just-In-Time Provisioning
                       </div>
-                      <div className="text-sm text-[var(--wl-text-secondary)]">
+                      <div className="text-sm text-gray-400">
                         Automatically create users on first SSO login
                       </div>
                     </div>
@@ -428,12 +429,12 @@ export default function AuthProvidersPage() {
                   </div>
 
                   {/* MFA Required */}
-                  <div className="flex items-center justify-between pb-6 border-b border-[var(--wl-border)]">
+                  <div className="flex items-center justify-between pb-6 border-b border-[#1e1e2e]">
                     <div>
-                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
+                      <div className="text-sm font-semibold text-white mb-1">
                         Enforce MFA for All Users
                       </div>
-                      <div className="text-sm text-[var(--wl-text-secondary)]">
+                      <div className="text-sm text-gray-400">
                         Require multi-factor authentication on login
                       </div>
                     </div>
@@ -441,12 +442,12 @@ export default function AuthProvidersPage() {
                   </div>
 
                   {/* Session Timeout */}
-                  <div className="flex items-start justify-between pb-6 border-b border-[var(--wl-border)]">
+                  <div className="flex items-start justify-between pb-6 border-b border-[#1e1e2e]">
                     <div>
-                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
+                      <div className="text-sm font-semibold text-white mb-1">
                         Session Timeout
                       </div>
-                      <div className="text-sm text-[var(--wl-text-secondary)]">
+                      <div className="text-sm text-gray-400">
                         Auto-logout after period of inactivity
                       </div>
                     </div>
@@ -465,10 +466,10 @@ export default function AuthProvidersPage() {
                   {/* IP Whitelisting */}
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="text-sm font-semibold text-[var(--wl-text-primary)] mb-1">
+                      <div className="text-sm font-semibold text-white mb-1">
                         IP Whitelist
                       </div>
-                      <div className="text-sm text-[var(--wl-text-secondary)]">
+                      <div className="text-sm text-gray-400">
                         Restrict access to specific IP addresses (optional)
                       </div>
                     </div>
@@ -501,7 +502,7 @@ export default function AuthProvidersPage() {
         <div className="flex flex-col gap-6">
           {/* Domain/Tenant */}
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Domain / Tenant
             </label>
             <Input placeholder="e.g., witylogix.auth0.com" defaultValue={selectedProvider?.config?.domain || ""} />
@@ -509,7 +510,7 @@ export default function AuthProvidersPage() {
 
           {/* Client ID */}
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Client ID
             </label>
             <div className="flex gap-2">
@@ -535,7 +536,7 @@ export default function AuthProvidersPage() {
 
           {/* Client Secret */}
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Client Secret
             </label>
             <div className="flex gap-2">
@@ -561,14 +562,14 @@ export default function AuthProvidersPage() {
 
           {/* Callback URL */}
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Callback URL
             </label>
             <div className="flex gap-2">
               <Input
                 readOnly
                 value="https://app.witylogix.com/auth/callback"
-                className="flex-1 bg-[var(--wl-bg-tertiary)]"
+                className="flex-1 bg-[#1a1a2e]"
               />
               <Button
                 variant="ghost"
@@ -580,7 +581,7 @@ export default function AuthProvidersPage() {
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
-            <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
+            <p className="text-xs text-gray-500 mt-2">
               Use this URL in your auth provider settings
             </p>
           </div>
@@ -606,13 +607,13 @@ export default function AuthProvidersPage() {
       >
         <div className="flex flex-col gap-6">
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               External Role Claim
             </label>
             <Input placeholder="e.g., admin, manager, viewer" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-[var(--wl-text-primary)] mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               Map to Witylogix Role
             </label>
             <Select

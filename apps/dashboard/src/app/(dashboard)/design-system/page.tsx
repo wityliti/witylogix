@@ -61,10 +61,10 @@ function CodeBlock({ code }: CodeBlockProps) {
   };
 
   return (
-    <div className="relative bg-wl-bg-sunken rounded-md overflow-hidden border border-wl-border-subtle">
+    <div className="relative bg-[#0a0a0f] rounded-md overflow-hidden border border-[#1e1e2e]">
       <button
         onClick={handleCopy}
-        className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-wl-bg-elevated hover:bg-wl-bg-overlay border border-wl-border-default rounded-md text-xs font-medium text-wl-text-secondary transition-all duration-fast"
+        className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-[#12121a] hover:bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-xs font-medium text-gray-300 transition-all duration-fast"
       >
         {copied ? (
           <>
@@ -77,7 +77,7 @@ function CodeBlock({ code }: CodeBlockProps) {
         )}
       </button>
 
-      <pre className="p-4 pr-24 overflow-x-auto text-xs font-mono text-wl-text-secondary leading-relaxed">
+      <pre className="p-4 pr-24 overflow-x-auto text-xs font-mono text-gray-300 leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -102,19 +102,19 @@ function PreviewSection({
   return (
     <div className="space-y-3">
       <div>
-        <h4 className="text-sm font-semibold text-wl-text-primary mb-1">
+        <h4 className="text-sm font-semibold text-white mb-1">
           {title}
         </h4>
-        <p className="text-xs text-wl-text-tertiary">{description}</p>
+        <p className="text-xs text-gray-400">{description}</p>
       </div>
 
-      <div className="bg-wl-bg-surface border border-wl-border-subtle rounded-md p-6 flex items-center justify-center min-h-24">
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-md p-6 flex items-center justify-center min-h-24">
         {preview}
       </div>
 
       <button
         onClick={() => setShowCode(!showCode)}
-        className="flex items-center gap-2 text-xs font-medium text-wl-text-secondary hover:text-wl-text-primary transition-colors"
+        className="flex items-center gap-2 text-xs font-medium text-gray-300 hover:text-white transition-colors"
       >
         {showCode ? (
           <>
@@ -140,14 +140,14 @@ export default function DesignSystemPage() {
   const [checkboxChecked, setCheckboxChecked] = useState(false);
 
   return (
-    <div className="min-h-screen bg-wl-bg-root">
+    <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
-      <div className="border-b border-wl-border-subtle">
+      <div className="border-b border-[#1e1e2e]">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Design System
           </h1>
-          <p className="text-wl-text-secondary max-w-2xl">
+          <p className="text-gray-300 max-w-2xl">
             Witylogix component library. All components use Tailwind CSS v3.4 with
             design tokens (--wl-*) for consistent styling across the platform.
           </p>
@@ -155,7 +155,7 @@ export default function DesignSystemPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-wl-border-subtle sticky top-0 z-40 bg-wl-bg-root/95 backdrop-blur">
+      <div className="border-b border-[#1e1e2e] sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-8 overflow-x-auto">
             {[
@@ -177,8 +177,8 @@ export default function DesignSystemPage() {
                 className={cn(
                   "text-sm font-medium py-4 px-1 border-b-2 transition-all duration-fast whitespace-nowrap",
                   activeTab === tab
-                    ? "text-wl-primary-500 border-b-wl-primary-500"
-                    : "text-wl-text-secondary border-b-transparent hover:text-wl-text-primary"
+                    ? "text-blue-500 border-b-blue-500"
+                    : "text-gray-300 border-b-transparent hover:text-white"
                 )}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -194,10 +194,10 @@ export default function DesignSystemPage() {
         {activeTab === "buttons" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Buttons
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Button component with 4 variants: primary, secondary, ghost, and danger.
                 Supports small, medium, and large sizes.
               </p>
@@ -276,10 +276,10 @@ export default function DesignSystemPage() {
         {activeTab === "badges" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Badges
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Badge component with 6 variants: default, success, warning, danger, info,
                 and primary. Optional dot indicator.
               </p>
@@ -367,41 +367,41 @@ export default function DesignSystemPage() {
         {activeTab === "colors" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Color Palette
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Design tokens for colors used throughout the platform. Dark theme with
                 amber primary color for logistics warmth.
               </p>
 
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Primary Colors (Amber)
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     {[
-                      { name: "50", hex: "#fff9eb", token: "--wl-primary-50" },
-                      { name: "100", hex: "#ffefc4", token: "--wl-primary-100" },
-                      { name: "200", hex: "#ffe09d", token: "--wl-primary-200" },
-                      { name: "300", hex: "#ffd06a", token: "--wl-primary-300" },
-                      { name: "400", hex: "#ffc240", token: "--wl-primary-400" },
-                      { name: "500", hex: "#f5a623", token: "--wl-primary-500" },
-                      { name: "600", hex: "#d98b0a", token: "--wl-primary-600" },
-                      { name: "700", hex: "#b06f05", token: "--wl-primary-700" },
-                      { name: "800", hex: "#8d5704", token: "--wl-primary-800" },
-                      { name: "900", hex: "#6b4203", token: "--wl-primary-900" },
+                      { name: "50", hex: "#fff9eb", token: "--blue-50" },
+                      { name: "100", hex: "#ffefc4", token: "--blue-100" },
+                      { name: "200", hex: "#ffe09d", token: "--blue-200" },
+                      { name: "300", hex: "#ffd06a", token: "--blue-300" },
+                      { name: "400", hex: "#ffc240", token: "--blue-400" },
+                      { name: "500", hex: "#f5a623", token: "--blue-500" },
+                      { name: "600", hex: "#d98b0a", token: "--blue-600" },
+                      { name: "700", hex: "#b06f05", token: "--blue-700" },
+                      { name: "800", hex: "#8d5704", token: "--blue-800" },
+                      { name: "900", hex: "#6b4203", token: "--blue-900" },
                     ].map((color) => (
                       <div key={color.name}>
                         <div
-                          className="w-full h-24 rounded-md mb-2 border border-wl-border-subtle"
+                          className="w-full h-24 rounded-md mb-2 border border-[#1e1e2e]"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <p className="text-xs font-mono text-wl-text-secondary">
+                        <p className="text-xs font-mono text-gray-300">
                           {color.hex}
                         </p>
-                        <p className="text-xs text-wl-text-tertiary">
+                        <p className="text-xs text-gray-400">
                           {color.token}
                         </p>
                       </div>
@@ -410,78 +410,78 @@ export default function DesignSystemPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Semantic Colors
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <div
-                        className="w-full h-32 rounded-md mb-2 border border-wl-border-subtle"
+                        className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                         style={{ backgroundColor: "#34d399" }}
                       />
-                      <p className="text-sm font-semibold text-wl-text-primary">
+                      <p className="text-sm font-semibold text-white">
                         Success
                       </p>
-                      <p className="text-xs font-mono text-wl-text-secondary">
+                      <p className="text-xs font-mono text-gray-300">
                         #34d399
                       </p>
-                      <p className="text-xs text-wl-text-tertiary">
-                        --wl-success-400
+                      <p className="text-xs text-gray-400">
+                        --emerald-500
                       </p>
                     </div>
 
                     <div>
                       <div
-                        className="w-full h-32 rounded-md mb-2 border border-wl-border-subtle"
+                        className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                         style={{ backgroundColor: "#fbbf24" }}
                       />
-                      <p className="text-sm font-semibold text-wl-text-primary">
+                      <p className="text-sm font-semibold text-white">
                         Warning
                       </p>
-                      <p className="text-xs font-mono text-wl-text-secondary">
+                      <p className="text-xs font-mono text-gray-300">
                         #fbbf24
                       </p>
-                      <p className="text-xs text-wl-text-tertiary">
-                        --wl-warning-400
+                      <p className="text-xs text-gray-400">
+                        --amber-500
                       </p>
                     </div>
 
                     <div>
                       <div
-                        className="w-full h-32 rounded-md mb-2 border border-wl-border-subtle"
+                        className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                         style={{ backgroundColor: "#f87171" }}
                       />
-                      <p className="text-sm font-semibold text-wl-text-primary">
+                      <p className="text-sm font-semibold text-white">
                         Danger
                       </p>
-                      <p className="text-xs font-mono text-wl-text-secondary">
+                      <p className="text-xs font-mono text-gray-300">
                         #f87171
                       </p>
-                      <p className="text-xs text-wl-text-tertiary">
-                        --wl-danger-400
+                      <p className="text-xs text-gray-400">
+                        --red-500
                       </p>
                     </div>
 
                     <div>
                       <div
-                        className="w-full h-32 rounded-md mb-2 border border-wl-border-subtle"
+                        className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                         style={{ backgroundColor: "#60a5fa" }}
                       />
-                      <p className="text-sm font-semibold text-wl-text-primary">
+                      <p className="text-sm font-semibold text-white">
                         Info
                       </p>
-                      <p className="text-xs font-mono text-wl-text-secondary">
+                      <p className="text-xs font-mono text-gray-300">
                         #60a5fa
                       </p>
-                      <p className="text-xs text-wl-text-tertiary">
-                        --wl-info-400
+                      <p className="text-xs text-gray-400">
+                        --blue-500
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Background Colors
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -495,13 +495,13 @@ export default function DesignSystemPage() {
                     ].map((color) => (
                       <div key={color.name}>
                         <div
-                          className="w-full h-20 rounded-md mb-2 border border-wl-border-subtle"
+                          className="w-full h-20 rounded-md mb-2 border border-[#1e1e2e]"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <p className="text-sm font-semibold text-wl-text-primary">
+                        <p className="text-sm font-semibold text-white">
                           {color.name}
                         </p>
-                        <p className="text-xs font-mono text-wl-text-secondary">
+                        <p className="text-xs font-mono text-gray-300">
                           {color.hex}
                         </p>
                       </div>
@@ -517,10 +517,10 @@ export default function DesignSystemPage() {
         {activeTab === "inputs" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Input Fields
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Text input component with support for labels, errors, hints, and icons.
                 Available in small, medium, and large sizes.
               </p>
@@ -613,10 +613,10 @@ export default function DesignSystemPage() {
         {activeTab === "selects" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Select Dropdown
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Dropdown select component with label, error states, and size variants.
               </p>
 
@@ -706,10 +706,10 @@ export default function DesignSystemPage() {
         {activeTab === "cards" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Cards
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Card component with optional header, content, and footer sections.
                 Supports hover and glow effects.
               </p>
@@ -814,10 +814,10 @@ export default function DesignSystemPage() {
         {activeTab === "modals" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Modals & Dialogs
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Modal dialog component with configurable sizes. Press Escape to close or
                 click the backdrop.
               </p>
@@ -856,7 +856,7 @@ export default function DesignSystemPage() {
                     </div>
                   }
                 >
-                  <p className="text-wl-text-secondary mb-4">
+                  <p className="text-gray-300 mb-4">
                     This is a modal dialog. You can add any content here, including forms,
                     messages, or confirmations.
                   </p>
@@ -870,7 +870,7 @@ export default function DesignSystemPage() {
                   <CardHeader>
                     <CardTitle>Modal Sizes</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-wl-text-secondary space-y-2">
+                  <CardContent className="text-sm text-gray-300 space-y-2">
                     <p>Available sizes: sm, md, lg, full</p>
                     <p>
                       Use the size prop to control modal dimensions.
@@ -886,27 +886,27 @@ export default function DesignSystemPage() {
         {activeTab === "tables" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Tables
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Responsive table component for displaying structured data.
               </p>
 
               <Card className="w-full overflow-hidden">
                 <Table>
                   <thead>
-                    <tr className="border-b border-wl-border-subtle">
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-primary">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="text-left px-4 py-3 font-semibold text-white">
                         ID
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-primary">
+                      <th className="text-left px-4 py-3 font-semibold text-white">
                         Name
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-primary">
+                      <th className="text-left px-4 py-3 font-semibold text-white">
                         Status
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-wl-text-primary">
+                      <th className="text-left px-4 py-3 font-semibold text-white">
                         Date
                       </th>
                     </tr>
@@ -934,12 +934,12 @@ export default function DesignSystemPage() {
                     ].map((row, idx) => (
                       <tr
                         key={idx}
-                        className="border-b border-wl-border-subtle hover:bg-wl-bg-surface transition-colors"
+                        className="border-b border-[#1e1e2e] hover:bg-[#12121a] transition-colors"
                       >
-                        <td className="px-4 py-3 text-wl-text-secondary">
+                        <td className="px-4 py-3 text-gray-300">
                           {row.id}
                         </td>
-                        <td className="px-4 py-3 text-wl-text-primary">
+                        <td className="px-4 py-3 text-white">
                           {row.name}
                         </td>
                         <td className="px-4 py-3">
@@ -955,7 +955,7 @@ export default function DesignSystemPage() {
                             {row.status}
                           </Badge>
                         </td>
-                        <td className="px-4 py-3 text-wl-text-secondary">
+                        <td className="px-4 py-3 text-gray-300">
                           {row.date}
                         </td>
                       </tr>
@@ -971,22 +971,22 @@ export default function DesignSystemPage() {
         {activeTab === "typography" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Typography
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Font family: DM Sans (sans), JetBrains Mono (mono). Text sizes from xs
                 (11px) to 3xl (30px).
               </p>
 
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Font Sizes
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Extra Small (11px)
                       </p>
                       <p className="text-xs">
@@ -994,7 +994,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Small (13px)
                       </p>
                       <p className="text-sm">
@@ -1002,7 +1002,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Base (14px)
                       </p>
                       <p className="text-base">
@@ -1010,7 +1010,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Large (17px)
                       </p>
                       <p className="text-lg">
@@ -1018,7 +1018,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Extra Large (20px)
                       </p>
                       <p className="text-xl">
@@ -1026,7 +1026,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         2XL (24px)
                       </p>
                       <p className="text-2xl">
@@ -1034,7 +1034,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         3XL (30px)
                       </p>
                       <p className="text-3xl">
@@ -1045,12 +1045,12 @@ export default function DesignSystemPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Font Weights
                   </h3>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Regular (400)
                       </p>
                       <p className="font-normal">
@@ -1058,7 +1058,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Medium (500)
                       </p>
                       <p className="font-medium">
@@ -1066,7 +1066,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Semibold (600)
                       </p>
                       <p className="font-semibold">
@@ -1074,7 +1074,7 @@ export default function DesignSystemPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-wl-text-tertiary mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         Bold (700)
                       </p>
                       <p className="font-bold">
@@ -1085,7 +1085,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
                     Monospace Font
                   </h3>
                   <p className="font-mono text-sm">
@@ -1101,10 +1101,10 @@ export default function DesignSystemPage() {
         {activeTab === "forms" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Form Components
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 Collections of form-related components: switches, checkboxes, and their
                 combinations.
               </p>
@@ -1119,7 +1119,7 @@ export default function DesignSystemPage() {
                         checked={switchEnabled}
                         onChange={(e) => setSwitchEnabled(e.target.checked)}
                       />
-                      <span className="text-sm text-wl-text-secondary">
+                      <span className="text-sm text-gray-300">
                         {switchEnabled ? "Enabled" : "Disabled"}
                       </span>
                     </div>
@@ -1136,7 +1136,7 @@ export default function DesignSystemPage() {
                         checked={checkboxChecked}
                         onChange={(e) => setCheckboxChecked(e.target.checked)}
                       />
-                      <span className="text-sm text-wl-text-secondary">
+                      <span className="text-sm text-gray-300">
                         I agree to the terms
                       </span>
                     </div>
@@ -1187,10 +1187,10 @@ export default function DesignSystemPage() {
         {activeTab === "a11y" && (
           <div className="space-y-12">
             <div>
-              <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-2xl font-bold text-white mb-2">
                 Accessibility Features
               </h2>
-              <p className="text-wl-text-secondary mb-8">
+              <p className="text-gray-300 mb-8">
                 All components follow WCAG 2.1 accessibility guidelines with proper ARIA
                 attributes, semantic HTML, and keyboard navigation support.
               </p>
@@ -1200,7 +1200,7 @@ export default function DesignSystemPage() {
                   <CardHeader>
                     <CardTitle>Keyboard Navigation</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-wl-text-secondary space-y-2">
+                  <CardContent className="text-sm text-gray-300 space-y-2">
                     <p>
                       Tab: Move focus to the next interactive element
                     </p>
@@ -1220,7 +1220,7 @@ export default function DesignSystemPage() {
                   <CardHeader>
                     <CardTitle>ARIA Attributes</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-wl-text-secondary space-y-2">
+                  <CardContent className="text-sm text-gray-300 space-y-2">
                     <p>
                       aria-label: Provides accessible names for unlabeled elements
                     </p>
@@ -1240,12 +1240,12 @@ export default function DesignSystemPage() {
                   <CardHeader>
                     <CardTitle>Focus Management</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-wl-text-secondary space-y-2">
+                  <CardContent className="text-sm text-gray-300 space-y-2">
                     <p>
                       All interactive elements have visible focus indicators
                     </p>
                     <p>
-                      Focus outlines use --wl-primary-500 color
+                      Focus outlines use --blue-500 color
                     </p>
                     <p>
                       Tab order follows logical visual structure
@@ -1257,7 +1257,7 @@ export default function DesignSystemPage() {
                   <CardHeader>
                     <CardTitle>Color Contrast</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-wl-text-secondary space-y-2">
+                  <CardContent className="text-sm text-gray-300 space-y-2">
                     <p>
                       All text meets WCAG AA contrast ratio requirements (4.5:1)
                     </p>

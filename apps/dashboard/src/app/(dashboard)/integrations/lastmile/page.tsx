@@ -373,42 +373,42 @@ export default function LastMileIntegrationPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Deliveries Today"
             value={totalDeliveriesToday}
             change={{ value: 22.5, label: "vs yesterday" }}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={0}
           />
           <StatCard
             label="Total Revenue"
             value={formatCurrency(totalRevenuToday)}
             change={{ value: 18.3, label: "vs yesterday" }}
-            accentColor="var(--wl-success-400)"
+            accentColor="#10b981"
             index={1}
           />
           <StatCard
             label="On-Time Rate"
             value={`${avgOnTimeRate.toFixed(1)}%`}
             change={{ value: 2.1, label: "vs avg" }}
-            accentColor="var(--wl-warning-400)"
+            accentColor="#f59e0b"
             index={2}
           />
           <StatCard
             label="Total Commissions"
             value={formatCurrency(totalCommissions)}
             change={{ value: -1.5, label: "vs target" }}
-            accentColor="var(--wl-info-400)"
+            accentColor="#60a5fa"
             index={3}
           />
         </div>
 
         {/* Delivery Platform Cards */}
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-wl-text-primary mb-4 uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
             Connected Delivery Platforms
           </h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
@@ -419,16 +419,16 @@ export default function LastMileIntegrationPage() {
                 onClick={() => setSelectedProvider(provider.id)}
                 className={cn(
                   "cursor-pointer transition-all",
-                  selectedProvider === provider.id && "ring-2 ring-wl-primary-500"
+                  selectedProvider === provider.id && "ring-2 ring-blue-500"
                 )}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-wl-primary-500/20 flex items-center justify-center text-xs font-bold text-wl-primary-400">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
                       {provider.logo}
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-wl-text-primary">
+                      <h3 className="text-sm font-semibold text-white">
                         {provider.name}
                       </h3>
                       <Badge variant="success">● {provider.status}</Badge>
@@ -436,34 +436,34 @@ export default function LastMileIntegrationPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
+                <div className="space-y-2 text-xs text-gray-400 mb-3">
                   <div className="flex justify-between">
                     <span>Deliveries Today:</span>
-                    <span className="text-wl-text-primary font-semibold">
+                    <span className="text-white font-semibold">
                       {provider.deliveriesToday}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Revenue:</span>
-                    <span className="text-wl-text-primary font-semibold">
+                    <span className="text-white font-semibold">
                       {formatCurrency(provider.revenueToday)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Commission:</span>
-                    <span className="text-wl-text-primary font-semibold">
+                    <span className="text-white font-semibold">
                       {provider.commissionsPercentage}%
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>On-Time Rate:</span>
-                    <span className="text-wl-success-400 font-semibold">
+                    <span className="text-emerald-500 font-semibold">
                       {provider.onTimeDeliveryRate}%
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Avg Delivery Time:</span>
-                    <span className="text-wl-text-primary font-semibold">
+                    <span className="text-white font-semibold">
                       {provider.averageDeliveryTime}m
                     </span>
                   </div>
@@ -491,20 +491,20 @@ export default function LastMileIntegrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border-subtle">
-                    <th className="p-3 text-left font-semibold text-wl-text-secondary">
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="p-3 text-left font-semibold text-gray-400">
                       Provider
                     </th>
-                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-center font-semibold text-gray-400">
                       On-Time %
                     </th>
-                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-center font-semibold text-gray-400">
                       Avg Time (mins)
                     </th>
-                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-center font-semibold text-gray-400">
                       Rating
                     </th>
-                    <th className="p-3 text-right font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-right font-semibold text-gray-400">
                       Cost per Delivery
                     </th>
                   </tr>
@@ -514,23 +514,23 @@ export default function LastMileIntegrationPage() {
                     <tr
                       key={idx}
                       className={cn(
-                        "border-b border-wl-border-subtle",
-                        idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay/30"
+                        "border-b border-[#1e1e2e]",
+                        idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]/30"
                       )}
                     >
-                      <td className="p-3 text-wl-text-primary font-semibold">
+                      <td className="p-3 text-white font-semibold">
                         {metric.provider}
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="success">{metric.onTimePercent}%</Badge>
                       </td>
-                      <td className="p-3 text-center text-wl-text-primary font-semibold">
+                      <td className="p-3 text-center text-white font-semibold">
                         {metric.avgDeliveryTime}
                       </td>
-                      <td className="p-3 text-center text-wl-text-primary font-semibold">
+                      <td className="p-3 text-center text-white font-semibold">
                         {metric.customerRating} ⭐
                       </td>
-                      <td className="p-3 text-right text-wl-text-primary font-semibold">
+                      <td className="p-3 text-right text-white font-semibold">
                         {formatCurrency(metric.costPerDelivery)}
                       </td>
                     </tr>
@@ -555,8 +555,8 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                       deliveryFilterStatus === status
-                        ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                        : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
                     )}
                   >
                     {status === "all" ? "All" : status === "in_transit" ? "Transit" : status}
@@ -572,18 +572,18 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       "p-3 rounded-md border",
                       delivery.status === "delivered"
-                        ? "border-wl-success-400/20 bg-wl-success-bg/20"
+                        ? "border-emerald-500/20 bg-emerald-500/20"
                         : delivery.status === "in_transit"
-                        ? "border-wl-warning-400/20 bg-wl-warning-bg/20"
-                        : "border-wl-info-400/20 bg-wl-info-bg/20"
+                        ? "border-amber-500/20 bg-amber-500/20"
+                        : "border-blue-500/20 bg-blue-500/20"
                     )}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-wl-text-primary">
+                        <p className="text-sm font-semibold text-white">
                           {delivery.orderId}
                         </p>
-                        <p className="text-xs text-wl-text-tertiary">
+                        <p className="text-xs text-gray-300">
                           {delivery.customer} → {delivery.destination}
                         </p>
                       </div>
@@ -596,22 +596,22 @@ export default function LastMileIntegrationPage() {
 
                     <div className="grid grid-cols-2 gap-2 mb-2 text-xs">
                       <div>
-                        <span className="text-wl-text-tertiary">Driver:</span>
-                        <p className="font-semibold text-wl-text-primary">{delivery.driver}</p>
+                        <span className="text-gray-300">Driver:</span>
+                        <p className="font-semibold text-white">{delivery.driver}</p>
                       </div>
                       <div className="text-right">
-                        <span className="text-wl-text-tertiary">Distance:</span>
-                        <p className="font-semibold text-wl-text-primary">
+                        <span className="text-gray-300">Distance:</span>
+                        <p className="font-semibold text-white">
                           {delivery.distance} km
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-wl-border-subtle text-xs">
-                      <span className="text-wl-text-secondary">
+                    <div className="flex items-center justify-between pt-2 border-t border-[#1e1e2e] text-xs">
+                      <span className="text-gray-400">
                         {delivery.actualTime ? `${delivery.actualTime}` : delivery.estimatedTime}
                       </span>
-                      <span className="text-wl-text-tertiary">
+                      <span className="text-gray-300">
                         Fee: {formatCurrency(delivery.fee)}
                       </span>
                     </div>
@@ -633,8 +633,8 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       "px-2 py-1 text-xs font-semibold rounded border capitalize transition-all",
                       driverFilterStatus === status
-                        ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                        : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-transparent text-gray-400 border-[#1e1e2e]"
                     )}
                   >
                     {status === "all"
@@ -654,18 +654,18 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       "p-3 rounded-md border",
                       driver.status === "online"
-                        ? "border-wl-success-400/20 bg-wl-success-bg/20"
+                        ? "border-emerald-500/20 bg-emerald-500/20"
                         : driver.status === "on_delivery"
-                        ? "border-wl-warning-400/20 bg-wl-warning-bg/20"
-                        : "border-wl-neutral-600/20 bg-wl-bg-overlay/20"
+                        ? "border-amber-500/20 bg-amber-500/20"
+                        : "border-neutral-600/20 bg-[#1a1a2e]/20"
                     )}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-wl-text-primary">
+                        <p className="text-sm font-semibold text-white">
                           {driver.name}
                         </p>
-                        <p className="text-xs text-wl-text-tertiary">
+                        <p className="text-xs text-gray-300">
                           {driver.provider} • {driver.location}
                         </p>
                       </div>
@@ -676,20 +676,20 @@ export default function LastMileIntegrationPage() {
 
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className="text-wl-text-tertiary block mb-0.5">Active</span>
-                        <p className="font-semibold text-wl-text-primary">
+                        <span className="text-gray-300 block mb-0.5">Active</span>
+                        <p className="font-semibold text-white">
                           {driver.activeDeliveries}
                         </p>
                       </div>
                       <div>
-                        <span className="text-wl-text-tertiary block mb-0.5">Completed</span>
-                        <p className="font-semibold text-wl-text-primary">
+                        <span className="text-gray-300 block mb-0.5">Completed</span>
+                        <p className="font-semibold text-white">
                           {driver.completedToday}
                         </p>
                       </div>
                       <div className="text-right">
-                        <span className="text-wl-text-tertiary block mb-0.5">Rating</span>
-                        <p className="font-semibold text-wl-text-primary">
+                        <span className="text-gray-300 block mb-0.5">Rating</span>
+                        <p className="font-semibold text-white">
                           {driver.rating} ⭐
                         </p>
                       </div>

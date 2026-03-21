@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-import { useApiList } from '@/hooks/use-api';
   Download,
   Eye,
   Mail,
@@ -208,11 +207,11 @@ const CHANNEL_ICONS: Record<Channel, React.ReactNode> = {
 };
 
 const STATUS_ICONS: Record<NotificationStatus, React.ReactNode> = {
-  sent: <CheckCircle className="w-4 h-4 text-[var(--wl-success)]" />,
-  delivered: <CheckCircle className="w-4 h-4 text-[var(--wl-success)]" />,
-  failed: <AlertCircle className="w-4 h-4 text-[var(--wl-danger)]" />,
-  bounced: <AlertCircle className="w-4 h-4 text-[var(--wl-warning)]" />,
-  pending: <Clock className="w-4 h-4 text-[var(--wl-text-secondary)]" />,
+  sent: <CheckCircle className="w-4 h-4 text-emerald-500" />,
+  delivered: <CheckCircle className="w-4 h-4 text-emerald-500" />,
+  failed: <AlertCircle className="w-4 h-4 text-red-500" />,
+  bounced: <AlertCircle className="w-4 h-4 text-amber-500" />,
+  pending: <Clock className="w-4 h-4 text-gray-400" />,
 };
 
 const getStatusVariant = (status: NotificationStatus) => {
@@ -240,7 +239,7 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[var(--wl-border)] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
         <CardHeader>
           <CardTitle>Notification Details</CardTitle>
           <CardDescription>Message ID: {log.messageId}</CardDescription>
@@ -248,21 +247,21 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
                 Recipient
               </p>
-              <p className="text-sm text-[var(--wl-text-primary)]">{log.recipient}</p>
+              <p className="text-sm text-white">{log.recipient}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
                 Channel
               </p>
-              <p className="text-sm text-[var(--wl-text-primary)] capitalize">
+              <p className="text-sm text-white capitalize">
                 {log.channel}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
                 Status
               </p>
               <Badge variant={getStatusVariant(log.status) as any}>
@@ -270,44 +269,44 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
               </Badge>
             </div>
             <div>
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
                 Cost
               </p>
-              <p className="text-sm text-[var(--wl-text-primary)]">
+              <p className="text-sm text-white">
                 ${log.cost.toFixed(2)}
               </p>
             </div>
           </div>
 
-          <div className="border-t border-[var(--wl-border)] pt-4">
-            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-3">
+          <div className="border-t border-[#1e1e2e] pt-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
               Message Preview
             </p>
-            <div className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
-              <p className="text-sm text-[var(--wl-text-primary)] whitespace-pre-wrap">
+            <div className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
+              <p className="text-sm text-white whitespace-pre-wrap">
                 {log.messagePreview}
               </p>
             </div>
           </div>
 
-          <div className="border-t border-[var(--wl-border)] pt-4">
-            <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-3">
+          <div className="border-t border-[#1e1e2e] pt-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
               Delivery Attempts ({log.attempts.length})
             </p>
             <div className="space-y-2">
               {log.attempts.map((attempt, idx) => (
                 <div
                   key={idx}
-                  className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]"
+                  className="p-3 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2">
                       {STATUS_ICONS[attempt.status]}
                       <div>
-                        <p className="text-sm font-medium text-[var(--wl-text-primary)] capitalize">
+                        <p className="text-sm font-medium text-white capitalize">
                           {attempt.status}
                         </p>
-                        <p className="text-xs text-[var(--wl-text-secondary)]">
+                        <p className="text-xs text-gray-400">
                           {attempt.timestamp.toLocaleString()}
                         </p>
                       </div>
@@ -315,10 +314,10 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
                   </div>
                   {attempt.errorMessage && (
                     <div className="mt-2 text-xs">
-                      <p className="text-[var(--wl-danger)]">
+                      <p className="text-red-500">
                         Error: {attempt.errorMessage}
                       </p>
-                      <p className="text-[var(--wl-text-secondary)]">
+                      <p className="text-gray-400">
                         Code: {attempt.errorCode}
                       </p>
                     </div>
@@ -330,7 +329,7 @@ const DetailModal = ({ log, isOpen, onClose }: DetailModalProps) => {
 
           <button
             onClick={onClose}
-            className="w-full mt-4 px-4 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] rounded-lg hover:bg-[var(--wl-bg-tertiary)] transition-colors"
+            className="w-full mt-4 px-4 py-2 bg-[#1a1a2e] text-white rounded-lg hover:bg-[#252541] transition-colors"
           >
             Close
           </button>
@@ -375,7 +374,7 @@ export default function NotificationLogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Log"
         subtitle="Track sent notifications and delivery status"
@@ -384,42 +383,42 @@ export default function NotificationLogPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Total Sent
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <p className="text-2xl font-bold text-white">
                 {stats.totalSent}
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Delivery Rate
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-success)]">
+              <p className="text-2xl font-bold text-emerald-500">
                 {stats.deliveryRate}%
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Bounce Rate
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-warning)]">
+              <p className="text-2xl font-bold text-amber-500">
                 {stats.bounceRate}%
               </p>
             </CardContent>
           </Card>
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardContent className="pt-6">
-              <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                 Total Cost
               </p>
-              <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <p className="text-2xl font-bold text-white">
                 ${stats.totalCost}
               </p>
             </CardContent>
@@ -427,11 +426,11 @@ export default function NotificationLogPage() {
         </div>
 
         {/* Filters */}
-        <Card className="border border-[var(--wl-border)] mb-8">
+        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase block mb-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
                   Channel
                 </label>
                 <select
@@ -439,7 +438,7 @@ export default function NotificationLogPage() {
                   onChange={(e) =>
                     setFilterChannel(e.target.value as typeof filterChannel)
                   }
-                  className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
                   <option value="all">All Channels</option>
                   <option value="email">Email</option>
@@ -449,7 +448,7 @@ export default function NotificationLogPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase block mb-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
                   Status
                 </label>
                 <select
@@ -457,7 +456,7 @@ export default function NotificationLogPage() {
                   onChange={(e) =>
                     setFilterStatus(e.target.value as typeof filterStatus)
                   }
-                  className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
                   <option value="all">All Status</option>
                   <option value="sent">Sent</option>
@@ -468,7 +467,7 @@ export default function NotificationLogPage() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase block mb-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
                   From Date
                 </label>
                 <Input
@@ -480,10 +479,11 @@ export default function NotificationLogPage() {
                       from: e.target.value,
                     })
                   }
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase block mb-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase block mb-2">
                   To Date
                 </label>
                 <Input
@@ -495,6 +495,7 @@ export default function NotificationLogPage() {
                       to: e.target.value,
                     })
                   }
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                 />
               </div>
             </div>
@@ -502,7 +503,7 @@ export default function NotificationLogPage() {
         </Card>
 
         {/* Logs Table */}
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-[#1e1e2e] bg-[#12121a]">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -536,7 +537,7 @@ export default function NotificationLogPage() {
                   {filteredLogs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-[var(--wl-text-secondary)] text-sm">
+                        <p className="text-gray-400 text-sm">
                           No notifications found
                         </p>
                       </TableCell>
@@ -545,35 +546,35 @@ export default function NotificationLogPage() {
                     filteredLogs.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell>
-                          <div className="flex items-center gap-2 text-xs text-[var(--wl-text-secondary)]">
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
                             <Clock className="w-3 h-3" />
                             {log.timestamp.toLocaleString()}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-primary)] truncate max-w-xs">
+                          <span className="text-sm text-white truncate max-w-xs">
                             {log.recipient}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span className="text-[var(--wl-text-secondary)]">
+                            <span className="text-gray-400">
                               {CHANNEL_ICONS[log.channel]}
                             </span>
-                            <span className="text-sm capitalize text-[var(--wl-text-primary)]">
+                            <span className="text-sm capitalize text-white">
                               {log.channel}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-primary)]">
+                          <span className="text-sm text-white">
                             {log.eventType
                               .replace(/_/g, " ")
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-secondary)]">
+                          <span className="text-sm text-gray-400">
                             {log.templateName}
                           </span>
                         </TableCell>
@@ -586,7 +587,7 @@ export default function NotificationLogPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-primary)]">
+                          <span className="text-sm text-white">
                             ${log.cost.toFixed(2)}
                           </span>
                         </TableCell>
@@ -596,9 +597,9 @@ export default function NotificationLogPage() {
                               setSelectedLog(log);
                               setShowDetail(true);
                             }}
-                            className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors"
+                            className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
                           >
-                            <Eye className="w-4 h-4 text-[var(--wl-text-secondary)]" />
+                            <Eye className="w-4 h-4 text-gray-400" />
                           </button>
                         </TableCell>
                       </TableRow>

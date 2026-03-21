@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
+import { Package, Plus, Upload } from 'lucide-react';
 
 interface Shipment {
   id: string;
@@ -32,43 +33,89 @@ export default function FreightLoadsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
+  const activeLoads = shipments.filter(s => ['Booked', 'In-Transit'].includes(s.status)).length;
+
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-[#0a0a0f] p-6">
       {/* Header & Actions */}
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-wl-text-primary">Load Board</h2>
-          <p className="text-sm text-wl-text-secondary mt-1">{pagination.total} total loads</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" size="md">
-            + Create Load
-          </Button>
-          <Button variant="secondary" size="md">
-            📥 Import
-          </Button>
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Load Board</h1>
+            <p className="text-gray-400">{pagination.total} total loads · {activeLoads} active</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="secondary" size="md" className="flex items-center gap-2">
+              <Plus size={16} /> Create Load
+            </Button>
+            <Button variant="secondary" size="md" className="flex items-center gap-2">
+              <Upload size={16} /> Import
+            </Button>
+          </div>
         </div>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Total Loads</span>
+              <Package className="text-blue-500" size={20} />
+            </div>
+            <p className="text-3xl font-bold text-white">{pagination.total}</p>
+            <p className="text-gray-400 text-xs mt-2">All shipments</p>
+          </div>
+        </Card>
+
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">In Transit</span>
+              <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
+            </div>
+            <p className="text-3xl font-bold text-white">{activeLoads}</p>
+            <p className="text-gray-400 text-xs mt-2">Currently moving</p>
+          </div>
+        </Card>
+
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium">Available</span>
+              <div className="w-5 h-5 rounded-full bg-blue-500"></div>
+            </div>
+            <p className="text-3xl font-bold text-white">{shipments.filter(s => s.status === 'Available').length}</p>
+            <p className="text-gray-400 text-xs mt-2">Ready to book</p>
+          </div>
+        </Card>
+      </div>
+
       {/* Loads Table */}
-      <Card className="overflow-hidden p-0">
+      <Card className="bg-[#12121a] border-[#1e1e2e] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Load ID</th>
-                <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Origin</th>
-                <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Destination</th>
-                <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+          <table className="w-full text-sm">
+            <thead className="bg-[#1a1a2e] border-b border-[#1e1e2e]">
+              <tr>
+                <th className="px-6 py-4 text-left font-semibold text-gray-300">Load ID</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-300">Origin</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-300">Destination</th>
+                <th className="px-6 py-4 text-center font-semibold text-gray-300">Status</th>
               </tr>
             </thead>
             <tbody>
               {shipments.map((shipment, idx) => (
-                <tr key={shipment.id} className={cn('border-b border-wl-border-subtle transition-colors hover:bg-wl-bg-overlay', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay')}>
-                  <td className="p-3 px-4 text-wl-text-primary font-semibold">{shipment.id}</td>
-                  <td className="p-3 px-4 text-wl-text-secondary text-xs">Origin</td>
-                  <td className="p-3 px-4 text-wl-text-secondary text-xs">Destination</td>
-                  <td className="p-3 px-4 text-center">
+                <tr
+                  key={shipment.id}
+                  className={cn(
+                    'border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]',
+                    idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]'
+                  )}
+                >
+                  <td className="px-6 py-4 text-white font-semibold">{shipment.id}</td>
+                  <td className="px-6 py-4 text-gray-400 text-xs">Origin</td>
+                  <td className="px-6 py-4 text-gray-400 text-xs">Destination</td>
+                  <td className="px-6 py-4 text-center">
                     <Badge variant={statusBadgeVariant(shipment.status)}>{shipment.status}</Badge>
                   </td>
                 </tr>
@@ -78,7 +125,7 @@ export default function FreightLoadsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
+        <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
           <div>
             Showing {shipments.length > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0} to{' '}
             {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
@@ -92,7 +139,7 @@ export default function FreightLoadsPage() {
             >
               Previous
             </Button>
-            <span className="px-3 py-1 flex items-center">
+            <span className="px-3 py-1 flex items-center text-gray-400">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <Button

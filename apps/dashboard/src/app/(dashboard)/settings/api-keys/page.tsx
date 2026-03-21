@@ -102,7 +102,7 @@ export default function APIKeysPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="API Keys"
         subtitle="Manage API keys for programmatic access"
@@ -120,14 +120,14 @@ export default function APIKeysPage() {
 
           {/* Create Dialog */}
           {showCreateDialog && (
-            <Card className="border-[var(--wl-primary)]/50 bg-[var(--wl-bg-secondary)]">
+            <Card className="border-blue-500/30 bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Create New API Key</CardTitle>
-                <CardDescription>Generate a new API key for your application</CardDescription>
+                <CardTitle className="text-white">Create New API Key</CardTitle>
+                <CardDescription className="text-gray-400">Generate a new API key for your application</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Key Name
                   </label>
                   <Input
@@ -138,7 +138,7 @@ export default function APIKeysPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-3">
+                  <label className="text-sm font-semibold text-white block mb-3">
                     Scopes (Permissions)
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -148,9 +148,9 @@ export default function APIKeysPage() {
                           type="checkbox"
                           checked={selectedScopes.includes(scope.id)}
                           onChange={() => toggleScope(scope.id)}
-                          className="w-4 h-4 rounded border-[var(--wl-border)] text-[var(--wl-primary)] cursor-pointer"
+                          className="w-4 h-4 rounded border-[#1e1e2e] text-blue-500 cursor-pointer"
                         />
-                        <span className="text-sm text-[var(--wl-text-secondary)]">
+                        <span className="text-sm text-gray-400">
                           {scope.label}
                         </span>
                       </label>
@@ -158,9 +158,9 @@ export default function APIKeysPage() {
                   </div>
                 </div>
 
-                <div className="bg-[var(--wl-info)]/10 border border-[var(--wl-info)]/30 rounded-lg p-3 flex gap-2">
-                  <AlertCircle className="w-4 h-4 text-[var(--wl-info)] flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-[var(--wl-text-secondary)]">
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-400">
                     Store your API key securely. You won't be able to see it again after creation.
                   </p>
                 </div>
@@ -188,10 +188,10 @@ export default function APIKeysPage() {
           )}
 
           {/* API Keys List */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Your API Keys</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white">Your API Keys</CardTitle>
+              <CardDescription className="text-gray-400">
                 {apiKeys.length} {apiKeys.length === 1 ? "key" : "keys"} available
               </CardDescription>
             </CardHeader>
@@ -201,17 +201,17 @@ export default function APIKeysPage() {
                   {apiKeys.map((apiKey) => (
                     <div
                       key={apiKey.id}
-                      className="p-4 border border-[var(--wl-border)] rounded-lg hover:bg-[var(--wl-bg-secondary)]/50 transition-all"
+                      className="p-4 border border-[#1e1e2e] rounded-lg hover:bg-[#1a1a2e]/50 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Key className="w-4 h-4 text-[var(--wl-text-secondary)]" />
-                            <p className="font-semibold text-[var(--wl-text-primary)]">
+                            <Key className="w-4 h-4 text-gray-400" />
+                            <p className="font-semibold text-white">
                               {apiKey.name}
                             </p>
                           </div>
-                          <p className="text-xs text-[var(--wl-text-secondary)] font-mono">
+                          <p className="text-xs text-gray-400 font-mono">
                             {apiKey.masked}
                           </p>
                         </div>
@@ -234,7 +234,7 @@ export default function APIKeysPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-4 sm:items-center text-xs text-[var(--wl-text-secondary)] mb-3">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:items-center text-xs text-gray-400 mb-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           <span>Created: {apiKey.createdAt}</span>
@@ -255,13 +255,13 @@ export default function APIKeysPage() {
                         ))}
                       </div>
 
-                      <div className="text-xs text-[var(--wl-text-secondary)]">
+                      <div className="text-xs text-gray-400">
                         <span className="font-semibold">{apiKey.requestsPerDay}</span> requests today
                       </div>
 
                       {deleteConfirmId === apiKey.id && (
-                        <div className="mt-4 p-3 bg-[var(--wl-danger)]/10 border border-[var(--wl-danger)]/30 rounded-lg flex items-center justify-between gap-3">
-                          <p className="text-xs text-[var(--wl-text-primary)]">
+                        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between gap-3">
+                          <p className="text-xs text-white">
                             Are you sure? This action cannot be undone.
                           </p>
                           <div className="flex gap-2">
@@ -287,8 +287,8 @@ export default function APIKeysPage() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Key className="w-12 h-12 text-[var(--wl-text-secondary)] mx-auto mb-3 opacity-30" />
-                  <p className="text-[var(--wl-text-secondary)]">
+                  <Key className="w-12 h-12 text-gray-400 mx-auto mb-3 opacity-30" />
+                  <p className="text-gray-400">
                     No API keys created yet
                   </p>
                 </div>
@@ -297,13 +297,13 @@ export default function APIKeysPage() {
           </Card>
 
           {/* Documentation Link */}
-          <Card className="bg-[var(--wl-info)]/5 border border-[var(--wl-info)]/30">
+          <Card className="bg-blue-500/5 border border-blue-500/30 bg-[#12121a] border border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <p className="text-sm text-[var(--wl-text-secondary)]">
+              <p className="text-sm text-gray-400">
                 Learn how to use the Witylogix API in our{" "}
                 <a
                   href="#"
-                  className="text-[var(--wl-primary)] hover:underline font-semibold"
+                  className="text-blue-400 hover:underline font-semibold"
                 >
                   API documentation
                 </a>

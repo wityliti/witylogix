@@ -444,7 +444,7 @@ export default function PaymentsPage() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-gradient-to-br from-[#3b82f6] to-[#3b82f6]">
       <Header
         title="Payment Integrations"
         subtitle="Manage payment processors, transactions, and settlement reconciliation"
@@ -455,7 +455,7 @@ export default function PaymentsPage() {
         <Link href="/integrations">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-[#3b82f6] hover:text-[#3b82f6]"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Integrations
@@ -464,15 +464,15 @@ export default function PaymentsPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-[var(--wl-primary)]/10 to-[var(--wl-primary)]/5 border-[var(--wl-primary)]/30">
+          <Card className="bg-gradient-to-br from-[#3b82f6]/10 to-[#3b82f6]/5 border-[#3b82f6]/30">
             <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+              <p className="text-xs font-medium text-[#3b82f6] uppercase">
                 Total Volume
               </p>
-              <p className="text-3xl font-bold text-[var(--wl-primary)] mt-2">
+              <p className="text-3xl font-bold text-[#3b82f6] mt-2">
                 ${totalVolume.toLocaleString("en-US", { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
+              <p className="text-xs text-[#3b82f6] mt-2">
                 Across all providers
               </p>
             </CardContent>
@@ -480,13 +480,13 @@ export default function PaymentsPage() {
 
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/30">
             <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+              <p className="text-xs font-medium text-[#3b82f6] uppercase">
                 Total Fees
               </p>
               <p className="text-3xl font-bold text-blue-400 mt-2">
                 ${totalFees.toLocaleString("en-US", { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
+              <p className="text-xs text-[#3b82f6] mt-2">
                 {((totalFees / totalVolume) * 100).toFixed(2)}% of volume
               </p>
             </CardContent>
@@ -494,13 +494,13 @@ export default function PaymentsPage() {
 
           <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/30">
             <CardContent className="pt-6">
-              <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+              <p className="text-xs font-medium text-[#3b82f6] uppercase">
                 Connected Providers
               </p>
               <p className="text-3xl font-bold text-green-400 mt-2">
                 {providers.filter((p) => p.status === "connected").length}/{providers.length}
               </p>
-              <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
+              <p className="text-xs text-[#3b82f6] mt-2">
                 Active integrations
               </p>
             </CardContent>
@@ -514,16 +514,16 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("providers")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Payment Providers
               </h2>
-              <Badge variant="primary" className="bg-[var(--wl-primary)]/30 text-[var(--wl-primary)]">
+              <Badge variant="primary" className="bg-[#3b82f6]/30 text-[#3b82f6]">
                 {providers.filter((p) => p.status === "connected").length} connected
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.providers ? "rotate-90" : ""
               )}
             />
@@ -532,17 +532,17 @@ export default function PaymentsPage() {
           {expandedSections.providers && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {providers.map((provider) => (
-                <Card key={provider.id} className="hover:border-[var(--wl-primary)]/50">
+                <Card key={provider.id} className="hover:border-[#3b82f6]/50">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="text-[var(--wl-primary)] text-2xl">{provider.icon}</div>
+                        <div className="text-[#3b82f6] text-2xl">{provider.icon}</div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="text-lg font-semibold text-[#3b82f6]">
                             {provider.name}
                           </h3>
-                          <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-xs text-[#3b82f6] mt-1">
                             {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
                             {provider.status === "disconnected" && "Not connected"}
                             {provider.status === "error" && "Connection error"}
@@ -581,17 +581,17 @@ export default function PaymentsPage() {
                     {/* Stats Grid */}
                     {provider.status === "connected" && (
                       <>
-                        <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                        <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#3b82f6]">
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
                               Txns
                             </p>
-                            <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-lg font-bold text-[#3b82f6] mt-1">
                               {provider.transactions?.toLocaleString()}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
                               Volume
                             </p>
                             <p className="text-lg font-bold text-green-400 mt-1">
@@ -599,20 +599,20 @@ export default function PaymentsPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-[#3b82f6] uppercase">
                               Fees
                             </p>
-                            <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-lg font-bold text-[#3b82f6] mt-1">
                               {provider.fees}
                             </p>
                           </div>
                         </div>
 
                         <div className="mb-6">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                          <p className="text-xs font-medium text-[#3b82f6] uppercase">
                             Last Sync
                           </p>
-                          <p className="text-sm text-[var(--wl-text-primary)] mt-1 flex items-center gap-2">
+                          <p className="text-sm text-[#3b82f6] mt-1 flex items-center gap-2">
                             <Clock className="w-3 h-3 text-green-500" />
                             {provider.lastSync}
                           </p>
@@ -627,7 +627,7 @@ export default function PaymentsPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                            className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Configure
@@ -645,7 +645,7 @@ export default function PaymentsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
                         >
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Reconnect
@@ -654,7 +654,7 @@ export default function PaymentsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Connect
@@ -675,7 +675,7 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("transactions")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Recent Transactions
               </h2>
               <Badge variant="info" className="bg-blue-500/20 text-blue-400">
@@ -684,14 +684,14 @@ export default function PaymentsPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.transactions ? "rotate-90" : ""
               )}
             />
           </div>
 
           {expandedSections.transactions && (
-            <Card className="bg-[var(--wl-bg-tertiary)]">
+            <Card className="bg-[#3b82f6]">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {transactions.map((txn) => {
@@ -704,11 +704,11 @@ export default function PaymentsPage() {
                     return (
                       <div
                         key={txn.id}
-                        className="flex items-start justify-between p-4 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)] hover:border-[var(--wl-primary)]/50"
+                        className="flex items-start justify-between p-4 bg-[#3b82f6] rounded-lg border border-[#3b82f6] hover:border-[#3b82f6]/50"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-[var(--wl-text-primary)] capitalize">
+                            <h4 className="font-semibold text-[#3b82f6] capitalize">
                               {txn.type}
                             </h4>
                             <Badge variant="default" className="text-xs font-mono">
@@ -718,14 +718,14 @@ export default function PaymentsPage() {
                               {txn.status}
                             </Badge>
                           </div>
-                          <p className="text-sm text-[var(--wl-text-secondary)] mb-1">
+                          <p className="text-sm text-[#3b82f6] mb-1">
                             {txn.customer} • {txn.description}
                           </p>
-                          <p className="text-xs text-[var(--wl-text-tertiary)]">
+                          <p className="text-xs text-[#3b82f6]">
                             {txn.paymentMethod} • {txn.date}
                           </p>
                           {txn.reference && (
-                            <p className="text-xs text-[var(--wl-text-tertiary)] mt-1 font-mono">
+                            <p className="text-xs text-[#3b82f6] mt-1 font-mono">
                               Ref: {txn.reference}
                             </p>
                           )}
@@ -754,16 +754,16 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("methods")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Payment Methods
               </h2>
-              <Badge variant="default" className="bg-[var(--wl-bg-secondary)]">
+              <Badge variant="default" className="bg-[#3b82f6]">
                 {paymentMethods.filter((m) => m.status === "active").length} active
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.methods ? "rotate-90" : ""
               )}
             />
@@ -772,37 +772,37 @@ export default function PaymentsPage() {
           {expandedSections.methods && (
             <div className="space-y-4">
               {paymentMethods.map((method) => (
-                <Card key={method.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={method.id} className="bg-[#3b82f6]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className="w-12 h-12 rounded-lg bg-[var(--wl-bg-secondary)] flex items-center justify-center text-[var(--wl-primary)]">
+                        <div className="w-12 h-12 rounded-lg bg-[#3b82f6] flex items-center justify-center text-[#3b82f6]">
                           {method.type === "card" && <CreditCard className="w-6 h-6" />}
                           {method.type === "ach" && <DollarSign className="w-6 h-6" />}
                           {method.type === "wallet" && <Activity className="w-6 h-6" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="font-semibold text-[#3b82f6]">
                             {method.label}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
                             {method.type === "card" && (
                               <>
-                                <p className="text-sm text-[var(--wl-text-tertiary)]">
+                                <p className="text-sm text-[#3b82f6]">
                                   •••• {method.last4}
                                 </p>
-                                <span className="text-xs text-[var(--wl-text-tertiary)]">
+                                <span className="text-xs text-[#3b82f6]">
                                   Expires {method.expiryDate}
                                 </span>
                               </>
                             )}
                             {method.type === "ach" && (
-                              <p className="text-sm text-[var(--wl-text-tertiary)]">
+                              <p className="text-sm text-[#3b82f6]">
                                 {method.bankName} • {method.routingNumber}
                               </p>
                             )}
                             {method.type === "wallet" && (
-                              <p className="text-sm text-[var(--wl-text-tertiary)]">
+                              <p className="text-sm text-[#3b82f6]">
                                 Added {method.addedDate}
                               </p>
                             )}
@@ -830,7 +830,7 @@ export default function PaymentsPage() {
                         <Button
                           variant="secondary"
                           size="sm"
-                          className="bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                          className="bg-[#3b82f6] hover:bg-[#3b82f6]"
                         >
                           <Settings className="w-4 h-4" />
                         </Button>
@@ -842,7 +842,7 @@ export default function PaymentsPage() {
 
               <Button
                 variant="primary"
-                className="w-full bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                className="w-full bg-[#3b82f6] hover:bg-[#3b82f6]/90"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Payment Method
@@ -858,7 +858,7 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("refunds")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Refunds & Chargebacks
               </h2>
               <Badge variant="warning" className="bg-yellow-500/20 text-yellow-400">
@@ -867,7 +867,7 @@ export default function PaymentsPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.refunds ? "rotate-90" : ""
               )}
             />
@@ -876,12 +876,12 @@ export default function PaymentsPage() {
           {expandedSections.refunds && (
             <div className="space-y-4">
               {refundsAndChargebacks.map((case_) => (
-                <Card key={case_.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={case_.id} className="bg-[#3b82f6]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-[var(--wl-text-primary)] capitalize">
+                          <h3 className="font-semibold text-[#3b82f6] capitalize">
                             {case_.type}
                           </h3>
                           <Badge
@@ -894,10 +894,10 @@ export default function PaymentsPage() {
                             {case_.type}
                           </Badge>
                         </div>
-                        <p className="text-sm text-[var(--wl-text-tertiary)]">
+                        <p className="text-sm text-[#3b82f6]">
                           {case_.customer} • {case_.date}
                         </p>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1 font-mono">
+                        <p className="text-xs text-[#3b82f6] mt-1 font-mono">
                           Txn: {case_.transactionId}
                         </p>
                       </div>
@@ -919,13 +919,13 @@ export default function PaymentsPage() {
                       </div>
                     </div>
 
-                    <div className="mb-4 pb-4 border-b border-[var(--wl-border)]">
-                      <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-2">
+                    <div className="mb-4 pb-4 border-b border-[#3b82f6]">
+                      <p className="text-xs font-medium text-[#3b82f6] uppercase mb-2">
                         Reason
                       </p>
-                      <p className="text-sm text-[var(--wl-text-primary)]">{case_.reason}</p>
+                      <p className="text-sm text-[#3b82f6]">{case_.reason}</p>
                       {case_.notes && (
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-2 italic">
+                        <p className="text-xs text-[#3b82f6] mt-2 italic">
                           Note: {case_.notes}
                         </p>
                       )}
@@ -935,7 +935,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Details
@@ -944,7 +944,7 @@ export default function PaymentsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
                         >
                           Respond
                         </Button>
@@ -964,7 +964,7 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("settlement")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Settlement Reports
               </h2>
               <Badge variant="success" className="bg-green-500/20 text-green-400">
@@ -973,7 +973,7 @@ export default function PaymentsPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.settlement ? "rotate-90" : ""
               )}
             />
@@ -982,14 +982,14 @@ export default function PaymentsPage() {
           {expandedSections.settlement && (
             <div className="space-y-4">
               {settlementReports.map((report) => (
-                <Card key={report.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={report.id} className="bg-[#3b82f6]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="font-semibold text-[#3b82f6]">
                           {report.provider}
                         </h3>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                        <p className="text-xs text-[#3b82f6] mt-1">
                           {report.period}
                         </p>
                       </div>
@@ -1005,17 +1005,17 @@ export default function PaymentsPage() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b border-[var(--wl-border)]">
+                    <div className="grid grid-cols-4 gap-4 mb-4 pb-4 border-b border-[#3b82f6]">
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
                           Txns
                         </p>
-                        <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
                           {report.totalTransactions}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
                           Volume
                         </p>
                         <p className="text-lg font-bold text-green-400 mt-1">
@@ -1023,18 +1023,18 @@ export default function PaymentsPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
                           Fees
                         </p>
-                        <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
                           ${report.totalFees.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-[#3b82f6] uppercase">
                           Net
                         </p>
-                        <p className="text-lg font-bold text-[var(--wl-primary)] mt-1">
+                        <p className="text-lg font-bold text-[#3b82f6] mt-1">
                           ${report.netSettlement.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                         </p>
                       </div>
@@ -1044,7 +1044,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -1052,7 +1052,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Export
@@ -1072,7 +1072,7 @@ export default function PaymentsPage() {
             onClick={() => toggleSection("reconciliation")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-[#3b82f6]">
                 Reconciliation Issues
               </h2>
               <Badge variant="warning" className="bg-yellow-500/20 text-yellow-400">
@@ -1081,7 +1081,7 @@ export default function PaymentsPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-[#3b82f6] transition-transform",
                 expandedSections.reconciliation ? "rotate-90" : ""
               )}
             />
@@ -1091,24 +1091,24 @@ export default function PaymentsPage() {
             <div className="space-y-4">
               {reconciliationIssues.map((issue) => (
                 <Card key={issue.id} className={cn(
-                  "bg-[var(--wl-bg-tertiary)]",
+                  "bg-[#3b82f6]",
                   issue.status === "open" && "border-yellow-500/50"
                 )}>
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="font-semibold text-[#3b82f6]">
                           {issue.type}
                         </h3>
-                        <p className="text-sm text-[var(--wl-text-secondary)] mt-1">
+                        <p className="text-sm text-[#3b82f6] mt-1">
                           {issue.description}
                         </p>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
+                        <p className="text-xs text-[#3b82f6] mt-2">
                           {issue.provider} • {issue.date}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xl font-bold text-[var(--wl-primary)] mb-2">
+                        <p className="text-xl font-bold text-[#3b82f6] mb-2">
                           ${issue.amount.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                         </p>
                         <Badge
@@ -1129,7 +1129,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="primary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]/90"
                       >
                         <Activity className="w-4 h-4 mr-2" />
                         Investigate
@@ -1137,7 +1137,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#3b82f6] hover:bg-[#3b82f6]"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Details

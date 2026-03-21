@@ -215,7 +215,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
     <Modal isOpen={isOpen} onClose={onClose} title={`Customer Details: ${customer.name}`}>
       <div className="flex flex-col gap-4">
         {/* Overview Section */}
-        <div className="border-b border-wl-border-subtle pb-3">
+        <div className="border-b border-[#1e1e2e] pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -224,7 +224,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "overview"]
               )
             }
-            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("overview") ? <ChevronUp /> : <ChevronDown />}
             Overview
@@ -232,15 +232,15 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
           {expandedSections.includes("overview") && (
             <div className="grid grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Name
                 </p>
-                <p className="text-wl-text-primary text-sm font-medium m-0">
+                <p className="text-white text-sm font-medium m-0">
                   {customer.name}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Status
                 </p>
                 <Badge variant={getStatusBadgeVariant(customer.status)} className="text-xs capitalize">
@@ -248,34 +248,34 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Email
                 </p>
-                <a href={`mailto:${customer.email}`} className="text-wl-brand-primary no-underline text-sm font-medium">
+                <a href={`mailto:${customer.email}`} className="text-blue-500 no-underline text-sm font-medium">
                   {customer.email}
                 </a>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Phone
                 </p>
-                <p className="text-wl-text-primary text-sm font-medium m-0">
+                <p className="text-white text-sm font-medium m-0">
                   {customer.phone}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Store
                 </p>
-                <p className="text-wl-text-primary text-sm font-medium m-0">
+                <p className="text-white text-sm font-medium m-0">
                   {customer.store}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Joined
                 </p>
-                <p className="text-wl-text-primary text-sm font-medium m-0">
+                <p className="text-white text-sm font-medium m-0">
                   {customer.joined}
                 </p>
               </div>
@@ -284,7 +284,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Order History Section */}
-        <div className="border-b border-wl-border-subtle pb-3">
+        <div className="border-b border-[#1e1e2e] pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -293,7 +293,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "orders"]
               )
             }
-            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("orders") ? <ChevronUp /> : <ChevronDown />}
             Order History
@@ -301,26 +301,26 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
           {expandedSections.includes("orders") && (
             <div className="grid grid-cols-3 gap-4 mt-3">
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Total Orders
                 </p>
-                <p className="text-wl-text-primary text-lg font-bold m-0">
+                <p className="text-white text-lg font-bold m-0">
                   {customer.ordersCount}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Total Spent
                 </p>
-                <p className="text-wl-brand-primary text-lg font-bold m-0">
+                <p className="text-blue-500 text-lg font-bold m-0">
                   ${customer.totalSpent.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                   Last Order
                 </p>
-                <p className="text-wl-text-primary text-sm font-medium m-0">
+                <p className="text-white text-sm font-medium m-0">
                   {customer.lastOrder}
                 </p>
               </div>
@@ -329,7 +329,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Addresses Section */}
-        <div className="border-b border-wl-border-subtle pb-3">
+        <div className="border-b border-[#1e1e2e] pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -338,7 +338,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "addresses"]
               )
             }
-            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("addresses") ? <ChevronUp /> : <ChevronDown />}
             Addresses ({customer.addresses.length})
@@ -348,12 +348,12 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
               {customer.addresses.map((addr, idx) => (
                 <div
                   key={idx}
-                  className="p-3 bg-wl-bg-base rounded-md border border-wl-border-subtle"
+                  className="p-3 bg-[#0a0a0f] min-h-screen rounded-md border border-[#1e1e2e]"
                 >
-                  <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
+                  <p className="text-xs text-gray-400 m-0 font-semibold uppercase mb-1">
                     {addr.type}
                   </p>
-                  <p className="text-wl-text-primary text-sm m-0">
+                  <p className="text-white text-sm m-0">
                     {addr.address}
                   </p>
                 </div>
@@ -363,7 +363,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
         </div>
 
         {/* Tags Section */}
-        <div className="border-b border-wl-border-subtle pb-3">
+        <div className="border-b border-[#1e1e2e] pb-3">
           <button
             onClick={() =>
               setExpandedSections(
@@ -372,7 +372,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "tags"]
               )
             }
-            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("tags") ? <ChevronUp /> : <ChevronDown />}
             Tags ({customer.tags.length})
@@ -398,20 +398,20 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "notes"]
               )
             }
-            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("notes") ? <ChevronUp /> : <ChevronDown />}
             Notes
           </button>
           {expandedSections.includes("notes") && (
-            <p className="text-wl-text-secondary text-sm m-2 p-3 bg-wl-bg-base rounded-md border border-wl-border-subtle">
+            <p className="text-gray-400 text-sm m-2 p-3 bg-[#0a0a0f] min-h-screen rounded-md border border-[#1e1e2e]">
               {customer.notes}
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-4 border-t border-wl-border-subtle pt-4">
+        <div className="flex gap-2 mt-4 border-t border-[#1e1e2e] pt-4">
           <Button variant="secondary" size="sm">
             <FileText className="w-3.5 h-3.5 mr-1" />
             Add Note
@@ -446,7 +446,7 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
         return (
           <Card
             key={idx}
-            className="bg-wl-bg-surface border-wl-border-subtle animate-in"
+            className="bg-[#12121a] border-[#1e1e2e] animate-in"
             style={{
               animationDelay: `${idx * 50}ms`,
             }}
@@ -461,10 +461,10 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
                 <Icon style={{ color: stat.color }} className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wide">
+                <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wide">
                   {stat.label}
                 </p>
-                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
+                <p className="text-white text-lg font-bold m-0 mt-1">
                   {stat.value}
                 </p>
               </div>
@@ -524,7 +524,7 @@ export default function AdminCustomersPage() {
   if (error && customers.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="bg-wl-bg-base">
+    <div className="bg-[#0a0a0f] min-h-screen">
       <Header
         title="Customer Management"
         subtitle="Manage all customers across all stores"
@@ -539,7 +539,7 @@ export default function AdminCustomersPage() {
       <main className="flex-1 p-6 max-w-7xl mx-auto">
         <StatsBar customers={customers} loading={loading} />
 
-        <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+        <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
           <CardContent className="p-4">
             {/* Search */}
             <div className="mb-4 relative">
@@ -548,23 +548,23 @@ export default function AdminCustomersPage() {
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 pl-8 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-sm"
+                className="w-full p-2 pl-8 bg-[#0a0a0f] min-h-screen text-white border border-[#1e1e2e] rounded-md text-sm"
               />
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
 
             {/* Filters */}
             <div className="flex gap-3 flex-wrap mb-4">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-wl-text-secondary" />
-                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-400 font-semibold uppercase">
                   Store:
                 </span>
               </div>
               <select
                 value={storeFilter}
                 onChange={(e) => setStoreFilter(e.target.value)}
-                className="px-3 py-1 bg-wl-bg-base text-wl-text-primary border border-wl-border-subtle rounded-md text-xs cursor-pointer"
+                className="px-3 py-1 bg-[#0a0a0f] min-h-screen text-white border border-[#1e1e2e] rounded-md text-xs cursor-pointer"
               >
                 {stores.map((store) => (
                   <option key={store} value={store}>
@@ -576,7 +576,7 @@ export default function AdminCustomersPage() {
 
             <div className="flex gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-wl-text-secondary font-semibold uppercase">
+                <span className="text-xs text-gray-400 font-semibold uppercase">
                   Status:
                 </span>
               </div>
@@ -587,8 +587,8 @@ export default function AdminCustomersPage() {
                   className={cn(
                     "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
                     statusFilter === status
-                      ? "bg-wl-brand-primary text-white border-wl-brand-primary"
-                      : "bg-wl-bg-base text-wl-text-primary border-wl-border-subtle"
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-[#0a0a0f] min-h-screen text-white border-[#1e1e2e]"
                   )}
                 >
                   {status === "all" ? "All" : status}
@@ -599,22 +599,22 @@ export default function AdminCustomersPage() {
         </Card>
 
         {/* Customers Table */}
-        <Card className="bg-wl-bg-surface border-wl-border-subtle">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           {filteredCustomers.length > 0 ? (
             <>
-              <div className="p-3 border-b border-wl-border-subtle text-xs text-wl-text-secondary">
+              <div className="p-3 border-b border-[#1e1e2e] text-xs text-gray-400">
                 Showing {filteredCustomers.length} of {customers.length} customers
               </div>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-wl-border-subtle bg-wl-bg-base">
+                      <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f] min-h-screen">
                         {["Name", "Email", "Phone", "Store", "Orders", "Total Spent", "Last Order", "Status", "Actions"].map((header) => (
                           <th
                             key={header}
                             className={cn(
-                              "p-3 text-left text-wl-text-secondary font-semibold text-xs uppercase tracking-wide",
+                              "p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wide",
                               header === "Actions" && "text-center"
                             )}
                           >
@@ -628,36 +628,36 @@ export default function AdminCustomersPage() {
                         <tr
                           key={customer.id}
                           className={cn(
-                            "border-b border-wl-border-subtle transition-all cursor-pointer",
-                            idx % 2 === 0 ? "bg-wl-bg-base" : "bg-wl-bg-surface"
+                            "border-b border-[#1e1e2e] transition-all cursor-pointer",
+                            idx % 2 === 0 ? "bg-[#0a0a0f] min-h-screen" : "bg-[#12121a]"
                           )}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "var(--wl-bg-surface)";
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "#12121a";
                           }}
                           onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "var(--wl-bg-base)" : "var(--wl-bg-surface)";
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = idx % 2 === 0 ? "#0a0a0f" : "#12121a";
                           }}
                           onClick={() => handleCustomerClick(customer)}
                         >
-                          <td className="p-3 text-wl-text-primary font-medium">
+                          <td className="p-3 text-white font-medium">
                             {customer.name}
                           </td>
-                          <td className="p-3 text-wl-text-secondary text-xs">
+                          <td className="p-3 text-gray-400 text-xs">
                             {customer.email}
                           </td>
-                          <td className="p-3 text-wl-text-secondary text-xs">
+                          <td className="p-3 text-gray-400 text-xs">
                             {customer.phone}
                           </td>
-                          <td className="p-3 text-wl-text-primary text-sm">
+                          <td className="p-3 text-white text-sm">
                             {customer.store}
                           </td>
-                          <td className="p-3 text-wl-text-primary font-medium">
+                          <td className="p-3 text-white font-medium">
                             {customer.ordersCount}
                           </td>
-                          <td className="p-3 text-wl-brand-primary font-semibold">
+                          <td className="p-3 text-blue-500 font-semibold">
                             ${customer.totalSpent.toLocaleString()}
                           </td>
-                          <td className="p-3 text-wl-text-secondary text-xs">
+                          <td className="p-3 text-gray-400 text-xs">
                             {customer.lastOrder}
                           </td>
                           <td className="p-3">
@@ -669,7 +669,7 @@ export default function AdminCustomersPage() {
                             className="p-3 text-center"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button className="bg-transparent border-none text-wl-text-secondary cursor-pointer p-1 inline-flex items-center justify-center transition-all hover:text-wl-text-primary">
+                            <button className="bg-transparent border-none text-gray-400 cursor-pointer p-1 inline-flex items-center justify-center transition-all hover:text-white">
                               <MoreVertical />
                             </button>
                           </td>
@@ -682,11 +682,11 @@ export default function AdminCustomersPage() {
             </>
           ) : (
             <CardContent className="p-12 text-center flex flex-col items-center justify-center">
-              <AlertCircle className="w-12 h-12 text-wl-text-secondary mb-3 opacity-30" />
-              <p className="text-wl-text-primary font-medium m-0 mb-1">
+              <AlertCircle className="w-12 h-12 text-gray-400 mb-3 opacity-30" />
+              <p className="text-white font-medium m-0 mb-1">
                 No customers found
               </p>
-              <p className="text-wl-text-secondary text-sm m-0">
+              <p className="text-gray-400 text-sm m-0">
                 Try adjusting your filters
               </p>
             </CardContent>

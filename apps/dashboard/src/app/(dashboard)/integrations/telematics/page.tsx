@@ -236,7 +236,7 @@ export default function TelematicsPage() {
         }
       />
 
-      <div className={cn("p-6 space-y-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
         {/* Overview */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
           <Card>
@@ -244,10 +244,10 @@ export default function TelematicsPage() {
               <CardTitle className="text-sm">Connected Providers</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {TELEMATICS_PROVIDERS.filter((p) => p.status === "CONNECTED").length}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>out of {TELEMATICS_PROVIDERS.length}</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>out of {TELEMATICS_PROVIDERS.length}</p>
             </div>
           </Card>
 
@@ -256,10 +256,10 @@ export default function TelematicsPage() {
               <CardTitle className="text-sm">Tracked Vehicles</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {TELEMATICS_PROVIDERS.reduce((sum, p) => sum + p.vehicleMappings.length, 0)}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>total mapped devices</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>total mapped devices</p>
             </div>
           </Card>
 
@@ -268,11 +268,11 @@ export default function TelematicsPage() {
               <CardTitle className="text-sm">Total Records</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {(TELEMATICS_PROVIDERS.reduce((sum, p) => sum + p.syncStats.totalRecords, 0) / 1000).toFixed(0)}
-                <span className="text-xs text-wl-text-tertiary">k</span>
+                <span className="text-xs text-gray-300">k</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>synced total</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>synced total</p>
             </div>
           </Card>
 
@@ -281,17 +281,17 @@ export default function TelematicsPage() {
               <CardTitle className="text-sm">Errors/Week</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-warning-500")}>
+              <div className={cn("text-2xl font-bold text-amber-500")}>
                 {TELEMATICS_PROVIDERS.reduce((sum, p) => sum + p.syncStats.errorsThisWeek, 0)}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>across all providers</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>across all providers</p>
             </div>
           </Card>
         </div>
 
         {/* Connection Wizard Modal */}
         {wizardStep !== "select" && (
-          <Card className={cn("border-wl-primary-400")}>
+          <Card className={cn("border-blue-400")}>
             <CardHeader>
               <CardTitle>Connection Wizard</CardTitle>
             </CardHeader>
@@ -306,10 +306,10 @@ export default function TelematicsPage() {
                         setWizardStep("credentials");
                       }}
                       className={cn(
-                        "p-3 rounded border border-wl-border-default hover:border-wl-primary-400 text-left transition"
+                        "p-3 rounded border border-[#1e1e2e] hover:border-blue-400 text-left transition"
                       )}
                     >
-                      <p className={cn("font-semibold text-wl-text-primary")}>{provider.name}</p>
+                      <p className={cn("font-semibold text-white")}>{provider.name}</p>
                     </button>
                   ))}
                 </div>
@@ -317,30 +317,30 @@ export default function TelematicsPage() {
 
               {wizardStep === "credentials" && (
                 <div className={cn("space-y-4")}>
-                  <p className={cn("text-sm text-wl-text-tertiary")}>
+                  <p className={cn("text-sm text-gray-300")}>
                     Step 1: Enter credentials for {TELEMATICS_PROVIDERS.find((p) => p.id === wizardProvider)?.name}
                   </p>
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       API Key
                     </label>
                     <input
                       type="password"
                       placeholder="Enter API key"
                       className={cn(
-                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                       )}
                     />
                   </div>
                   <div>
-                    <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                    <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                       Account ID
                     </label>
                     <input
                       type="text"
                       placeholder="Enter account ID"
                       className={cn(
-                        "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                        "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                       )}
                     />
                   </div>
@@ -361,14 +361,14 @@ export default function TelematicsPage() {
 
               {wizardStep === "test" && (
                 <div className={cn("space-y-4")}>
-                  <p className={cn("text-sm text-wl-text-tertiary")}>
+                  <p className={cn("text-sm text-gray-300")}>
                     Step 2: Testing connection...
                   </p>
-                  <div className={cn("bg-wl-bg-surface p-3 rounded border border-wl-border-subtle")}>
-                    <p className={cn("text-xs text-wl-text-secondary mb-2")}>✓ Authentication successful</p>
-                    <p className={cn("text-xs text-wl-text-secondary mb-2")}>✓ API endpoint reachable</p>
-                    <p className={cn("text-xs text-wl-text-secondary mb-2")}>✓ Rate limits OK</p>
-                    <p className={cn("text-xs text-wl-success-500")}>Connection test passed!</p>
+                  <div className={cn("bg-[#12121a] p-3 rounded border border-[#1e1e2e]")}>
+                    <p className={cn("text-xs text-gray-400 mb-2")}>✓ Authentication successful</p>
+                    <p className={cn("text-xs text-gray-400 mb-2")}>✓ API endpoint reachable</p>
+                    <p className={cn("text-xs text-gray-400 mb-2")}>✓ Rate limits OK</p>
+                    <p className={cn("text-xs text-emerald-500")}>Connection test passed!</p>
                   </div>
                   <div className={cn("flex gap-2")}>
                     <Button
@@ -387,7 +387,7 @@ export default function TelematicsPage() {
 
               {wizardStep === "complete" && (
                 <div className={cn("space-y-4")}>
-                  <div className={cn("bg-wl-success-500/10 border border-wl-success-500 p-3 rounded text-sm text-wl-success-600")}>
+                  <div className={cn("bg-emerald-500/10 border border-emerald-500 p-3 rounded text-sm text-emerald-600")}>
                     <p className={cn("font-semibold mb-1")}>✓ Connection established</p>
                     <p className={cn("text-xs")}>Your provider has been successfully connected and initial data sync has started.</p>
                   </div>
@@ -408,7 +408,7 @@ export default function TelematicsPage() {
           {/* Provider Grid */}
           <div className={cn("lg:col-span-2 space-y-4")}>
             <div className={cn("flex items-center justify-between")}>
-              <h2 className={cn("text-lg font-semibold text-wl-text-primary")}>Connected Providers</h2>
+              <h2 className={cn("text-lg font-semibold text-white")}>Connected Providers</h2>
               <Button variant="secondary" size="sm">
                 Sync All
               </Button>
@@ -419,16 +419,16 @@ export default function TelematicsPage() {
                 <Card
                   key={provider.id}
                   className={cn(
-                    "cursor-pointer transition-all hover:border-wl-primary-400",
-                    selectedProvider === provider.id && "border-wl-primary-500 bg-wl-bg-surface"
+                    "cursor-pointer transition-all hover:border-blue-400",
+                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div>
-                        <h3 className={cn("font-semibold text-wl-text-primary")}>{provider.name}</h3>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>
+                        <h3 className={cn("font-semibold text-white")}>{provider.name}</h3>
+                        <p className={cn("text-xs text-gray-300")}>
                           {provider.vehicleMappings.length} vehicle{provider.vehicleMappings.length !== 1 ? "s" : ""} mapped
                         </p>
                       </div>
@@ -437,22 +437,22 @@ export default function TelematicsPage() {
 
                     <div className={cn("grid grid-cols-4 gap-3")}>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Last Sync</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>{provider.lastSync}</p>
+                        <p className={cn("text-xs text-gray-300")}>Last Sync</p>
+                        <p className={cn("text-sm font-semibold text-white")}>{provider.lastSync}</p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Freshness</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>{provider.syncStats.dataFreshness}</p>
+                        <p className={cn("text-xs text-gray-300")}>Freshness</p>
+                        <p className={cn("text-sm font-semibold text-white")}>{provider.syncStats.dataFreshness}</p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Total Synced</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-xs text-gray-300")}>Total Synced</p>
+                        <p className={cn("text-sm font-semibold text-white")}>
                           {(provider.syncStats.totalRecords / 1000).toFixed(0)}k
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Errors</p>
-                        <p className={cn("text-sm font-semibold text-wl-warning-500")}>
+                        <p className={cn("text-xs text-gray-300")}>Errors</p>
+                        <p className={cn("text-sm font-semibold text-amber-500")}>
                           {provider.syncStats.errorsThisWeek}
                         </p>
                       </div>
@@ -473,7 +473,7 @@ export default function TelematicsPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-4")}>
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Connection Status
                       </label>
                       <div className={cn("flex items-center gap-2")}>
@@ -481,28 +481,28 @@ export default function TelematicsPage() {
                           className={cn(
                             "w-2 h-2 rounded-full",
                             selected.status === "CONNECTED"
-                              ? "bg-wl-success-500"
+                              ? "bg-emerald-500"
                               : selected.status === "ERROR"
-                                ? "bg-wl-danger-500"
-                                : "bg-wl-text-tertiary"
+                                ? "bg-red-500"
+                                : "bg-gray-300"
                           )}
                         />
-                        <p className={cn("text-sm text-wl-text-primary")}>{selected.status}</p>
+                        <p className={cn("text-sm text-white")}>{selected.status}</p>
                       </div>
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Poll Interval
                       </label>
-                      <p className={cn("text-sm font-mono text-wl-text-primary")}>{selected.pollInterval} seconds</p>
+                      <p className={cn("text-sm font-mono text-white")}>{selected.pollInterval} seconds</p>
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Batch Size
                       </label>
-                      <p className={cn("text-sm font-mono text-wl-text-primary")}>{selected.batchSize} records</p>
+                      <p className={cn("text-sm font-mono text-white")}>{selected.batchSize} records</p>
                     </div>
 
                     <div className={cn("flex gap-2")}>
@@ -522,15 +522,15 @@ export default function TelematicsPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-2")}>
                     {selected.dataTypes.map((dataType) => (
-                      <div key={dataType.name} className={cn("flex items-start justify-between p-2 rounded hover:bg-wl-bg-elevated transition")}>
+                      <div key={dataType.name} className={cn("flex items-start justify-between p-2 rounded hover:bg-[#1a1a2e] transition")}>
                         <div>
-                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>{dataType.name}</p>
-                          <p className={cn("text-xs text-wl-text-tertiary")}>{dataType.frequency}</p>
+                          <p className={cn("text-sm font-semibold text-white")}>{dataType.name}</p>
+                          <p className={cn("text-xs text-gray-300")}>{dataType.frequency}</p>
                         </div>
                         <div
                           className={cn(
                             "w-3 h-3 rounded-full mt-1",
-                            dataType.enabled ? "bg-wl-success-500" : "bg-wl-border-subtle"
+                            dataType.enabled ? "bg-emerald-500" : "bg-[#1e1e2e]"
                           )}
                         />
                       </div>
@@ -541,7 +541,7 @@ export default function TelematicsPage() {
             ) : (
               <Card>
                 <div className={cn("p-8 text-center")}>
-                  <p className={cn("text-wl-text-tertiary")}>Select a provider to view details</p>
+                  <p className={cn("text-gray-300")}>Select a provider to view details</p>
                 </div>
               </Card>
             )}
@@ -557,36 +557,36 @@ export default function TelematicsPage() {
             <div className={cn("overflow-x-auto")}>
               <table className={cn("w-full text-sm")}>
                 <thead>
-                  <tr className={cn("border-b border-wl-border-subtle")}>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <tr className={cn("border-b border-[#1e1e2e]")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Witylogix Vehicle
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Device ID
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Device Name
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Last Sync
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-300")}>
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {selected.vehicleMappings.map((mapping) => (
-                    <tr key={mapping.witylogixId} className={cn("border-b border-wl-border-subtle hover:bg-wl-bg-surface")}>
+                    <tr key={mapping.witylogixId} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
                       <td className={cn("p-4")}>
                         <div>
-                          <p className={cn("font-semibold text-wl-text-primary text-sm")}>{mapping.witylogixName}</p>
-                          <p className={cn("text-xs text-wl-text-tertiary")}>{mapping.witylogixId}</p>
+                          <p className={cn("font-semibold text-white text-sm")}>{mapping.witylogixName}</p>
+                          <p className={cn("text-xs text-gray-300")}>{mapping.witylogixId}</p>
                         </div>
                       </td>
-                      <td className={cn("p-4 font-mono text-xs text-wl-text-primary")}>{mapping.deviceId}</td>
-                      <td className={cn("p-4 text-wl-text-primary")}>{mapping.deviceName}</td>
-                      <td className={cn("p-4 text-xs text-wl-text-tertiary")}>{mapping.lastSync}</td>
+                      <td className={cn("p-4 font-mono text-xs text-white")}>{mapping.deviceId}</td>
+                      <td className={cn("p-4 text-white")}>{mapping.deviceName}</td>
+                      <td className={cn("p-4 text-xs text-gray-300")}>{mapping.lastSync}</td>
                       <td className={cn("p-4")}>
                         <Button variant="ghost" size="sm">
                           Edit
@@ -609,28 +609,28 @@ export default function TelematicsPage() {
             <div className={cn("p-4 pt-0")}>
               <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4")}>
                 {selected.vehicleMappings.slice(0, 3).map((mapping) => (
-                  <div key={mapping.witylogixId} className={cn("p-3 rounded bg-wl-bg-surface border border-wl-border-subtle")}>
-                    <p className={cn("font-semibold text-wl-text-primary text-sm mb-3")}>{mapping.witylogixName}</p>
+                  <div key={mapping.witylogixId} className={cn("p-3 rounded bg-[#12121a] border border-[#1e1e2e]")}>
+                    <p className={cn("font-semibold text-white text-sm mb-3")}>{mapping.witylogixName}</p>
                     <div className={cn("space-y-2 text-xs")}>
                       <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-tertiary")}>Position</span>
-                        <span className={cn("text-wl-text-primary font-mono")}>37.7749°N, 122.4194°W</span>
+                        <span className={cn("text-gray-300")}>Position</span>
+                        <span className={cn("text-white font-mono")}>37.7749°N, 122.4194°W</span>
                       </div>
                       <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-tertiary")}>Speed</span>
-                        <span className={cn("text-wl-text-primary font-mono")}>32 mph</span>
+                        <span className={cn("text-gray-300")}>Speed</span>
+                        <span className={cn("text-white font-mono")}>32 mph</span>
                       </div>
                       <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-tertiary")}>Fuel Level</span>
-                        <span className={cn("text-wl-text-primary font-mono")}>78%</span>
+                        <span className={cn("text-gray-300")}>Fuel Level</span>
+                        <span className={cn("text-white font-mono")}>78%</span>
                       </div>
                       <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-tertiary")}>Engine Hours</span>
-                        <span className={cn("text-wl-text-primary font-mono")}>2,340 h</span>
+                        <span className={cn("text-gray-300")}>Engine Hours</span>
+                        <span className={cn("text-white font-mono")}>2,340 h</span>
                       </div>
                       <div className={cn("flex justify-between")}>
-                        <span className={cn("text-wl-text-tertiary")}>Last Update</span>
-                        <span className={cn("text-wl-text-primary font-mono")}>15s ago</span>
+                        <span className={cn("text-gray-300")}>Last Update</span>
+                        <span className={cn("text-white font-mono")}>15s ago</span>
                       </div>
                     </div>
                   </div>

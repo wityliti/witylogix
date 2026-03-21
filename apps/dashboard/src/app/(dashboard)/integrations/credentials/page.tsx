@@ -44,13 +44,13 @@ function VaultStatusCard({
   connectionStatus: "connected" | "disconnected";
 }) {
   return (
-    <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+    <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardContent className="pt-6">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-medium text-wl-text-primary">{name}</p>
-              <p className="text-xs text-wl-text-secondary mt-1">{type}</p>
+              <p className="font-medium text-white">{name}</p>
+              <p className="text-xs text-gray-400 mt-1">{type}</p>
             </div>
             <Badge
               variant={connectionStatus === "connected" ? "success" : "danger"}
@@ -60,21 +60,21 @@ function VaultStatusCard({
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-wl-text-secondary">Health Score</span>
-            <span className="text-sm font-medium text-wl-text-primary">
+            <span className="text-xs text-gray-400">Health Score</span>
+            <span className="text-sm font-medium text-white">
               {healthScore}%
             </span>
           </div>
 
-          <div className="w-full bg-wl-bg-tertiary rounded-full h-2">
+          <div className="w-full bg-[#1a1a2e] rounded-full h-2">
             <div
               className={cn(
                 "h-2 rounded-full transition-all",
                 healthScore >= 80
-                  ? "bg-wl-success-500"
+                  ? "bg-emerald-500"
                   : healthScore >= 60
-                    ? "bg-wl-warning-500"
-                    : "bg-wl-danger-500"
+                    ? "bg-amber-500"
+                    : "bg-red-500"
               )}
               style={{ width: `${healthScore}%` }}
             />
@@ -102,21 +102,21 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
                 className={cn(
                   "w-3 h-3 rounded-full",
                   schedule.status === "completed"
-                    ? "bg-wl-success-500"
+                    ? "bg-emerald-500"
                     : isOverdue
-                      ? "bg-wl-danger-500"
-                      : "bg-wl-info-500"
+                      ? "bg-red-500"
+                      : "bg-cyan-500"
                 )}
               />
               {idx < sorted.length - 1 && (
-                <div className="w-px h-12 bg-wl-neutral-700 my-2" />
+                <div className="w-px h-12 bg-gray-700 my-2" />
               )}
             </div>
             <div className="flex-1 pt-1">
-              <p className="font-medium text-wl-text-primary">
+              <p className="font-medium text-white">
                 {schedule.provider}
               </p>
-              <p className="text-xs text-wl-text-secondary mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 {new Date(schedule.scheduledDate).toLocaleString()}
               </p>
               <Badge
@@ -189,14 +189,14 @@ export default function CredentialsPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
+      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
         <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-wl-danger-400 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-wl-text-primary">
+            <h3 className="font-semibold text-white">
               Failed to load credentials
             </h3>
-            <p className="text-sm text-wl-text-secondary mt-1">{error}</p>
+            <p className="text-sm text-gray-400 mt-1">{error}</p>
             <Button
               onClick={revalidate}
               variant="secondary"
@@ -215,14 +215,14 @@ export default function CredentialsPage() {
     <div className="space-y-8">
       {/* Overdue Rotations Alert */}
       {overdueRotations.length > 0 && (
-        <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
           <div className="flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-wl-danger-400 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-wl-text-primary">
+              <h3 className="font-semibold text-white">
                 {overdueRotations.length} Credential Rotation{overdueRotations.length !== 1 ? "s" : ""} Overdue
               </h3>
-              <p className="text-sm text-wl-text-secondary mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 These credentials should have been rotated. Please rotate them as soon as possible.
               </p>
             </div>
@@ -257,7 +257,7 @@ export default function CredentialsPage() {
 
       {/* Rotation Schedule Timeline */}
       {credentials?.rotationSchedule && credentials.rotationSchedule.length > 0 && (
-        <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export default function CredentialsPage() {
       )}
 
       {/* Credential Inventory */}
-      <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="w-4 h-4" />
@@ -292,11 +292,11 @@ export default function CredentialsPage() {
               return (
                 <div
                   key={credential.id}
-                  className="border border-wl-neutral-700 rounded-lg overflow-hidden"
+                  className="border border-[#1e1e2e] rounded-lg overflow-hidden"
                 >
                   <button
                     onClick={() => toggleCredentialExpand(credential.id)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-wl-bg-tertiary transition-colors text-left"
+                    className="w-full flex items-center justify-between p-3 hover:bg-[#1a1a2e] transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge
@@ -315,24 +315,24 @@ export default function CredentialsPage() {
                             : "Expired"}
                       </Badge>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-wl-text-primary truncate">
+                        <p className="text-sm font-medium text-white truncate">
                           {credential.provider}
                         </p>
-                        <p className="text-xs text-wl-text-secondary truncate mt-0.5">
+                        <p className="text-xs text-gray-400 truncate mt-0.5">
                           Type: {credential.type.replace(/_/g, " ")}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right text-xs">
-                        <p className="text-wl-text-secondary">Health</p>
-                        <p className="font-medium text-wl-text-primary">
+                        <p className="text-gray-400">Health</p>
+                        <p className="font-medium text-white">
                           {credential.healthScore}%
                         </p>
                       </div>
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 text-wl-text-secondary transition-transform",
+                          "w-4 h-4 text-gray-400 transition-transform",
                           expandedCredentials[credential.id] && "rotate-180"
                         )}
                       />
@@ -340,36 +340,36 @@ export default function CredentialsPage() {
                   </button>
 
                   {expandedCredentials[credential.id] && (
-                    <div className="border-t border-wl-neutral-700 bg-wl-bg-tertiary p-3 space-y-3">
+                    <div className="border-t border-[#1e1e2e] bg-[#1a1a2e] p-3 space-y-3">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Vault</p>
-                          <p className="font-medium text-wl-text-primary">
+                          <p className="text-gray-400 mb-1">Vault</p>
+                          <p className="font-medium text-white">
                             {credential.vault}
                           </p>
                         </div>
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Last Rotated</p>
-                          <p className="font-medium text-wl-text-primary">
+                          <p className="text-gray-400 mb-1">Last Rotated</p>
+                          <p className="font-medium text-white">
                             {new Date(credential.lastRotated).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Expires In</p>
+                          <p className="text-gray-400 mb-1">Expires In</p>
                           <p className={cn(
                             "font-medium",
                             isExpired
-                              ? "text-wl-danger-400"
+                              ? "text-red-400"
                               : expiresIn <= 7
-                                ? "text-wl-warning-400"
-                                : "text-wl-success-400"
+                                ? "text-amber-400"
+                                : "text-emerald-400"
                           )}>
                             {isExpired ? "Expired" : `${expiresIn} days`}
                           </p>
                         </div>
                         <div>
-                          <p className="text-wl-text-secondary mb-1">Expiry Date</p>
-                          <p className="font-medium text-wl-text-primary">
+                          <p className="text-gray-400 mb-1">Expiry Date</p>
+                          <p className="font-medium text-white">
                             {new Date(credential.expiryDate).toLocaleDateString()}
                           </p>
                         </div>
@@ -398,12 +398,12 @@ export default function CredentialsPage() {
                       </div>
 
                       {showScheduleForm === credential.id && (
-                        <div className="mt-3 pt-3 border-t border-wl-neutral-700 space-y-2">
+                        <div className="mt-3 pt-3 border-t border-[#1e1e2e] space-y-2">
                           <input
                             type="datetime-local"
                             value={scheduleDateInput}
                             onChange={(e) => setScheduleDateInput(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-secondary border border-wl-neutral-700 text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                            className="w-full px-2 py-1 text-sm rounded bg-[#12121a] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -444,28 +444,28 @@ export default function CredentialsPage() {
       </Card>
 
       {/* Secret Scan Results */}
-      <Card className="bg-wl-warning-500/10 border border-wl-warning-500/20">
+      <Card className="bg-amber-500/10 border border-amber-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-wl-warning-400">
+          <CardTitle className="flex items-center gap-2 text-amber-400">
             <AlertTriangle className="w-4 h-4" />
             Secret Scan Results
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="p-3 bg-wl-bg-secondary border border-wl-neutral-700 rounded-lg">
+            <div className="p-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="font-medium text-wl-text-primary">
+                  <p className="font-medium text-white">
                     AWS_SECRET_ACCESS_KEY exposed in commit abc123
                   </p>
-                  <p className="text-xs text-wl-text-secondary mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     Found in repository at line 45
                   </p>
                 </div>
                 <Badge variant="danger">Exposed</Badge>
               </div>
-              <p className="text-xs text-wl-text-secondary mb-3">
+              <p className="text-xs text-gray-400 mb-3">
                 Remediation: Rotate this credential immediately and revoke access.
               </p>
               <div className="flex gap-2">
@@ -479,19 +479,19 @@ export default function CredentialsPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-wl-bg-secondary border border-wl-neutral-700 rounded-lg">
+            <div className="p-3 bg-[#12121a] border border-[#1e1e2e] rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="font-medium text-wl-text-primary">
+                  <p className="font-medium text-white">
                     STRIPE_API_KEY detected in .env.local
                   </p>
-                  <p className="text-xs text-wl-text-secondary mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     Found in local development environment
                   </p>
                 </div>
                 <Badge variant="warning">Risky</Badge>
               </div>
-              <p className="text-xs text-wl-text-secondary mb-3">
+              <p className="text-xs text-gray-400 mb-3">
                 Remediation: Move this to a secure secrets manager. Ensure .env is in .gitignore.
               </p>
               <Button size="sm" variant="secondary">

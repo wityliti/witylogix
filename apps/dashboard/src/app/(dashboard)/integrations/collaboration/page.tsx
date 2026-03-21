@@ -256,7 +256,7 @@ export default function CollaborationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
       <Header
         title="Collaboration Integrations"
         subtitle="Connect and manage team communication tools, presence, and message routing"
@@ -267,7 +267,7 @@ export default function CollaborationPage() {
         <Link href="/integrations">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-gray-400 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Integrations
@@ -281,16 +281,16 @@ export default function CollaborationPage() {
             onClick={() => toggleSection("providers")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Communication Providers
               </h2>
-              <Badge variant="primary" className="bg-[var(--wl-primary)]/30 text-[var(--wl-primary)]">
+              <Badge variant="primary" className="bg-blue-500/30 text-blue-500">
                 {providers.length} integrated
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.providers ? "rotate-90" : ""
               )}
             />
@@ -302,8 +302,8 @@ export default function CollaborationPage() {
                 <Card
                   key={provider.id}
                   className={cn(
-                    "cursor-pointer transition-all hover:border-[var(--wl-primary)]/50",
-                    selectedProvider === provider.id && "border-[var(--wl-primary)]/80 bg-[var(--wl-bg-tertiary)]"
+                    "cursor-pointer transition-all hover:border-blue-500/50",
+                    selectedProvider === provider.id && "border-blue-500/80 bg-[#1a1a2e]"
                   )}
                   onClick={() => setSelectedProvider(selectedProvider === provider.id ? null : provider.id)}
                 >
@@ -311,12 +311,12 @@ export default function CollaborationPage() {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="text-[var(--wl-primary)] text-2xl">{provider.icon}</div>
+                        <div className="text-blue-500 text-2xl">{provider.icon}</div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="text-lg font-semibold text-white">
                             {provider.name}
                           </h3>
-                          <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
                             {provider.status === "disconnected" && "Not connected"}
                             {provider.status === "error" && "Connection error"}
@@ -356,21 +356,21 @@ export default function CollaborationPage() {
 
                     {/* Status & Sync Info */}
                     {provider.status === "connected" && (
-                      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Last Sync
                           </p>
-                          <p className="text-sm text-[var(--wl-text-primary)] mt-1 flex items-center gap-1">
+                          <p className="text-sm text-white mt-1 flex items-center gap-1">
                             <Clock className="w-3 h-3 text-green-500" />
                             {provider.lastSync}
                           </p>
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Channels
                           </p>
-                          <p className="text-sm text-[var(--wl-text-primary)] mt-1">
+                          <p className="text-sm text-white mt-1">
                             {provider.config.channels?.length || 0} channels
                           </p>
                         </div>
@@ -379,10 +379,10 @@ export default function CollaborationPage() {
 
                     {/* Config Details (Expanded) */}
                     {selectedProvider === provider.id && provider.status === "connected" && (
-                      <div className="space-y-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                      <div className="space-y-4 mb-6 pb-6 border-b border-[#1e1e2e]">
                         {provider.config.channels && provider.config.channels.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-2">
+                            <p className="text-xs font-medium text-gray-500 uppercase mb-2">
                               Connected Channels
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -390,7 +390,7 @@ export default function CollaborationPage() {
                                 <Badge
                                   key={channel}
                                   variant="secondary"
-                                  className="bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)]"
+                                  className="bg-[#12121a] text-white"
                                 >
                                   {channel}
                                 </Badge>
@@ -401,17 +401,17 @@ export default function CollaborationPage() {
 
                         {provider.config.webhookUrl && (
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-2">
+                            <p className="text-xs font-medium text-gray-500 uppercase mb-2">
                               Webhook URL
                             </p>
-                            <div className="bg-[var(--wl-bg-secondary)] rounded-lg p-3 flex items-center justify-between font-mono text-xs">
-                              <span className="text-[var(--wl-text-tertiary)] truncate">
+                            <div className="bg-[#12121a] rounded-lg p-3 flex items-center justify-between font-mono text-xs">
+                              <span className="text-gray-500 truncate">
                                 {provider.config.webhookUrl.substring(0, 50)}...
                               </span>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-[var(--wl-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                                className="text-blue-500 hover:bg-[#1a1a2e]"
                               >
                                 <Copy className="w-3 h-3" />
                               </Button>
@@ -428,7 +428,7 @@ export default function CollaborationPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Configure
@@ -446,7 +446,7 @@ export default function CollaborationPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                         >
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Reconnect
@@ -455,7 +455,7 @@ export default function CollaborationPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Connect
@@ -476,7 +476,7 @@ export default function CollaborationPage() {
             onClick={() => toggleSection("presence")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Team Presence Status
               </h2>
               <Badge variant="info" className="bg-blue-500/20 text-blue-400">
@@ -485,7 +485,7 @@ export default function CollaborationPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.presence ? "rotate-90" : ""
               )}
             />
@@ -494,7 +494,7 @@ export default function CollaborationPage() {
           {expandedSections.presence && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {presenceIndicators.map((indicator) => (
-                <Card key={indicator.userId} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={indicator.userId} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3 flex-1">
@@ -502,10 +502,10 @@ export default function CollaborationPage() {
                           {indicator.name.charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-[var(--wl-text-primary)] truncate">
+                          <h4 className="font-semibold text-white truncate">
                             {indicator.name}
                           </h4>
-                          <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             {indicator.lastActive}
                           </p>
                         </div>
@@ -528,16 +528,16 @@ export default function CollaborationPage() {
             onClick={() => toggleSection("routes")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Message Routing Rules
               </h2>
-              <Badge variant="default" className="bg-[var(--wl-bg-secondary)]">
+              <Badge variant="default" className="bg-[#12121a]">
                 {messageRoutes.filter((r) => r.enabled).length}/{messageRoutes.length} active
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.routes ? "rotate-90" : ""
               )}
             />
@@ -546,22 +546,22 @@ export default function CollaborationPage() {
           {expandedSections.routes && (
             <div className="space-y-4">
               {messageRoutes.map((route) => (
-                <Card key={route.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={route.id} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="text-right min-w-max">
-                          <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
+                          <p className="text-sm font-semibold text-white">
                             {route.source}
                           </p>
                         </div>
                         <div className="flex-1 flex items-center justify-center">
-                          <div className="flex-1 h-px bg-[var(--wl-border)]" />
-                          <Send className="w-4 h-4 text-[var(--wl-primary)] mx-3" />
-                          <div className="flex-1 h-px bg-[var(--wl-border)]" />
+                          <div className="flex-1 h-px bg-[#1e1e2e]" />
+                          <Send className="w-4 h-4 text-blue-500 mx-3" />
+                          <div className="flex-1 h-px bg-[#1e1e2e]" />
                         </div>
                         <div className="text-left min-w-max">
-                          <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
+                          <p className="text-sm font-semibold text-white">
                             {route.target}
                           </p>
                         </div>
@@ -576,8 +576,8 @@ export default function CollaborationPage() {
                       </div>
                     </div>
 
-                    <div className="mb-4 pb-4 border-b border-[var(--wl-border)]">
-                      <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-2">
+                    <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-2">
                         Conditions
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -585,7 +585,7 @@ export default function CollaborationPage() {
                           <Badge
                             key={idx}
                             variant="secondary"
-                            className="bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] font-mono text-xs"
+                            className="bg-[#12121a] text-white font-mono text-xs"
                           >
                             {condition}
                           </Badge>
@@ -597,7 +597,7 @@ export default function CollaborationPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Edit
@@ -605,7 +605,7 @@ export default function CollaborationPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="flex-1 text-[var(--wl-error)] hover:bg-[var(--wl-error)]/10"
+                        className="flex-1 text-red-500 hover:bg-red-500/10"
                       >
                         Remove
                       </Button>
@@ -616,7 +616,7 @@ export default function CollaborationPage() {
 
               <Button
                 variant="primary"
-                className="w-full bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                className="w-full bg-blue-500 hover:bg-blue-500/90"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Routing Rule
@@ -632,7 +632,7 @@ export default function CollaborationPage() {
             onClick={() => toggleSection("delivery")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Delivery Statistics
               </h2>
               <Badge variant="success" className="bg-green-500/20 text-green-400">
@@ -641,7 +641,7 @@ export default function CollaborationPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.delivery ? "rotate-90" : ""
               )}
             />
@@ -652,7 +652,7 @@ export default function CollaborationPage() {
               {deliveryStats.map((stat) => {
                 const successRate = ((stat.delivered / stat.sent) * 100).toFixed(1);
                 return (
-                  <Card key={stat.provider} className="bg-[var(--wl-bg-tertiary)]">
+                  <Card key={stat.provider} className="bg-[#1a1a2e]">
                     <CardHeader>
                       <CardTitle className="text-base">{stat.provider}</CardTitle>
                     </CardHeader>
@@ -660,15 +660,15 @@ export default function CollaborationPage() {
                       <div className="space-y-4">
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Sent
                             </p>
-                            <p className="text-xl font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-xl font-bold text-white mt-1">
                               {stat.sent.toLocaleString()}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Delivered
                             </p>
                             <p className="text-xl font-bold text-green-400 mt-1">
@@ -676,7 +676,7 @@ export default function CollaborationPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Failed
                             </p>
                             <p className="text-xl font-bold text-red-400 mt-1">
@@ -685,14 +685,14 @@ export default function CollaborationPage() {
                           </div>
                         </div>
 
-                        <div className="pt-4 border-t border-[var(--wl-border)]">
+                        <div className="pt-4 border-t border-[#1e1e2e]">
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Success Rate
                             </p>
                             <p className="text-sm font-bold text-green-400">{successRate}%</p>
                           </div>
-                          <div className="w-full h-2 bg-[var(--wl-bg-secondary)] rounded-full overflow-hidden">
+                          <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-green-500 to-green-400"
                               style={{ width: `${successRate}%` }}
@@ -700,11 +700,11 @@ export default function CollaborationPage() {
                           </div>
                         </div>
 
-                        <div className="pt-4 border-t border-[var(--wl-border)]">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <div className="pt-4 border-t border-[#1e1e2e]">
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Avg Latency
                           </p>
-                          <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                          <p className="text-lg font-bold text-white mt-1">
                             {stat.avgLatency}
                           </p>
                         </div>
@@ -724,46 +724,46 @@ export default function CollaborationPage() {
             onClick={() => toggleSection("preferences")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Notification Preferences
               </h2>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.preferences ? "rotate-90" : ""
               )}
             />
           </div>
 
           {expandedSections.preferences && (
-            <Card className="bg-[var(--wl-bg-tertiary)]">
+            <Card className="bg-[#1a1a2e]">
               <CardContent className="pt-6">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-[var(--wl-border)]">
-                        <th className="text-left py-3 px-4 font-semibold text-[var(--wl-text-secondary)]">
+                      <tr className="border-b border-[#1e1e2e]">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-400">
                           Event
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-[var(--wl-text-secondary)]">
+                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
                           Slack
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-[var(--wl-text-secondary)]">
+                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
                           Teams
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-[var(--wl-text-secondary)]">
+                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
                           Pusher
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-[var(--wl-text-secondary)]">
+                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
                           Sound
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {notificationPreferences.map((pref) => (
-                        <tr key={pref.id} className="border-b border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)]">
-                          <td className="py-3 px-4 text-[var(--wl-text-primary)]">
+                        <tr key={pref.id} className="border-b border-[#1e1e2e] hover:bg-[#12121a]">
+                          <td className="py-3 px-4 text-white">
                             {pref.event}
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -807,13 +807,13 @@ export default function CollaborationPage() {
                 <div className="mt-6 flex gap-2">
                   <Button
                     variant="primary"
-                    className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                    className="bg-blue-500 hover:bg-blue-500/90"
                   >
                     Save Preferences
                   </Button>
                   <Button
                     variant="secondary"
-                    className="bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                    className="bg-[#12121a] hover:bg-[#1a1a2e]"
                   >
                     Reset to Defaults
                   </Button>

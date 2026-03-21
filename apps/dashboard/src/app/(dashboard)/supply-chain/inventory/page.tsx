@@ -129,8 +129,8 @@ export default function InventoryPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-wl-text-primary">Inventory Management</h2>
-          <p className="text-wl-text-secondary mt-1">
+          <h2 className="text-2xl font-bold text-white">Inventory Management</h2>
+          <p className="text-gray-300 mt-1">
             Monitor stock levels, ABC analysis, and reorder alerts
           </p>
         </div>
@@ -149,13 +149,13 @@ export default function InventoryPage() {
             {stockGauges.map((gauge) => {
               const gaugePercentage = (gauge.current / gauge.maximum) * 100;
               return (
-                <div key={gauge.sku} className="p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
+                <div key={gauge.sku} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h4 className="text-sm font-medium text-wl-text-primary">
+                      <h4 className="text-sm font-medium text-white">
                         {gauge.name}
                       </h4>
-                      <p className="text-xs text-wl-text-tertiary mt-0.5">
+                      <p className="text-xs text-gray-400 mt-0.5">
                         {gauge.sku}
                       </p>
                     </div>
@@ -181,15 +181,15 @@ export default function InventoryPage() {
                         className={cn(
                           'flex-1 rounded-t transition-all',
                           gauge.status === 'critical'
-                            ? 'bg-wl-danger-500'
+                            ? 'bg-red-500'
                             : gauge.status === 'warning'
-                            ? 'bg-wl-warning-500'
-                            : 'bg-wl-success-500'
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
                         )}
                         style={{ height: `${Math.max(5, gaugePercentage)}%` }}
                       />
                     </div>
-                    <div className="text-xs text-wl-text-tertiary mt-2 text-center">
+                    <div className="text-xs text-gray-400 mt-2 text-center">
                       {gauge.percentageFilled}% filled
                     </div>
                   </div>
@@ -197,20 +197,20 @@ export default function InventoryPage() {
                   {/* Levels */}
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Current:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Current:</span>
+                      <span className="font-semibold text-white">
                         {gauge.current}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Min:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Min:</span>
+                      <span className="font-semibold text-white">
                         {gauge.minimum}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Max:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Max:</span>
+                      <span className="font-semibold text-white">
                         {gauge.maximum}
                       </span>
                     </div>
@@ -235,24 +235,24 @@ export default function InventoryPage() {
             {reorderAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-start justify-between p-3 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
               >
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-wl-text-primary">
+                  <h4 className="text-sm font-medium text-white">
                     {alert.productName}
                   </h4>
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       Current: {alert.currentQty}
                     </span>
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       Reorder Point: {alert.reorderPoint}
                     </span>
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       Suggested Order: {alert.suggestedOrder}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-wl-text-secondary">
+                  <div className="flex items-center gap-4 mt-1 text-xs text-gray-300">
                     <span>Vendor: {alert.vendor}</span>
                     <span>Lead Time: {alert.leadTime} days</span>
                   </div>
@@ -290,7 +290,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, searchTerm: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-primary-500"
+                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-wl-text-tertiary focus:outline-none focus:border-blue-500"
               />
 
               <select
@@ -298,7 +298,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, warehouse: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
               >
                 {WAREHOUSES.map((wh) => (
                   <option key={wh} value={wh}>
@@ -312,7 +312,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, abcClass: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
               >
                 {ABC_CLASSES.map((cls) => (
                   <option key={cls.value} value={cls.value}>
@@ -326,7 +326,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                className="px-3 py-2 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
               >
                 {STATUS_FILTERS.map((st) => (
                   <option key={st.value} value={st.value}>
@@ -345,16 +345,16 @@ export default function InventoryPage() {
                   className={cn(
                     'p-4 rounded-lg border-2 cursor-pointer transition-all',
                     selectedItem === item.id
-                      ? 'border-wl-primary-500 bg-wl-primary-500/10'
-                      : 'border-wl-border-subtle bg-wl-bg-overlay'
+                      ? 'border-blue-500 bg-blue-500/10'
+                      : 'border-[#1e1e2e] hover:bg-[#1a1a2e]'
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h4 className="text-sm font-medium text-wl-text-primary">
+                      <h4 className="text-sm font-medium text-white">
                         {item.name}
                       </h4>
-                      <p className="text-xs text-wl-text-tertiary">{item.sku}</p>
+                      <p className="text-xs text-gray-400">{item.sku}</p>
                     </div>
                     <Badge
                       variant={
@@ -371,26 +371,26 @@ export default function InventoryPage() {
 
                   <div className="space-y-1 text-xs mb-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Qty:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Qty:</span>
+                      <span className="font-semibold text-white">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Reorder:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Reorder:</span>
+                      <span className="font-semibold text-white">
                         {item.reorderPoint}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Unit Cost:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Unit Cost:</span>
+                      <span className="font-semibold text-white">
                         ${item.unitCost.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-text-secondary">Location:</span>
-                      <span className="font-semibold text-wl-text-primary">
+                      <span className="text-gray-300">Location:</span>
+                      <span className="font-semibold text-white">
                         {item.warehouse}
                       </span>
                     </div>
@@ -426,20 +426,20 @@ export default function InventoryPage() {
             {[].map((transfer: any) => (
               <div
                 key={transfer.id}
-                className="flex items-start justify-between p-3 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle"
+                className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
               >
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-wl-text-primary">
+                  <h4 className="text-sm font-medium text-white">
                     {transfer.fromWarehouse} → {transfer.toWarehouse}
                   </h4>
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       SKU: {transfer.sku}
                     </span>
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       Qty: {transfer.qty}
                     </span>
-                    <span className="text-xs text-wl-text-tertiary">
+                    <span className="text-xs text-gray-400">
                       Created: {new Date(transfer.createdDate).toLocaleDateString()}
                     </span>
                   </div>
@@ -470,13 +470,13 @@ export default function InventoryPage() {
           <div className="space-y-3">
             {/* Cycle count data would come from API */}
             {[].map((count: any) => (
-              <div key={count.id} className="p-4 rounded-lg bg-wl-bg-overlay border border-wl-border-subtle">
+              <div key={count.id} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="text-sm font-medium text-wl-text-primary">
+                    <h4 className="text-sm font-medium text-white">
                       {count.warehouseId}
                     </h4>
-                    <p className="text-xs text-wl-text-tertiary mt-0.5">
+                    <p className="text-xs text-gray-400 mt-0.5">
                       {new Date(count.scheduledDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -496,21 +496,21 @@ export default function InventoryPage() {
                 {count.status !== 'scheduled' && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-wl-text-secondary">
+                      <span className="text-xs text-gray-300">
                         Progress
                       </span>
-                      <span className="text-xs font-semibold text-wl-text-primary">
+                      <span className="text-xs font-semibold text-white">
                         {count.completionRate}%
                       </span>
                     </div>
-                    <div className="w-full bg-wl-bg-surface rounded-full h-2">
+                    <div className="w-full bg-[#12121a] rounded-full h-2">
                       <div
-                        className="h-full rounded-full bg-wl-primary-500 transition-all"
+                        className="h-full rounded-full bg-blue-500 transition-all"
                         style={{ width: `${count.completionRate}%` }}
                       />
                     </div>
                     {count.itemsCountedCount && count.totalItems && (
-                      <p className="text-xs text-wl-text-tertiary mt-2">
+                      <p className="text-xs text-gray-400 mt-2">
                         {count.itemsCountedCount} of {count.totalItems} items counted
                       </p>
                     )}

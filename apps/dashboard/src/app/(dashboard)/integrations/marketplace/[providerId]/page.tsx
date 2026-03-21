@@ -242,7 +242,7 @@ export default function ProviderDetailPage() {
 
   if (!provider) {
     return (
-      <div className={cn("p-6 text-center text-wl-text-tertiary")}>
+      <div className={cn("p-6 text-center text-gray-500")}>
         <div className="text-lg font-semibold mb-2">Provider not found</div>
         <Link href="/integrations/marketplace">
           <Button variant="secondary">Back to Marketplace</Button>
@@ -315,7 +315,7 @@ export default function ProviderDetailPage() {
             <div className={cn("flex items-start gap-6")}>
               <div
                 className={cn(
-                  "w-24 h-24 rounded-lg bg-wl-bg-surface flex items-center justify-center flex-shrink-0"
+                  "w-24 h-24 rounded-lg bg-[#1a1a2e] flex items-center justify-center flex-shrink-0"
                 )}
               >
                 <span className="text-5xl">📦</span>
@@ -323,7 +323,7 @@ export default function ProviderDetailPage() {
 
               <div className={cn("flex-1 min-w-0")}>
                 <div className={cn("flex items-center gap-3 mb-3")}>
-                  <h1 className={cn("text-2xl font-bold text-wl-text-primary")}>
+                  <h1 className={cn("text-2xl font-bold text-white")}>
                     {provider.name}
                   </h1>
                   {provider.popular && (
@@ -331,7 +331,7 @@ export default function ProviderDetailPage() {
                   )}
                 </div>
 
-                <p className={cn("text-wl-text-secondary mb-4")}>
+                <p className={cn("text-gray-400 mb-4")}>
                   {provider.longDescription}
                 </p>
 
@@ -378,10 +378,10 @@ export default function ProviderDetailPage() {
                   {provider.features.map((feature) => (
                     <div
                       key={feature}
-                      className={cn("flex items-center gap-2 p-2 rounded bg-wl-bg-surface")}
+                      className={cn("flex items-center gap-2 p-2 rounded bg-[#1a1a2e]")}
                     >
-                      <CheckCircle className="w-4 h-4 text-wl-success-400 flex-shrink-0" />
-                      <span className="text-sm text-wl-text-primary">{feature}</span>
+                      <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <span className="text-sm text-white">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -399,11 +399,11 @@ export default function ProviderDetailPage() {
                     <div
                       key={op}
                       className={cn(
-                        "flex items-center gap-2 p-3 rounded border border-wl-border-subtle"
+                        "flex items-center gap-2 p-3 rounded border border-[#1e1e2e]"
                       )}
                     >
-                      <CheckCircle className="w-4 h-4 text-wl-primary-400 flex-shrink-0" />
-                      <span className="text-sm text-wl-text-primary">{op}</span>
+                      <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <span className="text-sm text-white">{op}</span>
                     </div>
                   ))}
                 </div>
@@ -421,13 +421,13 @@ export default function ProviderDetailPage() {
                     <li key={idx} className={cn("flex gap-4")}>
                       <span
                         className={cn(
-                          "flex-shrink-0 w-6 h-6 rounded-full bg-wl-primary-500 text-wl-text-inverse",
+                          "flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-black",
                           "flex items-center justify-center text-xs font-semibold"
                         )}
                       >
                         {idx + 1}
                       </span>
-                      <span className={cn("text-sm text-wl-text-primary pt-0.5")}>
+                      <span className={cn("text-sm text-white pt-0.5")}>
                         {instruction}
                       </span>
                     </li>
@@ -446,26 +446,26 @@ export default function ProviderDetailPage() {
               </CardHeader>
               <CardContent className={cn("space-y-4")}>
                 <div>
-                  <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
                     Category
                   </div>
-                  <div className={cn("text-sm font-medium text-wl-text-primary")}>
+                  <div className={cn("text-sm font-medium text-white")}>
                     {provider.category}
                   </div>
                 </div>
                 <div>
-                  <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
                     Authentication
                   </div>
-                  <div className={cn("text-sm font-medium text-wl-text-primary")}>
+                  <div className={cn("text-sm font-medium text-white")}>
                     {provider.authType.replace(/_/g, " ")}
                   </div>
                 </div>
                 <div>
-                  <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>
+                  <div className={cn("text-xs text-gray-500 uppercase tracking-wide mb-1")}>
                     Webhooks
                   </div>
-                  <div className={cn("text-sm font-medium text-wl-text-primary")}>
+                  <div className={cn("text-sm font-medium text-white")}>
                     {provider.webhookSupported ? "Supported" : "Not supported"}
                   </div>
                 </div>
@@ -480,15 +480,15 @@ export default function ProviderDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className={cn("space-y-2")}>
-                    <p className={cn("text-xs text-wl-text-tertiary mb-2")}>
+                    <p className={cn("text-xs text-gray-500 mb-2")}>
                       Use this URL for webhook configuration:
                     </p>
                     <div
                       className={cn(
-                        "flex items-center gap-2 p-2 bg-wl-bg-surface rounded border border-wl-border-subtle"
+                        "flex items-center gap-2 p-2 bg-[#1a1a2e] rounded border border-[#1e1e2e]"
                       )}
                     >
-                      <code className={cn("flex-1 text-xs text-wl-text-secondary truncate")}>
+                      <code className={cn("flex-1 text-xs text-gray-400 truncate")}>
                         {provider.webhookUrl}
                       </code>
                       <button
@@ -496,10 +496,10 @@ export default function ProviderDetailPage() {
                           navigator.clipboard.writeText(provider.webhookUrl!);
                         }}
                         className={cn(
-                          "p-1 hover:bg-wl-bg-overlay rounded transition-all"
+                          "p-1 hover:bg-[#1a1a2e] rounded transition-all"
                         )}
                       >
-                        <Copy className="w-4 h-4 text-wl-text-tertiary" />
+                        <Copy className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
                   </div>
@@ -529,24 +529,24 @@ export default function ProviderDetailPage() {
       >
         {authStep === "details" && (
           <div className={cn("space-y-4")}>
-            <p className={cn("text-sm text-wl-text-secondary")}>
+            <p className={cn("text-sm text-gray-400")}>
               Review the integration details before connecting:
             </p>
 
-            <div className={cn("space-y-3 bg-wl-bg-surface p-4 rounded-lg")}>
+            <div className={cn("space-y-3 bg-[#1a1a2e] p-4 rounded-lg")}>
               <div>
-                <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
                   Provider
                 </div>
-                <div className={cn("text-sm font-medium text-wl-text-primary")}>
+                <div className={cn("text-sm font-medium text-white")}>
                   {provider.name}
                 </div>
               </div>
               <div>
-                <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
                   Authentication Type
                 </div>
-                <div className={cn("text-sm font-medium text-wl-text-primary")}>
+                <div className={cn("text-sm font-medium text-white")}>
                   {provider.authType === "oauth2"
                     ? "OAuth 2.0"
                     : provider.authType === "api_key"
@@ -557,21 +557,21 @@ export default function ProviderDetailPage() {
                 </div>
               </div>
               <div>
-                <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+                <div className={cn("text-xs text-gray-500 uppercase tracking-wide")}>
                   Permissions Requested
                 </div>
-                <div className={cn("text-sm text-wl-text-primary space-y-1 mt-1")}>
+                <div className={cn("text-sm text-white space-y-1 mt-1")}>
                   <div className={cn("flex items-center gap-2")}>
-                    <Check className="w-3 h-3 text-wl-success-400" />
+                    <Check className="w-3 h-3 text-emerald-500" />
                     Read access to {provider.name} data
                   </div>
                   <div className={cn("flex items-center gap-2")}>
-                    <Check className="w-3 h-3 text-wl-success-400" />
+                    <Check className="w-3 h-3 text-emerald-500" />
                     Write access to selected resources
                   </div>
                   {provider.webhookSupported && (
                     <div className={cn("flex items-center gap-2")}>
-                      <Check className="w-3 h-3 text-wl-success-400" />
+                      <Check className="w-3 h-3 text-emerald-500" />
                       Webhook configuration
                     </div>
                   )}
@@ -600,7 +600,7 @@ export default function ProviderDetailPage() {
 
         {authStep === "credentials" && (
           <div className={cn("space-y-4")}>
-            <p className={cn("text-sm text-wl-text-secondary")}>
+            <p className={cn("text-sm text-gray-400")}>
               {provider.authType === "oauth2"
                 ? "You'll be redirected to authenticate with " + provider.name
                 : "Enter your " + provider.name + " credentials"}
@@ -627,7 +627,7 @@ export default function ProviderDetailPage() {
                   icon={
                     <button
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="text-wl-text-tertiary hover:text-wl-text-primary"
+                      className="text-gray-500 hover:text-white"
                     >
                       {showApiKey ? (
                         <EyeOff className="w-4 h-4" />
@@ -637,7 +637,7 @@ export default function ProviderDetailPage() {
                     </button>
                   }
                 />
-                <div className={cn("text-xs text-wl-text-tertiary")}>
+                <div className={cn("text-xs text-gray-500")}>
                   Your API key is encrypted and never shared
                 </div>
               </div>
@@ -694,11 +694,11 @@ export default function ProviderDetailPage() {
           <div className={cn("space-y-4 text-center py-6")}>
             {testResult === "pending" && (
               <>
-                <Loader2 className="w-8 h-8 mx-auto text-wl-primary-400 animate-spin" />
-                <p className={cn("text-wl-text-primary font-medium")}>
+                <Loader2 className="w-8 h-8 mx-auto text-blue-500 animate-spin" />
+                <p className={cn("text-white font-medium")}>
                   Testing connection...
                 </p>
-                <p className={cn("text-sm text-wl-text-tertiary")}>
+                <p className={cn("text-sm text-gray-500")}>
                   Verifying your credentials with {provider.name}
                 </p>
               </>
@@ -706,11 +706,11 @@ export default function ProviderDetailPage() {
 
             {testResult === "success" && (
               <>
-                <CheckCircle className="w-8 h-8 mx-auto text-wl-success-400" />
-                <p className={cn("text-wl-text-primary font-medium")}>
+                <CheckCircle className="w-8 h-8 mx-auto text-emerald-500" />
+                <p className={cn("text-white font-medium")}>
                   Connection successful!
                 </p>
-                <p className={cn("text-sm text-wl-text-tertiary")}>
+                <p className={cn("text-sm text-gray-500")}>
                   Your integration is ready to use
                 </p>
                 <Button
@@ -725,11 +725,11 @@ export default function ProviderDetailPage() {
 
             {testResult === "error" && (
               <>
-                <AlertCircle className="w-8 h-8 mx-auto text-wl-danger-400" />
-                <p className={cn("text-wl-text-primary font-medium")}>
+                <AlertCircle className="w-8 h-8 mx-auto text-red-500" />
+                <p className={cn("text-white font-medium")}>
                   Connection failed
                 </p>
-                <p className={cn("text-sm text-wl-text-tertiary")}>
+                <p className={cn("text-sm text-gray-500")}>
                   Please check your credentials and try again
                 </p>
                 <Button
@@ -747,12 +747,12 @@ export default function ProviderDetailPage() {
         {authStep === "success" && (
           <div className={cn("space-y-4 text-center py-6")}>
             <div className={cn("flex justify-center")}>
-              <CheckCircle className="w-12 h-12 text-wl-success-400" />
+              <CheckCircle className="w-12 h-12 text-emerald-500" />
             </div>
-            <h3 className={cn("text-lg font-semibold text-wl-text-primary")}>
+            <h3 className={cn("text-lg font-semibold text-white")}>
               All set!
             </h3>
-            <p className={cn("text-sm text-wl-text-tertiary")}>
+            <p className={cn("text-sm text-gray-500")}>
               {provider.name} has been successfully connected to your Witylogix
               account. You can now use this integration in your workflows.
             </p>

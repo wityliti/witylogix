@@ -272,16 +272,16 @@ export default function IntegrationCatalogPage() {
         <div className={cn("mb-6 space-y-4")}>
           {/* Search Bar */}
           <div className={cn("relative")}>
-            <Search className={cn("absolute left-3 top-2.5 h-4 w-4 text-wl-text-tertiary")} />
+            <Search className={cn("absolute left-3 top-2.5 h-4 w-4 text-gray-500")} />
             <input
               type="text"
               placeholder="Search integrations by name, provider, or features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                "w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default",
-                "rounded-lg text-wl-text-primary text-sm font-sans outline-none",
-                "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500"
+                "w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e]",
+                "rounded-lg text-white text-sm font-sans outline-none",
+                "focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               )}
             />
           </div>
@@ -295,8 +295,8 @@ export default function IntegrationCatalogPage() {
                 className={cn(
                   "px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer",
                   selectedCategory === cat.key
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                    : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-primary-400"
+                    ? "bg-blue-500 text-black border-blue-500"
+                    : "bg-transparent text-gray-400 border-[#1e1e2e] hover:border-blue-500"
                 )}
               >
                 {cat.icon} {cat.label}
@@ -306,7 +306,7 @@ export default function IntegrationCatalogPage() {
 
           {/* Sort Controls */}
           <div className={cn("flex items-center gap-2")}>
-            <span className={cn("text-xs text-wl-text-tertiary font-medium")}>Sort by:</span>
+            <span className={cn("text-xs text-gray-500 font-medium")}>Sort by:</span>
             {(["popularity", "name", "category"] as const).map((s) => (
               <button
                 key={s}
@@ -314,8 +314,8 @@ export default function IntegrationCatalogPage() {
                 className={cn(
                   "px-2 py-1 text-xs rounded border transition-colors",
                   sortBy === s
-                    ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                    : "bg-transparent text-wl-text-tertiary border-wl-border-default hover:border-wl-text-tertiary"
+                    ? "bg-blue-500 text-black border-blue-500"
+                    : "bg-transparent text-gray-500 border-[#1e1e2e] hover:border-gray-500"
                 )}
               >
                 {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -330,8 +330,8 @@ export default function IntegrationCatalogPage() {
             <Card
               key={integration.id}
               className={cn(
-                "relative overflow-hidden transition-all duration-300 cursor-pointer hover:border-wl-primary-400 hover:shadow-lg",
-                expandedId === integration.id && "ring-2 ring-wl-primary-500"
+                "relative overflow-hidden transition-all duration-300 cursor-pointer hover:border-blue-500 hover:shadow-lg",
+                expandedId === integration.id && "ring-2 ring-blue-500"
               )}
               style={{ animationDelay: `${index * 30}ms` }}
             >
@@ -342,16 +342,16 @@ export default function IntegrationCatalogPage() {
                 {/* Header */}
                 <div className={cn("flex items-start justify-between mb-3")}>
                   <div className={cn("flex-1")}>
-                    <h3 className={cn("font-bold text-wl-text-primary text-sm")}>
+                    <h3 className={cn("font-bold text-white text-sm")}>
                       {integration.name}
                     </h3>
-                    <p className={cn("text-xs text-wl-text-tertiary mt-1 line-clamp-2")}>
+                    <p className={cn("text-xs text-gray-500 mt-1 line-clamp-2")}>
                       {integration.provider}
                     </p>
                   </div>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-wl-text-tertiary transition-transform",
+                      "h-4 w-4 text-gray-500 transition-transform",
                       expandedId === integration.id && "rotate-180"
                     )}
                   />
@@ -382,16 +382,16 @@ export default function IntegrationCatalogPage() {
                 </div>
 
                 {/* Description */}
-                <p className={cn("text-xs text-wl-text-secondary mb-3 line-clamp-2")}>
+                <p className={cn("text-xs text-gray-400 mb-3 line-clamp-2")}>
                   {integration.description}
                 </p>
 
                 {/* Expanded Content */}
                 {expandedId === integration.id && (
-                  <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
+                  <div className={cn("border-t border-[#1e1e2e] pt-3 mt-3 space-y-3")}>
                     {/* Features */}
                     <div>
-                      <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
+                      <p className={cn("text-xs font-semibold text-white mb-2")}>
                         Features:
                       </p>
                       <div className={cn("flex flex-wrap gap-1")}>
@@ -399,7 +399,7 @@ export default function IntegrationCatalogPage() {
                           <span
                             key={feature}
                             className={cn(
-                              "px-2 py-1 rounded text-xs bg-wl-bg-surface text-wl-text-tertiary font-medium"
+                              "px-2 py-1 rounded text-xs bg-[#1a1a2e] text-gray-500 font-medium"
                             )}
                           >
                             {feature}
@@ -409,7 +409,7 @@ export default function IntegrationCatalogPage() {
                     </div>
 
                     {/* Setup Time */}
-                    <div className={cn("flex items-center gap-2 text-xs text-wl-text-secondary")}>
+                    <div className={cn("flex items-center gap-2 text-xs text-gray-400")}>
                       <Zap className={cn("h-3 w-3")} />
                       <span>Setup: {integration.setupTime}</span>
                     </div>
@@ -437,11 +437,11 @@ export default function IntegrationCatalogPage() {
         {/* Empty State */}
         {filtered.length === 0 && (
           <div className={cn("text-center py-12")}>
-            <Package className={cn("h-12 w-12 text-wl-text-tertiary mx-auto mb-3 opacity-50")} />
-            <p className={cn("text-wl-text-tertiary text-sm font-medium")}>
+            <Package className={cn("h-12 w-12 text-gray-500 mx-auto mb-3 opacity-50")} />
+            <p className={cn("text-gray-500 text-sm font-medium")}>
               No integrations found matching your criteria.
             </p>
-            <p className={cn("text-wl-text-tertiary text-xs mt-1")}>
+            <p className={cn("text-gray-500 text-xs mt-1")}>
               Try adjusting your search or filter options.
             </p>
           </div>

@@ -123,8 +123,8 @@ export default function CRMIntegrationPage() {
   if (providersError) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
-          <p className="text-sm text-wl-danger-400">Failed to load CRM integrations</p>
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+          <p className="text-sm text-red-400">Failed to load CRM integrations</p>
           <Button onClick={refetch} variant="secondary" size="sm" className="mt-3">
             Retry
           </Button>
@@ -152,47 +152,47 @@ export default function CRMIntegrationPage() {
             label="Connected Providers"
             value={connectedCount}
             change={{ value: 0, label: `of ${providers.length} available` }}
-            accentColor="var(--wl-success-400)"
+            accentColor="#10b981"
             index={0}
           />
           <StatCard
             label="Total Contacts"
             value={totalContacts.toLocaleString()}
             change={{ value: 8.3, label: 'vs last month' }}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
             label="Active Deals"
             value={totalDeals}
             change={{ value: 12.5, label: 'vs last month' }}
-            accentColor="var(--wl-warning-400)"
+            accentColor="#f59e0b"
             index={2}
           />
           <StatCard
             label="Sync Success Rate"
             value={`${syncSuccessRate}%`}
             change={{ value: 2.1, label: 'avg success rate' }}
-            accentColor="var(--wl-info-400)"
+            accentColor="#0ea5e9"
             index={3}
           />
         </div>
 
         {/* Provider Cards */}
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-wl-text-primary mb-4 uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
             Connected Providers
           </h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
             {providersLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="p-4">
-                  <div className="h-32 bg-wl-bg-overlay/50 rounded animate-pulse" />
+                  <div className="h-32 bg-[#1a1a2e]/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : providers.length === 0 ? (
               <Card className="p-6 col-span-full text-center">
-                <p className="text-wl-text-secondary">No CRM providers connected</p>
+                <p className="text-gray-400">No CRM providers connected</p>
               </Card>
             ) : (
               providers.map((provider) => (
@@ -206,11 +206,11 @@ export default function CRMIntegrationPage() {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-wl-primary-500/20 flex items-center justify-center text-xs font-bold text-wl-primary-400">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
                         {provider.logo}
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-wl-text-primary">
+                        <h3 className="text-sm font-semibold text-white">
                           {provider.name}
                         </h3>
                         <Badge variant={getStatusColor(provider.status)} className="mt-1">
@@ -221,34 +221,34 @@ export default function CRMIntegrationPage() {
                   </div>
 
                   {provider.status === 'error' && provider.errorMessage && (
-                    <div className="bg-wl-danger-bg/30 border border-wl-danger-400/30 rounded px-2 py-1.5 mb-2 text-xs text-wl-danger-400">
+                    <div className="bg-red-900/30 border border-red-400/30 rounded px-2 py-1.5 mb-2 text-xs text-red-400">
                       {provider.errorMessage}
                     </div>
                   )}
 
-                  <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
+                  <div className="space-y-2 text-xs text-gray-400 mb-3">
                     <div className="flex justify-between">
                       <span>Contacts:</span>
-                      <span className="text-wl-text-primary font-semibold">
+                      <span className="text-white font-semibold">
                         {provider.contactsCount.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Deals:</span>
-                      <span className="text-wl-text-primary font-semibold">
+                      <span className="text-white font-semibold">
                         {provider.dealsCount}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Syncs:</span>
-                      <span className="text-wl-text-primary font-semibold">
+                      <span className="text-white font-semibold">
                         {provider.syncCount}
                       </span>
                     </div>
                     {provider.lastSync && (
                       <div className="flex justify-between">
                         <span>Last Sync:</span>
-                        <span className="text-wl-text-tertiary">
+                        <span className="text-gray-500">
                           {formatDateTime(provider.lastSync)}
                         </span>
                       </div>
@@ -284,18 +284,18 @@ export default function CRMIntegrationPage() {
                   <div key={idx}>
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <span className="text-sm font-semibold text-wl-text-primary">
+                        <span className="text-sm font-semibold text-white">
                           {stage.name}
                         </span>
-                        <span className="text-xs text-wl-text-tertiary ml-2">
+                        <span className="text-xs text-gray-500 ml-2">
                           {stage.count} deals
                         </span>
                       </div>
-                      <span className="text-sm font-semibold text-wl-primary-400">
+                      <span className="text-sm font-semibold text-blue-400">
                         {formatCurrency(stage.value)}
                       </span>
                     </div>
-                    <div className="w-full bg-wl-bg-surface rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-[#12121a] rounded-full h-2 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 rounded-full transition-all"
                         style={{ width: `${percentage}%` }}
@@ -304,10 +304,10 @@ export default function CRMIntegrationPage() {
                   </div>
                 );
               })}
-              <div className="border-t border-wl-border-subtle pt-3 mt-3">
+              <div className="border-t border-[#1e1e2e] pt-3 mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-wl-text-primary">Total Pipeline</span>
-                  <span className="text-lg font-bold text-wl-primary-400">
+                  <span className="text-sm font-semibold text-white">Total Pipeline</span>
+                  <span className="text-lg font-bold text-blue-400">
                     {formatCurrency(pipelineValue)}
                   </span>
                 </div>
@@ -325,8 +325,8 @@ export default function CRMIntegrationPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold text-wl-text-primary">Auto-Sync Enabled</h4>
-                  <p className="text-xs text-wl-text-tertiary mt-1">
+                  <h4 className="text-sm font-semibold text-white">Auto-Sync Enabled</h4>
+                  <p className="text-xs text-gray-500 mt-1">
                     Automatically sync data every 30 minutes
                   </p>
                 </div>
@@ -337,19 +337,19 @@ export default function CRMIntegrationPage() {
                     onChange={(e) => setAutoSyncEnabled(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-10 h-6 bg-wl-bg-surface border border-wl-border-default rounded-full peer peer-checked:bg-wl-primary-500 peer-checked:border-wl-primary-500 transition-all" />
+                  <div className="w-10 h-6 bg-[#12121a] border border-[#1e1e2e] rounded-full peer peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all" />
                 </label>
               </div>
 
-              <div className="border-t border-wl-border-subtle pt-4">
-                <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+              <div className="border-t border-[#1e1e2e] pt-4">
+                <h4 className="text-sm font-semibold text-white mb-3">
                   Conflict Resolution
                 </h4>
                 <div className="space-y-2">
                   {(['witylogix', 'crm', 'manual'] as const).map((option) => (
                     <label
                       key={option}
-                      className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay"
+                      className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[#1a1a2e]"
                     >
                       <input
                         type="radio"
@@ -358,10 +358,10 @@ export default function CRMIntegrationPage() {
                         className="cursor-pointer"
                       />
                       <div>
-                        <span className="text-sm font-medium text-wl-text-primary capitalize">
+                        <span className="text-sm font-medium text-white capitalize">
                           {option === 'witylogix' ? 'Prefer Witylogix' : option === 'crm' ? 'Prefer CRM' : 'Manual Review'}
                         </span>
-                        <p className="text-xs text-wl-text-tertiary">
+                        <p className="text-xs text-gray-500">
                           {option === 'witylogix'
                             ? 'Always use Witylogix data when conflicts occur'
                             : option === 'crm'
@@ -386,18 +386,18 @@ export default function CRMIntegrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border-subtle">
-                    <th className="p-3 text-left font-semibold text-wl-text-secondary">
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="p-3 text-left font-semibold text-gray-400">
                       Witylogix Field
                     </th>
-                    <th className="p-3 text-left font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-left font-semibold text-gray-400">
                       CRM Field
                     </th>
-                    <th className="p-3 text-left font-semibold text-wl-text-secondary">Type</th>
-                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-left font-semibold text-gray-400">Type</th>
+                    <th className="p-3 text-center font-semibold text-gray-400">
                       Required
                     </th>
-                    <th className="p-3 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 text-center font-semibold text-gray-400">
                       Actions
                     </th>
                   </tr>
@@ -407,11 +407,11 @@ export default function CRMIntegrationPage() {
                     <tr
                       key={mapping.id}
                       className={cn(
-                        'border-b border-wl-border-subtle',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay/30'
+                        'border-b border-[#1e1e2e]',
+                        idx % 2 === 0 ? 'bg-transparent' : 'bg-[#1a1a2e]/30'
                       )}
                     >
-                      <td className="p-3 text-wl-text-primary font-medium">
+                      <td className="p-3 text-white font-medium">
                         {mapping.witylogixField}
                         {mapping.customMapping && (
                           <Badge variant="info" className="ml-2">
@@ -419,8 +419,8 @@ export default function CRMIntegrationPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-3 text-wl-text-secondary">{mapping.crmField}</td>
-                      <td className="p-3 text-wl-text-secondary text-xs">
+                      <td className="p-3 text-gray-400">{mapping.crmField}</td>
+                      <td className="p-3 text-gray-400 text-xs">
                         <Badge variant="default">{mapping.type}</Badge>
                       </td>
                       <td className="p-3 text-center">
@@ -458,8 +458,8 @@ export default function CRMIntegrationPage() {
                   className={cn(
                     'px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all',
                     syncFilterType === type
-                      ? 'bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500'
-                      : 'bg-transparent text-wl-text-secondary border-wl-border-subtle hover:border-wl-border-default'
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-transparent text-gray-400 border-[#1e1e2e] hover:border-[#1e1e2e]'
                   )}
                 >
                   {type === 'all' ? 'All' : type}
@@ -471,10 +471,10 @@ export default function CRMIntegrationPage() {
             <div className="space-y-3">
               {logsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-12 bg-wl-bg-overlay/50 rounded animate-pulse" />
+                  <div key={i} className="h-12 bg-[#1a1a2e]/50 rounded animate-pulse" />
                 ))
               ) : filteredLogs.length === 0 ? (
-                <p className="text-center text-wl-text-secondary">No sync logs</p>
+                <p className="text-center text-gray-400">No sync logs</p>
               ) : (
                 filteredLogs.map((log, idx) => (
                   <div
@@ -482,10 +482,10 @@ export default function CRMIntegrationPage() {
                     className={cn(
                       'p-3 rounded-md border',
                       log.status === 'success'
-                        ? 'border-wl-success-400/20 bg-wl-success-bg/30'
+                        ? 'border-emerald-400/20 bg-emerald-900/30'
                         : log.status === 'failed'
-                        ? 'border-wl-danger-400/20 bg-wl-danger-bg/30'
-                        : 'border-wl-warning-400/20 bg-wl-warning-bg/30'
+                        ? 'border-red-400/20 bg-red-900/30'
+                        : 'border-amber-400/20 bg-amber-900/30'
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -502,15 +502,15 @@ export default function CRMIntegrationPage() {
                           >
                             {log.status}
                           </Badge>
-                          <span className="text-xs font-semibold text-wl-text-secondary capitalize">
+                          <span className="text-xs font-semibold text-gray-400 capitalize">
                             {log.type}
                           </span>
-                          <span className="text-xs text-wl-text-tertiary">
+                          <span className="text-xs text-gray-500">
                             ({log.direction})
                           </span>
                         </div>
-                        <p className="text-sm text-wl-text-primary mb-1">{log.details}</p>
-                        <div className="flex items-center gap-3 text-xs text-wl-text-tertiary">
+                        <p className="text-sm text-white mb-1">{log.details}</p>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
                           <span>{formatDateTime(log.timestamp)}</span>
                           <span>•</span>
                           <span>{log.recordsAffected} records affected</span>

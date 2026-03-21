@@ -253,11 +253,11 @@ const mockEndpoints: ApiEndpoint[] = [
 
 function MethodBadge({ method }: { method: string }) {
   const colors: Record<string, string> = {
-    GET: "bg-wl-info-500/20 text-wl-info-400",
-    POST: "bg-wl-success-500/20 text-wl-success-400",
-    PUT: "bg-wl-warning-500/20 text-wl-warning-400",
-    DELETE: "bg-wl-danger-500/20 text-wl-danger-400",
-    PATCH: "bg-wl-primary-500/20 text-wl-primary-400",
+    GET: "bg-blue-600/20 text-blue-500",
+    POST: "bg-emerald-600/20 text-emerald-500",
+    PUT: "bg-amber-600/20 text-amber-500",
+    DELETE: "bg-red-600/20 text-red-500",
+    PATCH: "bg-blue-600/20 text-blue-500",
   };
 
   return (
@@ -310,16 +310,16 @@ function EndpointCard({
     <Card className="mb-4">
       <button
         onClick={onToggle}
-        className="w-full px-5 py-4 hover:bg-wl-bg-overlay transition-colors flex items-start justify-between text-left"
+        className="w-full px-5 py-4 hover:bg-[#1a1a2e] transition-colors flex items-start justify-between text-left"
       >
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <MethodBadge method={endpoint.method} />
-            <code className="text-sm font-mono text-wl-text-primary break-all">
+            <code className="text-sm font-mono text-white break-all">
               {endpoint.path}
             </code>
           </div>
-          <p className="text-sm text-wl-text-secondary">
+          <p className="text-sm text-gray-400">
             {endpoint.description}
           </p>
         </div>
@@ -327,39 +327,39 @@ function EndpointCard({
         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
           <AuthBadge auth={endpoint.authentication} />
           {expanded ? (
-            <ChevronUp className="w-5 h-5 text-wl-text-tertiary" />
+            <ChevronUp className="w-5 h-5 text-gray-400" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-wl-text-tertiary" />
+            <ChevronDown className="w-5 h-5 text-gray-400" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="px-5 py-4 border-t border-wl-border-subtle space-y-6">
+        <div className="px-5 py-4 border-t border-[#1e1e2e] space-y-6">
           {/* Parameters */}
           {endpoint.parameters && endpoint.parameters.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+              <h4 className="text-sm font-semibold text-white mb-3">
                 Parameters
               </h4>
               <div className="space-y-3">
                 {endpoint.parameters.map((param, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-subtle"
+                    className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <code className="text-sm font-mono text-wl-primary-400">
+                      <code className="text-sm font-mono text-blue-500">
                         {param.name}
                       </code>
-                      <span className="text-xs text-wl-text-tertiary">
+                      <span className="text-xs text-gray-400">
                         {param.type}
                       </span>
                       {param.required && (
                         <Badge variant="danger">Required</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-wl-text-secondary">
+                    <p className="text-sm text-gray-400">
                       {param.description}
                     </p>
                   </div>
@@ -371,11 +371,11 @@ function EndpointCard({
           {/* Request Body */}
           {endpoint.requestBody && (
             <div>
-              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+              <h4 className="text-sm font-semibold text-white mb-3">
                 Request Body
               </h4>
               <div className="relative">
-                <pre className="p-4 bg-wl-bg-overlay rounded-lg border border-wl-border-subtle overflow-x-auto text-xs text-wl-text-secondary">
+                <pre className="p-4 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] overflow-x-auto text-xs text-gray-400">
                   <code>
                     {JSON.stringify(endpoint.requestBody.example, null, 2)}
                   </code>
@@ -386,9 +386,9 @@ function EndpointCard({
                       JSON.stringify(endpoint.requestBody?.example, null, 2)
                     )
                   }
-                  className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
+                  className="absolute top-2 right-2 p-2 hover:bg-[#1a1a2e] rounded transition-colors"
                 >
-                  <Copy className="w-4 h-4 text-wl-text-tertiary hover:text-wl-text-primary" />
+                  <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                 </button>
               </div>
             </div>
@@ -396,7 +396,7 @@ function EndpointCard({
 
           {/* Responses */}
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+            <h4 className="text-sm font-semibold text-white mb-3">
               Responses
             </h4>
             <div className="space-y-3">
@@ -406,8 +406,8 @@ function EndpointCard({
                   className={cn(
                     "p-4 rounded-lg border",
                     response.code >= 200 && response.code < 300
-                      ? "bg-wl-success-bg/30 border-wl-success-400/30"
-                      : "bg-wl-danger-bg/30 border-wl-danger-400/30"
+                      ? "bg-emerald-600/30 border-emerald-500/30"
+                      : "bg-red-600/30 border-red-500/30"
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -416,13 +416,13 @@ function EndpointCard({
                         className={cn(
                           "text-sm font-bold",
                           response.code >= 200 && response.code < 300
-                            ? "text-wl-success-400"
-                            : "text-wl-danger-400"
+                            ? "text-emerald-500"
+                            : "text-red-500"
                         )}
                       >
                         {response.code}
                       </span>
-                      <p className="text-sm text-wl-text-secondary mt-0.5">
+                      <p className="text-sm text-gray-400 mt-0.5">
                         {response.description}
                       </p>
                     </div>
@@ -430,12 +430,12 @@ function EndpointCard({
                       onClick={() =>
                         handleCopy(JSON.stringify(response.example, null, 2))
                       }
-                      className="p-2 hover:bg-wl-bg-overlay rounded transition-colors"
+                      className="p-2 hover:bg-[#1a1a2e] rounded transition-colors"
                     >
-                      <Copy className="w-4 h-4 text-wl-text-tertiary hover:text-wl-text-primary" />
+                      <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                     </button>
                   </div>
-                  <pre className="p-3 bg-wl-bg-elevated rounded text-xs text-wl-text-secondary overflow-x-auto">
+                  <pre className="p-3 bg-[#1a1a2e] rounded text-xs text-gray-400 overflow-x-auto">
                     <code>{JSON.stringify(response.example, null, 2)}</code>
                   </pre>
                 </div>
@@ -444,15 +444,15 @@ function EndpointCard({
           </div>
 
           {/* Try It Out */}
-          <div className="p-4 bg-wl-primary-500/5 rounded-lg border border-wl-primary-500/20">
-            <h4 className="text-sm font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
+          <div className="p-4 bg-blue-600/5 rounded-lg border border-blue-600/20">
+            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Code className="w-4 h-4" />
               Try It Out
             </h4>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-wl-text-tertiary uppercase tracking-wider block mb-2">
+                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">
                   Authorization Token
                 </label>
                 <input
@@ -460,23 +460,23 @@ function EndpointCard({
                   placeholder="Enter your Bearer token"
                   value={authToken}
                   onChange={(e) => setAuthToken(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-overlay border border-wl-border-subtle text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-border-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-[#1a1a2e] border border-[#1e1e2e] text-white placeholder-gray-500 focus:outline-none focus:border-[#1e1e2e]-focus"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-wl-text-tertiary uppercase tracking-wider block mb-2">
+                <label className="text-xs text-gray-400 uppercase tracking-wider block mb-2">
                   cURL Command
                 </label>
                 <div className="relative">
-                  <pre className="p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-subtle text-xs text-wl-text-secondary overflow-x-auto">
+                  <pre className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e] text-xs text-gray-400 overflow-x-auto">
                     <code>{curlCommand}</code>
                   </pre>
                   <button
                     onClick={() => handleCopy(curlCommand)}
-                    className="absolute top-2 right-2 p-2 hover:bg-wl-bg-elevated rounded transition-colors"
+                    className="absolute top-2 right-2 p-2 hover:bg-[#1a1a2e] rounded transition-colors"
                   >
-                    <Copy className="w-4 h-4 text-wl-text-tertiary hover:text-wl-text-primary" />
+                    <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                   </button>
                 </div>
               </div>
@@ -508,7 +508,7 @@ export default function ApiDocsPage() {
     : mockEndpoints;
 
   return (
-    <div className="min-h-screen bg-wl-bg-surface">
+    <div className="min-h-screen bg-[#12121a]">
       <Header
         title="API Documentation"
         subtitle="Witylogix Logistics API v1.0"
@@ -530,34 +530,34 @@ export default function ApiDocsPage() {
           <CardContent className="pt-5">
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-wl-text-primary">
+                  <p className="text-sm font-semibold text-white">
                     REST API
                   </p>
-                  <p className="text-sm text-wl-text-secondary mt-0.5">
+                  <p className="text-sm text-gray-400 mt-0.5">
                     RESTful API for managing orders, routes, drivers, and integrations
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-wl-text-primary">
+                  <p className="text-sm font-semibold text-white">
                     Authentication
                   </p>
-                  <p className="text-sm text-wl-text-secondary mt-0.5">
+                  <p className="text-sm text-gray-400 mt-0.5">
                     Bearer Token or API Key via Authorization header
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-wl-text-primary">
+                  <p className="text-sm font-semibold text-white">
                     Rate Limiting
                   </p>
-                  <p className="text-sm text-wl-text-secondary mt-0.5">
+                  <p className="text-sm text-gray-400 mt-0.5">
                     1000 requests per minute per API key
                   </p>
                 </div>
@@ -573,8 +573,8 @@ export default function ApiDocsPage() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               !selectedTag
-                ? "bg-wl-primary-500 text-wl-text-inverse"
-                : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-border-subtle"
+                ? "bg-blue-600 text-white"
+                : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
             )}
           >
             All Endpoints ({mockEndpoints.length})
@@ -586,8 +586,8 @@ export default function ApiDocsPage() {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 selectedTag === tag
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-border-subtle"
+                  ? "bg-blue-600 text-white"
+                  : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
               )}
             >
               {tag} (
@@ -613,17 +613,17 @@ export default function ApiDocsPage() {
         </div>
 
         {/* Footer */}
-        <Card className="bg-wl-info-bg/40 border border-wl-info-400/30">
+        <Card className="bg-blue-600/40 border border-blue-500/30">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-wl-info-400 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-wl-info-400">
+                <h4 className="text-sm font-semibold text-blue-500">
                   Need Help?
                 </h4>
-                <p className="text-sm text-wl-text-secondary mt-1">
-                  Visit our <a href="#" className="text-wl-primary-400 hover:underline">full API documentation</a> or contact{" "}
-                  <a href="#" className="text-wl-primary-400 hover:underline">support@witylogix.com</a>
+                <p className="text-sm text-gray-400 mt-1">
+                  Visit our <a href="#" className="text-blue-500 hover:underline">full API documentation</a> or contact{" "}
+                  <a href="#" className="text-blue-500 hover:underline">support@witylogix.com</a>
                 </p>
               </div>
             </div>

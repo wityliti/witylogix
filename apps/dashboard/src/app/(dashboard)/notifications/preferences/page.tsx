@@ -6,9 +6,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
   CardContent,
   CardDescription,
   CardFooter,
@@ -37,6 +34,23 @@ import {
  * - Test notification button per channel
  * - Save with optimistic update
  */
+
+const timezoneOptions = [
+  { value: "America/New_York", label: "Eastern Time" },
+  { value: "America/Chicago", label: "Central Time" },
+  { value: "America/Denver", label: "Mountain Time" },
+  { value: "America/Los_Angeles", label: "Pacific Time" },
+  { value: "UTC", label: "UTC" },
+  { value: "Europe/London", label: "London" },
+  { value: "Europe/Paris", label: "Paris" },
+  { value: "Asia/Tokyo", label: "Tokyo" },
+];
+
+const frequencyOptions = [
+  { value: "IMMEDIATE", label: "Immediate" },
+  { value: "HOURLY", label: "Hourly" },
+  { value: "DAILY", label: "Daily" },
+];
 
 export default function NotificationPreferencesPage() {
   const {
@@ -73,10 +87,6 @@ export default function NotificationPreferencesPage() {
     "ALERTS",
   ];
 
-  
-
-  
-
   // Local state for form
   const [quietHours, setQuietHours] = useState(
     preferences?.quietHours || {
@@ -96,11 +106,6 @@ export default function NotificationPreferencesPage() {
   );
 
   const enabledCount = useMemo(() => {
-  const { items: data, loading, error, refetch, pagination } = useApiList<NotificationPreference>('/api/v4/notification-preferences');
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
     return (
       preferences?.channelMatrix.filter((p) => p.enabled).length || 0
     );
@@ -146,11 +151,11 @@ export default function NotificationPreferencesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary">
+      <div className="min-h-screen bg-[#0a0a0f]">
         <Header title="Notification Preferences" subtitle="Coming soon..." />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
-            <p className="text-wl-text-secondary">
+            <p className="text-gray-300">
               Loading preferences...
             </p>
           </div>
@@ -160,7 +165,7 @@ export default function NotificationPreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"
@@ -177,7 +182,7 @@ export default function NotificationPreferencesPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Channel × Category Matrix */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Notification Channels</CardTitle>
               <CardDescription>
@@ -189,19 +194,19 @@ export default function NotificationPreferencesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-3 px-4 font-semibold text-wl-text-primary">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="text-left py-3 px-4 font-semibold text-white">
                         Channel
                       </th>
                       {categories.map((cat) => (
                         <th
                           key={cat}
-                          className="text-center py-3 px-4 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide"
+                          className="text-center py-3 px-4 font-semibold text-gray-400 text-xs uppercase tracking-wide"
                         >
                           {cat}
                         </th>
                       ))}
-                      <th className="text-center py-3 px-4 font-semibold text-wl-text-tertiary text-xs">
+                      <th className="text-center py-3 px-4 font-semibold text-gray-400 text-xs">
                         Test
                       </th>
                     </tr>
@@ -219,9 +224,9 @@ export default function NotificationPreferencesPage() {
                       return (
                         <tr
                           key={channel}
-                          className="border-b border-wl-border-default hover:bg-wl-bg-overlay transition-colors"
+                          className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                         >
-                          <td className="py-4 px-4 font-medium text-wl-text-primary">
+                          <td className="py-4 px-4 font-medium text-white">
                             {channel}
                           </td>
 
@@ -298,7 +303,7 @@ export default function NotificationPreferencesPage() {
           </Card>
 
           {/* Quiet Hours */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Quiet Hours</CardTitle>
               <CardDescription>
@@ -308,10 +313,10 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-wl-text-primary">
+                  <h4 className="font-medium text-white">
                     Enable Quiet Hours
                   </h4>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-300">
                     Stop receiving notifications during your preferred hours
                   </p>
                 </div>
@@ -327,10 +332,10 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {quietHours.enabled && (
-                <div className="space-y-4 p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
+                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Start Time
                       </label>
                       <Input
@@ -342,11 +347,12 @@ export default function NotificationPreferencesPage() {
                             startTime: e.target.value,
                           }))
                         }
+                        className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         End Time
                       </label>
                       <Input
@@ -358,11 +364,12 @@ export default function NotificationPreferencesPage() {
                             endTime: e.target.value,
                           }))
                         }
+                        className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Timezone
                       </label>
                       <select
@@ -375,9 +382,9 @@ export default function NotificationPreferencesPage() {
                         }
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
-                          "bg-wl-bg-overlay border border-wl-border-default",
-                          "text-wl-text-primary",
-                          "focus:outline-none focus:border-wl-primary-500",
+                          "bg-[#1a1a2e] border border-[#1e1e2e]",
+                          "text-white",
+                          "focus:outline-none focus:border-blue-500",
                           "transition-colors duration-fast"
                         )}
                       >
@@ -395,7 +402,7 @@ export default function NotificationPreferencesPage() {
           </Card>
 
           {/* Digest Settings */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
               <CardTitle>Digest Settings</CardTitle>
               <CardDescription>
@@ -405,10 +412,10 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-wl-text-primary">
+                  <h4 className="font-medium text-white">
                     Enable Digest
                   </h4>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-300">
                     Receive notifications in a consolidated email or report
                   </p>
                 </div>
@@ -424,10 +431,10 @@ export default function NotificationPreferencesPage() {
               </div>
 
               {digestSettings.enabled && (
-                <div className="space-y-4 p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
+                <div className="space-y-4 p-4 bg-[#0a0a0f] rounded-lg border border-[#1e1e2e]">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Frequency
                       </label>
                       <select
@@ -440,9 +447,9 @@ export default function NotificationPreferencesPage() {
                         }
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
-                          "bg-wl-bg-overlay border border-wl-border-default",
-                          "text-wl-text-primary",
-                          "focus:outline-none focus:border-wl-primary-500",
+                          "bg-[#1a1a2e] border border-[#1e1e2e]",
+                          "text-white",
+                          "focus:outline-none focus:border-blue-500",
                           "transition-colors duration-fast"
                         )}
                       >
@@ -456,7 +463,7 @@ export default function NotificationPreferencesPage() {
 
                     {digestSettings.frequency === "DAILY" && (
                       <div>
-                        <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                        <label className="block text-sm font-medium text-white mb-2">
                           Delivery Time
                         </label>
                         <Input
@@ -468,6 +475,7 @@ export default function NotificationPreferencesPage() {
                               time: e.target.value,
                             }))
                           }
+                          className="bg-[#1a1a2e] border-[#1e1e2e] text-white"
                         />
                       </div>
                     )}

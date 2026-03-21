@@ -353,28 +353,28 @@ export default function MarketplacePage() {
         <div className={cn("flex flex-col gap-4 mb-6")}>
           {/* Search Input */}
           <div className={cn("relative")}>
-            <Search className="w-4 h-4 absolute left-3 top-3 text-wl-text-tertiary pointer-events-none" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500 pointer-events-none" />
             <input
               type="text"
               placeholder="Search providers..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className={cn(
-                "w-full pl-10 pr-4 py-2 bg-wl-bg-overlay border border-wl-border-default rounded-lg",
-                "text-wl-text-primary text-sm",
-                "focus:border-wl-primary-500 outline-none",
+                "w-full pl-10 pr-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
+                "text-white text-sm",
+                "focus:border-blue-500 outline-none",
                 "transition-all duration-fast"
               )}
             />
             {isSearching && (
-              <Loader2 className="w-4 h-4 absolute right-3 top-3 text-wl-primary-400 animate-spin" />
+              <Loader2 className="w-4 h-4 absolute right-3 top-3 text-blue-500 animate-spin" />
             )}
           </div>
 
           {/* Filters & Controls */}
           <div className={cn("flex flex-wrap gap-3 items-center")}>
             {/* View Toggle */}
-            <div className={cn("flex gap-1 bg-wl-bg-overlay rounded-md p-1")}>
+            <div className={cn("flex gap-1 bg-[#1a1a2e] rounded-md p-1")}>
               {(["grid", "list"] as const).map((v) => (
                 <button
                   key={v}
@@ -382,8 +382,8 @@ export default function MarketplacePage() {
                   className={cn(
                     "p-2 rounded-sm border-none cursor-pointer transition-all",
                     view === v
-                      ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-transparent text-wl-text-tertiary hover:text-wl-text-primary"
+                      ? "bg-blue-500 text-black"
+                      : "bg-transparent text-gray-500 hover:text-white"
                   )}
                   title={v === "grid" ? "Grid view" : "List view"}
                 >
@@ -400,8 +400,8 @@ export default function MarketplacePage() {
             <div className={cn("relative")}>
               <button
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded-lg",
-                  "text-sm text-wl-text-primary hover:border-wl-border-strong transition-all"
+                  "flex items-center gap-2 px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
+                  "text-sm text-white hover:border-blue-500 transition-all"
                 )}
               >
                 Sort by: <span className="font-semibold capitalize">{sortBy.replace(/_/g, " ")}</span>
@@ -410,7 +410,7 @@ export default function MarketplacePage() {
               {/* Dropdown Menu */}
               <div
                 className={cn(
-                  "absolute top-full mt-2 left-0 z-10 bg-wl-bg-elevated border border-wl-border-default rounded-lg",
+                  "absolute top-full mt-2 left-0 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg",
                   "shadow-lg overflow-hidden min-w-max"
                 )}
               >
@@ -421,10 +421,10 @@ export default function MarketplacePage() {
                       onClick={() => setSortBy(opt)}
                       className={cn(
                         "w-full px-4 py-2 text-left text-sm",
-                        "hover:bg-wl-bg-surface",
+                        "hover:bg-[#1a1a2e]",
                         sortBy === opt
-                          ? "bg-wl-primary-500/20 text-wl-primary-400"
-                          : "text-wl-text-primary"
+                          ? "bg-blue-500/20 text-blue-500"
+                          : "text-white"
                       )}
                     >
                       {opt.replace(/_/g, " ")}
@@ -442,7 +442,7 @@ export default function MarketplacePage() {
                   setSelectedCategories([]);
                 }}
                 className={cn(
-                  "text-sm text-wl-text-tertiary hover:text-wl-text-primary transition-all"
+                  "text-sm text-gray-500 hover:text-white transition-all"
                 )}
               >
                 Clear filters
@@ -485,7 +485,7 @@ export default function MarketplacePage() {
           <aside className={cn("w-56 flex-shrink-0")}>
             <div className={cn("sticky top-4 space-y-4")}>
               <div>
-                <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-3")}>
+                <h3 className={cn("text-sm font-semibold text-white mb-3")}>
                   Categories
                 </h3>
                 <div className={cn("space-y-2")}>
@@ -493,7 +493,7 @@ export default function MarketplacePage() {
                     <label
                       key={cat.key}
                       className={cn(
-                        "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-wl-bg-overlay transition-all"
+                        "flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-[#1a1a2e] transition-all"
                       )}
                     >
                       <input
@@ -501,14 +501,14 @@ export default function MarketplacePage() {
                         checked={selectedCategories.includes(cat.key)}
                         onChange={() => toggleCategory(cat.key)}
                         className={cn(
-                          "w-4 h-4 rounded border-wl-border-default",
-                          "checked:bg-wl-primary-500 checked:border-wl-primary-500"
+                          "w-4 h-4 rounded border-[#1e1e2e]",
+                          "checked:bg-blue-500 checked:border-blue-500"
                         )}
                       />
-                      <span className={cn("text-sm text-wl-text-primary flex-1")}>
+                      <span className={cn("text-sm text-white flex-1")}>
                         {cat.label}
                       </span>
-                      <span className={cn("text-xs text-wl-text-tertiary")}>
+                      <span className={cn("text-xs text-gray-500")}>
                         {cat.count}
                       </span>
                     </label>
@@ -523,7 +523,7 @@ export default function MarketplacePage() {
             {filtered.length === 0 ? (
               <div
                 className={cn(
-                  "text-center py-20 text-wl-text-tertiary"
+                  "text-center py-20 text-gray-500"
                 )}
               >
                 <div className="text-base font-semibold mb-2">
@@ -581,24 +581,24 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
     return (
       <Card
         className={cn(
-          "flex items-center justify-between p-4 hover:border-wl-border-strong transition-all",
-          provider.connected && "border-wl-success-400/30"
+          "flex items-center justify-between p-4 hover:border-blue-500 transition-all",
+          provider.connected && "border-emerald-500/30"
         )}
         style={{ animationDelay } as React.CSSProperties}
       >
         <div className={cn("flex-1 flex items-center gap-4 min-w-0")}>
           <div
             className={cn(
-              "w-12 h-12 rounded-lg bg-wl-bg-surface flex items-center justify-center flex-shrink-0"
+              "w-12 h-12 rounded-lg bg-[#1a1a2e] flex items-center justify-center flex-shrink-0"
             )}
           >
             <span className="text-xl">📦</span>
           </div>
           <div className={cn("flex-1 min-w-0")}>
-            <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+            <h3 className={cn("text-sm font-semibold text-white")}>
               {provider.name}
             </h3>
-            <p className={cn("text-xs text-wl-text-tertiary truncate")}>
+            <p className={cn("text-xs text-gray-500 truncate")}>
               {provider.description}
             </p>
             <div className={cn("flex gap-2 mt-2 flex-wrap")}>
@@ -627,14 +627,14 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
     <Link href={`/integrations/marketplace/${provider.slug}`}>
       <Card
         className={cn(
-          "h-full flex flex-col hover:border-wl-border-strong cursor-pointer transition-all",
-          provider.connected && "border-wl-success-400/30"
+          "h-full flex flex-col hover:border-blue-500 cursor-pointer transition-all",
+          provider.connected && "border-emerald-500/30"
         )}
         style={{ animationDelay } as React.CSSProperties}
         hover
       >
         {/* Logo Area */}
-        <div className={cn("w-full h-24 bg-wl-bg-surface rounded-lg mb-3 flex items-center justify-center")}>
+        <div className={cn("w-full h-24 bg-[#1a1a2e] rounded-lg mb-3 flex items-center justify-center")}>
           <span className="text-3xl">📦</span>
         </div>
 
@@ -642,7 +642,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
         <div className={cn("flex-1 flex flex-col")}>
           <div className={cn("flex items-start justify-between gap-2 mb-2")}>
             <div>
-              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
+              <h3 className={cn("text-sm font-semibold text-white")}>
                 {provider.name}
               </h3>
               {provider.popular && (
@@ -653,7 +653,7 @@ function ProviderCard({ provider, index, layout }: ProviderCardProps) {
             </div>
           </div>
 
-          <p className={cn("text-xs text-wl-text-tertiary mb-3 line-clamp-2")}>
+          <p className={cn("text-xs text-gray-500 mb-3 line-clamp-2")}>
             {provider.description}
           </p>
 

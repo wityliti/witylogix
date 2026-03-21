@@ -234,7 +234,7 @@ export default function TemplateEditorPage({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Edit Notification Template"
         subtitle="Customize template content for different channels"
@@ -245,7 +245,7 @@ export default function TemplateEditorPage({
           {/* Editor */}
           <div className="lg:col-span-2">
             <Tabs value={activeChannel} onValueChange={(v) => setActiveChannel(v as Channel)}>
-              <Card className="border border-[var(--wl-border)]">
+              <Card className="border border-[#1e1e2e] bg-[#12121a]">
                 <CardHeader>
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -264,7 +264,7 @@ export default function TemplateEditorPage({
                 <TabsContent value="email" className="m-0">
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                      <label className="text-sm font-semibold text-white block mb-2">
                         Subject
                       </label>
                       <Input
@@ -283,7 +283,7 @@ export default function TemplateEditorPage({
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                      <label className="text-sm font-semibold text-white block mb-2">
                         HTML Content
                       </label>
                       <textarea
@@ -298,12 +298,12 @@ export default function TemplateEditorPage({
                           }))
                         }
                         placeholder="HTML content"
-                        className="w-full h-64 px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm font-mono"
+                        className="w-full h-64 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                      <label className="text-sm font-semibold text-white block mb-2">
                         Plain Text Content
                       </label>
                       <textarea
@@ -318,7 +318,7 @@ export default function TemplateEditorPage({
                           }))
                         }
                         placeholder="Plain text content"
-                        className="w-full h-32 px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
                       />
                     </div>
                   </CardContent>
@@ -327,7 +327,7 @@ export default function TemplateEditorPage({
                 <TabsContent value="sms" className="m-0">
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                      <label className="text-sm font-semibold text-white block mb-2">
                         Message Text
                       </label>
                       <textarea
@@ -342,15 +342,15 @@ export default function TemplateEditorPage({
                           }))
                         }
                         placeholder="SMS message"
-                        className="w-full h-32 px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm font-mono"
                       />
-                      <div className="mt-3 p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
-                        <p className="text-xs text-[var(--wl-text-secondary)] mb-2">
+                      <div className="mt-3 p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+                        <p className="text-xs text-gray-400 mb-2">
                           Character count: {content.sms.text.length} / 160
                         </p>
-                        <div className="relative h-2 bg-[var(--wl-bg-tertiary)] rounded-full overflow-hidden">
+                        <div className="relative h-2 bg-[#2a2a3e] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-[var(--wl-primary)] transition-all"
+                            className="h-full bg-blue-500 transition-all"
                             style={{
                               width: `${Math.min(
                                 (content.sms.text.length / 160) * 100,
@@ -387,7 +387,7 @@ export default function TemplateEditorPage({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Variable Picker */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle className="text-base">Variables</CardTitle>
                 <CardDescription>Insert template variables</CardDescription>
@@ -397,10 +397,10 @@ export default function TemplateEditorPage({
                   <button
                     key={variable.name}
                     onClick={() => insertVariable(variable.name)}
-                    className="w-full text-left px-3 py-2 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)] text-[var(--wl-text-primary)] rounded-lg text-sm transition-colors border border-[var(--wl-border)]"
+                    className="w-full text-left px-3 py-2 bg-[#1a1a2e] hover:bg-[#202030] text-white rounded-lg text-sm transition-colors border border-[#1e1e2e]"
                   >
                     <code className="font-mono">{`{{${variable.name}}}`}</code>
-                    <p className="text-xs text-[var(--wl-text-secondary)] mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       {variable.label}
                     </p>
                   </button>
@@ -409,7 +409,7 @@ export default function TemplateEditorPage({
             </Card>
 
             {/* Preview */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle className="text-base">Preview</CardTitle>
                 <CardDescription>Live preview with sample data</CardDescription>
@@ -417,27 +417,27 @@ export default function TemplateEditorPage({
               <CardContent className="space-y-3">
                 {activeChannel === "email" && (
                   <div className="space-y-2">
-                    <div className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg">
-                      <p className="text-xs text-[var(--wl-text-secondary)] mb-1">
+                    <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                      <p className="text-xs text-gray-400 mb-1">
                         Subject:
                       </p>
-                      <p className="text-sm text-[var(--wl-text-primary)] break-words">
+                      <p className="text-sm text-white break-words">
                         {renderPreview(content.email.subject)}
                       </p>
                     </div>
-                    <div className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg">
-                      <p className="text-xs text-[var(--wl-text-secondary)] mb-1">
+                    <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                      <p className="text-xs text-gray-400 mb-1">
                         Text Preview:
                       </p>
-                      <p className="text-sm text-[var(--wl-text-primary)] whitespace-pre-wrap break-words">
+                      <p className="text-sm text-white whitespace-pre-wrap break-words">
                         {renderPreview(content.email.text)}
                       </p>
                     </div>
                   </div>
                 )}
                 {activeChannel === "sms" && (
-                  <div className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg">
-                    <p className="text-xs text-[var(--wl-text-secondary)] mb-2">
+                  <div className="p-3 bg-[#1a1a2e] rounded-lg">
+                    <p className="text-xs text-gray-400 mb-2">
                       SMS Preview:
                     </p>
                     <div className="bg-white text-black p-3 rounded text-sm">
@@ -475,13 +475,13 @@ export default function TemplateEditorPage({
         {/* Version History Modal */}
         {showVersionHistory && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="border border-[var(--wl-border)] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
               <CardHeader>
                 <div className="flex items-center justify-between gap-4">
                   <CardTitle>Version History</CardTitle>
                   <button
                     onClick={() => setShowVersionHistory(false)}
-                    className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg"
+                    className="p-2 hover:bg-[#1a1a2e] rounded-lg"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -491,13 +491,13 @@ export default function TemplateEditorPage({
                 {VERSION_HISTORY.map((version) => (
                   <div
                     key={version.id}
-                    className="p-4 border border-[var(--wl-border)] rounded-lg flex items-start justify-between"
+                    className="p-4 border border-[#1e1e2e] rounded-lg flex items-start justify-between"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
+                      <p className="text-sm font-semibold text-white">
                         {version.changes}
                       </p>
-                      <p className="text-xs text-[var(--wl-text-secondary)] mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         by {version.author} on{" "}
                         {version.timestamp.toLocaleDateString()}
                       </p>
@@ -515,13 +515,13 @@ export default function TemplateEditorPage({
         {/* Test Send Modal */}
         {showTestSend && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="border border-[var(--wl-border)] w-full max-w-md mx-4">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-md mx-4">
               <CardHeader>
                 <div className="flex items-center justify-between gap-4">
                   <CardTitle>Send Test Message</CardTitle>
                   <button
                     onClick={() => setShowTestSend(false)}
-                    className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg"
+                    className="p-2 hover:bg-[#1a1a2e] rounded-lg"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -529,7 +529,7 @@ export default function TemplateEditorPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     {activeChannel === "email"
                       ? "Email Address"
                       : activeChannel === "sms"

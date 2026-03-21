@@ -244,8 +244,8 @@ function Sparkline({ data }: SparklineProps) {
       />
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="var(--wl-primary-500)" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="var(--wl-primary-500)" stopOpacity="0.1" />
+          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.1" />
         </linearGradient>
       </defs>
     </svg>
@@ -290,7 +290,7 @@ export default function RoutingPage() {
         actions={<Button variant="primary">Add Provider</Button>}
       />
 
-      <div className={cn("p-6 space-y-6")}>
+      <div className={cn("p-6 bg-[#0a0a0f] space-y-6")}>
         {/* Overview Cards */}
         <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
           <Card>
@@ -298,10 +298,10 @@ export default function RoutingPage() {
               <CardTitle className="text-sm">Active Providers</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {ROUTING_PROVIDERS.filter((p) => p.status === "ACTIVE").length}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>out of 11 total</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>out of 11 total</p>
             </div>
           </Card>
 
@@ -310,13 +310,13 @@ export default function RoutingPage() {
               <CardTitle className="text-sm">Avg Latency</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {Math.round(
                   ROUTING_PROVIDERS.reduce((sum, p) => sum + p.avgLatency, 0) / ROUTING_PROVIDERS.length
                 )}
-                <span className="text-xs text-wl-text-tertiary">ms</span>
+                <span className="text-xs text-gray-300">ms</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>across all providers</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>across all providers</p>
             </div>
           </Card>
 
@@ -325,11 +325,11 @@ export default function RoutingPage() {
               <CardTitle className="text-sm">Requests/Day</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {(ROUTING_PROVIDERS.reduce((sum, p) => sum + p.requestsPerDay, 0) / 1000).toFixed(0)}
-                <span className="text-xs text-wl-text-tertiary">k</span>
+                <span className="text-xs text-gray-300">k</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>total volume</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>total volume</p>
             </div>
           </Card>
 
@@ -338,15 +338,15 @@ export default function RoutingPage() {
               <CardTitle className="text-sm">Error Rate</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-warning-500")}>
+              <div className={cn("text-2xl font-bold text-amber-500")}>
                 {(
                   (ROUTING_PROVIDERS.filter((p) => p.status === "ERROR").length /
                     ROUTING_PROVIDERS.length) *
                   100
                 ).toFixed(1)}
-                <span className="text-xs text-wl-text-tertiary">%</span>
+                <span className="text-xs text-gray-300">%</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>1 provider down</p>
+              <p className={cn("text-xs text-gray-300 mt-1")}>1 provider down</p>
             </div>
           </Card>
         </div>
@@ -355,7 +355,7 @@ export default function RoutingPage() {
           {/* Provider Grid */}
           <div className={cn("lg:col-span-2 space-y-4")}>
             <div className={cn("flex items-center justify-between")}>
-              <h2 className={cn("text-lg font-semibold text-wl-text-primary")}>Provider Configuration</h2>
+              <h2 className={cn("text-lg font-semibold text-white")}>Provider Configuration</h2>
               <div className={cn("flex gap-2")}>
                 <Button variant="secondary" size="sm">
                   Health Check
@@ -371,35 +371,35 @@ export default function RoutingPage() {
                 <Card
                   key={provider.id}
                   className={cn(
-                    "cursor-pointer transition-all hover:border-wl-primary-400",
-                    selectedProvider === provider.id && "border-wl-primary-500 bg-wl-bg-surface"
+                    "cursor-pointer transition-all hover:border-blue-400",
+                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div>
-                        <h3 className={cn("font-semibold text-wl-text-primary")}>{provider.name}</h3>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Priority: #{provider.fallbackPriority}</p>
+                        <h3 className={cn("font-semibold text-white")}>{provider.name}</h3>
+                        <p className={cn("text-xs text-gray-300")}>Priority: #{provider.fallbackPriority}</p>
                       </div>
                       <StatusBadge status={provider.status} />
                     </div>
 
                     <div className={cn("grid grid-cols-4 gap-3 mb-3")}>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Last Check</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>{provider.lastHealthCheck}</p>
+                        <p className={cn("text-xs text-gray-300")}>Last Check</p>
+                        <p className={cn("text-sm font-semibold text-white")}>{provider.lastHealthCheck}</p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Avg Latency</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>{provider.avgLatency}ms</p>
+                        <p className={cn("text-xs text-gray-300")}>Avg Latency</p>
+                        <p className={cn("text-sm font-semibold text-white")}>{provider.avgLatency}ms</p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Requests/Day</p>
-                        <p className={cn("text-sm font-semibold text-wl-text-primary")}>{(provider.requestsPerDay / 1000).toFixed(1)}k</p>
+                        <p className={cn("text-xs text-gray-300")}>Requests/Day</p>
+                        <p className={cn("text-sm font-semibold text-white")}>{(provider.requestsPerDay / 1000).toFixed(1)}k</p>
                       </div>
                       <div>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>Trend</p>
+                        <p className={cn("text-xs text-gray-300")}>Trend</p>
                         <div className={cn("h-8 mt-1")}>
                           <Sparkline data={provider.healthHistory} />
                         </div>
@@ -421,10 +421,10 @@ export default function RoutingPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-4")}>
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         API Key
                       </label>
-                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-wl-text-tertiary")}>
+                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         {selected.apiKey}
                       </div>
                       <Button variant="ghost" size="sm" className="mt-2 w-full">
@@ -433,28 +433,28 @@ export default function RoutingPage() {
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Base URL
                       </label>
-                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-wl-text-tertiary break-all")}>
+                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300 break-all")}>
                         {selected.baseUrl}
                       </div>
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Rate Limit
                       </label>
-                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-wl-text-tertiary")}>
+                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         {selected.rateLimit.toLocaleString()} req/hour
                       </div>
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Fallback Priority
                       </label>
-                      <div className={cn("bg-wl-bg-elevated rounded px-3 py-2 text-sm font-mono text-wl-text-tertiary")}>
+                      <div className={cn("bg-[#1a1a2e] rounded px-3 py-2 text-sm font-mono text-gray-300")}>
                         #{selected.fallbackPriority} of {ROUTING_PROVIDERS.length}
                       </div>
                     </div>
@@ -491,7 +491,7 @@ export default function RoutingPage() {
             ) : (
               <Card>
                 <div className={cn("p-8 text-center")}>
-                  <p className={cn("text-wl-text-tertiary")}>Select a provider to view details</p>
+                  <p className={cn("text-gray-300")}>Select a provider to view details</p>
                 </div>
               </Card>
             )}
@@ -506,7 +506,7 @@ export default function RoutingPage() {
           <div className={cn("p-4 pt-0")}>
             <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4 mb-4")}>
               <div>
-                <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                   Origin
                 </label>
                 <input
@@ -514,12 +514,12 @@ export default function RoutingPage() {
                   value={origin}
                   onChange={(e) => setOrigin(e.target.value)}
                   className={cn(
-                    "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                   )}
                 />
               </div>
               <div>
-                <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                   Destination
                 </label>
                 <input
@@ -527,7 +527,7 @@ export default function RoutingPage() {
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   className={cn(
-                    "w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm outline-none"
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
                   )}
                 />
               </div>
@@ -546,9 +546,9 @@ export default function RoutingPage() {
                         setCompareProviders(compareProviders.filter((p) => p !== pid));
                       }
                     }}
-                    className={cn("w-4 h-4 rounded border-wl-border-default")}
+                    className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
                   />
-                  <span className={cn("text-sm text-wl-text-primary")}>
+                  <span className={cn("text-sm text-white")}>
                     {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
                   </span>
                 </label>
@@ -562,21 +562,21 @@ export default function RoutingPage() {
                 if (!provider || !comparison) return null;
 
                 return (
-                  <Card key={pid} className={cn("bg-wl-bg-surface border-wl-border-subtle")}>
+                  <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
                     <div className={cn("p-3")}>
-                      <h4 className={cn("font-semibold text-wl-text-primary mb-3")}>{provider.name}</h4>
+                      <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
                       <div className={cn("space-y-2 text-sm")}>
                         <div>
-                          <p className={cn("text-xs text-wl-text-tertiary")}>Distance</p>
-                          <p className={cn("font-semibold text-wl-text-primary")}>{comparison.distance}</p>
+                          <p className={cn("text-xs text-gray-300")}>Distance</p>
+                          <p className={cn("font-semibold text-white")}>{comparison.distance}</p>
                         </div>
                         <div>
-                          <p className={cn("text-xs text-wl-text-tertiary")}>Duration</p>
-                          <p className={cn("font-semibold text-wl-text-primary")}>{comparison.duration}</p>
+                          <p className={cn("text-xs text-gray-300")}>Duration</p>
+                          <p className={cn("font-semibold text-white")}>{comparison.duration}</p>
                         </div>
                         <div>
-                          <p className={cn("text-xs text-wl-text-tertiary")}>ETA</p>
-                          <p className={cn("font-semibold text-wl-text-primary")}>{comparison.eta}</p>
+                          <p className={cn("text-xs text-gray-300")}>ETA</p>
+                          <p className={cn("font-semibold text-white")}>{comparison.eta}</p>
                         </div>
                       </div>
                     </div>
@@ -593,21 +593,21 @@ export default function RoutingPage() {
             <CardTitle>Fallback Priority Chain</CardTitle>
           </CardHeader>
           <div className={cn("p-4 pt-0")}>
-            <p className={cn("text-sm text-wl-text-tertiary mb-4")}>
+            <p className={cn("text-sm text-gray-300 mb-4")}>
               Drag to reorder providers. If the primary provider fails, requests will be routed to the next in the chain.
             </p>
             <div className={cn("space-y-2")}>
               {sortedByPriority.map((provider, idx) => (
-                <div key={provider.id} className={cn("flex items-center gap-3 p-3 bg-wl-bg-surface rounded border border-wl-border-subtle")}>
-                  <div className={cn("flex-shrink-0 w-6 h-6 rounded-full bg-wl-primary-500 text-wl-text-inverse flex items-center justify-center text-xs font-bold")}>
+                <div key={provider.id} className={cn("flex items-center gap-3 p-3 bg-[#12121a] rounded border border-[#1e1e2e]")}>
+                  <div className={cn("flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold")}>
                     {idx + 1}
                   </div>
                   <div className={cn("flex-1")}>
-                    <p className={cn("font-semibold text-wl-text-primary")}>{provider.name}</p>
-                    <p className={cn("text-xs text-wl-text-tertiary")}>{provider.status} · {provider.avgLatency}ms avg</p>
+                    <p className={cn("font-semibold text-white")}>{provider.name}</p>
+                    <p className={cn("text-xs text-gray-300")}>{provider.status} · {provider.avgLatency}ms avg</p>
                   </div>
                   <StatusBadge status={provider.status} />
-                  <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
+                  <Button variant="ghost" size="sm" className="text-gray-300">
                     ⋮
                   </Button>
                 </div>

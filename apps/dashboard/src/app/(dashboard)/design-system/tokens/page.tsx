@@ -48,31 +48,31 @@ const COLOR_TOKENS: Token[] = [
   { name: "Neutral 900", cssVar: "--wl-neutral-900", value: "#17172a", category: "colors", preview: "#17172a" },
 
   // Primary colors (Amber)
-  { name: "Primary 50", cssVar: "--wl-primary-50", value: "#fff9eb", category: "colors", preview: "#fff9eb" },
-  { name: "Primary 100", cssVar: "--wl-primary-100", value: "#ffefc4", category: "colors", preview: "#ffefc4" },
-  { name: "Primary 200", cssVar: "--wl-primary-200", value: "#ffe09d", category: "colors", preview: "#ffe09d" },
-  { name: "Primary 300", cssVar: "--wl-primary-300", value: "#ffd06a", category: "colors", preview: "#ffd06a" },
-  { name: "Primary 400", cssVar: "--wl-primary-400", value: "#ffc240", category: "colors", preview: "#ffc240" },
-  { name: "Primary 500", cssVar: "--wl-primary-500", value: "#f5a623", category: "colors", preview: "#f5a623" },
-  { name: "Primary 600", cssVar: "--wl-primary-600", value: "#d98b0a", category: "colors", preview: "#d98b0a" },
-  { name: "Primary 700", cssVar: "--wl-primary-700", value: "#b06f05", category: "colors", preview: "#b06f05" },
-  { name: "Primary 800", cssVar: "--wl-primary-800", value: "#8d5704", category: "colors", preview: "#8d5704" },
-  { name: "Primary 900", cssVar: "--wl-primary-900", value: "#6b4203", category: "colors", preview: "#6b4203" },
+  { name: "Primary 50", cssVar: "--blue-50", value: "#fff9eb", category: "colors", preview: "#fff9eb" },
+  { name: "Primary 100", cssVar: "--blue-100", value: "#ffefc4", category: "colors", preview: "#ffefc4" },
+  { name: "Primary 200", cssVar: "--blue-200", value: "#ffe09d", category: "colors", preview: "#ffe09d" },
+  { name: "Primary 300", cssVar: "--blue-300", value: "#ffd06a", category: "colors", preview: "#ffd06a" },
+  { name: "Primary 400", cssVar: "--blue-400", value: "#ffc240", category: "colors", preview: "#ffc240" },
+  { name: "Primary 500", cssVar: "--blue-500", value: "#f5a623", category: "colors", preview: "#f5a623" },
+  { name: "Primary 600", cssVar: "--blue-600", value: "#d98b0a", category: "colors", preview: "#d98b0a" },
+  { name: "Primary 700", cssVar: "--blue-700", value: "#b06f05", category: "colors", preview: "#b06f05" },
+  { name: "Primary 800", cssVar: "--blue-800", value: "#8d5704", category: "colors", preview: "#8d5704" },
+  { name: "Primary 900", cssVar: "--blue-900", value: "#6b4203", category: "colors", preview: "#6b4203" },
 
   // Semantic colors
-  { name: "Success 400", cssVar: "--wl-success-400", value: "#34d399", category: "colors", preview: "#34d399" },
+  { name: "Success 400", cssVar: "--emerald-500", value: "#34d399", category: "colors", preview: "#34d399" },
   { name: "Success 500", cssVar: "--wl-success-500", value: "#10b981", category: "colors", preview: "#10b981" },
   { name: "Success 600", cssVar: "--wl-success-600", value: "#059669", category: "colors", preview: "#059669" },
 
-  { name: "Warning 400", cssVar: "--wl-warning-400", value: "#fbbf24", category: "colors", preview: "#fbbf24" },
-  { name: "Warning 500", cssVar: "--wl-warning-500", value: "#f59e0b", category: "colors", preview: "#f59e0b" },
+  { name: "Warning 400", cssVar: "--amber-500", value: "#fbbf24", category: "colors", preview: "#fbbf24" },
+  { name: "Warning 500", cssVar: "--amber-600", value: "#f59e0b", category: "colors", preview: "#f59e0b" },
 
-  { name: "Danger 400", cssVar: "--wl-danger-400", value: "#f87171", category: "colors", preview: "#f87171" },
+  { name: "Danger 400", cssVar: "--red-500", value: "#f87171", category: "colors", preview: "#f87171" },
   { name: "Danger 500", cssVar: "--wl-danger-500", value: "#ef4444", category: "colors", preview: "#ef4444" },
   { name: "Danger 600", cssVar: "--wl-danger-600", value: "#dc2626", category: "colors", preview: "#dc2626" },
 
-  { name: "Info 400", cssVar: "--wl-info-400", value: "#60a5fa", category: "colors", preview: "#60a5fa" },
-  { name: "Info 500", cssVar: "--wl-info-500", value: "#3b82f6", category: "colors", preview: "#3b82f6" },
+  { name: "Info 400", cssVar: "--blue-500", value: "#60a5fa", category: "colors", preview: "#60a5fa" },
+  { name: "Info 500", cssVar: "--blue-600", value: "#3b82f6", category: "colors", preview: "#3b82f6" },
 
   // Text colors
   { name: "Text Primary", cssVar: "--wl-text-primary", value: "#f0f0f5", category: "colors", preview: "#f0f0f5" },
@@ -147,7 +147,7 @@ interface CopyState {
 function ColorSwatch({ color }: { color: string }) {
   return (
     <div
-      className="w-full h-20 rounded-lg border border-wl-border-default transition-all hover:border-wl-border-strong"
+      className="w-full h-20 rounded-lg border border-[#1e1e2e] transition-all hover:border-[#2a2a3e]"
       style={{ backgroundColor: color }}
     />
   );
@@ -156,7 +156,7 @@ function ColorSwatch({ color }: { color: string }) {
 function ShadowPreview({ shadow }: { shadow: string }) {
   return (
     <div
-      className="w-full h-20 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
+      className="w-full h-20 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
       style={{ boxShadow: shadow }}
     />
   );
@@ -165,7 +165,7 @@ function ShadowPreview({ shadow }: { shadow: string }) {
 function RadiusPreview({ radius }: { radius: string }) {
   return (
     <div
-      className="w-full h-20 bg-gradient-to-br from-wl-primary-500 to-wl-primary-600 border border-wl-border-default"
+      className="w-full h-20 bg-gradient-to-br from-blue-500 to-blue-600 border border-[#1e1e2e]"
       style={{ borderRadius: radius }}
     />
   );
@@ -178,10 +178,10 @@ function SpacingBar({ size, value }: { size: string; value: string }) {
   return (
     <div className="space-y-2">
       <div
-        className="bg-gradient-to-r from-wl-primary-500 to-wl-primary-600 rounded-sm transition-all"
+        className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-sm transition-all"
         style={{ height: "24px", width: `${Math.min(numValue * 2, 100)}%` }}
       />
-      <div className="text-xs text-wl-text-tertiary">{size}</div>
+      <div className="text-xs text-gray-400">{size}</div>
     </div>
   );
 }
@@ -198,7 +198,7 @@ function TypographyPreview({ size }: { size: string }) {
   };
 
   return (
-    <div className={cn("font-sans text-wl-text-primary", sizeMap[size] || "text-base")}>
+    <div className={cn("font-sans text-white", sizeMap[size] || "text-base")}>
       The quick brown fox jumps over the lazy dog
     </div>
   );
@@ -288,13 +288,13 @@ export default function DesignTokensPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-wl-bg-root text-wl-text-primary">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Header */}
-      <div className="border-b border-wl-border-subtle sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
+      <div className="border-b border-[#1e1e2e] sticky top-0 z-40 bg-[#0a0a0f]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Design Tokens</h1>
-            <p className="text-wl-text-secondary">Complete reference of all design system tokens</p>
+            <p className="text-gray-300">Complete reference of all design system tokens</p>
           </div>
 
           {/* Search */}
@@ -303,7 +303,7 @@ export default function DesignTokensPage() {
               placeholder="Search tokens by name, variable, or value..."
               value={searchQuery}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="w-full bg-wl-bg-surface border-wl-border-default text-wl-text-primary placeholder-wl-text-tertiary"
+              className="w-full bg-[#12121a] border-[#1e1e2e] text-white placeholder-gray-400"
             />
           </div>
         </div>
@@ -322,19 +322,19 @@ export default function DesignTokensPage() {
               }
               className={cn(
                 "w-full flex items-center gap-3 mb-6 p-4 rounded-lg",
-                "bg-wl-bg-surface border border-wl-border-subtle",
-                "hover:border-wl-border-default transition-colors",
-                expandedCategory === category.id && "border-wl-primary-500/30 bg-wl-primary-500/5"
+                "bg-[#12121a] border border-[#1e1e2e]",
+                "hover:border-[#1e1e2e] transition-colors",
+                expandedCategory === category.id && "border-blue-500/30 bg-blue-500/5"
               )}
             >
               <span className="text-2xl">{category.icon}</span>
               <div className="text-left flex-1">
                 <h2 className="text-lg font-semibold">{category.name}</h2>
-                <p className="text-sm text-wl-text-secondary">{category.description}</p>
+                <p className="text-sm text-gray-300">{category.description}</p>
               </div>
               <span
                 className={cn(
-                  "text-wl-text-tertiary transition-transform",
+                  "text-gray-400 transition-transform",
                   expandedCategory === category.id && "rotate-180"
                 )}
               >
@@ -350,17 +350,17 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="mb-3">
                           <ColorSwatch color={token.preview || token.value} />
                         </div>
                         <div className="space-y-2">
                           <div>
-                            <div className="text-sm font-semibold text-wl-text-primary">
+                            <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-wl-text-tertiary font-mono">
+                            <div className="text-xs text-gray-400 font-mono">
                               {token.value}
                             </div>
                           </div>
@@ -370,7 +370,7 @@ export default function DesignTokensPage() {
                               onClick={() => handleCopy(token.cssVar, token.cssVar)}
                               className={cn(
                                 "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                                "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                                "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                                 "transition-colors",
                                 copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                               )}
@@ -391,7 +391,7 @@ export default function DesignTokensPage() {
                               onClick={() => handleCopy(token.value, `${token.cssVar}-value`)}
                               className={cn(
                                 "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                                "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                                "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                                 "transition-colors",
                                 copiedTokens[`${token.cssVar}-value`] && "bg-wl-success-500/20 border-wl-success-500"
                               )}
@@ -420,16 +420,16 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="text-sm font-semibold text-wl-text-primary mb-2">
+                            <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-wl-text-tertiary space-y-1 font-mono">
+                            <div className="text-xs text-gray-400 space-y-1 font-mono">
                               <div>{token.cssVar}</div>
-                              <div className="text-wl-text-secondary">{token.value}</div>
+                              <div className="text-gray-300">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -445,7 +445,7 @@ export default function DesignTokensPage() {
                             onClick={() => handleCopy(token.cssVar, token.cssVar)}
                             className={cn(
                               "flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                              "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                              "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                               "transition-colors",
                               copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                             )}
@@ -473,13 +473,13 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="mb-3">
-                          <div className="text-sm font-semibold text-wl-text-primary mb-2">
+                          <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-wl-text-tertiary font-mono mb-3">
+                          <div className="text-xs text-gray-400 font-mono mb-3">
                             {token.value}
                           </div>
                           <SpacingBar size={token.value} value={token.value} />
@@ -489,7 +489,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -516,16 +516,16 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="text-sm font-semibold text-wl-text-primary mb-2">
+                            <div className="text-sm font-semibold text-white mb-2">
                               {token.name}
                             </div>
-                            <div className="text-xs text-wl-text-tertiary font-mono space-y-1">
+                            <div className="text-xs text-gray-400 font-mono space-y-1">
                               <div>{token.cssVar}</div>
-                              <div className="text-wl-text-secondary">{token.value}</div>
+                              <div className="text-gray-300">{token.value}</div>
                               {token.tailwind && <div>{token.tailwind}</div>}
                             </div>
                           </div>
@@ -536,7 +536,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs mt-3",
-                            "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -563,13 +563,13 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="mb-3">
-                          <div className="text-sm font-semibold text-wl-text-primary mb-2">
+                          <div className="text-sm font-semibold text-white mb-2">
                             {token.name}
                           </div>
-                          <div className="text-xs text-wl-text-tertiary font-mono mb-3">
+                          <div className="text-xs text-gray-400 font-mono mb-3">
                             {token.value}
                           </div>
                           <ShadowPreview shadow={token.value} />
@@ -579,7 +579,7 @@ export default function DesignTokensPage() {
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -606,25 +606,25 @@ export default function DesignTokensPage() {
                     {category.tokens.map((token) => (
                       <div
                         key={token.cssVar}
-                        className="rounded-lg border border-wl-border-subtle p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
+                        className="rounded-lg border border-[#1e1e2e] p-4 bg-[#12121a] hover:border-[#1e1e2e] transition-colors"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <div className="text-sm font-semibold text-wl-text-primary">
+                            <div className="text-sm font-semibold text-white">
                               {token.name}
                             </div>
-                            <div className="text-xs text-wl-text-tertiary font-mono">
+                            <div className="text-xs text-gray-400 font-mono">
                               {token.value}
                             </div>
                           </div>
-                          <div className="h-1 flex-1 mx-4 bg-gradient-to-r from-wl-primary-500/50 to-wl-primary-500 rounded-full" />
+                          <div className="h-1 flex-1 mx-4 bg-gradient-to-r from-blue-500/50 to-blue-500 rounded-full" />
                         </div>
 
                         <button
                           onClick={() => handleCopy(token.cssVar, token.cssVar)}
                           className={cn(
                             "w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-xs",
-                            "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                            "bg-[#12121a] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                             "transition-colors",
                             copiedTokens[token.cssVar] && "bg-wl-success-500/20 border-wl-success-500"
                           )}
@@ -650,7 +650,7 @@ export default function DesignTokensPage() {
 
             {/* Empty State */}
             {expandedCategory === category.id && category.tokens.length === 0 && (
-              <div className="text-center py-8 text-wl-text-tertiary">
+              <div className="text-center py-8 text-gray-400">
                 No tokens found matching your search
               </div>
             )}
@@ -659,7 +659,7 @@ export default function DesignTokensPage() {
 
         {filteredTokens.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-wl-text-tertiary mb-4">No tokens found matching your search</p>
+            <p className="text-gray-400 mb-4">No tokens found matching your search</p>
             <Button
               variant="secondary"
               onClick={() => setSearchQuery("")}

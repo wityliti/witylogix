@@ -261,13 +261,13 @@ export default function ECommerceIntegrationPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "connected":
-        return <CheckCircle className="w-5 h-5 text-wl-success-400" />;
+        return <CheckCircle className="w-5 h-5 text-emerald-400" />;
       case "error":
-        return <AlertCircle className="w-5 h-5 text-wl-danger-400" />;
+        return <AlertCircle className="w-5 h-5 text-red-400" />;
       case "pending":
-        return <Clock className="w-5 h-5 text-wl-warning-400" />;
+        return <Clock className="w-5 h-5 text-amber-400" />;
       default:
-        return <AlertCircle className="w-5 h-5 text-wl-neutral-400" />;
+        return <AlertCircle className="w-5 h-5 text-gray-400" />;
     }
   };
 
@@ -294,45 +294,45 @@ export default function ECommerceIntegrationPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-wl-text-primary">
+              <div className="text-3xl font-bold text-white">
                 {connected.length}
               </div>
-              <p className="text-sm text-wl-text-tertiary mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Connected Platforms
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-wl-text-primary">
+              <div className="text-3xl font-bold text-white">
                 {totalProducts.toLocaleString()}
               </div>
-              <p className="text-sm text-wl-text-tertiary mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Total Products Synced
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-wl-text-primary">
+              <div className="text-3xl font-bold text-white">
                 {totalOrders.toLocaleString()}
               </div>
-              <p className="text-sm text-wl-text-tertiary mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Total Orders Synced
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+          <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
             <CardContent className="pt-6">
-              <div className="text-3xl font-bold text-wl-text-primary">
+              <div className="text-3xl font-bold text-white">
                 {PLATFORMS.filter((p) => p.status === "error").length}
               </div>
-              <p className="text-sm text-wl-text-tertiary mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Sync Errors
               </p>
             </CardContent>
@@ -340,7 +340,7 @@ export default function ECommerceIntegrationPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 bg-wl-bg-overlay rounded-lg p-1 mb-8">
+        <div className="flex gap-1 bg-[#1a1a2e] rounded-lg p-1 mb-8">
           {(
             [
               "overview",
@@ -355,8 +355,8 @@ export default function ECommerceIntegrationPage() {
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-all",
                 selectedTab === tab
-                  ? "bg-wl-primary-500 text-wl-text-inverse"
-                  : "text-wl-text-tertiary hover:text-wl-text-secondary"
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-500 hover:text-gray-400"
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -368,7 +368,7 @@ export default function ECommerceIntegrationPage() {
         {selectedTab === "overview" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-wl-text-primary">
+              <h2 className="text-xl font-bold text-white">
                 Platform Status
               </h2>
               <Button
@@ -385,7 +385,7 @@ export default function ECommerceIntegrationPage() {
                 <Card
                   key={platform.id}
                   className={cn(
-                    "bg-wl-bg-tertiary border-wl-neutral-700 cursor-pointer transition-all hover:border-wl-primary-500/50",
+                    "bg-[#1a1a2e] border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500/50",
                     expandedPlatform === platform.id && "ring-1 ring-wl-primary-500"
                   )}
                   onClick={() =>
@@ -400,13 +400,13 @@ export default function ECommerceIntegrationPage() {
                       <div className="flex items-center gap-4">
                         <div className="text-4xl">{platform.logo}</div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-wl-text-primary">
+                          <h3 className="font-semibold text-white">
                             {platform.name}
                           </h3>
                           <div className="flex gap-2 mt-1">
                             {getStatusBadge(platform.status)}
                             {platform.lastSync && (
-                              <span className="text-xs text-wl-text-tertiary">
+                              <span className="text-xs text-gray-500">
                                 Last sync:{" "}
                                 {new Date(platform.lastSync).toLocaleString()}
                               </span>
@@ -420,14 +420,14 @@ export default function ECommerceIntegrationPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-wl-text-tertiary"
+                              className="text-gray-500"
                             >
                               <RotateCw className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-wl-text-tertiary"
+                              className="text-gray-500"
                             >
                               <Settings className="w-4 h-4" />
                             </Button>
@@ -435,7 +435,7 @@ export default function ECommerceIntegrationPage() {
                         )}
                         <ChevronRight
                           className={cn(
-                            "w-5 h-5 text-wl-text-tertiary transition-transform",
+                            "w-5 h-5 text-gray-500 transition-transform",
                             expandedPlatform === platform.id && "rotate-90"
                           )}
                         />
@@ -444,38 +444,38 @@ export default function ECommerceIntegrationPage() {
 
                     {/* Expanded Details */}
                     {expandedPlatform === platform.id && (
-                      <div className="mt-6 pt-6 border-t border-wl-neutral-700 space-y-6">
+                      <div className="mt-6 pt-6 border-t border-[#1e1e2e] space-y-6">
                         {/* Sync Stats */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           <div>
-                            <div className="text-sm text-wl-text-tertiary">
+                            <div className="text-sm text-gray-500">
                               Products Synced
                             </div>
-                            <div className="text-2xl font-bold text-wl-text-primary mt-1">
+                            <div className="text-2xl font-bold text-white mt-1">
                               {platform.productsSynced.toLocaleString()}
                             </div>
                           </div>
                           <div>
-                            <div className="text-sm text-wl-text-tertiary">
+                            <div className="text-sm text-gray-500">
                               Orders Synced
                             </div>
-                            <div className="text-2xl font-bold text-wl-text-primary mt-1">
+                            <div className="text-2xl font-bold text-white mt-1">
                               {platform.ordersSynced.toLocaleString()}
                             </div>
                           </div>
                           <div>
-                            <div className="text-sm text-wl-text-tertiary">
+                            <div className="text-sm text-gray-500">
                               Product Sync
                             </div>
-                            <div className="text-sm font-medium text-wl-text-primary mt-1">
+                            <div className="text-sm font-medium text-white mt-1">
                               {platform.syncSettings.productSync.direction.toUpperCase()}
                             </div>
                           </div>
                           <div>
-                            <div className="text-sm text-wl-text-tertiary">
+                            <div className="text-sm text-gray-500">
                               Order Sync
                             </div>
-                            <div className="text-sm font-medium text-wl-text-primary mt-1">
+                            <div className="text-sm font-medium text-white mt-1">
                               {platform.syncSettings.orderSync.direction.toUpperCase()}
                             </div>
                           </div>
@@ -483,7 +483,7 @@ export default function ECommerceIntegrationPage() {
 
                         {/* Sync Settings */}
                         <div>
-                          <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+                          <h4 className="text-sm font-semibold text-white mb-3">
                             Sync Settings
                           </h4>
                           <div className="space-y-2">
@@ -512,7 +512,7 @@ export default function ECommerceIntegrationPage() {
                                 key={setting.label}
                                 className="flex items-center justify-between"
                               >
-                                <span className="text-sm text-wl-text-secondary">
+                                <span className="text-sm text-gray-400">
                                   {setting.label}
                                 </span>
                                 <Badge
@@ -530,17 +530,17 @@ export default function ECommerceIntegrationPage() {
                         {/* Webhooks */}
                         {platform.webhooks.length > 0 && (
                           <div>
-                            <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
+                            <h4 className="text-sm font-semibold text-white mb-3">
                               Webhooks ({platform.webhooks.length})
                             </h4>
                             <div className="space-y-2">
                               {platform.webhooks.map((hook) => (
                                 <div
                                   key={hook.id}
-                                  className="flex items-center justify-between p-2 bg-wl-bg-secondary rounded text-sm"
+                                  className="flex items-center justify-between p-2 bg-[#12121a] rounded text-sm"
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span className="text-wl-text-secondary">
+                                    <span className="text-gray-400">
                                       {hook.event}
                                     </span>
                                     <Badge
@@ -554,7 +554,7 @@ export default function ECommerceIntegrationPage() {
                                       {hook.status}
                                     </Badge>
                                   </div>
-                                  <span className="text-xs text-wl-text-tertiary">
+                                  <span className="text-xs text-gray-500">
                                     {new Date(
                                       hook.lastTriggered
                                     ).toLocaleString()}
@@ -567,7 +567,7 @@ export default function ECommerceIntegrationPage() {
 
                         {/* Actions */}
                         {platform.status === "connected" && (
-                          <div className="flex gap-2 pt-4 border-t border-wl-neutral-700">
+                          <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
                             <Button variant="secondary" size="sm">
                               Edit Configuration
                             </Button>
@@ -583,7 +583,7 @@ export default function ECommerceIntegrationPage() {
                           </Button>
                         )}
                         {platform.status === "error" && (
-                          <div className="p-3 bg-wl-danger-bg rounded text-sm text-wl-danger-400">
+                          <div className="p-3 bg-red-900 rounded text-sm text-red-400">
                             Sync failed. Check webhooks configuration and try
                             again.
                           </div>
@@ -600,11 +600,11 @@ export default function ECommerceIntegrationPage() {
         {/* Product Mapping Tab */}
         {selectedTab === "mapping" && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-wl-text-primary">
+            <h2 className="text-xl font-bold text-white">
               Product Mapping
             </h2>
 
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Grid className="w-5 h-5" />
@@ -632,25 +632,25 @@ export default function ECommerceIntegrationPage() {
                   ].map((mapping, idx) => (
                     <div
                       key={idx}
-                      className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700"
+                      className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
                     >
                       <div className="grid grid-cols-3 gap-4 items-center">
                         <div>
-                          <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
                             Shopify
                           </div>
-                          <div className="text-sm font-medium text-wl-text-primary mt-1">
+                          <div className="text-sm font-medium text-white mt-1">
                             {mapping.shopify}
                           </div>
                         </div>
                         <div className="flex justify-center">
-                          <ChevronRight className="w-5 h-5 text-wl-text-tertiary" />
+                          <ChevronRight className="w-5 h-5 text-gray-500" />
                         </div>
                         <div>
-                          <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
                             External
                           </div>
-                          <div className="text-sm font-medium text-wl-text-primary mt-1">
+                          <div className="text-sm font-medium text-white mt-1">
                             {mapping.woo} / {mapping.amazon}
                           </div>
                         </div>
@@ -661,7 +661,7 @@ export default function ECommerceIntegrationPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5" />
@@ -689,25 +689,25 @@ export default function ECommerceIntegrationPage() {
                   ].map((variant, idx) => (
                     <div
                       key={idx}
-                      className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-700"
+                      className="p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
                     >
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
                         {variant.attribute}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <div className="text-xs text-wl-text-tertiary">
+                          <div className="text-xs text-gray-500">
                             Shopify
                           </div>
-                          <div className="text-sm text-wl-text-secondary mt-1">
+                          <div className="text-sm text-gray-400 mt-1">
                             {variant.shopify}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs text-wl-text-tertiary">
+                          <div className="text-xs text-gray-500">
                             WooCommerce
                           </div>
-                          <div className="text-sm text-wl-text-secondary mt-1">
+                          <div className="text-sm text-gray-400 mt-1">
                             {variant.woo}
                           </div>
                         </div>
@@ -723,32 +723,32 @@ export default function ECommerceIntegrationPage() {
         {/* Webhooks Tab */}
         {selectedTab === "webhooks" && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-wl-text-primary">
+            <h2 className="text-xl font-bold text-white">
               Webhook Configuration
             </h2>
 
-            <Card className="bg-wl-bg-tertiary border-wl-neutral-700">
+            <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {PLATFORMS.filter((p) => p.webhooks.length > 0).map((platform) => (
                     <div
                       key={platform.id}
-                      className="border border-wl-neutral-700 rounded-lg p-4"
+                      className="border border-[#1e1e2e] rounded-lg p-4"
                     >
-                      <h3 className="font-semibold text-wl-text-primary mb-3">
+                      <h3 className="font-semibold text-white mb-3">
                         {platform.name} Webhooks
                       </h3>
                       <div className="space-y-2">
                         {platform.webhooks.map((hook) => (
                           <div
                             key={hook.id}
-                            className="flex items-center justify-between p-3 bg-wl-bg-secondary rounded"
+                            className="flex items-center justify-between p-3 bg-[#12121a] rounded"
                           >
                             <div>
-                              <div className="text-sm font-medium text-wl-text-primary">
+                              <div className="text-sm font-medium text-white">
                                 {hook.event}
                               </div>
-                              <div className="text-xs text-wl-text-tertiary mt-1">
+                              <div className="text-xs text-gray-500 mt-1">
                                 Last triggered:{" "}
                                 {new Date(hook.lastTriggered).toLocaleString()}
                               </div>
@@ -767,7 +767,7 @@ export default function ECommerceIntegrationPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-wl-text-tertiary"
+                                className="text-gray-500"
                               >
                                 <Settings className="w-4 h-4" />
                               </Button>
@@ -787,10 +787,10 @@ export default function ECommerceIntegrationPage() {
         {selectedTab === "conflict" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-wl-text-primary mb-2">
+              <h2 className="text-xl font-bold text-white mb-2">
                 Conflict Resolution Rules
               </h2>
-              <p className="text-sm text-wl-text-tertiary">
+              <p className="text-sm text-gray-500">
                 Define priority rules for when the same product field is
                 synced from multiple platforms
               </p>
@@ -798,19 +798,19 @@ export default function ECommerceIntegrationPage() {
 
             <div className="grid grid-cols-1 gap-4">
               {CONFLICT_RULES.map((rule) => (
-                <Card key={rule.field} className="bg-wl-bg-tertiary border-wl-neutral-700">
+                <Card key={rule.field} className="bg-[#1a1a2e] border-[#1e1e2e]">
                   <CardContent className="pt-6">
-                    <h3 className="font-semibold text-wl-text-primary mb-4">
+                    <h3 className="font-semibold text-white mb-4">
                       {rule.field.replace(/_/g, " ")}
                     </h3>
                     <div className="flex items-center gap-2">
                       {rule.priority.map((source, idx) => (
                         <div key={source} className="flex items-center gap-2">
-                          <div className="px-3 py-1 bg-wl-primary-500/20 text-wl-primary-400 rounded text-sm font-medium">
+                          <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm font-medium">
                             {idx + 1}. {source}
                           </div>
                           {idx < rule.priority.length - 1 && (
-                            <ChevronRight className="w-4 h-4 text-wl-text-tertiary" />
+                            <ChevronRight className="w-4 h-4 text-gray-500" />
                           )}
                         </div>
                       ))}
@@ -827,13 +827,13 @@ export default function ECommerceIntegrationPage() {
               ))}
             </div>
 
-            <Card className="bg-wl-bg-secondary border border-wl-primary-500/20">
+            <Card className="bg-[#12121a] border border-blue-500/20">
               <CardHeader>
                 <CardTitle>Order Import Rules</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-wl-text-primary">
+                  <label className="text-sm font-medium text-white">
                     Filter by Status
                   </label>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -850,15 +850,15 @@ export default function ECommerceIntegrationPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-wl-text-primary">
+                  <label className="text-sm font-medium text-white">
                     Date Range
                   </label>
-                  <div className="text-sm text-wl-text-secondary mt-2">
+                  <div className="text-sm text-gray-400 mt-2">
                     Last 90 days
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-wl-text-primary">
+                  <label className="text-sm font-medium text-white">
                     Fulfillment Type
                   </label>
                   <div className="flex flex-wrap gap-2 mt-2">

@@ -91,7 +91,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Notification Matrix */}
-          <Card>
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardHeader>
               <CardTitle>Notification Channels & Preferences</CardTitle>
               <CardDescription>
@@ -111,14 +111,14 @@ export default function NotificationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[var(--wl-border)]">
-                      <th className="text-left py-3 px-3 font-semibold text-[var(--wl-text-primary)]">
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="text-left py-3 px-3 font-semibold text-white">
                         Event Type
                       </th>
                       {CHANNELS.map((channel) => (
                         <th
                           key={channel.id}
-                          className="text-center py-3 px-3 font-semibold text-[var(--wl-text-primary)]"
+                          className="text-center py-3 px-3 font-semibold text-white"
                         >
                           <div className="flex items-center justify-center gap-1">
                             {channel.icon}
@@ -132,9 +132,9 @@ export default function NotificationsPage() {
                     {EVENT_CATEGORIES.map((category) => (
                       <tr
                         key={category}
-                        className="border-b border-[var(--wl-border)] last:border-b-0"
+                        className="border-b border-[#1e1e2e] last:border-b-0"
                       >
-                        <td className="py-4 px-3 font-medium text-[var(--wl-text-primary)]">
+                        <td className="py-4 px-3 font-medium text-white">
                           {category}
                         </td>
                         {CHANNELS.map((channel) => {
@@ -147,7 +147,7 @@ export default function NotificationsPage() {
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => handlePreferenceChange(channel.id, categoryKey)}
-                                  className="w-4 h-4 rounded border-[var(--wl-border)] text-[var(--wl-primary)] cursor-pointer"
+                                  className="w-4 h-4 rounded border-[#1e1e2e] text-blue-500 cursor-pointer"
                                 />
                               </label>
                             </td>
@@ -162,7 +162,7 @@ export default function NotificationsPage() {
           </Card>
 
           {/* Quiet Hours */}
-          <Card>
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -189,7 +189,7 @@ export default function NotificationsPage() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Start Time
                   </label>
                   <Input
@@ -202,7 +202,7 @@ export default function NotificationsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     End Time
                   </label>
                   <Input
@@ -215,29 +215,29 @@ export default function NotificationsPage() {
                   />
                 </div>
               </div>
-              <p className="text-xs text-[var(--wl-text-secondary)]">
+              <p className="text-xs text-gray-400">
                 Notifications will be silenced from {quietHours.start} to {quietHours.end} daily
               </p>
             </CardContent>
           </Card>
 
           {/* Summary */}
-          <Card className="bg-[var(--wl-bg-secondary)]">
+          <Card className="bg-[#1a1a2e] border border-[#1e1e2e]">
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     Active Channels
                   </p>
-                  <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+                  <p className="text-2xl font-bold text-white">
                     {CHANNELS.length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     Total Notifications
                   </p>
-                  <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+                  <p className="text-2xl font-bold text-white">
                     {Object.values(preferences).reduce(
                       (sum, channel) =>
                         sum + Object.values(channel).filter(Boolean).length,
@@ -246,7 +246,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     Quiet Hours
                   </p>
                   <Badge variant={quietHours.enabled ? "success" : "default"}>
@@ -254,7 +254,7 @@ export default function NotificationsPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                     Status
                   </p>
                   <Badge variant="success">Active</Badge>

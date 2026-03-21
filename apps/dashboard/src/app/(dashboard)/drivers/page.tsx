@@ -159,13 +159,13 @@ const DriverCard = ({ driver }: { driver: Driver }) => {
         <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/[0.05]">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             {/* Avatar */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-wl-primary-500 to-wl-primary-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-semibold text-white">{initials}</span>
             </div>
             {/* Name and phone */}
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-wl-text-primary text-sm leading-tight">{driver.name}</h3>
-              <div className="flex items-center gap-1 text-xs text-wl-text-tertiary mt-1">
+              <h3 className="font-semibold text-white text-sm leading-tight">{driver.name}</h3>
+              <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
                 <Phone className="w-3 h-3" />
                 <span>{driver.phone}</span>
               </div>
@@ -180,27 +180,27 @@ const DriverCard = ({ driver }: { driver: Driver }) => {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-white/[0.05]">
           <div>
-            <div className="text-xs text-wl-text-tertiary mb-1">Deliveries</div>
-            <div className="text-sm font-semibold text-wl-text-primary">{driver.completedToday}</div>
+            <div className="text-xs text-gray-400 mb-1">Deliveries</div>
+            <div className="text-sm font-semibold text-white">{driver.completedToday}</div>
           </div>
           <div>
-            <div className="text-xs text-wl-text-tertiary mb-1">Rating</div>
+            <div className="text-xs text-gray-400 mb-1">Rating</div>
             <StarRating rating={driver.avgRating} size="sm" />
           </div>
           <div>
-            <div className="text-xs text-wl-text-tertiary mb-1">On-Time</div>
-            <div className="text-sm font-semibold text-wl-text-primary">{driver.onTimePercentage}%</div>
+            <div className="text-xs text-gray-400 mb-1">On-Time</div>
+            <div className="text-sm font-semibold text-white">{driver.onTimePercentage}%</div>
           </div>
         </div>
 
         {/* Current delivery info */}
         {driver.activeOrders > 0 && (
           <div className="mb-4 pb-4 border-b border-white/[0.05]">
-            <div className="text-xs text-wl-text-tertiary mb-2">Active Orders</div>
+            <div className="text-xs text-gray-400 mb-2">Active Orders</div>
             <div className="flex items-center gap-2 text-xs">
-              <MapPin className="w-3.5 h-3.5 text-wl-primary-400" />
-              <span className="text-wl-text-secondary">{driver.currentLocation}</span>
-              <span className="text-wl-text-tertiary">· {driver.activeOrders} orders</span>
+              <MapPin className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-gray-300">{driver.currentLocation}</span>
+              <span className="text-gray-400">· {driver.activeOrders} orders</span>
             </div>
           </div>
         )}

@@ -73,7 +73,7 @@ export default function ProfilePage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProfile({ ...profile, avatar: event.target?.result as string });
+        setProfileData({ ...profileData, avatar: event.target?.result as string });
       };
       reader.readAsDataURL(file);
     }
@@ -119,17 +119,17 @@ export default function ProfilePage() {
   };
 
   const getStrengthColor = () => {
-    if (passwordStrength < 25) return "bg-[var(--wl-danger)]";
-    if (passwordStrength < 50) return "bg-[var(--wl-warning)]";
-    if (passwordStrength < 75) return "bg-[var(--wl-info)]";
-    return "bg-[var(--wl-success)]";
+    if (passwordStrength < 25) return "bg-red-500";
+    if (passwordStrength < 50) return "bg-amber-500";
+    if (passwordStrength < 75) return "bg-blue-500";
+    return "bg-emerald-500";
   };
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Profile Settings"
         subtitle="Manage your personal information and security"
@@ -138,21 +138,21 @@ export default function ProfilePage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Avatar and Basic Info */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal details</CardDescription>
+              <CardTitle className="text-white">Profile Information</CardTitle>
+              <CardDescription className="text-gray-400">Update your personal details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-3">
+                <label className="text-sm font-semibold text-white block mb-3">
                   Avatar
                 </label>
                 <div className="flex items-center gap-6">
                   <img
                     src={profileData.avatar}
                     alt="Avatar"
-                    className="w-24 h-24 rounded-full border-2 border-[var(--wl-border)] object-cover"
+                    className="w-24 h-24 rounded-full border-2 border-[#1e1e2e] object-cover"
                   />
                   <div className="flex gap-2">
                     <Button variant="secondary" size="sm" asChild>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Full Name
                 </label>
                 <Input
@@ -193,19 +193,19 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Email Address (Read-only)
                 </label>
                 <Input
                   type="email"
                   value={profileData.email}
                   disabled
-                  className="bg-[var(--wl-bg-secondary)]"
+                  className="bg-[#1a1a2e] border-[#1e1e2e] text-gray-400"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Phone Number
                 </label>
                 <Input
@@ -225,17 +225,17 @@ export default function ProfilePage() {
           </Card>
 
           {/* Password Change */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Lock className="w-5 h-5" />
                 Change Password
               </CardTitle>
-              <CardDescription>Update your password regularly for security</CardDescription>
+              <CardDescription className="text-gray-400">Update your password regularly for security</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Current Password
                 </label>
                 <Input
@@ -247,7 +247,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   New Password
                 </label>
                 <div className="relative">
@@ -259,7 +259,7 @@ export default function ProfilePage() {
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -267,8 +267,8 @@ export default function ProfilePage() {
                 {password.new && (
                   <div className="mt-2">
                     <div className="flex items-center gap-2 text-xs mb-1">
-                      <span className="text-[var(--wl-text-secondary)]">Strength:</span>
-                      <div className="flex-1 h-2 bg-[var(--wl-bg-secondary)] rounded-full overflow-hidden">
+                      <span className="text-gray-400">Strength:</span>
+                      <div className="flex-1 h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
                         <div
                           className={cn("h-full transition-all", getStrengthColor())}
                           style={{ width: `${passwordStrength}%` }}
@@ -280,7 +280,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Confirm Password
                 </label>
                 <Input
@@ -300,20 +300,20 @@ export default function ProfilePage() {
           </Card>
 
           {/* MFA Setup */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-white">
                     <Shield className="w-5 h-5" />
                     Two-Factor Authentication
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-400">
                     Add an extra layer of security to your account
                   </CardDescription>
                 </div>
                 {mfaEnabled && (
-                  <div className="flex items-center gap-1 px-3 py-1 bg-[var(--wl-success)]/10 text-[var(--wl-success)] text-xs font-semibold rounded-full">
+                  <div className="flex items-center gap-1 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full">
                     <Check className="w-3 h-3" />
                     Enabled
                   </div>
@@ -323,7 +323,7 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               {!mfaSetup ? (
                 <div className="text-center py-8">
-                  <p className="text-[var(--wl-text-secondary)] mb-4">
+                  <p className="text-gray-400 mb-4">
                     Set up two-factor authentication using an authenticator app
                   </p>
                   <Button variant="primary" onClick={() => setMfaSetup(true)}>
@@ -333,14 +333,14 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <div className="text-center py-4">
-                    <p className="text-sm text-[var(--wl-text-secondary)] mb-3">
+                    <p className="text-sm text-gray-400 mb-3">
                       Scan this QR code with your authenticator app
                     </p>
-                    <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-[var(--wl-border)] p-2 rounded" />
+                    <img src={qrCode} alt="MFA QR Code" className="mx-auto border border-[#1e1e2e] p-2 rounded" />
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                    <label className="text-sm font-semibold text-white block mb-2">
                       Enter verification code to confirm
                     </label>
                     <Input
@@ -351,21 +351,21 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="bg-[var(--wl-bg-secondary)] p-4 rounded-lg border border-[var(--wl-border)]">
-                    <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-3">
+                  <div className="bg-[#1a1a2e] p-4 rounded-lg border border-[#1e1e2e]">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
                       Backup Codes
                     </p>
-                    <p className="text-xs text-[var(--wl-text-secondary)] mb-3">
+                    <p className="text-xs text-gray-400 mb-3">
                       Save these codes in a secure location. Use them if you lose access to your authenticator.
                     </p>
                     <div className="space-y-2">
                       {backupCodes.map((code, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between p-2 bg-[var(--wl-bg-primary)] rounded font-mono text-sm"
+                          className="flex items-center justify-between p-2 bg-[#0a0a0f] rounded font-mono text-sm text-white"
                         >
                           <span>{code}</span>
-                          <button className="text-[var(--wl-primary)] hover:text-[var(--wl-primary)]/80">
+                          <button className="text-blue-400 hover:text-blue-300">
                             <Copy className="w-4 h-4" />
                           </button>
                         </div>

@@ -102,7 +102,7 @@ export default function PreferencesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Dashboard Preferences"
         subtitle="Customize your dashboard experience"
@@ -111,23 +111,23 @@ export default function PreferencesPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Location & Timezone */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <MapPin className="w-5 h-5" />
                 Location & Timezone
               </CardTitle>
-              <CardDescription>Set your timezone for accurate scheduling</CardDescription>
+              <CardDescription className="text-gray-400">Set your timezone for accurate scheduling</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Timezone
                 </label>
                 <select
                   value={preferences.timezone}
                   onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
-                  className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz.value} value={tz.value}>
@@ -147,23 +147,23 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Language & Regional */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Globe className="w-5 h-5" />
                 Language & Regional
               </CardTitle>
-              <CardDescription>Choose your preferred language and date format</CardDescription>
+              <CardDescription className="text-gray-400">Choose your preferred language and date format</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Language
                 </label>
                 <select
                   value={preferences.language}
                   onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                  className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
                   {LANGUAGES.map((lang) => (
                     <option key={lang.value} value={lang.value}>
@@ -174,13 +174,13 @@ export default function PreferencesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Date Format
                 </label>
                 <select
                   value={preferences.dateFormat}
                   onChange={(e) => setPreferences({ ...preferences, dateFormat: e.target.value })}
-                  className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
                 >
                   {DATE_FORMATS.map((fmt) => (
                     <option key={fmt.value} value={fmt.value}>
@@ -193,17 +193,17 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Units & Measurements */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Weight className="w-5 h-5" />
                 Units & Measurements
               </CardTitle>
-              <CardDescription>Set your preferred units for distance and weight</CardDescription>
+              <CardDescription className="text-gray-400">Set your preferred units for distance and weight</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Distance Unit
                 </label>
                 <div className="flex gap-4">
@@ -220,7 +220,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, distanceUnit: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm text-[var(--wl-text-secondary)]">
+                      <span className="text-sm text-gray-400">
                         {option.label}
                       </span>
                     </label>
@@ -229,7 +229,7 @@ export default function PreferencesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Weight Unit
                 </label>
                 <div className="flex gap-4">
@@ -246,7 +246,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, weightUnit: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm text-[var(--wl-text-secondary)]">
+                      <span className="text-sm text-gray-400">
                         {option.label}
                       </span>
                     </label>
@@ -257,17 +257,17 @@ export default function PreferencesPage() {
           </Card>
 
           {/* Dashboard Display */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Calendar className="w-5 h-5" />
                 Dashboard Display
               </CardTitle>
-              <CardDescription>Customize your default dashboard view</CardDescription>
+              <CardDescription className="text-gray-400">Customize your default dashboard view</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Default Dashboard View
                 </label>
                 <div className="grid grid-cols-2 gap-4">
@@ -280,10 +280,10 @@ export default function PreferencesPage() {
                     <label
                       key={option.value}
                       className={cn(
-                        "p-3 border border-[var(--wl-border)] rounded-lg cursor-pointer transition-all",
+                        "p-3 border border-[#1e1e2e] rounded-lg cursor-pointer transition-all",
                         preferences.dashboardView === option.value
-                          ? "border-[var(--wl-primary)] bg-[var(--wl-primary)]/10"
-                          : "hover:border-[var(--wl-text-secondary)]"
+                          ? "border-blue-500 bg-blue-500/10"
+                          : "hover:border-gray-400"
                       )}
                     >
                       <input
@@ -294,7 +294,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, dashboardView: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm font-medium text-[var(--wl-text-primary)] ml-2">
+                      <span className="text-sm font-medium text-white ml-2">
                         {option.label}
                       </span>
                     </label>

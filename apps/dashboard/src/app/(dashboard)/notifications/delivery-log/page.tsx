@@ -114,7 +114,7 @@ export default function DeliveryLogPage() {
   }, [entries]);
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Delivery Log"
         subtitle="Track notification delivery status and history"
@@ -131,52 +131,52 @@ export default function DeliveryLogPage() {
         <div className="space-y-6">
           {/* Statistics Cards */}
           <div className="grid grid-cols-4 gap-4">
-            <Card>
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-wl-text-primary">
+                  <div className="text-2xl font-bold text-white">
                     {stats.total}
                   </div>
-                  <p className="text-sm text-wl-text-secondary mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Total Sent
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-wl-success-400">
+                  <div className="text-2xl font-bold text-emerald-500">
                     {stats.delivered}
                   </div>
-                  <p className="text-sm text-wl-text-secondary mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Delivered
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-wl-danger-400">
+                  <div className="text-2xl font-bold text-red-500">
                     {stats.failed}
                   </div>
-                  <p className="text-sm text-wl-text-secondary mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Failed
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-wl-warning-400">
+                  <div className="text-2xl font-bold text-amber-500">
                     {stats.rate}%
                   </div>
-                  <p className="text-sm text-wl-text-secondary mt-1">
+                  <p className="text-sm text-gray-300 mt-1">
                     Success Rate
                   </p>
                 </div>
@@ -185,25 +185,26 @@ export default function DeliveryLogPage() {
           </div>
 
           {/* Filters and Search */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search */}
                 <div>
-                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Search
                   </label>
                   <Input
                     placeholder="Search by message, recipient..."
                     value={debouncedQuery}
                     onChange={(e) => setDebouncedQuery(e.target.value)}
+                    className="bg-[#1a1a2e] border-[#1e1e2e] text-white placeholder-gray-500"
                   />
                 </div>
 
                 {/* Filters */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       Channel
                     </label>
                     <select
@@ -216,9 +217,9 @@ export default function DeliveryLogPage() {
                       }
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
-                        "bg-wl-bg-overlay border border-wl-border-default",
-                        "text-wl-text-primary",
-                        "focus:outline-none focus:border-wl-primary-500",
+                        "bg-[#1a1a2e] border border-[#1e1e2e]",
+                        "text-white",
+                        "focus:outline-none focus:border-blue-500",
                         "transition-colors duration-fast"
                       )}
                     >
@@ -232,7 +233,7 @@ export default function DeliveryLogPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       Status
                     </label>
                     <select
@@ -245,9 +246,9 @@ export default function DeliveryLogPage() {
                       }
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
-                        "bg-wl-bg-overlay border border-wl-border-default",
-                        "text-wl-text-primary",
-                        "focus:outline-none focus:border-wl-primary-500",
+                        "bg-[#1a1a2e] border border-[#1e1e2e]",
+                        "text-white",
+                        "focus:outline-none focus:border-blue-500",
                         "transition-colors duration-fast"
                       )}
                     >
@@ -289,12 +290,12 @@ export default function DeliveryLogPage() {
           </Card>
 
           {/* Delivery Log Table */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardContent className="p-0">
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Calendar className="w-12 h-12 text-wl-text-tertiary mb-3" />
-                  <p className="text-wl-text-secondary">
+                  <Calendar className="w-12 h-12 text-gray-400 mb-3" />
+                  <p className="text-gray-300">
                     No delivery logs found
                   </p>
                 </div>
@@ -302,20 +303,20 @@ export default function DeliveryLogPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-wl-border-default bg-wl-bg-surface">
-                        <th className="text-left py-3 px-6 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide">
+                      <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Message
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Channel
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Recipient
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Status
                         </th>
-                        <th className="text-left py-3 px-6 font-semibold text-wl-text-tertiary text-xs uppercase tracking-wide">
+                        <th className="text-left py-3 px-6 font-semibold text-gray-400 text-xs uppercase tracking-wide">
                           Timestamp
                         </th>
                         <th className="w-10" />
@@ -329,17 +330,17 @@ export default function DeliveryLogPage() {
                           <tr
                             key={entry.id}
                             className={cn(
-                              "border-b border-wl-border-default hover:bg-wl-bg-overlay transition-colors cursor-pointer",
-                              isExpanded && "bg-wl-bg-surface"
+                              "border-b border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors cursor-pointer",
+                              isExpanded && "bg-[#12121a]"
                             )}
                           >
-                            <td className="py-4 px-6 text-wl-text-primary font-medium">
+                            <td className="py-4 px-6 text-white font-medium">
                               {entry.message}
                             </td>
-                            <td className="py-4 px-6 text-wl-text-secondary">
+                            <td className="py-4 px-6 text-gray-300">
                               <Badge variant="info">{entry.channel}</Badge>
                             </td>
-                            <td className="py-4 px-6 text-wl-text-secondary text-xs font-mono">
+                            <td className="py-4 px-6 text-gray-300 text-xs font-mono">
                               {truncate(entry.recipient, 30)}
                             </td>
                             <td className="py-4 px-6">
@@ -347,7 +348,7 @@ export default function DeliveryLogPage() {
                                 {entry.status}
                               </Badge>
                             </td>
-                            <td className="py-4 px-6 text-wl-text-secondary text-sm">
+                            <td className="py-4 px-6 text-gray-300 text-sm">
                               {formatDateTime(entry.timestamp)}
                             </td>
                             <td
@@ -360,7 +361,7 @@ export default function DeliveryLogPage() {
                             >
                               <ChevronDown
                                 className={cn(
-                                  "w-4 h-4 text-wl-text-tertiary transition-transform inline",
+                                  "w-4 h-4 text-gray-400 transition-transform inline",
                                   isExpanded && "rotate-180"
                                 )}
                               />
@@ -381,33 +382,33 @@ export default function DeliveryLogPage() {
               return (
                 <div
                   key={`${entry.id}-details`}
-                  className="bg-wl-bg-surface border-t border-wl-border-default px-6 py-4"
+                  className="bg-[#12121a] border-t border-[#1e1e2e] px-6 py-4"
                 >
                   <div className="grid grid-cols-2 gap-6 text-sm">
                     <div>
-                      <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                         Full Recipient
                       </p>
-                      <p className="font-mono text-wl-text-secondary break-all">
+                      <p className="font-mono text-gray-300 break-all">
                         {entry.recipient}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                         Sent At
                       </p>
-                      <p className="text-wl-text-secondary">
+                      <p className="text-gray-300">
                         {new Date(entry.timestamp).toLocaleString()}
                       </p>
                     </div>
 
                     {entry.deliveredAt && (
                       <div>
-                        <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                           Delivered At
                         </p>
-                        <p className="text-wl-success-400">
+                        <p className="text-emerald-500">
                           {new Date(
                             entry.deliveredAt
                           ).toLocaleString()}
@@ -417,30 +418,30 @@ export default function DeliveryLogPage() {
 
                     {entry.readAt && (
                       <div>
-                        <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                           Read At
                         </p>
-                        <p className="text-wl-success-400">
+                        <p className="text-emerald-500">
                           {new Date(entry.readAt).toLocaleString()}
                         </p>
                       </div>
                     )}
 
                     <div>
-                      <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                      <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                         Retries
                       </p>
-                      <p className="text-wl-text-secondary">
+                      <p className="text-gray-300">
                         {entry.retryCount}
                       </p>
                     </div>
 
                     {entry.error && (
                       <div>
-                        <p className="text-wl-text-tertiary uppercase text-xs font-semibold tracking-wide mb-1">
+                        <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                           Error
                         </p>
-                        <p className="text-wl-danger-400">{entry.error}</p>
+                        <p className="text-red-500">{entry.error}</p>
                       </div>
                     )}
                   </div>

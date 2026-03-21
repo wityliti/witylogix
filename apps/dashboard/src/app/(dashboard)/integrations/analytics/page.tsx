@@ -158,8 +158,8 @@ export default function AnalyticsIntegrationsPage() {
   if (connectionsError) {
     return (
       <div className="p-6">
-        <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
-          <p className="text-sm text-wl-danger-400">Failed to load analytics integrations</p>
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+          <p className="text-sm text-red-400">Failed to load analytics integrations</p>
           <Button onClick={refetchConnections} variant="secondary" size="sm" className="mt-3">
             Retry
           </Button>
@@ -187,14 +187,14 @@ export default function AnalyticsIntegrationsPage() {
         }
       />
 
-      <div className={cn('p-6')}>
+      <div className={cn('min-h-screen bg-[#0a0a0f] p-6')}>
         {/* Top Stats */}
         <div className={cn('grid grid-cols-1 md:grid-cols-4 gap-4 mb-6')}>
           <StatCard
             label="Active Connections"
             value={activeConnections.length}
             icon={<BarChart3 size={16} />}
-            accentColor="var(--wl-success-500)"
+            accentColor="#059669"
             index={0}
           />
           <StatCard
@@ -202,7 +202,7 @@ export default function AnalyticsIntegrationsPage() {
             value={totalDashboards}
             change={{ value: 12, label: 'this month' }}
             icon={<TrendingUp size={16} />}
-            accentColor="var(--wl-primary-500)"
+            accentColor="#3b82f6"
             index={1}
           />
           <StatCard
@@ -210,7 +210,7 @@ export default function AnalyticsIntegrationsPage() {
             value={connections.length}
             change={{ value: 0, label: 'configured' }}
             icon={<RefreshCw size={16} />}
-            accentColor="var(--wl-info-500)"
+            accentColor="#0284c7"
             index={2}
           />
           <StatCard
@@ -218,13 +218,13 @@ export default function AnalyticsIntegrationsPage() {
             value={totalEmbeds}
             change={{ value: 24, label: 'vs last week' }}
             icon={<Eye size={16} />}
-            accentColor="var(--wl-warning-500)"
+            accentColor="#d97706"
             index={3}
           />
         </div>
 
         {/* View Toggle */}
-        <div className={cn('flex gap-2 mb-6 bg-wl-bg-overlay rounded-md p-1 w-fit')}>
+        <div className={cn('flex gap-2 mb-6 bg-[#1a1a2e] rounded-md p-1 w-fit')}>
           {(['connections', 'reports', 'metrics'] as const).map((v) => (
             <button
               key={v}
@@ -232,8 +232,8 @@ export default function AnalyticsIntegrationsPage() {
               className={cn(
                 'px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize',
                 view === v
-                  ? 'bg-wl-primary-500 text-wl-text-inverse'
-                  : 'bg-transparent text-wl-text-tertiary'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-transparent text-gray-500'
               )}
             >
               {v}
@@ -246,7 +246,7 @@ export default function AnalyticsIntegrationsPage() {
           <div className={cn('space-y-4')}>
             {/* Provider Grid */}
             <div className={cn('mb-8')}>
-              <h3 className={cn('text-sm font-semibold text-wl-text-primary mb-4')}>
+              <h3 className={cn('text-sm font-semibold text-white mb-4')}>
                 Available Providers
               </h3>
               <div className={cn('grid grid-cols-1 md:grid-cols-5 gap-3')}>
@@ -260,10 +260,10 @@ export default function AnalyticsIntegrationsPage() {
                       className={cn(
                         'p-4 rounded-lg border cursor-pointer transition-all',
                         connection?.status === 'CONNECTED'
-                          ? 'border-wl-success-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
+                          ? 'border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
                           : connection?.status === 'ERROR'
-                            ? 'border-wl-danger-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
-                            : 'border-wl-border-subtle hover:border-wl-primary-400'
+                            ? 'border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
+                            : 'border-[#1e1e2e] hover:border-blue-400'
                       )}
                       onClick={() => setSelectedProvider(provider.slug)}
                     >
@@ -275,10 +275,10 @@ export default function AnalyticsIntegrationsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className={cn('text-sm font-semibold text-wl-text-primary')}>
+                      <p className={cn('text-sm font-semibold text-white')}>
                         {provider.name}
                       </p>
-                      <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
+                      <p className={cn('text-xs text-gray-500 mt-1')}>
                         {provider.description}
                       </p>
                     </div>
@@ -290,7 +290,7 @@ export default function AnalyticsIntegrationsPage() {
             {/* Connection Cards */}
             <div className={cn('space-y-3')}>
               <div className={cn('flex items-center justify-between mb-4')}>
-                <h3 className={cn('text-sm font-semibold text-wl-text-primary')}>
+                <h3 className={cn('text-sm font-semibold text-white')}>
                   Configured Connections ({connections.length})
                 </h3>
                 {errorConnections.length > 0 && (
@@ -303,12 +303,12 @@ export default function AnalyticsIntegrationsPage() {
               {connectionsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <Card key={i} className="p-4">
-                    <div className="h-20 bg-wl-bg-overlay/50 rounded animate-pulse" />
+                    <div className="h-20 bg-[#1a1a2e]/50 rounded animate-pulse" />
                   </Card>
                 ))
               ) : connections.length === 0 ? (
                 <Card className="p-6 text-center">
-                  <p className="text-wl-text-secondary">No connections configured</p>
+                  <p className="text-gray-400">No connections configured</p>
                 </Card>
               ) : (
                 connections.map((connection, idx) => {
@@ -336,10 +336,10 @@ export default function AnalyticsIntegrationsPage() {
                           <div className={cn('flex items-center gap-3 flex-1')}>
                             <span className={cn('text-2xl')}>{provider?.icon}</span>
                             <div className={cn('flex-1 min-w-0')}>
-                              <p className={cn('text-sm font-semibold text-wl-text-primary')}>
+                              <p className={cn('text-sm font-semibold text-white')}>
                                 {connection.name}
                               </p>
-                              <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
+                              <p className={cn('text-xs text-gray-500 mt-1')}>
                                 {connection.dashboardCount} dashboards • {connection.embedCount} embeds
                               </p>
                             </div>
@@ -355,7 +355,7 @@ export default function AnalyticsIntegrationsPage() {
                           </div>
                         </div>
 
-                        <div className={cn('flex items-center justify-between text-xs text-wl-text-tertiary mb-3')}>
+                        <div className={cn('flex items-center justify-between text-xs text-gray-500 mb-3')}>
                           <span>
                             Last sync: {connection.lastSync}
                           </span>
@@ -365,36 +365,36 @@ export default function AnalyticsIntegrationsPage() {
                         </div>
 
                         {connection.status === 'ERROR' && connection.errorMessage && (
-                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-wl-danger-400 border-opacity-30')}>
-                            <p className={cn('text-xs text-wl-danger-400')}>
+                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30')}>
+                            <p className={cn('text-xs text-red-400')}>
                               {connection.errorMessage}
                             </p>
                           </div>
                         )}
 
                         {isExpanded && (
-                          <div className={cn('border-t border-wl-border-subtle pt-3 mt-3')}>
+                          <div className={cn('border-t border-[#1e1e2e] pt-3 mt-3')}>
                             <div className={cn('grid grid-cols-3 gap-3 mb-4')}>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Dashboards</p>
-                                <p className={cn('text-lg font-bold text-wl-text-primary')}>
+                                <p className={cn('text-xs text-gray-500 mb-1')}>Dashboards</p>
+                                <p className={cn('text-lg font-bold text-white')}>
                                   {connection.dashboardCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Embeds</p>
-                                <p className={cn('text-lg font-bold text-wl-text-primary')}>
+                                <p className={cn('text-xs text-gray-500 mb-1')}>Embeds</p>
+                                <p className={cn('text-lg font-bold text-white')}>
                                   {connection.embedCount}
                                 </p>
                               </div>
                               <div>
-                                <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Status</p>
+                                <p className={cn('text-xs text-gray-500 mb-1')}>Status</p>
                                 <p
                                   className={cn(
                                     'text-lg font-bold',
                                     connection.status === 'CONNECTED'
-                                      ? 'text-wl-success-400'
-                                      : 'text-wl-danger-400'
+                                      ? 'text-emerald-400'
+                                      : 'text-red-400'
                                   )}
                                 >
                                   {connection.status === 'CONNECTED' ? 'Live' : 'Error'}
@@ -438,7 +438,7 @@ export default function AnalyticsIntegrationsPage() {
         {view === 'reports' && (
           <div className={cn('space-y-3')}>
             <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-wl-text-primary')}>
+              <h3 className={cn('text-sm font-semibold text-white')}>
                 Scheduled Reports ({reports.length})
               </h3>
               <Button variant="primary" size="sm" onClick={() => setShowReportForm(true)}>
@@ -450,12 +450,12 @@ export default function AnalyticsIntegrationsPage() {
             {reportsLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Card key={i} className="p-4">
-                  <div className="h-24 bg-wl-bg-overlay/50 rounded animate-pulse" />
+                  <div className="h-24 bg-[#1a1a2e]/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : reports.length === 0 ? (
               <Card className="p-6 text-center">
-                <p className="text-wl-text-secondary">No scheduled reports</p>
+                <p className="text-gray-400">No scheduled reports</p>
               </Card>
             ) : (
               reports.map((report, idx) => {
@@ -473,10 +473,10 @@ export default function AnalyticsIntegrationsPage() {
                         <div className={cn('flex items-center gap-3 flex-1 min-w-0')}>
                           <span className={cn('text-xl shrink-0')}>{provider?.icon}</span>
                           <div className={cn('min-w-0')}>
-                            <p className={cn('text-sm font-semibold text-wl-text-primary truncate')}>
+                            <p className={cn('text-sm font-semibold text-white truncate')}>
                               {report.title}
                             </p>
-                            <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
+                            <p className={cn('text-xs text-gray-500 mt-1')}>
                               {report.frequency} • {report.format}
                             </p>
                           </div>
@@ -495,17 +495,17 @@ export default function AnalyticsIntegrationsPage() {
                         </Badge>
                       </div>
 
-                      <div className={cn('bg-wl-bg-surface rounded p-3 mb-3')}>
+                      <div className={cn('bg-[#12121a] rounded p-3 mb-3')}>
                         <div className={cn('grid grid-cols-2 gap-3 text-xs')}>
                           <div>
-                            <p className={cn('text-wl-text-tertiary mb-1')}>Next Run</p>
-                            <p className={cn('font-semibold text-wl-text-primary')}>
+                            <p className={cn('text-gray-500 mb-1')}>Next Run</p>
+                            <p className={cn('font-semibold text-white')}>
                               {report.nextRun}
                             </p>
                           </div>
                           <div>
-                            <p className={cn('text-wl-text-tertiary mb-1')}>Last Run</p>
-                            <p className={cn('font-semibold text-wl-text-primary')}>
+                            <p className={cn('text-gray-500 mb-1')}>Last Run</p>
+                            <p className={cn('font-semibold text-white')}>
                               {report.lastRun}
                             </p>
                           </div>
@@ -513,7 +513,7 @@ export default function AnalyticsIntegrationsPage() {
                       </div>
 
                       <div className={cn('mb-3')}>
-                        <p className={cn('text-xs text-wl-text-tertiary mb-2')}>
+                        <p className={cn('text-xs text-gray-500 mb-2')}>
                           Recipients ({report.recipients.length})
                         </p>
                         <div className={cn('flex flex-wrap gap-1')}>
@@ -521,7 +521,7 @@ export default function AnalyticsIntegrationsPage() {
                             <span
                               key={recipient}
                               className={cn(
-                                'text-xs px-2 py-1 rounded bg-wl-bg-elevated text-wl-text-secondary'
+                                'text-xs px-2 py-1 rounded bg-[#1a1a2e] text-gray-400'
                               )}
                             >
                               {recipient}
@@ -551,7 +551,7 @@ export default function AnalyticsIntegrationsPage() {
                           <Settings size={14} />
                         </Button>
                         <Button variant="ghost" size="sm">
-                          <Trash2 size={14} className={cn('text-wl-danger-400')} />
+                          <Trash2 size={14} className={cn('text-red-400')} />
                         </Button>
                       </div>
                     </div>
@@ -565,19 +565,19 @@ export default function AnalyticsIntegrationsPage() {
         {/* Metrics View */}
         {view === 'metrics' && (
           <div className={cn('space-y-4')}>
-            <h3 className={cn('text-sm font-semibold text-wl-text-primary mb-4')}>
+            <h3 className={cn('text-sm font-semibold text-white mb-4')}>
               Data Source Sync Status
             </h3>
 
             {dataSourcesLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="p-3">
-                  <div className="h-12 bg-wl-bg-overlay/50 rounded animate-pulse" />
+                  <div className="h-12 bg-[#1a1a2e]/50 rounded animate-pulse" />
                 </Card>
               ))
             ) : dataSources.length === 0 ? (
               <Card className="p-6 text-center">
-                <p className="text-wl-text-secondary">No data sources configured</p>
+                <p className="text-gray-400">No data sources configured</p>
               </Card>
             ) : (
               <div className={cn('space-y-2')}>
@@ -589,27 +589,27 @@ export default function AnalyticsIntegrationsPage() {
                           className={cn(
                             'w-2 h-2 rounded-full shrink-0',
                             source.status === 'SYNCED'
-                              ? 'bg-wl-success-400'
+                              ? 'bg-emerald-400'
                               : source.status === 'SYNCING'
-                                ? 'bg-wl-info-400'
+                                ? 'bg-cyan-400'
                                 : source.status === 'STALE'
-                                  ? 'bg-wl-warning-400'
-                                  : 'bg-wl-danger-400'
+                                  ? 'bg-amber-400'
+                                  : 'bg-red-400'
                           )}
                         />
                         <div className={cn('min-w-0')}>
-                          <p className={cn('text-sm font-semibold text-wl-text-primary')}>
+                          <p className={cn('text-sm font-semibold text-white')}>
                             {source.name}
                           </p>
-                          <p className={cn('text-xs text-wl-text-tertiary mt-0.5')}>
+                          <p className={cn('text-xs text-gray-500 mt-0.5')}>
                             {source.type} • Refreshes {source.refreshSchedule}
                           </p>
                         </div>
                       </div>
                       <div className={cn('flex items-center gap-3 text-right shrink-0')}>
                         <div>
-                          <p className={cn('text-xs text-wl-text-tertiary')}>Last Refresh</p>
-                          <p className={cn('text-xs font-semibold text-wl-text-primary')}>
+                          <p className={cn('text-xs text-gray-500')}>Last Refresh</p>
+                          <p className={cn('text-xs font-semibold text-white')}>
                             {source.lastRefresh}
                           </p>
                         </div>

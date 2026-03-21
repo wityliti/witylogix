@@ -37,54 +37,54 @@ import {
 // Color tokens definition
 const COLOR_TOKENS = {
   "Background Colors": {
-    "--wl-bg-root": "#0a0a0c",
-    "--wl-bg-base": "#0f0f13",
-    "--wl-bg-surface": "#111114",
-    "--wl-bg-elevated": "#19191e",
-    "--wl-bg-overlay": "#1f1f26",
-    "--wl-bg-sunken": "#07070a",
-    "--wl-bg-sidebar": "#0c0c10",
+    "--bg-root': '#0a0a0f'
+    "--bg-base': '#0a0a0f'
+    "--bg-surface': '#12121a'
+    "--bg-elevated': '#1a1a2e'
+    "--bg-overlay': '#1a1a2e'
+    "#000": "#07070a",
+    "#000": "#0c0c10",
   },
   "Neutral Colors": {
-    "--wl-neutral-50": "#f8f8fa",
-    "--wl-neutral-100": "#ececf1",
-    "--wl-neutral-200": "#d5d5dd",
-    "--wl-neutral-300": "#b0b0bf",
-    "--wl-neutral-400": "#8585a0",
-    "--wl-neutral-500": "#62627e",
-    "--wl-neutral-600": "#4a4a62",
-    "--wl-neutral-700": "#35354a",
-    "--wl-neutral-800": "#232336",
-    "--wl-neutral-900": "#17172a",
+    "#000": "#f8f8fa",
+    "#000": "#ececf1",
+    "#000": "#d5d5dd",
+    "#000": "#b0b0bf",
+    "#000": "#8585a0",
+    "#000": "#62627e",
+    "#000": "#4a4a62",
+    "#000": "#35354a",
+    "#000": "#232336",
+    "#000": "#17172a",
   },
   "Primary Colors (Amber)": {
-    "--wl-primary-50": "#fff9eb",
-    "--wl-primary-100": "#ffefc4",
-    "--wl-primary-200": "#ffe09d",
-    "--wl-primary-300": "#ffd06a",
-    "--wl-primary-400": "#ffc240",
-    "--wl-primary-500": "#f5a623",
-    "--wl-primary-600": "#d98b0a",
-    "--wl-primary-700": "#b06f05",
-    "--wl-primary-800": "#8d5704",
-    "--wl-primary-900": "#6b4203",
+    "--blue-50": "#fff9eb",
+    "#000": "#ffefc4",
+    "#000": "#ffe09d",
+    "#000": "#ffd06a",
+    "--blue-500": "#ffc240",
+    "--blue-600": "#f5a623",
+    "--blue-700": "#d98b0a",
+    "#000": "#b06f05",
+    "#000": "#8d5704",
+    "#000": "#6b4203",
   },
   "Status Colors": {
-    "--wl-success-500": "#10b981",
-    "--wl-warning-500": "#f59e0b",
-    "--wl-danger-500": "#ef4444",
-    "--wl-info-500": "#3b82f6",
+    "--emerald-600": "#10b981",
+    "--amber-600": "#f59e0b",
+    "--red-600": "#ef4444",
+    "--blue-600": "#3b82f6",
   },
   "Text Colors": {
-    "--wl-text-primary": "#f0f0f5",
-    "--wl-text-secondary": "#9494ac",
-    "--wl-text-tertiary": "#5e5e78",
-    "--wl-text-inverse": "#0a0a0c",
+    "--text-primary': '#ffffff'
+    "--text-secondary': '#9ca3af'
+    "#000": "#5e5e78",
+    "#000": "#0a0a0c",
   },
   "Border Colors": {
-    "--wl-border-subtle": "rgba(255, 255, 255, 0.06)",
-    "--wl-border-default": "rgba(255, 255, 255, 0.10)",
-    "--wl-border-strong": "rgba(255, 255, 255, 0.16)",
+    "--border-subtle': '#1e1e2e'
+    "#000": "rgba(255, 255, 255, 0.10)",
+    "#000": "rgba(255, 255, 255, 0.16)",
   },
 };
 
@@ -127,11 +127,11 @@ const CopyToken = ({ token }: { token: string }) => {
   return (
     <button
       onClick={handleCopy}
-      className="bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-wl-text-secondary transition-all hover:text-wl-text-primary"
+      className="bg-transparent border-none cursor-pointer p-1 flex items-center justify-center text-gray-400 transition-all hover:text-white"
       title="Copy token"
     >
       {copied ? (
-        <Check className="w-4 h-4 text-wl-success-500" />
+        <Check className="w-4 h-4 text-emerald-600" />
       ) : (
         <Copy className="w-4 h-4" />
       )}
@@ -142,30 +142,30 @@ const CopyToken = ({ token }: { token: string }) => {
 // Color Palette Section
 const ColorPaletteSection = () => {
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Palette className="w-5 h-5 text-wl-text-secondary" />
+        <Palette className="w-5 h-5 text-gray-400" />
         <CardTitle>Color Palette</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">
           {Object.entries(COLOR_TOKENS).map(([categoryName, colors]) => (
             <div key={categoryName}>
-              <h4 className="text-sm font-semibold text-wl-text-secondary mb-3 uppercase tracking-widest">
+              <h4 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest">
                 {categoryName}
               </h4>
               <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
                 {Object.entries(colors).map(([tokenName, hexValue]) => (
                   <div key={tokenName} className="flex gap-3 items-start">
                     <div
-                      className="w-15 h-15 rounded-md border border-wl-border-default flex-shrink-0"
+                      className="w-15 h-15 rounded-md border border-[#1e1e2e]-default flex-shrink-0"
                       style={{ backgroundColor: hexValue }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="m-0 text-xs font-semibold text-wl-text-primary mb-0.5">
+                      <p className="m-0 text-xs font-semibold text-white mb-0.5">
                         {tokenName}
                       </p>
-                      <code className="text-xs text-wl-text-secondary font-mono flex items-center gap-1 justify-between">
+                      <code className="text-xs text-gray-400 font-mono flex items-center gap-1 justify-between">
                         <span>{hexValue}</span>
                         <CopyToken token={hexValue} />
                       </code>
@@ -184,25 +184,25 @@ const ColorPaletteSection = () => {
 // Typography Section
 const TypographySection = () => {
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Type className="w-5 h-5 text-wl-text-secondary" />
+        <Type className="w-5 h-5 text-gray-400" />
         <CardTitle>Typography</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
           {TYPOGRAPHY_SAMPLES.map((sample, idx) => (
-            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-wl-border-subtle": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
+            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-[#1e1e2e]": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
               <div className="min-w-20">
-                <p className="m-0 text-xs font-semibold text-wl-text-secondary uppercase tracking-widest">
+                <p className="m-0 text-xs font-semibold text-gray-400 uppercase tracking-widest">
                   {sample.name}
                 </p>
-                <code className="text-xs text-wl-text-tertiary font-mono">
+                <code className="text-xs text-gray-400 font-mono">
                   {sample.size} / {sample.weight}
                 </code>
               </div>
               <div className="flex-1">
-                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-wl-text-primary">
+                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-white">
                   {sample.text}
                 </div>
               </div>
@@ -217,9 +217,9 @@ const TypographySection = () => {
 // Spacing Section
 const SpacingSection = () => {
   return (
-    <Card className="bg-wl-bg-surface border-wl-border-subtle mb-6">
+    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
       <CardHeader className="pb-3 flex items-center gap-3">
-        <Layout className="w-5 h-5 text-wl-text-secondary" />
+        <Layout className="w-5 h-5 text-gray-400" />
         <CardTitle>Spacing Scale</CardTitle>
       </CardHeader>
       <CardContent>
@@ -227,21 +227,21 @@ const SpacingSection = () => {
           {SPACING_SCALE.map((space) => (
             <div key={space.name} className="flex items-center gap-4">
               <div className="min-w-16">
-                <p className="m-0 text-xs font-semibold text-wl-text-secondary">
+                <p className="m-0 text-xs font-semibold text-gray-400">
                   --wl-space-{space.name}
                 </p>
-                <p className="m-0 mt-0.5 text-xs text-wl-text-tertiary">
+                <p className="m-0 mt-0.5 text-xs text-gray-400">
                   {space.label || "0"}
                 </p>
               </div>
               <div
-                className="h-0.5 bg-wl-primary-500 rounded"
+                className="h-0.5 bg-blue-600 rounded"
                 style={{
                   width: `${Math.max(space.value, 4)}px`,
                 }}
               />
               <div className="min-w-10 text-right">
-                <code className="text-xs text-wl-text-secondary font-mono">
+                <code className="text-xs text-gray-400 font-mono">
                   {space.value}px
                 </code>
               </div>
@@ -261,7 +261,7 @@ const ComponentsShowcase = () => {
   return (
     <div className="grid gap-6">
       {/* Buttons */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
@@ -279,7 +279,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Badges */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Badges</CardTitle>
         </CardHeader>
@@ -296,20 +296,20 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Inputs & Selects */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Form Elements</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 max-w-md">
             <div>
-              <label className="text-sm font-medium text-wl-text-primary block mb-2">
+              <label className="text-sm font-medium text-white block mb-2">
                 Input Field
               </label>
               <Input placeholder="Enter text..." />
             </div>
             <div>
-              <label className="text-sm font-medium text-wl-text-primary block mb-2">
+              <label className="text-sm font-medium text-white block mb-2">
                 Select Field
               </label>
               <Select
@@ -327,7 +327,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Stat Cards */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
@@ -359,7 +359,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Tabs */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Tabs</CardTitle>
         </CardHeader>
@@ -379,7 +379,7 @@ const ComponentsShowcase = () => {
       </Card>
 
       {/* Modal Trigger */}
-      <Card className="bg-wl-bg-surface border-wl-border-subtle">
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
         <CardHeader className="pb-3">
           <CardTitle>Modal</CardTitle>
         </CardHeader>
@@ -390,10 +390,10 @@ const ComponentsShowcase = () => {
           {modalOpen && (
             <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
               <div className="p-6">
-                <h2 className="text-xl font-bold text-wl-text-primary m-0 mb-3">
+                <h2 className="text-xl font-bold text-white m-0 mb-3">
                   Modal Example
                 </h2>
-                <p className="text-wl-text-secondary m-0 mb-4">
+                <p className="text-gray-400 m-0 mb-4">
                   This is a sample modal dialog showing component usage in the design system.
                 </p>
                 <div className="flex gap-3 justify-end">
@@ -418,7 +418,7 @@ export default function DesignSystemPage() {
   const [activeTab, setActiveTab] = useState("colors");
 
   return (
-    <div className="bg-wl-bg-root">
+    <div className="bg-[#0a0a0f]-root">
       <Header
         title="Design System"
         subtitle="Comprehensive guide to colors, typography, spacing, and components"

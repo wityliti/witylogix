@@ -1,20 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { FieldMappingEditor } from '@/components/sync/field-mapping-editor';
-import { SyncScheduleConfig } from '@/components/sync/sync-schedule-config';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { FieldMappingEditor } from "@/components/sync/field-mapping-editor";
+import { SyncScheduleConfig } from "@/components/sync/sync-schedule-config";
 import {
   useFieldMappings,
   useSyncSchedule,
   useProductPreview,
-} from '@/hooks/use-product-sync';
+} from "@/hooks/use-product-sync";
 import {
-import { useApiList } from '@/hooks/use-api';
   AlertCircle,
   Check,
   ChevronRight,
@@ -23,7 +28,7 @@ import { useApiList } from '@/hooks/use-api';
   Save,
   Download,
   Upload,
-} from 'lucide-react';
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    PRODUCT CATALOG SYNC PAGE — Field mapping & sync config
@@ -164,10 +169,10 @@ export default function ProductSyncPage() {
   };
 
   const syncStatusColor = {
-    synced: 'bg-wl-success-bg text-wl-success-500',
-    syncing: 'bg-wl-info-bg text-wl-info-500',
-    error: 'bg-wl-danger-bg text-wl-danger-500',
-    pending: 'bg-wl-warning-bg text-wl-warning-500',
+    synced: 'bg-emerald-500 text-emerald-500',
+    syncing: 'bg-blue-500 text-blue-500',
+    error: 'bg-red-500 text-red-500',
+    pending: 'bg-amber-500 text-amber-500',
   };
 
   const syncStatusIcon = {
@@ -198,16 +203,16 @@ export default function ProductSyncPage() {
                 className={cn(
                   'flex items-center justify-between p-4 rounded-lg border transition-all',
                   selectedPlatformId === platform.id
-                    ? 'bg-wl-bg-overlay border-wl-primary-500 ring-2 ring-wl-primary-500/20'
-                    : 'bg-wl-bg-surface border-wl-border-subtle hover:border-wl-border-default'
+                    ? 'hover:bg-[#1a1a2e] border-blue-500 ring-2 ring-blue-500/20'
+                    : 'bg-[#12121a] border-[#1e1e2e] hover:border-[#1e1e2e]'
                 )}
               >
                 <div className="flex items-center gap-3 flex-1 text-left">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-wl-text-primary">
+                    <h4 className="font-semibold text-white">
                       {platform.name}
                     </h4>
-                    <p className="text-sm text-wl-text-secondary">
+                    <p className="text-sm text-gray-300">
                       {platform.platform} • {platform.productCount} products
                     </p>
                   </div>
@@ -232,7 +237,7 @@ export default function ProductSyncPage() {
                         platform.status.slice(1)}
                     </Badge>
                     {platform.lastSyncAt && (
-                      <span className="text-xs text-wl-text-secondary">
+                      <span className="text-xs text-gray-300">
                         {new Date(platform.lastSyncAt).toLocaleTimeString()}
                       </span>
                     )}
@@ -240,7 +245,7 @@ export default function ProductSyncPage() {
 
                   <ChevronRight
                     className={cn(
-                      'w-5 h-5 text-wl-text-secondary transition-transform',
+                      'w-5 h-5 text-gray-300 transition-transform',
                       selectedPlatformId === platform.id && 'rotate-90'
                     )}
                   />
@@ -254,7 +259,7 @@ export default function ProductSyncPage() {
       {selectedPlatform && (
         <>
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-wl-border-subtle">
+          <div className="flex gap-2 border-b border-[#1e1e2e]">
             {(['mapping', 'schedule', 'preview'] as const).map((tab) => (
               <button
                 key={tab}
@@ -262,8 +267,8 @@ export default function ProductSyncPage() {
                 className={cn(
                   'px-4 py-3 font-medium text-sm transition-colors border-b-2',
                   activeTab === tab
-                    ? 'border-wl-primary-500 text-wl-primary-500'
-                    : 'border-transparent text-wl-text-secondary hover:text-wl-text-primary'
+                    ? 'border-blue-500 text-blue-500'
+                    : 'border-transparent text-gray-300 hover:text-white'
                 )}
               >
                 {tab === 'mapping' && 'Field Mapping'}
@@ -296,13 +301,13 @@ export default function ProductSyncPage() {
               <CardContent className="space-y-4">
                 {/* Unmapped Required Fields Warning */}
                 {unmappedRequired.length > 0 && (
-                  <div className="p-4 bg-wl-warning-bg/20 border border-wl-warning-500/30 rounded-lg flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
+                  <div className="p-4 bg-amber-500/20 border border-amber-500/30 rounded-lg flex gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-wl-warning-600 mb-1">
+                      <h4 className="font-semibold text-amber-600 mb-1">
                         Unmapped Required Fields
                       </h4>
-                      <p className="text-sm text-wl-text-secondary">
+                      <p className="text-sm text-gray-300">
                         {unmappedRequired.map((f) => f.name).join(', ')}
                       </p>
                     </div>
@@ -338,9 +343,9 @@ export default function ProductSyncPage() {
                       onChange={(e) => setTemplateName(e.target.value)}
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
-                        'bg-wl-bg-surface border border-wl-border-subtle',
-                        'text-wl-text-primary placeholder:text-wl-text-secondary',
-                        'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                        'bg-[#12121a] border border-[#1e1e2e]',
+                        'text-white placeholder:text-gray-300',
+                        'focus:outline-none focus:ring-2 focus:ring-blue-500'
                       )}
                     />
                     <Button
@@ -423,15 +428,15 @@ export default function ProductSyncPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <div className="bg-wl-bg-surface rounded-lg p-4 border border-wl-border-subtle">
-                  <h4 className="font-semibold text-wl-text-primary mb-4">
+                <div className="bg-[#12121a] rounded-lg p-4 border border-[#1e1e2e]">
+                  <h4 className="font-semibold text-white mb-4">
                     Sample Product Transformation
                   </h4>
 
                   <div className="grid grid-cols-2 gap-4">
                     {/* Source */}
                     <div>
-                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">
+                      <h5 className="text-sm font-medium text-gray-300 mb-3">
                         Source ({selectedPlatform.name})
                       </h5>
                       <div className="space-y-2 text-sm">
@@ -439,10 +444,10 @@ export default function ProductSyncPage() {
                           Object.entries(previewProduct.source).map(([key, value]) => (
                             <div
                               key={key}
-                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
+                              className="flex justify-between p-2 bg-[#1a1a2e] rounded"
                             >
-                              <span className="text-wl-text-secondary">{key}:</span>
-                              <span className="text-wl-text-primary font-medium">
+                              <span className="text-gray-300">{key}:</span>
+                              <span className="text-white font-medium">
                                 {String(value)}
                               </span>
                             </div>
@@ -452,7 +457,7 @@ export default function ProductSyncPage() {
 
                     {/* Target */}
                     <div>
-                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">
+                      <h5 className="text-sm font-medium text-gray-300 mb-3">
                         Target (Witylogix)
                       </h5>
                       <div className="space-y-2 text-sm">
@@ -460,10 +465,10 @@ export default function ProductSyncPage() {
                           Object.entries(previewProduct.target).map(([key, value]) => (
                             <div
                               key={key}
-                              className="flex justify-between p-2 bg-wl-bg-elevated rounded"
+                              className="flex justify-between p-2 bg-[#1a1a2e] rounded"
                             >
-                              <span className="text-wl-text-secondary">{key}:</span>
-                              <span className="text-wl-text-primary font-medium">
+                              <span className="text-gray-300">{key}:</span>
+                              <span className="text-white font-medium">
                                 {String(value)}
                               </span>
                             </div>
@@ -474,9 +479,9 @@ export default function ProductSyncPage() {
                 </div>
 
                 {testSyncInProgress && (
-                  <div className="p-4 bg-wl-info-bg/20 border border-wl-info-500/30 rounded-lg flex items-center gap-3">
-                    <RefreshCw className="w-5 h-5 text-wl-info-500 animate-spin" />
-                    <span className="text-sm text-wl-text-secondary">
+                  <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center gap-3">
+                    <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                    <span className="text-sm text-gray-300">
                       Testing sync with 5 sample products...
                     </span>
                   </div>

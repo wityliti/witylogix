@@ -255,10 +255,10 @@ export default function ERPPage() {
               <CardTitle className="text-sm">Connected</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {ERP_PROVIDERS.filter((p) => p.status === "CONNECTED").length}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>providers active</p>
+              <p className={cn("text-xs text-gray-500 mt-1")}>providers active</p>
             </div>
           </Card>
 
@@ -267,13 +267,13 @@ export default function ERPPage() {
               <CardTitle className="text-sm">Synced Entities</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {ERP_PROVIDERS.reduce(
                   (sum, p) => sum + p.syncEntities.filter((e) => e.enabled).length,
                   0
                 )}
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>entity types</p>
+              <p className={cn("text-xs text-gray-500 mt-1")}>entity types</p>
             </div>
           </Card>
 
@@ -282,16 +282,16 @@ export default function ERPPage() {
               <CardTitle className="text-sm">Total Records</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-text-primary")}>
+              <div className={cn("text-2xl font-bold text-white")}>
                 {(
                   ERP_PROVIDERS.reduce(
                     (sum, p) => sum + p.syncEntities.reduce((s, e) => s + e.count, 0),
                     0
                   ) / 1000
                 ).toFixed(0)}
-                <span className="text-xs text-wl-text-tertiary">k</span>
+                <span className="text-xs text-gray-500">k</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>synced records</p>
+              <p className={cn("text-xs text-gray-500 mt-1")}>synced records</p>
             </div>
           </Card>
 
@@ -300,11 +300,11 @@ export default function ERPPage() {
               <CardTitle className="text-sm">Sync Health</CardTitle>
             </CardHeader>
             <div className={cn("p-4 pt-0")}>
-              <div className={cn("text-2xl font-bold text-wl-success-500")}>
+              <div className={cn("text-2xl font-bold text-emerald-500")}>
                 99.8
-                <span className="text-xs text-wl-text-tertiary">%</span>
+                <span className="text-xs text-gray-500">%</span>
               </div>
-              <p className={cn("text-xs text-wl-text-tertiary mt-1")}>success rate</p>
+              <p className={cn("text-xs text-gray-500 mt-1")}>success rate</p>
             </div>
           </Card>
         </div>
@@ -313,7 +313,7 @@ export default function ERPPage() {
           {/* Provider Grid */}
           <div className={cn("lg:col-span-2 space-y-4")}>
             <div className={cn("flex items-center justify-between")}>
-              <h2 className={cn("text-lg font-semibold text-wl-text-primary")}>ERP Providers</h2>
+              <h2 className={cn("text-lg font-semibold text-white")}>ERP Providers</h2>
               <Button variant="secondary" size="sm">
                 Force Sync All
               </Button>
@@ -324,16 +324,16 @@ export default function ERPPage() {
                 <Card
                   key={provider.id}
                   className={cn(
-                    "cursor-pointer transition-all hover:border-wl-primary-400",
-                    selectedProvider === provider.id && "border-wl-primary-500 bg-wl-bg-surface"
+                    "cursor-pointer transition-all hover:border-blue-400",
+                    selectedProvider === provider.id && "border-blue-500 bg-[#12121a]"
                   )}
                   onClick={() => setSelectedProvider(provider.id)}
                 >
                   <div className={cn("p-4")}>
                     <div className={cn("flex items-start justify-between mb-3")}>
                       <div>
-                        <h3 className={cn("font-semibold text-wl-text-primary")}>{provider.name}</h3>
-                        <p className={cn("text-xs text-wl-text-tertiary")}>
+                        <h3 className={cn("font-semibold text-white")}>{provider.name}</h3>
+                        <p className={cn("text-xs text-gray-500")}>
                           {provider.syncEntities.filter((e) => e.enabled).length} entities enabled
                         </p>
                       </div>
@@ -342,12 +342,12 @@ export default function ERPPage() {
 
                     <div className={cn("grid grid-cols-2 gap-2 text-xs mb-3")}>
                       <div>
-                        <p className={cn("text-wl-text-tertiary")}>Last Sync</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>{provider.lastSync}</p>
+                        <p className={cn("text-gray-500")}>Last Sync</p>
+                        <p className={cn("font-semibold text-white")}>{provider.lastSync}</p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-text-tertiary")}>Direction</p>
-                        <p className={cn("font-semibold text-wl-text-primary")}>
+                        <p className={cn("text-gray-500")}>Direction</p>
+                        <p className={cn("font-semibold text-white")}>
                           {provider.syncDirection.replace(/_/g, " ")}
                         </p>
                       </div>
@@ -372,7 +372,7 @@ export default function ERPPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-3")}>
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Status
                       </label>
                       <div className={cn("flex items-center gap-2")}>
@@ -380,22 +380,22 @@ export default function ERPPage() {
                           className={cn(
                             "w-2 h-2 rounded-full",
                             selected.status === "CONNECTED"
-                              ? "bg-wl-success-500"
+                              ? "bg-emerald-500"
                               : selected.status === "EXPIRED"
-                                ? "bg-wl-warning-500"
-                                : "bg-wl-danger-500"
+                                ? "bg-amber-500"
+                                : "bg-red-500"
                           )}
                         />
-                        <p className={cn("text-sm text-wl-text-primary")}>{selected.status}</p>
+                        <p className={cn("text-sm text-white")}>{selected.status}</p>
                       </div>
                     </div>
 
                     {selected.tokenExpiry && (
                       <div>
-                        <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                        <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                           Token Expires
                         </label>
-                        <p className={cn("text-sm text-wl-text-primary")}>{selected.tokenExpiry}</p>
+                        <p className={cn("text-sm text-white")}>{selected.tokenExpiry}</p>
                       </div>
                     )}
 
@@ -415,19 +415,19 @@ export default function ERPPage() {
                   </CardHeader>
                   <div className={cn("p-4 pt-0 space-y-3")}>
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Sync Direction
                       </label>
-                      <p className={cn("text-sm text-wl-text-primary")}>
+                      <p className={cn("text-sm text-white")}>
                         {selected.syncDirection.replace(/_/g, " ")}
                       </p>
                     </div>
 
                     <div>
-                      <label className={cn("text-xs font-semibold text-wl-text-secondary block mb-2")}>
+                      <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
                         Conflict Resolution
                       </label>
-                      <p className={cn("text-sm text-wl-text-primary")}>
+                      <p className={cn("text-sm text-white")}>
                         {selected.conflictResolution.replace(/_/g, " ")}
                       </p>
                     </div>
@@ -446,7 +446,7 @@ export default function ERPPage() {
             ) : (
               <Card>
                 <div className={cn("p-8 text-center")}>
-                  <p className={cn("text-wl-text-tertiary")}>Select a provider to view details</p>
+                  <p className={cn("text-gray-500")}>Select a provider to view details</p>
                 </div>
               </Card>
             )}
@@ -465,17 +465,17 @@ export default function ERPPage() {
                   <div
                     key={entity.name}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded bg-wl-bg-surface border border-wl-border-subtle"
+                      "flex items-center justify-between p-3 rounded bg-[#12121a] border border-[#1e1e2e]"
                     )}
                   >
                     <div className={cn("flex-1")}>
-                      <p className={cn("font-semibold text-wl-text-primary")}>{entity.name}</p>
-                      <p className={cn("text-xs text-wl-text-tertiary")}>{entity.count.toLocaleString()} records</p>
+                      <p className={cn("font-semibold text-white")}>{entity.name}</p>
+                      <p className={cn("text-xs text-gray-500")}>{entity.count.toLocaleString()} records</p>
                     </div>
                     <div
                       className={cn(
                         "w-3 h-3 rounded-full",
-                        entity.enabled ? "bg-wl-success-500" : "bg-wl-border-subtle"
+                        entity.enabled ? "bg-emerald-500" : "border-[#1e1e2e]"
                       )}
                     />
                   </div>
@@ -494,37 +494,37 @@ export default function ERPPage() {
             <div className={cn("overflow-x-auto")}>
               <table className={cn("w-full text-sm")}>
                 <thead>
-                  <tr className={cn("border-b border-wl-border-subtle")}>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <tr className={cn("border-b border-[#1e1e2e]")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       Witylogix Field
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       ERP Field
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       Data Type
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       Auto Mapped
                     </th>
-                    <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                    <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {selected.fieldMappings.map((mapping) => (
-                    <tr key={mapping.witylogixField} className={cn("border-b border-wl-border-subtle hover:bg-wl-bg-surface")}>
-                      <td className={cn("p-4 font-mono text-xs text-wl-text-primary")}>{mapping.witylogixField}</td>
-                      <td className={cn("p-4 font-mono text-xs text-wl-text-primary")}>{mapping.erpField}</td>
-                      <td className={cn("p-4 text-xs text-wl-text-tertiary")}>
+                    <tr key={mapping.witylogixField} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
+                      <td className={cn("p-4 font-mono text-xs text-white")}>{mapping.witylogixField}</td>
+                      <td className={cn("p-4 font-mono text-xs text-white")}>{mapping.erpField}</td>
+                      <td className={cn("p-4 text-xs text-gray-500")}>
                         <Badge variant="info">{mapping.dataType}</Badge>
                       </td>
                       <td className={cn("p-4")}>
                         <div
                           className={cn(
                             "w-3 h-3 rounded-full",
-                            mapping.autoMapped ? "bg-wl-success-500" : "bg-wl-text-tertiary"
+                            mapping.autoMapped ? "bg-emerald-500" : "text-gray-500"
                           )}
                         />
                       </td>
@@ -539,7 +539,7 @@ export default function ERPPage() {
               </table>
             </div>
 
-            <div className={cn("p-4 pt-4 border-t border-wl-border-subtle")}>
+            <div className={cn("p-4 pt-4 border-t border-[#1e1e2e]")}>
               <Button variant="secondary" size="sm">
                 Auto-Map All Fields
               </Button>
@@ -555,38 +555,38 @@ export default function ERPPage() {
           <div className={cn("overflow-x-auto")}>
             <table className={cn("w-full text-sm")}>
               <thead>
-                <tr className={cn("border-b border-wl-border-subtle")}>
-                  <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                <tr className={cn("border-b border-[#1e1e2e]")}>
+                  <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Timestamp
                   </th>
-                  <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Entity
                   </th>
-                  <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Status
                   </th>
-                  <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Records
                   </th>
-                  <th className={cn("text-left p-4 text-xs font-semibold text-wl-text-tertiary")}>
+                  <th className={cn("text-left p-4 text-xs font-semibold text-gray-500")}>
                     Errors
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {SYNC_LOG.map((operation) => (
-                  <tr key={operation.id} className={cn("border-b border-wl-border-subtle hover:bg-wl-bg-surface")}>
-                    <td className={cn("p-4 text-xs text-wl-text-tertiary")}>{operation.timestamp}</td>
-                    <td className={cn("p-4 font-semibold text-wl-text-primary")}>{operation.entity}</td>
+                  <tr key={operation.id} className={cn("border-b border-[#1e1e2e] hover:bg-[#12121a]")}>
+                    <td className={cn("p-4 text-xs text-gray-500")}>{operation.timestamp}</td>
+                    <td className={cn("p-4 font-semibold text-white")}>{operation.entity}</td>
                     <td className={cn("p-4")}>
                       <SyncStatusBadge status={operation.status} />
                     </td>
-                    <td className={cn("p-4 text-wl-text-primary")}>{operation.recordsAffected}</td>
+                    <td className={cn("p-4 text-white")}>{operation.recordsAffected}</td>
                     <td className={cn("p-4")}>
                       {operation.errors > 0 ? (
-                        <span className={cn("text-wl-warning-500 font-semibold")}>{operation.errors}</span>
+                        <span className={cn("text-amber-500 font-semibold")}>{operation.errors}</span>
                       ) : (
-                        <span className={cn("text-wl-text-tertiary")}>—</span>
+                        <span className={cn("text-gray-500")}>—</span>
                       )}
                     </td>
                   </tr>

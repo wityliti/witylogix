@@ -143,7 +143,7 @@ export default function WebhooksDebuggerPage() {
   const eventTypes = ["shipment.created", "order.created", "driver.assigned"];
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Webhook Debugger"
         subtitle="Monitor and debug webhook deliveries in real-time"
@@ -152,7 +152,7 @@ export default function WebhooksDebuggerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-[#1e1e2e] bg-[#12121a]">
             <CardHeader>
               <CardDescription>Success Rate</CardDescription>
             </CardHeader>
@@ -198,7 +198,7 @@ export default function WebhooksDebuggerPage() {
         </div>
 
         {/* Filters and Controls */}
-        <Card className="border border-[var(--wl-border)] mb-8">
+        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Filter className="w-5 h-5" />
@@ -216,7 +216,7 @@ export default function WebhooksDebuggerPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, eventType: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-sm"
                 >
                   <option value="all">All Events</option>
                   {eventTypes.map((type) => (
@@ -295,7 +295,7 @@ export default function WebhooksDebuggerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Event List */}
           <div className="lg:col-span-2">
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Zap className="w-5 h-5" />
@@ -305,7 +305,7 @@ export default function WebhooksDebuggerPage() {
               <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {filteredEvents.length === 0 ? (
-                    <div className="text-center py-8 text-[var(--wl-text-secondary)]">
+                    <div className="text-center py-8 text-gray-400">
                       No events found
                     </div>
                   ) : (
@@ -316,25 +316,25 @@ export default function WebhooksDebuggerPage() {
                         className={cn(
                           "p-3 rounded-lg border cursor-pointer transition-all",
                           selectedEvent?.id === event.id
-                            ? "bg-[var(--wl-primary)]/10 border-[var(--wl-primary)]"
-                            : "border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)]"
+                            ? "bg-blue-500/10 border-blue-500"
+                            : "border-[#1e1e2e] hover:bg-[#1a1a2e]"
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               {getStatusIcon(event.status)}
-                              <span className="font-mono text-xs text-[var(--wl-text-secondary)]">
+                              <span className="font-mono text-xs text-gray-400">
                                 {event.timestamp.toLocaleTimeString()}
                               </span>
                               <Badge variant="info">{event.eventType}</Badge>
                             </div>
-                            <div className="text-sm text-[var(--wl-text-secondary)] truncate">
+                            <div className="text-sm text-gray-400 truncate">
                               {event.endpointUrl}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs font-mono text-[var(--wl-text-secondary)]">
+                            <div className="text-xs font-mono text-gray-400">
                               {event.duration}ms
                             </div>
                             <Badge
@@ -361,7 +361,7 @@ export default function WebhooksDebuggerPage() {
 
           {/* Event Details */}
           <div>
-            <Card className="border border-[var(--wl-border)] sticky top-4">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] sticky top-4">
               <CardHeader>
                 <CardTitle className="text-lg">Event Details</CardTitle>
               </CardHeader>
@@ -369,42 +369,42 @@ export default function WebhooksDebuggerPage() {
                 {selectedEvent ? (
                   <div className="space-y-4">
                     <div>
-                      <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                      <div className="text-xs font-semibold text-gray-400 mb-1">
                         Event ID
                       </div>
-                      <div className="text-xs font-mono bg-[var(--wl-bg-secondary)] p-2 rounded flex items-center justify-between">
+                      <div className="text-xs font-mono bg-[#1a1a2e] p-2 rounded flex items-center justify-between">
                         <span className="truncate">{selectedEvent.id}</span>
                         <Copy className="w-3 h-3 cursor-pointer hover:opacity-60" />
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                      <div className="text-xs font-semibold text-gray-400 mb-1">
                         Timestamp
                       </div>
-                      <div className="text-sm">
+                      <div className="text-sm text-white">
                         {selectedEvent.timestamp.toLocaleString()}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                      <div className="text-xs font-semibold text-gray-400 mb-1">
                         Event Type
                       </div>
                       <Badge variant="info">{selectedEvent.eventType}</Badge>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                      <div className="text-xs font-semibold text-gray-400 mb-1">
                         Endpoint
                       </div>
-                      <div className="text-xs text-[var(--wl-text-secondary)] break-all">
+                      <div className="text-xs text-gray-400 break-all">
                         {selectedEvent.endpointUrl}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                      <div className="text-xs font-semibold text-gray-400 mb-1">
                         Status
                       </div>
                       <Badge
@@ -422,18 +422,18 @@ export default function WebhooksDebuggerPage() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">
                           Duration
                         </div>
-                        <div className="text-sm font-mono">
+                        <div className="text-sm font-mono text-white">
                           {selectedEvent.duration}ms
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">
                           Status Code
                         </div>
-                        <div className="text-sm font-mono">
+                        <div className="text-sm font-mono text-white">
                           {selectedEvent.statusCode || "—"}
                         </div>
                       </div>
@@ -441,10 +441,10 @@ export default function WebhooksDebuggerPage() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">
                           Attempt
                         </div>
-                        <div className="text-sm font-mono">
+                        <div className="text-sm font-mono text-white">
                           {selectedEvent.attempt}/{selectedEvent.maxAttempts}
                         </div>
                       </div>
@@ -452,7 +452,7 @@ export default function WebhooksDebuggerPage() {
 
                     {selectedEvent.error && (
                       <div>
-                        <div className="text-xs font-semibold text-[var(--wl-text-secondary)] mb-1">
+                        <div className="text-xs font-semibold text-gray-400 mb-1">
                           Error
                         </div>
                         <div className="text-xs text-red-500 bg-red-500/10 p-2 rounded">
@@ -461,7 +461,7 @@ export default function WebhooksDebuggerPage() {
                       </div>
                     )}
 
-                    <div className="pt-4 border-t border-[var(--wl-border)]">
+                    <div className="pt-4 border-t border-[#1e1e2e]">
                       <Button className="w-full" variant="secondary" size="sm">
                         <BarChart3 className="w-4 h-4 mr-2" />
                         View Payload
@@ -469,7 +469,7 @@ export default function WebhooksDebuggerPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-[var(--wl-text-secondary)]">
+                  <div className="text-center py-8 text-gray-400">
                     Select an event to view details
                   </div>
                 )}

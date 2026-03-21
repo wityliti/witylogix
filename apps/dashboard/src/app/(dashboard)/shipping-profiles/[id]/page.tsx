@@ -169,30 +169,30 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
 
   if (!profile) {
     return (
-      <div className="p-6 min-h-screen bg-wl-bg">
-        <p className="text-wl-muted">Profile not found</p>
+      <div className="p-6 min-h-screen bg-[#12121a]">
+        <p className="text-gray-400">Profile not found</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen bg-wl-bg">
+    <div className="p-6 min-h-screen bg-[#12121a]">
       {/* Header */}
       <div className="mb-6">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h1 className="text-4xl font-bold text-wl-text mb-1">
+            <h1 className="text-4xl font-bold text-white mb-1">
               {isEditing ? (
                 <Input
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  className="w-full p-2 px-3 bg-wl-bg border border-wl-primary rounded text-wl-text text-2xl font-bold"
+                  className="w-full p-2 px-3 bg-[#12121a] border border-blue-500 rounded text-white text-2xl font-bold"
                 />
               ) : (
                 profile.name
               )}
             </h1>
-            <p className="text-wl-muted">ID: {profile.id}</p>
+            <p className="text-gray-400">ID: {profile.id}</p>
           </div>
           <div className="flex gap-2">
             {isEditing ? (
@@ -228,31 +228,31 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
         </div>
         <div className="flex gap-3 items-center flex-wrap">
           <Badge variant={profile.status === 'active' ? 'success' : 'warning'}>{profile.status.toUpperCase()}</Badge>
-          <span className="text-xs text-wl-muted">Last updated: {profile.lastUpdated}</span>
+          <span className="text-xs text-gray-400">Last updated: {profile.lastUpdated}</span>
         </div>
       </div>
 
       {/* Quick Info Cards */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
-        <Card className="bg-wl-card border border-wl-border">
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="p-5">
-            <p className="text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <Truck size={14} /> Carrier
             </p>
-            <p className="text-base text-wl-text font-semibold">{profile.carrier}</p>
+            <p className="text-base text-white font-semibold">{profile.carrier}</p>
           </CardContent>
         </Card>
-        <Card className="bg-wl-card border border-wl-border">
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="p-5">
-            <p className="text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <DollarSign size={14} /> Default Cost
             </p>
-            <p className="text-base font-semibold text-wl-primary-400">${profile.defaultCost.toFixed(2)}</p>
+            <p className="text-base font-semibold text-blue-500">${profile.defaultCost.toFixed(2)}</p>
           </CardContent>
         </Card>
-        <Card className="bg-wl-card border border-wl-border">
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="p-5">
-            <p className="text-xs text-wl-muted font-semibold mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
               <Settings size={14} /> Cost Structure
             </p>
             {isEditing ? (
@@ -262,7 +262,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 <option value="tiered">Tiered</option>
               </Select>
             ) : (
-              <p className="text-base text-wl-text font-semibold">{costStructure.replace('-', ' ').toUpperCase()}</p>
+              <p className="text-base text-white font-semibold">{costStructure.replace('-', ' ').toUpperCase()}</p>
             )}
           </CardContent>
         </Card>
@@ -271,7 +271,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       {/* Tabs for Editing */}
       {isEditing && (
         <div className="mb-6">
-          <div className="flex gap-2 border-b border-wl-border pb-3 flex-wrap">
+          <div className="flex gap-2 border-b border-[#1e1e2e] pb-3 flex-wrap">
             {(['rates', 'rules', 'windows', 'locations', 'calendar'] as const).map((tab) => (
               <button
                 key={tab}
@@ -290,10 +290,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       )}
 
       {/* Rate Table Section */}
-      <Card className="bg-wl-card border border-wl-border mb-6">
-        <CardHeader className="pb-4 border-b border-wl-border">
+      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
           <CardTitle className="flex items-center gap-2">
-            <DollarSign size={18} className="text-wl-primary-400" /> Rate Configuration
+            <DollarSign size={18} className="text-blue-500" /> Rate Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -302,33 +302,33 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               <div className="overflow-x-auto mb-4">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="border-b border-wl-border">
-                      <th className="p-3 text-left text-wl-muted text-xs font-semibold">Zone</th>
-                      <th className="p-3 text-left text-wl-muted text-xs font-semibold">Distance</th>
-                      <th className="p-3 text-left text-wl-muted text-xs font-semibold">Base Rate</th>
-                      <th className="p-3 text-left text-wl-muted text-xs font-semibold">Per KM</th>
-                      <th className="p-3 text-left text-wl-muted text-xs font-semibold">Min Cost</th>
-                      {isEditing && <th className="p-3 text-center text-wl-muted text-xs font-semibold">Action</th>}
+                    <tr className="border-b border-[#1e1e2e]">
+                      <th className="p-3 text-left text-gray-400 text-xs font-semibold">Zone</th>
+                      <th className="p-3 text-left text-gray-400 text-xs font-semibold">Distance</th>
+                      <th className="p-3 text-left text-gray-400 text-xs font-semibold">Base Rate</th>
+                      <th className="p-3 text-left text-gray-400 text-xs font-semibold">Per KM</th>
+                      <th className="p-3 text-left text-gray-400 text-xs font-semibold">Min Cost</th>
+                      {isEditing && <th className="p-3 text-center text-gray-400 text-xs font-semibold">Action</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {rateTable.map((rate, idx) => (
-                      <tr key={idx} className="border-b border-wl-border">
-                        <td className="p-3 text-wl-text text-sm">
+                      <tr key={idx} className="border-b border-[#1e1e2e]">
+                        <td className="p-3 text-white text-sm">
                           {isEditing ? (
                             <Input value={rate.zone} onChange={(e) => updateRate(idx, 'zone', e.target.value)} className="w-full" />
                           ) : (
                             rate.zone
                           )}
                         </td>
-                        <td className="p-3 text-wl-text text-sm">
+                        <td className="p-3 text-white text-sm">
                           {isEditing ? (
                             <Input value={rate.distance} onChange={(e) => updateRate(idx, 'distance', e.target.value)} className="w-full" />
                           ) : (
                             rate.distance
                           )}
                         </td>
-                        <td className="p-3 text-sm font-semibold text-wl-primary-400">
+                        <td className="p-3 text-sm font-semibold text-blue-500">
                           {isEditing ? (
                             <Input
                               type="number"
@@ -340,7 +340,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                             `$${rate.baseRate.toFixed(2)}`
                           )}
                         </td>
-                        <td className="p-3 text-wl-text text-sm">
+                        <td className="p-3 text-white text-sm">
                           {isEditing ? (
                             <Input
                               type="number"
@@ -352,7 +352,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                             `$${rate.perKm.toFixed(2)}`
                           )}
                         </td>
-                        <td className="p-3 text-wl-text text-sm">
+                        <td className="p-3 text-white text-sm">
                           {isEditing ? (
                             <Input
                               type="number"
@@ -387,10 +387,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Zone-Based Rules */}
-      <Card className="bg-wl-card border border-wl-border mb-6">
-        <CardHeader className="pb-4 border-b border-wl-border">
+      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
           <CardTitle className="flex items-center gap-2">
-            <AlertCircle size={18} className="text-wl-warning-400" /> Zone-Based Rules
+            <AlertCircle size={18} className="text-amber-500" /> Zone-Based Rules
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -400,10 +400,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 {rules.map((rule) => (
                   <div
                     key={rule.id}
-                    className="p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-center"
+                    className="p-3 rounded bg-[#12121a] border border-[#1e1e2e] flex justify-between items-center"
                   >
                     <div>
-                      <p className="text-xs text-wl-muted mb-1">
+                      <p className="text-xs text-gray-400 mb-1">
                         <strong>{rule.zone}</strong> · {rule.condition}
                       </p>
                       <Badge variant="success" className="text-xs">
@@ -420,7 +420,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               </div>
 
               {isEditing && (
-                <div className="p-4 rounded bg-wl-bg border border-wl-border flex flex-col gap-3">
+                <div className="p-4 rounded bg-[#12121a] border border-[#1e1e2e] flex flex-col gap-3">
                   <div className="grid grid-cols-3 gap-2">
                     <Select value={newRuleZone} onChange={(v) => setNewRuleZone(v)}>
                       <option value="">Zone</option>
@@ -444,10 +444,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Delivery Time Windows */}
-      <Card className="bg-wl-card border border-wl-border mb-6">
-        <CardHeader className="pb-4 border-b border-wl-border">
+      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
           <CardTitle className="flex items-center gap-2">
-            <Clock size={18} className="text-wl-primary-400" /> Delivery Time Windows
+            <Clock size={18} className="text-blue-500" /> Delivery Time Windows
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -456,11 +456,11 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               {timeWindows.map((window, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-center"
+                  className="p-3 rounded bg-[#12121a] border border-[#1e1e2e] flex justify-between items-center"
                 >
                   <div className="flex-1">
-                    <p className="text-sm text-wl-text font-semibold">{window.day}</p>
-                    <p className="text-xs text-wl-muted mt-1">
+                    <p className="text-sm text-white font-semibold">{window.day}</p>
+                    <p className="text-xs text-gray-400 mt-1">
                       {window.start} – {window.end}
                     </p>
                   </div>
@@ -484,10 +484,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Location Attachments */}
-      <Card className="bg-wl-card border border-wl-border mb-6">
-        <CardHeader className="pb-4 border-b border-wl-border">
+      <Card className="bg-[#12121a] border border-[#1e1e2e] mb-6">
+        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
           <CardTitle className="flex items-center gap-2">
-            <MapPin size={18} className="text-wl-primary-400" /> Attached Locations
+            <MapPin size={18} className="text-blue-500" /> Attached Locations
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -497,11 +497,11 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
                 {locations.map((location) => (
                   <div
                     key={location.id}
-                    className="p-3 rounded bg-wl-bg border border-wl-border flex justify-between items-start"
+                    className="p-3 rounded bg-[#12121a] border border-[#1e1e2e] flex justify-between items-start"
                   >
                     <div>
-                      <p className="text-sm text-wl-text font-semibold">{location.name}</p>
-                      <p className="text-xs text-wl-muted mt-1">{location.address}</p>
+                      <p className="text-sm text-white font-semibold">{location.name}</p>
+                      <p className="text-xs text-gray-400 mt-1">{location.address}</p>
                     </div>
                     {isEditing && (
                       <Button variant="danger" size="sm" onClick={() => deleteLocation(location.id)}>
@@ -513,7 +513,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               </div>
 
               {isEditing && (
-                <div className="p-4 rounded bg-wl-bg border border-wl-border flex flex-col gap-3">
+                <div className="p-4 rounded bg-[#12121a] border border-[#1e1e2e] flex flex-col gap-3">
                   <Input placeholder="Location Name" value={newLocationName} onChange={(e) => setNewLocationName(e.target.value)} />
                   <Input placeholder="Address" value={newLocationAddress} onChange={(e) => setNewLocationAddress(e.target.value)} />
                   <Button variant="primary" size="sm" onClick={addLocation} className="flex items-center gap-1.5">
@@ -527,10 +527,10 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
       </Card>
 
       {/* Calendar Profile Picker */}
-      <Card className="bg-wl-card border border-wl-border">
-        <CardHeader className="pb-4 border-b border-wl-border">
+      <Card className="bg-[#12121a] border border-[#1e1e2e]">
+        <CardHeader className="pb-4 border-b border-[#1e1e2e]">
           <CardTitle className="flex items-center gap-2">
-            <Calendar size={18} className="text-wl-primary-400" /> Calendar Profile
+            <Calendar size={18} className="text-blue-500" /> Calendar Profile
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -542,7 +542,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
               <option value="Weekend">Weekend Only</option>
             </Select>
           ) : (
-            <p className="text-base text-wl-text">{calendarProfile}</p>
+            <p className="text-base text-white">{calendarProfile}</p>
           )}
         </CardContent>
       </Card>

@@ -215,11 +215,11 @@ export default function WhatsAppPage() {
 const getStatusIcon = (status: TemplateStatus) => {
   switch (status) {
     case "APPROVED":
-      return <CheckCircle className="w-4 h-4 text-[var(--wl-success)]" />;
+      return <CheckCircle className="w-4 h-4 text-emerald-500" />;
     case "PENDING":
-      return <Clock className="w-4 h-4 text-[var(--wl-warning)]" />;
+      return <Clock className="w-4 h-4 text-amber-500" />;
     case "REJECTED":
-      return <AlertCircle className="w-4 h-4 text-[var(--wl-danger)]" />;
+      return <AlertCircle className="w-4 h-4 text-red-500" />;
   }
 };
 
@@ -231,6 +231,8 @@ const getStatusVariant = (status: TemplateStatus) => {
       return "warning";
     case "REJECTED":
       return "danger";
+    default:
+      return "default";
   }
 };
 
@@ -256,7 +258,7 @@ const TemplateModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <Card className="border border-[var(--wl-border)] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+      <Card className="border border-[#1e1e2e] bg-[#12121a] w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
         <CardHeader>
           <CardTitle>
             {template ? "Edit WhatsApp Template" : "Create WhatsApp Template"}
@@ -264,7 +266,7 @@ const TemplateModal = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+            <label className="text-sm font-semibold text-white block mb-2">
               Template Name
             </label>
             <Input
@@ -274,13 +276,13 @@ const TemplateModal = ({
             />
           </div>
           <div>
-            <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+            <label className="text-sm font-semibold text-white block mb-2">
               Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as TemplateCategory)}
-              className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+              className="w-full px-3 py-2 bg-[#1a1a2e] text-white border border-[#1e1e2e] rounded-md text-sm"
             >
               <option value="UTILITY">Utility</option>
               <option value="MARKETING">Marketing</option>
@@ -340,7 +342,7 @@ export default function WhatsAppTemplatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="WhatsApp Template Manager"
         subtitle="Create and manage WhatsApp Business templates"
@@ -348,11 +350,11 @@ export default function WhatsAppTemplatePage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter & Actions */}
-        <Card className="border border-[var(--wl-border)] mb-8">
+        <Card className="border border-[#1e1e2e] bg-[#12121a] mb-8">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex-1">
-                <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
                   Filter by Category
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -364,8 +366,8 @@ export default function WhatsAppTemplatePage() {
                         className={cn(
                           "px-3 py-2 rounded-lg text-sm font-medium transition-all",
                           selectedCategory === category
-                            ? "bg-[var(--wl-primary)] text-white"
-                            : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                            ? "bg-blue-500 text-white"
+                            : "bg-[#1a1a2e] text-white hover:bg-[#202030]"
                         )}
                       >
                         {category === "all" ? "All" : category}
@@ -399,7 +401,7 @@ export default function WhatsAppTemplatePage() {
         </Card>
 
         {/* Templates Table */}
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-[#1e1e2e] bg-[#12121a]">
           <CardHeader>
             <CardTitle>
               {filteredTemplates.length} Template
@@ -429,7 +431,7 @@ export default function WhatsAppTemplatePage() {
                   {filteredTemplates.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
-                        <p className="text-[var(--wl-text-secondary)] text-sm">
+                        <p className="text-gray-400 text-sm">
                           No templates found
                         </p>
                       </TableCell>
@@ -439,10 +441,10 @@ export default function WhatsAppTemplatePage() {
                       <TableRow key={template.id}>
                         <TableCell>
                           <div>
-                            <p className="text-sm font-medium text-[var(--wl-text-primary)]">
+                            <p className="text-sm font-medium text-white">
                               {template.name}
                             </p>
-                            <p className="text-xs text-[var(--wl-text-secondary)] mt-1">
+                            <p className="text-xs text-gray-400 mt-1">
                               ID: {template.id}
                             </p>
                           </div>
@@ -457,11 +459,11 @@ export default function WhatsAppTemplatePage() {
                               className={cn(
                                 "text-sm font-medium",
                                 template.status === "APPROVED" &&
-                                  "text-[var(--wl-success)]",
+                                  "text-emerald-500",
                                 template.status === "PENDING" &&
-                                  "text-[var(--wl-warning)]",
+                                  "text-amber-500",
                                 template.status === "REJECTED" &&
-                                  "text-[var(--wl-danger)]"
+                                  "text-red-500"
                               )}
                             >
                               {template.status}
@@ -469,17 +471,17 @@ export default function WhatsAppTemplatePage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-secondary)]">
+                          <span className="text-sm text-gray-400">
                             {template.variables.length}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-secondary)]">
+                          <span className="text-sm text-gray-400">
                             {template.language.toUpperCase()}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-[var(--wl-text-secondary)]">
+                          <span className="text-sm text-gray-400">
                             {template.lastEdited.toLocaleDateString()}
                           </span>
                         </TableCell>
@@ -487,10 +489,10 @@ export default function WhatsAppTemplatePage() {
                           <div className="flex gap-2 justify-end">
                             {template.status === "REJECTED" && (
                               <button
-                                className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors"
+                                className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
                                 title={template.rejectionReason}
                               >
-                                <AlertCircle className="w-4 h-4 text-[var(--wl-danger)]" />
+                                <AlertCircle className="w-4 h-4 text-red-500" />
                               </button>
                             )}
                             <button
@@ -498,15 +500,15 @@ export default function WhatsAppTemplatePage() {
                                 setSelectedTemplate(template);
                                 setIsModalOpen(true);
                               }}
-                              className="p-2 hover:bg-[var(--wl-bg-secondary)] rounded-lg transition-colors"
+                              className="p-2 hover:bg-[#1a1a2e] rounded-lg transition-colors"
                             >
-                              <Edit className="w-4 h-4 text-[var(--wl-text-secondary)]" />
+                              <Edit className="w-4 h-4 text-gray-400" />
                             </button>
                             <button
                               onClick={() => handleDelete(template.id)}
-                              className="p-2 hover:bg-[var(--wl-danger)]/10 rounded-lg transition-colors"
+                              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                             >
-                              <Trash2 className="w-4 h-4 text-[var(--wl-danger)]" />
+                              <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
                           </div>
                         </TableCell>
@@ -521,12 +523,12 @@ export default function WhatsAppTemplatePage() {
 
         {/* Template Detail Cards */}
         <div className="mt-8">
-          <h3 className="text-lg font-bold text-[var(--wl-text-primary)] mb-4">
+          <h3 className="text-lg font-bold text-white mb-4">
             Template Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredTemplates.map((template) => (
-              <Card key={template.id} className="border border-[var(--wl-border)]">
+              <Card key={template.id} className="border border-[#1e1e2e] bg-[#12121a]">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -544,13 +546,13 @@ export default function WhatsAppTemplatePage() {
                   {template.components.map((component, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]"
+                      className="p-3 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]"
                     >
-                      <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase mb-2">
+                      <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
                         {component.type}
                       </p>
                       {component.text && (
-                        <p className="text-sm text-[var(--wl-text-primary)] whitespace-pre-wrap">
+                        <p className="text-sm text-white whitespace-pre-wrap">
                           {component.text}
                         </p>
                       )}
@@ -559,9 +561,9 @@ export default function WhatsAppTemplatePage() {
                           {component.buttons.map((btn, bidx) => (
                             <div
                               key={bidx}
-                              className="flex items-center gap-2 text-xs text-[var(--wl-text-secondary)]"
+                              className="flex items-center gap-2 text-xs text-gray-400"
                             >
-                              <span className="px-2 py-1 bg-[var(--wl-primary)]/10 rounded text-[var(--wl-primary)]">
+                              <span className="px-2 py-1 bg-blue-500/10 rounded text-blue-500">
                                 [{btn.type}]
                               </span>
                               <span>{btn.text}</span>
@@ -572,11 +574,11 @@ export default function WhatsAppTemplatePage() {
                     </div>
                   ))}
                   {template.rejectionReason && (
-                    <div className="p-3 bg-[var(--wl-danger)]/10 border border-[var(--wl-danger)]/30 rounded-lg">
-                      <p className="text-xs font-semibold text-[var(--wl-danger)] mb-1">
+                    <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <p className="text-xs font-semibold text-red-500 mb-1">
                         Rejection Reason:
                       </p>
-                      <p className="text-xs text-[var(--wl-text-secondary)]">
+                      <p className="text-xs text-gray-400">
                         {template.rejectionReason}
                       </p>
                     </div>

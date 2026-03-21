@@ -376,7 +376,7 @@ export default function ESignaturesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--wl-bg-primary)] to-[var(--wl-bg-secondary)]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
       <Header
         title="E-Signatures Integrations"
         subtitle="Manage document signing workflows, templates, and audit trails"
@@ -387,7 +387,7 @@ export default function ESignaturesPage() {
         <Link href="/integrations">
           <Button
             variant="ghost"
-            className="mb-8 text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]"
+            className="mb-8 text-gray-400 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Integrations
@@ -401,16 +401,16 @@ export default function ESignaturesPage() {
             onClick={() => toggleSection("providers")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 E-Signature Providers
               </h2>
-              <Badge variant="primary" className="bg-[var(--wl-primary)]/30 text-[var(--wl-primary)]">
+              <Badge variant="primary" className="bg-blue-500/30 text-blue-500">
                 {providers.filter((p) => p.status === "connected").length} connected
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.providers ? "rotate-90" : ""
               )}
             />
@@ -419,17 +419,17 @@ export default function ESignaturesPage() {
           {expandedSections.providers && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {providers.map((provider) => (
-                <Card key={provider.id} className="hover:border-[var(--wl-primary)]/50">
+                <Card key={provider.id} className="hover:border-blue-500/50">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="text-[var(--wl-primary)] text-2xl">{provider.icon}</div>
+                        <div className="text-blue-500 text-2xl">{provider.icon}</div>
                         <div>
-                          <h3 className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                          <h3 className="text-lg font-semibold text-white">
                             {provider.name}
                           </h3>
-                          <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                          <p className="text-xs text-gray-500 mt-1">
                             {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
                             {provider.status === "disconnected" && "Not connected"}
                             {provider.status === "error" && "Connection error"}
@@ -469,30 +469,30 @@ export default function ESignaturesPage() {
                     {/* Stats Grid */}
                     {provider.status === "connected" && (
                       <>
-                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Templates
                             </p>
-                            <p className="text-2xl font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-2xl font-bold text-white mt-1">
                               {provider.templates}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                            <p className="text-xs font-medium text-gray-500 uppercase">
                               Envelopes
                             </p>
-                            <p className="text-2xl font-bold text-[var(--wl-text-primary)] mt-1">
+                            <p className="text-2xl font-bold text-white mt-1">
                               {provider.envelopes?.toLocaleString()}
                             </p>
                           </div>
                         </div>
 
                         <div className="mb-6">
-                          <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Last Sync
                           </p>
-                          <p className="text-sm text-[var(--wl-text-primary)] mt-1 flex items-center gap-2">
+                          <p className="text-sm text-white mt-1 flex items-center gap-2">
                             <Clock className="w-3 h-3 text-green-500" />
                             {provider.lastSync}
                           </p>
@@ -507,7 +507,7 @@ export default function ESignaturesPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                           >
                             <Settings className="w-4 h-4 mr-2" />
                             Settings
@@ -525,7 +525,7 @@ export default function ESignaturesPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                         >
                           <AlertCircle className="w-4 h-4 mr-2" />
                           Reconnect
@@ -534,7 +534,7 @@ export default function ESignaturesPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Connect
@@ -555,7 +555,7 @@ export default function ESignaturesPage() {
             onClick={() => toggleSection("envelopes")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Document Envelopes
               </h2>
               <Badge variant="info" className="bg-blue-500/20 text-blue-400">
@@ -564,7 +564,7 @@ export default function ESignaturesPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.envelopes ? "rotate-90" : ""
               )}
             />
@@ -573,15 +573,15 @@ export default function ESignaturesPage() {
           {expandedSections.envelopes && (
             <div className="space-y-4">
               {envelopes.map((envelope) => (
-                <Card key={envelope.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={envelope.id} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="text-base font-semibold text-white">
                           {envelope.documentName}
                         </h3>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           Created {envelope.createdAt}
                           {envelope.dueDate && ` • Due ${envelope.dueDate}`}
                         </p>
@@ -607,16 +607,16 @@ export default function ESignaturesPage() {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mb-6 pb-6 border-b border-[var(--wl-border)]">
+                    <div className="mb-6 pb-6 border-b border-[#1e1e2e]">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Completion
                         </p>
-                        <p className="text-sm font-bold text-[var(--wl-text-primary)]">{envelope.progress}%</p>
+                        <p className="text-sm font-bold text-white">{envelope.progress}%</p>
                       </div>
-                      <div className="w-full h-2 bg-[var(--wl-bg-secondary)] rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-[var(--wl-primary)] to-[var(--wl-primary)]/70"
+                          className="h-full bg-gradient-to-r from-blue-500 to-blue-500/70"
                           style={{ width: `${envelope.progress}%` }}
                         />
                       </div>
@@ -624,19 +624,19 @@ export default function ESignaturesPage() {
 
                     {/* Signers */}
                     <div className="mb-4">
-                      <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase mb-3">
+                      <p className="text-xs font-medium text-gray-500 uppercase mb-3">
                         Signing Order
                       </p>
                       <div className="space-y-2">
                         {envelope.signers.map((signer) => (
                           <div key={signer.id} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-[var(--wl-bg-secondary)] flex items-center justify-center text-xs font-semibold">
+                              <div className="w-6 h-6 rounded-full bg-[#12121a] flex items-center justify-center text-xs font-semibold">
                                 {signer.order}
                               </div>
                               <div>
-                                <p className="font-medium text-[var(--wl-text-primary)]">{signer.name}</p>
-                                <p className="text-xs text-[var(--wl-text-tertiary)]">{signer.email}</p>
+                                <p className="font-medium text-white">{signer.name}</p>
+                                <p className="text-xs text-gray-500">{signer.email}</p>
                               </div>
                             </div>
                             <div className={cn("px-2 py-1 rounded text-xs font-semibold capitalize",
@@ -656,11 +656,11 @@ export default function ESignaturesPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 pt-4 border-t border-[var(--wl-border)]">
+                    <div className="flex gap-2 pt-4 border-t border-[#1e1e2e]">
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         View
@@ -668,7 +668,7 @@ export default function ESignaturesPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <DownloadCloud className="w-4 h-4 mr-2" />
                         Download
@@ -698,16 +698,16 @@ export default function ESignaturesPage() {
             onClick={() => toggleSection("templates")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Signing Templates
               </h2>
-              <Badge variant="default" className="bg-[var(--wl-bg-secondary)]">
+              <Badge variant="default" className="bg-[#12121a]">
                 {templates.length} templates
               </Badge>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.templates ? "rotate-90" : ""
               )}
             />
@@ -716,42 +716,42 @@ export default function ESignaturesPage() {
           {expandedSections.templates && (
             <div className="space-y-4">
               {templates.map((template) => (
-                <Card key={template.id} className="bg-[var(--wl-bg-tertiary)]">
+                <Card key={template.id} className="bg-[#1a1a2e]">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold text-[var(--wl-text-primary)]">
+                        <h3 className="text-base font-semibold text-white">
                           {template.name}
                         </h3>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           {template.provider} • Created {template.created}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-[var(--wl-primary)]">{template.usage}</p>
-                        <p className="text-xs text-[var(--wl-text-tertiary)]">times used</p>
+                        <p className="text-2xl font-bold text-blue-500">{template.usage}</p>
+                        <p className="text-xs text-gray-500">times used</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[var(--wl-border)]">
+                    <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Fields
                         </p>
-                        <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                        <p className="text-lg font-bold text-white mt-1">
                           {template.fields}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Signers
                         </p>
-                        <p className="text-lg font-bold text-[var(--wl-text-primary)] mt-1">
+                        <p className="text-lg font-bold text-white mt-1">
                           {template.signers}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-[var(--wl-text-tertiary)] uppercase">
+                        <p className="text-xs font-medium text-gray-500 uppercase">
                           Status
                         </p>
                         <Badge variant="success" className="mt-1 bg-green-500/20 text-green-400">
@@ -764,7 +764,7 @@ export default function ESignaturesPage() {
                       <Button
                         variant="primary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                        className="flex-1 bg-blue-500 hover:bg-blue-500/90"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Use Template
@@ -772,7 +772,7 @@ export default function ESignaturesPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 bg-[var(--wl-bg-secondary)] hover:bg-[var(--wl-bg-tertiary)]"
+                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Edit
@@ -784,7 +784,7 @@ export default function ESignaturesPage() {
 
               <Button
                 variant="primary"
-                className="w-full bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90"
+                className="w-full bg-blue-500 hover:bg-blue-500/90"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Template
@@ -800,7 +800,7 @@ export default function ESignaturesPage() {
             onClick={() => toggleSection("webhooks")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Webhook Event Log
               </h2>
               <Badge variant="success" className="bg-green-500/20 text-green-400">
@@ -809,20 +809,20 @@ export default function ESignaturesPage() {
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.webhooks ? "rotate-90" : ""
               )}
             />
           </div>
 
           {expandedSections.webhooks && (
-            <Card className="bg-[var(--wl-bg-tertiary)]">
+            <Card className="bg-[#1a1a2e]">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {webhookEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="flex items-start justify-between p-4 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]"
+                      className="flex items-start justify-between p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -833,19 +833,19 @@ export default function ESignaturesPage() {
                             <CheckCircle2 className="w-3 h-3" />
                             Success
                           </Badge>
-                          <code className="text-xs font-mono text-[var(--wl-primary)]">
+                          <code className="text-xs font-mono text-blue-500">
                             {event.event}
                           </code>
                         </div>
-                        <p className="text-sm text-[var(--wl-text-primary)] font-medium">
+                        <p className="text-sm text-white font-medium">
                           {event.envelope}
                         </p>
-                        <p className="text-xs text-[var(--wl-text-tertiary)] mt-1">
+                        <p className="text-xs text-gray-500 mt-1">
                           {event.details}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-mono text-[var(--wl-text-tertiary)]">
+                        <p className="text-xs font-mono text-gray-500">
                           {event.timestamp}
                         </p>
                       </div>
@@ -864,41 +864,41 @@ export default function ESignaturesPage() {
             onClick={() => toggleSection("audit")}
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-[var(--wl-text-primary)]">
+              <h2 className="text-2xl font-bold text-white">
                 Audit Trail
               </h2>
             </div>
             <ChevronLeft
               className={cn(
-                "w-5 h-5 text-[var(--wl-text-secondary)] transition-transform",
+                "w-5 h-5 text-gray-400 transition-transform",
                 expandedSections.audit ? "rotate-90" : ""
               )}
             />
           </div>
 
           {expandedSections.audit && (
-            <Card className="bg-[var(--wl-bg-tertiary)]">
+            <Card className="bg-[#1a1a2e]">
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   {auditLog.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-start gap-4 p-4 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]"
+                      className="flex items-start gap-4 p-4 bg-[#12121a] rounded-lg border border-[#1e1e2e]"
                     >
-                      <div className="w-2 h-2 rounded-full bg-[var(--wl-primary)] mt-2 flex-shrink-0" />
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-[var(--wl-text-primary)]">
+                          <h4 className="font-semibold text-white">
                             {entry.action}
                           </h4>
-                          <span className="text-xs font-mono text-[var(--wl-text-tertiary)]">
+                          <span className="text-xs font-mono text-gray-500">
                             {entry.ipAddress}
                           </span>
                         </div>
-                        <p className="text-sm text-[var(--wl-text-tertiary)] mb-1">
+                        <p className="text-sm text-gray-500 mb-1">
                           {entry.details}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-[var(--wl-text-tertiary)]">
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span>{entry.user}</span>
                           <span>•</span>
                           <span>{entry.timestamp}</span>

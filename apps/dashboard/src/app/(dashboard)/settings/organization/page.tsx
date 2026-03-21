@@ -78,16 +78,16 @@ export default function OrganizationPage() {
   };
 
   const usageStats = [
-    { label: "Orders/Month", current: 8450, limit: 10000, color: "bg-[var(--wl-primary)]" },
-    { label: "Active Drivers", current: 45, limit: 100, color: "bg-[var(--wl-success)]" },
-    { label: "API Calls/Month", current: 2800000, limit: 5000000, color: "bg-[var(--wl-warning)]" },
+    { label: "Orders/Month", current: 8450, limit: 10000, color: "bg-blue-500" },
+    { label: "Active Drivers", current: 45, limit: 100, color: "bg-emerald-500" },
+    { label: "API Calls/Month", current: 2800000, limit: 5000000, color: "bg-amber-500" },
   ];
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Organization Settings"
         subtitle="Manage your organization profile and billing"
@@ -96,21 +96,21 @@ export default function OrganizationPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Organization Details */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Organization Details</CardTitle>
-              <CardDescription>Update your organization information</CardDescription>
+              <CardTitle className="text-white">Organization Details</CardTitle>
+              <CardDescription className="text-gray-400">Update your organization information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-3">
+                <label className="text-sm font-semibold text-white block mb-3">
                   Organization Logo
                 </label>
                 <div className="flex items-center gap-6">
                   <img
                     src={orgData.logo}
                     alt="Logo"
-                    className="w-20 h-20 rounded-lg border border-[var(--wl-border)] object-cover"
+                    className="w-20 h-20 rounded-lg border border-[#1e1e2e] object-cover"
                   />
                   <Button variant="secondary" size="sm" asChild>
                     <label className="cursor-pointer">
@@ -128,7 +128,7 @@ export default function OrganizationPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Organization Name
                 </label>
                 <Input
@@ -140,7 +140,7 @@ export default function OrganizationPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                <label className="text-sm font-semibold text-white block mb-2">
                   Website
                 </label>
                 <Input
@@ -153,13 +153,13 @@ export default function OrganizationPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Industry
                   </label>
                   <select
                     value={orgData.industry}
                     onChange={(e) => setOrgData({ ...orgData, industry: e.target.value })}
-                    className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
                   >
                     <option value="Logistics & Delivery">Logistics & Delivery</option>
                     <option value="E-Commerce">E-Commerce</option>
@@ -170,13 +170,13 @@ export default function OrganizationPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-[var(--wl-text-primary)] block mb-2">
+                  <label className="text-sm font-semibold text-white block mb-2">
                     Company Size
                   </label>
                   <select
                     value={orgData.companySize}
                     onChange={(e) => setOrgData({ ...orgData, companySize: e.target.value })}
-                    className="w-full px-3 py-2 bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] border border-[var(--wl-border)] rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-[#0a0a0f] text-white border border-[#1e1e2e] rounded-md text-sm"
                   >
                     <option value="1-10">1-10 employees</option>
                     <option value="10-50">10-50 employees</option>
@@ -196,23 +196,23 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Billing Information */}
-          <Card className="border-l-4 border-l-[var(--wl-primary)]">
+          <Card className="bg-[#12121a] border border-[#1e1e2e] border-l-4 border-l-blue-500">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Current Plan</CardTitle>
-                  <CardDescription>Manage your billing and subscription</CardDescription>
+                  <CardTitle className="text-white">Current Plan</CardTitle>
+                  <CardDescription className="text-gray-400">Manage your billing and subscription</CardDescription>
                 </div>
-                <Badge variant="primary">{billing.plan} Plan</Badge>
+                <Badge variant="primary" className="bg-blue-500 text-white">{billing.plan} Plan</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
-                  <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-1">
+                <div className="p-4 bg-[#1a1a2e] rounded-lg">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
                     Monthly Cost
                   </p>
-                  <p className="text-2xl font-bold text-[var(--wl-text-primary)]">
+                  <p className="text-2xl font-bold text-white">
                     ${billing.monthlyPrice}
                   </p>
                 </div>
@@ -220,7 +220,7 @@ export default function OrganizationPage() {
                   <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-1">
                     Cycle Start
                   </p>
-                  <p className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                  <p className="text-lg font-semibold text-white">
                     {billing.cycleStart}
                   </p>
                 </div>
@@ -228,26 +228,26 @@ export default function OrganizationPage() {
                   <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-1">
                     Next Billing
                   </p>
-                  <p className="text-lg font-semibold text-[var(--wl-text-primary)]">
+                  <p className="text-lg font-semibold text-white">
                     {billing.nextBilling}
                   </p>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-[var(--wl-text-primary)] mb-4">
+                <h4 className="text-sm font-semibold text-white mb-4">
                   Usage Statistics
                 </h4>
                 <div className="space-y-4">
                   {usageStats.map((stat, idx) => (
                     <div key={idx}>
                       <div className="flex justify-between items-end mb-2">
-                        <span className="text-sm text-[var(--wl-text-primary)]">{stat.label}</span>
-                        <span className="text-xs text-[var(--wl-text-secondary)]">
+                        <span className="text-sm text-white">{stat.label}</span>
+                        <span className="text-xs text-gray-400">
                           {stat.current.toLocaleString()} / {stat.limit.toLocaleString()}
                         </span>
                       </div>
-                      <div className="w-full bg-[var(--wl-bg-primary)] rounded-full h-2">
+                      <div className="w-full bg-[#0a0a0f] rounded-full h-2">
                         <div
                           className={cn("h-2 rounded-full transition-all", stat.color)}
                           style={{ width: `${Math.min((stat.current / stat.limit) * 100, 100)}%` }}
@@ -264,20 +264,20 @@ export default function OrganizationPage() {
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-[var(--wl-danger)]">
+          <Card className="bg-[#12121a] border border-red-500/30">
             <CardHeader>
-              <CardTitle className="text-[var(--wl-danger)] flex items-center gap-2">
+              <CardTitle className="text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Danger Zone
               </CardTitle>
-              <CardDescription>Irreversible and destructive actions</CardDescription>
+              <CardDescription className="text-gray-400">Irreversible and destructive actions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-[var(--wl-danger)]/5 border border-[var(--wl-danger)]/30 rounded-lg">
-                <h4 className="font-semibold text-[var(--wl-text-primary)] mb-2">
+              <div className="p-4 bg-red-500/5 border border-red-500/30 rounded-lg">
+                <h4 className="font-semibold text-white mb-2">
                   Delete Organization
                 </h4>
-                <p className="text-sm text-[var(--wl-text-secondary)] mb-3">
+                <p className="text-sm text-gray-400 mb-3">
                   This will permanently delete your organization, all data, and cannot be undone.
                 </p>
                 <Button
@@ -291,8 +291,8 @@ export default function OrganizationPage() {
               </div>
 
               {showDeleteConfirm && (
-                <div className="p-4 bg-[var(--wl-danger)]/10 border border-[var(--wl-danger)]/50 rounded-lg">
-                  <p className="text-sm font-semibold text-[var(--wl-text-primary)] mb-3">
+                <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+                  <p className="text-sm font-semibold text-white mb-3">
                     Are you absolutely sure? This action cannot be undone.
                   </p>
                   <div className="flex gap-3">

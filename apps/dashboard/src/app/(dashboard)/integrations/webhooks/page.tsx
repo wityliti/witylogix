@@ -39,12 +39,12 @@ function EndpointCard({
   onEdit: (endpoint: WebhookEndpoint) => void;
 }) {
   return (
-    <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+    <Card className="bg-[#12121a] border-neutral-700">
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-mono text-wl-text-secondary truncate">
+              <p className="text-sm font-mono text-gray-400 truncate">
                 {endpoint.url}
               </p>
               <div className="flex gap-2 mt-2">
@@ -76,14 +76,14 @@ function EndpointCard({
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p className="text-wl-text-secondary">Success Rate</p>
-              <p className="font-medium text-wl-text-primary mt-1">
+              <p className="text-gray-400">Success Rate</p>
+              <p className="font-medium text-white mt-1">
                 {endpoint.successRate.toFixed(1)}%
               </p>
             </div>
             <div>
-              <p className="text-wl-text-secondary">Last Delivery</p>
-              <p className="font-medium text-wl-text-primary mt-1 truncate">
+              <p className="text-gray-400">Last Delivery</p>
+              <p className="font-medium text-white mt-1 truncate">
                 {new Date(endpoint.lastDeliveryTime).toLocaleString()}
               </p>
             </div>
@@ -153,14 +153,14 @@ export default function WebhooksPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg bg-wl-danger-500/10 border border-wl-danger-500/20 p-4">
+      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
         <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-wl-danger-400 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-wl-text-primary">
+            <h3 className="font-semibold text-white">
               Failed to load webhooks
             </h3>
-            <p className="text-sm text-wl-text-secondary mt-1">{error}</p>
+            <p className="text-sm text-gray-400 mt-1">{error}</p>
             <Button
               onClick={revalidate}
               variant="secondary"
@@ -209,7 +209,7 @@ export default function WebhooksPage() {
 
       {/* Create/Edit Form */}
       {(showCreateForm || editingEndpoint) && (
-        <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+        <Card className="bg-[#12121a] border-neutral-700">
           <CardHeader>
             <CardTitle>
               {editingEndpoint ? "Edit Webhook Endpoint" : "Create Webhook Endpoint"}
@@ -218,7 +218,7 @@ export default function WebhooksPage() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Endpoint URL
                 </label>
                 <input
@@ -228,12 +228,12 @@ export default function WebhooksPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, url: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-tertiary border border-wl-neutral-700 text-wl-text-primary placeholder-wl-text-secondary focus:outline-none focus:border-wl-primary-500"
+                  className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Event Types (select all that apply)
                 </label>
                 <div className="space-y-2">
@@ -263,14 +263,14 @@ export default function WebhooksPage() {
                         }}
                         className="w-4 h-4 rounded"
                       />
-                      <span className="text-sm text-wl-text-primary">{event}</span>
+                      <span className="text-sm text-white">{event}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Webhook Secret
                 </label>
                 <div className="relative">
@@ -281,15 +281,15 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, secret: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-tertiary border border-wl-neutral-700 text-wl-text-primary placeholder-wl-text-secondary focus:outline-none focus:border-wl-primary-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white placeholder-blue-500 focus:outline-none focus:border-blue-500"
                   />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Retry Policy
                   </label>
                   <select
@@ -297,7 +297,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, retryPolicy: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-tertiary border border-wl-neutral-700 text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="exponential">Exponential Backoff</option>
                     <option value="linear">Linear Backoff</option>
@@ -305,7 +305,7 @@ export default function WebhooksPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                  <label className="block text-sm font-medium text-white mb-2">
                     Max Retries
                   </label>
                   <input
@@ -317,7 +317,7 @@ export default function WebhooksPage() {
                         maxRetries: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-tertiary border border-wl-neutral-700 text-wl-text-primary focus:outline-none focus:border-wl-primary-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a0f]tertiary border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function WebhooksPage() {
 
       {/* Delivery Analytics */}
       {webhooks && (
-        <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+        <Card className="bg-[#12121a] border-neutral-700">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -383,20 +383,20 @@ export default function WebhooksPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
-                <p className="text-sm text-wl-text-secondary">Success Rate</p>
-                <p className="text-3xl font-bold text-wl-success-400 mt-2">
+                <p className="text-sm text-gray-400">Success Rate</p>
+                <p className="text-3xl font-bold text-emerald-500 mt-2">
                   {webhooks.successRate?.toFixed(1) ?? 0}%
                 </p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Successful Deliveries</p>
-                <p className="text-3xl font-bold text-wl-text-primary mt-2">
+                <p className="text-sm text-gray-400">Successful Deliveries</p>
+                <p className="text-3xl font-bold text-white mt-2">
                   {successfulDeliveries.length}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Failed Deliveries</p>
-                <p className="text-3xl font-bold text-wl-danger-400 mt-2">
+                <p className="text-sm text-gray-400">Failed Deliveries</p>
+                <p className="text-3xl font-bold text-red-500 mt-2">
                   {failedDeliveries.length}
                 </p>
               </div>
@@ -404,8 +404,8 @@ export default function WebhooksPage() {
 
             {/* Stacked Bar Chart (hourly) */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-wl-text-primary">Hourly Delivery Status</p>
-              <div className="flex items-end gap-1 h-32 px-2 py-4 bg-wl-bg-tertiary rounded-lg border border-wl-neutral-700">
+              <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
+              <div className="flex items-end gap-1 h-32 px-2 py-4 bg-[#0a0a0f]tertiary rounded-lg border border-neutral-700">
                 {Array.from({ length: 24 }).map((_, i) => {
                   const total = Math.floor(Math.random() * 100) + 20;
                   const success = Math.floor(total * 0.9);
@@ -420,11 +420,11 @@ export default function WebhooksPage() {
                       title={`${i}:00 - Success: ${success}, Failed: ${failed}`}
                     >
                       <div
-                        className="w-full bg-wl-danger-500 rounded-t transition-all group-hover:opacity-80"
+                        className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
                         style={{ height: `${(failed / total) * heightPercent}%` }}
                       />
                       <div
-                        className="w-full bg-wl-success-500 rounded-t transition-all group-hover:opacity-80"
+                        className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
                         style={{ height: `${(success / total) * heightPercent}%` }}
                       />
                     </div>
@@ -438,7 +438,7 @@ export default function WebhooksPage() {
 
       {/* Delivery Log */}
       {webhooks?.deliveries && webhooks.deliveries.length > 0 && (
-        <Card className="bg-wl-bg-secondary border-wl-neutral-700">
+        <Card className="bg-[#12121a] border-neutral-700">
           <CardHeader>
             <CardTitle>Delivery Log</CardTitle>
           </CardHeader>
@@ -447,11 +447,11 @@ export default function WebhooksPage() {
               {webhooks.deliveries.map((delivery) => (
                 <div
                   key={delivery.id}
-                  className="border border-wl-neutral-700 rounded-lg overflow-hidden"
+                  className="border border-neutral-700 rounded-lg overflow-hidden"
                 >
                   <button
                     onClick={() => toggleDeliveryExpand(delivery.id)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-wl-bg-tertiary transition-colors text-left"
+                    className="w-full flex items-center justify-between p-3 hover:bg-[#0a0a0f]tertiary transition-colors text-left"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Badge
@@ -466,24 +466,24 @@ export default function WebhooksPage() {
                         {delivery.status}
                       </Badge>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-wl-text-primary truncate">
+                        <p className="text-sm font-medium text-white truncate">
                           {delivery.eventType}
                         </p>
-                        <p className="text-xs text-wl-text-secondary truncate">
+                        <p className="text-xs text-gray-400 truncate">
                           {delivery.endpoint}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-xs text-wl-text-secondary">
+                      <span className="text-xs text-gray-400">
                         {delivery.attempts} attempt{delivery.attempts !== 1 ? "s" : ""}
                       </span>
-                      <span className="text-xs text-wl-text-secondary">
+                      <span className="text-xs text-gray-400">
                         {delivery.latency}ms
                       </span>
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 text-wl-text-secondary transition-transform",
+                          "w-4 h-4 text-gray-400 transition-transform",
                           expandedDeliveries[delivery.id] && "rotate-180"
                         )}
                       />
@@ -491,21 +491,21 @@ export default function WebhooksPage() {
                   </button>
 
                   {expandedDeliveries[delivery.id] && (
-                    <div className="border-t border-wl-neutral-700 bg-wl-bg-tertiary p-3 space-y-3">
+                    <div className="border-t border-neutral-700 bg-[#0a0a0f]tertiary p-3 space-y-3">
                       <div>
-                        <p className="text-xs font-medium text-wl-text-secondary mb-1">
+                        <p className="text-xs font-medium text-gray-400 mb-1">
                           Timestamp
                         </p>
-                        <p className="text-sm text-wl-text-primary">
+                        <p className="text-sm text-white">
                           {new Date(delivery.timestamp).toLocaleString()}
                         </p>
                       </div>
                       {delivery.payload && (
                         <div>
-                          <p className="text-xs font-medium text-wl-text-secondary mb-1">
+                          <p className="text-xs font-medium text-gray-400 mb-1">
                             Payload
                           </p>
-                          <pre className="text-xs bg-wl-bg-secondary p-2 rounded border border-wl-neutral-700 overflow-x-auto text-wl-text-primary">
+                          <pre className="text-xs bg-[#12121a] p-2 rounded border border-neutral-700 overflow-x-auto text-white">
                             {JSON.stringify(delivery.payload, null, 2)}
                           </pre>
                         </div>
@@ -530,10 +530,10 @@ export default function WebhooksPage() {
 
       {/* DLQ Viewer */}
       {(webhooks?.dlqCount ?? 0) > 0 && (
-        <Card className="bg-wl-danger-500/10 border border-wl-danger-500/20">
+        <Card className="bg-red-500/10 border border-red-500/20">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-wl-danger-400">
+              <CardTitle className="text-red-500">
                 Dead Letter Queue ({webhooks?.dlqCount})
               </CardTitle>
               <Button
@@ -548,7 +548,7 @@ export default function WebhooksPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-wl-text-secondary">
+            <p className="text-sm text-gray-400">
               {webhooks?.dlqCount} failed deliveries are waiting for retry.
             </p>
             <Button variant="secondary" size="sm" className="mt-3">

@@ -247,21 +247,21 @@ export default function WorkflowExecutionsPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
             label="Total Runs"
             value={totalRuns}
             change={{ value: 12.5, label: "this month" }}
-            accentColor="var(--wl-primary-500)"
+            accentColor="var(--blue-600)"
             icon={<Activity size={18} />}
             index={0}
           />
           <StatCard
             label="Active"
             value={activeRuns}
-            accentColor="var(--wl-info-400)"
+            accentColor="var(--blue-500)"
             icon={<Clock size={18} />}
             index={1}
           />
@@ -269,7 +269,7 @@ export default function WorkflowExecutionsPage() {
             label="Completed"
             value={completedRuns}
             change={{ value: 8.3, label: "success rate" }}
-            accentColor="var(--wl-success-400)"
+            accentColor="var(--emerald-500)"
             icon={<CheckCircle2 size={18} />}
             index={2}
           />
@@ -277,14 +277,14 @@ export default function WorkflowExecutionsPage() {
             label="Failed"
             value={failedRuns}
             change={{ value: -2.1, label: "vs last month" }}
-            accentColor="var(--wl-danger-400)"
+            accentColor="var(--red-500)"
             icon={<AlertCircle size={18} />}
             index={3}
           />
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-5 border-b border-wl-border-subtle pb-4">
+        <div className="flex gap-2 mb-5 border-b border-[#1e1e2e] pb-4">
           {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
             const count =
               tab === "all"
@@ -299,8 +299,8 @@ export default function WorkflowExecutionsPage() {
                 className={cn(
                   "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
                   isActive
-                    ? "text-wl-text-primary border-b-wl-accent"
-                    : "text-wl-text-tertiary border-b-transparent"
+                    ? "text-white border-b-blue-500"
+                    : "text-gray-400 border-b-transparent"
                 )}
               >
                 {tab === "all" ? "All" : tab}
@@ -317,33 +317,33 @@ export default function WorkflowExecutionsPage() {
             placeholder="Search workflow name or execution ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-lg text-wl-text-primary text-sm font-sans outline-none transition-all focus:border-wl-accent focus:ring-3 focus:ring-wl-accent/10"
+            className="w-full max-w-md px-4 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-blue-500 focus:ring-3 focus:ring-blue-500/10"
           />
         </div>
 
         {/* Executions Table */}
         {filtered.length > 0 ? (
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
+                  <tr className="border-b border-[#1e1e2e] bg-[#0a0a0f]">
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
                       Workflow Name
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Status
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Steps
                     </th>
-                    <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
                       Started
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Duration
                     </th>
-                    <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
                       Actions
                     </th>
                   </tr>
@@ -352,13 +352,13 @@ export default function WorkflowExecutionsPage() {
                   {filtered.map((execution, idx) => (
                     <tr
                       key={execution.id}
-                      className="border-b border-wl-border-subtle transition-colors cursor-pointer"
+                      className="border-b border-[#1e1e2e] transition-colors cursor-pointer hover:bg-[#1a1a2e]"
                       style={{
-                        background: idx % 2 === 0 ? "transparent" : "var(--wl-bg-overlay)",
+                        background: idx % 2 === 0 ? "transparent" : "#12121a",
                       }}
                       onClick={() => router.push(`/admin/workflows/${execution.id}`)}
                     >
-                      <td className="p-3 px-4 text-wl-text-primary font-medium">
+                      <td className="p-3 px-4 text-white font-medium">
                         {execution.workflowName}
                       </td>
                       <td className="p-3 px-4 text-center">
@@ -366,13 +366,13 @@ export default function WorkflowExecutionsPage() {
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
-                      <td className="p-3 px-4 text-center text-wl-text-primary font-medium">
+                      <td className="p-3 px-4 text-center text-white font-medium">
                         {execution.completedSteps}/{execution.totalSteps}
                       </td>
-                      <td className="p-3 px-4 text-wl-text-secondary">
+                      <td className="p-3 px-4 text-gray-400">
                         {formatDateTime(execution.startedAt)}
                       </td>
-                      <td className="p-3 px-4 text-center text-wl-text-secondary">
+                      <td className="p-3 px-4 text-center text-gray-400">
                         {execution.duration}
                       </td>
                       <td className="p-3 px-4 text-center">
@@ -391,13 +391,13 @@ export default function WorkflowExecutionsPage() {
             </div>
           </Card>
         ) : (
-          <Card className="text-center p-8">
-            <div className="text-wl-text-secondary">
+          <Card className="text-center p-8 bg-[#12121a] border border-[#1e1e2e]">
+            <div className="text-gray-400">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />
-              <h3 className="text-base font-semibold m-0 mb-2">
+              <h3 className="text-base font-semibold m-0 mb-2 text-white">
                 No executions found
               </h3>
-              <p className="text-sm m-0 text-wl-text-tertiary">
+              <p className="text-sm m-0 text-gray-400">
                 {search ? "Try adjusting your search criteria" : "Start a new workflow to see executions here"}
               </p>
             </div>

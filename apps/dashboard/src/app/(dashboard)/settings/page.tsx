@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import {
@@ -14,10 +13,12 @@ import { cn } from "@/lib/utils";
 import {
   User,
   Building2,
-  Bell,
   Key,
-  Users,
   Sliders,
+  Palette,
+  Map,
+  CreditCard,
+  Shield,
   ChevronRight,
 } from "lucide-react";
 
@@ -33,23 +34,23 @@ const SETTINGS_TABS: SettingsTab[] = [
   {
     id: "profile",
     label: "Profile",
-    description: "Manage your personal information and preferences",
+    description: "Manage your personal information and security",
     icon: <User className="w-6 h-6" />,
     href: "/settings/profile",
   },
   {
     id: "organization",
     label: "Organization",
-    description: "Manage organization details and settings",
+    description: "Manage organization details and billing",
     icon: <Building2 className="w-6 h-6" />,
     href: "/settings/organization",
   },
   {
-    id: "notifications",
-    label: "Notifications",
-    description: "Configure notification preferences and channels",
-    icon: <Bell className="w-6 h-6" />,
-    href: "/settings/notifications",
+    id: "general",
+    label: "General",
+    description: "Configure company information and localization",
+    icon: <Shield className="w-6 h-6" />,
+    href: "/settings/general",
   },
   {
     id: "api-keys",
@@ -59,11 +60,32 @@ const SETTINGS_TABS: SettingsTab[] = [
     href: "/settings/api-keys",
   },
   {
-    id: "team",
-    label: "Team",
-    description: "Manage team members and their roles",
-    icon: <Users className="w-6 h-6" />,
-    href: "/settings/team",
+    id: "auth-providers",
+    label: "Auth Providers",
+    description: "Configure SSO and authentication settings",
+    icon: <Shield className="w-6 h-6" />,
+    href: "/settings/auth-providers",
+  },
+  {
+    id: "billing",
+    label: "Billing",
+    description: "Manage subscription and payment methods",
+    icon: <CreditCard className="w-6 h-6" />,
+    href: "/settings/billing",
+  },
+  {
+    id: "branding",
+    label: "Branding",
+    description: "Customize colors, logos, and branding",
+    icon: <Palette className="w-6 h-6" />,
+    href: "/settings/branding",
+  },
+  {
+    id: "maps",
+    label: "Maps",
+    description: "Configure Google Maps API and settings",
+    icon: <Map className="w-6 h-6" />,
+    href: "/settings/maps",
   },
   {
     id: "preferences",
@@ -76,7 +98,7 @@ const SETTINGS_TABS: SettingsTab[] = [
 
 export default function SettingsHub() {
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Settings"
         subtitle="Manage your account, organization, and preferences"
@@ -86,16 +108,16 @@ export default function SettingsHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SETTINGS_TABS.map((tab) => (
             <Link key={tab.id} href={tab.href}>
-              <Card className="h-full border border-[var(--wl-border)] hover:border-[var(--wl-primary)] hover:shadow-md transition-all cursor-pointer group">
+              <Card className="h-full bg-[#12121a] border border-[#1e1e2e] hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all cursor-pointer group">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-3">
-                    <div className="p-3 bg-[var(--wl-primary)]/10 rounded-lg text-[var(--wl-primary)] group-hover:bg-[var(--wl-primary)]/20 transition-colors">
+                    <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500 group-hover:bg-blue-500/20 transition-colors">
                       {tab.icon}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-[var(--wl-text-secondary)] group-hover:text-[var(--wl-primary)] transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                   </div>
-                  <CardTitle className="text-lg">{tab.label}</CardTitle>
-                  <CardDescription className="mt-2">
+                  <CardTitle className="text-lg text-white">{tab.label}</CardTitle>
+                  <CardDescription className="mt-2 text-gray-400">
                     {tab.description}
                   </CardDescription>
                 </CardHeader>

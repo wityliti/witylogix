@@ -155,7 +155,7 @@ export default function WebhookTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <Header
         title="Webhook Test Sender"
         subtitle="Test webhook deliveries with custom payloads"
@@ -166,7 +166,7 @@ export default function WebhookTestPage() {
           {/* Test Configuration */}
           <div className="lg:col-span-2 space-y-6">
             {/* Event Type Selection */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle className="text-lg">Select Event Type</CardTitle>
                 <CardDescription>
@@ -182,8 +182,8 @@ export default function WebhookTestPage() {
                       className={cn(
                         "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
                         selectedEvent === event.id
-                          ? "bg-[var(--wl-primary)] text-white border-[var(--wl-primary)]"
-                          : "border-[var(--wl-border)] hover:bg-[var(--wl-bg-secondary)]"
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : "border-[#1e1e2e] hover:bg-[#1a1a2e]"
                       )}
                     >
                       {event.label}
@@ -194,7 +194,7 @@ export default function WebhookTestPage() {
             </Card>
 
             {/* Endpoint Configuration */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <CardTitle className="text-lg">Target Endpoint</CardTitle>
                 <CardDescription>
@@ -212,7 +212,7 @@ export default function WebhookTestPage() {
             </Card>
 
             {/* Payload Editor */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -236,13 +236,13 @@ export default function WebhookTestPage() {
                 <textarea
                   value={customPayload}
                   onChange={(e) => setCustomPayload(e.target.value)}
-                  className="w-full h-48 p-3 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] font-mono text-xs resize-none focus:outline-none focus:border-[var(--wl-primary)]"
+                  className="w-full h-48 p-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] font-mono text-xs resize-none focus:outline-none focus:border-blue-500 text-white"
                 />
               </CardContent>
             </Card>
 
             {/* Send Button */}
-            <Card className="border border-[var(--wl-border)]">
+            <Card className="border border-[#1e1e2e] bg-[#12121a]">
               <CardContent className="pt-6">
                 <Button
                   onClick={handleSendTest}
@@ -259,13 +259,13 @@ export default function WebhookTestPage() {
 
           {/* Test History */}
           <div className="lg:col-span-1">
-            <Card className="border border-[var(--wl-border)] sticky top-4">
+            <Card className="border border-[#1e1e2e] bg-[#12121a] sticky top-4">
               <CardHeader>
                 <CardTitle className="text-lg">Test History</CardTitle>
               </CardHeader>
               <CardContent>
                 {testSends.length === 0 ? (
-                  <div className="text-center py-8 text-[var(--wl-text-secondary)]">
+                  <div className="text-center py-8 text-gray-400">
                     No test sends yet
                   </div>
                 ) : (
@@ -273,7 +273,7 @@ export default function WebhookTestPage() {
                     {testSends.map((send) => (
                       <div
                         key={send.id}
-                        className="border border-[var(--wl-border)] rounded-lg overflow-hidden"
+                        className="border border-[#1e1e2e] rounded-lg overflow-hidden"
                       >
                         <button
                           onClick={() =>
@@ -281,15 +281,15 @@ export default function WebhookTestPage() {
                               expandedSendId === send.id ? null : send.id
                             )
                           }
-                          className="w-full p-3 hover:bg-[var(--wl-bg-secondary)] transition-colors flex items-center justify-between"
+                          className="w-full p-3 hover:bg-[#1a1a2e] transition-colors flex items-center justify-between"
                         >
                           <div className="flex items-center gap-2 flex-1 text-left">
                             {getStatusIcon(send.status)}
                             <div className="flex-1 min-w-0">
-                              <div className="text-xs font-mono text-[var(--wl-text-secondary)]">
+                              <div className="text-xs font-mono text-gray-400">
                                 {send.timestamp.toLocaleTimeString()}
                               </div>
-                              <div className="text-xs truncate">
+                              <div className="text-xs truncate text-white">
                                 {send.eventType}
                               </div>
                             </div>
@@ -316,31 +316,31 @@ export default function WebhookTestPage() {
                         </button>
 
                         {expandedSendId === send.id && (
-                          <div className="border-t border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] p-3 text-xs space-y-2">
+                          <div className="border-t border-[#1e1e2e] bg-[#1a1a2e] p-3 text-xs space-y-2">
                             <div>
-                              <div className="font-semibold text-[var(--wl-text-secondary)] mb-1">
+                              <div className="font-semibold text-gray-400 mb-1">
                                 Duration
                               </div>
-                              <div className="font-mono">
+                              <div className="font-mono text-white">
                                 {send.duration}ms
                               </div>
                             </div>
 
                             <div>
-                              <div className="font-semibold text-[var(--wl-text-secondary)] mb-1">
+                              <div className="font-semibold text-gray-400 mb-1">
                                 Endpoint
                               </div>
-                              <div className="font-mono break-all">
+                              <div className="font-mono break-all text-white">
                                 {send.endpoint}
                               </div>
                             </div>
 
                             {send.responseBody && (
                               <div>
-                                <div className="font-semibold text-[var(--wl-text-secondary)] mb-1">
+                                <div className="font-semibold text-gray-400 mb-1">
                                   Response
                                 </div>
-                                <pre className="bg-[var(--wl-bg-primary)] p-2 rounded overflow-x-auto max-h-32 overflow-y-auto">
+                                <pre className="bg-[#0a0a0f] p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-white">
                                   {send.responseBody}
                                 </pre>
                               </div>

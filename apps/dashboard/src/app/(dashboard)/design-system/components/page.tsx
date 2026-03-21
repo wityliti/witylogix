@@ -64,31 +64,31 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden bg-[#12121a] border-[#1e1e2e]">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle className="text-white">{title}</CardTitle>
+        <CardDescription className="text-gray-400">{description}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* Preview */}
-        <div className="border border-wl-border-subtle rounded-lg p-6 bg-wl-bg-surface flex items-center justify-center min-h-40">
+        <div className="border border-[#1e1e2e] rounded-lg p-6 bg-[#1a1a2e] flex items-center justify-center min-h-40">
           {preview}
         </div>
 
         {/* Code */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">
+            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Code
             </label>
             <button
               onClick={handleCopyCode}
               className={cn(
                 "flex items-center gap-1 px-2 py-1 text-xs rounded",
-                "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
+                "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e]",
                 "transition-colors",
-                copiedCode && "bg-wl-success-500/20 border-wl-success-500"
+                copiedCode && "bg-emerald-500/20 border-emerald-500"
               )}
             >
               {copiedCode ? (
@@ -104,8 +104,8 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
               )}
             </button>
           </div>
-          <pre className="bg-wl-bg-surface border border-wl-border-subtle rounded p-4 text-xs overflow-x-auto">
-            <code className="text-wl-text-tertiary font-mono">{code}</code>
+          <pre className="bg-[#1a1a2e] border border-[#1e1e2e] rounded p-4 text-xs overflow-x-auto">
+            <code className="text-gray-400 font-mono">{code}</code>
           </pre>
         </div>
       </CardContent>
@@ -128,12 +128,12 @@ export default function ComponentGalleryPage() {
   const [toastVisible, setToastVisible] = useState(false);
 
   return (
-    <div className="min-h-screen bg-wl-bg-root text-wl-text-primary">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
       {/* Header */}
-      <div className="border-b border-wl-border-subtle sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
+      <div className="border-b border-[#1e1e2e] sticky top-0 z-40 bg-[#0a0a0f]/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Component Gallery</h1>
-          <p className="text-wl-text-secondary">
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Component Gallery</h1>
+          <p className="text-gray-400">
             Interactive showcase of all design system components
           </p>
         </div>
@@ -163,13 +163,13 @@ export default function ComponentGalleryPage() {
           />
 
           {/* BUTTON CONTROLS */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Button Props</CardTitle>
+              <CardTitle className="text-white">Button Props</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
                   Variant
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -180,8 +180,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonVariant === v
-                          ? "bg-wl-primary-500 text-wl-text-inverse"
-                          : "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong"
+                          ? "bg-blue-500 text-white"
+                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
                       )}
                     >
                       {v}
@@ -191,7 +191,7 @@ export default function ComponentGalleryPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
                   Size
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -202,8 +202,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         buttonSize === s
-                          ? "bg-wl-primary-500 text-wl-text-inverse"
-                          : "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong"
+                          ? "bg-blue-500 text-white"
+                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
                       )}
                     >
                       {s}
@@ -218,7 +218,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setButtonDisabled(checked === true)}
                   id="button-disabled"
                 />
-                <label htmlFor="button-disabled" className="text-sm text-wl-text-primary">
+                <label htmlFor="button-disabled" className="text-sm text-white">
                   Disabled
                 </label>
               </div>
@@ -242,13 +242,13 @@ export default function ComponentGalleryPage() {
           />
 
           {/* BADGE CONTROLS */}
-          <Card>
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Badge Props</CardTitle>
+              <CardTitle className="text-white">Badge Props</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
                   Variant
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -259,8 +259,8 @@ export default function ComponentGalleryPage() {
                       className={cn(
                         "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                         badgeVariant === v
-                          ? "bg-wl-primary-500 text-wl-text-inverse"
-                          : "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong"
+                          ? "bg-blue-500 text-white"
+                          : "bg-[#1a1a2e] border border-[#1e1e2e] hover:border-[#2a2a3e] text-gray-300"
                       )}
                     >
                       {v}
@@ -275,7 +275,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setBadgeWithDot(checked === true)}
                   id="badge-dot"
                 />
-                <label htmlFor="badge-dot" className="text-sm text-wl-text-primary">
+                <label htmlFor="badge-dot" className="text-sm text-white">
                   Show Dot
                 </label>
               </div>
@@ -287,13 +287,13 @@ export default function ComponentGalleryPage() {
             title="Card"
             description="Container for grouped content"
             preview={
-              <Card className="w-full max-w-xs">
+              <Card className="w-full max-w-xs bg-[#12121a] border-[#1e1e2e]">
                 <CardHeader>
-                  <CardTitle>Card Title</CardTitle>
-                  <CardDescription>Card subtitle or description</CardDescription>
+                  <CardTitle className="text-white">Card Title</CardTitle>
+                  <CardDescription className="text-gray-400">Card subtitle or description</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-300">
                     This is the main content area of the card component.
                   </p>
                 </CardContent>
@@ -364,7 +364,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setSwitchEnabled(checked === true)}
                   id="switch-demo"
                 />
-                <label htmlFor="switch-demo" className="text-sm text-wl-text-secondary">
+                <label htmlFor="switch-demo" className="text-sm text-gray-300">
                   {switchEnabled ? "Enabled" : "Disabled"}
                 </label>
               </div>
@@ -387,7 +387,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setCheckboxChecked(checked === true)}
                   id="checkbox-demo"
                 />
-                <label htmlFor="checkbox-demo" className="text-sm text-wl-text-secondary">
+                <label htmlFor="checkbox-demo" className="text-sm text-gray-300">
                   {checkboxChecked ? "Checked" : "Unchecked"}
                 </label>
               </div>
@@ -423,7 +423,7 @@ export default function ComponentGalleryPage() {
               <div className="w-full max-w-xs space-y-4">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-wl-text-secondary">Progress: {progressValue}%</label>
+                    <label className="text-xs text-gray-300">Progress: {progressValue}%</label>
                   </div>
                   <Progress value={progressValue} />
                 </div>
@@ -482,11 +482,11 @@ export default function ComponentGalleryPage() {
             description="Tab navigation component"
             preview={
               <Tabs defaultValue="tab1">
-                <div className="flex gap-2 mb-4 border-b border-wl-border-subtle">
-                  <button className="px-3 py-2 text-sm border-b-2 border-wl-primary-500 text-wl-primary-400 font-medium">
+                <div className="flex gap-2 mb-4 border-b border-[#1e1e2e]">
+                  <button className="px-3 py-2 text-sm border-b-2 border-blue-500 text-blue-400 font-medium">
                     Tab 1
                   </button>
-                  <button className="px-3 py-2 text-sm text-wl-text-secondary hover:text-wl-text-primary">
+                  <button className="px-3 py-2 text-sm text-gray-300 hover:text-white">
                     Tab 2
                   </button>
                 </div>
@@ -647,11 +647,11 @@ export default function ComponentGalleryPage() {
             description="Alert with status icons"
             preview={
               <div className="w-full max-w-xs space-y-3">
-                <div className="flex gap-2 p-3 rounded-lg border border-wl-info-500/30 bg-wl-info-500/10">
-                  <Info className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />
+                <div className="flex gap-2 p-3 rounded-lg border border-blue-600/30 bg-blue-600/10">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-wl-info-400">Info Message</p>
-                    <p className="text-xs text-wl-text-tertiary">This is an informational alert</p>
+                    <p className="text-sm font-medium text-blue-500">Info Message</p>
+                    <p className="text-xs text-gray-400">This is an informational alert</p>
                   </div>
                 </div>
               </div>
