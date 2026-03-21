@@ -94,7 +94,7 @@ async function main() {
 
     const orgs = await Promise.all(
       orgData.map((org) =>
-        (prisma as any).organization.upsert({
+        db.organization.upsert({
           where: { slug: org.slug },
           update: {},
           create: {
@@ -142,7 +142,7 @@ async function main() {
 
     const users = await Promise.all(
       usersData.map((userData) =>
-        (prisma as any).user.upsert({
+        db.user.upsert({
           where: { email: `${generateEmailPrefix(userData.name)}@witylogix.test` },
           update: {},
           create: {
@@ -166,7 +166,7 @@ async function main() {
     log(colors.blue, "○", "Creating Auth Sessions...");
 
     // Fetch auth providers (should exist from previous migrations)
-    const authProviders = await (prisma as any).authProvider.findMany({
+    const authProviders = await db.authProvider.findMany({
       take: 1,
     });
 
@@ -174,7 +174,7 @@ async function main() {
       const provider = authProviders[0];
       const sessions = await Promise.all(
         users.slice(0, 5).map((user) =>
-          (prisma as any).authSession.upsert({
+          db.authSession.upsert({
             where: { id: crypto.randomUUID() },
             update: {},
             create: {
@@ -239,7 +239,7 @@ async function main() {
 
     const workspaces = await Promise.all(
       workspacesData.map((ws) =>
-        (prisma as any).workspace.upsert({
+        db.workspace.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -267,7 +267,7 @@ async function main() {
 
     const workspaceSettings = await Promise.all(
       workspaces.map((ws) =>
-        (prisma as any).workspaceSettings.upsert({
+        db.workspaceSettings.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -292,7 +292,7 @@ async function main() {
 
     const onboardingRecords = await Promise.all(
       users.slice(0, 3).map((user) =>
-        (prisma as any).onboardingProgress.upsert({
+        db.onboardingProgress.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -326,7 +326,7 @@ async function main() {
 
     const tenantConfigs = await Promise.all(
       orgs.map((org) =>
-        (prisma as any).tenantConfig.upsert({
+        db.tenantConfig.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -364,7 +364,7 @@ async function main() {
         const key = `wl_live_${crypto.randomBytes(16).toString("hex")}`;
         const keyHash = crypto.createHash("sha256").update(key).digest("hex");
 
-        await (prisma as any).apiKey.upsert({
+        await db.apiKey.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -406,7 +406,7 @@ async function main() {
     const invitations = [];
     for (const org of orgs) {
       for (let i = 1; i <= 2; i++) {
-        const invitation = await (prisma as any).invitation.upsert({
+        const invitation = await db.invitation.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -435,13 +435,13 @@ async function main() {
 
     for (let i = 1; i <= 50; i++) {
       const org = orgs[Math.floor(Math.random() * orgs.length)];
-      const shop = await (prisma as any).shop.findFirst({
+      const shop = await db.shop.findFirst({
         where: { organizationId: org.id },
       });
 
       if (shop) {
         try {
-          await (prisma as any).order.upsert({
+          await db.order.upsert({
             where: { id: crypto.randomUUID() },
             update: {},
             create: {
@@ -482,14 +482,14 @@ async function main() {
     let driverCount = 0;
     for (let i = 1; i <= 20; i++) {
       const org = orgs[Math.floor(i / 7)];
-      const shop = await (prisma as any).shop.findFirst({
+      const shop = await db.shop.findFirst({
         where: { organizationId: org.id },
       });
 
       if (shop) {
         try {
           const coords = generateRandomCoordinates();
-          await (prisma as any).driver.upsert({
+          await db.driver.upsert({
             where: { id: crypto.randomUUID() },
             update: {},
             create: {
@@ -583,13 +583,13 @@ async function main() {
     let zoneCount = 0;
     for (let i = 0; i < zoneData.length; i++) {
       const org = orgs[Math.floor(i / 2)];
-      const shop = await (prisma as any).shop.findFirst({
+      const shop = await db.shop.findFirst({
         where: { organizationId: org.id },
       });
 
       if (shop) {
         try {
-          await (prisma as any).deliveryZone.upsert({
+          await db.deliveryZone.upsert({
             where: { id: crypto.randomUUID() },
             update: {},
             create: {
@@ -622,7 +622,7 @@ async function main() {
 
     let webhookCount = 0;
     for (const org of orgs) {
-      const shop = await (prisma as any).shop.findFirst({
+      const shop = await db.shop.findFirst({
         where: { organizationId: org.id },
       });
 
@@ -635,7 +635,7 @@ async function main() {
         ];
         for (const event of events) {
           try {
-            await (prisma as any).carrierService.upsert({
+            await db.carrierService.upsert({
               where: { id: crypto.randomUUID() },
               update: {},
               create: {

@@ -130,7 +130,7 @@ describe('Routes Core Module', () => {
       const expected = createMockRoute(routeData);
       (prisma.route.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).route.create({ data: routeData });
+      const result = await db.route.create({ data: routeData });
 
       expect(result.status).toBe('DRAFT');
       expect(result.date).toEqual(new Date('2025-03-15'));
@@ -146,7 +146,7 @@ describe('Routes Core Module', () => {
       const expected = createMockRoute(routeData);
       (prisma.route.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).route.create({ data: routeData });
+      const result = await db.route.create({ data: routeData });
 
       expect(result.driverId).toBe('driver-123');
     });
@@ -200,7 +200,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.create as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.create({
+      const result = await db.route.create({
         data: { shopId: 'shop-123', date: new Date('2025-03-15') },
       });
 
@@ -220,7 +220,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
         include: { stops: { orderBy: { sequence: 'asc' } } },
       });
@@ -241,7 +241,7 @@ describe('Routes Core Module', () => {
 
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
         include: { driver: true },
       });
@@ -253,7 +253,7 @@ describe('Routes Core Module', () => {
     it('should return null for non-existent route', async () => {
       (prisma.route.findUnique as any).mockResolvedValueOnce(null);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'nonexistent' },
       });
 
@@ -270,7 +270,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
         include: { stops: { orderBy: { sequence: 'asc' } } },
       });
@@ -291,11 +291,11 @@ describe('Routes Core Module', () => {
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
       (prisma.route.count as any).mockResolvedValueOnce(50);
 
-      const result = await (prisma as any).route.findMany({
+      const result = await db.route.findMany({
         skip: 0,
         take: 3,
       });
-      const total = await (prisma as any).route.count();
+      const total = await db.route.count();
 
       expect(result).toHaveLength(3);
       expect(total).toBe(50);
@@ -309,7 +309,7 @@ describe('Routes Core Module', () => {
       ];
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
 
-      const result = await (prisma as any).route.findMany({
+      const result = await db.route.findMany({
         where: { date },
       });
 
@@ -324,7 +324,7 @@ describe('Routes Core Module', () => {
       ];
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
 
-      const result = await (prisma as any).route.findMany({
+      const result = await db.route.findMany({
         where: { driverId },
       });
 
@@ -338,7 +338,7 @@ describe('Routes Core Module', () => {
       ];
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
 
-      const result = await (prisma as any).route.findMany({
+      const result = await db.route.findMany({
         where: { status: 'IN_PROGRESS' },
       });
 
@@ -353,7 +353,7 @@ describe('Routes Core Module', () => {
       ];
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
 
-      const result = await (prisma as any).route.findMany({
+      const result = await db.route.findMany({
         orderBy: { date: 'desc' },
       });
 
@@ -367,7 +367,7 @@ describe('Routes Core Module', () => {
       ];
       (prisma.route.findMany as any).mockResolvedValueOnce(routes);
 
-      const result = await (prisma as any).route.findMany();
+      const result = await db.route.findMany();
 
       expect(result[0]._count.stops).toBe(5);
       expect(result[1]._count.stops).toBe(3);
@@ -390,7 +390,7 @@ describe('Routes Core Module', () => {
       const updated = createMockRoute({ status: 'OPTIMIZED' });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'OPTIMIZED' },
       });
@@ -405,7 +405,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'ASSIGNED', driverId: 'driver-123' },
       });
@@ -421,7 +421,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'IN_PROGRESS', startedAt: new Date() },
       });
@@ -438,7 +438,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'COMPLETED', completedAt: now },
       });
@@ -474,7 +474,7 @@ describe('Routes Core Module', () => {
         count: 3,
       });
 
-      const result = await (prisma as any).routeStop.createMany({
+      const result = await db.routeStop.createMany({
         data: stops.map(stop => ({
           routeId: 'route-001',
           ...stop,
@@ -503,7 +503,7 @@ describe('Routes Core Module', () => {
 
       (prisma.routeStop.findMany as any).mockResolvedValueOnce(stops);
 
-      const result = await (prisma as any).routeStop.findMany({
+      const result = await db.routeStop.findMany({
         orderBy: { sequence: 'asc' },
       });
 
@@ -520,7 +520,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.routeStop.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).routeStop.update({
+      const result = await db.routeStop.update({
         where: { id: 'stop-001' },
         data: { status: 'ARRIVED', actualArrival: new Date() },
       });
@@ -537,12 +537,12 @@ describe('Routes Core Module', () => {
         .mockResolvedValueOnce(skipped)
         .mockResolvedValueOnce(failed);
 
-      const result1 = await (prisma as any).routeStop.update({
+      const result1 = await db.routeStop.update({
         where: { id: 'stop-001' },
         data: { status: 'SKIPPED' },
       });
 
-      const result2 = await (prisma as any).routeStop.update({
+      const result2 = await db.routeStop.update({
         where: { id: 'stop-002' },
         data: { status: 'FAILED' },
       });
@@ -562,7 +562,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.routeStop.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).routeStop.update({
+      const result = await db.routeStop.update({
         where: { id: 'stop-001' },
         data: {
           status: 'COMPLETED',
@@ -592,7 +592,7 @@ describe('Routes Core Module', () => {
       const updated = createMockStop({ status: 'EN_ROUTE' });
       (prisma.routeStop.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).routeStop.update({
+      const result = await db.routeStop.update({
         where: { id: 'stop-001' },
         data: { status: 'EN_ROUTE' },
       });
@@ -614,7 +614,7 @@ describe('Routes Core Module', () => {
       const skipped = createMockStop({ status: 'SKIPPED' });
       (prisma.routeStop.update as any).mockResolvedValueOnce(skipped);
 
-      const result = await (prisma as any).routeStop.update({
+      const result = await db.routeStop.update({
         where: { id: 'stop-001' },
         data: { status: 'SKIPPED' },
       });
@@ -636,7 +636,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { totalDistance: 42.5 },
       });
@@ -650,7 +650,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { totalDuration: 180 },
       });
@@ -666,7 +666,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'IN_PROGRESS', startedAt: startTime },
       });
@@ -682,7 +682,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'COMPLETED', completedAt: endTime },
       });
@@ -723,7 +723,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: {
           status: 'OPTIMIZED',
@@ -747,7 +747,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: {
           totalDistance: 35.2,
@@ -767,7 +767,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(reverted);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'DRAFT', optimizedOrder: [] },
       });
@@ -787,7 +787,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(assigned);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { driverId: 'driver-123', status: 'ASSIGNED' },
       });
@@ -803,7 +803,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(reassigned);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { driverId: 'driver-456' },
       });
@@ -818,7 +818,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(unassigned);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { driverId: null },
       });
@@ -836,7 +836,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.update as any).mockResolvedValueOnce(cancelled);
 
-      const result = await (prisma as any).route.update({
+      const result = await db.route.update({
         where: { id: 'route-001' },
         data: { status: 'CANCELLED' },
       });
@@ -853,7 +853,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(cancelled);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -867,7 +867,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(cancelled);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -894,7 +894,7 @@ describe('Routes Core Module', () => {
 
       const result = await (prisma as any).$transaction(
         routeDates.map(date =>
-          (prisma as any).route.create({
+          db.route.create({
             data: { shopId: 'shop-123', date },
           })
         )
@@ -912,7 +912,7 @@ describe('Routes Core Module', () => {
         count: 10,
       });
 
-      const result = await (prisma as any).routeStop.createMany({
+      const result = await db.routeStop.createMany({
         data: stops,
       });
 
@@ -927,7 +927,7 @@ describe('Routes Core Module', () => {
       const route = createMockRoute({ stops: [] });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -940,7 +940,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -954,7 +954,7 @@ describe('Routes Core Module', () => {
       const route = createMockRoute({ stops: manyStops });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -965,7 +965,7 @@ describe('Routes Core Module', () => {
       const route = createMockRoute({ driverId: null });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -979,7 +979,7 @@ describe('Routes Core Module', () => {
       });
       (prisma.route.findUnique as any).mockResolvedValueOnce(route);
 
-      const result = await (prisma as any).route.findUnique({
+      const result = await db.route.findUnique({
         where: { id: 'route-001' },
       });
 
@@ -1000,7 +1000,7 @@ describe('Routes Core Module', () => {
 
       const results = await Promise.all(
         updates.map(update =>
-          (prisma as any).routeStop.update({
+          db.routeStop.update({
             where: { id: update.id },
             data: { status: update.status },
           })

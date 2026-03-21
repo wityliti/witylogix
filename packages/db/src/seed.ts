@@ -52,7 +52,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Organizations...");
 
     const orgs = await Promise.all([
-      (prisma as any).organization.upsert({
+      db.organization.upsert({
         where: { slug: "acme-logistics" },
         update: {},
         create: {
@@ -67,7 +67,7 @@ async function main() {
           },
         },
       }),
-      (prisma as any).organization.upsert({
+      db.organization.upsert({
         where: { slug: "metro-delivery" },
         update: {},
         create: {
@@ -82,7 +82,7 @@ async function main() {
           },
         },
       }),
-      (prisma as any).organization.upsert({
+      db.organization.upsert({
         where: { slug: "fastship-inc" },
         update: {},
         create: {
@@ -107,7 +107,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Shops...");
 
     const shops = await Promise.all([
-      (prisma as any).shop.upsert({
+      db.shop.upsert({
         where: { shopifyDomain: "acme-logistics.myshopify.com" },
         update: {},
         create: {
@@ -128,7 +128,7 @@ async function main() {
           },
         },
       }),
-      (prisma as any).shop.upsert({
+      db.shop.upsert({
         where: { shopifyDomain: "metro-delivery.myshopify.com" },
         update: {},
         create: {
@@ -149,7 +149,7 @@ async function main() {
           },
         },
       }),
-      (prisma as any).shop.upsert({
+      db.shop.upsert({
         where: { shopifyDomain: "fastship-inc.myshopify.com" },
         update: {},
         create: {
@@ -194,7 +194,7 @@ async function main() {
 
     const users = await Promise.all(
       userEmails.map((u) =>
-        (prisma as any).user.upsert({
+        db.user.upsert({
           where: { shopId_email: { shopId: shops[u.shop].id, email: u.email } },
           update: {},
           create: {
@@ -218,22 +218,22 @@ async function main() {
 
     // Link users to their organizations
     await Promise.all([
-      (prisma as any).orgMember.upsert({
+      db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[0].id, userId: users[0].id } },
         update: {},
         create: { orgId: orgs[0].id, userId: users[0].id, role: "OWNER", shopIds: [] },
       }),
-      (prisma as any).orgMember.upsert({
+      db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[0].id, userId: users[1].id } },
         update: {},
         create: { orgId: orgs[0].id, userId: users[1].id, role: "ADMIN", shopIds: [] },
       }),
-      (prisma as any).orgMember.upsert({
+      db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[1].id, userId: users[3].id } },
         update: {},
         create: { orgId: orgs[1].id, userId: users[3].id, role: "OWNER", shopIds: [] },
       }),
-      (prisma as any).orgMember.upsert({
+      db.orgMember.upsert({
         where: { orgId_userId: { orgId: orgs[2].id, userId: users[6].id } },
         update: {},
         create: { orgId: orgs[2].id, userId: users[6].id, role: "OWNER", shopIds: [] },
@@ -248,7 +248,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Locations...");
 
     const locations = await Promise.all([
-      (prisma as any).location.upsert({
+      db.location.upsert({
         where: { id: "loc-acme-main" },
         update: {},
         create: {
@@ -279,7 +279,7 @@ async function main() {
           metadata: { capacity: "high", serviceLevel: "premium" },
         },
       }),
-      (prisma as any).location.upsert({
+      db.location.upsert({
         where: { id: "loc-metro-hub" },
         update: {},
         create: {
@@ -310,7 +310,7 @@ async function main() {
           metadata: { capacity: "ultra-high", serviceLevel: "express" },
         },
       }),
-      (prisma as any).location.upsert({
+      db.location.upsert({
         where: { id: "loc-fastship-depot" },
         update: {},
         create: {
@@ -351,7 +351,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Delivery Zones...");
 
     const zones = await Promise.all([
-      (prisma as any).deliveryZone.upsert({
+      db.deliveryZone.upsert({
         where: { id: "zone-acme-manhattan" },
         update: {},
         create: {
@@ -377,7 +377,7 @@ async function main() {
           metadata: { coverage: "dense", avgDeliveryTime: 45 },
         },
       }),
-      (prisma as any).deliveryZone.upsert({
+      db.deliveryZone.upsert({
         where: { id: "zone-acme-brooklyn" },
         update: {},
         create: {
@@ -403,7 +403,7 @@ async function main() {
           metadata: { coverage: "moderate", avgDeliveryTime: 55 },
         },
       }),
-      (prisma as any).deliveryZone.upsert({
+      db.deliveryZone.upsert({
         where: { id: "zone-metro-downtown" },
         update: {},
         create: {
@@ -429,7 +429,7 @@ async function main() {
           metadata: { coverage: "ultra-dense", avgDeliveryTime: 30 },
         },
       }),
-      (prisma as any).deliveryZone.upsert({
+      db.deliveryZone.upsert({
         where: { id: "zone-fastship-sf" },
         update: {},
         create: {
@@ -455,7 +455,7 @@ async function main() {
           metadata: { coverage: "sparse", avgDeliveryTime: 60 },
         },
       }),
-      (prisma as any).deliveryZone.upsert({
+      db.deliveryZone.upsert({
         where: { id: "zone-fastship-peninsula" },
         update: {},
         create: {
@@ -491,7 +491,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Time Slots...");
 
     const timeSlots = await Promise.all([
-      (prisma as any).timeSlot.upsert({
+      db.timeSlot.upsert({
         where: { id: "slot-acme-morning" },
         update: {},
         create: {
@@ -508,7 +508,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).timeSlot.upsert({
+      db.timeSlot.upsert({
         where: { id: "slot-acme-afternoon" },
         update: {},
         create: {
@@ -525,7 +525,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).timeSlot.upsert({
+      db.timeSlot.upsert({
         where: { id: "slot-metro-morning" },
         update: {},
         create: {
@@ -542,7 +542,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).timeSlot.upsert({
+      db.timeSlot.upsert({
         where: { id: "slot-fastship-sameday" },
         update: {},
         create: {
@@ -580,7 +580,7 @@ async function main() {
     const drivers = await Promise.all(
       driverNames.map((name, i) => {
         const orgIndex = i % 3;
-        return (prisma as any).driver.upsert({
+        return db.driver.upsert({
           where: { orgId_phone: { orgId: orgs[orgIndex].id, phone: `+1-555-000${String(i).padStart(4, "0")}` } },
           update: {},
           create: {
@@ -627,7 +627,7 @@ async function main() {
         const status = orderStatuses[Math.floor(Math.random() * orderStatuses.length)];
         const driver = status !== "PENDING" && status !== "CANCELLED" ? drivers[Math.floor(Math.random() * drivers.length)] : null;
 
-        return (prisma as any).order.upsert({
+        return db.order.upsert({
           where: { shopId_externalOrderId_source: { shopId: shops[shopIndex].id, externalOrderId: `ext-order-${i + 1}`, source: "SHOPIFY" } },
           update: {},
           create: {
@@ -686,7 +686,7 @@ async function main() {
         const status = shipmentStatuses[Math.floor(Math.random() * shipmentStatuses.length)];
         const driver = status !== "PENDING" && status !== "CANCELLED" ? drivers[Math.floor(Math.random() * drivers.length)] : null;
 
-        return (prisma as any).shipment.upsert({
+        return db.shipment.upsert({
           where: { shopId_shipmentNumber: { shopId: order.shopId, shipmentNumber: `SHP-${String(i + 1).padStart(5, "0")}` } },
           update: {},
           create: {
@@ -744,7 +744,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Notification Templates...");
 
     const notificationTemplates = await Promise.all([
-      (prisma as any).notificationTemplate.upsert({
+      db.notificationTemplate.upsert({
         where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "EMAIL", eventType: "order.confirmed", language: "en" } },
         update: {},
         create: {
@@ -764,7 +764,7 @@ async function main() {
           isDefault: true,
         },
       }),
-      (prisma as any).notificationTemplate.upsert({
+      db.notificationTemplate.upsert({
         where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "SMS", eventType: "delivery.assigned", language: "en" } },
         update: {},
         create: {
@@ -784,7 +784,7 @@ async function main() {
           isDefault: true,
         },
       }),
-      (prisma as any).notificationTemplate.upsert({
+      db.notificationTemplate.upsert({
         where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "PUSH", eventType: "delivery.out_for_delivery", language: "en" } },
         update: {},
         create: {
@@ -804,7 +804,7 @@ async function main() {
           isDefault: true,
         },
       }),
-      (prisma as any).notificationTemplate.upsert({
+      db.notificationTemplate.upsert({
         where: { shopId_channel_eventType_language: { shopId: shops[0].id, channel: "EMAIL", eventType: "delivery.delivered", language: "en" } },
         update: {},
         create: {
@@ -834,7 +834,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Webhook Subscriptions...");
 
     const webhooks = await Promise.all([
-      (prisma as any).webhookSubscription.upsert({
+      db.webhookSubscription.upsert({
         where: { shopId_topic: { shopId: shops[0].id, topic: "orders/create" } },
         update: {},
         create: {
@@ -844,7 +844,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).webhookSubscription.upsert({
+      db.webhookSubscription.upsert({
         where: { shopId_topic: { shopId: shops[0].id, topic: "orders/updated" } },
         update: {},
         create: {
@@ -854,7 +854,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).webhookSubscription.upsert({
+      db.webhookSubscription.upsert({
         where: { shopId_topic: { shopId: shops[1].id, topic: "orders/create" } },
         update: {},
         create: {
@@ -864,7 +864,7 @@ async function main() {
           isActive: true,
         },
       }),
-      (prisma as any).webhookSubscription.upsert({
+      db.webhookSubscription.upsert({
         where: { shopId_topic: { shopId: shops[2].id, topic: "orders/create" } },
         update: {},
         create: {
@@ -884,7 +884,7 @@ async function main() {
     log(colors.blue, "○", "Seeding Billing Plans...");
 
     const billingPlans = await Promise.all([
-      (prisma as any).billingPlan.upsert({
+      db.billingPlan.upsert({
         where: { slug: "free" },
         update: {},
         create: {
@@ -910,7 +910,7 @@ async function main() {
           sortOrder: 1,
         },
       }),
-      (prisma as any).billingPlan.upsert({
+      db.billingPlan.upsert({
         where: { slug: "pro" },
         update: {},
         create: {
@@ -939,7 +939,7 @@ async function main() {
           sortOrder: 2,
         },
       }),
-      (prisma as any).billingPlan.upsert({
+      db.billingPlan.upsert({
         where: { slug: "enterprise" },
         update: {},
         create: {
@@ -984,7 +984,7 @@ async function main() {
     const oneMonthLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const subscriptions = await Promise.all([
-      (prisma as any).billingSubscription.upsert({
+      db.billingSubscription.upsert({
         where: { shopId: shops[0].id },
         update: {},
         create: {
@@ -998,7 +998,7 @@ async function main() {
           cancelAtPeriodEnd: false,
         },
       }),
-      (prisma as any).billingSubscription.upsert({
+      db.billingSubscription.upsert({
         where: { shopId: shops[1].id },
         update: {},
         create: {
@@ -1012,7 +1012,7 @@ async function main() {
           cancelAtPeriodEnd: false,
         },
       }),
-      (prisma as any).billingSubscription.upsert({
+      db.billingSubscription.upsert({
         where: { shopId: shops[2].id },
         update: {},
         create: {

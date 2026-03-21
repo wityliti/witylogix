@@ -51,7 +51,7 @@ export class DispatchService {
 
       // TODO: Replace with actual database call using Prisma
       // const prisma = (await import('@/db')).default;
-      // const routes = await (prisma as any).route.findMany({
+      // const routes = await db.route.findMany({
       //   where: {
       //     shopId: this.shopId,
       //     date: {
@@ -94,8 +94,8 @@ export class DispatchService {
 
       // TODO: Replace with actual database call
       // const [routes, total] = await Promise.all([
-      //   (prisma as any).route.findMany({...}),
-      //   (prisma as any).route.count({...}),
+      //   db.route.findMany({...}),
+      //   db.route.count({...}),
       // ]);
 
       return {
@@ -118,7 +118,7 @@ export class DispatchService {
   async getRoute(routeId: string): Promise<Route | null> {
     try {
       // TODO: Replace with actual database call
-      // const route = await (prisma as any).route.findUnique({
+      // const route = await db.route.findUnique({
       //   where: { id: routeId },
       //   include: {
       //     stops: {
@@ -145,7 +145,7 @@ export class DispatchService {
   async getStop(stopId: string): Promise<Stop | null> {
     try {
       // TODO: Replace with actual database call
-      // const stop = await (prisma as any).routeStop.findUnique({
+      // const stop = await db.routeStop.findUnique({
       //   where: { id: stopId },
       // });
       return null;
@@ -162,7 +162,7 @@ export class DispatchService {
   async getActiveDrivers(): Promise<Driver[]> {
     try {
       // TODO: Replace with actual database call
-      // const drivers = await (prisma as any).driver.findMany({
+      // const drivers = await db.driver.findMany({
       //   where: {
       //     shopId: this.shopId,
       //     isActive: true,
@@ -228,7 +228,7 @@ export class DispatchService {
   async skipStop(stopId: string, reason?: string): Promise<Stop | null> {
     try {
       // TODO: Replace with actual database update
-      // const stop = await (prisma as any).routeStop.update({
+      // const stop = await db.routeStop.update({
       //   where: { id: stopId },
       //   data: {
       //     status: 'skipped',
@@ -299,7 +299,7 @@ export class DispatchService {
       // TODO: Replace with actual database aggregations
       // const [routes, stats] = await Promise.all([
       //   this.getActiveRoutes(targetDate),
-      //   (prisma as any).routeStop.aggregate({...}),
+      //   db.routeStop.aggregate({...}),
       // ]);
 
       const routes = await this.getActiveRoutes(targetDate);
@@ -340,7 +340,7 @@ export class DispatchService {
   async getUnscheduledOrders(): Promise<string[]> {
     try {
       // TODO: Replace with actual database call
-      // const orders = await (prisma as any).order.findMany({
+      // const orders = await db.order.findMany({
       //   where: {
       //     shopId: this.shopId,
       //     routeStopId: null,

@@ -42,7 +42,7 @@ async function main() {
 
     // Create Organization
     log(colors.blue, "○", "Creating Organization...");
-    const org = await (prisma as any).organization.upsert({
+    const org = await db.organization.upsert({
       where: { slug: "test-org" },
       update: {},
       create: {
@@ -61,7 +61,7 @@ async function main() {
     const passwordHash = hashPassword(testPassword);
 
     const [owner, admin, driver] = await Promise.all([
-      (prisma as any).user.upsert({
+      db.user.upsert({
         where: { email: "owner@test.local" },
         update: {},
         create: {
@@ -73,7 +73,7 @@ async function main() {
           settings: { language: "en", theme: "light" },
         },
       }),
-      (prisma as any).user.upsert({
+      db.user.upsert({
         where: { email: "admin@test.local" },
         update: {},
         create: {
@@ -85,7 +85,7 @@ async function main() {
           settings: { language: "en", theme: "light" },
         },
       }),
-      (prisma as any).user.upsert({
+      db.user.upsert({
         where: { email: "driver@test.local" },
         update: {},
         create: {
@@ -103,7 +103,7 @@ async function main() {
 
     // Create Workspace
     log(colors.blue, "○", "Creating Workspace...");
-    const workspace = await (prisma as any).workspace.upsert({
+    const workspace = await db.workspace.upsert({
       where: { id: crypto.randomUUID() },
       update: {},
       create: {
@@ -116,7 +116,7 @@ async function main() {
     });
 
     // Create Workspace Settings
-    await (prisma as any).workspaceSettings.upsert({
+    await db.workspaceSettings.upsert({
       where: { id: crypto.randomUUID() },
       update: {},
       create: {
@@ -131,7 +131,7 @@ async function main() {
 
     // Create Tenant Config
     log(colors.blue, "○", "Creating Tenant Config...");
-    await (prisma as any).tenantConfig.upsert({
+    await db.tenantConfig.upsert({
       where: { id: crypto.randomUUID() },
       update: {},
       create: {
@@ -152,7 +152,7 @@ async function main() {
       .update(key)
       .digest("hex");
 
-    await (prisma as any).apiKey.upsert({
+    await db.apiKey.upsert({
       where: { id: crypto.randomUUID() },
       update: {},
       create: {
@@ -171,12 +171,12 @@ async function main() {
     // Create Shop (if needed for orders)
     let shop;
     try {
-      shop = await (prisma as any).shop.findFirst({
+      shop = await db.shop.findFirst({
         where: { organizationId: org.id },
       });
 
       if (!shop) {
-        shop = await (prisma as any).shop.create({
+        shop = await db.shop.create({
           data: {
             organizationId: org.id,
             name: "Test Shop",
@@ -189,7 +189,7 @@ async function main() {
       // Create Orders
       log(colors.blue, "○", "Creating Orders...");
       for (let i = 1; i <= 5; i++) {
-        await (prisma as any).order.upsert({
+        await db.order.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -217,7 +217,7 @@ async function main() {
       // Create Drivers
       log(colors.blue, "○", "Creating Drivers...");
       for (let i = 1; i <= 3; i++) {
-        await (prisma as any).driver.upsert({
+        await db.driver.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {
@@ -263,7 +263,7 @@ async function main() {
       ];
 
       for (const zone of zones) {
-        await (prisma as any).deliveryZone.upsert({
+        await db.deliveryZone.upsert({
           where: { id: crypto.randomUUID() },
           update: {},
           create: {

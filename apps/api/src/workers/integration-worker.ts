@@ -67,13 +67,13 @@ async function handleSync(job: Job<IntegrationJobData>): Promise<void> {
     }
 
     // Update integration last sync time
-    await (prisma as any).integration.update({
+    await db.integration.update({
       where: { id: integrationId },
       data: { lastSyncAt: new Date() },
     });
 
     // Record sync event
-    await (prisma as any).integrationEvent.create({
+    await db.integrationEvent.create({
       data: {
         shopId,
         appSlug,
@@ -94,7 +94,7 @@ async function handleSync(job: Job<IntegrationJobData>): Promise<void> {
     );
 
     // Record failure event
-    await (prisma as any).integrationEvent.create({
+    await db.integrationEvent.create({
       data: {
         shopId,
         appSlug,
@@ -165,7 +165,7 @@ async function handleHealthCheck(job: Job<IntegrationJobData>): Promise<void> {
 async function handleWebhookProcess(job: Job<IntegrationJobData>): Promise<void> {
   const { shopId, appSlug, integrationId, payload } = job.data;
 
-  const integration = await (prisma as any).integration.findUnique({
+  const integration = await db.integration.findUnique({
     where: { id: integrationId },
   });
 
@@ -228,7 +228,7 @@ async function handleWebhookProcess(job: Job<IntegrationJobData>): Promise<void>
     }
 
     // Record successful webhook event
-    await (prisma as any).integrationEvent.create({
+    await db.integrationEvent.create({
       data: {
         shopId,
         appSlug,
@@ -253,7 +253,7 @@ async function handleWebhookProcess(job: Job<IntegrationJobData>): Promise<void>
     );
 
     // Record failure event
-    await (prisma as any).integrationEvent.create({
+    await db.integrationEvent.create({
       data: {
         shopId,
         appSlug,

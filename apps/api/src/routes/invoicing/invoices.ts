@@ -94,7 +94,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response): P
     }
 
     const [invoices, total] = await Promise.all([
-      (prisma as any).Invoice.findMany({
+      db.invoice.findMany({
         where: filters,
         include: {
           lineItems: true,
@@ -106,7 +106,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response): P
         skip: parseInt(skip as string),
         take: parseInt(take as string),
       }),
-      (prisma as any).Invoice.count({ where: filters }),
+      db.invoice.count({ where: filters }),
     ]);
 
     res.json({
@@ -133,7 +133,7 @@ router.get('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
     const { id } = req.params;
     const tenantId = req.tenantId!;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
       include: {
         lineItems: true,
@@ -174,7 +174,7 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response): 
     // Generate invoice number
     const year = new Date().getFullYear();
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const counter = await (prisma as any).InvoiceNumberCounter.findUnique({
+    const counter = await db.invoiceNumberCounter.findUnique({
       where: { tenantId },
     });
 
@@ -182,7 +182,7 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response): 
     const invoiceNumber = `WL-INV-${year}${month}-${nextNumber}`;
 
     // Create invoice
-    const invoice = await (prisma as any).Invoice.create({
+    const invoice = await db.invoice.create({
       data: {
         tenantId,
         invoiceNumber,
@@ -207,12 +207,12 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response): 
 
     // Update counter
     if (counter) {
-      await (prisma as any).InvoiceNumberCounter.update({
+      await db.invoiceNumberCounter.update({
         where: { tenantId },
         data: { currentNumber: nextNumber },
       });
     } else {
-      await (prisma as any).InvoiceNumberCounter.create({
+      await db.invoiceNumberCounter.create({
         data: {
           tenantId,
           year,
@@ -239,7 +239,7 @@ router.put('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
     const tenantId = req.tenantId!;
     const { notes, dueDate } = req.body;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
     });
 
@@ -253,7 +253,7 @@ router.put('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
       return;
     }
 
-    const updated = await (prisma as any).Invoice.update({
+    const updated = await db.invoice.update({
       where: { id },
       data: {
         notes: notes || invoice.notes,
@@ -285,7 +285,7 @@ router.post('/:id/pdf', requireAuth, async (req: AuthenticatedRequest, res: Resp
     const { id } = req.params;
     const tenantId = req.tenantId!;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
       include: {
         lineItems: true,
@@ -328,7 +328,7 @@ router.post('/:id/send', requireAuth, async (req: AuthenticatedRequest, res: Res
     const tenantId = req.tenantId!;
     const { email } = req.body;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
     });
 
@@ -348,7 +348,7 @@ router.post('/:id/send', requireAuth, async (req: AuthenticatedRequest, res: Res
     }
 
     // Update status to SENT
-    const updated = await (prisma as any).Invoice.update({
+    const updated = await db.invoice.update({
       where: { id },
       data: {
         status: 'SENT',
@@ -380,7 +380,7 @@ router.post('/:id/mark-paid', requireAuth, async (req: AuthenticatedRequest, res
     const tenantId = req.tenantId!;
     const { amount, method, reference } = req.body;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
     });
 
@@ -395,7 +395,7 @@ router.post('/:id/mark-paid', requireAuth, async (req: AuthenticatedRequest, res
     }
 
     // Record payment
-    await (prisma as any).InvoicePayment.create({
+    await db.invoicePayment.create({
       data: {
         invoiceId: id,
         amount,
@@ -406,7 +406,7 @@ router.post('/:id/mark-paid', requireAuth, async (req: AuthenticatedRequest, res
     });
 
     // Calculate total paid
-    const payments = await (prisma as any).InvoicePayment.findMany({
+    const payments = await db.invoicePayment.findMany({
       where: { invoiceId: id },
     });
 
@@ -415,7 +415,7 @@ router.post('/:id/mark-paid', requireAuth, async (req: AuthenticatedRequest, res
     // Update invoice status
     const newStatus = totalPaid >= invoice.total ? 'PAID' : invoice.status;
 
-    const updated = await (prisma as any).Invoice.update({
+    const updated = await db.invoice.update({
       where: { id },
       data: {
         status: newStatus,
@@ -448,7 +448,7 @@ router.post('/:id/void', requireAuth, async (req: AuthenticatedRequest, res: Res
     const tenantId = req.tenantId!;
     const { reason } = req.body;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
     });
 
@@ -462,7 +462,7 @@ router.post('/:id/void', requireAuth, async (req: AuthenticatedRequest, res: Res
       return;
     }
 
-    const updated = await (prisma as any).Invoice.update({
+    const updated = await db.invoice.update({
       where: { id },
       data: {
         status: 'VOIDED',
@@ -496,7 +496,7 @@ router.post('/:id/reminder', requireAuth, async (req: AuthenticatedRequest, res:
     const tenantId = req.tenantId!;
     const { email, reminderType = 'after-due' } = req.body;
 
-    const invoice = await (prisma as any).Invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
     });
 

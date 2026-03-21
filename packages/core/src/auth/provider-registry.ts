@@ -347,7 +347,7 @@ export class AuthProviderRegistry {
     operation: string,
   ): Promise<void> {
     try {
-      await (prisma as any).authMeterEvent.create({
+      await db.authMeterEvent.create({
         data: {
           shopId,
           provider,

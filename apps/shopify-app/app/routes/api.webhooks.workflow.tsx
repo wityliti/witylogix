@@ -356,7 +356,7 @@ async function triggerCreateDeliveryOrderWorkflow(
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
 
-    const shop = await (prisma as any).shop.findUnique({
+    const shop = await db.shop.findUnique({
       where: { id: shopId },
       select: { ownerId: true },
     });
@@ -448,7 +448,7 @@ async function triggerCompleteDeliveryWorkflow(
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
 
-    const order = await (prisma as any).order.findFirst({
+    const order = await db.order.findFirst({
       where: {
         externalOrderId: orderId,
         source: "shopify",

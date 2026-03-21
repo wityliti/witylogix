@@ -109,7 +109,7 @@ describe('Zones Core Module', () => {
       const expected = createMockZone(zoneData);
       (prisma.deliveryZone.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).deliveryZone.create({
+      const result = await db.deliveryZone.create({
         data: zoneData,
       });
 
@@ -170,7 +170,7 @@ describe('Zones Core Module', () => {
       });
       (prisma.deliveryZone.create as any).mockResolvedValueOnce(zone);
 
-      const result = await (prisma as any).deliveryZone.create({
+      const result = await db.deliveryZone.create({
         data: { shopId: 'shop-123', name: 'Zone' },
       });
 
@@ -185,11 +185,11 @@ describe('Zones Core Module', () => {
         .mockResolvedValueOnce(zone1)
         .mockResolvedValueOnce(zone2);
 
-      const result1 = await (prisma as any).deliveryZone.create({
+      const result1 = await db.deliveryZone.create({
         data: { shopId: 'shop-123', name: 'Zone 1', freeAbove: 100.0 },
       });
 
-      const result2 = await (prisma as any).deliveryZone.create({
+      const result2 = await db.deliveryZone.create({
         data: { shopId: 'shop-123', name: 'Zone 2', freeAbove: null },
       });
 
@@ -222,7 +222,7 @@ describe('Zones Core Module', () => {
       const zone = createMockZone({ id: 'zone-001' });
       (prisma.deliveryZone.findUnique as any).mockResolvedValueOnce(zone);
 
-      const result = await (prisma as any).deliveryZone.findUnique({
+      const result = await db.deliveryZone.findUnique({
         where: { id: 'zone-001' },
       });
 
@@ -233,7 +233,7 @@ describe('Zones Core Module', () => {
     it('should return null for non-existent zone', async () => {
       (prisma.deliveryZone.findUnique as any).mockResolvedValueOnce(null);
 
-      const result = await (prisma as any).deliveryZone.findUnique({
+      const result = await db.deliveryZone.findUnique({
         where: { id: 'nonexistent' },
       });
 
@@ -250,7 +250,7 @@ describe('Zones Core Module', () => {
       });
       (prisma.deliveryZone.findUnique as any).mockResolvedValueOnce(zone);
 
-      const result = await (prisma as any).deliveryZone.findUnique({
+      const result = await db.deliveryZone.findUnique({
         where: { id: 'zone-001' },
         include: { timeSlots: true },
       });
@@ -295,11 +295,11 @@ describe('Zones Core Module', () => {
       (prisma.deliveryZone.findMany as any).mockResolvedValueOnce(zones);
       (prisma.deliveryZone.count as any).mockResolvedValueOnce(20);
 
-      const result = await (prisma as any).deliveryZone.findMany({
+      const result = await db.deliveryZone.findMany({
         skip: 0,
         take: 3,
       });
-      const total = await (prisma as any).deliveryZone.count();
+      const total = await db.deliveryZone.count();
 
       expect(result).toHaveLength(3);
       expect(total).toBe(20);
@@ -313,7 +313,7 @@ describe('Zones Core Module', () => {
       ];
       (prisma.deliveryZone.findMany as any).mockResolvedValueOnce(zones);
 
-      const result = await (prisma as any).deliveryZone.findMany({
+      const result = await db.deliveryZone.findMany({
         orderBy: [{ priority: 'desc' }, { name: 'asc' }],
       });
 
@@ -327,7 +327,7 @@ describe('Zones Core Module', () => {
       ];
       (prisma.deliveryZone.findMany as any).mockResolvedValueOnce(active);
 
-      const result = await (prisma as any).deliveryZone.findMany({
+      const result = await db.deliveryZone.findMany({
         where: { isActive: true },
       });
 
@@ -341,7 +341,7 @@ describe('Zones Core Module', () => {
       ];
       (prisma.deliveryZone.findMany as any).mockResolvedValueOnce(zones);
 
-      const result = await (prisma as any).deliveryZone.findMany(
+      const result = await db.deliveryZone.findMany(
         { include: { _count: { select: { timeSlots: true } } } }
       );
 
@@ -357,7 +357,7 @@ describe('Zones Core Module', () => {
       });
       (prisma.deliveryZone.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).deliveryZone.update({
+      const result = await db.deliveryZone.update({
         where: { id: 'zone-001' },
         data: { name: 'Updated Downtown' },
       });
@@ -372,7 +372,7 @@ describe('Zones Core Module', () => {
       });
       (prisma.deliveryZone.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).deliveryZone.update({
+      const result = await db.deliveryZone.update({
         where: { id: 'zone-001' },
         data: { baseRate: 7.5, perKmRate: 0.75 },
       });
@@ -389,7 +389,7 @@ describe('Zones Core Module', () => {
       (prisma.deliveryZone.update as any).mockResolvedValueOnce(updated);
 
       const result = async () => {
-        await (prisma as any).deliveryZone.update({
+        await db.deliveryZone.update({
           where: { id: 'zone-001' },
           data: { minOrder: 25.0, freeAbove: 150.0 },
         });
@@ -453,7 +453,7 @@ describe('Zones Core Module', () => {
       const updated = createMockZone({ priority: 5 });
       (prisma.deliveryZone.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).deliveryZone.update({
+      const result = await db.deliveryZone.update({
         where: { id: 'zone-001' },
         data: { priority: 5 },
       });
@@ -467,7 +467,7 @@ describe('Zones Core Module', () => {
       });
       (prisma.deliveryZone.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).deliveryZone.update({
+      const result = await db.deliveryZone.update({
         where: { id: 'zone-001' },
         data: { isActive: false },
       });
@@ -835,7 +835,7 @@ describe('Zones Core Module', () => {
         createMockZone({ shopId }),
       ]);
 
-      const result = await (prisma as any).deliveryZone.findMany({
+      const result = await db.deliveryZone.findMany({
         where: { shopId },
       });
 
@@ -848,7 +848,7 @@ describe('Zones Core Module', () => {
         createMockZone({ orgId }),
       ]);
 
-      const result = await (prisma as any).deliveryZone.findMany({
+      const result = await db.deliveryZone.findMany({
         where: { orgId },
       });
 
@@ -863,7 +863,7 @@ describe('Zones Core Module', () => {
       const zone = createMockZone({ boundary: null });
       (prisma.deliveryZone.findUnique as any).mockResolvedValueOnce(zone);
 
-      const result = await (prisma as any).deliveryZone.findUnique({
+      const result = await db.deliveryZone.findUnique({
         where: { id: 'zone-001' },
       });
 
@@ -910,7 +910,7 @@ describe('Zones Core Module', () => {
 
       const results = await Promise.all(
         updates.map(update =>
-          (prisma as any).deliveryZone.update({
+          db.deliveryZone.update({
             where: { id: 'zone-001' },
             data: update,
           })

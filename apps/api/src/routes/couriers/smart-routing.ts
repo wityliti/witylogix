@@ -128,7 +128,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         const options = request.query as Record<string, unknown>;
 
         // Get available couriers for tenant
-        const partners = await (prisma as any).CourierPartner.findMany({
+        const partners = await db.courierPartner.findMany({
           where: {
             tenantId,
             isEnabled: true,
@@ -243,7 +243,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(401).send({ error: "Unauthorized" });
         }
 
-        const partners = await (prisma as any).CourierPartner.findMany({
+        const partners = await db.courierPartner.findMany({
           where: { tenantId },
           select: { id: true, provider: true, name: true },
         });
@@ -251,7 +251,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         const performances = [];
         for (const partner of partners) {
           // Get recent metrics from deliveries
-          const deliveries = await (prisma as any).CourierDelivery.findMany({
+          const deliveries = await db.courierDelivery.findMany({
             where: {
               partnerId: partner.id,
               createdAt: {
@@ -325,7 +325,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
 
         const { partnerId } = request.params;
 
-        const partner = await (prisma as any).CourierPartner.findFirst({
+        const partner = await db.courierPartner.findFirst({
           where: { id: partnerId, tenantId },
           select: { id: true, name: true },
         });
@@ -336,7 +336,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
 
         // Get metrics for different periods
         const getPeriodMetrics = async (days: number) => {
-          const deliveries = await (prisma as any).CourierDelivery.findMany({
+          const deliveries = await db.courierDelivery.findMany({
             where: {
               partnerId,
               createdAt: {

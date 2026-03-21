@@ -89,7 +89,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findMany: vi.fn().mockResolvedValue([]),
         count: vi.fn().mockResolvedValue(0),
       };
@@ -106,7 +106,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findMany: vi.fn().mockResolvedValue([]),
         count: vi.fn().mockResolvedValue(0),
       };
@@ -123,7 +123,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findMany: vi.fn().mockResolvedValue([]),
         count: vi.fn().mockResolvedValue(100),
       };
@@ -155,7 +155,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findMany: vi.fn().mockResolvedValue(stores),
         count: vi.fn().mockResolvedValue(1),
       };
@@ -200,7 +200,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(store),
       };
 
@@ -220,7 +220,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -248,7 +248,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(suspendedStore),
       };
 
@@ -276,7 +276,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id/suspend"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(store),
         update: vi.fn().mockResolvedValue({
           ...store,
@@ -309,7 +309,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id/suspend"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(suspendedStore),
       };
 
@@ -327,7 +327,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id/suspend"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -352,7 +352,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id/restore"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(suspendedStore),
         update: vi.fn().mockResolvedValue({
           ...suspendedStore,
@@ -384,7 +384,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores/:id/restore"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findUnique: vi.fn().mockResolvedValue(activeStore),
       };
 
@@ -417,7 +417,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findMany: vi.fn().mockResolvedValue(users),
         count: vi.fn().mockResolvedValue(100),
       };
@@ -436,14 +436,14 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findMany: vi.fn().mockResolvedValue([]),
         count: vi.fn().mockResolvedValue(0),
       };
 
       await handler(mockRequest, mockReply);
 
-      expect((prisma as any).user.findMany).toHaveBeenCalledWith(
+      expect(db.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             OR: expect.arrayContaining([
@@ -476,7 +476,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 
@@ -494,7 +494,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -521,7 +521,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/role"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
         update: vi.fn().mockResolvedValue({
           ...user,
@@ -558,7 +558,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/role"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(superAdminUser),
       };
 
@@ -576,7 +576,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/role"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -604,7 +604,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/suspend"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
         update: vi.fn().mockResolvedValue({
           ...user,
@@ -635,7 +635,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/suspend"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(superAdminUser),
       };
 
@@ -661,7 +661,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/suspend"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(suspendedUser),
       };
 
@@ -688,7 +688,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/restore"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(suspendedUser),
         update: vi.fn().mockResolvedValue({
           ...suspendedUser,
@@ -718,7 +718,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/restore"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(activeUser),
       };
 
@@ -749,7 +749,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/customers"
       )?.[1];
 
-      (prisma as any).customer = {
+      db.customer = {
         findMany: vi.fn().mockResolvedValue(customers),
         count: vi.fn().mockResolvedValue(50),
       };
@@ -768,14 +768,14 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/customers"
       )?.[1];
 
-      (prisma as any).customer = {
+      db.customer = {
         findMany: vi.fn().mockResolvedValue([]),
         count: vi.fn().mockResolvedValue(0),
       };
 
       await handler(mockRequest, mockReply);
 
-      expect((prisma as any).customer.findMany).toHaveBeenCalled();
+      expect(db.customer.findMany).toHaveBeenCalled();
     });
   });
 
@@ -802,7 +802,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/customers/:id"
       )?.[1];
 
-      (prisma as any).customer = {
+      db.customer = {
         findUnique: vi.fn().mockResolvedValue(customer),
       };
 
@@ -820,7 +820,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/customers/:id"
       )?.[1];
 
-      (prisma as any).customer = {
+      db.customer = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -837,7 +837,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/dashboard"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         count: vi.fn()
           .mockResolvedValueOnce(100)
           .mockResolvedValueOnce(95)
@@ -848,11 +848,11 @@ describe("Admin Routes", () => {
         ]),
       };
 
-      (prisma as any).user = {
+      db.user = {
         count: vi.fn().mockResolvedValue(250),
       };
 
-      (prisma as any).order = {
+      db.order = {
         count: vi.fn()
           .mockResolvedValueOnce(10000)
           .mockResolvedValueOnce(500),
@@ -861,7 +861,7 @@ describe("Admin Routes", () => {
           .mockResolvedValueOnce({ _sum: { totalAmount: 50000 } }),
       };
 
-      (prisma as any).customer = {
+      db.customer = {
         count: vi.fn().mockResolvedValue(5000),
       };
 
@@ -881,16 +881,16 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/dashboard"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         count: vi.fn().mockResolvedValue(100),
         findMany: vi.fn().mockResolvedValue([]),
       };
 
-      (prisma as any).user = {
+      db.user = {
         count: vi.fn().mockResolvedValue(250),
       };
 
-      (prisma as any).order = {
+      db.order = {
         count: vi.fn()
           .mockResolvedValueOnce(10000)
           .mockResolvedValueOnce(500),
@@ -899,7 +899,7 @@ describe("Admin Routes", () => {
           .mockResolvedValueOnce({ _sum: { totalAmount: 50000 } }),
       };
 
-      (prisma as any).customer = {
+      db.customer = {
         count: vi.fn().mockResolvedValue(5000),
       };
 
@@ -921,21 +921,21 @@ describe("Admin Routes", () => {
         { id: "shop-3", name: "Third Store", _count: { orders: 200 } },
       ];
 
-      (prisma as any).shop = {
+      db.shop = {
         count: vi.fn().mockResolvedValue(100),
         findMany: vi.fn().mockResolvedValue(topStores),
       };
 
-      (prisma as any).user = {
+      db.user = {
         count: vi.fn().mockResolvedValue(250),
       };
 
-      (prisma as any).order = {
+      db.order = {
         count: vi.fn().mockResolvedValue(10000),
         aggregate: vi.fn().mockResolvedValue({ _sum: { totalAmount: 1000000 } }),
       };
 
-      (prisma as any).customer = {
+      db.customer = {
         count: vi.fn().mockResolvedValue(5000),
       };
 
@@ -965,7 +965,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/impersonate/:userId"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 
@@ -996,7 +996,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/impersonate/:userId"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 
@@ -1019,7 +1019,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/impersonate/:userId"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
@@ -1047,7 +1047,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/impersonate/:userId"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 
@@ -1103,7 +1103,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/stores"
       )?.[1];
 
-      (prisma as any).shop = {
+      db.shop = {
         findMany: vi.fn().mockRejectedValue(new Error("Database connection failed")),
         count: vi.fn().mockRejectedValue(new Error("Database connection failed")),
       };
@@ -1139,7 +1139,7 @@ describe("Admin Routes", () => {
         (call) => call[0] === "/users/:id/role"
       )?.[1];
 
-      (prisma as any).user = {
+      db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
       };
 

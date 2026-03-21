@@ -137,7 +137,7 @@ describe('Drivers Core Module', () => {
       const expectedDriver = createMockDriver(driverData);
       (prisma.driver.create as any).mockResolvedValueOnce(expectedDriver);
 
-      const result = await (prisma as any).driver.create({
+      const result = await db.driver.create({
         data: driverData,
       });
 
@@ -163,7 +163,7 @@ describe('Drivers Core Module', () => {
       const expectedDriver = createMockDriver(driverData);
       (prisma.driver.create as any).mockResolvedValueOnce(expectedDriver);
 
-      const result = await (prisma as any).driver.create({
+      const result = await db.driver.create({
         data: driverData,
       });
 
@@ -185,7 +185,7 @@ describe('Drivers Core Module', () => {
       (prisma.driver.create as any).mockRejectedValueOnce(error);
 
       await expect(
-        (prisma as any).driver.create({ data: driverData })
+        db.driver.create({ data: driverData })
       ).rejects.toThrow('Unique constraint failed');
     });
 
@@ -203,7 +203,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.create as any).mockResolvedValueOnce(expectedDriver);
 
-      const result = await (prisma as any).driver.create({
+      const result = await db.driver.create({
         data: driverData,
       });
 
@@ -226,7 +226,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.create as any).mockResolvedValueOnce(expectedDriver);
 
-      const result = await (prisma as any).driver.create({
+      const result = await db.driver.create({
         data: driverData,
       });
 
@@ -244,7 +244,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
       });
 
@@ -255,7 +255,7 @@ describe('Drivers Core Module', () => {
     it('should return null for non-existent driver', async () => {
       (prisma.driver.findUnique as any).mockResolvedValueOnce(null);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'nonexistent-id' },
       });
 
@@ -279,7 +279,7 @@ describe('Drivers Core Module', () => {
 
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-002' },
         include: { orders: true },
       });
@@ -294,7 +294,7 @@ describe('Drivers Core Module', () => {
 
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-003' },
         select: {
           id: true,
@@ -327,12 +327,12 @@ describe('Drivers Core Module', () => {
       (prisma.driver.findMany as any).mockResolvedValueOnce(drivers);
       (prisma.driver.count as any).mockResolvedValueOnce(10);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         skip: 0,
         take: 3,
         orderBy: { name: 'asc' },
       });
-      const total = await (prisma as any).driver.count();
+      const total = await db.driver.count();
 
       expect(result).toHaveLength(3);
       expect(total).toBe(10);
@@ -345,7 +345,7 @@ describe('Drivers Core Module', () => {
       ];
       (prisma.driver.findMany as any).mockResolvedValueOnce(availableDrivers);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: { status: 'AVAILABLE' },
       });
 
@@ -360,7 +360,7 @@ describe('Drivers Core Module', () => {
       ];
       (prisma.driver.findMany as any).mockResolvedValueOnce(activeDrivers);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: { isActive: true },
       });
 
@@ -371,7 +371,7 @@ describe('Drivers Core Module', () => {
       const searchResults = [createMockDriver({ name: 'Alice Johnson' })];
       (prisma.driver.findMany as any).mockResolvedValueOnce(searchResults);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: {
           OR: [
             { name: { contains: 'Alice', mode: 'insensitive' } },
@@ -395,7 +395,7 @@ describe('Drivers Core Module', () => {
       ];
       (prisma.driver.findMany as any).mockResolvedValueOnce(filtered);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: {
           status: 'AVAILABLE',
           isActive: true,
@@ -415,7 +415,7 @@ describe('Drivers Core Module', () => {
       ];
       (prisma.driver.findMany as any).mockResolvedValueOnce(drivers);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         orderBy: { name: 'asc' },
       });
 
@@ -433,7 +433,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { name: 'Updated Name' },
       });
@@ -449,7 +449,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: {
           vehicleType: 'TRUCK',
@@ -469,7 +469,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { fcmToken: 'new-fcm-token-123' },
       });
@@ -487,7 +487,7 @@ describe('Drivers Core Module', () => {
       const updated = { ...original, name: 'Updated Name' };
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { name: 'Updated Name' },
       });
@@ -507,7 +507,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'AVAILABLE' },
       });
@@ -521,7 +521,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'ON_ROUTE' },
       });
@@ -535,7 +535,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'ON_BREAK' },
       });
@@ -549,7 +549,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'AVAILABLE' },
       });
@@ -563,7 +563,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'OFFLINE' },
       });
@@ -577,7 +577,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { status: 'OFFLINE' },
       });
@@ -605,7 +605,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: {
           currentLocation: location,
@@ -654,7 +654,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { heading: 45 },
       });
@@ -669,7 +669,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { lastLocationAt: now },
       });
@@ -911,7 +911,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.update as any).mockResolvedValueOnce(deactivated);
 
-      const result = await (prisma as any).driver.update({
+      const result = await db.driver.update({
         where: { id: 'driver-001' },
         data: { isActive: false, status: 'OFFLINE' },
       });
@@ -934,7 +934,7 @@ describe('Drivers Core Module', () => {
       const driver = createMockDriver({ id: 'driver-001' });
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
       });
 
@@ -950,7 +950,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
       });
 
@@ -968,7 +968,7 @@ describe('Drivers Core Module', () => {
         createMockDriver({ shopId }),
       ]);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: { shopId },
       });
 
@@ -981,7 +981,7 @@ describe('Drivers Core Module', () => {
         createMockDriver({ orgId }),
       ]);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: { orgId },
       });
 
@@ -995,7 +995,7 @@ describe('Drivers Core Module', () => {
       ];
       (prisma.driver.findMany as any).mockResolvedValueOnce(activeDrivers);
 
-      const result = await (prisma as any).driver.findMany({
+      const result = await db.driver.findMany({
         where: { isActive: true },
       });
 
@@ -1009,7 +1009,7 @@ describe('Drivers Core Module', () => {
         _count: { orders: 3 },
       });
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
         select: {
           id: true,
@@ -1033,7 +1033,7 @@ describe('Drivers Core Module', () => {
       ];
 
       const updates = locations.map(loc =>
-        (prisma as any).driver.update({
+        db.driver.update({
           where: { id: driverId },
           data: { currentLocation: loc },
         })
@@ -1052,7 +1052,7 @@ describe('Drivers Core Module', () => {
       const statuses = ['AVAILABLE', 'ON_ROUTE', 'ON_BREAK'];
 
       const updates = statuses.map(status =>
-        (prisma as any).driver.update({
+        db.driver.update({
           where: { id: driverId },
           data: { status },
         })
@@ -1078,7 +1078,7 @@ describe('Drivers Core Module', () => {
       });
       (prisma.driver.findUnique as any).mockResolvedValueOnce(driver);
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
       });
 
@@ -1093,7 +1093,7 @@ describe('Drivers Core Module', () => {
         _count: { orders: 0 },
       });
 
-      const result = await (prisma as any).driver.findUnique({
+      const result = await db.driver.findUnique({
         where: { id: 'driver-001' },
         select: { id: true, _count: { select: { orders: true } } },
       });

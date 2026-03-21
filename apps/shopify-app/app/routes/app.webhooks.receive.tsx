@@ -603,7 +603,7 @@ async function updateOrderStatusInDatabase(params: {
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
 
-    await (prisma as any).order.updateMany({
+    await db.order.updateMany({
       where: {
         shopifyOrderId: params.orderId,
         shopId: params.shopId,
@@ -664,7 +664,7 @@ async function deactivateTenant(params: {
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
 
-    await (prisma as any).shop.update({
+    await db.shop.update({
       where: { shopifyId: params.shopId },
       data: {
         active: false,
@@ -725,7 +725,7 @@ async function deleteCustomerData(params: {
     const prisma = new PrismaClient();
 
     // Delete all customer-related data
-    await (prisma as any).customer.deleteMany({
+    await db.customer.deleteMany({
       where: {
         shopifyId: params.customerId,
         shopId: params.shopId,
@@ -754,7 +754,7 @@ async function deleteShopData(params: {
     const prisma = new PrismaClient();
 
     // Delete all shop-related data
-    await (prisma as any).shop.delete({
+    await db.shop.delete({
       where: { shopifyId: params.shopId },
     });
 

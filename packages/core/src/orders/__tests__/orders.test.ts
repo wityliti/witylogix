@@ -146,7 +146,7 @@ describe('Orders Core Module', () => {
       const expected = createMockOrder(orderData);
       (prisma.order.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).order.create({ data: orderData });
+      const result = await db.order.create({ data: orderData });
 
       expect(result.shopId).toBe('shop-123');
       expect(result.status).toBe('PENDING');
@@ -173,7 +173,7 @@ describe('Orders Core Module', () => {
       const expected = createMockOrder(orderData);
       (prisma.order.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).order.create({ data: orderData });
+      const result = await db.order.create({ data: orderData });
 
       expect(result.customerEmail).toBe('jane@example.com');
       expect(result.tags).toContain('urgent');
@@ -188,10 +188,10 @@ describe('Orders Core Module', () => {
         .mockResolvedValueOnce(order1)
         .mockResolvedValueOnce(order2);
 
-      const result1 = await (prisma as any).order.create({
+      const result1 = await db.order.create({
         data: { shopId: 'shop-123', externalOrderId: 'ext-1' },
       });
-      const result2 = await (prisma as any).order.create({
+      const result2 = await db.order.create({
         data: { shopId: 'shop-123', externalOrderId: 'ext-2' },
       });
 
@@ -207,7 +207,7 @@ describe('Orders Core Module', () => {
       const expected = createMockOrder({ ...orderData, status: 'PENDING' });
       (prisma.order.create as any).mockResolvedValueOnce(expected);
 
-      const result = await (prisma as any).order.create({ data: orderData });
+      const result = await db.order.create({ data: orderData });
 
       expect(result.status).toBe('PENDING');
     });
@@ -246,7 +246,7 @@ describe('Orders Core Module', () => {
       (prisma.order.create as any).mockRejectedValueOnce(error);
 
       await expect(
-        (prisma as any).order.create({
+        db.order.create({
           data: {
             shopId: 'shop-123',
             externalOrderId: 'ext-dup',
@@ -263,7 +263,7 @@ describe('Orders Core Module', () => {
         const order = createMockOrder({ source });
         (prisma.order.create as any).mockResolvedValueOnce(order);
 
-        const result = await (prisma as any).order.create({
+        const result = await db.order.create({
           data: { shopId: 'shop-123', externalOrderId: `ext-${source}`, source },
         });
 
@@ -277,7 +277,7 @@ describe('Orders Core Module', () => {
       const order = createMockOrder({ id: 'order-001' });
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
       });
 
@@ -288,7 +288,7 @@ describe('Orders Core Module', () => {
     it('should return null for non-existent order', async () => {
       (prisma.order.findUnique as any).mockResolvedValueOnce(null);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'nonexistent' },
       });
 
@@ -308,7 +308,7 @@ describe('Orders Core Module', () => {
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { driver: true },
       });
@@ -330,7 +330,7 @@ describe('Orders Core Module', () => {
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { timeSlot: true },
       });
@@ -350,7 +350,7 @@ describe('Orders Core Module', () => {
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { proofOfDelivery: true },
       });
@@ -368,7 +368,7 @@ describe('Orders Core Module', () => {
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { notificationLogs: true },
       });
@@ -387,11 +387,11 @@ describe('Orders Core Module', () => {
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
       (prisma.order.count as any).mockResolvedValueOnce(100);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         skip: 0,
         take: 3,
       });
-      const total = await (prisma as any).order.count();
+      const total = await db.order.count();
 
       expect(result).toHaveLength(3);
       expect(total).toBe(100);
@@ -404,7 +404,7 @@ describe('Orders Core Module', () => {
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(pending);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         where: { status: 'PENDING' },
       });
 
@@ -418,7 +418,7 @@ describe('Orders Core Module', () => {
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(assigned);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         where: { driverId: 'driver-123' },
       });
 
@@ -430,7 +430,7 @@ describe('Orders Core Module', () => {
       const orders = [createMockOrder({ deliveryDate: date })];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         where: {
           deliveryDate: {
             gte: date,
@@ -446,7 +446,7 @@ describe('Orders Core Module', () => {
       const results = [createMockOrder({ customerName: 'Jane Doe' })];
       (prisma.order.findMany as any).mockResolvedValueOnce(results);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         where: {
           OR: [
             { customerName: { contains: 'Jane', mode: 'insensitive' } },
@@ -468,7 +468,7 @@ describe('Orders Core Module', () => {
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(orders);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         orderBy: { createdAt: 'desc' },
       });
 
@@ -482,7 +482,7 @@ describe('Orders Core Module', () => {
       const sortOptions = ['createdAt', 'deliveryDate', 'status', 'customerName'];
 
       for (const sortBy of sortOptions) {
-        await (prisma as any).order.findMany({
+        await db.order.findMany({
           orderBy: { [sortBy]: 'asc' },
         });
         expect(prisma.order.findMany).toHaveBeenCalled();
@@ -499,7 +499,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           customerName: 'Updated Name',
@@ -518,7 +518,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           addressLine1: 'New Address',
@@ -537,7 +537,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           deliveryDate: newDate,
@@ -556,7 +556,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           notes: 'Updated notes',
@@ -576,7 +576,7 @@ describe('Orders Core Module', () => {
       const updated = { ...original, notes: 'Updated notes' };
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: { notes: 'Updated notes' },
       });
@@ -606,7 +606,7 @@ describe('Orders Core Module', () => {
       const updated = createMockOrder({ status: 'ACCEPTED' });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: { status: 'ACCEPTED' },
       });
@@ -658,7 +658,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           status: 'PICKED_UP',
@@ -677,7 +677,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           status: 'DELIVERED',
@@ -699,7 +699,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(assigned);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           driverId: 'driver-123',
@@ -718,7 +718,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(unassigned);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           driverId: null,
@@ -735,7 +735,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(reassigned);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: { driverId: 'driver-456' },
       });
@@ -816,7 +816,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           tags: ['express', 'fragile', 'signature-required'],
@@ -837,7 +837,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(updated);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: {
           metadata: {
@@ -859,7 +859,7 @@ describe('Orders Core Module', () => {
       ];
       (prisma.order.findMany as any).mockResolvedValueOnce(expressOrders);
 
-      const result = await (prisma as any).order.findMany({
+      const result = await db.order.findMany({
         where: { tags: { has: 'express' } },
       });
 
@@ -876,7 +876,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.update as any).mockResolvedValueOnce(cancelled);
 
-      const result = await (prisma as any).order.update({
+      const result = await db.order.update({
         where: { id: 'order-001' },
         data: { status: 'CANCELLED' },
       });
@@ -906,7 +906,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.findUnique as any).mockResolvedValueOnce(cancelled);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
       });
 
@@ -929,7 +929,7 @@ describe('Orders Core Module', () => {
 
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { notificationLogs: { orderBy: { createdAt: 'desc' }, take: 20 } },
       });
@@ -953,7 +953,7 @@ describe('Orders Core Module', () => {
         notificationLogs: order.notificationLogs.slice(0, 20),
       });
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
         include: { notificationLogs: { take: 20 } },
       });
@@ -972,7 +972,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.findUnique as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
       });
 
@@ -988,7 +988,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.findUnique as any).mockResolvedValueOnce(minimal);
 
-      const result = await (prisma as any).order.findUnique({
+      const result = await db.order.findUnique({
         where: { id: 'order-001' },
       });
 
@@ -1001,7 +1001,7 @@ describe('Orders Core Module', () => {
       });
       (prisma.order.create as any).mockResolvedValueOnce(freeOrder);
 
-      const result = await (prisma as any).order.create({
+      const result = await db.order.create({
         data: { totalPrice: 0 },
       });
 
@@ -1016,7 +1016,7 @@ describe('Orders Core Module', () => {
       const order = createMockOrder({ metadata: largeMetadata });
       (prisma.order.create as any).mockResolvedValueOnce(order);
 
-      const result = await (prisma as any).order.create({
+      const result = await db.order.create({
         data: { metadata: largeMetadata },
       });
 
@@ -1049,7 +1049,7 @@ describe('Orders Core Module', () => {
 
       const results = await Promise.all(
         updates.map(update =>
-          (prisma as any).order.update({
+          db.order.update({
             where: { id: 'order-001' },
             data: update,
           })

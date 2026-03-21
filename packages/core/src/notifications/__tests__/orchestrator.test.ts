@@ -12,7 +12,7 @@
  * - Error type handling
  *
  * Mocking strategy:
- * - Mock Prisma via (prisma as any).notificationTemplate and .notificationLog
+ * - Mock Prisma via db.notificationTemplate and .notificationLog
  * - Mock providers via vi.fn()
  * - Mock sleep/delays to run tests quickly
  */
