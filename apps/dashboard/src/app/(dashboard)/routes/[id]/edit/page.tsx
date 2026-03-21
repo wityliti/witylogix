@@ -68,7 +68,7 @@ export default function EditRoutePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-wl-bg p-6">
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
         <LoadingSkeleton />
       </div>
     );
@@ -76,7 +76,7 @@ export default function EditRoutePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-wl-bg p-6">
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
         <ErrorState error={error} onRetry={refetch} />
       </div>
     );
@@ -171,50 +171,50 @@ export default function EditRoutePage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-wl-text mb-2">Edit Route</h1>
-        <p className="text-sm text-wl-muted">Modify route details, reorder stops, and optimize delivery sequence</p>
+        <h1 className="text-4xl font-bold text-white mb-2">Edit Route</h1>
+        <p className="text-sm text-gray-400">Modify route details, reorder stops, and optimize delivery sequence</p>
       </div>
 
       <div className="max-w-4xl mb-8">
         <div className="grid grid-cols-[2fr_1fr] gap-6">
           <div>
-            <Card className="mb-6">
+            <Card className="mb-6 bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Route Information</CardTitle>
+                <CardTitle className="text-white">Route Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="block text-wl-text text-sm font-semibold mb-2">Route Name</label>
+                    <label className="block text-white text-sm font-semibold mb-2">Route Name</label>
                     <input
                       type="text"
                       name="name"
                       value={currentFormData.name}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                     />
                   </div>
                   <div>
-                    <label className="block text-wl-text text-sm font-semibold mb-2">Delivery Date</label>
+                    <label className="block text-white text-sm font-semibold mb-2">Delivery Date</label>
                     <input
                       type="date"
                       name="date"
                       value={currentFormData.date}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-wl-text text-sm font-semibold mb-2">Assign Driver</label>
+                    <label className="block text-white text-sm font-semibold mb-2">Assign Driver</label>
                     <select
                       name="driverId"
                       value={currentFormData.driverId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                     >
                       {driversList.map((driver) => (
                         <option key={driver.id} value={driver.id}>
@@ -224,12 +224,12 @@ export default function EditRoutePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-wl-text text-sm font-semibold mb-2">Vehicle</label>
+                    <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
                     <select
                       name="vehicleId"
                       value={currentFormData.vehicleId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                      className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                     >
                       {vehiclesList.map((vehicle) => (
                         <option key={vehicle.id} value={vehicle.id}>
@@ -242,23 +242,23 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Route Stops</CardTitle>
+                <CardTitle className="text-white">Route Stops</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
-                    <div className="text-lg font-bold text-wl-primary mb-0.5">{currentFormData.stops.length}</div>
-                    <div className="text-xs text-wl-muted">Total Stops</div>
+                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">{currentFormData.stops.length}</div>
+                    <div className="text-xs text-gray-400">Total Stops</div>
                   </div>
-                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
-                    <div className="text-lg font-bold text-wl-primary mb-0.5">{estimatedDistance.toFixed(1)}km</div>
-                    <div className="text-xs text-wl-muted">Est. Distance</div>
+                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDistance.toFixed(1)}km</div>
+                    <div className="text-xs text-gray-400">Est. Distance</div>
                   </div>
-                  <div className="p-4 rounded-md bg-wl-surface border border-wl-border text-center">
-                    <div className="text-lg font-bold text-wl-primary mb-0.5">{estimatedDuration}min</div>
-                    <div className="text-xs text-wl-muted">Est. Duration</div>
+                  <div className="p-4 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDuration}min</div>
+                    <div className="text-xs text-gray-400">Est. Duration</div>
                   </div>
                 </div>
 
@@ -266,11 +266,11 @@ export default function EditRoutePage() {
                   {currentFormData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
-                      className="p-3 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center cursor-grab transition-all"
+                      className="p-3 rounded-md bg-[#12121a] border border-[#1e1e2e] grid gap-3 items-center cursor-grab transition-all"
                       style={{
                         gridTemplateColumns: "24px 1fr auto auto",
-                        backgroundColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-surface)",
-                        borderColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-border)",
+                        backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
+                        borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
                         opacity: draggedStop === idx ? 0.7 : 1,
                       }}
                       draggable
@@ -278,15 +278,15 @@ export default function EditRoutePage() {
                       onDragOver={handleDragOver}
                       onDrop={() => handleDrop(idx)}
                     >
-                      <div className="flex flex-col gap-0.5 text-wl-muted text-xs cursor-grab">
+                      <div className="flex flex-col gap-0.5 text-gray-400 text-xs cursor-grab">
                         <span>⋮</span>
                         <span>⋮</span>
                       </div>
                       <div className="min-w-0">
-                        <div className="text-wl-text text-xs font-semibold mb-0.5">
+                        <div className="text-white text-xs font-semibold mb-0.5">
                           {idx + 1}. {stop.orderId}
                         </div>
-                        <div className="text-wl-muted text-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                        <div className="text-gray-400 text-xs overflow-hidden text-ellipsis whitespace-nowrap">
                           {stop.address}
                         </div>
                       </div>
@@ -320,23 +320,23 @@ export default function EditRoutePage() {
                 </div>
 
                 {showAddStop && (
-                  <div className="mt-4 p-4 rounded-md bg-wl-surface border border-wl-border">
-                    <h4 className="text-wl-text text-sm font-semibold mb-3">Available Orders</h4>
+                  <div className="mt-4 p-4 rounded-md bg-[#12121a] border border-[#1e1e2e]">
+                    <h4 className="text-white text-sm font-semibold mb-3">Available Orders</h4>
                     <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                       {ordersList.map((order) => (
                         <div
                           key={order.id}
-                          className="p-3 rounded-md bg-wl-bg border border-wl-border cursor-pointer text-xs transition-all hover:bg-wl-surface hover:border-wl-primary"
+                          className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] cursor-pointer text-xs transition-all hover:bg-[#12121a] hover:border-blue-500"
                           onClick={() => handleAddStop(order)}
                         >
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="font-semibold text-wl-text">{order.id}</span>
+                            <span className="font-semibold text-white">{order.id}</span>
                             <Badge>{order.priority.toUpperCase()}</Badge>
                           </div>
-                          <div className="text-wl-muted mb-1">
+                          <div className="text-gray-400 mb-1">
                             {order.address}
                           </div>
-                          <div className="text-wl-muted text-xs">
+                          <div className="text-gray-400 text-xs">
                             {order.timeWindow.start} - {order.timeWindow.end}
                           </div>
                         </div>
@@ -349,16 +349,16 @@ export default function EditRoutePage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <Card>
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Current Driver</CardTitle>
+                <CardTitle className="text-white">Current Driver</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
-                  <div className="text-wl-text text-sm font-semibold mb-2">
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e]">
+                  <div className="text-white text-sm font-semibold mb-2">
                     {driversList.find((d) => d.id === currentFormData.driverId)?.name}
                   </div>
-                  <div className="text-wl-muted text-xs leading-relaxed">
+                  <div className="text-gray-400 text-xs leading-relaxed">
                     <div>ID: {currentFormData.driverId}</div>
                     <div className="mt-2">Status: Active</div>
                   </div>
@@ -366,16 +366,16 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Vehicle Details</CardTitle>
+                <CardTitle className="text-white">Vehicle Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
-                  <div className="text-wl-text text-sm font-semibold mb-2">
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e]">
+                  <div className="text-white text-sm font-semibold mb-2">
                     {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.name}
                   </div>
-                  <div className="text-wl-muted text-xs leading-relaxed">
+                  <div className="text-gray-400 text-xs leading-relaxed">
                     <div>
                       Capacity: {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.capacity}
                     </div>
@@ -385,12 +385,12 @@ export default function EditRoutePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#12121a] border border-[#1e1e2e]">
               <CardHeader>
-                <CardTitle>Route Summary</CardTitle>
+                <CardTitle className="text-white">Route Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-md bg-wl-surface border border-wl-border text-wl-muted text-xs leading-relaxed">
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-gray-400 text-xs leading-relaxed">
                   <div>
                     <strong>Name:</strong> {currentFormData.name}
                   </div>

@@ -72,41 +72,41 @@ export default function VehiclesPage() {
         }
       />
 
-      <div className="p-6 space-y-6">
+      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
         {/* Vehicles Table */}
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vehicle</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">VIN</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Mileage</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Driver</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Health</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Actions</th>
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">VIN</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Mileage</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Driver</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Health</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedVehicles.map((vehicle, idx) => (
-                  <tr key={vehicle.id} className={cn('border-b border-wl-border-subtle transition-colors hover:bg-wl-bg-overlay', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay')}>
-                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
+                  <tr key={vehicle.id} className={cn('border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]', idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]')}>
+                    <td className="p-3 px-4 text-white font-semibold">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md bg-wl-primary-500 bg-opacity-10 flex items-center justify-center text-wl-primary-500">
+                        <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
                           <Truck className="w-4 h-4" />
                         </div>
                         <div>
                           <p>
                             {vehicle.year} {vehicle.make} {vehicle.model}
                           </p>
-                          <p className="text-xs text-wl-text-tertiary">{vehicle.licensePlate}</p>
+                          <p className="text-xs text-gray-500">{vehicle.licensePlate}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-3 px-4 text-wl-text-tertiary text-xs font-mono">{vehicle.vin.slice(-8)}</td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-medium">{formatMileage(vehicle.mileage)}</td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{vehicle.assignedDriver || '—'}</td>
+                    <td className="p-3 px-4 text-gray-500 text-xs font-mono">{vehicle.vin.slice(-8)}</td>
+                    <td className="p-3 px-4 text-center text-white font-medium">{formatMileage(vehicle.mileage)}</td>
+                    <td className="p-3 px-4 text-center text-gray-400 text-xs">{vehicle.assignedDriver || '—'}</td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={getHealthColor(vehicle.healthScore)}>{vehicle.healthScore}</Badge>
                     </td>
@@ -115,11 +115,11 @@ export default function VehiclesPage() {
                     </td>
                     <td className="p-3 px-4 text-center">
                       <div className="flex gap-1 justify-center">
-                        <button className="p-1.5 hover:bg-wl-bg-overlay rounded-md transition-colors" title="View Details">
-                          <Eye className="w-4 h-4 text-wl-text-secondary" />
+                        <button className="p-1.5 hover:bg-[#1a1a2e] rounded-md transition-colors" title="View Details">
+                          <Eye className="w-4 h-4 text-gray-400" />
                         </button>
-                        <button className="p-1.5 hover:bg-wl-bg-overlay rounded-md transition-colors" title="Edit">
-                          <Edit2 className="w-4 h-4 text-wl-text-secondary" />
+                        <button className="p-1.5 hover:bg-[#1a1a2e] rounded-md transition-colors" title="Edit">
+                          <Edit2 className="w-4 h-4 text-gray-400" />
                         </button>
                       </div>
                     </td>
@@ -130,7 +130,7 @@ export default function VehiclesPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
+          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
             <div>
               Showing {paginatedVehicles.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, vehicles.length)} of {vehicles.length}
@@ -144,7 +144,7 @@ export default function VehiclesPage() {
               >
                 Previous
               </Button>
-              <span className="px-3 py-1 flex items-center">
+              <span className="px-3 py-1 flex items-center text-gray-400">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
@@ -158,7 +158,7 @@ export default function VehiclesPage() {
             </div>
           </div>
         </Card>
-      </div>
+      </main>
     </>
   );
 }

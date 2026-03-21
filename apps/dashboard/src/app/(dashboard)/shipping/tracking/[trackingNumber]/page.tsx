@@ -56,31 +56,31 @@ export default function TrackingDetailPage() {
     <>
       <Header title="Shipment Tracking" subtitle={tracking.trackingNumber} />
 
-      <div className="p-6 max-w-2xl mx-auto space-y-6">
+      <main className="min-h-screen bg-[#0a0a0f] p-6 max-w-2xl mx-auto space-y-6">
         {/* Status Card */}
-        <Card>
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardHeader>
-            <CardTitle>Shipment Status</CardTitle>
+            <CardTitle className="text-white">Shipment Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-wl-text-secondary">Current Status</p>
+                <p className="text-sm text-gray-400">Current Status</p>
                 <Badge variant={statusVariant(tracking.currentStatus)} className="mt-1">
                   {tracking.currentStatus}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Carrier</p>
-                <p className="text-wl-text-primary font-medium mt-1">{tracking.carrier}</p>
+                <p className="text-sm text-gray-400">Carrier</p>
+                <p className="text-white font-medium mt-1">{tracking.carrier}</p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Last Location</p>
-                <p className="text-wl-text-primary font-medium mt-1">{tracking.lastLocation}</p>
+                <p className="text-sm text-gray-400">Last Location</p>
+                <p className="text-white font-medium mt-1">{tracking.lastLocation}</p>
               </div>
               <div>
-                <p className="text-sm text-wl-text-secondary">Estimated Delivery</p>
-                <p className="text-wl-text-primary font-medium mt-1">
+                <p className="text-sm text-gray-400">Estimated Delivery</p>
+                <p className="text-white font-medium mt-1">
                   {tracking.eta ? new Date(tracking.eta).toLocaleDateString() : 'TBD'}
                 </p>
               </div>
@@ -90,22 +90,22 @@ export default function TrackingDetailPage() {
 
         {/* Timeline */}
         {tracking.events && tracking.events.length > 0 && (
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Tracking Timeline</CardTitle>
+              <CardTitle className="text-white">Tracking Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {tracking.events.map((event, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 rounded-full bg-wl-primary-500" />
-                      {idx < tracking.events.length - 1 && <div className="w-0.5 h-12 bg-wl-border-subtle mt-2" />}
+                      <div className="w-3 h-3 rounded-full bg-blue-500" />
+                      {idx < tracking.events.length - 1 && <div className="w-0.5 h-12 bg-[#1e1e2e] mt-2" />}
                     </div>
                     <div className="pb-4">
-                      <p className="text-sm font-medium text-wl-text-primary">{event.status}</p>
-                      <p className="text-xs text-wl-text-secondary">{event.location}</p>
-                      <p className="text-xs text-wl-text-tertiary mt-1">
+                      <p className="text-sm font-medium text-white">{event.status}</p>
+                      <p className="text-xs text-gray-400">{event.location}</p>
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(event.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -115,7 +115,7 @@ export default function TrackingDetailPage() {
             </CardContent>
           </Card>
         )}
-      </div>
+      </main>
     </>
   );
 }

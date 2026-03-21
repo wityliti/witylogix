@@ -42,9 +42,9 @@ export default function TrackingPage() {
     <>
       <Header title="Shipment Tracking" subtitle={`${trackingRecords.length} active shipments`} />
 
-      <div className="p-6 space-y-6">
+      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
         {/* Filter Tabs */}
-        <Card>
+        <Card className="bg-[#12121a] border border-[#1e1e2e]">
           <CardContent className="pt-4">
             <div className="flex gap-2 flex-wrap">
               {['ALL', 'In Transit', 'Out for Delivery', 'Delivered', 'Exception'].map((status) => (
@@ -52,7 +52,7 @@ export default function TrackingPage() {
                   key={status}
                   onClick={() => setFilterStatus(status)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    filterStatus === status ? 'bg-wl-primary-500 text-wl-text-inverse' : 'bg-wl-bg-overlay text-wl-text-secondary hover:text-wl-text-primary'
+                    filterStatus === status ? 'bg-blue-500 text-white' : 'bg-[#1a1a2e] text-gray-400 hover:text-white'
                   }`}
                 >
                   {status}
@@ -63,30 +63,30 @@ export default function TrackingPage() {
         </Card>
 
         {/* Tracking Table */}
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Tracking #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Recipient</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Carrier</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Last Location</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">ETA</th>
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Location</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">ETA</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((record) => (
-                  <tr key={record.id} className="border-b border-wl-border-subtle transition-colors hover:bg-wl-bg-overlay">
-                    <td className="p-3 px-4 text-wl-text-primary font-mono text-xs">{record.trackingNumber}</td>
-                    <td className="p-3 px-4 text-wl-text-secondary text-sm">{record.recipientName}</td>
-                    <td className="p-3 px-4 text-wl-text-secondary text-sm">{record.carrier}</td>
-                    <td className="p-3 px-4 text-wl-text-secondary text-sm">{record.lastLocation}</td>
+                {filteredRecords.map((record, idx) => (
+                  <tr key={record.id} className={`border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e] ${idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]'}`}>
+                    <td className="p-3 px-4 text-white font-mono text-xs">{record.trackingNumber}</td>
+                    <td className="p-3 px-4 text-gray-400 text-sm">{record.recipientName}</td>
+                    <td className="p-3 px-4 text-gray-400 text-sm">{record.carrier}</td>
+                    <td className="p-3 px-4 text-gray-400 text-sm">{record.lastLocation}</td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={getStatusColor(record.currentStatus)}>{record.currentStatus}</Badge>
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary text-sm">
+                    <td className="p-3 px-4 text-center text-gray-400 text-sm">
                       {record.eta ? new Date(record.eta).toLocaleDateString() : '—'}
                     </td>
                   </tr>
@@ -95,7 +95,7 @@ export default function TrackingPage() {
             </table>
           </div>
         </Card>
-      </div>
+      </main>
     </>
   );
 }

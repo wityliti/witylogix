@@ -3,6 +3,7 @@
  * Queries and aggregates driver performance data from database
  */
 
+import { db } from '@witylogix/db';
 import { DriverMetrics, DriverScore, DriverLeaderboardEntry, ScoringPeriod } from './types';
 import { calculateDriverScore, updateScoreWithTrend } from './scoring-engine';
 import { applyDecay } from './decay';
@@ -130,7 +131,7 @@ export async function aggregateAllDrivers(
   prisma: any
 ): Promise<DriverMetrics[]> {
   // Get all active drivers for tenant
-  const drivers = await (prisma as any).driver.findMany({
+  const drivers = await db.driver.findMany({
     where: {
       tenantId,
       status: 'active', // or whatever your status field is called
@@ -192,7 +193,7 @@ export async function getLeaderboard(
     const finalScore = applyDecay(baseScore.compositeScore, daysSinceLastDelivery);
 
     // Fetch driver details
-    const driver = await (prisma as any).driver.findUnique({
+    const driver = await db.driver.findUnique({
       where: {
         id: metrics.driverId,
       },

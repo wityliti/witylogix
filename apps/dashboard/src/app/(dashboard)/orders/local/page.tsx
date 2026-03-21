@@ -188,29 +188,29 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
   };
 
   const getStatusColor = (status: string) => {
-    if (status === 'delivered') return '#22c55e';
+    if (status === 'delivered') return '#10b981';
     if (status === 'in-delivery') return '#3b82f6';
-    if (status === 'assigned') return '#6C63FF';
+    if (status === 'assigned') return '#6366f1';
     return '#f59e0b';
   };
 
   return (
-    <Card className="bg-slate-950 border-slate-700 mb-6">
-      <CardHeader className="pb-3 border-b border-slate-700">
-        <CardTitle className="flex items-center gap-2">
-          <MapPin size={18} className="text-indigo-500" /> Delivery Map
+    <Card className="bg-[#12121a] border-[#1e1e2e] mb-6">
+      <CardHeader className="pb-3 border-b border-[#1e1e2e]">
+        <CardTitle className="flex items-center gap-2 text-white">
+          <MapPin size={18} className="text-blue-500" /> Delivery Map
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <svg
           width={gridSize}
           height={gridSize}
-          className="bg-slate-900 border border-slate-700 rounded mb-3 cursor-crosshair"
+          className="bg-[#0a0a0f] border border-[#1e1e2e] rounded mb-3 cursor-crosshair"
         >
           {Array.from({ length: 11 }).map((_, i) => (
             <g key={`grid-${i}`}>
-              <line x1={i * (gridSize / 10)} y1={0} x2={i * (gridSize / 10)} y2={gridSize} stroke="#1e293b" strokeWidth="0.5" />
-              <line x1={0} y1={i * (gridSize / 10)} x2={gridSize} y2={i * (gridSize / 10)} stroke="#1e293b" strokeWidth="0.5" />
+              <line x1={i * (gridSize / 10)} y1={0} x2={i * (gridSize / 10)} y2={gridSize} stroke="#1e1e2e" strokeWidth="0.5" />
+              <line x1={0} y1={i * (gridSize / 10)} x2={gridSize} y2={i * (gridSize / 10)} stroke="#1e1e2e" strokeWidth="0.5" />
             </g>
           ))}
 
@@ -232,13 +232,13 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
         <div className="grid grid-cols-2 gap-3 text-xs">
           {[
             { color: '#f59e0b', label: 'Pending' },
-            { color: '#6C63FF', label: 'Assigned' },
+            { color: '#6366f1', label: 'Assigned' },
             { color: '#3b82f6', label: 'In Delivery' },
-            { color: '#22c55e', label: 'Delivered' }
+            { color: '#10b981', label: 'Delivered' }
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-slate-400">{item.label}</span>
+              <span className="text-gray-400">{item.label}</span>
             </div>
           ))}
         </div>
@@ -311,23 +311,23 @@ export default function LocalOrdersPage() {
   const deliveredCount = orders.filter((o) => o.status === 'delivered').length;
 
   return (
-    <div className="p-6 min-h-screen bg-slate-950">
+    <div className="p-6 min-h-screen bg-[#0a0a0f]">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-200 mb-2">Local Delivery Orders</h1>
-        <p className="text-slate-400 mb-4">Today's deliveries in {orders.length} locations</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
+        <p className="text-gray-400 mb-4">Today's deliveries in {orders.length} locations</p>
 
         <div className="flex gap-3 flex-wrap">
           <div className="flex gap-3">
             {[
               { label: 'Pending', count: pendingCount, color: '#f59e0b' },
-              { label: 'Assigned', count: assignedCount, color: '#6C63FF' },
+              { label: 'Assigned', count: assignedCount, color: '#6366f1' },
               { label: 'In Delivery', count: inDeliveryCount, color: '#3b82f6' },
-              { label: 'Delivered', count: deliveredCount, color: '#22c55e' }
+              { label: 'Delivered', count: deliveredCount, color: '#10b981' }
             ].map((stat) => (
-              <Card key={stat.label} className="bg-slate-900 border-slate-700 p-4 min-w-[120px]">
-                <div className="text-xs text-slate-400 mb-1">{stat.label}</div>
-                <div className="text-lg font-semibold" style={{ color: stat.color }}>{stat.count}</div>
+              <Card key={stat.label} className="bg-[#12121a] border-[#1e1e2e] p-4 min-w-[120px]">
+                <p className="text-xs text-gray-400 mb-1">{stat.label}</p>
+                <p className="text-lg font-semibold" style={{ color: stat.color }}>{stat.count}</p>
               </Card>
             ))}
           </div>
@@ -382,8 +382,8 @@ export default function LocalOrdersPage() {
                 className={cn(
                   'cursor-pointer transition-all',
                   selectedOrder?.id === order.id
-                    ? 'bg-slate-800 border-indigo-500 border-2'
-                    : 'bg-slate-900 border-slate-700'
+                    ? 'bg-[#1a1a2e] border-blue-500 border-2'
+                    : 'bg-[#12121a] border-[#1e1e2e]'
                 )}
                 onClick={() => handleSelectOrder(order.id)}
               >
@@ -394,11 +394,11 @@ export default function LocalOrdersPage() {
                       checked={selectedOrderIds.has(order.id)}
                       onChange={() => handleToggleSelect(order.id)}
                       onClick={(e) => e.stopPropagation()}
-                      className="w-4.5 h-4.5 cursor-pointer mt-0.5 accent-indigo-500"
+                      className="w-4.5 h-4.5 cursor-pointer mt-0.5 accent-blue-500"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <p className="text-sm font-semibold text-slate-100">{order.id}</p>
+                        <p className="text-sm font-semibold text-white">{order.id}</p>
                         <Badge
                           variant={
                             order.status === 'delivered'
@@ -414,25 +414,25 @@ export default function LocalOrdersPage() {
                         </Badge>
                       </div>
 
-                      <p className="text-xs text-slate-400 mb-2">{order.customer}</p>
+                      <p className="text-xs text-gray-400 mb-2">{order.customer}</p>
 
                       <div className="grid grid-cols-2 gap-2 mb-2">
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
                           <Clock size={12} /> {order.timeWindow}
                         </span>
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
                           <Package size={12} /> {order.items} items
                         </span>
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
                           <MapPin size={12} /> {order.address}
                         </span>
-                        <span className="text-sm font-semibold text-indigo-400">${order.amount.toFixed(2)}</span>
+                        <span className="text-sm font-semibold text-blue-500">${order.amount.toFixed(2)}</span>
                       </div>
 
                       {order.driver && (
-                        <div className="p-2 bg-slate-950 rounded text-xs">
-                          <p className="text-indigo-400 font-semibold">Assigned: {order.driver}</p>
-                          {order.eta && <p className="text-slate-400 mt-0.5">ETA: {order.eta}</p>}
+                        <div className="p-2 bg-[#0a0a0f] rounded text-xs">
+                          <p className="text-blue-500 font-semibold">Assigned: {order.driver}</p>
+                          {order.eta && <p className="text-gray-400 mt-0.5">ETA: {order.eta}</p>}
                         </div>
                       )}
                     </div>
@@ -446,58 +446,58 @@ export default function LocalOrdersPage() {
         {/* Right Sidebar - Order Detail */}
         <div>
           {selectedOrder ? (
-            <Card className="bg-slate-900 border-slate-700 sticky top-6">
-              <CardHeader className="pb-3 border-b border-slate-700">
-                <CardTitle className="text-base">{selectedOrder.id}</CardTitle>
+            <Card className="bg-[#12121a] border-[#1e1e2e] sticky top-6">
+              <CardHeader className="pb-3 border-b border-[#1e1e2e]">
+                <CardTitle className="text-base text-white">{selectedOrder.id}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 flex flex-col gap-4">
                 {/* Customer Info */}
                 <div>
-                  <p className="text-xs text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
+                  <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
                     <User size={14} /> Customer
                   </p>
-                  <p className="text-sm font-semibold text-slate-100">{selectedOrder.customer}</p>
+                  <p className="text-sm font-semibold text-white">{selectedOrder.customer}</p>
                   <a
                     href={`tel:${selectedOrder.phone}`}
-                    className="text-xs text-indigo-400 flex items-center gap-1 mt-1"
+                    className="text-xs text-blue-500 flex items-center gap-1 mt-1 hover:text-blue-400"
                   >
                     <Phone size={12} /> {selectedOrder.phone}
                   </a>
                   <a
                     href={`mailto:${selectedOrder.email}`}
-                    className="text-xs text-indigo-400 flex items-center gap-1 mt-0.5"
+                    className="text-xs text-blue-500 flex items-center gap-1 mt-0.5 hover:text-blue-400"
                   >
                     <Mail size={12} /> {selectedOrder.email}
                   </a>
                 </div>
 
                 {/* Delivery Details */}
-                <div className="border-t border-slate-700 pt-3">
-                  <p className="text-xs text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
+                <div className="border-t border-[#1e1e2e] pt-3">
+                  <p className="text-xs text-gray-400 font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
-                  <p className="text-xs text-slate-100">{selectedOrder.address}</p>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                  <p className="text-xs text-gray-300">{selectedOrder.address}</p>
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                     <Calendar size={12} /> {selectedOrder.timeWindow}
                   </p>
                 </div>
 
                 {/* Order Details */}
-                <div className="border-t border-slate-700 pt-3">
+                <div className="border-t border-[#1e1e2e] pt-3">
                   <div className="mb-2">
-                    <p className="text-xs text-slate-400 mb-0.5">Items</p>
-                    <p className="text-sm font-semibold text-slate-100">{selectedOrder.items}</p>
+                    <p className="text-xs text-gray-400 mb-0.5">Items</p>
+                    <p className="text-sm font-semibold text-white">{selectedOrder.items}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 mb-0.5">Total</p>
-                    <p className="text-base font-semibold text-indigo-400">${selectedOrder.amount.toFixed(2)}</p>
+                    <p className="text-xs text-gray-400 mb-0.5">Total</p>
+                    <p className="text-base font-semibold text-blue-500">${selectedOrder.amount.toFixed(2)}</p>
                   </div>
                 </div>
 
                 {/* Driver Assignment */}
                 {selectedOrder.status === 'pending' ? (
-                  <div className="border-t border-slate-700 pt-3">
-                    <p className="text-xs text-slate-400 font-semibold mb-2">Assign Driver</p>
+                  <div className="border-t border-[#1e1e2e] pt-3">
+                    <p className="text-xs text-gray-400 font-semibold mb-2">Assign Driver</p>
                     <div className="flex flex-col gap-1.5">
                       {['Carlos M.', 'Sofia L.', 'Ahmed K.'].map((driver) => (
                         <Button
@@ -513,10 +513,10 @@ export default function LocalOrdersPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="border-t border-slate-700 pt-3 bg-slate-950 rounded p-3">
-                    <p className="text-xs text-slate-400 mb-1">Assigned Driver</p>
-                    <p className="text-sm font-semibold text-slate-100">{selectedOrder.driver}</p>
-                    {selectedOrder.eta && <p className="text-xs text-indigo-400 mt-1">ETA: {selectedOrder.eta}</p>}
+                  <div className="border-t border-[#1e1e2e] pt-3 bg-[#0a0a0f] rounded p-3">
+                    <p className="text-xs text-gray-400 mb-1">Assigned Driver</p>
+                    <p className="text-sm font-semibold text-white">{selectedOrder.driver}</p>
+                    {selectedOrder.eta && <p className="text-xs text-blue-500 mt-1">ETA: {selectedOrder.eta}</p>}
                   </div>
                 )}
 
@@ -531,10 +531,10 @@ export default function LocalOrdersPage() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-slate-900 border-slate-700">
+            <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardContent className="p-6 text-center">
-                <AlertCircle size={24} className="text-slate-400 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">Select an order to view details</p>
+                <AlertCircle size={24} className="text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-400 text-sm">Select an order to view details</p>
               </CardContent>
             </Card>
           )}

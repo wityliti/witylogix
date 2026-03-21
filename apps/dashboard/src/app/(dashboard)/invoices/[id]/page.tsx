@@ -289,7 +289,7 @@ export default function InvoiceDetailPage() {
   }, [invoiceId]);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -299,7 +299,7 @@ export default function InvoiceDetailPage() {
           </Button>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-wl-text-primary">
+              <h1 className="text-3xl font-bold text-white">
                 {invoice.number}
               </h1>
               <Badge variant={getStatusBadgeVariant(invoice.status)}>
@@ -311,7 +311,7 @@ export default function InvoiceDetailPage() {
                 </Badge>
               )}
             </div>
-            <p className="text-wl-text-secondary">
+            <p className="text-gray-400">
               Created {invoice.createdDate.toLocaleDateString()}
             </p>
           </div>
@@ -388,20 +388,20 @@ export default function InvoiceDetailPage() {
         {/* Left Column - Invoice Details */}
         <div className="col-span-2 flex flex-col gap-6">
           {/* Invoice Header */}
-          <Card className="p-6">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-4">
+                <h3 className="text-sm font-semibold uppercase text-gray-400 mb-4">
                   Bill To
                 </h3>
                 <div className="flex flex-col gap-1">
-                  <p className="font-semibold text-wl-text-primary">
+                  <p className="font-semibold text-white">
                     {invoice.customerName}
                   </p>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-400">
                     {invoice.customerEmail}
                   </p>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-400">
                     {invoice.customerAddress}
                   </p>
                 </div>
@@ -410,15 +410,15 @@ export default function InvoiceDetailPage() {
               <div className="text-right">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs uppercase text-wl-text-secondary">
+                    <p className="text-xs uppercase text-gray-400">
                       Invoice Date
                     </p>
-                    <p className="font-semibold text-wl-text-primary">
+                    <p className="font-semibold text-white">
                       {invoice.createdDate.toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-wl-text-secondary">
+                    <p className="text-xs uppercase text-gray-400">
                       Due Date
                     </p>
                     <p
@@ -426,7 +426,7 @@ export default function InvoiceDetailPage() {
                         "font-semibold",
                         isOverdue
                           ? "text-red-500"
-                          : "text-wl-text-primary"
+                          : "text-white"
                       )}
                     >
                       {invoice.dueDate.toLocaleDateString()}
@@ -438,7 +438,7 @@ export default function InvoiceDetailPage() {
           </Card>
 
           {/* Line Items */}
-          <Card>
+          <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
             <Table
               columns={[
                 {
@@ -477,30 +477,30 @@ export default function InvoiceDetailPage() {
             />
 
             {/* Totals */}
-            <div className="border-t border-wl-border-subtle p-6">
+            <div className="border-t border-[#1e1e2e] p-6">
               <div className="flex justify-end max-w-xs ml-auto space-y-3">
                 <div className="w-full">
                   <div className="flex justify-between mb-2">
-                    <span className="text-wl-text-secondary">Subtotal</span>
-                    <span className="text-wl-text-primary">
+                    <span className="text-gray-400">Subtotal</span>
+                    <span className="text-white">
                       ${invoice.subtotal.toFixed(2)}
                     </span>
                   </div>
                   {invoice.discountAmount > 0 && (
-                    <div className="flex justify-between mb-2 text-green-600">
+                    <div className="flex justify-between mb-2 text-emerald-600">
                       <span>Discount</span>
                       <span>-${invoice.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between mb-2 border-t border-wl-border-subtle pt-2">
-                    <span className="text-wl-text-secondary">Tax (10%)</span>
-                    <span className="text-wl-text-primary">
+                  <div className="flex justify-between mb-2 border-t border-[#1e1e2e] pt-2">
+                    <span className="text-gray-400">Tax (10%)</span>
+                    <span className="text-white">
                       ${invoice.taxAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold border-t-2 border-wl-border-subtle pt-3 mt-3">
-                    <span>Total</span>
-                    <span className="text-wl-primary-500">
+                  <div className="flex justify-between text-lg font-bold border-t-2 border-[#1e1e2e] pt-3 mt-3">
+                    <span className="text-white">Total</span>
+                    <span className="text-blue-500">
                       ${invoice.total.toFixed(2)}
                     </span>
                   </div>
@@ -511,23 +511,23 @@ export default function InvoiceDetailPage() {
 
           {/* Notes & Terms */}
           {(invoice.notes || invoice.terms) && (
-            <Card className="p-6 space-y-4">
+            <Card className={cn("p-6 space-y-4 bg-[#12121a] border border-[#1e1e2e]")}>
               {invoice.notes && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
                     Notes
                   </h3>
-                  <p className="text-sm text-wl-text-primary">
+                  <p className="text-sm text-white">
                     {invoice.notes}
                   </p>
                 </div>
               )}
               {invoice.terms && (
                 <div>
-                  <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
+                  <h3 className="text-sm font-semibold uppercase text-gray-400 mb-2">
                     Terms & Conditions
                   </h3>
-                  <p className="text-sm text-wl-text-primary">
+                  <p className="text-sm text-white">
                     {invoice.terms}
                   </p>
                 </div>
@@ -539,29 +539,29 @@ export default function InvoiceDetailPage() {
         {/* Right Column - Summary & Activity */}
         <div className="flex flex-col gap-6">
           {/* Payment Summary */}
-          <Card className="p-6">
-            <h3 className="font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h3 className="font-semibold text-white mb-4">
               Payment Summary
             </h3>
             <div className="space-y-3">
               <div>
-                <p className="text-xs uppercase text-wl-text-secondary">
+                <p className="text-xs uppercase text-gray-400">
                   Total Amount
                 </p>
-                <p className="text-xl font-bold text-wl-text-primary">
+                <p className="text-xl font-bold text-white">
                   ${invoice.total.toFixed(2)}
                 </p>
               </div>
-              <div className="border-t border-wl-border-subtle pt-3">
-                <p className="text-xs uppercase text-wl-text-secondary">
+              <div className="border-t border-[#1e1e2e] pt-3">
+                <p className="text-xs uppercase text-gray-400">
                   Amount Paid
                 </p>
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-lg font-bold text-emerald-600">
                   ${amountPaid.toFixed(2)}
                 </p>
               </div>
-              <div className="border-t border-wl-border-subtle pt-3">
-                <p className="text-xs uppercase text-wl-text-secondary">
+              <div className="border-t border-[#1e1e2e] pt-3">
+                <p className="text-xs uppercase text-gray-400">
                   Remaining Balance
                 </p>
                 <p
@@ -569,7 +569,7 @@ export default function InvoiceDetailPage() {
                     "text-lg font-bold",
                     remainingBalance > 0
                       ? "text-red-500"
-                      : "text-green-600"
+                      : "text-emerald-600"
                   )}
                 >
                   ${remainingBalance.toFixed(2)}
@@ -580,28 +580,28 @@ export default function InvoiceDetailPage() {
 
           {/* Payments */}
           {invoice.payments.length > 0 && (
-            <Card className="p-6">
-              <h3 className="font-semibold text-wl-text-primary mb-4">
+            <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+              <h3 className="font-semibold text-white mb-4">
                 Payment History
               </h3>
               <div className="space-y-3">
                 {invoice.payments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="border-b border-wl-border-subtle pb-3 last:border-b-0 last:pb-0"
+                    className="border-b border-[#1e1e2e] pb-3 last:border-b-0 last:pb-0"
                   >
                     <div className="flex justify-between mb-1">
-                      <p className="text-sm font-medium text-wl-text-primary">
+                      <p className="text-sm font-medium text-white">
                         ${payment.amount.toFixed(2)}
                       </p>
-                      <span className="text-xs text-wl-text-secondary">
+                      <span className="text-xs text-gray-400">
                         {payment.date.toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-xs text-wl-text-secondary">
+                    <p className="text-xs text-gray-400">
                       {payment.method.replace("_", " ")}
                     </p>
-                    <p className="text-xs font-mono text-wl-text-secondary">
+                    <p className="text-xs font-mono text-gray-400">
                       Ref: {payment.reference}
                     </p>
                   </div>
@@ -611,21 +611,21 @@ export default function InvoiceDetailPage() {
           )}
 
           {/* Activity Log */}
-          <Card className="p-6">
-            <h3 className="font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h3 className="font-semibold text-white mb-4">
               Activity Log
             </h3>
             <div className="space-y-3">
               {invoice.activity.map((activity, index) => (
                 <div
                   key={activity.id}
-                  className="flex gap-3 pb-3 last:pb-0 border-b border-wl-border-subtle last:border-b-0"
+                  className="flex gap-3 pb-3 last:pb-0 border-b border-[#1e1e2e] last:border-b-0"
                 >
-                  <div className="text-wl-text-secondary mt-1">
+                  <div className="text-gray-400 mt-1">
                     {getActivityIcon(activity.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-wl-text-secondary">
+                    <p className="text-xs text-gray-400">
                       {getActivityDescription(activity)}
                     </p>
                   </div>
@@ -639,11 +639,11 @@ export default function InvoiceDetailPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="max-w-md p-6">
-            <h2 className="text-lg font-bold text-wl-text-primary mb-2">
+          <Card className={cn("max-w-md p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-bold text-white mb-2">
               Void Invoice?
             </h2>
-            <p className="text-sm text-wl-text-secondary mb-6">
+            <p className="text-sm text-gray-400 mb-6">
               Are you sure you want to void this invoice? This action cannot be
               undone.
             </p>

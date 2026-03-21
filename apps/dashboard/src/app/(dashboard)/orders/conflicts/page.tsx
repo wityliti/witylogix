@@ -127,70 +127,70 @@ export default function ConflictsPage() {
 
       <div className="p-6 space-y-6">
         {/* Conflict Stats */}
-        <Card className="p-6">
-          <h2 className="text-lg font-bold text-wl-text-primary mb-4">Conflict Summary</h2>
+        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <h2 className="text-lg font-bold text-white mb-4">Conflict Summary</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-wl-bg border border-wl-border-subtle">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Total Conflicts
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-text-primary">
+              </p>
+              <p className="text-3xl font-bold font-mono text-white">
                 {unresolved}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
                 across {uniqueFields.length} fields
-              </div>
+              </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-wl-bg border border-wl-border-subtle">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Affected Platforms
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-text-primary">
+              </p>
+              <p className="text-3xl font-bold font-mono text-white">
                 {Array.from(new Set(conflicts.filter((c) => !c.resolved).map((c) => c.platform))).length}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
                 platforms with conflicts
-              </div>
+              </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-wl-bg border border-wl-border-subtle">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <div className="p-4 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Resolution Rate
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-text-primary">
+              </p>
+              <p className="text-3xl font-bold font-mono text-white">
                 {conflicts.length > 0
                   ? Math.round(
                       ((conflicts.length - unresolved) / conflicts.length) * 100
                     )
                   : 0}
                 %
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
                 {conflicts.length - unresolved} resolved
-              </div>
+              </p>
             </div>
           </div>
         </Card>
 
         {/* Conflicts by Field */}
         {Object.keys(conflictsByField).length > 0 && (
-          <Card className="p-6">
-            <h2 className="text-lg font-bold text-wl-text-primary mb-4">Conflicts by Field</h2>
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-bold text-white mb-4">Conflicts by Field</h2>
 
             <div className="space-y-2">
               {Object.entries(conflictsByField).map(([field, count]) => (
                 <div
                   key={field}
-                  className="flex items-center justify-between p-3 rounded-lg bg-wl-bg border border-wl-border-subtle hover:bg-wl-bg-elevated transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f] border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div>
-                      <div className="font-medium text-wl-text-primary">{field}</div>
-                      <div className="text-xs text-wl-text-tertiary">
+                      <p className="font-medium text-white">{field}</p>
+                      <p className="text-xs text-gray-400">
                         {count} conflict{count !== 1 ? "s" : ""}
-                      </div>
+                      </p>
                     </div>
                   </div>
 
@@ -223,13 +223,13 @@ export default function ConflictsPage() {
         )}
 
         {/* Filters */}
-        <Card className="p-6">
-          <h2 className="text-lg font-bold text-wl-text-primary mb-4">Filters</h2>
+        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+          <h2 className="text-lg font-bold text-white mb-4">Filters</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Platform Filter */}
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Platform
               </label>
               <select
@@ -237,7 +237,7 @@ export default function ConflictsPage() {
                 onChange={(e) =>
                   setFilterPlatform(e.target.value as SyncPlatform | "all")
                 }
-                className="w-full px-3 py-2 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
+                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Platforms</option>
                 {Object.entries(PLATFORMS).map(([key, { name }]) => (
@@ -250,13 +250,13 @@ export default function ConflictsPage() {
 
             {/* Field Filter */}
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Field
               </label>
               <select
                 value={filterField}
                 onChange={(e) => setFilterField(e.target.value)}
-                className="w-full px-3 py-2 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
+                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Fields</option>
                 {uniqueFields.map((field) => (
@@ -269,7 +269,7 @@ export default function ConflictsPage() {
 
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Date Range
               </label>
               <select
@@ -279,7 +279,7 @@ export default function ConflictsPage() {
                     e.target.value as "all" | "today" | "week" | "month"
                   )
                 }
-                className="w-full px-3 py-2 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
+                className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -292,16 +292,16 @@ export default function ConflictsPage() {
 
         {/* Conflicts List */}
         {filteredConflicts.length === 0 ? (
-          <Card className="p-12 text-center">
-            <div className="text-wl-text-tertiary text-lg font-medium">
+          <Card className="p-12 text-center bg-[#12121a] border border-[#1e1e2e]">
+            <p className="text-gray-400 text-lg font-medium">
               {unresolved === 0
                 ? "✓ All conflicts resolved!"
                 : "No conflicts match your filters"}
-            </div>
+            </p>
           </Card>
         ) : (
-          <Card className="p-6">
-            <h2 className="text-lg font-bold text-wl-text-primary mb-4">
+          <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
+            <h2 className="text-lg font-bold text-white mb-4">
               Unresolved Conflicts ({filteredConflicts.length})
             </h2>
 
@@ -316,8 +316,8 @@ export default function ConflictsPage() {
                     className={cn(
                       "rounded-lg border transition-all",
                       isExpanded
-                        ? "border-wl-primary-400 bg-[rgba(245,166,35,0.05)]"
-                        : "border-wl-border-subtle bg-wl-bg-surface hover:border-wl-border-default"
+                        ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
+                        : "border-[#1e1e2e] bg-[#0a0a0f] hover:border-blue-500"
                     )}
                   >
                     {/* Header */}
@@ -332,71 +332,71 @@ export default function ConflictsPage() {
                       <div className="flex items-center gap-3 flex-1">
                         <span className="text-lg">{platform?.icon}</span>
                         <div className="flex-1">
-                          <div className="font-medium text-wl-text-primary">
+                          <p className="font-medium text-white">
                             {platform?.name} • Order {conflict.orderId}
-                          </div>
+                          </p>
                           <div className="flex gap-2 mt-1">
                             <Badge variant="info">{conflict.field}</Badge>
-                            <span className="text-xs text-wl-text-tertiary">
+                            <span className="text-xs text-gray-400">
                               {new Date(conflict.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-wl-text-tertiary text-lg">
+                      <p className="text-gray-400 text-lg">
                         {isExpanded ? "▼" : "▶"}
-                      </div>
+                      </p>
                     </div>
 
                     {/* Expanded Content */}
                     {isExpanded && (
                       <>
-                        <div className="border-t border-wl-border-subtle p-4">
+                        <div className="border-t border-[#1e1e2e] p-4">
                           {/* Side-by-side Diff View */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             {/* External (Platform) Value */}
                             <div>
-                              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                                 {platform?.name} Value
-                              </div>
-                              <div className="p-3 rounded-lg bg-wl-bg border border-wl-success-400/30 font-mono text-sm text-wl-text-primary break-words max-h-32 overflow-y-auto">
+                              </p>
+                              <div className="p-3 rounded-lg bg-[#0a0a0f] border border-emerald-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.externalValue || "(empty)"}
                               </div>
-                              <div className="text-xs text-wl-success-400 mt-2 font-medium">
+                              <p className="text-xs text-emerald-500 mt-2 font-medium">
                                 Source: External
-                              </div>
+                              </p>
                             </div>
 
                             {/* Internal (Witylogix) Value */}
                             <div>
-                              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                                 Witylogix Value
-                              </div>
-                              <div className="p-3 rounded-lg bg-wl-bg border border-wl-info-400/30 font-mono text-sm text-wl-text-primary break-words max-h-32 overflow-y-auto">
+                              </p>
+                              <div className="p-3 rounded-lg bg-[#0a0a0f] border border-blue-500/30 font-mono text-sm text-gray-300 break-words max-h-32 overflow-y-auto">
                                 {conflict.internalValue || "(empty)"}
                               </div>
-                              <div className="text-xs text-wl-info-400 mt-2 font-medium">
+                              <p className="text-xs text-blue-500 mt-2 font-medium">
                                 Source: Internal
-                              </div>
+                              </p>
                             </div>
                           </div>
 
                           {/* Manual Edit Option */}
                           <div className="mb-4">
-                            <label className="block text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+                            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                               Manual Resolution
                             </label>
                             <input
                               type="text"
                               placeholder="Enter custom value (optional)"
-                              className="w-full px-3 py-2 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
+                              className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-gray-300 outline-none focus:border-blue-500"
                             />
                           </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="border-t border-wl-border-subtle p-4 flex gap-2 flex-wrap">
+                        <div className="border-t border-[#1e1e2e] p-4 flex gap-2 flex-wrap">
                           <Button
                             variant="primary"
                             size="sm"
@@ -450,8 +450,8 @@ export default function ConflictsPage() {
 
         {/* Error State */}
         {error && (
-          <Card className="p-4 border-wl-danger-400/20 bg-[rgba(255,69,69,0.05)]">
-            <div className="flex items-center gap-2 text-wl-danger-400">
+          <Card className="p-4 border-red-500/20 bg-[rgba(255,69,69,0.05)] border border-red-500/20">
+            <div className="flex items-center gap-2 text-red-500">
               <span>⚠️</span>
               <span className="text-sm font-medium">{error}</span>
             </div>

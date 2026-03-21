@@ -71,7 +71,7 @@ export default function FuelPage() {
         actions={<Button variant="primary" size="md">Manage Fuel Cards</Button>}
       />
 
-      <div className="p-6 space-y-6">
+      <main className="min-h-screen bg-[#0a0a0f] p-6 space-y-6">
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
           <StatCard label="Total Fuel Spend" value={formatCurrency(analytics.totalSpend)} change={{ value: 8.5, label: 'vs last month' }} accentColor="var(--wl-primary-500)" index={0} />
@@ -82,20 +82,20 @@ export default function FuelPage() {
 
         {/* Anomaly Alerts */}
         {analytics.anomalies.length > 0 && (
-          <Card className="border-wl-danger-500 border-2">
+          <Card className="bg-[#12121a] border border-red-500/30">
             <CardHeader>
-              <CardTitle className="text-sm text-wl-danger-500">
-                <AlertTriangle className="w-4 h-4 inline mr-2" />
+              <CardTitle className="text-sm text-red-400 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
                 Fuel Anomalies Detected ({analytics.anomalies.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {analytics.anomalies.slice(0, 3).map((anomaly) => (
-                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-wl-danger-500 bg-opacity-10 rounded-md">
+                  <div key={anomaly.id} className="flex items-center justify-between p-3 bg-red-500/10 rounded-md border border-[#1e1e2e]">
                     <div>
-                      <p className="text-sm font-medium text-wl-text-primary">Anomaly Detected</p>
-                      <p className="text-xs text-wl-text-secondary">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
+                      <p className="text-sm font-medium text-white">Anomaly Detected</p>
+                      <p className="text-xs text-gray-400">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
                     </div>
                     <Button variant="danger" size="sm">Review</Button>
                   </div>
@@ -107,9 +107,9 @@ export default function FuelPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Consumers */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="text-sm">Top Fuel Consumers</CardTitle>
+              <CardTitle className="text-sm text-white">Top Fuel Consumers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -119,11 +119,11 @@ export default function FuelPage() {
                   return (
                     <div key={item.vehicleId}>
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-medium text-wl-text-primary">{idx + 1}. Vehicle {idx + 1}</p>
-                        <p className="text-xs font-semibold text-wl-text-secondary">{formatCurrency(item.spend)}</p>
+                        <p className="text-sm font-medium text-white">{idx + 1}. Vehicle {idx + 1}</p>
+                        <p className="text-xs font-semibold text-gray-400">{formatCurrency(item.spend)}</p>
                       </div>
-                      <div className="h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-600 rounded-full" style={{ width: `${percentage}%` }} />
+                      <div className="h-2 bg-[#1a1a2e] rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
                   );
@@ -133,42 +133,42 @@ export default function FuelPage() {
           </Card>
 
           {/* Cost Breakdown */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="text-sm">Cost Breakdown</CardTitle>
+              <CardTitle className="text-sm text-white">Cost Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-wl-text-secondary mb-1">Fuel Spend</p>
-                  <p className="text-lg font-bold text-wl-text-primary">{formatCurrency(12000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Fuel Spend</p>
+                  <p className="text-lg font-bold text-white">{formatCurrency(12000)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-wl-text-secondary mb-1">Maintenance</p>
-                  <p className="text-lg font-bold text-wl-text-primary">{formatCurrency(3000)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Maintenance</p>
+                  <p className="text-lg font-bold text-white">{formatCurrency(3000)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-wl-text-secondary mb-1">Insurance (Monthly)</p>
-                  <p className="text-lg font-bold text-wl-text-primary">{formatCurrency(500)}</p>
+                  <p className="text-xs text-gray-400 mb-1">Insurance (Monthly)</p>
+                  <p className="text-lg font-bold text-white">{formatCurrency(500)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Fuel Cards */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="text-sm">Fuel Cards Status</CardTitle>
+              <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {['Shell ****1234', 'Chevron ****5678', 'Shell ****9012'].map((card, idx) => (
-                  <div key={card} className="p-3 bg-wl-bg-overlay rounded-md">
+                  <div key={card} className="p-3 bg-[#1a1a2e] rounded-md border border-[#1e1e2e]">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-medium text-wl-text-primary">{card}</p>
+                      <p className="text-sm font-medium text-white">{card}</p>
                       <Badge variant={idx === 2 ? 'danger' : 'success'}>{idx === 2 ? 'Blocked' : 'Active'}</Badge>
                     </div>
-                    <p className="text-xs text-wl-text-secondary">Daily: {formatCurrency(500 + idx * 100)} • Monthly: {formatCurrency(10000 + idx * 2000)}</p>
+                    <p className="text-xs text-gray-400">Daily: {formatCurrency(500 + idx * 100)} • Monthly: {formatCurrency(10000 + idx * 2000)}</p>
                   </div>
                 ))}
               </div>
@@ -177,37 +177,37 @@ export default function FuelPage() {
         </div>
 
         {/* Transactions Table */}
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Date</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vehicle</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Station</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Gallons</th>
-                  <th className="p-3 px-4 text-right font-semibold text-wl-text-secondary">Amount</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Price/Gal</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">MPG</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Status</th>
+                <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Date</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Station</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Gallons</th>
+                  <th className="p-3 px-4 text-right font-semibold text-gray-400">Amount</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Price/Gal</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">MPG</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedTransactions.map((tx, idx) => (
-                  <tr key={tx.id} className={cn('border-b border-wl-border-subtle transition-colors hover:bg-wl-bg-overlay', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-overlay')}>
-                    <td className="p-3 px-4 text-wl-text-secondary text-xs">{formatDate(tx.date)}</td>
-                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
+                  <tr key={tx.id} className={cn('border-b border-[#1e1e2e] transition-colors hover:bg-[#1a1a2e]', idx % 2 === 0 ? 'bg-transparent' : 'bg-[#0f0f14]')}>
+                    <td className="p-3 px-4 text-gray-400 text-xs">{formatDate(tx.date)}</td>
+                    <td className="p-3 px-4 text-white font-semibold">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-wl-primary-500 bg-opacity-10 flex items-center justify-center text-wl-primary-500 text-xs">
+                        <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400 text-xs">
                           <Fuel className="w-3 h-3" />
                         </div>
                         <p className="text-sm">Vehicle</p>
                       </div>
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{tx.station}</td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-medium">{tx.gallons.toFixed(1)}</td>
-                    <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">{formatCurrency(tx.amount)}</td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{formatCurrency(tx.price)}</td>
+                    <td className="p-3 px-4 text-center text-gray-400 text-xs">{tx.station}</td>
+                    <td className="p-3 px-4 text-center text-white font-medium">{tx.gallons.toFixed(1)}</td>
+                    <td className="p-3 px-4 text-right text-white font-semibold">{formatCurrency(tx.amount)}</td>
+                    <td className="p-3 px-4 text-center text-gray-400 text-xs">{formatCurrency(tx.price)}</td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={tx.mpg >= 20 ? 'success' : tx.mpg >= 15 ? 'warning' : 'danger'}>
                         {tx.mpg.toFixed(1)}
@@ -223,7 +223,7 @@ export default function FuelPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
+          <div className="flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400">
             <div>
               Showing {paginatedTransactions.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
               {Math.min(currentPage * pageSize, transactions.length)} of {transactions.length}
@@ -237,7 +237,7 @@ export default function FuelPage() {
               >
                 Previous
               </Button>
-              <span className="px-3 py-1 flex items-center">
+              <span className="px-3 py-1 flex items-center text-gray-400">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
@@ -251,7 +251,7 @@ export default function FuelPage() {
             </div>
           </div>
         </Card>
-      </div>
+      </main>
     </>
   );
 }

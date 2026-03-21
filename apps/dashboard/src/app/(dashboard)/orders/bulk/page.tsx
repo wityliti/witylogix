@@ -137,30 +137,30 @@ export default function BulkOperationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       <div className="mb-8">
-        <div className="text-4xl font-bold mb-2">Bulk Operations</div>
-        <div className="text-sm text-wl-muted">Perform bulk actions on multiple orders at once</div>
+        <h1 className="text-4xl font-bold mb-2">Bulk Operations</h1>
+        <p className="text-sm text-gray-400">Perform bulk actions on multiple orders at once</p>
       </div>
 
       {/* Search and Filter */}
-      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
-        <div className="text-base font-semibold mb-4">Search & Filter Orders</div>
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
+        <p className="text-base font-semibold mb-4 text-white">Search & Filter Orders</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-wl-text">Search Order Number or Customer</label>
+            <label className="text-sm font-medium text-gray-300">Search Order Number or Customer</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-wl-text">Filter by Status</label>
+            <label className="text-sm font-medium text-gray-300">Filter by Status</label>
             <select
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -173,13 +173,13 @@ export default function BulkOperationsPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-wl-text">&nbsp;</label>
+            <label className="text-sm font-medium text-gray-300">&nbsp;</label>
             <button
               onClick={() => {
                 setSearchTerm('');
                 setFilterStatus('all');
               }}
-              className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
+              className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
             >
               Reset Filters
             </button>
@@ -189,17 +189,17 @@ export default function BulkOperationsPage() {
 
       {/* Selection and Bulk Actions */}
       {filteredOrders.length > 0 && (
-        <div className="bg-wl-bg border border-wl-border rounded p-4 mb-5 flex items-center justify-between">
-          <div className="text-sm text-wl-muted flex-1">
+        <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 mb-6 flex items-center justify-between">
+          <p className="text-sm text-gray-400 flex-1">
             {selectedOrders.size > 0 ? (
               `${selectedOrders.size} order${selectedOrders.size !== 1 ? 's' : ''} selected`
             ) : (
               'Select orders to perform bulk actions'
             )}
-          </div>
+          </p>
           <button
             onClick={toggleSelectAll}
-            className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
+            className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
           >
             {selectedOrders.size === filteredOrders.length && selectedOrders.size > 0 ? 'Deselect All' : 'Select All'}
           </button>
@@ -207,13 +207,13 @@ export default function BulkOperationsPage() {
       )}
 
       {/* Orders Table */}
-      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
-        <div className="text-base font-semibold mb-4">Orders ({filteredOrders.length})</div>
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
+        <p className="text-base font-semibold mb-4 text-white">Orders ({filteredOrders.length})</p>
         {filteredOrders.length > 0 ? (
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left">
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left">
                   <input
                     type="checkbox"
                     className="cursor-pointer"
@@ -221,17 +221,17 @@ export default function BulkOperationsPage() {
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Order Number</th>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Customer</th>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Total</th>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Status</th>
-                <th className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">Date</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Order Number</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Customer</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Total</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Status</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Date</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map(order => (
                 <tr key={order.id}>
-                  <td className="border-b border-wl-border p-3">
+                  <td className="border-b border-[#1e1e2e] p-3">
                     <input
                       type="checkbox"
                       className="cursor-pointer"
@@ -239,24 +239,24 @@ export default function BulkOperationsPage() {
                       onChange={() => toggleOrderSelection(order.id)}
                     />
                   </td>
-                  <td className="border-b border-wl-border p-3 text-sm">
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">
                     <strong>{order.orderNumber}</strong>
                   </td>
-                  <td className="border-b border-wl-border p-3 text-sm">{order.customer}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">₹{order.total.toLocaleString()}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.customer}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{order.total.toLocaleString()}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm">
                     <Badge
                       label={getStatusLabel(order.status)}
                       color={statusColors[order.status]}
                     />
                   </td>
-                  <td className="border-b border-wl-border p-3 text-sm">{order.date}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.date}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <div className="p-5 text-center text-wl-muted">
+          <div className="p-6 text-center text-gray-400">
             No orders found
           </div>
         )}
@@ -264,13 +264,13 @@ export default function BulkOperationsPage() {
 
       {/* Bulk Actions Section */}
       {selectedOrders.size > 0 && (
-        <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
-          <div className="text-base font-semibold mb-4">Bulk Actions</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
+          <p className="text-base font-semibold mb-4 text-white">Bulk Actions</p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-wl-text">Select Action</label>
+              <label className="text-sm font-medium text-gray-300">Select Action</label>
               <select
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value)}
               >
@@ -285,9 +285,9 @@ export default function BulkOperationsPage() {
 
             {bulkAction === 'update_status' && (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-wl-text">New Status</label>
+                <label className="text-sm font-medium text-gray-300">New Status</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                  className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
@@ -301,9 +301,9 @@ export default function BulkOperationsPage() {
 
             {bulkAction === 'assign_route' && (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-wl-text">Select Route</label>
+                <label className="text-sm font-medium text-gray-300">Select Route</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                  className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                   value={selectedRoute}
                   onChange={(e) => setSelectedRoute(e.target.value)}
                 >
@@ -316,15 +316,15 @@ export default function BulkOperationsPage() {
             )}
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-wl-text">&nbsp;</label>
+              <label className="text-sm font-medium text-gray-300">&nbsp;</label>
               <button
                 onClick={handleBulkAction}
                 disabled={!bulkAction || (bulkAction === 'assign_route' && !selectedRoute)}
                 className={cn(
                   "px-4 py-2.5 rounded font-semibold text-sm transition-all",
                   !bulkAction || (bulkAction === 'assign_route' && !selectedRoute)
-                    ? "bg-wl-primary text-white opacity-50 cursor-not-allowed"
-                    : "bg-wl-primary text-white cursor-pointer"
+                    ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                    : "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
                 )}
               >
                 Execute Action
@@ -337,9 +337,9 @@ export default function BulkOperationsPage() {
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
-            <div className="text-lg font-bold mb-4">Confirm Bulk Action</div>
-            <div className="text-sm text-wl-muted mb-5 leading-relaxed">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
+            <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
+            <p className="text-sm text-gray-300 mb-5 leading-relaxed">
               <div className="mb-2.5">
                 Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : 'Execute'}</strong>
               </div>
@@ -363,13 +363,13 @@ export default function BulkOperationsPage() {
             <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
+                className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
-                className="px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
+                className="px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
               >
                 Confirm
               </button>
@@ -381,14 +381,14 @@ export default function BulkOperationsPage() {
       {/* Progress Modal */}
       {showProgress && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
-            <div className="text-lg font-bold mb-4">Processing Orders...</div>
-            <div className="w-full h-2 bg-wl-bg rounded overflow-hidden">
-              <div className="h-full bg-wl-primary transition-all" style={{ width: `${progress}%` }} />
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
+            <h2 className="text-lg font-bold mb-4">Processing Orders...</h2>
+            <div className="w-full h-2 bg-[#0a0a0f] rounded overflow-hidden">
+              <div className="h-full bg-blue-500 transition-all" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-4 text-center text-sm text-wl-muted">
+            <p className="mt-4 text-center text-sm text-gray-400">
               {progress}% Complete
-            </div>
+            </p>
           </div>
         </div>
       )}
@@ -396,14 +396,14 @@ export default function BulkOperationsPage() {
       {/* Results Modal */}
       {operationResults && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-wl-surface border border-wl-border rounded p-8 max-w-md w-11/12 text-wl-text">
-            <div className="text-lg font-bold mb-4">Operation Complete</div>
-            <div className="text-sm text-wl-muted mb-5">
-              <div className="mb-2.5 text-green-400">
+          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
+            <h2 className="text-lg font-bold mb-4">Operation Complete</h2>
+            <div className="text-sm text-gray-300 mb-5">
+              <div className="mb-2.5 text-emerald-500">
                 <strong>{operationResults.success} order{operationResults.success !== 1 ? 's' : ''} processed successfully</strong>
               </div>
               {operationResults.failed > 0 && (
-                <div className="text-red-400">
+                <div className="text-red-500">
                   <strong>{operationResults.failed} order{operationResults.failed !== 1 ? 's' : ''} failed</strong>
                 </div>
               )}
@@ -415,14 +415,14 @@ export default function BulkOperationsPage() {
                   <div
                     key={idx}
                     className={cn(
-                      "bg-wl-bg border rounded p-3 mb-2",
+                      "bg-[#0a0a0f] border rounded p-3 mb-2",
                       detail.message.includes('Successfully')
-                        ? "border-l-4 border-l-green-500"
-                        : "border-l-4 border-l-red-400"
+                        ? "border-l-4 border-l-emerald-500"
+                        : "border-l-4 border-l-red-500"
                     )}
                   >
-                    <div className="font-semibold text-sm">{detail.orderId}</div>
-                    <div className="text-xs text-wl-muted mt-1">{detail.message}</div>
+                    <p className="font-semibold text-sm text-gray-300">{detail.orderId}</p>
+                    <p className="text-xs text-gray-400 mt-1">{detail.message}</p>
                   </div>
                 ))}
               </div>
@@ -431,7 +431,7 @@ export default function BulkOperationsPage() {
             <div className="flex gap-2.5 justify-end mt-5">
               <button
                 onClick={resetOperations}
-                className="px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
+                className="px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
               >
                 Done
               </button>

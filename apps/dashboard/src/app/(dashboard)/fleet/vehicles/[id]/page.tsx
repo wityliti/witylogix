@@ -82,20 +82,20 @@ export default function VehicleDetailPage() {
   return (
     <>
       <Header />
-      <main className="p-8">
+      <main className="min-h-screen bg-[#0a0a0f] p-8">
         {/* ── BACK BUTTON & HEADER ──────────────────────────── */}
         <div className="mb-8">
-          <button className="flex items-center gap-2 text-wl-primary-500 hover:text-wl-primary-600 mb-4 transition-colors">
+          <button className="flex items-center gap-2 text-blue-500 hover:text-blue-400 mb-4 transition-colors">
             <ChevronLeft className="w-4 h-4" />
             Back to Vehicles
           </button>
 
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-wl-text-primary">
+              <h1 className="text-3xl font-bold text-white">
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </h1>
-              <p className="text-wl-text-secondary mt-2">License Plate: {vehicle.licensePlate}</p>
+              <p className="text-gray-400 mt-2">License Plate: {vehicle.licensePlate}</p>
             </div>
             <Badge variant={getStatusBadgeVariant(vehicle.status)} className="text-lg px-4 py-1">
               {vehicle.status}
@@ -106,10 +106,10 @@ export default function VehicleDetailPage() {
         {/* ─── MAIN GRID ────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* ── VEHICLE INFO CARD ─────────────────────────── */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Truck className="w-5 h-5 mr-2 text-wl-primary-500" />
+              <CardTitle className="flex items-center text-white">
+                <Truck className="w-5 h-5 mr-2 text-blue-500" />
                 Vehicle Information
               </CardTitle>
             </CardHeader>
@@ -122,19 +122,19 @@ export default function VehicleDetailPage() {
                 { label: 'Engine Hours', value: `${vehicle.engineHours} h` },
                 { label: 'Battery', value: `${vehicle.battery}%` },
               ].map((item) => (
-                <div key={item.label} className="flex justify-between items-center py-2 border-b border-wl-border-subtle last:border-b-0">
-                  <span className="text-wl-text-secondary text-sm">{item.label}</span>
-                  <span className="text-wl-text-primary font-medium">{item.value}</span>
+                <div key={item.label} className="flex justify-between items-center py-2 border-b border-[#1e1e2e] last:border-b-0">
+                  <span className="text-gray-400 text-sm">{item.label}</span>
+                  <span className="text-white font-medium">{item.value}</span>
                 </div>
               ))}
             </CardContent>
           </Card>
 
           {/* ── REAL-TIME METRICS ────────────────────────── */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Activity className="w-5 h-5 mr-2 text-wl-primary-500" />
+              <CardTitle className="flex items-center text-white">
+                <Activity className="w-5 h-5 mr-2 text-blue-500" />
                 Real-Time Metrics
               </CardTitle>
             </CardHeader>
@@ -142,18 +142,18 @@ export default function VehicleDetailPage() {
               {/* Fuel */}
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-wl-text-secondary text-sm flex items-center gap-2">
-                    <Fuel className="w-4 h-4 text-wl-primary-500" />
+                  <span className="text-gray-400 text-sm flex items-center gap-2">
+                    <Fuel className="w-4 h-4 text-blue-500" />
                     Fuel Level
                   </span>
-                  <span className="text-wl-text-primary font-medium">{vehicle.fuelLevel}%</span>
+                  <span className="text-white font-medium">{vehicle.fuelLevel}%</span>
                 </div>
-                <div className="w-full bg-wl-border-subtle rounded-full h-2">
+                <div className="w-full bg-[#1a1a2e] rounded-full h-2">
                   <div
                     className={cn('h-2 rounded-full transition-all', {
-                      'bg-wl-success-500': vehicle.fuelLevel > 50,
-                      'bg-wl-warning-500': vehicle.fuelLevel > 25,
-                      'bg-wl-danger-500': vehicle.fuelLevel <= 25,
+                      'bg-emerald-500': vehicle.fuelLevel > 50,
+                      'bg-amber-500': vehicle.fuelLevel > 25,
+                      'bg-red-500': vehicle.fuelLevel <= 25,
                     })}
                     style={{ width: `${vehicle.fuelLevel}%` }}
                   />
@@ -162,39 +162,39 @@ export default function VehicleDetailPage() {
 
               {/* Position */}
               {vehicle.lastPosition && (
-                <div className="bg-wl-bg-overlay rounded-lg p-3">
-                  <p className="text-wl-text-secondary text-sm flex items-center gap-2 mb-1">
+                <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
+                  <p className="text-gray-400 text-sm flex items-center gap-2 mb-1">
                     <MapPin className="w-4 h-4" />
                     Last Position
                   </p>
-                  <p className="text-wl-text-primary text-sm font-mono">
+                  <p className="text-white text-sm font-mono">
                     {vehicle.lastPosition.latitude.toFixed(4)}°, {vehicle.lastPosition.longitude.toFixed(4)}°
                   </p>
-                  <p className="text-wl-text-secondary text-xs mt-1">
+                  <p className="text-gray-500 text-xs mt-1">
                     Speed: {vehicle.lastPosition.speed} km/h | Heading: {vehicle.lastPosition.heading}°
                   </p>
                 </div>
               )}
 
               {/* Last Sync */}
-              <div className="bg-wl-bg-overlay rounded-lg p-3">
-                <p className="text-wl-text-secondary text-sm flex items-center gap-2 mb-1">
+              <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
+                <p className="text-gray-400 text-sm flex items-center gap-2 mb-1">
                   <Clock className="w-4 h-4" />
                   Last Sync
                 </p>
-                <p className="text-wl-text-primary text-sm">
+                <p className="text-white text-sm">
                   {new Date(vehicle.lastSyncAt).toLocaleString()}
                 </p>
               </div>
 
               {/* Next Maintenance */}
               {vehicle.nextMaintenanceDate && (
-                <div className="bg-wl-bg-overlay rounded-lg p-3">
-                  <p className="text-wl-text-secondary text-sm flex items-center gap-2 mb-1">
+                <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
+                  <p className="text-gray-400 text-sm flex items-center gap-2 mb-1">
                     <Wrench className="w-4 h-4" />
                     Next Maintenance
                   </p>
-                  <p className="text-wl-text-primary text-sm">
+                  <p className="text-white text-sm">
                     {new Date(vehicle.nextMaintenanceDate).toLocaleDateString()}
                   </p>
                 </div>
@@ -203,18 +203,18 @@ export default function VehicleDetailPage() {
           </Card>
 
           {/* ── HEALTH SUMMARY ────────────────────────────── */}
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2 text-wl-primary-500" />
+              <CardTitle className="flex items-center text-white">
+                <AlertTriangle className="w-5 h-5 mr-2 text-blue-500" />
                 Health Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Diagnostics */}
-              <div className="bg-wl-bg-overlay rounded-lg p-3">
+              <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-wl-text-secondary text-sm flex items-center gap-2">
+                  <p className="text-gray-400 text-sm flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
                     Active Fault Codes
                   </p>
@@ -223,7 +223,7 @@ export default function VehicleDetailPage() {
                   </Badge>
                 </div>
                 {diagnostics.length === 0 && (
-                  <p className="text-wl-success-500 text-xs mt-2 flex items-center gap-1">
+                  <p className="text-emerald-400 text-xs mt-2 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" />
                     No issues detected
                   </p>
@@ -231,9 +231,9 @@ export default function VehicleDetailPage() {
               </div>
 
               {/* Driver Behavior */}
-              <div className="bg-wl-bg-overlay rounded-lg p-3">
+              <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-wl-text-secondary text-sm flex items-center gap-2">
+                  <p className="text-gray-400 text-sm flex items-center gap-2">
                     <Activity className="w-4 h-4" />
                     Recent Events (7d)
                   </p>
@@ -244,9 +244,9 @@ export default function VehicleDetailPage() {
               </div>
 
               {/* Maintenance Alerts */}
-              <div className="bg-wl-bg-overlay rounded-lg p-3">
+              <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#1e1e2e]">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-wl-text-secondary text-sm flex items-center gap-2">
+                  <p className="text-gray-400 text-sm flex items-center gap-2">
                     <Wrench className="w-4 h-4" />
                     Pending Maintenance
                   </p>
@@ -260,7 +260,7 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* ── TABBED SECTIONS ────────────────────────────────── */}
-        <div className="flex gap-2 mb-6 border-b border-wl-border-subtle">
+        <div className="flex gap-2 mb-6 border-b border-[#1e1e2e]">
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'diagnostics', label: 'Diagnostics' },
@@ -273,8 +273,8 @@ export default function VehicleDetailPage() {
               className={cn(
                 'px-4 py-2 text-sm font-medium transition-colors border-b-2',
                 activeTab === tab.id
-                  ? 'text-wl-primary-500 border-wl-primary-500'
-                  : 'text-wl-text-secondary border-transparent hover:text-wl-text-primary',
+                  ? 'text-blue-500 border-blue-500'
+                  : 'text-gray-400 border-transparent hover:text-white',
               )}
             >
               {tab.label}
@@ -283,16 +283,16 @@ export default function VehicleDetailPage() {
         </div>
 
         {activeTab === 'diagnostics' && (
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Vehicle Diagnostics</CardTitle>
-              <CardDescription>Active fault codes and diagnostic information</CardDescription>
+              <CardTitle className="text-white">Vehicle Diagnostics</CardTitle>
+              <CardDescription className="text-gray-400">Active fault codes and diagnostic information</CardDescription>
             </CardHeader>
             <CardContent>
               {diagnostics.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <CheckCircle2 className="w-12 h-12 text-wl-success-500 mb-4" />
-                  <p className="text-wl-text-secondary">No diagnostic issues detected</p>
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-4" />
+                  <p className="text-gray-400">No diagnostic issues detected</p>
                 </div>
               ) : null}
             </CardContent>
@@ -300,16 +300,16 @@ export default function VehicleDetailPage() {
         )}
 
         {activeTab === 'behavior' && (
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Driver Behavior Events</CardTitle>
-              <CardDescription>Last 7 days of driving events</CardDescription>
+              <CardTitle className="text-white">Driver Behavior Events</CardTitle>
+              <CardDescription className="text-gray-400">Last 7 days of driving events</CardDescription>
             </CardHeader>
             <CardContent>
               {behaviors.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <CheckCircle2 className="w-12 h-12 text-wl-success-500 mb-4" />
-                  <p className="text-wl-text-secondary">No driving events recorded</p>
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-4" />
+                  <p className="text-gray-400">No driving events recorded</p>
                 </div>
               ) : null}
             </CardContent>
@@ -317,16 +317,16 @@ export default function VehicleDetailPage() {
         )}
 
         {activeTab === 'maintenance' && (
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Maintenance Alerts</CardTitle>
-              <CardDescription>Upcoming and pending maintenance tasks</CardDescription>
+              <CardTitle className="text-white">Maintenance Alerts</CardTitle>
+              <CardDescription className="text-gray-400">Upcoming and pending maintenance tasks</CardDescription>
             </CardHeader>
             <CardContent>
               {maintenance.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <CheckCircle2 className="w-12 h-12 text-wl-success-500 mb-4" />
-                  <p className="text-wl-text-secondary">No pending maintenance</p>
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-4" />
+                  <p className="text-gray-400">No pending maintenance</p>
                 </div>
               ) : null}
             </CardContent>

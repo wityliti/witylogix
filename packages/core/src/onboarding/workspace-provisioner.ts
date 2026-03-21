@@ -154,7 +154,7 @@ export class WorkspaceProvisioner {
       });
 
       // Create workspace settings
-      await (prisma as any).workspaceSettings.create({
+      await db.workspaceSettings.create({
         data: {
           workspaceId: workspace.id,
           timezone,
@@ -192,7 +192,7 @@ export class WorkspaceProvisioner {
 
       // Create initial API key
       const apiKey = this.generateApiKey();
-      const apiKeyRecord = await (prisma as any).workspaceApiKey.create({
+      const apiKeyRecord = await db.workspaceApiKey.create({
         data: {
           workspaceId: workspace.id,
           name: "Default",
@@ -280,7 +280,7 @@ export class WorkspaceProvisioner {
 
     if (hardDelete) {
       // Hard delete: remove all related records first
-      await (prisma as any).workspaceApiKey.deleteMany({
+      await db.workspaceApiKey.deleteMany({
         where: { workspaceId },
       });
 
@@ -288,7 +288,7 @@ export class WorkspaceProvisioner {
         where: { workspaceId },
       });
 
-      await (prisma as any).workspaceSettings.deleteMany({
+      await db.workspaceSettings.deleteMany({
         where: { workspaceId },
       });
 
@@ -315,7 +315,7 @@ export class WorkspaceProvisioner {
       });
 
       // Disable all API keys
-      await (prisma as any).workspaceApiKey.updateMany({
+      await db.workspaceApiKey.updateMany({
         where: { workspaceId },
         data: {
           isActive: false,
@@ -430,7 +430,7 @@ export class WorkspaceProvisioner {
       updates.dateFormat ||
       updates.locale
     ) {
-      await (prisma as any).workspaceSettings.update({
+      await db.workspaceSettings.update({
         where: { workspaceId },
         data: {
           timezone: updates.timezone,

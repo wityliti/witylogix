@@ -210,7 +210,7 @@ export default function CreateInvoicePage() {
   }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -219,10 +219,10 @@ export default function CreateInvoicePage() {
             Back
           </Button>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-wl-text-primary">
+            <h1 className="text-3xl font-bold text-white">
               Create Invoice
             </h1>
-            <p className="text-wl-text-secondary">
+            <p className="text-gray-400">
               Create and send a new invoice to your customer
             </p>
           </div>
@@ -248,21 +248,21 @@ export default function CreateInvoicePage() {
         {/* Left Column - Form */}
         <div className="col-span-2 space-y-6">
           {/* Customer Selection */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-4">
               Customer
             </h2>
 
             {selectedCustomer ? (
-              <div className="flex items-center justify-between p-4 bg-wl-bg-surface rounded border border-wl-border-subtle">
+              <div className={cn("flex items-center justify-between p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e]")}>
                 <div>
-                  <p className="font-semibold text-wl-text-primary">
+                  <p className="font-semibold text-white">
                     {selectedCustomer.name}
                   </p>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-400">
                     {selectedCustomer.email}
                   </p>
-                  <p className="text-sm text-wl-text-secondary">
+                  <p className="text-sm text-gray-400">
                     {selectedCustomer.address}
                   </p>
                 </div>
@@ -287,39 +287,39 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Billing Dates */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-4">
               Billing Period
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Billing Start Date
                 </label>
                 <input
                   type="date"
                   value={billingStartDate}
                   onChange={(e) => setBillingStartDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-wl-text-primary"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Billing End Date
                 </label>
                 <input
                   type="date"
                   value={billingEndDate}
                   onChange={(e) => setBillingEndDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-wl-text-primary"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
                 />
               </div>
             </div>
           </Card>
 
           {/* Billing Rule */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-4">
               Billing Rule
             </h2>
             <Select
@@ -334,7 +334,7 @@ export default function CreateInvoicePage() {
               <option value="tiered">Tiered Pricing</option>
               <option value="subscription">Subscription</option>
             </Select>
-            <p className="mt-2 text-xs text-wl-text-secondary">
+            <p className="mt-2 text-xs text-gray-400">
               {billingRuleType === "per-delivery" &&
                 "Charge a fixed amount per delivery"}
               {billingRuleType === "per-mile" &&
@@ -351,9 +351,9 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Line Items */}
-          <Card className="p-6">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-wl-text-primary">
+              <h2 className="text-lg font-semibold text-white">
                 Line Items
               </h2>
               <Button variant="secondary" size="sm" onClick={addLineItem}>
@@ -363,7 +363,7 @@ export default function CreateInvoicePage() {
             </div>
 
             {lineItems.length === 0 ? (
-              <div className="text-center py-8 text-wl-text-secondary">
+              <div className="text-center py-8 text-gray-400">
                 <p className="mb-3">No line items yet</p>
                 <Button
                   variant="secondary"
@@ -379,10 +379,10 @@ export default function CreateInvoicePage() {
                 {lineItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex gap-3 p-4 bg-wl-bg-surface rounded border border-wl-border-subtle items-end"
+                    className={cn("flex gap-3 p-4 bg-[#1a1a2e] rounded border border-[#1e1e2e] items-end")}
                   >
                     <div className="flex-1">
-                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
                         Description
                       </label>
                       <input
@@ -396,12 +396,12 @@ export default function CreateInvoicePage() {
                           )
                         }
                         placeholder="Item description"
-                        className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
                       />
                     </div>
 
                     <div className="w-20">
-                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
                         Qty
                       </label>
                       <input
@@ -416,12 +416,12 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
                       />
                     </div>
 
                     <div className="w-24">
-                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
                         Rate
                       </label>
                       <input
@@ -436,15 +436,15 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+                        className="w-full px-3 py-2 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-sm text-white"
                       />
                     </div>
 
                     <div className="w-20 text-right">
-                      <label className="block text-xs font-medium text-wl-text-secondary mb-1">
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
                         Amount
                       </label>
-                      <p className="font-semibold text-wl-text-primary">
+                      <p className="font-semibold text-white">
                         ${(item.quantity * item.rate).toFixed(2)}
                       </p>
                     </div>
@@ -463,8 +463,8 @@ export default function CreateInvoicePage() {
           </Card>
 
           {/* Due Date */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-4">
               Due Date
             </h2>
             <div className="space-y-4">
@@ -492,7 +492,7 @@ export default function CreateInvoicePage() {
                 </Button>
               </div>
               <div>
-                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Custom Date
                 </label>
                 <input
@@ -502,20 +502,20 @@ export default function CreateInvoicePage() {
                     setDueDate(e.target.value);
                     setDueDatePreset("custom");
                   }}
-                  className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-wl-text-primary"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white"
                 />
               </div>
             </div>
           </Card>
 
           {/* Notes & Terms */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
+          <Card className={cn("p-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-4">
               Notes & Terms
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Notes
                 </label>
                 <textarea
@@ -523,11 +523,11 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes for the customer..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-wl-text-secondary mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Terms & Conditions
                 </label>
                 <textarea
@@ -535,7 +535,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setTerms(e.target.value)}
                   placeholder="Add any terms and conditions..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-wl-bg-inverse border border-wl-border-subtle rounded text-sm text-wl-text-primary"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-sm text-white"
                 />
               </div>
             </div>
@@ -545,15 +545,15 @@ export default function CreateInvoicePage() {
         {/* Right Column - Summary */}
         <div className="space-y-6">
           {/* Pricing Summary */}
-          <Card className="p-6 sticky top-6">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-6">
+          <Card className={cn("p-6 sticky top-6 bg-[#12121a] border border-[#1e1e2e]")}>
+            <h2 className="text-lg font-semibold text-white mb-6">
               Invoice Summary
             </h2>
 
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-wl-text-secondary">Subtotal</span>
-                <span className="font-medium text-wl-text-primary">
+                <span className="text-gray-400">Subtotal</span>
+                <span className="font-medium text-white">
                   ${subtotal.toFixed(2)}
                 </span>
               </div>
@@ -561,10 +561,10 @@ export default function CreateInvoicePage() {
               {parseFloat(discountPercentage) > 0 && (
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-wl-text-secondary">
+                    <span className="text-gray-400">
                       Discount ({discountPercentage}%)
                     </span>
-                    <span className="font-medium text-green-600">
+                    <span className="font-medium text-emerald-600">
                       -${discountAmount.toFixed(2)}
                     </span>
                   </div>
@@ -574,14 +574,14 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-wl-bg-inverse border border-wl-border-subtle rounded text-xs text-wl-text-primary"
+                    className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
                   />
                 </div>
               )}
 
               {parseFloat(discountPercentage) === 0 && (
                 <div>
-                  <label className="block text-xs font-medium text-wl-text-secondary mb-2">
+                  <label className="block text-xs font-medium text-gray-400 mb-2">
                     Discount %
                   </label>
                   <input
@@ -590,17 +590,17 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-wl-bg-inverse border border-wl-border-subtle rounded text-xs text-wl-text-primary"
+                    className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
                   />
                 </div>
               )}
 
-              <div className="border-t border-wl-border-subtle pt-3">
+              <div className="border-t border-[#1e1e2e] pt-3">
                 <div className="flex justify-between mb-2">
-                  <span className="text-wl-text-secondary">
+                  <span className="text-gray-400">
                     Tax ({taxRate}%)
                   </span>
-                  <span className="font-medium text-wl-text-primary">
+                  <span className="font-medium text-white">
                     ${taxAmount.toFixed(2)}
                   </span>
                 </div>
@@ -611,16 +611,16 @@ export default function CreateInvoicePage() {
                   step="0.5"
                   value={taxRate}
                   onChange={(e) => setTaxRate(e.target.value)}
-                  className="w-full px-2 py-1 bg-wl-bg-inverse border border-wl-border-subtle rounded text-xs text-wl-text-primary"
+                  className="w-full px-2 py-1 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-xs text-white"
                 />
               </div>
 
-              <div className="border-t-2 border-wl-border-subtle pt-3">
+              <div className="border-t-2 border-[#1e1e2e] pt-3">
                 <div className="flex justify-between">
-                  <span className="font-semibold text-wl-text-primary">
+                  <span className="font-semibold text-white">
                     Total
                   </span>
-                  <span className="text-2xl font-bold text-wl-primary-500">
+                  <span className="text-2xl font-bold text-blue-500">
                     ${total.toFixed(2)}
                   </span>
                 </div>
@@ -646,7 +646,7 @@ export default function CreateInvoicePage() {
             />
 
             {filteredCustomers.length === 0 ? (
-              <p className="text-center py-6 text-wl-text-secondary">
+              <p className="text-center py-6 text-gray-400">
                 No customers found
               </p>
             ) : (
@@ -655,12 +655,12 @@ export default function CreateInvoicePage() {
                   <button
                     key={customer.id}
                     onClick={() => handleSelectCustomer(customer)}
-                    className="w-full text-left p-3 rounded border border-wl-border-subtle hover:bg-wl-bg-surface transition-colors"
+                    className={cn("w-full text-left p-3 rounded border border-[#1e1e2e] hover:bg-[#1a1a2e] transition-colors")}
                   >
-                    <p className="font-medium text-wl-text-primary">
+                    <p className="font-medium text-white">
                       {customer.name}
                     </p>
-                    <p className="text-sm text-wl-text-secondary">
+                    <p className="text-sm text-gray-400">
                       {customer.email}
                     </p>
                   </button>

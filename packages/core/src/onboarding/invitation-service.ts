@@ -44,7 +44,7 @@ export class InvitationService {
     const { orgId, email, role, invitedBy } = input;
 
     // Validate organization exists
-    const org = await (prisma as any).organization.findUnique({
+    const org = await db.organization.findUnique({
       where: { id: orgId },
     });
 
@@ -70,7 +70,7 @@ export class InvitationService {
     }
 
     // Check if user already exists in org
-    const existingMember = await (prisma as any).orgMember.findMany({
+    const existingMember = await db.orgMember.findMany({
       where: {
         orgId,
         user: { email },
@@ -168,7 +168,7 @@ export class InvitationService {
     }
 
     // Create or update OrgMember
-    let orgMember = await (prisma as any).orgMember.findUnique({
+    let orgMember = await db.orgMember.findUnique({
       where: {
         orgId_userId: {
           orgId: invitation.orgId,
@@ -179,7 +179,7 @@ export class InvitationService {
 
     if (orgMember) {
       // Update existing member's role if needed
-      orgMember = await (prisma as any).orgMember.update({
+      orgMember = await db.orgMember.update({
         where: { id: orgMember.id },
         data: {
           role: invitation.role,
@@ -189,7 +189,7 @@ export class InvitationService {
       });
     } else {
       // Create new member
-      orgMember = await (prisma as any).orgMember.create({
+      orgMember = await db.orgMember.create({
         data: {
           orgId: invitation.orgId,
           userId,

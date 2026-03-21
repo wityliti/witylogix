@@ -297,7 +297,7 @@ async function shopifyWorkflowBridgeRoutes(
         );
 
         // Log webhook delivery
-        await (prisma as any).webhookDeliveryLog.create({
+        await db.webhookDeliveryLog.create({
           data: {
             shopId,
             eventType: "shopify.order.created",
@@ -326,7 +326,7 @@ async function shopifyWorkflowBridgeRoutes(
 
         // Log failed delivery
         try {
-          await (prisma as any).webhookDeliveryLog.create({
+          await db.webhookDeliveryLog.create({
             data: {
               shopId,
               eventType: "shopify.order.created",
@@ -472,7 +472,7 @@ async function shopifyWorkflowBridgeRoutes(
         );
 
         // Log webhook delivery
-        await (prisma as any).webhookDeliveryLog.create({
+        await db.webhookDeliveryLog.create({
           data: {
             shopId,
             eventType: "shopify.fulfillment.updated",
@@ -501,7 +501,7 @@ async function shopifyWorkflowBridgeRoutes(
 
         // Log failed delivery
         try {
-          await (prisma as any).webhookDeliveryLog.create({
+          await db.webhookDeliveryLog.create({
             data: {
               shopId,
               eventType: "shopify.fulfillment.updated",

@@ -177,35 +177,35 @@ export default function RoutesPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f]">
         {/* ═══ KPI Stats Row ═══ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 auto-rows-max">
-          <Card className="p-4 bg-wl-bg-elevated border-wl-border-default">
-            <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+          <Card className="p-4 bg-[#12121a] border border-[#1e1e2e]">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Total Routes
             </div>
-            <div className="text-3xl font-bold text-wl-primary-500">{stats.total}</div>
+            <div className="text-3xl font-bold text-blue-500">{stats.total}</div>
           </Card>
 
-          <Card className="p-4 bg-wl-bg-elevated border-wl-border-default">
-            <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+          <Card className="p-4 bg-[#12121a] border border-[#1e1e2e]">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Active Now
             </div>
-            <div className="text-3xl font-bold text-wl-success-400">{stats.active}</div>
+            <div className="text-3xl font-bold text-emerald-500">{stats.active}</div>
           </Card>
 
-          <Card className="p-4 bg-wl-bg-elevated border-wl-border-default">
-            <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+          <Card className="p-4 bg-[#12121a] border border-[#1e1e2e]">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Templates
             </div>
-            <div className="text-3xl font-bold text-wl-info-400">{stats.templates}</div>
+            <div className="text-3xl font-bold text-blue-400">{stats.templates}</div>
           </Card>
 
-          <Card className="p-4 bg-wl-bg-elevated border-wl-border-default">
-            <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+          <Card className="p-4 bg-[#12121a] border border-[#1e1e2e]">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Completed
             </div>
-            <div className="text-3xl font-bold text-wl-warning-400">{stats.completed}</div>
+            <div className="text-3xl font-bold text-amber-500">{stats.completed}</div>
           </Card>
         </div>
 
@@ -220,10 +220,10 @@ export default function RoutesPage() {
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
                 'w-full px-4 py-2 rounded-md text-sm',
-                'bg-wl-bg-surface text-wl-text-primary',
-                'border border-wl-border-default',
-                'placeholder-wl-text-tertiary',
-                'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                'bg-[#12121a] text-white',
+                'border border-[#1e1e2e]',
+                'placeholder-gray-400',
+                'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                 'transition-colors'
               )}
             />
@@ -238,8 +238,8 @@ export default function RoutesPage() {
                 className={cn(
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors border',
                   filter === f
-                    ? 'bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500'
-                    : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong'
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-transparent text-gray-300 border-[#1e1e2e] hover:border-[#2a2a3e]'
                 )}
               >
                 {f === 'all' ? 'All Routes' : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -250,69 +250,69 @@ export default function RoutesPage() {
 
         {/* ═══ Routes Table ═══ */}
         {filtered.length > 0 ? (
-          <Card className="border-wl-border-default overflow-hidden">
+          <Card className="border border-[#1e1e2e] overflow-hidden bg-[#12121a]">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 {/* Header */}
                 <thead>
-                  <tr className="border-b border-wl-border-default bg-wl-bg-surface">
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                  <tr className="border-b border-[#1e1e2e] bg-[#12121a]">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Route Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Stops
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Distance
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Duration
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Driver
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Last Used
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
 
                 {/* Body */}
-                <tbody className="divide-y divide-wl-border-default">
+                <tbody className="divide-y divide-[#1e1e2e]">
                   {filtered.map((route) => (
                     <tr
                       key={route.id}
-                      className="hover:bg-wl-bg-overlay transition-colors"
+                      className="hover:bg-[#1a1a2e] transition-colors"
                     >
                       <td className="px-6 py-4">
                         <Link
                           href={`/routes/${route.id}`}
-                          className="text-wl-primary-400 hover:text-wl-primary-300 font-medium"
+                          className="text-blue-400 hover:text-blue-300 font-medium"
                         >
                           {route.name}
                           {route.isTemplate && (
-                            <span className="ml-2 text-xs text-wl-text-tertiary">
+                            <span className="ml-2 text-xs text-gray-400">
                               (Template)
                             </span>
                           )}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-wl-text-secondary">
+                      <td className="px-6 py-4 text-gray-300">
                         {route.stopsCount}
                       </td>
-                      <td className="px-6 py-4 text-wl-text-secondary font-mono">
+                      <td className="px-6 py-4 text-gray-300 font-mono">
                         {route.totalDistance.toFixed(1)} km
                       </td>
-                      <td className="px-6 py-4 text-wl-text-secondary">
+                      <td className="px-6 py-4 text-gray-300">
                         {formatDuration(route.totalDuration)}
                       </td>
-                      <td className="px-6 py-4 text-wl-text-secondary">
+                      <td className="px-6 py-4 text-gray-300">
                         {route.assignedDriver ?? '—'}
                       </td>
                       <td className="px-6 py-4">
@@ -320,7 +320,7 @@ export default function RoutesPage() {
                           {statusLabel(route.status)}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-wl-text-tertiary text-xs">
+                      <td className="px-6 py-4 text-gray-400 text-xs">
                         {route.lastUsed}
                       </td>
                       <td className="px-6 py-4">
@@ -343,8 +343,8 @@ export default function RoutesPage() {
                               <Send className="w-4 h-4" />
                             </Button>
                           )}
-                          <button className="px-2 py-1 hover:bg-wl-bg-overlay rounded-md transition-colors">
-                            <MoreVertical className="w-4 h-4 text-wl-text-tertiary" />
+                          <button className="px-2 py-1 hover:bg-[#1a1a2e] rounded-md transition-colors">
+                            <MoreVertical className="w-4 h-4 text-gray-400" />
                           </button>
                         </div>
                       </td>
@@ -355,12 +355,12 @@ export default function RoutesPage() {
             </div>
           </Card>
         ) : (
-          <Card className="p-12 bg-wl-bg-surface border border-dashed border-wl-border-default text-center">
-            <div className="text-wl-text-tertiary mb-3">📍</div>
-            <div className="text-lg font-semibold text-wl-text-secondary mb-1">
+          <Card className="p-12 bg-[#12121a] border border-dashed border-[#1e1e2e] text-center">
+            <div className="text-gray-400 mb-3">📍</div>
+            <div className="text-lg font-semibold text-gray-300 mb-1">
               No routes found
             </div>
-            <div className="text-sm text-wl-text-tertiary mb-6">
+            <div className="text-sm text-gray-400 mb-6">
               {search
                 ? 'Try adjusting your search criteria'
                 : 'Start by creating a new route'}

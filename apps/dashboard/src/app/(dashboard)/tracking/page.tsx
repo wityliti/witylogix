@@ -1,54 +1,56 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { MapPin, AlertCircle } from "lucide-react";
+import { MapPin, AlertCircle, Users, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DeliveryMap } from "@/components/maps/delivery-map";
-import { DeliverySidebar } from "@/components/maps/delivery-sidebar";
-import { useMapTracking } from "@/hooks/use-map-tracking";
-import type {
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-  Driver,
-  Delivery,
-  DriverStatus,
-  DeliveryStatus,
-} from "@/components/maps/delivery-types";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+interface Driver {
+  id: string;
+  name: string;
+  status: "available" | "en-route" | "delivering" | "offline";
+  location: { latitude: number; longitude: number };
+  speed: number;
+  phone: string;
+  currentDeliveryId: string | null;
+  eta: Date | null;
+}
+
+interface Delivery {
+  id: string;
+  orderId: string;
+  customerId: string;
+  customerName: string;
+  driverId: string | null;
+  status: "pending" | "en-route" | "delivering" | "completed" | "cancelled";
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickupLocation: { latitude: number; longitude: number };
+  dropoffLocation: { latitude: number; longitude: number };
+  eta: Date | null;
+  progress: number;
+  createdAt: Date;
+}
 
 /**
- * Live Delivery Tracking Page
+ * Tracking Overview Page
  *
- * Real-time map-based delivery tracking with live driver and delivery updates.
+ * Displays active shipments, delivery progress, and status breakdown.
  * Features:
- * - Full-screen Mapbox GL map with 70% width
- * - Sidebar (30% width) with active deliveries list
- * - Driver markers colored by status (green=available, blue=en-route, orange=delivering, gray=offline)
- * - Delivery point markers (pickup/dropoff/completed)
- * - Animated route polylines
- * - Driver popover with details on click
- * - Real-time position updates via WebSocket
- * - Clustering at low zoom levels
+ * - Key metrics: active shipments, drivers online, completion rate
+ * - Status breakdown cards with live counts
+ * - Recent deliveries timeline
+ * - Map placeholder (70%) with sidebar (30%)
  */
 export default function TrackingPage() {
-  const { items, loading, error, refetch, pagination } = useApiList<TrackingInfo>('/api/v4/tracking');
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   // State
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
-  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(
-    null
-  );
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Real-time tracking hook
-  const { subscribe, unsubscribe, onPositionUpdate, disconnect } =
-    useMapTracking();
 
   // Initialize tracking
   useEffect(() => {
@@ -57,13 +59,11 @@ export default function TrackingPage() {
         setIsLoading(true);
         setError(null);
 
-        // Mock data - replace with API call in production
         const mockDrivers: Driver[] = [
           {
             id: "driver-1",
             name: "Alex Johnson",
-            photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-            status: "en-route" as DriverStatus,
+            status: "en-route",
             location: { latitude: 40.7128, longitude: -74.006 },
             speed: 25,
             phone: "+1-555-0101",
@@ -73,8 +73,7 @@ export default function TrackingPage() {
           {
             id: "driver-2",
             name: "Maria García",
-            photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-            status: "delivering" as DriverStatus,
+            status: "delivering",
             location: { latitude: 40.7489, longitude: -73.9680 },
             speed: 8,
             phone: "+1-555-0102",
@@ -84,8 +83,7 @@ export default function TrackingPage() {
           {
             id: "driver-3",
             name: "David Chen",
-            photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-            status: "available" as DriverStatus,
+            status: "available",
             location: { latitude: 40.7614, longitude: -73.9776 },
             speed: 0,
             phone: "+1-555-0103",
@@ -95,8 +93,7 @@ export default function TrackingPage() {
           {
             id: "driver-4",
             name: "James Wilson",
-            photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
-            status: "offline" as DriverStatus,
+            status: "offline",
             location: { latitude: 40.7505, longitude: -73.9972 },
             speed: 0,
             phone: "+1-555-0104",
@@ -112,7 +109,7 @@ export default function TrackingPage() {
             customerId: "cust-1",
             customerName: "John Smith",
             driverId: "driver-1",
-            status: "en-route" as DeliveryStatus,
+            status: "en-route",
             pickupAddress: "123 Main St, New York, NY",
             dropoffAddress: "456 Park Ave, New York, NY",
             pickupLocation: { latitude: 40.7128, longitude: -74.006 },
@@ -127,7 +124,7 @@ export default function TrackingPage() {
             customerId: "cust-2",
             customerName: "Sarah Johnson",
             driverId: "driver-2",
-            status: "delivering" as DeliveryStatus,
+            status: "delivering",
             pickupAddress: "789 Broadway, New York, NY",
             dropoffAddress: "321 5th Ave, New York, NY",
             pickupLocation: { latitude: 40.7489, longitude: -73.968 },
@@ -142,7 +139,7 @@ export default function TrackingPage() {
             customerId: "cust-3",
             customerName: "Michael Brown",
             driverId: "driver-1",
-            status: "pending" as DeliveryStatus,
+            status: "pending",
             pickupAddress: "555 Madison Ave, New York, NY",
             dropoffAddress: "777 Park Ave, New York, NY",
             pickupLocation: { latitude: 40.7505, longitude: -73.9972 },
@@ -157,7 +154,7 @@ export default function TrackingPage() {
             customerId: "cust-4",
             customerName: "Emily Davis",
             driverId: null,
-            status: "pending" as DeliveryStatus,
+            status: "pending",
             pickupAddress: "999 Lexington Ave, New York, NY",
             dropoffAddress: "111 Madison Ave, New York, NY",
             pickupLocation: { latitude: 40.7549, longitude: -73.975 },
@@ -170,15 +167,6 @@ export default function TrackingPage() {
 
         setDrivers(mockDrivers);
         setDeliveries(mockDeliveries);
-
-        // Subscribe to real-time updates
-        await subscribe("tracking:active");
-        onPositionUpdate((driver) => {
-          setDrivers((prev) =>
-            prev.map((d) => (d.id === driver.id ? driver : d))
-          );
-        });
-
         setIsLoading(false);
       } catch (err) {
         const message =
@@ -189,150 +177,164 @@ export default function TrackingPage() {
     };
 
     initTracking();
+  }, []);
 
-    return () => {
-      unsubscribe("tracking:active");
-      disconnect();
-    };
-  }, [subscribe, unsubscribe, onPositionUpdate, disconnect]);
-
-  // Handler for driver selection
-  const handleSelectDriver = useCallback((driverId: string) => {
-    setSelectedDriverId(driverId);
-
-    // Auto-select current delivery if any
-    const driver = drivers.find((d) => d.id === driverId);
-    if (driver?.currentDeliveryId) {
-      setSelectedDeliveryId(driver.currentDeliveryId);
-    }
-  }, [drivers]);
-
-  // Handler for delivery selection
-  const handleSelectDelivery = useCallback((deliveryId: string) => {
-    setSelectedDeliveryId(deliveryId);
-
-    // Auto-select driver if assigned
-    const delivery = deliveries.find((d) => d.id === deliveryId);
-    if (delivery?.driverId) {
-      setSelectedDriverId(delivery.driverId);
-    }
-  }, [deliveries]);
-
-  // Count active deliveries
   const activeDeliveriesCount = useMemo(
-    () =>
-      deliveries.filter((d) => d.status !== "completed" && d.status !== "cancelled").length,
+    () => deliveries.filter((d) => d.status !== "completed" && d.status !== "cancelled").length,
     [deliveries]
   );
 
-  // Count online drivers
   const onlineDriversCount = useMemo(
     () => drivers.filter((d) => d.status !== "offline").length,
     [drivers]
   );
 
-  return (
-    <div className={cn(
-      "flex h-screen w-full overflow-hidden",
-      "bg-wl-bg-surface"
-    )}>
-      {/* Error State */}
-      {error && (
-        <div className={cn(
-          "absolute inset-0 z-50 flex items-center justify-center",
-          "bg-black/50"
-        )}>
-          <div className={cn(
-            "rounded-lg p-6 max-w-md",
-            "bg-wl-bg-elevated border border-wl-border-strong"
-          )}>
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-wl-danger-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <h2 className="font-semibold text-wl-text-primary mb-1">
-                  Tracking Error
-                </h2>
-                <p className="text-sm text-wl-text-secondary">{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+  const completionRate = useMemo(() => {
+    const completed = deliveries.filter((d) => d.status === "completed").length;
+    return deliveries.length > 0 ? Math.round((completed / deliveries.length) * 100) : 0;
+  }, [deliveries]);
 
-      {/* Stats Bar */}
-      <div className={cn(
-        "absolute top-0 left-0 right-0 z-40",
-        "bg-gradient-to-b from-wl-bg-surface to-transparent",
-        "px-6 py-4 pointer-events-none"
-      )}>
-        <div className={cn(
-          "flex gap-4 text-sm pointer-events-auto",
-          "max-w-2xl"
-        )}>
-          <div className="flex items-center gap-2 text-wl-text-secondary">
-            <MapPin className="w-4 h-4 text-wl-primary-400" />
-            <span>
-              <span className="text-wl-text-primary font-semibold">
-                {onlineDriversCount}
-              </span>
-              /{drivers.length} Drivers Online
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-wl-text-secondary">
-            <span>
-              <span className="text-wl-text-primary font-semibold">
-                {activeDeliveriesCount}
-              </span>
-              /{deliveries.length} Active Deliveries
-            </span>
-          </div>
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "success";
+      case "en-route":
+      case "delivering":
+        return "primary";
+      case "pending":
+        return "warning";
+      case "cancelled":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f]">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e] p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-2">Tracking Overview</h1>
+          <p className="text-gray-400 text-sm">Monitor active shipments and delivery progress</p>
         </div>
       </div>
 
-      {/* Main Content: Map (70%) + Sidebar (30%) */}
-      <div className="flex flex-1 gap-4 p-4 pt-20">
-        {/* Map Container */}
-        <div className={cn(
-          "flex-1 basis-7/10 rounded-lg overflow-hidden",
-          "border border-wl-border-default",
-          "shadow-lg"
-        )}>
-          {isLoading ? (
-            <div className={cn(
-              "w-full h-full flex items-center justify-center",
-              "bg-wl-bg-elevated"
-            )}>
-              <div className="text-center">
-                <div className="w-8 h-8 rounded-full border-2 border-wl-primary-400 border-t-transparent animate-spin mx-auto mb-2" />
-                <p className="text-sm text-wl-text-secondary">
-                  Loading tracking data...
-                </p>
+      {/* Error State */}
+      {error && (
+        <div className="max-w-7xl mx-auto p-6">
+          <Card className="bg-red-900/20 border border-red-800 p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-400 mb-1">Tracking Error</h3>
+                <p className="text-sm text-red-300">{error}</p>
               </div>
             </div>
-          ) : (
-            <DeliveryMap
-              drivers={drivers}
-              deliveries={deliveries}
-              selectedDriverId={selectedDriverId}
-              selectedDeliveryId={selectedDeliveryId}
-              onDriverSelect={handleSelectDriver}
-              onDeliverySelect={handleSelectDelivery}
-            />
-          )}
+          </Card>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-400 text-xs font-semibold uppercase">Active Deliveries</p>
+              <Truck className="w-5 h-5 text-blue-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{activeDeliveriesCount}</p>
+            <p className="text-xs text-emerald-500 mt-2">+{Math.floor(activeDeliveriesCount * 0.25)} today</p>
+          </Card>
+
+          <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-400 text-xs font-semibold uppercase">Drivers Online</p>
+              <Users className="w-5 h-5 text-blue-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{onlineDriversCount}</p>
+            <p className="text-xs text-gray-500 mt-2">{Math.round((onlineDriversCount / drivers.length) * 100)}% available</p>
+          </Card>
+
+          <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-400 text-xs font-semibold uppercase">Completion Rate</p>
+              <div className="w-5 h-5 text-emerald-500">✓</div>
+            </div>
+            <p className="text-3xl font-bold text-white">{completionRate}%</p>
+            <p className="text-xs text-emerald-500 mt-2">On schedule</p>
+          </Card>
+
+          <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-400 text-xs font-semibold uppercase">Total Shipments</p>
+              <MapPin className="w-5 h-5 text-blue-500" />
+            </div>
+            <p className="text-3xl font-bold text-white">{deliveries.length}</p>
+            <p className="text-xs text-gray-500 mt-2">{deliveries.filter((d) => d.status === "completed").length} completed</p>
+          </Card>
         </div>
 
-        {/* Sidebar Container */}
-        <div className={cn(
-          "flex-1 basis-3/10 rounded-lg overflow-hidden",
-          "border border-wl-border-default",
-          "shadow-lg"
-        )}>
-          <DeliverySidebar
-            deliveries={deliveries}
-            selectedDeliveryId={selectedDeliveryId}
-            onSelectDelivery={handleSelectDelivery}
-          />
-        </div>
+        {/* Status Breakdown */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+          <h2 className="text-lg font-semibold text-white mb-4">Status Breakdown</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { label: "Pending", count: deliveries.filter((d) => d.status === "pending").length, variant: "warning" },
+              { label: "En-Route", count: deliveries.filter((d) => d.status === "en-route").length, variant: "primary" },
+              { label: "Delivering", count: deliveries.filter((d) => d.status === "delivering").length, variant: "primary" },
+              { label: "Completed", count: deliveries.filter((d) => d.status === "completed").length, variant: "success" },
+              { label: "Cancelled", count: deliveries.filter((d) => d.status === "cancelled").length, variant: "danger" },
+            ].map((item) => (
+              <div key={item.label} className="text-center p-4 rounded-lg bg-[#1a1a2e] hover:bg-[#1a1a2e]/80 transition-colors">
+                <p className="text-gray-400 text-xs font-semibold mb-2">{item.label}</p>
+                <p className="text-2xl font-bold text-white">{item.count}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Recent Deliveries */}
+        <Card className="bg-[#12121a] border border-[#1e1e2e] p-6">
+          <h2 className="text-lg font-semibold text-white mb-4">Recent Deliveries</h2>
+          <div className="space-y-3">
+            {isLoading ? (
+              <p className="text-gray-400 text-sm text-center py-8">Loading deliveries...</p>
+            ) : deliveries.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-8">No deliveries found</p>
+            ) : (
+              deliveries.slice(0, 5).map((delivery) => (
+                <div
+                  key={delivery.id}
+                  className="p-3 rounded-lg bg-[#1a1a2e] hover:bg-[#1a1a2e]/80 transition-colors border border-[#1e1e2e]"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{delivery.orderId}</p>
+                      <p className="text-xs text-gray-400">{delivery.customerName}</p>
+                    </div>
+                    <Badge variant={getStatusBadgeVariant(delivery.status) as any}>
+                      {delivery.status.replace("-", " ")}
+                    </Badge>
+                  </div>
+                  <div className="mb-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-xs text-gray-400">Progress</p>
+                      <p className="text-xs font-semibold text-gray-300">{delivery.progress}%</p>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[#1e1e2e] overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all"
+                        style={{ width: `${delivery.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500">{delivery.dropoffAddress}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

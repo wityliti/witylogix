@@ -120,25 +120,25 @@ export default function CreateOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg p-5 text-wl-text">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       <div className="mb-8">
-        <div className="text-4xl font-bold mb-2 text-wl-text">Create Order</div>
-        <div className="text-sm text-wl-muted">Create and manage new orders with customer and delivery information</div>
+        <h1 className="text-4xl font-bold mb-2">Create Order</h1>
+        <p className="text-sm text-gray-400">Create and manage new orders with customer and delivery information</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-5">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-6">
         {/* Customer Section */}
-        <div className="bg-wl-surface border border-wl-border rounded p-5">
-          <div className="text-base font-semibold mb-4 text-wl-text">Customer Information</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+          <h3 className="text-base font-semibold mb-4 text-white">Customer Information</h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-2">Customer Type</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Customer Type</label>
             <div className="flex gap-5 mb-4">
               {[
                 { checked: isNewCustomer, label: 'New Customer' },
                 { checked: !isNewCustomer, label: 'Existing Customer' }
               ].map((opt, idx) => (
-                <label key={idx} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={idx} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
                   <input
                     type="radio"
                     checked={opt.checked}
@@ -152,27 +152,27 @@ export default function CreateOrderPage() {
 
           {!isNewCustomer ? (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-wl-text mb-1.5">Search Customer</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Search Customer</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Search by name or email..."
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
               />
               {customerSearch && (
-                <div className="absolute bg-wl-surface border border-wl-border rounded mt-1 z-10 max-h-52 overflow-y-auto">
+                <div className="absolute bg-[#12121a] border border-[#1e1e2e] rounded mt-1 z-10 max-h-52 overflow-y-auto">
                   {filteredCustomers.map(c => (
                     <div
                       key={c.id}
-                      className="p-3 cursor-pointer border-b border-wl-border hover:bg-wl-bg text-sm"
+                      className="p-3 cursor-pointer border-b border-[#1e1e2e] hover:bg-[#0a0a0f] text-sm text-gray-300"
                       onClick={() => {
                         setCustomer(c);
                         setCustomerSearch('');
                       }}
                     >
-                      <div className="font-medium">{c.name}</div>
-                      <div className="text-xs text-wl-muted">{c.email}</div>
+                      <p className="font-medium text-white">{c.name}</p>
+                      <p className="text-xs text-gray-400">{c.email}</p>
                     </div>
                   ))}
                 </div>
@@ -181,10 +181,10 @@ export default function CreateOrderPage() {
           ) : null}
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Full Name *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter customer name"
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
@@ -192,10 +192,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Email *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
             <input
               type="email"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="customer@example.com"
               value={customer.email}
               onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
@@ -203,10 +203,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone Number</label>
             <input
               type="tel"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="+91-9876543210"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
@@ -215,26 +215,26 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Address */}
-        <div className="bg-wl-surface border border-wl-border rounded p-5">
-          <div className="text-base font-semibold mb-4 text-wl-text">Delivery Address</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+          <h3 className="text-base font-semibold mb-4 text-white">Delivery Address</h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Street Address *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Street Address *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter street address"
               value={address.street}
               onChange={(e) => setAddress({ ...address, street: e.target.value })}
             />
-            <div className="text-xs text-wl-muted mt-1">Address autocomplete placeholder</div>
+            <p className="text-xs text-gray-400 mt-1">Address autocomplete placeholder</p>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">City *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">City *</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter city"
               value={address.city}
               onChange={(e) => setAddress({ ...address, city: e.target.value })}
@@ -243,10 +243,10 @@ export default function CreateOrderPage() {
 
           <div className="grid grid-cols-2 gap-2.5">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-wl-text mb-1.5">State *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">State *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter state"
                 value={address.state}
                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
@@ -254,10 +254,10 @@ export default function CreateOrderPage() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-wl-text mb-1.5">Zip Code *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Zip Code *</label>
               <input
                 type="text"
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter zip code"
                 value={address.zip}
                 onChange={(e) => setAddress({ ...address, zip: e.target.value })}
@@ -267,23 +267,23 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Delivery Preferences */}
-        <div className="bg-wl-surface border border-wl-border rounded p-5">
-          <div className="text-base font-semibold mb-4 text-wl-text">Delivery Preferences</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+          <h3 className="text-base font-semibold mb-4 text-white">Delivery Preferences</h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Preferred Delivery Date</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Preferred Delivery Date</label>
             <input
               type="date"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={deliveryDate}
               onChange={(e) => setDeliveryDate(e.target.value)}
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Time Slot</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Time Slot</label>
             <select
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={timeSlot}
               onChange={(e) => setTimeSlot(e.target.value)}
             >
@@ -295,9 +295,9 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Delivery Notes</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Delivery Notes</label>
             <textarea
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm min-h-20 font-inherit box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-blue-500"
               placeholder="Add special delivery instructions..."
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
@@ -306,14 +306,14 @@ export default function CreateOrderPage() {
         </div>
 
         {/* Payment & Priority */}
-        <div className="bg-wl-surface border border-wl-border rounded p-5">
-          <div className="text-base font-semibold mb-4 text-wl-text">Payment & Priority</div>
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6">
+          <h3 className="text-base font-semibold mb-4 text-white">Payment & Priority</h3>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-wl-text mb-2.5">Payment Method</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2.5">Payment Method</label>
             <div className="flex flex-col gap-2.5">
               {['cod', 'prepaid', 'invoice'].map(method => (
-                <label key={method} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={method} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
                   <input
                     type="radio"
                     checked={paymentMethod === method}
@@ -326,7 +326,7 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-wl-text mb-2.5">Priority</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2.5">Priority</label>
             <div className="flex gap-2.5 flex-wrap mb-2.5">
               {['normal', 'express', 'same-day'].map(pri => (
                 <button
@@ -335,8 +335,8 @@ export default function CreateOrderPage() {
                   className={cn(
                     'px-4 py-2 rounded border text-sm font-semibold transition-all',
                     priority === pri
-                      ? 'bg-wl-primary text-white border-wl-primary'
-                      : 'bg-transparent text-wl-primary border-wl-primary'
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-transparent text-blue-500 border-blue-500'
                   )}
                 >
                   {pri === 'normal' ? 'Normal' : pri === 'express' ? 'Express' : 'Same Day'}
@@ -352,10 +352,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Tags (comma-separated)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Tags (comma-separated)</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="e.g., VIP, Fragile, Gift Wrap"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -365,15 +365,15 @@ export default function CreateOrderPage() {
       </div>
 
       {/* Line Items Section */}
-      <div className="bg-wl-surface border border-wl-border rounded p-5 mb-5">
-        <div className="text-base font-semibold mb-4 text-wl-text">Line Items</div>
+      <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-6 mb-6">
+        <h3 className="text-base font-semibold mb-4 text-white">Line Items</h3>
 
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] gap-2.5 mb-4">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Product Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Product Name</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Search product..."
               value={newLineItem.productName}
               onChange={(e) => {
@@ -395,10 +395,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">SKU</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">SKU</label>
             <input
               type="text"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-400 text-sm box-border"
               placeholder="SKU"
               value={newLineItem.sku}
               readOnly
@@ -406,10 +406,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Quantity</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Quantity</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="1"
               value={newLineItem.quantity}
               onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) })}
@@ -417,10 +417,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">Unit Price</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Unit Price</label>
             <input
               type="number"
-              className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+              className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="0"
               value={newLineItem.unitPrice}
               onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) })}
@@ -428,10 +428,10 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-wl-text mb-1.5">&nbsp;</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">&nbsp;</label>
             <button
               onClick={addLineItem}
-              className="w-full px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
+              className="w-full px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
             >
               Add
             </button>
@@ -443,7 +443,7 @@ export default function CreateOrderPage() {
             <thead>
               <tr>
                 {['Product', 'SKU', 'Qty', 'Unit Price', 'Total', 'Action'].map(h => (
-                  <th key={h} className="bg-wl-bg border-b border-wl-border p-3 text-left text-xs font-semibold text-wl-muted">
+                  <th key={h} className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">
                     {h}
                   </th>
                 ))}
@@ -452,15 +452,15 @@ export default function CreateOrderPage() {
             <tbody>
               {lineItems.map(item => (
                 <tr key={item.id}>
-                  <td className="border-b border-wl-border p-3 text-sm">{item.productName}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">{item.sku}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">{item.quantity}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">₹{item.unitPrice.toLocaleString()}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">₹{item.total.toLocaleString()}</td>
-                  <td className="border-b border-wl-border p-3 text-sm">
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.productName}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.sku}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{item.quantity}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.unitPrice.toLocaleString()}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{item.total.toLocaleString()}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm">
                     <button
                       onClick={() => removeLineItem(item.id)}
-                      className="px-2.5 py-1.5 rounded bg-red-400 text-white font-semibold text-xs transition-all"
+                      className="px-2.5 py-1.5 rounded bg-red-500 text-white font-semibold text-xs transition-all hover:bg-red-600"
                     >
                       Remove
                     </button>
@@ -472,18 +472,18 @@ export default function CreateOrderPage() {
         )}
 
         {/* Order Totals */}
-        <div className="border-t border-wl-border pt-4">
-          <div className="flex justify-between py-2 text-sm">
+        <div className="border-t border-[#1e1e2e] pt-4">
+          <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Subtotal:</span>
             <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-5 mb-4 mt-4">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-wl-text mb-1.5">Tax (%)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Tax (%)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 min="0"
                 max="100"
                 value={tax}
@@ -491,10 +491,10 @@ export default function CreateOrderPage() {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-wl-text mb-1.5">Discount (₹)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Discount (₹)</label>
               <input
                 type="number"
-                className="w-full px-3 py-2.5 bg-wl-bg border border-wl-border rounded text-wl-text text-sm box-border"
+                className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 min="0"
                 value={discount}
                 onChange={(e) => setDiscount(parseFloat(e.target.value))}
@@ -502,22 +502,22 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
-          <div className="flex justify-between py-2 text-sm">
+          <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Tax ({tax}%):</span>
             <span className="font-semibold">₹{taxAmount.toLocaleString()}</span>
           </div>
 
-          <div className="flex justify-between py-2 text-sm">
+          <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Shipping:</span>
             <span className="font-semibold">₹{shipping.toLocaleString()}</span>
           </div>
 
-          <div className="flex justify-between py-2 text-sm">
+          <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Discount:</span>
             <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
           </div>
 
-          <div className="flex justify-between py-4 border-t border-wl-border text-base font-bold text-wl-primary">
+          <div className="flex justify-between py-4 border-t border-[#1e1e2e] text-base font-bold text-blue-500">
             <span>Total Amount:</span>
             <span>₹{total.toLocaleString()}</span>
           </div>
@@ -526,13 +526,13 @@ export default function CreateOrderPage() {
         <div className="flex gap-2.5 mt-5">
           <button
             onClick={handleCreateOrder}
-            className="flex-1 px-4 py-2.5 rounded bg-wl-primary text-white font-semibold text-sm transition-all"
+            className="flex-1 px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
           >
             Create Order
           </button>
           <button
             onClick={handleSaveDraft}
-            className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-primary font-semibold text-sm border border-wl-primary transition-all"
+            className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
           >
             Save as Draft
           </button>

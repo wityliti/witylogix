@@ -46,7 +46,7 @@ export default function RouteDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-wl-bg p-6">
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
         <LoadingSkeleton />
       </div>
     );
@@ -54,7 +54,7 @@ export default function RouteDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-wl-bg p-6">
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
         <ErrorState error={error} onRetry={refetch} />
       </div>
     );
@@ -62,8 +62,8 @@ export default function RouteDetailPage() {
 
   if (!route) {
     return (
-      <div className="min-h-screen bg-wl-bg p-6">
-        <div className="text-center text-wl-muted">Route not found</div>
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
+        <div className="text-center text-gray-400">Route not found</div>
       </div>
     );
   }
@@ -109,11 +109,11 @@ export default function RouteDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       <div className="mb-8 flex justify-between items-start">
         <div className="flex-1">
-          <h1 className="text-4xl font-bold text-wl-text mb-2">{route.name}</h1>
-          <div className="flex gap-4 mt-2 text-sm text-wl-muted">
+          <h1 className="text-4xl font-bold text-white mb-2">{route.name}</h1>
+          <div className="flex gap-4 mt-2 text-sm text-gray-400">
             <div className="flex items-center gap-1.5">
               <Badge variant="default">{route.status}</Badge>
               {route.date}
@@ -128,12 +128,12 @@ export default function RouteDetailPage() {
 
       <div className="grid grid-cols-[2fr_1fr] gap-6 mb-6">
         <div>
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Route Map</CardTitle>
+              <CardTitle className="text-white">Route Map</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="w-full h-96 bg-wl-surface border border-wl-border rounded-lg flex items-center justify-center relative overflow-hidden">
+              <div className="w-full h-96 bg-[#12121a] border border-[#1e1e2e] rounded-lg flex items-center justify-center relative overflow-hidden">
                 <svg
                   width="100%"
                   height="100%"
@@ -205,33 +205,33 @@ export default function RouteDetailPage() {
                     Driver
                   </text>
                 </svg>
-                <div className="absolute bottom-4 right-4 text-xs text-wl-muted">
+                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
                   Lat: {route.currentLocation.lat}, Lng: {route.currentLocation.lng}
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6 bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Route Progress Timeline</CardTitle>
+              <CardTitle className="text-white">Route Progress Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="relative pl-8">
                 {route.stops.map((stop, idx) => (
-                  <div key={stop.id} className={cn("mb-5 pb-5", idx < route.stops.length - 1 && "border-b border-wl-border")}>
+                  <div key={stop.id} className={cn("mb-5 pb-5", idx < route.stops.length - 1 && "border-b border-[#1e1e2e]")}>
                     {idx < route.stops.length - 1 && (
-                      <div className="absolute left-2 top-5 w-1 bg-wl-border" style={{ height: "calc(100% + 20px)" }} />
+                      <div className="absolute left-2 top-5 w-1 bg-[#1e1e2e]" style={{ height: "calc(100% + 20px)" }} />
                     )}
                     <div
-                      className="absolute left-0 top-0 w-5 h-5 rounded-full bg-wl-primary border-4 border-wl-surface flex items-center justify-center"
+                      className="absolute left-0 top-0 w-5 h-5 rounded-full bg-blue-500 border-4 border-[#0a0a0f] flex items-center justify-center"
                       style={{ backgroundColor: getStatusColor(stop.status) }}
                     />
                     <div className="pt-1">
-                      <div className="text-xs text-wl-muted">{stop.eta}</div>
-                      <div className="text-sm font-semibold text-wl-text mt-1">{stop.orderId}</div>
-                      <div className="text-xs text-wl-muted mt-1">{stop.address}</div>
-                      <div className="flex gap-3 mt-1 text-xs text-wl-muted">
+                      <div className="text-xs text-gray-400">{stop.eta}</div>
+                      <div className="text-sm font-semibold text-white mt-1">{stop.orderId}</div>
+                      <div className="text-xs text-gray-400 mt-1">{stop.address}</div>
+                      <div className="flex gap-3 mt-1 text-xs text-gray-400">
                         <span>ETA: {stop.eta}</span>
                         {stop.actualTime && <span>Arrived: {stop.actualTime}</span>}
                         {stop.completedAt && <span>Completed: {stop.completedAt}</span>}
@@ -245,42 +245,42 @@ export default function RouteDetailPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Route Statistics</CardTitle>
+              <CardTitle className="text-white">Route Statistics</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
-                  <div className="text-xl font-bold text-wl-primary mb-1">
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="text-xl font-bold text-blue-500 mb-1">
                     {completedStops}/{totalStops}
                   </div>
-                  <div className="text-xs text-wl-muted">Stops Completed</div>
+                  <div className="text-xs text-gray-400">Stops Completed</div>
                 </div>
-                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
-                  <div className="text-xl font-bold text-wl-primary mb-1">{onTimePercent}%</div>
-                  <div className="text-xs text-wl-muted">On-Time Deliveries</div>
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="text-xl font-bold text-blue-500 mb-1">{onTimePercent}%</div>
+                  <div className="text-xs text-gray-400">On-Time Deliveries</div>
                 </div>
-                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
-                  <div className="text-xl font-bold text-wl-primary mb-1">12min</div>
-                  <div className="text-xs text-wl-muted">Avg Stop Time</div>
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="text-xl font-bold text-blue-500 mb-1">12min</div>
+                  <div className="text-xs text-gray-400">Avg Stop Time</div>
                 </div>
-                <div className="p-3 rounded-md bg-wl-bg border border-wl-border text-center">
-                  <div className="text-xl font-bold text-wl-primary mb-1">18.5km</div>
-                  <div className="text-xs text-wl-muted">Total Distance</div>
+                <div className="p-3 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-center">
+                  <div className="text-xl font-bold text-blue-500 mb-1">18.5km</div>
+                  <div className="text-xs text-gray-400">Total Distance</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Driver Information</CardTitle>
+              <CardTitle className="text-white">Driver Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="p-3 rounded-md bg-wl-surface border border-wl-border">
-                <div className="text-sm font-semibold text-wl-text mb-2">{route.driver.name}</div>
-                <div className="flex flex-col gap-1.5 text-xs text-wl-muted">
+              <div className="p-3 rounded-md bg-[#12121a] border border-[#1e1e2e]">
+                <div className="text-sm font-semibold text-white mb-2">{route.driver.name}</div>
+                <div className="flex flex-col gap-1.5 text-xs text-gray-400">
                   <div>
                     <strong>Phone:</strong> {route.driver.phone}
                   </div>
@@ -300,9 +300,9 @@ export default function RouteDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#12121a] border border-[#1e1e2e]">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-white">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
@@ -324,9 +324,9 @@ export default function RouteDetailPage() {
         </div>
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-6 bg-[#12121a] border border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle>Stop Details</CardTitle>
+          <CardTitle className="text-white">Stop Details</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2">
@@ -334,8 +334,8 @@ export default function RouteDetailPage() {
               <div
                 key={stop.id}
                 className={cn(
-                  "p-4 rounded-md bg-wl-surface border flex items-center gap-3 transition-all",
-                  stop.status === "ARRIVED" ? "border-wl-primary" : "border-wl-border"
+                  "p-4 rounded-md bg-[#12121a] border flex items-center gap-3 transition-all",
+                  stop.status === "ARRIVED" ? "border-blue-500" : "border-[#1e1e2e]"
                 )}
               >
                 <div
@@ -345,17 +345,17 @@ export default function RouteDetailPage() {
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
                     <div>
-                      <span className="text-wl-text font-semibold text-sm">
+                      <span className="text-white font-semibold text-sm">
                         {idx + 1}. {stop.orderId}
                       </span>
                       <Badge className="ml-2">{stop.status}</Badge>
                     </div>
                     <Badge>{stop.priority.toUpperCase()}</Badge>
                   </div>
-                  <p className="text-wl-muted text-xs my-1">
+                  <p className="text-gray-400 text-xs my-1">
                     {stop.address}
                   </p>
-                  <div className="flex gap-4 text-xs text-wl-muted">
+                  <div className="flex gap-4 text-xs text-gray-400">
                     <span>Window: {stop.timeWindow.start} - {stop.timeWindow.end}</span>
                     <span>ETA: {stop.eta}</span>
                     {stop.actualTime && <span>Arrived: {stop.actualTime}</span>}

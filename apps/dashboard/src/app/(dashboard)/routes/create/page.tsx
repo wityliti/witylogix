@@ -172,10 +172,10 @@ export default function CreateRoutePage() {
         : true;
 
   return (
-    <div className="min-h-screen bg-wl-bg p-6 text-wl-text">
+    <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-wl-text mb-2">Create New Route</h1>
-        <p className="text-sm text-wl-muted">Set up a new delivery route with multiple stops</p>
+        <h1 className="text-4xl font-bold text-white mb-2">Create New Route</h1>
+        <p className="text-sm text-gray-400">Set up a new delivery route with multiple stops</p>
       </div>
 
       <div className="flex gap-3 mb-8 max-w-4xl">
@@ -185,10 +185,10 @@ export default function CreateRoutePage() {
             className={cn(
               "flex-1 p-3 rounded-lg border text-center text-sm font-semibold cursor-pointer transition-all",
               step === idx + 1
-                ? "bg-wl-primary text-white border-wl-primary"
+                ? "bg-blue-500 text-white border-blue-500"
                 : step > idx + 1
-                  ? "bg-wl-surface text-wl-muted border-wl-border"
-                  : "bg-wl-surface text-wl-muted border-wl-border"
+                  ? "bg-[#12121a] text-gray-400 border-[#1e1e2e]"
+                  : "bg-[#12121a] text-gray-400 border-[#1e1e2e]"
             )}
             onClick={() => step > idx + 1 && setStep(idx + 1)}
           >
@@ -197,9 +197,9 @@ export default function CreateRoutePage() {
         ))}
       </div>
 
-      <Card className="max-w-4xl mb-6">
+      <Card className="max-w-4xl mb-6 bg-[#12121a] border border-[#1e1e2e]">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-white">
             Step {step}:{" "}
             {step === 1
               ? "Route Basics"
@@ -215,35 +215,35 @@ export default function CreateRoutePage() {
             <div className="max-w-4xl">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-wl-text text-sm font-semibold mb-2">Route Name</label>
+                  <label className="block text-white text-sm font-semibold mb-2">Route Name</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., Downtown Delivery Route A"
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   />
                 </div>
                 <div>
-                  <label className="block text-wl-text text-sm font-semibold mb-2">Delivery Date</label>
+                  <label className="block text-white text-sm font-semibold mb-2">Delivery Date</label>
                   <input
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-wl-text text-sm font-semibold mb-2">Assign Driver</label>
+                  <label className="block text-white text-sm font-semibold mb-2">Assign Driver</label>
                   <select
                     name="driverId"
                     value={formData.driverId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   >
                     <option value="">Select a driver</option>
                     {mockDrivers.map((driver) => (
@@ -254,12 +254,12 @@ export default function CreateRoutePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-wl-text text-sm font-semibold mb-2">Vehicle</label>
+                  <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
                   <select
                     name="vehicleId"
                     value={formData.vehicleId}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   >
                     <option value="">Select a vehicle</option>
                     {mockVehicles.map((vehicle) => (
@@ -276,37 +276,37 @@ export default function CreateRoutePage() {
           {step === 2 && (
             <div className="max-w-4xl">
               <div className="mb-6">
-                <label className="block text-wl-text text-sm font-semibold mb-2">Search & Add Orders</label>
+                <label className="block text-white text-sm font-semibold mb-2">Search & Add Orders</label>
                 <input
                   type="text"
                   placeholder="Search by order ID or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-md bg-wl-surface border border-wl-border text-wl-text text-sm mb-4 box-border"
+                  className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm mb-4 box-border"
                 />
               </div>
 
               {filteredOrders.length > 0 && (
                 <>
-                  <h3 className="text-wl-text text-sm font-semibold mb-3">
+                  <h3 className="text-white text-sm font-semibold mb-3">
                     Available Orders ({filteredOrders.length})
                   </h3>
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 mb-6">
                     {filteredOrders.map((order) => (
                       <div
                         key={order.id}
-                        className="p-4 rounded-lg bg-wl-surface border border-wl-border cursor-pointer transition-all hover:border-wl-primary hover:bg-wl-surface"
+                        className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] cursor-pointer transition-all hover:border-blue-500 hover:bg-[#12121a]"
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-wl-text font-semibold text-sm">
+                          <span className="text-white font-semibold text-sm">
                             {order.id}
                           </span>
                           <Badge>{order.priority.toUpperCase()}</Badge>
                         </div>
-                        <p className="text-wl-muted text-xs mb-2">
+                        <p className="text-gray-400 text-xs mb-2">
                           {order.address}
                         </p>
-                        <p className="text-wl-muted text-xs mb-3">
+                        <p className="text-gray-400 text-xs mb-3">
                           {order.timeWindow.start} - {order.timeWindow.end}
                         </p>
                         <Button
@@ -325,18 +325,17 @@ export default function CreateRoutePage() {
 
               {formData.stops.length > 0 && (
                 <>
-                  <h3 className="text-wl-text text-sm font-semibold mt-8 mb-3">
+                  <h3 className="text-white text-sm font-semibold mt-8 mb-3">
                     Route Stops ({formData.stops.length})
                   </h3>
                   <div className="flex flex-col gap-2 mt-4">
                     {formData.stops.map((stop, idx) => (
                       <div
                         key={stop.id}
-                        className="p-3 rounded-md bg-wl-surface border border-wl-border flex items-center gap-3 cursor-grab transition-all"
+                        className="p-3 rounded-md bg-[#12121a] border border-[#1e1e2e] flex items-center gap-3 cursor-grab transition-all"
                         style={{
-                          // Intentional inline: dynamic backgroundColor, borderColor, and opacity
-                          backgroundColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-surface)",
-                          borderColor: draggedStop === idx ? "var(--wl-primary)" : "var(--wl-border)",
+                          backgroundColor: draggedStop === idx ? "#2563eb" : "#12121a",
+                          borderColor: draggedStop === idx ? "#2563eb" : "#1e1e2e",
                           opacity: draggedStop === idx ? 0.7 : 1,
                         }}
                         draggable
@@ -344,15 +343,15 @@ export default function CreateRoutePage() {
                         onDragOver={handleDragOver}
                         onDrop={() => handleDrop(idx)}
                       >
-                        <div className="flex flex-col gap-0.5 text-wl-muted text-xs">
+                        <div className="flex flex-col gap-0.5 text-gray-400 text-xs">
                           <span>::::</span>
                         </div>
                         <div className="flex-1">
-                          <div className="text-wl-text text-sm font-semibold">
+                          <div className="text-white text-sm font-semibold">
                             {stop.orderId}
                           </div>
-                          <div className="text-wl-muted text-xs">{stop.address}</div>
-                          <div className="text-wl-muted text-xs mt-1">
+                          <div className="text-gray-400 text-xs">{stop.address}</div>
+                          <div className="text-gray-400 text-xs mt-1">
                             {stop.timeWindow.start} - {stop.timeWindow.end}
                           </div>
                         </div>
@@ -369,21 +368,21 @@ export default function CreateRoutePage() {
                   </div>
 
                   <div className="grid grid-cols-4 gap-4 my-6">
-                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
-                      <div className="text-lg font-bold text-wl-primary mb-1">{formData.stops.length}</div>
-                      <div className="text-xs text-wl-muted">Total Stops</div>
+                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                      <div className="text-lg font-bold text-blue-500 mb-1">{formData.stops.length}</div>
+                      <div className="text-xs text-gray-400">Total Stops</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
-                      <div className="text-lg font-bold text-wl-primary mb-1">{estimatedDistance.toFixed(1)}km</div>
-                      <div className="text-xs text-wl-muted">Est. Distance</div>
+                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDistance.toFixed(1)}km</div>
+                      <div className="text-xs text-gray-400">Est. Distance</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
-                      <div className="text-lg font-bold text-wl-primary mb-1">{estimatedDuration}min</div>
-                      <div className="text-xs text-wl-muted">Est. Duration</div>
+                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                      <div className="text-lg font-bold text-blue-500 mb-1">{estimatedDuration}min</div>
+                      <div className="text-xs text-gray-400">Est. Duration</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-wl-surface border border-wl-border text-center">
-                      <div className="text-lg font-bold text-wl-primary mb-1">850kg</div>
-                      <div className="text-xs text-wl-muted">Est. Capacity</div>
+                    <div className="p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-center">
+                      <div className="text-lg font-bold text-blue-500 mb-1">850kg</div>
+                      <div className="text-xs text-gray-400">Est. Capacity</div>
                     </div>
                   </div>
                 </>
@@ -393,7 +392,7 @@ export default function CreateRoutePage() {
 
           {step === 3 && (
             <div className="max-w-4xl">
-              <div className="w-full h-96 bg-wl-surface border border-wl-border rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
+              <div className="w-full h-96 bg-[#12121a] border border-[#1e1e2e] rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
                 <svg
                   width="100%"
                   height="100%"
@@ -402,8 +401,8 @@ export default function CreateRoutePage() {
                 >
                   <defs>
                     <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#6C63FF" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#6C63FF" stopOpacity="0.1" />
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.1" />
                     </linearGradient>
                   </defs>
 
@@ -417,7 +416,7 @@ export default function CreateRoutePage() {
                         })
                         .join(" ")}
                       fill="none"
-                      stroke="#6C63FF"
+                      stroke="#3b82f6"
                       strokeWidth="2"
                       opacity="0.5"
                     />
@@ -450,37 +449,35 @@ export default function CreateRoutePage() {
                     );
                   })}
                 </svg>
-                <div className="absolute bottom-4 right-4 text-xs text-wl-muted">
+                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
                   Map Preview - {formData.stops.length} stops
                 </div>
               </div>
 
               <div>
-                <h3 className="text-wl-text text-sm font-semibold mb-3">Stop Details</h3>
+                <h3 className="text-white text-sm font-semibold mb-3">Stop Details</h3>
                 <div className="flex flex-col gap-2">
                   {formData.stops.map((stop, idx) => (
                     <div
                       key={stop.id}
-                      className="p-4 rounded-md bg-wl-surface border border-wl-border grid gap-3 items-center"
+                      className="p-4 rounded-md bg-[#12121a] border border-[#1e1e2e] grid gap-3 items-center"
                       style={{
-                        // Intentional inline: dynamic grid template columns
                         gridTemplateColumns: "30px 1fr auto",
                       }}
                     >
                       <div
                         className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
                         style={{
-                          // Intentional inline: dynamic background color
                           backgroundColor: getPriorityColor(stop.priority)
                         }}
                       >
                         {idx + 1}
                       </div>
                       <div>
-                        <div className="text-wl-text text-sm font-semibold">
+                        <div className="text-white text-sm font-semibold">
                           {stop.orderId}
                         </div>
-                        <div className="text-wl-muted text-xs mt-0.5">
+                        <div className="text-gray-400 text-xs mt-0.5">
                           {stop.address}
                         </div>
                       </div>
@@ -496,7 +493,7 @@ export default function CreateRoutePage() {
 
           {step === 4 && (
             <div className="max-w-4xl">
-              <h3 className="text-wl-text text-sm font-semibold mb-4">Route Optimization Strategy</h3>
+              <h3 className="text-white text-sm font-semibold mb-4">Route Optimization Strategy</h3>
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   {
@@ -520,8 +517,8 @@ export default function CreateRoutePage() {
                     className={cn(
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
                       formData.optimizationMode === (option.id as any)
-                        ? "bg-wl-primary text-white border-wl-primary"
-                        : "bg-wl-surface text-wl-text border-wl-border"
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-[#12121a] text-white border-[#1e1e2e]"
                     )}
                     onClick={() =>
                       setFormData((prev) => ({
@@ -536,9 +533,9 @@ export default function CreateRoutePage() {
                 ))}
               </div>
 
-              <div className="mt-6 p-4 rounded-lg bg-wl-surface border border-wl-border">
-                <h4 className="text-wl-text text-sm font-semibold mb-2">Summary</h4>
-                <div className="text-wl-muted text-sm leading-relaxed">
+              <div className="mt-6 p-4 rounded-lg bg-[#12121a] border border-[#1e1e2e]">
+                <h4 className="text-white text-sm font-semibold mb-2">Summary</h4>
+                <div className="text-gray-400 text-sm leading-relaxed">
                   <p>
                     <strong>Route:</strong> {formData.name}
                   </p>

@@ -118,7 +118,7 @@ export class ReturnService {
     }
 
     // Check max returns per order
-    const existingReturns = await (prisma as any).returnRequest.count({
+    const existingReturns = await db.returnRequest.count({
       where: {
         orderId: validated.orderId,
         status: { not: RS.REJECTED },
@@ -146,7 +146,7 @@ export class ReturnService {
     const originalOrderTotal = order.total || 0;
 
     // Create return request
-    const returnRequest = await (prisma as any).returnRequest.create({
+    const returnRequest = await db.returnRequest.create({
       data: {
         id: crypto.randomUUID(),
         orderId: validated.orderId,
@@ -205,7 +205,7 @@ export class ReturnService {
   ): Promise<ReturnRequest> {
     const validated = approveReturnSchema.parse(input);
 
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -218,7 +218,7 @@ export class ReturnService {
     validateTransition(returnRequest.status, RS.APPROVED);
 
     // Update return
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.APPROVED,
@@ -246,7 +246,7 @@ export class ReturnService {
    * @returns Updated ReturnRequest
    */
   async rejectReturn(id: string, reason: string, prisma: any): Promise<ReturnRequest> {
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -258,7 +258,7 @@ export class ReturnService {
     // Validate transition
     validateTransition(returnRequest.status, RS.REJECTED);
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.REJECTED,
@@ -281,7 +281,7 @@ export class ReturnService {
    * @returns Updated ReturnRequest
    */
   async markShippedBack(id: string, prisma: any): Promise<ReturnRequest> {
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -292,7 +292,7 @@ export class ReturnService {
 
     validateTransition(returnRequest.status, RS.SHIPPED_BACK);
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.SHIPPED_BACK,
@@ -314,7 +314,7 @@ export class ReturnService {
    * @returns Updated ReturnRequest
    */
   async receiveReturn(id: string, prisma: any): Promise<ReturnRequest> {
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -325,7 +325,7 @@ export class ReturnService {
 
     validateTransition(returnRequest.status, RS.RECEIVED);
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.RECEIVED,
@@ -358,7 +358,7 @@ export class ReturnService {
   ): Promise<ReturnRequest> {
     const validated = inspectReturnSchema.parse({ condition, notes });
 
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -375,7 +375,7 @@ export class ReturnService {
       validated.condition
     );
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.INSPECTED,
@@ -405,7 +405,7 @@ export class ReturnService {
     input: ProcessRefundInput,
     prisma: any
   ): Promise<ReturnRequest> {
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -416,7 +416,7 @@ export class ReturnService {
 
     validateTransition(returnRequest.status, RS.REFUNDED);
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.REFUNDED,
@@ -440,7 +440,7 @@ export class ReturnService {
    * @returns Updated ReturnRequest
    */
   async closeReturn(id: string, prisma: any): Promise<ReturnRequest> {
-    const returnRequest = await (prisma as any).returnRequest.findUnique({
+    const returnRequest = await db.returnRequest.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -451,7 +451,7 @@ export class ReturnService {
 
     validateTransition(returnRequest.status, RS.CLOSED);
 
-    const updated = await (prisma as any).returnRequest.update({
+    const updated = await db.returnRequest.update({
       where: { id },
       data: {
         status: RS.CLOSED,
@@ -549,14 +549,14 @@ export class ReturnService {
     }
 
     const [data, total] = await Promise.all([
-      (prisma as any).returnRequest.findMany({
+      db.returnRequest.findMany({
         where,
         include: { items: true },
         skip,
         take,
         orderBy: { createdAt: 'desc' },
       }),
-      (prisma as any).returnRequest.count({ where }),
+      db.returnRequest.count({ where }),
     ]);
 
     return {

@@ -157,7 +157,7 @@ export default function ProductsPage() {
         }
       />
 
-      <div className="p-6">
+      <div className="p-6 bg-[#0a0a0f] min-h-screen">
         {/* Stats Grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
           <StatCard
@@ -201,7 +201,7 @@ export default function ProductsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none"
+              className={cn("w-full p-2 px-4 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm font-sans outline-none")}
             />
           </div>
 
@@ -211,7 +211,7 @@ export default function ProductsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className="p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans cursor-pointer outline-none"
+            className={cn("p-1 px-3 bg-[#1a1a2e] border border-[#1e1e2e] rounded-md text-white text-sm font-sans cursor-pointer outline-none")}
           >
             <option value="title">Sort by Title</option>
             <option value="type">Sort by Type</option>
@@ -221,7 +221,7 @@ export default function ProductsPage() {
 
         {/* Filter Chips */}
         <div className="flex gap-2 mb-5 flex-wrap items-center">
-          <span className="text-xs font-semibold text-wl-text-secondary">
+          <span className="text-xs font-semibold text-gray-400">
             Filters:
           </span>
 
@@ -230,8 +230,8 @@ export default function ProductsPage() {
             className={cn(
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("requiresShipping")
-                ? "bg-wl-primary-500 text-wl-text-inverse border-wl-primary-500"
-                : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+                ? "bg-blue-500 text-white border-blue-500"
+                : "bg-transparent text-gray-400 border-[#1e1e2e]"
             )}
           >
             Requires Shipping
@@ -242,8 +242,8 @@ export default function ProductsPage() {
             className={cn(
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("missingWeight")
-                ? "bg-wl-warning-500 text-wl-text-inverse border-wl-warning-500"
-                : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+                ? "bg-amber-500 text-white border-amber-500"
+                : "bg-transparent text-gray-400 border-[#1e1e2e]"
             )}
           >
             Missing Weight
@@ -256,8 +256,8 @@ export default function ProductsPage() {
               className={cn(
                 "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
                 selectedFilters.has(vendor)
-                  ? "bg-wl-info-500 text-wl-text-inverse border-wl-info-500"
-                  : "bg-transparent text-wl-text-secondary border-wl-border-subtle"
+                  ? "bg-cyan-500 text-white border-cyan-500"
+                  : "bg-transparent text-gray-400 border-[#1e1e2e]"
               )}
             >
               {vendor}
@@ -270,7 +270,7 @@ export default function ProductsPage() {
                 setSelectedFilters(new Set());
                 setCurrentPage(1);
               }}
-              className="p-1 px-3 rounded-full border border-wl-border-subtle text-xs font-semibold cursor-pointer font-sans bg-transparent text-wl-text-tertiary"
+              className={cn("p-1 px-3 rounded-full border border-[#1e1e2e] text-xs font-semibold cursor-pointer font-sans bg-transparent text-gray-500")}
             >
               Clear all
             </button>
@@ -279,9 +279,9 @@ export default function ProductsPage() {
 
         {/* Bulk Actions Bar */}
         {selectedProducts.size > 0 && (
-          <Card className="mb-5 p-4 bg-wl-primary-500 border border-wl-primary-600">
+          <Card className={cn("mb-5 p-4 bg-blue-500 border border-blue-600")}>
             <div className="flex gap-4 items-center justify-between">
-              <div className="text-wl-text-inverse text-sm font-semibold">
+              <div className="text-white text-sm font-semibold">
                 {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
               </div>
               <div className="flex gap-2">
@@ -312,12 +312,12 @@ export default function ProductsPage() {
         )}
 
         {/* Products Table */}
-        <Card className="overflow-hidden p-0">
+        <Card className={cn("overflow-hidden p-0 bg-[#12121a] border border-[#1e1e2e]")}>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-wl-border-subtle bg-wl-bg-overlay">
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary w-10">
+                <tr className={cn("border-b border-[#1e1e2e] bg-[#1a1a2e]")}>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400 w-10")}>
                     <input
                       type="checkbox"
                       checked={selectedProducts.size === paginatedItems.length && paginatedItems.length > 0}
@@ -333,14 +333,14 @@ export default function ProductsPage() {
                       className="cursor-pointer"
                     />
                   </th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Title</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Type</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Vendor</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Weight</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Shipping</th>
-                  <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">Inventory</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Last Sync</th>
-                  <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">Shopify ID</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Title</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Type</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Vendor</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Weight</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Shipping</th>
+                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Inventory</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Last Sync</th>
+                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Shopify ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,8 +348,8 @@ export default function ProductsPage() {
                   <tr
                     key={product.id}
                     className={cn(
-                      "border-b border-wl-border-subtle transition-colors duration-fast",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-overlay"
+                      "border-b border-[#1e1e2e] transition-colors duration-fast",
+                      idx % 2 === 0 ? "bg-transparent" : "bg-[#1a1a2e]"
                     )}
                   >
                     <td className="p-3 px-4 text-center">
@@ -360,32 +360,32 @@ export default function ProductsPage() {
                         className="cursor-pointer"
                       />
                     </td>
-                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
+                    <td className={cn("p-3 px-4 text-white font-semibold")}>
                       {product.title}
                     </td>
-                    <td className="p-3 px-4 text-wl-text-secondary">
+                    <td className={cn("p-3 px-4 text-gray-300")}>
                       {product.productType}
                     </td>
-                    <td className="p-3 px-4 text-wl-text-secondary">
+                    <td className={cn("p-3 px-4 text-gray-300")}>
                       {product.vendor}
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-secondary">
+                    <td className={cn("p-3 px-4 text-center text-gray-300")}>
                       {product.weight ? `${product.weight} ${product.weightUnit}` : (
-                        <span className="text-wl-danger-400 font-semibold">Missing</span>
+                        <span className="text-red-400 font-semibold">Missing</span>
                       )}
                     </td>
-                    <td className="p-3 px-4 text-center">
+                    <td className={cn("p-3 px-4 text-center")}>
                       <Badge variant={product.requiresShipping ? "primary" : "default"}>
                         {product.requiresShipping ? "Yes" : "No"}
                       </Badge>
                     </td>
-                    <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
+                    <td className={cn("p-3 px-4 text-center text-white font-semibold")}>
                       {product.inventoryQty}
                     </td>
-                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
+                    <td className={cn("p-3 px-4 text-gray-500 text-xs")}>
                       {formatDateTime(product.lastSyncAt)}
                     </td>
-                    <td className="p-3 px-4 text-wl-text-tertiary text-xs">
+                    <td className={cn("p-3 px-4 text-gray-500 text-xs")}>
                       {product.shopifyId.split("/").pop()}
                     </td>
                   </tr>
@@ -395,7 +395,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4 border-t border-wl-border-subtle bg-wl-bg-overlay text-sm text-wl-text-secondary">
+          <div className={cn("flex items-center justify-between p-4 border-t border-[#1e1e2e] bg-[#1a1a2e] text-sm text-gray-400")}>
             <div>
               Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
             </div>

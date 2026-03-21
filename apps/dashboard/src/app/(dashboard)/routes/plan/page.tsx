@@ -109,10 +109,10 @@ export default function RoutePlanningPage() {
                       'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold',
                       'transition-colors cursor-pointer',
                       isActive
-                        ? 'bg-wl-primary-500 text-white ring-2 ring-offset-2 ring-wl-primary-500'
+                        ? 'bg-blue-500 text-white ring-2 ring-offset-2 ring-blue-500'
                         : isCompleted
-                          ? 'bg-wl-success-400 text-white'
-                          : 'bg-wl-bg-surface border-2 border-wl-border-default text-wl-text-tertiary'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-[#12121a] border-2 border-[#1e1e2e] text-gray-400'
                     )}
                   >
                     {isCompleted ? '✓' : idx + 1}
@@ -124,8 +124,8 @@ export default function RoutePlanningPage() {
                       className={cn(
                         'flex-1 h-0.5 mx-2',
                         isCompleted || isActive
-                          ? 'bg-wl-primary-500'
-                          : 'bg-wl-border-default'
+                          ? 'bg-blue-500'
+                          : 'bg-[#1e1e2e]'
                       )}
                     />
                   )}
@@ -140,10 +140,10 @@ export default function RoutePlanningPage() {
               const isActive = step.id === state.currentStep;
               return (
                 <div key={step.id} className="flex-1 text-center">
-                  <div className={cn('text-sm font-semibold', isActive ? 'text-wl-primary-500' : 'text-wl-text-tertiary')}>
+                  <div className={cn('text-sm font-semibold', isActive ? 'text-blue-500' : 'text-gray-400')}>
                     {step.label}
                   </div>
-                  <div className="text-xs text-wl-text-tertiary">{step.description}</div>
+                  <div className="text-xs text-gray-400">{step.description}</div>
                 </div>
               );
             })}
@@ -156,12 +156,12 @@ export default function RoutePlanningPage() {
           <div className="lg:col-span-2">
             {/* STEP 1: STOPS */}
             {state.currentStep === 'stops' && (
-              <Card className="p-6 border-wl-border-default">
+              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
                 <div className="mb-4">
-                  <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                  <h2 className="text-lg font-bold text-white mb-1">
                     Add Delivery Stops
                   </h2>
-                  <p className="text-sm text-wl-text-tertiary">
+                  <p className="text-sm text-gray-400">
                     Search for addresses and add them to your route. You can drag to reorder or
                     import from CSV.
                   </p>
@@ -180,12 +180,12 @@ export default function RoutePlanningPage() {
 
             {/* STEP 2: CONSTRAINTS */}
             {state.currentStep === 'constraints' && (
-              <Card className="p-6 border-wl-border-default">
+              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
                 <div className="mb-6">
-                  <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                  <h2 className="text-lg font-bold text-white mb-1">
                     Route Constraints
                   </h2>
-                  <p className="text-sm text-wl-text-tertiary">
+                  <p className="text-sm text-gray-400">
                     Set vehicle specifications and driver preferences to optimize your route.
                   </p>
                 </div>
@@ -193,7 +193,7 @@ export default function RoutePlanningPage() {
                 <div className="space-y-6">
                   {/* Vehicle Section */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Vehicle Type
                     </label>
                     <select
@@ -203,9 +203,9 @@ export default function RoutePlanningPage() {
                       }
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     >
@@ -220,7 +220,7 @@ export default function RoutePlanningPage() {
 
                   {/* Capacity Section */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Vehicle Capacity (items)
                     </label>
                     <input
@@ -237,10 +237,10 @@ export default function RoutePlanningPage() {
                       placeholder="e.g., 20"
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'placeholder-wl-text-tertiary',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'placeholder-gray-400',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     />
@@ -248,7 +248,7 @@ export default function RoutePlanningPage() {
 
                   {/* Weight Limit Section */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Weight Limit (kg)
                     </label>
                     <input
@@ -265,10 +265,10 @@ export default function RoutePlanningPage() {
                       placeholder="e.g., 500"
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'placeholder-wl-text-tertiary',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'placeholder-gray-400',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     />
@@ -276,7 +276,7 @@ export default function RoutePlanningPage() {
 
                   {/* Driver Assignment Section */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Preferred Driver (Optional)
                     </label>
                     <select
@@ -286,9 +286,9 @@ export default function RoutePlanningPage() {
                       }
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     >
@@ -305,12 +305,12 @@ export default function RoutePlanningPage() {
 
             {/* STEP 3: OPTIMIZE */}
             {state.currentStep === 'optimize' && (
-              <Card className="p-6 border-wl-border-default">
+              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
                 <div className="mb-6">
-                  <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                  <h2 className="text-lg font-bold text-white mb-1">
                     Optimize Route
                   </h2>
-                  <p className="text-sm text-wl-text-tertiary">
+                  <p className="text-sm text-gray-400">
                     Configure optimization settings and run the route optimizer.
                   </p>
                 </div>
@@ -333,7 +333,7 @@ export default function RoutePlanningPage() {
                 />
 
                 {saveError && (
-                  <div className="mt-4 p-3 bg-wl-danger-bg border border-wl-danger-400 text-wl-danger-400 rounded-md text-sm">
+                  <div className="mt-4 p-3 bg-red-500/10 border border-red-500 text-red-500 rounded-md text-sm">
                     {saveError}
                   </div>
                 )}
@@ -342,12 +342,12 @@ export default function RoutePlanningPage() {
 
             {/* STEP 4: REVIEW */}
             {state.currentStep === 'review' && (
-              <Card className="p-6 border-wl-border-default">
+              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
                 <div className="mb-6">
-                  <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                  <h2 className="text-lg font-bold text-white mb-1">
                     Review Route
                   </h2>
-                  <p className="text-sm text-wl-text-tertiary">
+                  <p className="text-sm text-gray-400">
                     Check the optimized route details before dispatching.
                   </p>
                 </div>
@@ -361,12 +361,12 @@ export default function RoutePlanningPage() {
 
             {/* STEP 5: DISPATCH */}
             {state.currentStep === 'dispatch' && (
-              <Card className="p-6 border-wl-border-default">
+              <Card className="p-6 border-[#1e1e2e] bg-[#12121a]">
                 <div className="mb-6">
-                  <h2 className="text-lg font-bold text-wl-text-primary mb-1">
+                  <h2 className="text-lg font-bold text-white mb-1">
                     Dispatch & Schedule
                   </h2>
-                  <p className="text-sm text-wl-text-tertiary">
+                  <p className="text-sm text-gray-400">
                     Assign driver, save as template, and schedule the route.
                   </p>
                 </div>
@@ -374,7 +374,7 @@ export default function RoutePlanningPage() {
                 <div className="space-y-6">
                   {/* Driver Assignment */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Assign Driver
                     </label>
                     <select
@@ -382,9 +382,9 @@ export default function RoutePlanningPage() {
                       onChange={(e) => setAssignedDriver(e.target.value)}
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     >
@@ -398,7 +398,7 @@ export default function RoutePlanningPage() {
 
                   {/* Schedule */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Schedule
                     </label>
                     <select
@@ -406,9 +406,9 @@ export default function RoutePlanningPage() {
                       onChange={(e) => setDispatchSchedule(e.target.value)}
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     >
@@ -421,7 +421,7 @@ export default function RoutePlanningPage() {
 
                   {/* Save as Template */}
                   <div>
-                    <label className="block text-sm font-semibold text-wl-text-primary mb-3">
+                    <label className="block text-sm font-semibold text-white mb-3">
                       Save as Template (Optional)
                     </label>
                     <input
@@ -430,10 +430,10 @@ export default function RoutePlanningPage() {
                       onChange={(e) => setTemplate(e.target.value, undefined)}
                       className={cn(
                         'w-full px-4 py-2 rounded-md text-sm',
-                        'bg-wl-bg-surface text-wl-text-primary',
-                        'border border-wl-border-default',
-                        'placeholder-wl-text-tertiary',
-                        'focus:outline-none focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500',
+                        'bg-[#0a0a0f] text-white',
+                        'border border-[#1e1e2e]',
+                        'placeholder-gray-400',
+                        'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
                         'transition-colors'
                       )}
                     />
@@ -446,17 +446,17 @@ export default function RoutePlanningPage() {
           {/* Sidebar: Route Summary & Stats */}
           <div className="flex flex-col gap-4">
             {/* Quick Summary */}
-            <Card className="p-4 bg-wl-bg-surface border-wl-border-default sticky top-6">
-              <div className="text-sm font-semibold text-wl-text-primary mb-4">
+            <Card className="p-4 bg-[#12121a] border-[#1e1e2e] sticky top-6">
+              <div className="text-sm font-semibold text-white mb-4">
                 Route Summary
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                  <div className="text-xs text-gray-400 uppercase tracking-wider">
                     Stops
                   </div>
-                  <div className="text-2xl font-bold text-wl-primary-500">
+                  <div className="text-2xl font-bold text-blue-500">
                     {state.stops.length}
                   </div>
                 </div>
@@ -464,25 +464,25 @@ export default function RoutePlanningPage() {
                 {state.selectedResult && (
                   <>
                     <div>
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">
                         Distance
                       </div>
-                      <div className="text-xl font-bold text-wl-info-400">
+                      <div className="text-xl font-bold text-blue-400">
                         {state.selectedResult.totalDistance.toFixed(1)} km
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">
                         Duration
                       </div>
-                      <div className="text-xl font-bold text-wl-warning-400">
+                      <div className="text-xl font-bold text-amber-500">
                         {Math.round(state.selectedResult.totalDuration)} min
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs text-wl-text-tertiary uppercase tracking-wider">
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">
                         Provider
                       </div>
                       <Badge variant="info">
@@ -496,16 +496,16 @@ export default function RoutePlanningPage() {
 
             {/* Validation Alerts */}
             {state.currentStep === 'stops' && !canProceedFromStops && (
-              <Card className="p-3 bg-wl-warning-bg border border-wl-warning-400/30">
-                <div className="text-sm text-wl-warning-400">
+              <Card className="p-3 bg-amber-500/10 border border-amber-500/30">
+                <div className="text-sm text-amber-500">
                   Add at least 2 stops to proceed
                 </div>
               </Card>
             )}
 
             {state.currentStep === 'optimize' && state.results.length === 0 && (
-              <Card className="p-3 bg-wl-info-bg border border-wl-info-400/30">
-                <div className="text-sm text-wl-info-400">
+              <Card className="p-3 bg-blue-500/10 border border-blue-500/30">
+                <div className="text-sm text-blue-400">
                   Click "Optimize Route" to calculate routes
                 </div>
               </Card>

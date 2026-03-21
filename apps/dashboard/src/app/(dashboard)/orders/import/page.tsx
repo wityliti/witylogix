@@ -129,54 +129,54 @@ export default function OrderImportPage() {
         {/* Sync Stats Dashboard */}
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Total Synced
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-text-primary">
+              </p>
+              <p className="text-3xl font-bold font-mono text-white">
                 {metrics.totalOrdersSynced}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">orders imported</div>
+              </p>
+              <p className="text-xs text-gray-400 mt-2">orders imported</p>
             </Card>
 
-            <Card className="p-5">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Pending
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-primary-400">
+              </p>
+              <p className="text-3xl font-bold font-mono text-blue-500">
                 {metrics.pendingOrders}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">awaiting sync</div>
+              </p>
+              <p className="text-xs text-gray-400 mt-2">awaiting sync</p>
             </Card>
 
-            <Card className="p-5">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Failed
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-danger-400">
+              </p>
+              <p className="text-3xl font-bold font-mono text-red-500">
                 {metrics.failedOrders}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">errors</div>
+              </p>
+              <p className="text-xs text-gray-400 mt-2">errors</p>
             </Card>
 
-            <Card className="p-5">
-              <div className="text-xs font-semibold text-wl-text-tertiary uppercase tracking-wider mb-2">
+            <Card className="p-5 bg-[#12121a] border border-[#1e1e2e]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Conflicts
-              </div>
-              <div className="text-3xl font-bold font-mono text-wl-warning-400">
+              </p>
+              <p className="text-3xl font-bold font-mono text-amber-500">
                 {metrics.activeConflicts}
-              </div>
-              <div className="text-xs text-wl-text-secondary mt-2">unresolved</div>
+              </p>
+              <p className="text-xs text-gray-400 mt-2">unresolved</p>
             </Card>
           </div>
         )}
 
         {/* Platform Connection Status */}
-        <Card className="p-6">
+        <Card className="p-6 bg-[#12121a] border border-[#1e1e2e]">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-lg font-bold text-wl-text-primary">Platform Status</h2>
-              <p className="text-sm text-wl-text-secondary mt-1">Connection and health overview</p>
+              <h2 className="text-lg font-bold text-white">Platform Status</h2>
+              <p className="text-sm text-gray-400 mt-1">Connection and health overview</p>
             </div>
             <Badge variant={statusLoading ? "info" : "default"}>
               {statusLoading ? "⟳ Updating..." : "Live"}
@@ -193,10 +193,10 @@ export default function OrderImportPage() {
                   key={platform.id}
                   className={cn(
                     "relative p-4 rounded-lg border-2 transition-all cursor-pointer",
-                    "bg-wl-bg-surface hover:border-wl-border-active",
+                    "bg-[#0a0a0f] hover:border-blue-500",
                     selectedPlatform === platform.id
-                      ? "border-wl-primary-500 bg-[rgba(245,166,35,0.08)]"
-                      : "border-wl-border-subtle"
+                      ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
+                      : "border-[#1e1e2e]"
                   )}
                   onClick={() => isConnected && handlePlatformSelect(platform.id)}
                 >
@@ -204,10 +204,10 @@ export default function OrderImportPage() {
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-2xl">{platform.icon}</span>
                     <div>
-                      <div className="font-semibold text-wl-text-primary">{platform.name}</div>
-                      <div className="text-xs text-wl-text-tertiary">
+                      <p className="font-semibold text-white">{platform.name}</p>
+                      <p className="text-xs text-gray-400">
                         {isConnected ? "Connected" : "Disconnected"}
-                      </div>
+                      </p>
                     </div>
                   </div>
 
@@ -219,7 +219,7 @@ export default function OrderImportPage() {
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: getHealthColor(health.status) }}
                         />
-                        <span className="text-xs font-medium text-wl-text-secondary">
+                        <span className="text-xs font-medium text-gray-300">
                           {health.status === "healthy"
                             ? "Healthy"
                             : health.status === "warning"
@@ -231,13 +231,13 @@ export default function OrderImportPage() {
                       </div>
 
                       {/* Last Sync Time */}
-                      <div className="text-xs text-wl-text-tertiary flex justify-between">
+                      <p className="text-xs text-gray-400 flex justify-between">
                         <span>
                           {health.lastSyncTime
                             ? `Synced: ${new Date(health.lastSyncTime).toLocaleDateString()} ${new Date(health.lastSyncTime).toLocaleTimeString()}`
                             : "Never synced"}
                         </span>
-                      </div>
+                      </p>
 
                       {/* Action Button */}
                       {isConnected && (

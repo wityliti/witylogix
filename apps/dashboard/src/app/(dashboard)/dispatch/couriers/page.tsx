@@ -210,7 +210,7 @@ export default function CourierDispatchPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-wl-bg-primary">
+    <div className="flex flex-col h-screen bg-[#0a0a0f]">
       {/* Stats Bar */}
       <DispatchStatsBar stats={stats} />
 
@@ -220,9 +220,9 @@ export default function CourierDispatchPage() {
         <div className="flex flex-col w-96 gap-4 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-wl-text-primary">
+            <h2 className="text-lg font-semibold text-white">
               Pending Deliveries
-              <span className="ml-2 text-sm font-medium text-wl-text-secondary">
+              <span className="ml-2 text-sm font-medium text-gray-300">
                 ({pendingDeliveries.length})
               </span>
             </h2>
@@ -241,7 +241,7 @@ export default function CourierDispatchPage() {
           {/* Deliveries List */}
           <div className="flex-1 overflow-y-auto space-y-3">
             {pendingDeliveries.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-wl-text-tertiary">
+              <div className="flex items-center justify-center h-32 text-gray-400">
                 <p>No pending deliveries</p>
               </div>
             ) : (
@@ -256,18 +256,18 @@ export default function CourierDispatchPage() {
                   }}
                   className={cn(
                     "p-4 rounded-lg border cursor-pointer transition-all duration-200",
-                    "hover:border-wl-border-default hover:bg-wl-bg-elevated",
+                    "hover:border-[#1e1e2e] hover:bg-[#12121a]",
                     selectedDelivery?.id === delivery.id
-                      ? "bg-wl-primary-500/10 border-wl-primary-400"
-                      : "bg-wl-bg-surface border-wl-border-subtle"
+                      ? "bg-blue-500/10 border-blue-400"
+                      : "bg-[#12121a] border-[#1e1e2e]"
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <p className="font-semibold text-wl-text-primary text-sm">
+                      <p className="font-semibold text-white text-sm">
                         {delivery.orderId}
                       </p>
-                      <p className="text-xs text-wl-text-secondary mt-1">
+                      <p className="text-xs text-gray-300 mt-1">
                         {delivery.recipient?.name || "Unknown Recipient"}
                       </p>
                     </div>
@@ -276,7 +276,7 @@ export default function CourierDispatchPage() {
                     </Badge>
                   </div>
 
-                  <div className="space-y-2 text-xs text-wl-text-secondary">
+                  <div className="space-y-2 text-xs text-gray-300">
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
                       <span className="line-clamp-1">{delivery.dropoff.address}</span>
@@ -287,7 +287,7 @@ export default function CourierDispatchPage() {
                     </div>
                     {delivery.courierId && (
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-wl-primary-500" />
+                        <div className="w-4 h-4 rounded-full bg-blue-500" />
                         <span>
                           {couriers.find((c) => c.id === delivery.courierId)?.name || "Unassigned"}
                         </span>
@@ -317,20 +317,20 @@ export default function CourierDispatchPage() {
         {/* Right Panel - Map and Details */}
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
           {/* Map */}
-          <div className="flex-1 rounded-lg border border-wl-border-subtle overflow-hidden bg-wl-bg-surface">
+          <div className="flex-1 rounded-lg border border-[#1e1e2e] overflow-hidden bg-[#12121a]">
             <CourierLiveMap couriers={couriers} deliveries={deliveries} selectedDeliveryId={selectedDelivery?.id} />
           </div>
 
           {/* Selected Delivery Details */}
           {selectedDelivery && (
-            <div className="bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-4 max-h-64 overflow-y-auto">
+            <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-4 max-h-64 overflow-y-auto">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="font-semibold text-wl-text-primary">Delivery Details</h3>
-                  <p className="text-xs text-wl-text-secondary mt-1">{selectedDelivery.orderId}</p>
+                  <h3 className="font-semibold text-white">Delivery Details</h3>
+                  <p className="text-xs text-gray-300 mt-1">{selectedDelivery.orderId}</p>
                 </div>
-                <button className="p-1 hover:bg-wl-bg-overlay rounded-md transition-colors">
-                  <MoreVertical className="w-4 h-4 text-wl-text-tertiary" />
+                <button className="p-1 hover:bg-[#0a0a0f] rounded-md transition-colors">
+                  <MoreVertical className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
 

@@ -52,13 +52,13 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary">
-      <div className="sticky top-0 z-10 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default">
+    <div className="flex flex-col min-h-screen bg-[#0a0a0f]">
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#1e1e2e]">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-wl-text-primary">Invoices</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Manage customer invoices</p>
+              <h1 className="text-2xl font-bold text-white">Invoices</h1>
+              <p className="text-sm text-gray-400 mt-1">Manage customer invoices</p>
             </div>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4" />
@@ -68,7 +68,7 @@ export default function InvoicesPage() {
 
           <div className="flex gap-4 mt-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-tertiary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search invoices..."
@@ -79,9 +79,9 @@ export default function InvoicesPage() {
                 }}
                 className={cn(
                   'w-full pl-10 pr-4 py-2 rounded-md text-sm',
-                  'bg-wl-bg-overlay border border-wl-border-default',
-                  'text-wl-text-primary',
-                  'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                  'bg-[#1a1a2e] border border-[#1e1e2e]',
+                  'text-white',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500'
                 )}
               />
             </div>
@@ -90,9 +90,9 @@ export default function InvoicesPage() {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className={cn(
                 'px-3 py-2 rounded-md text-sm font-medium',
-                'bg-wl-bg-overlay border border-wl-border-default',
-                'text-wl-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                'bg-[#1a1a2e] border border-[#1e1e2e]',
+                'text-white',
+                'focus:outline-none focus:ring-2 focus:ring-blue-500'
               )}
             >
               <option value="all">All Statuses</option>
@@ -108,31 +108,31 @@ export default function InvoicesPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-4 max-w-7xl">
           {filtered.length === 0 ? (
-            <Card className="p-12 bg-wl-bg-surface border-wl-border-default text-center">
-              <p className="text-wl-text-secondary">No invoices found</p>
+            <Card className={cn("p-12 bg-[#12121a] border border-[#1e1e2e] text-center")}>
+              <p className="text-gray-400">No invoices found</p>
             </Card>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Invoice #</th>
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Customer</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Amount</th>
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Due Date</th>
-                    <th className="text-center px-4 py-3 font-semibold text-wl-text-secondary">Status</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actions</th>
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Invoice #</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Customer</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Due Date</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((inv) => (
-                    <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-overlay">
-                      <td className="px-4 py-3 font-medium text-wl-text-primary">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-wl-text-secondary">{inv.customer}</td>
-                      <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
+                    <tr key={inv.id} className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]">
+                      <td className="px-4 py-3 font-medium text-white">{inv.invoiceNumber}</td>
+                      <td className="px-4 py-3 text-gray-300">{inv.customer}</td>
+                      <td className="text-right px-4 py-3 font-medium text-white">
                         ${inv.amount.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-wl-text-secondary">
+                      <td className="px-4 py-3 text-gray-300">
                         {new Date(inv.dueDate).toLocaleDateString()}
                       </td>
                       <td className="text-center px-4 py-3">

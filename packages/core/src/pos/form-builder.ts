@@ -3,6 +3,7 @@
  * Utilities for creating, managing, and validating custom forms
  */
 
+import { db } from '@witylogix/db';
 import type { PosFormInput, CustomFormField } from './types';
 
 /**
@@ -40,7 +41,7 @@ export async function createForm(prisma: any, input: PosFormInput): Promise<any>
   });
 
   try {
-    const form = await (prisma as any).posCustomForm.create({
+    const form = await db.posCustomForm.create({
       data: {
         shopId: input.shopId,
         name: input.name,
@@ -66,7 +67,7 @@ export async function getForm(prisma: any, formId: string): Promise<any> {
   }
 
   try {
-    const form = await (prisma as any).posCustomForm.findUnique({
+    const form = await db.posCustomForm.findUnique({
       where: { id: formId },
     });
     return form;
@@ -87,7 +88,7 @@ export async function listForms(prisma: any, shopId: string): Promise<any[]> {
   }
 
   try {
-    const forms = await (prisma as any).posCustomForm.findMany({
+    const forms = await db.posCustomForm.findMany({
       where: { shopId },
       orderBy: { createdAt: 'desc' },
     });
@@ -136,7 +137,7 @@ export async function updateForm(
   }
 
   try {
-    const form = await (prisma as any).posCustomForm.update({
+    const form = await db.posCustomForm.update({
       where: { id: formId },
       data: {
         ...(updates.name && { name: updates.name }),
@@ -161,7 +162,7 @@ export async function deleteForm(prisma: any, formId: string): Promise<void> {
   }
 
   try {
-    await (prisma as any).posCustomForm.delete({
+    await db.posCustomForm.delete({
       where: { id: formId },
     });
   } catch (error) {
@@ -280,7 +281,7 @@ export async function getDefaultForm(prisma: any, shopId: string): Promise<any> 
   }
 
   try {
-    const form = await (prisma as any).posCustomForm.findFirst({
+    const form = await db.posCustomForm.findFirst({
       where: {
         shopId,
         isDefault: true,

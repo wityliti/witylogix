@@ -10,7 +10,7 @@
  * - Batch indexing for initial population
  */
 
-import { prisma } from "@witylogix/db";
+import { prisma, db } from "@witylogix/db";
 import type { Prisma } from "@prisma/client";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────
@@ -177,7 +177,7 @@ export class SemanticSearch {
       metadata: metadata ? JSON.stringify(metadata) : undefined,
     };
 
-    await (prisma as any).searchIndex.upsert({
+    await db.searchIndex.upsert({
       where: { entityId_tenantId: { entityId, tenantId } },
       update: { embedding, content, metadata: data.metadata },
       create: data,
@@ -209,7 +209,7 @@ export class SemanticSearch {
       metadata: e.metadata ? JSON.stringify(e.metadata) : undefined,
     }));
 
-    await (prisma as any).searchIndex.createMany({
+    await db.searchIndex.createMany({
       data: createData,
       skipDuplicates: true,
     });
@@ -219,7 +219,7 @@ export class SemanticSearch {
    * Remove an entity from the search index
    */
   async removeEntity(entityId: string, tenantId: string): Promise<void> {
-    await (prisma as any).searchIndex.deleteMany({
+    await db.searchIndex.deleteMany({
       where: { entityId, tenantId },
     });
   }
@@ -236,7 +236,7 @@ export class SemanticSearch {
     const queryEmbedding = await this.embedder.generate(query);
 
     // Mock vector similarity search using cosine distance
-    const results = await (prisma as any).searchIndex.findMany({
+    const results = await db.searchIndex.findMany({
       where: {
         tenantId,
         ...(entityTypes && { entityType: { in: entityTypes } }),
@@ -283,7 +283,7 @@ export class SemanticSearch {
 
     // Text search (simple substring matching for BM25 simulation)
     const queryTokens = query.toLowerCase().split(/\W+/).filter((t) => t);
-    const textResults = await (prisma as any).searchIndex.findMany({
+    const textResults = await db.searchIndex.findMany({
       where: {
         tenantId,
         ...(entityTypes && { entityType: { in: entityTypes } }),

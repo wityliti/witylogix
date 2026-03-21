@@ -9,7 +9,7 @@
  * - A/B testing support for ranking experiments
  */
 
-import { prisma } from "@witylogix/db";
+import { prisma, db } from "@witylogix/db";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export class SearchRanker {
     interaction: SearchInteraction
   ): Promise<void> {
     // Store interaction in database for learning
-    await (prisma as any).searchInteraction.create({
+    await db.searchInteraction.create({
       data: {
         queryId: interaction.queryId,
         entityId: interaction.entityId,
@@ -193,7 +193,7 @@ export class SearchRanker {
       throw new Error(`Test ${testId} not found`);
     }
 
-    const interactions = await (prisma as any).searchInteraction.findMany({
+    const interactions = await db.searchInteraction.findMany({
       where: {
         // Filter by test period/condition
       },
@@ -276,7 +276,7 @@ export class SearchRanker {
     }
 
     // Count interactions
-    const interactions = await (prisma as any).searchInteraction.findMany({
+    const interactions = await db.searchInteraction.findMany({
       where: { entityId, tenantId },
     });
 
@@ -306,7 +306,7 @@ export class SearchRanker {
     }
 
     // Load from database
-    const interactions = await (prisma as any).searchInteraction.findMany({
+    const interactions = await db.searchInteraction.findMany({
       where: { userId, entityId, tenantId },
       select: { clicked: true, actionTaken: true },
     });
@@ -329,7 +329,7 @@ export class SearchRanker {
     entityId: string,
     tenantId: string
   ): Promise<number> {
-    const interactions = await (prisma as any).searchInteraction.findMany({
+    const interactions = await db.searchInteraction.findMany({
       where: { entityId, tenantId },
     });
 
