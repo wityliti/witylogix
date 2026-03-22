@@ -20,7 +20,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
-import { useParams } from 'next/navigation';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
@@ -227,12 +226,10 @@ export default function InvoiceDetailPage() {
   }, [invoice.total, amountPaid]);
 
   const handleDownloadPDF = useCallback(() => {
-    console.log("Downloading PDF for invoice", invoiceId);
     // TODO: Generate and download PDF
   }, [invoiceId]);
 
   const handleSendInvoice = useCallback(() => {
-    console.log("Sending invoice", invoiceId);
     setInvoice((prev) => ({
       ...prev,
       status: "sent",
@@ -242,7 +239,6 @@ export default function InvoiceDetailPage() {
   }, [invoiceId]);
 
   const handleMarkPaid = useCallback(() => {
-    console.log("Marking invoice as paid", invoiceId);
     setInvoice((prev) => ({
       ...prev,
       status: "paid",
@@ -262,7 +258,6 @@ export default function InvoiceDetailPage() {
   }, [invoiceId]);
 
   const handleVoidInvoice = useCallback(() => {
-    console.log("Voiding invoice", invoiceId);
     setInvoice((prev) => ({
       ...prev,
       status: "cancelled",
@@ -272,7 +267,6 @@ export default function InvoiceDetailPage() {
   }, [invoiceId]);
 
   const handleSendReminder = useCallback(() => {
-    console.log("Sending reminder for invoice", invoiceId);
     setInvoice((prev) => ({
       ...prev,
       activity: [
@@ -456,7 +450,7 @@ export default function InvoiceDetailPage() {
                   key: "rate",
                   header: "Rate",
                   align: "right",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <span>${item.rate.toFixed(2)}</span>
                   ),
                   width: "15%",
@@ -465,7 +459,7 @@ export default function InvoiceDetailPage() {
                   key: "amount",
                   header: "Amount",
                   align: "right",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <span className="font-medium">
                       ${item.amount.toFixed(2)}
                     </span>

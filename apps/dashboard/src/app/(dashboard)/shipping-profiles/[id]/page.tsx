@@ -122,7 +122,7 @@ export default function ShippingProfileDetail({ params }: { params: { id: string
     setIsEditing(false);
   };
 
-  const updateRate = (index: number, field: keyof RateRow, value: any) => {
+  const updateRate = (index: number, field: keyof RateRow, value: string | number) => {
     const updated = [...rateTable];
     updated[index] = { ...updated[index], [field]: value };
     setRateTable(updated);

@@ -323,7 +323,7 @@ function UsageGauge({
 }: {
   label: string;
   value: number;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
 }) {
   const getColor = (val: number) => {
     if (val < 50) return "text-emerald-500";

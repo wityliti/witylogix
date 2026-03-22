@@ -42,7 +42,7 @@ const mockDrivers = [
   { id: "DRV-003", name: "Bob Wilson", destination: "Home", speed: 0, lat: 40.6895, lng: -74.0450, status: "off-duty" },
 ];
 
-const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: any) => {
+const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: Record<string, unknown>) => {
   const canvasSize = 600;
   const minLat = 40.6895;
   const maxLat = 40.7700;
@@ -89,7 +89,7 @@ const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: any) => {
         </g>
       ))}
 
-      {items.map((item: any) => {
+      {items.map((item: Record<string, unknown>) => {
         const { x, y } = normalizeCoords(item.lat, item.lng);
         const color = getMarkerColor(item.status, mapType);
         const isSelected = item.id === selectedId;
@@ -307,7 +307,7 @@ export default function MapView() {
             <CardContent className="p-4 flex-1 overflow-y-auto max-h-96">
               <p className="text-xs font-semibold text-white mb-3 uppercase">Items ({items.length})</p>
               <div className="flex flex-col gap-2">
-                {items.map((item: any) => (
+                {items.map((item: Record<string, unknown>) => (
                   <button
                     key={item.id}
                     onClick={() => setSelectedId(item.id)}

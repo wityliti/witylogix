@@ -145,19 +145,7 @@ export default function MobileConfigPage() {
 
   // Handle save
   const handleSave = () => {
-    console.log({
-      appName,
-      primaryColor,
-      features,
-      navigationMap,
-      notifications,
-      trackingInterval,
-      batteryMode,
-      backgroundTracking,
-      cacheSize,
-      syncInterval,
-      autoRetry,
-    });
+    // TODO: API call to save configuration
     alert("Configuration saved successfully!");
   };
 

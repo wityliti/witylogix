@@ -174,7 +174,7 @@ interface Order {
   lng: number;
 }
 
-const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
+const MapGrid = ({ orders = [], selectedId, onSelectOrder }: Record<string, unknown>) => {
   const gridSize = 500;
   const minLat = 40.7100;
   const maxLat = 40.7750;
@@ -214,7 +214,7 @@ const MapGrid = ({ orders = [], selectedId, onSelectOrder }: any) => {
             </g>
           ))}
 
-          {orders.map((order: any) => {
+          {orders.map((order: Record<string, unknown>) => {
             const { x, y } = normalizeCoords(order.lat, order.lng);
             const color = getStatusColor(order.status);
             const isSelected = order.id === selectedId;

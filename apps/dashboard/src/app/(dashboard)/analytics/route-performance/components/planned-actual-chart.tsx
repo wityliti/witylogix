@@ -1,19 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-  ComposedChart,
-} from "recharts";
+  LazyComposedChart as ComposedChart,
+  LazyLine as Line,
+  LazyXAxis as XAxis,
+  LazyYAxis as YAxis,
+  LazyCartesianGrid as CartesianGrid,
+  LazyTooltip as Tooltip,
+  LazyLegend as Legend,
+  LazyResponsiveContainer as ResponsiveContainer,
+  LazyArea as Area,
+} from "@/components/charts/lazy";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PlannedActualChartProps } from "@witylogix/core/analytics";
@@ -89,79 +87,81 @@ export function PlannedActualChart({
       </CardHeader>
       <CardContent>
         <div className="w-full h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-              <defs>
-                <linearGradient id="varianceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--wl-warning-500)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="var(--wl-warning-500)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--wl-neutral-800)"
-                verticalPoints={chartData.map((_, i) => i)}
-              />
-              <XAxis
-                dataKey="timestamp"
-                stroke="var(--wl-text-secondary)"
-                style={{ fontSize: "12px" }}
-              />
-              <YAxis
-                stroke="var(--wl-text-secondary)"
-                label={{ value: "Minutes", angle: -90, position: "insideLeft" }}
-                style={{ fontSize: "12px" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--wl-bg-secondary)",
-                  border: "1px solid var(--wl-neutral-700)",
-                  borderRadius: "var(--wl-radius-md)",
-                  color: "var(--wl-text-primary)",
-                }}
-                formatter={(value: any) => [`${value}m`, ""]}
-                labelStyle={{ color: "var(--wl-text-primary)" }}
-              />
-              <Legend
-                wrapperStyle={{ color: "var(--wl-text-secondary)" }}
-                verticalAlign="top"
-                height={36}
-              />
+          <Suspense fallback={<div className="h-80 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="varianceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--wl-warning-500)" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="var(--wl-warning-500)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--wl-neutral-800)"
+                  verticalPoints={chartData.map((_, i) => i)}
+                />
+                <XAxis
+                  dataKey="timestamp"
+                  stroke="var(--wl-text-secondary)"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis
+                  stroke="var(--wl-text-secondary)"
+                  label={{ value: "Minutes", angle: -90, position: "insideLeft" }}
+                  style={{ fontSize: "12px" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--wl-bg-secondary)",
+                    border: "1px solid var(--wl-neutral-700)",
+                    borderRadius: "var(--wl-radius-md)",
+                    color: "var(--wl-text-primary)",
+                  }}
+                  formatter={(value: number) => [`${value}m`, ""]}
+                  labelStyle={{ color: "var(--wl-text-primary)" }}
+                />
+                <Legend
+                  wrapperStyle={{ color: "var(--wl-text-secondary)" }}
+                  verticalAlign="top"
+                  height={36}
+                />
 
-              {/* Variance area (background) */}
-              <Area
-                type="monotone"
-                dataKey="varianceUpper"
-                fill="url(#varianceGradient)"
-                stroke="transparent"
-                isAnimationActive={false}
-              />
+                {/* Variance area (background) */}
+                <Area
+                  type="monotone"
+                  dataKey="varianceUpper"
+                  fill="url(#varianceGradient)"
+                  stroke="transparent"
+                  isAnimationActive={false}
+                />
 
-              {/* Planned line */}
-              <Line
-                type="monotone"
-                dataKey="plannedDuration"
-                stroke="var(--wl-primary-500)"
-                strokeWidth={2}
-                dot={{ fill: "var(--wl-primary-500)", r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Planned Duration"
-                isAnimationActive={true}
-              />
+                {/* Planned line */}
+                <Line
+                  type="monotone"
+                  dataKey="plannedDuration"
+                  stroke="var(--wl-primary-500)"
+                  strokeWidth={2}
+                  dot={{ fill: "var(--wl-primary-500)", r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Planned Duration"
+                  isAnimationActive={true}
+                />
 
-              {/* Actual line */}
-              <Line
-                type="monotone"
-                dataKey="actualDuration"
-                stroke="var(--wl-info-400)"
-                strokeWidth={2}
-                dot={{ fill: "var(--wl-info-400)", r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Actual Duration"
-                isAnimationActive={true}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+                {/* Actual line */}
+                <Line
+                  type="monotone"
+                  dataKey="actualDuration"
+                  stroke="var(--wl-info-400)"
+                  strokeWidth={2}
+                  dot={{ fill: "var(--wl-info-400)", r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Actual Duration"
+                  isAnimationActive={true}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </Suspense>
         </div>
 
         {/* Summary stats below chart */}

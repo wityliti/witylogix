@@ -179,19 +179,6 @@ const getSegmentColor = (segment: string): "primary" | "success" | "warning" | "
   };
   return map[segment] ?? "default";
 };
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-};
-
-const getSegmentColor = (tier: string): 'primary' | 'success' | 'warning' | 'info' | 'default' => {
-  const map: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'default'> = {
-    enterprise: 'primary',
-    premium: 'success',
-    standard: 'info',
-    inactive: 'default',
-  };
-  return map[tier.toLowerCase()] ?? 'default';
 };
 
 export default function CustomersPage() {

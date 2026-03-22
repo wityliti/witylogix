@@ -40,15 +40,16 @@ export async function requireAuth(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  // Extract Bearer token from Authorization header
   const authHeader = request.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     throw new UnauthorizedError("Missing or invalid Authorization header");
   }
 
   const token = authHeader.slice(7);
-  const config = getConfig();
 
   try {
+    // Verify JWT signature using env var JWT_SECRET
     const payload = await request.jwtVerify<{
       sub: string;
       shopId: string;
@@ -59,6 +60,7 @@ export async function requireAuth(
       shopDomain?: string;
     }>();
 
+    // Attach auth context to request for downstream middleware/routes
     request.auth = {
       shopId: payload.shopId,
       orgId: payload.orgId,
@@ -69,6 +71,7 @@ export async function requireAuth(
       shopDomain: payload.shopDomain,
     };
   } catch (err) {
+    // Return 401 for any token verification failure (expired, invalid signature, etc.)
     throw new UnauthorizedError("Invalid or expired token");
   }
 }

@@ -135,7 +135,7 @@ export default function OnboardPage() {
 
   const handleComplete = useCallback(async () => {
     if (validateStep()) {
-      console.log("Onboarding data:", formData);
+      // TODO: API call to save onboarding data
       router.push("/dashboard/partners");
     }
   }, [formData, validateStep, router]);

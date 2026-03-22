@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Suppress @types/react dual-version errors from lucide-react/recharts
-  // until pnpm hoisting is fixed (React 19 + 18 types conflict)
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // TypeScript build errors are now properly fixed — no suppression needed
   // Proxy API calls to the Fastify backend in development
   async rewrites() {
     return [
@@ -15,6 +11,10 @@ const nextConfig: NextConfig = {
         destination: "http://localhost:8000/api/:path*",
       },
     ];
+  },
+  // Optimize bundle size by tree-shaking heavy libraries
+  experimental: {
+    optimizePackageImports: ["recharts", "lucide-react", "date-fns"],
   },
 };
 

@@ -82,6 +82,7 @@ export function useApiQuery<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const isMountedRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!path || options?.skip) {
@@ -89,19 +90,28 @@ export function useApiQuery<T>(
       return;
     }
 
+    // Cancel previous request if it's still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new controller for this request
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     try {
       setLoading(true);
       setError(null);
-      const result = await api.get<ApiResponse<T>>(path);
-      if (isMountedRef.current) {
+      const result = await api.get<ApiResponse<T>>(path, { signal });
+      if (isMountedRef.current && !signal.aborted) {
         setData(result.data);
       }
     } catch (err) {
-      if (isMountedRef.current) {
+      if (isMountedRef.current && !signal.aborted) {
         setError(err instanceof Error ? err : new Error(String(err)));
       }
     } finally {
-      if (isMountedRef.current) {
+      if (isMountedRef.current && !signal.aborted) {
         setLoading(false);
       }
     }
@@ -111,6 +121,9 @@ export function useApiQuery<T>(
     fetchData();
     return () => {
       isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [fetchData, options?.deps]);
 
@@ -193,6 +206,7 @@ export function useApiList<T>(
   const [sort, setSort] = useState(initialFilters?.sort ?? '');
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const isMountedRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const buildUrl = useCallback(() => {
     if (!path) return null;
@@ -215,20 +229,29 @@ export function useApiList<T>(
       return;
     }
 
+    // Cancel previous request if it's still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new controller for this request
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     try {
       setLoading(true);
       setError(null);
-      const result = await api.get<PaginatedResponse<T>>(url);
-      if (isMountedRef.current) {
+      const result = await api.get<PaginatedResponse<T>>(url, { signal });
+      if (isMountedRef.current && !signal.aborted) {
         setItems(result.data);
         setPagination(result.meta);
       }
     } catch (err) {
-      if (isMountedRef.current) {
+      if (isMountedRef.current && !signal.aborted) {
         setError(err instanceof Error ? err : new Error(String(err)));
       }
     } finally {
-      if (isMountedRef.current) {
+      if (isMountedRef.current && !signal.aborted) {
         setLoading(false);
       }
     }
@@ -238,6 +261,9 @@ export function useApiList<T>(
     fetchList();
     return () => {
       isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [fetchList]);
 

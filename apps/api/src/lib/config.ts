@@ -128,6 +128,7 @@ const configSchema = z.object({
 
   // URLs
   TRACKING_PAGE_URL: z.string().url().default("http://localhost:3002"),
+  DASHBOARD_URL: z.string().url().default("http://localhost:3000"),
 });
 
 export type Config = z.infer<typeof configSchema>;

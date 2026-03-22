@@ -164,7 +164,7 @@ function ActivityIcon({ type }: { type: string }) {
 }
 
 function ActivityTypeLabel({ type }: { type: string }) {
-  const labels: Record<string, { text: string; variant: any }> = {
+  const labels: Record<string, { text: string; variant: string }> = {
     login: { text: "Login", variant: "info" },
     order_created: { text: "Order Created", variant: "success" },
     route_planned: { text: "Route Planned", variant: "primary" },

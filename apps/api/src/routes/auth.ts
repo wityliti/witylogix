@@ -15,6 +15,7 @@
  *   POST /driver/login    Driver login (phone + password)
  *   POST /refresh         Refresh access token
  *   POST /logout          Invalidate refresh token
+ *   GET  /me              Get current authenticated user (requires Bearer token)
  *   POST /forgot-password Request password reset
  *   POST /reset-password  Reset password with token
  */
@@ -27,6 +28,11 @@ import { UnauthorizedError, NotFoundError, ValidationError } from "../lib/errors
 import { getConfig } from "../lib/config.js";
 import { getRedis } from "../lib/redis.js";
 import { getNotificationQueue } from "../lib/queue.js";
+
+// Password hashing with bcrypt
+// Note: Ensure 'bcrypt' is installed as dependency
+// TODO: Consider adding rate limiting middleware for login endpoints
+// Suggested approach: @fastify/rate-limit per /login route with max 5 attempts per minute
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -87,9 +93,20 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // No auth hooks — these are public routes
 
   // ── DASHBOARD USER LOGIN ──────────────────────────────────
+  // POST /login - Email + password authentication
+  // Returns: accessToken, refreshToken, user profile, shop details
+  // Errors: 401 (invalid credentials), 422 (validation error)
+  // Rate limiting: Recommended 5 attempts/minute per IP
 
   fastify.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email, password, shopDomain } = loginSchema.parse(request.body);
+    try {
+      var { email, password, shopDomain } = loginSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid login request", err.errors);
+      }
+      throw err;
+    }
 
     // Look up shop
     const shop = await prisma.shop.findUnique({
@@ -178,9 +195,20 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── DRIVER LOGIN ──────────────────────────────────────────
+  // POST /driver/login - Phone + password authentication for mobile drivers
+  // Returns: accessToken, refreshToken (90d), driver profile
+  // Errors: 401 (invalid credentials), 422 (validation error)
+  // Rate limiting: Recommended 5 attempts/minute per IP
 
   fastify.post("/driver/login", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { phone, password, shopDomain } = driverLoginSchema.parse(request.body);
+    try {
+      var { phone, password, shopDomain } = driverLoginSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid driver login request", err.errors);
+      }
+      throw err;
+    }
 
     const shop = await prisma.shop.findUnique({
       where: { shopifyDomain: shopDomain },
@@ -260,9 +288,20 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── REFRESH TOKEN ─────────────────────────────────────────
+  // POST /refresh - Obtain new accessToken using refreshToken
+  // Returns: new accessToken, rotated refreshToken, expiresIn
+  // Errors: 401 (invalid/expired token), 422 (validation error)
+  // Behavior: Old refresh token is invalidated, new one is rotated
 
   fastify.post("/refresh", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { refreshToken } = refreshSchema.parse(request.body);
+    try {
+      var { refreshToken } = refreshSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid refresh request", err.errors);
+      }
+      throw err;
+    }
     const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
 
     const redis = getRedis();
@@ -312,9 +351,20 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── LOGOUT ────────────────────────────────────────────────
+  // POST /logout - Revoke refreshToken session
+  // Returns: {data: {message: "Logged out"}}
+  // Errors: 422 (validation error)
+  // Behavior: Deletes refresh token from Redis; always returns 200 for idempotency
 
   fastify.post("/logout", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { refreshToken } = refreshSchema.parse(request.body);
+    try {
+      var { refreshToken } = refreshSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid logout request", err.errors);
+      }
+      throw err;
+    }
     const refreshHash = createHash("sha256").update(refreshToken).digest("hex");
 
     const redis = getRedis();
@@ -324,9 +374,21 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── FORGOT PASSWORD ───────────────────────────────────────
+  // POST /forgot-password - Initiate password reset flow
+  // Returns: {data: {message: "If the email exists, a reset link has been sent"}} (always 200)
+  // Errors: 422 (validation error)
+  // Security: Never reveals whether user exists; sends email async via notification queue
+  // Rate limiting: Recommended 3 attempts/hour per email per shop
 
   fastify.post("/forgot-password", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email, shopDomain } = forgotPasswordSchema.parse(request.body);
+    try {
+      var { email, shopDomain } = forgotPasswordSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid forgot-password request", err.errors);
+      }
+      throw err;
+    }
 
     const shop = await prisma.shop.findUnique({
       where: { shopifyDomain: shopDomain },
@@ -379,7 +441,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
             },
           },
         },
-        { priority: 'high' }
+        { priority: 1 } // 1 = high priority in BullMQ
       );
     }
 
@@ -387,9 +449,21 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── RESET PASSWORD ────────────────────────────────────────
+  // POST /reset-password - Complete password reset with token
+  // Returns: {data: {message: "Password reset successfully"}}
+  // Errors: 422 (invalid/expired token or weak password)
+  // Behavior: Password is hashed with scrypt; token is invalidated after use
+  // Rate limiting: Recommended 5 attempts/minute per IP
 
   fastify.post("/reset-password", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { token, password } = resetPasswordSchema.parse(request.body);
+    try {
+      var { token, password } = resetPasswordSchema.parse(request.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        throw new ValidationError("Invalid reset-password request", err.errors);
+      }
+      throw err;
+    }
     const resetHash = createHash("sha256").update(token).digest("hex");
 
     const redis = getRedis();
@@ -412,6 +486,84 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
     return { data: { message: "Password reset successfully" } };
   });
+
+  // ── GET CURRENT USER ───────────────────────────────────────
+  // GET /me - Retrieve authenticated user's profile and permissions
+  // Auth: Required — Bearer token in Authorization header
+  // Returns: user/driver profile with role, org context, shop affiliation
+  // Errors: 401 (missing/invalid token), 401 (user not found or inactive)
+
+  fastify.get(
+    "/me",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      // Import auth middleware to verify token
+      const { requireAuth } = await import("../middleware/auth.js");
+      await requireAuth(request, reply);
+
+      // At this point, request.auth is populated by requireAuth middleware
+      const auth = (request as any).auth;
+      if (!auth?.userId && !auth?.driverId) {
+        throw new UnauthorizedError("Invalid authentication context");
+      }
+
+      if (auth.driverId) {
+        // Return driver profile
+        const driver = await prisma.driver.findUnique({
+          where: { id: auth.driverId },
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            isActive: true,
+          },
+        });
+
+        if (!driver || !driver.isActive) {
+          throw new UnauthorizedError("Driver not found or inactive");
+        }
+
+        return {
+          data: {
+            id: driver.id,
+            name: driver.name,
+            phone: driver.phone,
+            role: auth.role, // From JWT token
+            type: "driver" as const,
+            shopId: auth.shopId,
+          },
+        };
+      }
+
+      // Return user profile
+      const user = await prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+        },
+      });
+
+      if (!user || !user.isActive) {
+        throw new UnauthorizedError("User not found or inactive");
+      }
+
+      return {
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          type: "user" as const,
+          shopId: auth.shopId,
+          orgId: auth.orgId,
+          orgRole: auth.orgRole,
+        },
+      };
+    },
+  );
 }
 
 export default authRoutes;

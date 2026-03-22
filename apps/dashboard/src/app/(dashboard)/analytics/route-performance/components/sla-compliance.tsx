@@ -1,19 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
+  LazyBarChart as BarChart,
+  LazyCartesianGrid as CartesianGrid,
+  LazyXAxis as XAxis,
+  LazyYAxis as YAxis,
+  LazyTooltip as Tooltip,
+  LazyBar as Bar,
+  LazyResponsiveContainer as ResponsiveContainer,
+} from "@/components/charts/lazy";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { SLAComplianceProps } from "@witylogix/core/analytics";
@@ -143,37 +139,39 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
         {trendData.length > 0 && (
           <div>
             <p className="text-sm font-semibold text-wl-text-primary mb-4">14-Day Trend</p>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={trendData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--wl-neutral-800)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="date"
-                  stroke="var(--wl-text-secondary)"
-                  style={{ fontSize: "12px" }}
-                />
-                <YAxis
-                  stroke="var(--wl-text-secondary)"
-                  label={{ value: "%", angle: -90, position: "insideLeft" }}
-                  style={{ fontSize: "12px" }}
-                  domain={[0, 100]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--wl-bg-secondary)",
-                    border: "1px solid var(--wl-neutral-700)",
-                    borderRadius: "var(--wl-radius-md)",
-                    color: "var(--wl-text-primary)",
-                  }}
-                  formatter={(value: any) => [`${value}%`, ""]}
-                  labelStyle={{ color: "var(--wl-text-primary)" }}
-                />
-                <Bar dataKey="overall" fill="var(--wl-primary-500)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-64 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={trendData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--wl-neutral-800)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    stroke="var(--wl-text-secondary)"
+                    style={{ fontSize: "12px" }}
+                  />
+                  <YAxis
+                    stroke="var(--wl-text-secondary)"
+                    label={{ value: "%", angle: -90, position: "insideLeft" }}
+                    style={{ fontSize: "12px" }}
+                    domain={[0, 100]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--wl-bg-secondary)",
+                      border: "1px solid var(--wl-neutral-700)",
+                      borderRadius: "var(--wl-radius-md)",
+                      color: "var(--wl-text-primary)",
+                    }}
+                    formatter={(value: number) => [`${value}%`, ""]}
+                    labelStyle={{ color: "var(--wl-text-primary)" }}
+                  />
+                  <Bar dataKey="overall" fill="var(--wl-primary-500)" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Suspense>
           </div>
         )}
       </CardContent>

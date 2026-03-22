@@ -49,28 +49,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from cookie and localStorage
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const storedToken = localStorage.getItem("authToken");
+        // Read token from httpOnly cookie (via document.cookie)
+        const cookieToken = document.cookie
+          .split('; ')
+          .find(c => c.startsWith('auth-token='))
+          ?.split('=')[1];
+
         const storedUser = localStorage.getItem("authUser");
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
+        if (cookieToken && storedUser) {
+          setToken(cookieToken);
           setUser(JSON.parse(storedUser));
 
-          // Skip token refresh for demo tokens
-          if (!storedToken.startsWith("demo-token-")) {
-            try {
-              await refreshTokenFn(storedToken);
-            } catch (error) {
-              // If refresh fails, clear auth
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("authUser");
-              setToken(null);
-              setUser(null);
-            }
+          // Attempt token refresh with exponential backoff
+          try {
+            await refreshTokenFn(cookieToken);
+          } catch (error) {
+            // If refresh fails, clear auth
+            localStorage.removeItem("authUser");
+            document.cookie = "auth-token=; path=/; max-age=0; samesite=lax";
+            setToken(null);
+            setUser(null);
           }
         }
       } catch (error) {
@@ -83,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, []);
 
-  const refreshTokenFn = async (currentToken: string) => {
+  const refreshTokenFn = async (currentToken: string, retryCount = 0) => {
     try {
       const response = await fetch(`${API_URL}/auth/refresh`, {
         method: "POST",
@@ -91,48 +94,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${currentToken}`,
         },
+        credentials: "include", // Include cookies for httpOnly cookie support
       });
 
       if (response.ok) {
         const data: AuthResponse = await response.json();
         setToken(data.token);
         setUser(data.user);
-        localStorage.setItem("authToken", data.token);
+        // Token stored in httpOnly cookie by backend
+        // Only store user profile in localStorage (non-sensitive)
         localStorage.setItem("authUser", JSON.stringify(data.user));
       } else {
         throw new Error("Token refresh failed");
       }
     } catch (error) {
+      // Exponential backoff retry logic
+      if (retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.warn(`Token refresh failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return refreshTokenFn(currentToken, retryCount + 1);
+      }
       console.error("Token refresh error:", error);
       throw error;
     }
   };
 
   const login = async (email: string, password: string, rememberMe = false) => {
-    // Demo credentials bypass (no backend required)
-    if (email === "demo@witylogix.com" && password === "demo123") {
-      const demoUser: User = {
-        id: "demo-001",
-        name: "Demo User",
-        email: "demo@witylogix.com",
-        role: "admin",
-        shopId: "shop-demo",
-        createdAt: new Date().toISOString(),
-      };
-      const demoToken = "demo-token-" + Date.now();
-      setToken(demoToken);
-      setUser(demoUser);
-      localStorage.setItem("authToken", demoToken);
-      localStorage.setItem("authUser", JSON.stringify(demoUser));
-      // Set cookie so middleware can verify auth on protected routes
-      document.cookie = `auth-token=${demoToken}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
-      if (rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-        localStorage.setItem("rememberedEmail", email);
-      }
-      return;
-    }
-
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
@@ -140,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Allow cookies to be set by backend
       });
 
       if (!response.ok) {
@@ -161,11 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setUser(data.user);
 
-      // Store auth data
-      localStorage.setItem("authToken", data.token);
+      // Token is stored in httpOnly cookie by backend
+      // Only store user profile in localStorage (non-sensitive)
       localStorage.setItem("authUser", JSON.stringify(data.user));
-      // Set cookie so middleware can verify auth on protected routes
-      document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`;
+
+      // Fallback: also set cookie in case backend doesn't set httpOnly
+      if (data.token) {
+        document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax; secure`;
+      }
 
       if (rememberMe) {
         localStorage.setItem("rememberMe", "true");
@@ -187,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        credentials: "include", // Allow cookies to be set by backend
       });
 
       if (!response.ok) {
@@ -205,9 +198,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(responseData.token);
       setUser(responseData.user);
 
-      // Store auth data
-      localStorage.setItem("authToken", responseData.token);
+      // Token is stored in httpOnly cookie by backend
+      // Only store user profile in localStorage (non-sensitive)
       localStorage.setItem("authUser", JSON.stringify(responseData.user));
+
+      // Fallback: also set cookie in case backend doesn't set httpOnly
+      if (responseData.token) {
+        document.cookie = `auth-token=${responseData.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax; secure`;
+      }
     } catch (error) {
       throw error;
     }
@@ -218,22 +216,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setToken(null);
 
-    // Clear localStorage
-    localStorage.removeItem("authToken");
+    // Clear localStorage (non-sensitive data only)
     localStorage.removeItem("authUser");
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("rememberedEmail");
 
-    // Clear auth cookie so middleware stops protecting routes
-    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax";
+    // Clear auth cookie
+    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax; secure";
 
-    // Optional: Notify backend of logout
+    // Notify backend of logout
     if (token) {
       fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       }).catch((error) => console.error("Logout notification failed:", error));
     }
   };

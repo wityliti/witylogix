@@ -113,7 +113,6 @@ export default function CrmDashboardPage() {
   // Handle disconnect
   const handleDisconnect = useCallback((crmId: string) => {
     // In production, make API call to disconnect
-    console.log("Disconnecting CRM:", crmId);
   }, []);
 
   // Handle reconfigure
@@ -124,7 +123,6 @@ export default function CrmDashboardPage() {
   // Handle retry failed sync
   const handleRetrySync = useCallback((eventId: string) => {
     // In production, make API call to retry sync
-    console.log("Retrying sync:", eventId);
   }, []);
 
   return (

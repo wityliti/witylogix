@@ -165,7 +165,7 @@ export default function CreateInvoicePage() {
   );
 
   const updateLineItem = useCallback(
-    (id: string, field: keyof LineItem, value: any) => {
+    (id: string, field: keyof LineItem, value: string | number) => {
       setLineItems(
         lineItems.map((item) =>
           item.id === id ? { ...item, [field]: value } : item
@@ -182,13 +182,6 @@ export default function CreateInvoicePage() {
   }, []);
 
   const handleSaveDraft = useCallback(() => {
-    console.log("Saving invoice as draft", {
-      customer: selectedCustomer,
-      lineItems,
-      dueDate,
-      notes,
-      terms,
-    });
     // TODO: API call
     router.push("/dashboard/invoices");
   }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
@@ -198,13 +191,6 @@ export default function CreateInvoicePage() {
       alert("Please select a customer and add line items");
       return;
     }
-    console.log("Sending invoice", {
-      customer: selectedCustomer,
-      lineItems,
-      dueDate,
-      notes,
-      terms,
-    });
     // TODO: API call
     router.push("/dashboard/invoices");
   }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);

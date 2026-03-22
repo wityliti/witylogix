@@ -84,7 +84,7 @@ interface TimelineEvent {
   completed: boolean;
 }
 
-const DeliveryProofSection = ({ proof }: { proof: any }) => {
+const DeliveryProofSection = ({ proof }: { proof: Record<string, unknown> }) => {
   return (
     <Card className="bg-[#12121a] border border-[#1e1e2e] mt-4">
       <CardContent className="p-6">
@@ -244,7 +244,7 @@ export default function ShipmentDetail({ params }: { params: { id: string } }) {
               <div className="border-t border-[#1e1e2e] pt-4">
                 <p className="text-xs font-semibold text-gray-300 mb-3">Items</p>
                 <div className="flex flex-col gap-2.5">
-                  {shipment.package.items.map((item: any, index: number) => (
+                  {shipment.package.items.map((item: Record<string, unknown>, index: number) => (
                     <div key={index} className="flex justify-between p-2.5 rounded-lg bg-[#1a1a2e]">
                       <div>
                         <p className="text-xs font-semibold text-white">{item.name}</p>

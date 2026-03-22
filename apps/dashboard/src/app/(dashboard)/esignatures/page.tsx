@@ -136,7 +136,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
   );
 }
 
-function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
+function RecentEnvelopesTable({ envelopes }: { envelopes: Record<string, unknown>[] }) {
   return (
     <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
@@ -213,7 +213,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: any[] }) {
   );
 }
 
-function TemplateUsageCard({ templates }: { templates: any[] }) {
+function TemplateUsageCard({ templates }: { templates: Record<string, unknown>[] }) {
   return (
     <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>

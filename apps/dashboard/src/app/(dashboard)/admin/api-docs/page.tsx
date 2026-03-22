@@ -35,12 +35,12 @@ interface ApiEndpoint {
   }>;
   requestBody?: {
     type: string;
-    example: any;
+    example: Record<string, unknown>;
   };
   responses: Array<{
     code: number;
     description: string;
-    example: any;
+    example: Record<string, unknown>;
   }>;
 }
 
@@ -273,7 +273,7 @@ function MethodBadge({ method }: { method: string }) {
 }
 
 function AuthBadge({ auth }: { auth: string }) {
-  const badges: Record<string, { variant: any; label: string }> = {
+  const badges: Record<string, { variant: string; label: string }> = {
     bearer: { variant: "warning", label: "Bearer Token" },
     api_key: { variant: "info", label: "API Key" },
     public: { variant: "success", label: "Public" },

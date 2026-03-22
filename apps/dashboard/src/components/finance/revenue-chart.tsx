@@ -1,19 +1,19 @@
 "use client";
 
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useMemo, useState, useCallback, Suspense } from "react";
 import { Card } from "@/components/ui";
 import {
-  BarChart,
-  Bar,
-  Line,
-  ComposedChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  LazyBarChart as BarChart,
+  LazyBar as Bar,
+  LazyLine as Line,
+  LazyComposedChart as ComposedChart,
+  LazyXAxis as XAxis,
+  LazyYAxis as YAxis,
+  LazyCartesianGrid as CartesianGrid,
+  LazyTooltip as Tooltip,
+  LazyLegend as Legend,
+  LazyResponsiveContainer as ResponsiveContainer,
+} from "@/components/charts/lazy";
 
 interface RevenueDataPoint {
   month: string;
@@ -206,108 +206,112 @@ export const RevenueChart = memo(function RevenueChart({
       )}
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart
-          data={chartData}
-          onMouseMove={handleMouseMove}
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-        >
-          <defs>
-            <linearGradient
-              id="revenueGradient"
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop
-                offset="5%"
-                stopColor="var(--wl-success-400)"
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="95%"
-                stopColor="var(--wl-success-400)"
-                stopOpacity={0.2}
-              />
-            </linearGradient>
-          </defs>
+      <Suspense fallback={<div className="w-full" style={{ height }}>
+        <div className="w-full h-full bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+      </div>}>
+        <ResponsiveContainer width="100%" height={height}>
+          <ComposedChart
+            data={chartData}
+            onMouseMove={handleMouseMove}
+            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+          >
+            <defs>
+              <linearGradient
+                id="revenueGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor="var(--wl-success-400)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--wl-success-400)"
+                  stopOpacity={0.2}
+                />
+              </linearGradient>
+            </defs>
 
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="var(--wl-border-subtle)"
-            vertical={false}
-          />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--wl-border-subtle)"
+              vertical={false}
+            />
 
-          <XAxis
-            dataKey="month"
-            stroke="var(--wl-text-tertiary)"
-            tick={{ fontSize: 12 }}
-            axisLine={{ stroke: "var(--wl-border-subtle)" }}
-            style={{ color: "var(--wl-text-tertiary)" }}
-          />
-
-          <YAxis
-            stroke="var(--wl-text-tertiary)"
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value) => formatCurrency(value, currency).replace(/\.0+K|M/, "")}
-            axisLine={{ stroke: "var(--wl-border-subtle)" }}
-            style={{ color: "var(--wl-text-tertiary)" }}
-          />
-
-          <Tooltip
-            content={
-              <RevenueTooltip currency={currency} />
-            }
-            cursor={{ fill: "var(--wl-primary-500)", fillOpacity: 0.05 }}
-          />
-
-          <Legend
-            wrapperStyle={{
-              paddingTop: "20px",
-              color: "var(--wl-text-secondary)",
-            }}
-            iconType="line"
-          />
-
-          {/* Revenue Bars */}
-          <Bar
-            dataKey="revenue"
-            fill="var(--wl-success-400)"
-            radius={[8, 8, 0, 0]}
-            name="Revenue"
-            fillOpacity={0.8}
-          />
-
-          {/* Previous Year Line */}
-          {showComparison && (
-            <Line
-              type="monotone"
-              dataKey="previousYear"
+            <XAxis
+              dataKey="month"
               stroke="var(--wl-text-tertiary)"
-              strokeWidth={2}
-              name="Previous Year"
-              dot={{ fill: "var(--wl-text-tertiary)", r: 4 }}
-              activeDot={{ r: 6 }}
-              opacity={0.6}
+              tick={{ fontSize: 12 }}
+              axisLine={{ stroke: "var(--wl-border-subtle)" }}
+              style={{ color: "var(--wl-text-tertiary)" }}
             />
-          )}
 
-          {/* Target Line */}
-          {showTarget && (
-            <Line
-              type="monotone"
-              dataKey="target"
-              stroke="var(--wl-primary-400)"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              name="Target"
-              dot={{ fill: "var(--wl-primary-400)", r: 4 }}
-              activeDot={{ r: 6 }}
+            <YAxis
+              stroke="var(--wl-text-tertiary)"
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value) => formatCurrency(value, currency).replace(/\.0+K|M/, "")}
+              axisLine={{ stroke: "var(--wl-border-subtle)" }}
+              style={{ color: "var(--wl-text-tertiary)" }}
             />
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
+
+            <Tooltip
+              content={
+                <RevenueTooltip currency={currency} />
+              }
+              cursor={{ fill: "var(--wl-primary-500)", fillOpacity: 0.05 }}
+            />
+
+            <Legend
+              wrapperStyle={{
+                paddingTop: "20px",
+                color: "var(--wl-text-secondary)",
+              }}
+              iconType="line"
+            />
+
+            {/* Revenue Bars */}
+            <Bar
+              dataKey="revenue"
+              fill="var(--wl-success-400)"
+              radius={[8, 8, 0, 0]}
+              name="Revenue"
+              fillOpacity={0.8}
+            />
+
+            {/* Previous Year Line */}
+            {showComparison && (
+              <Line
+                type="monotone"
+                dataKey="previousYear"
+                stroke="var(--wl-text-tertiary)"
+                strokeWidth={2}
+                name="Previous Year"
+                dot={{ fill: "var(--wl-text-tertiary)", r: 4 }}
+                activeDot={{ r: 6 }}
+                opacity={0.6}
+              />
+            )}
+
+            {/* Target Line */}
+            {showTarget && (
+              <Line
+                type="monotone"
+                dataKey="target"
+                stroke="var(--wl-primary-400)"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                name="Target"
+                dot={{ fill: "var(--wl-primary-400)", r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </Suspense>
 
       {/* Footer Info */}
       <div className="pt-4 border-t border-wl-border-subtle">

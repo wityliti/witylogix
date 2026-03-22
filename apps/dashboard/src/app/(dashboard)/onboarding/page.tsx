@@ -50,7 +50,7 @@ const subSteps: { id: SubStep; label: string }[] = [
 ];
 
 const initialData: OnboardingData = {
-  email: "demo@witylogix.com",
+  email: "",
   verificationCode: "",
   emailVerified: false,
   deploymentType: null,
@@ -160,7 +160,6 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = () => {
-    console.log("Onboarding complete:", data);
     // In real app, send data to backend
     router.push("/");
   };
@@ -357,15 +356,12 @@ export default function OnboardingPage() {
               data={data}
               onAddDriver={(driver) => {
                 // Store driver in data (add to drivers array if needed)
-                console.log("Driver added:", driver);
               }}
               onAddVehicle={(vehicle) => {
                 // Store vehicle in data (add to vehicles array if needed)
-                console.log("Vehicle added:", vehicle);
               }}
               onImportVehicles={(csvContent) => {
                 // Process CSV content
-                console.log("CSV imported:", csvContent);
               }}
               onSkip={handleSkip}
             />

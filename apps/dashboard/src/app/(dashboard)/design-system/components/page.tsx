@@ -715,7 +715,7 @@ export default function ComponentGalleryPage() {
               />
             }
             code={`<FileUpload
-  onFilesSelected={(files) => console.log(files)}
+  onFilesSelected={(files) => handleFilesSelected(files)}
   accept="image/*"
   maxSize={5}
 />`}
@@ -741,7 +741,7 @@ export default function ComponentGalleryPage() {
     { label: "Option 1", value: "1" },
     { label: "Option 2", value: "2" },
   ]}
-  onSelect={(option) => console.log(option)}
+  onSelect={(option) => handleSelect(option)}
   placeholder="Search..."
 />`}
           />

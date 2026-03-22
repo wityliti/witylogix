@@ -57,7 +57,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
   );
 }
 
-function ComplianceStatusCard({ compliance }: { compliance: any }) {
+function ComplianceStatusCard({ compliance }: { compliance: Record<string, unknown> }) {
   return (
     <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardHeader>
@@ -103,7 +103,7 @@ function ComplianceStatusCard({ compliance }: { compliance: any }) {
   );
 }
 
-function RecentRecordsCard({ patients }: { patients: any[] }) {
+function RecentRecordsCard({ patients }: { patients: Record<string, unknown>[] }) {
   return (
     <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardHeader>

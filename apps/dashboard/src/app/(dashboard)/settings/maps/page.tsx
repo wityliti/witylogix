@@ -110,7 +110,7 @@ export default function MapsSettingsPage() {
   };
 
   // Handle setting changes
-  const handleSettingChange = (key: keyof MapsSettings, value: any) => {
+  const handleSettingChange = (key: keyof MapsSettings, value: string | boolean) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,

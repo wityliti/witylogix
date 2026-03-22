@@ -5,24 +5,41 @@ import {
 } from './i18n/config';
 
 /**
- * Protected routes that require authentication
- */
-const protectedRoutes = [
-  '/orders',
-  '/drivers',
-  '/deliveries',
-  '/settings',
-  '/integrations',
-  '/admin',
-  '/profile',
-  '/analytics',
-  '/support',
-];
-
-/**
  * Public routes that don't require authentication
  */
-const publicRoutes = ['/login', '/register', '/forgot-password'];
+const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password', '/magic-link'];
+
+/**
+ * Helper to decode JWT payload (without verification - validation happens on backend)
+ */
+function decodeJWT(token: string): { exp?: number } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    const payload = parts[1];
+    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf-8'));
+    return decoded;
+  } catch (error) {
+    console.error('Failed to decode JWT:', error);
+    return null;
+  }
+}
+
+/**
+ * Check if JWT token is expired
+ */
+function isTokenExpired(token: string): boolean {
+  const decoded = decodeJWT(token);
+  if (!decoded || !decoded.exp) return true;
+
+  // exp is in seconds, Date.now() is in milliseconds
+  const expiryTime = decoded.exp * 1000;
+  const now = Date.now();
+
+  // Consider token expired if expiry is within 30 seconds
+  return expiryTime < (now + 30 * 1000);
+}
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -44,19 +61,32 @@ export function middleware(request: NextRequest) {
   // Get auth token from cookies
   const authToken = request.cookies.get('auth-token')?.value;
 
-  // Check authentication for protected routes
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  // Check if route is public
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
-  // Redirect to login if accessing protected route without auth
-  if (isProtectedRoute && !authToken) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+  // Check if route is under dashboard (protected)
+  const isDashboardRoute = pathname.startsWith('/(dashboard)') ||
+                           pathname.match(/^\/(dashboard|orders|drivers|deliveries|settings|integrations|admin|profile|analytics|support|customers|onboarding)/);
+
+  // For dashboard routes, require valid auth token
+  if (isDashboardRoute) {
+    if (!authToken) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check if token is expired
+    if (isTokenExpired(authToken)) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      loginUrl.searchParams.set('reason', 'expired');
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // Redirect to dashboard if accessing login while authenticated
-  if (isPublicRoute && authToken) {
+  // Redirect to dashboard if accessing public auth routes while authenticated
+  if (isPublicRoute && authToken && !isTokenExpired(authToken)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

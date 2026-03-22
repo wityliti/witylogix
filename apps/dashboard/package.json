@@ -19,7 +19,8 @@
     "next-intl": "^4.8.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

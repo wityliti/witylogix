@@ -145,7 +145,7 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
     label: string;
     value: number | string;
     suffix?: string;
-    icon?: any;
+    icon?: React.ComponentType<{ className?: string }>;
   }) => (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between">

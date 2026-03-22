@@ -98,7 +98,7 @@ export default function EventsPage() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Events" value={data.length} color="primary" />
         <StatCard label="Last 24h" value={Math.floor(data.length * 0.3)} color="info" />
-        <StatCard label="Event Types" value={new Set(data.map((e: any) => e.action)).size} color="success" />
+        <StatCard label="Event Types" value={new Set(data.map((e: Record<string, unknown>) => e.action)).size} color="success" />
         <StatCard label="Pending" value="2" color="warning" />
       </div>
 
@@ -224,7 +224,7 @@ export default function EventsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-3">
-            {data.map((event: any) => (
+            {data.map((event: Record<string, unknown>) => (
               <div key={event.id} className="flex items-start gap-3">
                 <input
                   type="checkbox"

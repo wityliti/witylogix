@@ -218,12 +218,10 @@ export default function InvoicesPage() {
   }, [paginatedInvoices, selectedInvoices]);
 
   const handleBulkSend = useCallback(() => {
-    console.log("Bulk send:", Array.from(selectedInvoices));
     // TODO: API call for bulk send
   }, [selectedInvoices]);
 
   const handleBulkMarkPaid = useCallback(() => {
-    console.log("Mark paid:", Array.from(selectedInvoices));
     // TODO: API call for mark paid
   }, [selectedInvoices]);
 
@@ -500,7 +498,7 @@ export default function InvoicesPage() {
                       className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
                     />
                   ),
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <input
                       type="checkbox"
                       checked={selectedInvoices.has(item.id)}
@@ -513,7 +511,7 @@ export default function InvoicesPage() {
                 {
                   key: "number",
                   header: "Invoice #",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <div className="font-mono text-sm font-medium text-blue-400">
                       {item.number}
                     </div>
@@ -526,12 +524,12 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: any) => <span className="text-gray-300">{item.customerName}</span>,
+                  render: (item: Record<string, unknown>) => <span className="text-gray-300">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
                   header: "Amount",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <div className="font-medium text-white">
                       ${item.amount.toFixed(2)}
                     </div>
@@ -543,7 +541,7 @@ export default function InvoicesPage() {
                 {
                   key: "status",
                   header: "Status",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <Badge variant={getStatusBadgeVariant(item.status)}>
                       {getStatusLabel(item.status)}
                     </Badge>
@@ -553,7 +551,7 @@ export default function InvoicesPage() {
                 {
                   key: "dueDate",
                   header: "Due Date",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <div className="text-sm text-gray-300">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
@@ -564,7 +562,7 @@ export default function InvoicesPage() {
                 {
                   key: "sentDate",
                   header: "Sent Date",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <div className="text-sm text-gray-400">
                       {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
@@ -574,7 +572,7 @@ export default function InvoicesPage() {
                 {
                   key: "actions",
                   header: "Actions",
-                  render: (item: any) => (
+                  render: (item: Record<string, unknown>) => (
                     <Button
                       variant="ghost"
                       size="sm"

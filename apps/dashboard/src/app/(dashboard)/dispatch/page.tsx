@@ -122,7 +122,7 @@ export default function DispatchPage() {
     (orderId: string, driverId: string) => {
       setAssigningOrderId(orderId);
       setTimeout(() => {
-        console.log(`Assigned order ${orderId} to driver ${driverId}`);
+        // TODO: API call to assign driver
         setAssigningOrderId(null);
         setSelectedOrderId(null);
       }, 300);

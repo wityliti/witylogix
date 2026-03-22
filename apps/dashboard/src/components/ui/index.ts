@@ -151,6 +151,15 @@ export { ErrorBoundary } from "./error-boundary";
 // Loading Spinner
 export { LoadingSpinner } from "./loading-spinner";
 
+// Loading (consolidated loading module)
+export {
+  LoadingSkeleton,
+  TableSkeleton,
+  CardSkeleton,
+  ErrorState,
+  LoadingSpinner as LoadingSpinnerConsolidated,
+} from "./loading";
+
 // Enhanced Empty State
 export { EmptyState as EmptyStateEnhanced, type EmptyStateVariant } from "./empty-state-enhanced";
 

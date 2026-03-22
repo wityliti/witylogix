@@ -319,7 +319,7 @@ const ComponentsShowcase = () => {
                   { value: "opt3", label: "Option 3" },
                 ]}
                 value="opt1"
-                onChange={(value) => console.log("Selected:", value)}
+                onChange={() => {}}
               />
             </div>
           </div>
@@ -371,7 +371,7 @@ const ComponentsShowcase = () => {
               { id: "tab3", label: "Tab Three" },
             ]}
             activeTab="tab1"
-            onChange={(tab) => console.log("Selected tab:", tab)}
+            onChange={() => {}}
             variant="pills"
             size="md"
           />

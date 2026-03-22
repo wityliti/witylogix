@@ -108,7 +108,7 @@ function TeamCollaborationPage() {
       "textarea[placeholder*='Type a message']"
     ) as HTMLTextAreaElement;
     const content = messageInput?.value || "";
-    const attachments: any[] = [];
+    const attachments: Record<string, unknown>[] = [];
 
     if (!content.trim()) return;
 
@@ -389,7 +389,7 @@ function TeamCollaborationPage() {
 interface RightSidebarProps {
   channel: Channel;
   pinnedMessages: Message[];
-  sharedFiles: any[];
+  sharedFiles: Record<string, unknown>[];
   memberCount: number;
 }
 

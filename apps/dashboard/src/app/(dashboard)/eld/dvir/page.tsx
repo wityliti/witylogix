@@ -368,7 +368,7 @@ export default function DVIRPage() {
             driverName="Carlos Martinez"
             inspectionType={inspectionType}
             onSubmit={(data) => {
-              console.log("Inspection submitted:", data);
+              // TODO: API call to submit inspection
               setShowForm(false);
             }}
           />

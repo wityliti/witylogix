@@ -146,7 +146,7 @@ function LoginPageInner() {
             <input
               id="email"
               type="email"
-              placeholder="demo@witylogix.com"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -395,10 +395,6 @@ function LoginPageInner() {
         </button>
       )}
 
-      {/* Demo Credentials Hint */}
-      <div className="p-3 rounded-lg bg-opacity-5 border border-opacity-15 text-xs text-wl-text-tertiary bg-blue-400 border-blue-400 leading-relaxed">
-        Demo credentials: <span className="text-wl-text-secondary font-semibold">demo@witylogix.com</span> / <span className="text-wl-text-secondary font-semibold">demo123</span>
-      </div>
 
       {/* Sign Up Link */}
       <div className="text-center text-sm text-wl-text-tertiary">

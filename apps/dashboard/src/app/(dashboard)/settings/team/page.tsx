@@ -95,7 +95,7 @@ export default function TeamPage() {
   };
 
   const resendInvitation = (id: string) => {
-    console.log("Resend invitation:", id);
+    // TODO: API call to resend invitation
   };
 
   const revokeInvitation = (id: string) => {

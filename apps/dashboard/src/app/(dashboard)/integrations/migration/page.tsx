@@ -287,7 +287,7 @@ function FieldMappingEditor({
   targetProvider: string;
   mappings: FieldMapping[];
   onMappingsChange: (mappings: FieldMapping[]) => void;
-  validation: any;
+  validation: Record<string, unknown>;
 }) {
   const sourceFields = SAMPLE_FIELDS[sourceProvider as keyof typeof SAMPLE_FIELDS] || [];
   const targetFields = SAMPLE_FIELDS[targetProvider as keyof typeof SAMPLE_FIELDS] || [];
@@ -379,7 +379,7 @@ function ShadowModeSettings({
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
   matchPercentage: number;
-  comparisons: any[];
+  comparisons: Record<string, unknown>[];
 }) {
   return (
     <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">

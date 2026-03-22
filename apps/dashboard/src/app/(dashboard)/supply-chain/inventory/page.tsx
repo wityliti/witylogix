@@ -423,7 +423,7 @@ export default function InventoryPage() {
         <CardContent>
           <div className="space-y-3">
             {/* Transfer data would come from API */}
-            {[].map((transfer: any) => (
+            {[].map((transfer: Record<string, unknown>) => (
               <div
                 key={transfer.id}
                 className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
@@ -469,7 +469,7 @@ export default function InventoryPage() {
         <CardContent>
           <div className="space-y-3">
             {/* Cycle count data would come from API */}
-            {[].map((count: any) => (
+            {[].map((count: Record<string, unknown>) => (
               <div key={count.id} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
                 <div className="flex items-start justify-between mb-3">
                   <div>

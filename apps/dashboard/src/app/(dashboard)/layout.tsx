@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { NavSidebar } from "@/components/navigation/sidebar";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
@@ -93,7 +93,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Page Content */}
         <div className={cn("flex-1 overflow-y-auto")}>
-          {children}
+          <Suspense fallback={<div className="p-6">Loading...</div>}>
+            {children}
+          </Suspense>
         </div>
       </main>
     </div>

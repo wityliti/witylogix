@@ -630,7 +630,7 @@ export default function PaymentsPage() {
               {
                 key: "invoiceNumber",
                 header: "Invoice #",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <div className="font-mono text-sm font-medium text-blue-500">
                     {item.invoiceNumber}
                   </div>
@@ -647,7 +647,7 @@ export default function PaymentsPage() {
               {
                 key: "amount",
                 header: "Amount",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <div className="font-medium text-white">
                     ${item.amount.toFixed(2)}
                   </div>
@@ -659,7 +659,7 @@ export default function PaymentsPage() {
               {
                 key: "method",
                 header: "Method",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <div className="text-sm text-gray-300">
                     {getMethodLabel(item.method)}
                   </div>
@@ -669,7 +669,7 @@ export default function PaymentsPage() {
               {
                 key: "status",
                 header: "Status",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <Badge variant={getStatusBadgeVariant(item.status)}>
                     {getStatusLabel(item.status)}
                   </Badge>
@@ -679,7 +679,7 @@ export default function PaymentsPage() {
               {
                 key: "date",
                 header: "Date",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <div className="text-sm text-gray-300">
                     {item.date.toLocaleDateString()}
                   </div>
@@ -690,7 +690,7 @@ export default function PaymentsPage() {
               {
                 key: "reference",
                 header: "Reference",
-                render: (item: any) => (
+                render: (item: Record<string, unknown>) => (
                   <div className="font-mono text-xs text-gray-400">
                     {item.reference}
                   </div>

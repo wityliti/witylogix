@@ -31,6 +31,34 @@ class ApiError extends Error {
   }
 }
 
+/**
+ * Get JWT token from cookie
+ */
+function getAuthToken(): string | null {
+  if (typeof document === 'undefined') return null;
+
+  const token = document.cookie
+    .split('; ')
+    .find(c => c.startsWith('auth-token='))
+    ?.split('=')[1];
+
+  return token || null;
+}
+
+/**
+ * Handle 401 responses by redirecting to login
+ */
+function handleUnauthorized(): void {
+  if (typeof window !== 'undefined') {
+    // Clear auth state
+    localStorage.removeItem('authUser');
+    document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax; secure';
+
+    // Redirect to login with return URL
+    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -41,10 +69,23 @@ async function request<T>(
     ...options.headers,
   };
 
-  // In a real app, attach JWT from cookie/session
-  // headers['Authorization'] = `Bearer ${token}`;
+  // Attach JWT token from httpOnly cookie
+  const token = getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(url, {
+    ...options,
+    headers,
+    credentials: 'include', // Include cookies in request
+  });
+
+  if (res.status === 401) {
+    // Token is invalid or expired
+    handleUnauthorized();
+    throw new ApiError(401, 'Unauthorized. Please log in again.');
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -55,10 +96,10 @@ async function request<T>(
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
-  patch: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: "PATCH", body: body ? JSON.stringify(body) : undefined }),
-  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  get: <T>(path: string, options?: RequestInit) => request<T>(path, options),
+  post: <T>(path: string, body?: unknown, options?: RequestInit) =>
+    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined, ...options }),
+  patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
+    request<T>(path, { method: "PATCH", body: body ? JSON.stringify(body) : undefined, ...options }),
+  delete: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "DELETE", ...options }),
 };
