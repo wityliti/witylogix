@@ -6,7 +6,7 @@
  * validation and error handling.
  */
 
-import { db } from '@witylogix/db';
+import { prisma } from '@witylogix/db';
 import { IntegrationConnection, BatchEnableResult, HealthStatus } from './types';
 import { getSetupConfig } from './integration-setup-registry';
 import { CredentialValidator } from './credential-validator';

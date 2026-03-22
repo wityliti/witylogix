@@ -16,7 +16,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { db } from "@witylogix/db";
+import { prisma } from "@witylogix/db";
 import { paginationSchema } from "@witylogix/validators";
 import {
   ReturnStatus,

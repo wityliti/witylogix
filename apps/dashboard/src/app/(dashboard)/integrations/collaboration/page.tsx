@@ -1,32 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {
   ChevronLeft,
-  Plus,
-  Settings,
-  Power,
-  BarChart3,
-  Users,
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Copy,
-  Eye,
-  Route,
-  Radio,
   Slack,
+  MessageSquare,
   Send,
   Activity,
+  Route,
+  Radio,
+  Users,
 } from 'lucide-react';
+import { ProviderList } from './_components/provider-list';
+import { PresenceGrid } from './_components/presence-grid';
+import { MessageRoutes } from './_components/message-routes';
+import { DeliveryStats } from './_components/delivery-stats';
+import { NotificationPreferences } from './_components/notification-preferences';
 
 interface Provider {
   id: string;
@@ -236,25 +230,6 @@ export default function CollaborationPage() {
     }));
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "online":
-      case "connected":
-        return "bg-green-500/20 text-green-400 border-green-500/50";
-      case "away":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
-      case "busy":
-        return "bg-orange-500/20 text-orange-400 border-orange-500/50";
-      case "offline":
-      case "disconnected":
-        return "bg-gray-500/20 text-gray-400 border-gray-500/50";
-      case "error":
-        return "bg-red-500/20 text-red-400 border-red-500/50";
-      default:
-        return "";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#12121a]">
       <Header
@@ -297,175 +272,11 @@ export default function CollaborationPage() {
           </div>
 
           {expandedSections.providers && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {providers.map((provider) => (
-                <Card
-                  key={provider.id}
-                  className={cn(
-                    "cursor-pointer transition-all hover:border-blue-500/50",
-                    selectedProvider === provider.id && "border-blue-500/80 bg-[#1a1a2e]"
-                  )}
-                  onClick={() => setSelectedProvider(selectedProvider === provider.id ? null : provider.id)}
-                >
-                  <CardContent className="pt-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="text-blue-500 text-2xl">{provider.icon}</div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">
-                            {provider.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
-                            {provider.status === "disconnected" && "Not connected"}
-                            {provider.status === "error" && "Connection error"}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          provider.status === "connected"
-                            ? "success"
-                            : provider.status === "error"
-                              ? "danger"
-                              : "default"
-                        }
-                        className={cn(
-                          provider.status === "connected" &&
-                            "bg-green-500/20 text-green-400 border border-green-500/50",
-                          provider.status === "error" && "bg-red-500/20 text-red-400 border border-red-500/50",
-                          provider.status === "disconnected" && "bg-gray-500/20 text-gray-400"
-                        )}
-                      >
-                        {provider.status === "connected" && (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Connected
-                          </>
-                        )}
-                        {provider.status === "disconnected" && "Disconnected"}
-                        {provider.status === "error" && (
-                          <>
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            Error
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-
-                    {/* Status & Sync Info */}
-                    {provider.status === "connected" && (
-                      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-500 uppercase">
-                            Last Sync
-                          </p>
-                          <p className="text-sm text-white mt-1 flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-green-500" />
-                            {provider.lastSync}
-                          </p>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-500 uppercase">
-                            Channels
-                          </p>
-                          <p className="text-sm text-white mt-1">
-                            {provider.config.channels?.length || 0} channels
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Config Details (Expanded) */}
-                    {selectedProvider === provider.id && provider.status === "connected" && (
-                      <div className="space-y-4 mb-6 pb-6 border-b border-[#1e1e2e]">
-                        {provider.config.channels && provider.config.channels.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase mb-2">
-                              Connected Channels
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {provider.config.channels.map((channel) => (
-                                <Badge
-                                  key={channel}
-                                  variant="secondary"
-                                  className="bg-[#12121a] text-white"
-                                >
-                                  {channel}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {provider.config.webhookUrl && (
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase mb-2">
-                              Webhook URL
-                            </p>
-                            <div className="bg-[#12121a] rounded-lg p-3 flex items-center justify-between font-mono text-xs">
-                              <span className="text-gray-500 truncate">
-                                {provider.config.webhookUrl.substring(0, 50)}...
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-blue-500 hover:bg-[#1a1a2e]"
-                              >
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      {provider.status === "connected" ? (
-                        <>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
-                          >
-                            <Settings className="w-4 h-4 mr-2" />
-                            Configure
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                          >
-                            <Power className="w-4 h-4 mr-2" />
-                            Disconnect
-                          </Button>
-                        </>
-                      ) : provider.status === "error" ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
-                        >
-                          <AlertCircle className="w-4 h-4 mr-2" />
-                          Reconnect
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1 bg-blue-500 hover:bg-blue-500/90"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Connect
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ProviderList
+              providers={providers}
+              selectedProvider={selectedProvider}
+              onSelectProvider={setSelectedProvider}
+            />
           )}
         </div>
 
@@ -492,32 +303,7 @@ export default function CollaborationPage() {
           </div>
 
           {expandedSections.presence && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {presenceIndicators.map((indicator) => (
-                <Card key={indicator.userId} className="bg-[#1a1a2e]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold", getStatusColor(indicator.status))}>
-                          {indicator.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-white truncate">
-                            {indicator.name}
-                          </h4>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {indicator.lastActive}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={cn("px-2 py-1 rounded-full text-xs font-semibold border", getStatusColor(indicator.status))}>
-                        {indicator.status.charAt(0).toUpperCase() + indicator.status.slice(1)}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <PresenceGrid indicators={presenceIndicators} />
           )}
         </div>
 
@@ -544,84 +330,7 @@ export default function CollaborationPage() {
           </div>
 
           {expandedSections.routes && (
-            <div className="space-y-4">
-              {messageRoutes.map((route) => (
-                <Card key={route.id} className="bg-[#1a1a2e]">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="text-right min-w-max">
-                          <p className="text-sm font-semibold text-white">
-                            {route.source}
-                          </p>
-                        </div>
-                        <div className="flex-1 flex items-center justify-center">
-                          <div className="flex-1 h-px bg-[#1e1e2e]" />
-                          <Send className="w-4 h-4 text-blue-500 mx-3" />
-                          <div className="flex-1 h-px bg-[#1e1e2e]" />
-                        </div>
-                        <div className="text-left min-w-max">
-                          <p className="text-sm font-semibold text-white">
-                            {route.target}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <input
-                          type="checkbox"
-                          checked={route.enabled}
-                          onChange={() => {}}
-                          className="w-5 h-5 rounded cursor-pointer"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
-                      <p className="text-xs font-medium text-gray-500 uppercase mb-2">
-                        Conditions
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {route.conditions.map((condition, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="secondary"
-                            className="bg-[#12121a] text-white font-mono text-xs"
-                          >
-                            {condition}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
-                      >
-                        <Settings className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex-1 text-red-500 hover:bg-red-500/10"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              <Button
-                variant="primary"
-                className="w-full bg-blue-500 hover:bg-blue-500/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Routing Rule
-              </Button>
-            </div>
+            <MessageRoutes routes={messageRoutes} onAddRoute={() => {}} />
           )}
         </div>
 
@@ -648,72 +357,7 @@ export default function CollaborationPage() {
           </div>
 
           {expandedSections.delivery && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {deliveryStats.map((stat) => {
-                const successRate = ((stat.delivered / stat.sent) * 100).toFixed(1);
-                return (
-                  <Card key={stat.provider} className="bg-[#1a1a2e]">
-                    <CardHeader>
-                      <CardTitle className="text-base">{stat.provider}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">
-                              Sent
-                            </p>
-                            <p className="text-xl font-bold text-white mt-1">
-                              {stat.sent.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">
-                              Delivered
-                            </p>
-                            <p className="text-xl font-bold text-green-400 mt-1">
-                              {stat.delivered.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">
-                              Failed
-                            </p>
-                            <p className="text-xl font-bold text-red-400 mt-1">
-                              {stat.failed}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-[#1e1e2e]">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs font-medium text-gray-500 uppercase">
-                              Success Rate
-                            </p>
-                            <p className="text-sm font-bold text-green-400">{successRate}%</p>
-                          </div>
-                          <div className="w-full h-2 bg-[#12121a] rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-green-500 to-green-400"
-                              style={{ width: `${successRate}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-[#1e1e2e]">
-                          <p className="text-xs font-medium text-gray-500 uppercase">
-                            Avg Latency
-                          </p>
-                          <p className="text-lg font-bold text-white mt-1">
-                            {stat.avgLatency}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+            <DeliveryStats stats={deliveryStats} />
           )}
         </div>
 
@@ -737,89 +381,7 @@ export default function CollaborationPage() {
           </div>
 
           {expandedSections.preferences && (
-            <Card className="bg-[#1a1a2e]">
-              <CardContent className="pt-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#1e1e2e]">
-                        <th className="text-left py-3 px-4 font-semibold text-gray-400">
-                          Event
-                        </th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
-                          Slack
-                        </th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
-                          Teams
-                        </th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
-                          Pusher
-                        </th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-400">
-                          Sound
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {notificationPreferences.map((pref) => (
-                        <tr key={pref.id} className="border-b border-[#1e1e2e] hover:bg-[#12121a]">
-                          <td className="py-3 px-4 text-white">
-                            {pref.event}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <input
-                              type="checkbox"
-                              checked={pref.slack}
-                              onChange={() => {}}
-                              className="w-4 h-4 rounded cursor-pointer"
-                            />
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <input
-                              type="checkbox"
-                              checked={pref.teams}
-                              onChange={() => {}}
-                              className="w-4 h-4 rounded cursor-pointer"
-                            />
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <input
-                              type="checkbox"
-                              checked={pref.pusher}
-                              onChange={() => {}}
-                              className="w-4 h-4 rounded cursor-pointer"
-                            />
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <input
-                              type="checkbox"
-                              checked={pref.sound}
-                              onChange={() => {}}
-                              className="w-4 h-4 rounded cursor-pointer"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-6 flex gap-2">
-                  <Button
-                    variant="primary"
-                    className="bg-blue-500 hover:bg-blue-500/90"
-                  >
-                    Save Preferences
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="bg-[#12121a] hover:bg-[#1a1a2e]"
-                  >
-                    Reset to Defaults
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationPreferences preferences={notificationPreferences} />
           )}
         </div>
       </div>

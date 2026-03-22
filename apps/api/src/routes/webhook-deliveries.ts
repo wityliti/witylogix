@@ -17,7 +17,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { db } from "@witylogix/db";
+import { prisma } from "@witylogix/db";
 
 // ─── ZODI VALIDATION SCHEMAS ────────────────────────────
 

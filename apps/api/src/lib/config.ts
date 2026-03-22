@@ -129,6 +129,34 @@ const configSchema = z.object({
   // URLs
   TRACKING_PAGE_URL: z.string().url().default("http://localhost:3002"),
   DASHBOARD_URL: z.string().url().default("http://localhost:3000"),
+
+  // ─── Security Configuration ──────────────────────────────────
+  // CORS: comma-separated list of allowed origins (required in production)
+  CORS_ORIGINS: z.string().optional(),
+
+  // Rate limiting: per-IP (unauthenticated) and per-shopId (authenticated)
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).default(60000), // 1 minute
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).default(200), // per IP
+  RATE_LIMIT_AUTHENTICATED_MAX: z.coerce.number().int().min(1).default(1000), // per shopId
+  RATE_LIMIT_STRICT_MAX: z.coerce.number().int().min(1).default(10), // for auth endpoints
+
+  // Security headers
+  ENABLE_HSTS: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((v) => v === "true"),
+  HSTS_MAX_AGE: z.coerce.number().int().min(0).default(31536000), // 1 year in seconds
+  ENABLE_CSP: z
+    .enum(["true", "false"])
+    .default("false") // Relaxed for embedded iframe
+    .transform((v) => v === "true"),
+  ENABLE_FRAMEGUARD: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((v) => v === "true"),
+
+  // Graceful shutdown timeout (milliseconds)
+  SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000), // 30s
 });
 
 export type Config = z.infer<typeof configSchema>;

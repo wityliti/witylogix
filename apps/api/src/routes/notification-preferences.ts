@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { db } from "@witylogix/db";
+import { prisma } from "@witylogix/db";
 
 const router = Router();
 

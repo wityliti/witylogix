@@ -27,7 +27,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { db, prisma } from "@witylogix/db";
+import { prisma } from "@witylogix/db";
 import { getNotificationQueue } from "../lib/queue.js";
 import { CustomAdapter } from "@witylogix/core/platforms/adapters/custom.js";
 import type { CustomCredentials, CustomAuthConfig, CustomWebhookConfig, CustomFieldMapping } from "@witylogix/core/platforms/adapters/custom.js";

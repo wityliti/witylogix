@@ -20,7 +20,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createHmac } from "crypto";
-import { db, prisma } from "@witylogix/db";
+import { prisma } from "@witylogix/db";
 import { getNotificationQueue } from "../lib/queue.js";
 import { z } from "zod";
 

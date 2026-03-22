@@ -3,7 +3,7 @@
  * Queries and aggregates driver performance data from database
  */
 
-import { db } from '@witylogix/db';
+import { prisma } from '@witylogix/db';
 import { DriverMetrics, DriverScore, DriverLeaderboardEntry, ScoringPeriod } from './types';
 import { calculateDriverScore, updateScoreWithTrend } from './scoring-engine';
 import { applyDecay } from './decay';

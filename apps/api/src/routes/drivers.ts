@@ -14,6 +14,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 import {
   createDriverSchema,
   updateDriverLocationSchema,
@@ -51,104 +52,128 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
   // ── LIST DRIVERS ──────────────────────────────────────────
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listDriversQuery.parse(request.query);
-    const { page, limit, status, isActive, search } = query;
+    try {
+      const query = listDriversQuery.parse(request.query);
+      const { page, limit, status, isActive, search } = query;
 
-    const where: Prisma.DriverWhereInput = {};
+      const where: Prisma.DriverWhereInput = {};
 
-    if (status) where.status = status;
-    if (isActive !== undefined) where.isActive = isActive === "true";
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search } },
-      ];
+      if (status) where.status = status;
+      if (isActive !== undefined) where.isActive = isActive === "true";
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { phone: { contains: search } },
+        ];
+      }
+
+      const [drivers, total] = await Promise.all([
+        request.tenantDb.driver.findMany({
+          where,
+          orderBy: { name: "asc" },
+          skip: (page - 1) * limit,
+          take: limit,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            vehicleType: true,
+            vehiclePlate: true,
+            maxCapacity: true,
+            status: true,
+            isActive: true,
+            lastLocationAt: true,
+            heading: true,
+            createdAt: true,
+            _count: { select: { orders: { where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"] } } } } },
+          },
+        }),
+        request.tenantDb.driver.count({ where }),
+      ]);
+
+      return {
+        data: drivers,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+        });
+      }
+      throw err;
     }
-
-    const [drivers, total] = await Promise.all([
-      request.tenantDb.driver.findMany({
-        where,
-        orderBy: { name: "asc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          vehicleType: true,
-          vehiclePlate: true,
-          maxCapacity: true,
-          status: true,
-          isActive: true,
-          lastLocationAt: true,
-          heading: true,
-          createdAt: true,
-          _count: { select: { orders: { where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"] } } } } },
-        },
-      }),
-      request.tenantDb.driver.count({ where }),
-    ]);
-
-    return {
-      data: drivers,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
   });
 
   // ── GET DRIVER ────────────────────────────────────────────
 
   fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+    try {
+      const { id } = request.params as { id: string };
 
-    const driver = await request.tenantDb.driver.findUnique({
-      where: { id },
-      include: {
-        orders: {
-          where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] } },
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            shopifyOrderNumber: true,
-            status: true,
-            customerName: true,
-            addressLine1: true,
-            city: true,
-            estimatedArrival: true,
+      const driver = await request.tenantDb.driver.findUnique({
+        where: { id },
+        include: {
+          orders: {
+            where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"] } },
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              shopifyOrderNumber: true,
+              status: true,
+              customerName: true,
+              addressLine1: true,
+              city: true,
+              estimatedArrival: true,
+            },
+          },
+          routes: {
+            where: { status: { in: ["ASSIGNED", "IN_PROGRESS"] } },
+            take: 1,
+            orderBy: { date: "desc" },
+            include: {
+              stops: { orderBy: { sequence: "asc" } },
+            },
           },
         },
-        routes: {
-          where: { status: { in: ["ASSIGNED", "IN_PROGRESS"] } },
-          take: 1,
-          orderBy: { date: "desc" },
-          include: {
-            stops: { orderBy: { sequence: "asc" } },
-          },
-        },
-      },
-    });
+      });
 
-    if (!driver) throw new NotFoundError("Driver", id);
-    return { data: driver };
+      if (!driver) throw new NotFoundError("Driver", id);
+      return { data: driver };
+    } catch (err) {
+      throw err;
+    }
   });
 
   // ── CREATE DRIVER ─────────────────────────────────────────
 
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const body = createDriverSchema.parse(request.body);
+      const body = createDriverSchema.parse(request.body);
 
-    const driver = await request.tenantDb.driver.create({
-      data: {
-        shopId: request.shopId,
-        ...body,
-      },
-    });
+      const driver = await request.tenantDb.driver.create({
+        data: {
+          shopId: request.shopId,
+          ...body,
+        },
+      });
 
-    reply.status(201);
-    return { data: driver };
+      reply.status(201);
+      return { data: driver };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE DRIVER ─────────────────────────────────────────
@@ -165,20 +190,30 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const body = updateDriverSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const body = updateDriverSchema.parse(request.body);
 
-    const existing = await request.tenantDb.driver.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundError("Driver", id);
+      const existing = await request.tenantDb.driver.findUnique({ where: { id } });
+      if (!existing) throw new NotFoundError("Driver", id);
 
-    const driver = await request.tenantDb.driver.update({
-      where: { id },
-      data: body,
-    });
+      const driver = await request.tenantDb.driver.update({
+        where: { id },
+        data: body,
+      });
 
-    return { data: driver };
+      return { data: driver };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE DRIVER STATUS ──────────────────────────────────
@@ -188,154 +223,188 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
-    // Drivers can update their own status, admins can update anyone
-    const { id } = request.params as { id: string };
-    const { status } = driverStatusSchema.parse(request.body);
+    try {
+      // Drivers can update their own status, admins can update anyone
+      const { id } = request.params as { id: string };
+      const { status } = driverStatusSchema.parse(request.body);
 
-    // If caller is a driver, they can only change their own status
-    if (request.auth.role === "DRIVER" && request.auth.driverId !== id) {
-      throw new ValidationError("Drivers can only update their own status");
+      // If caller is a driver, they can only change their own status
+      if (request.auth.role === "DRIVER" && request.auth.driverId !== id) {
+        throw new ValidationError("Drivers can only update their own status");
+      }
+
+      const driver = await request.tenantDb.driver.findUnique({ where: { id } });
+      if (!driver) throw new NotFoundError("Driver", id);
+
+      const updated = await request.tenantDb.driver.update({
+        where: { id },
+        data: { status },
+      });
+
+      // Update Redis GEO tracking
+      if (status === "OFFLINE") {
+        await removeDriverGeo(id);
+      }
+
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
     }
-
-    const driver = await request.tenantDb.driver.findUnique({ where: { id } });
-    if (!driver) throw new NotFoundError("Driver", id);
-
-    const updated = await request.tenantDb.driver.update({
-      where: { id },
-      data: { status },
-    });
-
-    // Update Redis GEO tracking
-    if (status === "OFFLINE") {
-      await removeDriverGeo(id);
-    }
-
-    return { data: updated };
   });
 
   // ── UPDATE DRIVER LOCATION (GPS from mobile) ──────────────
 
   fastify.post("/:id/location", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const location = updateDriverLocationSchema.parse(request.body);
+    try {
+      const { id } = request.params as { id: string };
+      const location = updateDriverLocationSchema.parse(request.body);
 
-    // Only the driver themselves or admins can update location
-    if (request.auth.role === "DRIVER" && request.auth.driverId !== id) {
-      throw new ValidationError("Drivers can only update their own location");
-    }
+      // Only the driver themselves or admins can update location
+      if (request.auth.role === "DRIVER" && request.auth.driverId !== id) {
+        throw new ValidationError("Drivers can only update their own location");
+      }
 
-    // Update PostGIS location and Redis GEO in parallel
-    await Promise.all([
-      // PostGIS (persistent, queryable)
-      request.tenantDb.$executeRaw`
-        UPDATE drivers
-        SET current_location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
-            last_location_at = NOW(),
-            heading = ${location.heading ?? null}
-        WHERE id = ${id}::uuid
-      `,
-      // Redis GEO (ephemeral, fast proximity search)
-      updateDriverGeo(id, location.longitude, location.latitude),
-    ]);
+      // Update PostGIS location and Redis GEO in parallel
+      await Promise.all([
+        // PostGIS (persistent, queryable)
+        request.tenantDb.$executeRaw`
+          UPDATE drivers
+          SET current_location = ST_SetSRID(ST_MakePoint(${location.longitude}, ${location.latitude}), 4326),
+              last_location_at = NOW(),
+              heading = ${location.heading ?? null}
+          WHERE id = ${id}::uuid
+        `,
+        // Redis GEO (ephemeral, fast proximity search)
+        updateDriverGeo(id, location.longitude, location.latitude),
+      ]);
 
-    // Fetch updated driver info for Socket.io emission
-    const driver = await request.tenantDb.driver.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        _count: { select: { orders: { where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"] } } } } },
-      },
-    });
-
-    // Emit to Socket.io for real-time tracking to all connected clients in this shop
-    if (driver) {
-      emitToShop(`shop:${request.shopId}`, "driver:location_updated", {
-        id: driver.id,
-        shopId: request.shopId,
-        driverId: driver.id,
-        driverName: driver.name,
-        status: driver.status,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        accuracy: location.accuracy,
-        heading: location.heading,
-        timestamp: new Date().toISOString(),
-        assignedShipments: driver._count.orders,
+      // Fetch updated driver info for Socket.io emission
+      const driver = await request.tenantDb.driver.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          _count: { select: { orders: { where: { status: { in: ["ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY"] } } } } },
+        },
       });
-    }
 
-    return { status: "ok" };
+      // Emit to Socket.io for real-time tracking to all connected clients in this shop
+      if (driver) {
+        emitToShop(`shop:${request.shopId}`, "driver:location_updated", {
+          id: driver.id,
+          shopId: request.shopId,
+          driverId: driver.id,
+          driverName: driver.name,
+          status: driver.status,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracy: location.accuracy,
+          heading: location.heading,
+          timestamp: new Date().toISOString(),
+          assignedShipments: driver._count.orders,
+        });
+      }
+
+      return { status: "ok" };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── FIND NEARBY DRIVERS ───────────────────────────────────
 
   fastify.get("/nearby", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const query = nearbyDriversQuery.parse(request.query);
+      const query = nearbyDriversQuery.parse(request.query);
 
-    // Fast lookup via Redis GEO
-    const nearbyFromRedis = await findNearbyDriversGeo(
-      query.longitude,
-      query.latitude,
-      query.radiusKm,
-      query.limit,
-    );
+      // Fast lookup via Redis GEO
+      const nearbyFromRedis = await findNearbyDriversGeo(
+        query.longitude,
+        query.latitude,
+        query.radiusKm,
+        query.limit,
+      );
 
-    if (nearbyFromRedis.length === 0) {
-      return { data: [] };
+      if (nearbyFromRedis.length === 0) {
+        return { data: [] };
+      }
+
+      // Enrich with driver details from database
+      const driverIds = nearbyFromRedis.map((d) => d.driverId);
+      const drivers = await request.tenantDb.driver.findMany({
+        where: {
+          id: { in: driverIds },
+          isActive: true,
+          status: "AVAILABLE",
+        },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          vehicleType: true,
+          maxCapacity: true,
+          status: true,
+          _count: { select: { orders: { where: { status: "ASSIGNED" } } } },
+        },
+      });
+
+      // Merge with distance info
+      const driverMap = new Map(drivers.map((d) => [d.id, d]));
+      const results = nearbyFromRedis
+        .filter((r) => driverMap.has(r.driverId))
+        .map((r) => ({
+          ...driverMap.get(r.driverId)!,
+          distanceKm: Math.round(r.distance * 100) / 100,
+        }));
+
+      return { data: results };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+        });
+      }
+      throw err;
     }
-
-    // Enrich with driver details from database
-    const driverIds = nearbyFromRedis.map((d) => d.driverId);
-    const drivers = await request.tenantDb.driver.findMany({
-      where: {
-        id: { in: driverIds },
-        isActive: true,
-        status: "AVAILABLE",
-      },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        vehicleType: true,
-        maxCapacity: true,
-        status: true,
-        _count: { select: { orders: { where: { status: "ASSIGNED" } } } },
-      },
-    });
-
-    // Merge with distance info
-    const driverMap = new Map(drivers.map((d) => [d.id, d]));
-    const results = nearbyFromRedis
-      .filter((r) => driverMap.has(r.driverId))
-      .map((r) => ({
-        ...driverMap.get(r.driverId)!,
-        distanceKm: Math.round(r.distance * 100) / 100,
-      }));
-
-    return { data: results };
   });
 
   // ── DEACTIVATE DRIVER ─────────────────────────────────────
 
   fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const driver = await request.tenantDb.driver.findUnique({ where: { id } });
-    if (!driver) throw new NotFoundError("Driver", id);
+      const driver = await request.tenantDb.driver.findUnique({ where: { id } });
+      if (!driver) throw new NotFoundError("Driver", id);
 
-    const deactivated = await request.tenantDb.driver.update({
-      where: { id },
-      data: { isActive: false, status: "OFFLINE" },
-    });
+      const deactivated = await request.tenantDb.driver.update({
+        where: { id },
+        data: { isActive: false, status: "OFFLINE" },
+      });
 
-    await removeDriverGeo(id);
-    return { data: deactivated };
+      await removeDriverGeo(id);
+      return { data: deactivated };
+    } catch (err) {
+      throw err;
+    }
   });
 }
 

@@ -14,7 +14,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { paginationSchema, optimizeRouteSchema } from "@witylogix/validators";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
@@ -59,91 +59,115 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
   // ── LIST ROUTES ───────────────────────────────────────────
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listRoutesQuery.parse(request.query);
-    const { page, limit, date, driverId, status } = query;
+    try {
+      const query = listRoutesQuery.parse(request.query);
+      const { page, limit, date, driverId, status } = query;
 
-    const where: any = {};
-    if (status) where.status = status;
-    if (driverId) where.driverId = driverId;
-    if (date) where.date = new Date(date);
+      const where: any = {};
+      if (status) where.status = status;
+      if (driverId) where.driverId = driverId;
+      if (date) where.date = new Date(date);
 
-    const [routes, total] = await Promise.all([
-      request.tenantDb.route.findMany({
-        where,
-        orderBy: { date: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          driver: { select: { id: true, name: true, phone: true } },
-          _count: { select: { stops: true } },
-        },
-      }),
-      request.tenantDb.route.count({ where }),
-    ]);
+      const [routes, total] = await Promise.all([
+        request.tenantDb.route.findMany({
+          where,
+          orderBy: { date: "desc" },
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            driver: { select: { id: true, name: true, phone: true } },
+            _count: { select: { stops: true } },
+          },
+        }),
+        request.tenantDb.route.count({ where }),
+      ]);
 
-    return {
-      data: routes,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
+      return {
+        data: routes,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── GET ROUTE ─────────────────────────────────────────────
 
   fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+    try {
+      const { id } = request.params as { id: string };
 
-    const route = await request.tenantDb.route.findUnique({
-      where: { id },
-      include: {
-        driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
-        stops: {
-          orderBy: { sequence: "asc" },
-          include: {
-            driver: { select: { id: true, name: true } },
+      const route = await request.tenantDb.route.findUnique({
+        where: { id },
+        include: {
+          driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+          stops: {
+            orderBy: { sequence: "asc" },
+            include: {
+              driver: { select: { id: true, name: true } },
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!route) throw new NotFoundError("Route", id);
-    return { data: route };
+      if (!route) throw new NotFoundError("Route", id);
+      return { data: route };
+    } catch (err) {
+      throw err;
+    }
   });
 
   // ── CREATE ROUTE ──────────────────────────────────────────
 
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const body = createRouteSchema.parse(request.body);
-    const { orderIds, ...routeData } = body;
+      const body = createRouteSchema.parse(request.body);
+      const { orderIds, ...routeData } = body;
 
-    const route = await request.tenantDb.$transaction(async (tx) => {
-      const created = await tx.route.create({
-        data: {
-          shopId: request.shopId,
-          ...routeData,
-          date: new Date(routeData.date),
-        },
+      const route = await request.tenantDb.$transaction(async (tx) => {
+        const created = await tx.route.create({
+          data: {
+            shopId: request.shopId,
+            ...routeData,
+            date: new Date(routeData.date),
+          },
+        });
+
+        // Auto-create stops from order IDs if provided
+        if (orderIds && orderIds.length > 0) {
+          const stopsData = orderIds.map((orderId, index) => ({
+            routeId: created.id,
+            orderId,
+            driverId: routeData.driverId,
+            sequence: index,
+            stopType: "DELIVERY" as const,
+          }));
+
+          await tx.routeStop.createMany({ data: stopsData });
+        }
+
+        return created;
       });
 
-      // Auto-create stops from order IDs if provided
-      if (orderIds && orderIds.length > 0) {
-        const stopsData = orderIds.map((orderId, index) => ({
-          routeId: created.id,
-          orderId,
-          driverId: routeData.driverId,
-          sequence: index,
-          stopType: "DELIVERY" as const,
-        }));
-
-        await tx.routeStop.createMany({ data: stopsData });
+      reply.status(201);
+      return { data: route };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
       }
-
-      return created;
-    });
-
-    reply.status(201);
-    return { data: route };
+      throw err;
+    }
   });
 
   // ── UPDATE ROUTE ──────────────────────────────────────────
@@ -155,20 +179,30 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const body = updateRouteSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const body = updateRouteSchema.parse(request.body);
 
-    const route = await request.tenantDb.route.findUnique({ where: { id } });
-    if (!route) throw new NotFoundError("Route", id);
+      const route = await request.tenantDb.route.findUnique({ where: { id } });
+      if (!route) throw new NotFoundError("Route", id);
 
-    const updated = await request.tenantDb.route.update({
-      where: { id },
-      data: body,
-    });
+      const updated = await request.tenantDb.route.update({
+        where: { id },
+        data: body,
+      });
 
-    return { data: updated };
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE ROUTE STATUS ───────────────────────────────────
@@ -178,145 +212,183 @@ async function routesRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const { status } = routeStatusSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const { status } = routeStatusSchema.parse(request.body);
 
-    const route = await request.tenantDb.route.findUnique({ where: { id } });
-    if (!route) throw new NotFoundError("Route", id);
+      const route = await request.tenantDb.route.findUnique({ where: { id } });
+      if (!route) throw new NotFoundError("Route", id);
 
-    const updatePayload: any = { status };
-    if (status === "IN_PROGRESS" && !route.startedAt) {
-      updatePayload.startedAt = new Date();
+      const updatePayload: any = { status };
+      if (status === "IN_PROGRESS" && !route.startedAt) {
+        updatePayload.startedAt = new Date();
+      }
+      if (status === "COMPLETED") {
+        updatePayload.completedAt = new Date();
+      }
+
+      const updated = await request.tenantDb.route.update({
+        where: { id },
+        data: updatePayload,
+      });
+
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
     }
-    if (status === "COMPLETED") {
-      updatePayload.completedAt = new Date();
-    }
-
-    const updated = await request.tenantDb.route.update({
-      where: { id },
-      data: updatePayload,
-    });
-
-    return { data: updated };
   });
 
   // ── ADD STOPS ─────────────────────────────────────────────
 
   fastify.post("/:id/stops", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const { stops } = addStopsSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const { stops } = addStopsSchema.parse(request.body);
 
-    const route = await request.tenantDb.route.findUnique({ where: { id } });
-    if (!route) throw new NotFoundError("Route", id);
+      const route = await request.tenantDb.route.findUnique({ where: { id } });
+      if (!route) throw new NotFoundError("Route", id);
 
-    const created = await request.tenantDb.routeStop.createMany({
-      data: stops.map((stop) => ({
-        routeId: id,
-        ...stop,
-        driverId: route.driverId,
-      })),
-    });
+      const created = await request.tenantDb.routeStop.createMany({
+        data: stops.map((stop) => ({
+          routeId: id,
+          ...stop,
+          driverId: route.driverId,
+        })),
+      });
 
-    reply.status(201);
-    return { data: { count: created.count } };
+      reply.status(201);
+      return { data: { count: created.count } };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE STOP STATUS ────────────────────────────────────
 
   fastify.patch("/:id/stops/:stopId", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
 
-    const { id, stopId } = request.params as { id: string; stopId: string };
-    const body = updateStopSchema.parse(request.body);
+      const { id, stopId } = request.params as { id: string; stopId: string };
+      const body = updateStopSchema.parse(request.body);
 
-    const stop = await request.tenantDb.routeStop.findFirst({
-      where: { id: stopId, routeId: id },
-    });
-    if (!stop) throw new NotFoundError("RouteStop", stopId);
+      const stop = await request.tenantDb.routeStop.findFirst({
+        where: { id: stopId, routeId: id },
+      });
+      if (!stop) throw new NotFoundError("RouteStop", stopId);
 
-    const updatePayload: any = { status: body.status, notes: body.notes };
-    if (body.status === "ARRIVED") {
-      updatePayload.actualArrival = new Date();
+      const updatePayload: any = { status: body.status, notes: body.notes };
+      if (body.status === "ARRIVED") {
+        updatePayload.actualArrival = new Date();
+      }
+      if (body.status === "COMPLETED" || body.status === "SKIPPED" || body.status === "FAILED") {
+        updatePayload.departedAt = new Date();
+      }
+
+      const updated = await request.tenantDb.routeStop.update({
+        where: { id: stopId },
+        data: updatePayload,
+      });
+
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
     }
-    if (body.status === "COMPLETED" || body.status === "SKIPPED" || body.status === "FAILED") {
-      updatePayload.departedAt = new Date();
-    }
-
-    const updated = await request.tenantDb.routeStop.update({
-      where: { id: stopId },
-      data: updatePayload,
-    });
-
-    return { data: updated };
   });
 
   // ── OPTIMIZE ROUTE (stub — dispatches to solver) ──────────
 
   fastify.post("/:id/optimize", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const route = await request.tenantDb.route.findUnique({
-      where: { id },
-      include: { stops: true },
-    });
-    if (!route) throw new NotFoundError("Route", id);
+      const route = await request.tenantDb.route.findUnique({
+        where: { id },
+        include: { stops: true },
+      });
+      if (!route) throw new NotFoundError("Route", id);
 
-    if (route.stops.length < 2) {
-      throw new ValidationError("Route must have at least 2 stops to optimize");
+      if (route.stops.length < 2) {
+        throw new ValidationError("Route must have at least 2 stops to optimize");
+      }
+
+      // Dispatch to BullMQ optimization queue
+      const queue = getOptimizationQueue();
+      await queue.add(
+        "optimize",
+        {
+          shopId: request.shopId,
+          routeId: id,
+          depot: { lat: 0, lng: 0 }, // Default depot — should come from shop settings
+          orderIds: route.stops.map((s) => s.orderId).filter(Boolean) as string[],
+          vehicleIds: route.driverId ? [route.driverId] : [],
+        },
+        {
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+        },
+      );
+
+      // Mark as optimized (the worker will update with actual results)
+      await request.tenantDb.route.update({
+        where: { id },
+        data: { status: "OPTIMIZED" },
+      });
+
+      return { data: { message: "Route optimization queued", routeId: id } };
+    } catch (err) {
+      throw err;
     }
-
-    // Dispatch to BullMQ optimization queue
-    const queue = getOptimizationQueue();
-    await queue.add(
-      "optimize",
-      {
-        shopId: request.shopId,
-        routeId: id,
-        depot: { lat: 0, lng: 0 }, // Default depot — should come from shop settings
-        orderIds: route.stops.map((s) => s.orderId).filter(Boolean) as string[],
-        vehicleIds: route.driverId ? [route.driverId] : [],
-      },
-      {
-        attempts: 3,
-        backoff: { type: "exponential", delay: 2000 },
-      },
-    );
-
-    // Mark as optimized (the worker will update with actual results)
-    await request.tenantDb.route.update({
-      where: { id },
-      data: { status: "OPTIMIZED" },
-    });
-
-    return { data: { message: "Route optimization queued", routeId: id } };
   });
 
   // ── CANCEL ROUTE ──────────────────────────────────────────
 
   fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const route = await request.tenantDb.route.findUnique({ where: { id } });
-    if (!route) throw new NotFoundError("Route", id);
+      const route = await request.tenantDb.route.findUnique({ where: { id } });
+      if (!route) throw new NotFoundError("Route", id);
 
-    if (route.status === "COMPLETED") {
-      throw new ValidationError("Cannot cancel a completed route");
+      if (route.status === "COMPLETED") {
+        throw new ValidationError("Cannot cancel a completed route");
+      }
+
+      const cancelled = await request.tenantDb.route.update({
+        where: { id },
+        data: { status: "CANCELLED" },
+      });
+
+      return { data: cancelled };
+    } catch (err) {
+      throw err;
     }
-
-    const cancelled = await request.tenantDb.route.update({
-      where: { id },
-      data: { status: "CANCELLED" },
-    });
-
-    return { data: cancelled };
   });
 }
 

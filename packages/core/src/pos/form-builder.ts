@@ -3,7 +3,7 @@
  * Utilities for creating, managing, and validating custom forms
  */
 
-import { db } from '@witylogix/db';
+import { prisma } from '@witylogix/db';
 import type { PosFormInput, CustomFormField } from './types';
 
 /**

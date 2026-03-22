@@ -22,7 +22,7 @@
  * Type: TypeScript strict mode with full error handling
  */
 
-import { db } from "@witylogix/db";
+// prisma is imported dynamically within methods to avoid circular deps
 import type {
   NotificationProvider,
   NotificationMessage,
@@ -234,7 +234,7 @@ export class NotificationOrchestrator {
       // Import prisma dynamically to avoid circular dependencies
       const { prisma } = await import("@witylogix/db");
 
-      const template = await db.notificationTemplate.findFirst({
+      const template = await prisma.notificationTemplate.findFirst({
         where: {
           id: templateId,
           channel,
@@ -409,7 +409,7 @@ export class NotificationOrchestrator {
         providerName = (providerResponse.providerName as string) || "";
       }
 
-      await db.notificationLog.create({
+      await prisma.notificationLog.create({
         data: {
           shopId,
           templateId,

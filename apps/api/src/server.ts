@@ -21,6 +21,7 @@ import { getConfig, isDev } from "./lib/config.js";
 import { getRedis, disconnectRedis } from "./lib/redis.js";
 import errorHandlerPlugin from "./plugins/error-handler.js";
 import rawBodyPlugin from "./plugins/raw-body.js";
+import securityHeadersPlugin from "./middleware/security-headers.js";
 import { shutdownQueues } from "./lib/queue.js";
 import { startNotificationWorker } from "./workers/notification-worker.js";
 import { startOptimizationWorker } from "./workers/optimization-worker.js";
@@ -49,12 +50,23 @@ export async function buildServer(): Promise<FastifyInstance> {
     trustProxy: true,
   });
 
-  // ─── Core Plugins ───────────────────────────────────────────
+  // ─── Core Plugins (Ordered for Security) ────────────────────
+  //
+  // Order matters! Security must come first:
+  // 1. Security headers (applied to all responses)
+  // 2. Raw body capture (must be BEFORE helmet for HMAC verification)
+  // 3. CORS (before auth, allows OPTIONS preflight)
+  // 4. Rate limiting (per-IP/per-tenant)
+  // 5. Auth (JWT + tenant validation)
+  // 6. Error handler (catches all errors)
 
-  // Raw body capture (must register BEFORE routes that need HMAC)
+  // 1. Security headers — applies to all responses
+  await app.register(securityHeadersPlugin);
+
+  // 2. Raw body capture (must register BEFORE routes that need HMAC)
   await app.register(rawBodyPlugin);
 
-  // CORS — restrictive in production, permissive in dev
+  // 3. CORS — restrictive in production, permissive in dev
   await app.register(cors, {
     origin: isDev()
       ? true
@@ -67,7 +79,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
   });
 
-  // Security headers
+  // 4. Standard helmet security headers (CSP, X-Frame-Options, etc.)
   await app.register(helmet, {
     // Relaxed CSP for Shopify embedded iframe
     contentSecurityPolicy: isDev() ? false : undefined,
@@ -84,10 +96,10 @@ export async function buildServer(): Promise<FastifyInstance> {
     },
   });
 
-  // Global rate limiter
+  // 5. Global rate limiter — enforced before authentication
   await app.register(rateLimit, {
     global: true,
-    max: isDev() ? 1000 : 200,
+    max: isDev() ? 1000 : config.RATE_LIMIT_MAX_REQUESTS,
     timeWindow: "1 minute",
     redis: getRedis(),
     keyGenerator: (request) => {
@@ -96,7 +108,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     },
   });
 
-  // Structured error handler (maps AppError, ZodError, Prisma errors)
+  // 6. Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);
 
   // Workflow integration (auto-trigger workflows from API operations)
@@ -256,50 +268,66 @@ async function start(): Promise<void> {
     if (isShuttingDown) return;
     isShuttingDown = true;
 
-    app.log.info(`Received ${signal} — starting graceful shutdown`);
+    app.log.info(
+      { signal, timeoutMs: config.SHUTDOWN_TIMEOUT_MS },
+      "Graceful shutdown initiated",
+    );
 
-    // 1. Stop accepting new connections
+    // Set a hard timeout for shutdown (e.g., 30s)
+    const shutdownTimeout = setTimeout(() => {
+      app.log.error("Shutdown timeout exceeded — force exiting");
+      process.exit(1);
+    }, config.SHUTDOWN_TIMEOUT_MS);
+
     try {
-      await app.close();
-      app.log.info("HTTP server closed");
-    } catch (err) {
-      app.log.error(err, "Error closing HTTP server");
-    }
+      // 1. Stop accepting new connections
+      try {
+        await app.close();
+        app.log.info("HTTP server closed");
+      } catch (err) {
+        app.log.error(err, "Error closing HTTP server");
+      }
 
-    // 2. Shutdown Socket.io
-    try {
-      await shutdownSocket(app.log as any);
-      app.log.info("Socket.io server shut down");
-    } catch (err) {
-      app.log.error(err, "Error shutting down Socket.io");
-    }
+      // 2. Shutdown Socket.io
+      try {
+        await shutdownSocket(app.log as any);
+        app.log.info("Socket.io server shut down");
+      } catch (err) {
+        app.log.error(err, "Error shutting down Socket.io");
+      }
 
-    // 3. Drain BullMQ workers and queues
-    try {
-      await shutdownQueues();
-      app.log.info("BullMQ queues closed");
-    } catch (err) {
-      app.log.error(err, "Error closing BullMQ queues");
-    }
+      // 3. Drain BullMQ workers and queues
+      try {
+        await shutdownQueues();
+        app.log.info("BullMQ queues closed");
+      } catch (err) {
+        app.log.error(err, "Error closing BullMQ queues");
+      }
 
-    // 4. Disconnect Redis
-    try {
-      await disconnectRedis();
-      app.log.info("Redis disconnected");
-    } catch (err) {
-      app.log.error(err, "Error disconnecting Redis");
-    }
+      // 4. Disconnect Redis
+      try {
+        await disconnectRedis();
+        app.log.info("Redis disconnected");
+      } catch (err) {
+        app.log.error(err, "Error disconnecting Redis");
+      }
 
-    // 5. Disconnect database
-    try {
-      await prisma.$disconnect();
-      app.log.info("Database disconnected");
-    } catch (err) {
-      app.log.error(err, "Error disconnecting database");
-    }
+      // 5. Disconnect database
+      try {
+        await prisma.$disconnect();
+        app.log.info("Database disconnected");
+      } catch (err) {
+        app.log.error(err, "Error disconnecting database");
+      }
 
-    app.log.info("Shutdown complete");
-    process.exit(0);
+      clearTimeout(shutdownTimeout);
+      app.log.info("Shutdown complete");
+      process.exit(0);
+    } catch (err) {
+      app.log.error(err, "Error during shutdown");
+      clearTimeout(shutdownTimeout);
+      process.exit(1);
+    }
   }
 
   // Register shutdown handlers

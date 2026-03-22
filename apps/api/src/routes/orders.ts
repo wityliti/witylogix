@@ -14,6 +14,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 import {
   createOrderSchema,
   updateOrderStatusSchema,
@@ -65,8 +66,9 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
   // ── LIST ORDERS ─────────────────────────────────────────────
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listOrdersQuery.parse(request.query);
-    const { page, limit, status, driverId, deliveryDate, search, sortBy, sortOrder } = query;
+    try {
+      const query = listOrdersQuery.parse(request.query);
+      const { page, limit, status, driverId, deliveryDate, search, sortBy, sortOrder } = query;
 
     const where: Prisma.OrderWhereInput = {};
 
@@ -106,48 +108,62 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.order.count({ where }),
     ]);
 
-    return {
-      data: orders,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      return {
+        data: orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid query parameters", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── GET ORDER ───────────────────────────────────────────────
 
   fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+    try {
+      const { id } = request.params as { id: string };
 
-    const order = await request.tenantDb.order.findUnique({
-      where: { id },
-      include: {
-        driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
-        timeSlot: true,
-        proofOfDelivery: true,
-        notificationLogs: {
-          orderBy: { createdAt: "desc" },
-          take: 20,
+      const order = await request.tenantDb.order.findUnique({
+        where: { id },
+        include: {
+          driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
+          timeSlot: true,
+          proofOfDelivery: true,
+          notificationLogs: {
+            orderBy: { createdAt: "desc" },
+            take: 20,
+          },
         },
-      },
-    });
+      });
 
-    if (!order) {
-      throw new NotFoundError("Order", id);
+      if (!order) {
+        throw new NotFoundError("Order", id);
+      }
+
+      return { data: order };
+    } catch (err) {
+      throw err;
     }
-
-    return { data: order };
   });
 
   // ── CREATE ORDER ────────────────────────────────────────────
 
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const body = createOrderSchema.parse(request.body);
+      const body = createOrderSchema.parse(request.body);
     const { latitude, longitude, ...orderData } = body;
 
     // Generate tracking token
@@ -229,8 +245,17 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       // Continue anyway - order was created successfully
     }
 
-    reply.status(201);
-    return { data: order };
+      reply.status(201);
+      return { data: order };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE ORDER ────────────────────────────────────────────
@@ -255,10 +280,11 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const body = updateOrderSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const body = updateOrderSchema.parse(request.body);
     const { latitude, longitude, ...updateData } = body;
 
     const existing = await request.tenantDb.order.findUnique({ where: { id } });
@@ -286,17 +312,27 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       return updated;
     });
 
-    await request.tenantRedis.invalidateGroup("orders");
-    return { data: order };
+      await request.tenantRedis.invalidateGroup("orders");
+      return { data: order };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── UPDATE ORDER STATUS ─────────────────────────────────────
 
   fastify.patch("/:id/status", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER", "DRIVER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const { status: newStatus, notes } = updateOrderStatusSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const { status: newStatus, notes } = updateOrderStatusSchema.parse(request.body);
 
     const order = await request.tenantDb.order.findUnique({
       where: { id },
@@ -377,7 +413,16 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       // Continue anyway - status was updated successfully
     }
 
-    return { data: updated };
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── ASSIGN ORDER TO DRIVER ──────────────────────────────────
@@ -387,10 +432,11 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   fastify.patch("/:id/assign", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
-    const { id } = request.params as { id: string };
-    const { driverId } = assignOrderSchema.parse(request.body);
+      const { id } = request.params as { id: string };
+      const { driverId } = assignOrderSchema.parse(request.body);
 
     const [order, driver] = await Promise.all([
       request.tenantDb.order.findUnique({ where: { id } }),
@@ -473,54 +519,71 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       // Continue anyway - assignment was successful
     }
 
-    return { data: updated };
+      return { data: updated };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
   });
 
   // ── CANCEL ORDER ────────────────────────────────────────────
 
   fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+    try {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const order = await request.tenantDb.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundError("Order", id);
+      const order = await request.tenantDb.order.findUnique({ where: { id } });
+      if (!order) throw new NotFoundError("Order", id);
 
-    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
-      throw new ConflictError(`Cannot cancel order in '${order.status}' status`);
+      if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+        throw new ConflictError(`Cannot cancel order in '${order.status}' status`);
+      }
+
+      const cancelled = await request.tenantDb.order.update({
+        where: { id },
+        data: { status: "CANCELLED" },
+      });
+
+      await request.tenantRedis.invalidateGroup("orders");
+      return { data: cancelled };
+    } catch (err) {
+      throw err;
     }
-
-    const cancelled = await request.tenantDb.order.update({
-      where: { id },
-      data: { status: "CANCELLED" },
-    });
-
-    await request.tenantRedis.invalidateGroup("orders");
-    return { data: cancelled };
   });
 
   // ── ORDER TIMELINE ──────────────────────────────────────────
 
   fastify.get("/:id/timeline", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+    try {
+      const { id } = request.params as { id: string };
 
-    const order = await request.tenantDb.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundError("Order", id);
+      const order = await request.tenantDb.order.findUnique({ where: { id } });
+      if (!order) throw new NotFoundError("Order", id);
 
-    const logs = await request.tenantDb.notificationLog.findMany({
-      where: { orderId: id },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        channel: true,
-        eventType: true,
-        status: true,
-        createdAt: true,
-        sentAt: true,
-      },
-    });
+      const logs = await request.tenantDb.notificationLog.findMany({
+        where: { orderId: id },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          channel: true,
+          eventType: true,
+          status: true,
+          createdAt: true,
+          sentAt: true,
+        },
+      });
 
-    return { data: logs };
+      return { data: logs };
+    } catch (err) {
+      throw err;
+    }
   });
 }
 

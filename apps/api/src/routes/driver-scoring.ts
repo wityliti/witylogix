@@ -17,7 +17,7 @@ import {
   type DriverLeaderboardEntry,
   type DriverScore,
   type ScoringPeriod,
-} from "@witylogix/core";
+} from "@witylogix/core/driver-scoring";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
