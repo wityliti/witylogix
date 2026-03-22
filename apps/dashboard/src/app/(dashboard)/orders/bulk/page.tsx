@@ -339,7 +339,7 @@ export default function BulkOperationsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
-            <p className="text-sm text-gray-300 mb-5 leading-relaxed">
+            <div className="text-sm text-gray-300 mb-5 leading-relaxed">
               <div className="mb-2.5">
                 Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : 'Execute'}</strong>
               </div>

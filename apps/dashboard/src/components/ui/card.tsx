@@ -333,6 +333,4 @@ export {
   CardContent,
   CardDescription,
   CardFooter,
-  MetricCard,
-  StatCard,
 };

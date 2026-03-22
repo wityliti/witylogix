@@ -6,7 +6,7 @@
 // Button
 export { Button } from "./button";
 
-// Card
+// Card (also exports MetricCard, StatCard)
 export {
   Card,
   CardHeader,
@@ -14,6 +14,8 @@ export {
   CardContent,
   CardDescription,
   CardFooter,
+  MetricCard,
+  StatCard,
 } from "./card";
 
 // Badge
@@ -50,9 +52,6 @@ export {
 
 // Empty State
 export { EmptyState } from "./empty-state";
-
-// Stat Card
-export { StatCard } from "./stat-card";
 
 // Skeleton Loaders
 export {
@@ -135,9 +134,6 @@ export {
   type StatusTimelineProps,
 } from "./status-timeline";
 
-// Metric Card
-export { MetricCard, type MetricCardProps } from "./metric-card";
-
 // Color Legend
 export {
   ColorLegend,
@@ -150,15 +146,6 @@ export { ErrorBoundary } from "./error-boundary";
 
 // Loading Spinner
 export { LoadingSpinner } from "./loading-spinner";
-
-// Loading (consolidated loading module)
-export {
-  LoadingSkeleton,
-  TableSkeleton,
-  CardSkeleton,
-  ErrorState,
-  LoadingSpinner as LoadingSpinnerConsolidated,
-} from "./loading";
 
 // Enhanced Empty State
 export { EmptyState as EmptyStateEnhanced, type EmptyStateVariant } from "./empty-state-enhanced";

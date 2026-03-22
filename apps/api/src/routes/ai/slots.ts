@@ -44,37 +44,7 @@ export default async function aiSlotRoutes(
   fastify.addHook('preHandler', requireAuth);
   fastify.addHook('preHandler', tenantContext);
 
-  // Load shop's time slots and driver shifts on startup
-  fastify.addHook('onReady', async () => {
-    try {
-      const timeSlots = await (
-        request.tenantDb as any
-      ).timeSlot.findMany({
-        where: { shopId: 'shop_id' }, // Would be from context
-        select: {
-          id: true,
-          name: true,
-          startTime: true,
-          endTime: true,
-          zoneId: true,
-          isActive: true,
-        },
-      });
-
-      const convertedSlots: TimeSlot[] = timeSlots.map((ts: any) => ({
-        id: ts.id,
-        name: ts.name,
-        startTime: new Date(ts.startTime),
-        endTime: new Date(ts.endTime),
-        zoneId: ts.zoneId,
-        isActive: ts.isActive,
-      }));
-
-      slotRecommender.setAvailableSlots(convertedSlots);
-    } catch (error) {
-      fastify.log.warn('Failed to load time slots:', error);
-    }
-  });
+  // NOTE: Time slots are loaded lazily when needed in route handlers
 
   // ── GET /api/ai/slots/recommend — Recommend slots ────────
 
@@ -122,7 +92,7 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error recommending slots:', error);
+        fastify.log.error({ err: error }, 'Error recommending slots:');
         return reply.status(500).send({
           error: 'Failed to generate slot recommendations',
         });
@@ -178,7 +148,7 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error getting top slot:', error);
+        fastify.log.error({ err: error }, 'Error getting top slot:');
         return reply.status(500).send({
           error: 'Failed to get top slot recommendation',
         });
@@ -224,7 +194,7 @@ export default async function aiSlotRoutes(
           });
         }
       } catch (error) {
-        fastify.log.error('Error predicting demand:', error);
+        fastify.log.error({ err: error }, 'Error predicting demand:');
         return reply.status(500).send({
           error: 'Failed to predict demand',
         });
@@ -267,7 +237,7 @@ export default async function aiSlotRoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error analyzing peak hours:', error);
+        fastify.log.error({ err: error }, 'Error analyzing peak hours:');
         return reply.status(500).send({
           error: 'Failed to analyze peak hours',
         });

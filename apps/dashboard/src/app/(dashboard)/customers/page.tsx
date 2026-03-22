@@ -179,7 +179,6 @@ const getSegmentColor = (segment: string): "primary" | "success" | "warning" | "
   };
   return map[segment] ?? "default";
 };
-};
 
 export default function CustomersPage() {
   const [search, setSearch] = useState('');

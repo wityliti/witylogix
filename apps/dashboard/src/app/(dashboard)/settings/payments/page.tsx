@@ -65,7 +65,7 @@ export default function PaymentSettingsPage(): JSX.Element {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const mockGatewayConfigs: GatewayConfig[] = gateways ?? [
-  {
+    {
     id: 'stripe-prod',
     name: 'Stripe',
     code: 'stripe',
@@ -155,8 +155,6 @@ export default function PaymentSettingsPage(): JSX.Element {
     try {
       await disconnect({ id });
       refetch();
-        ),
-      );
     } catch (error) {
       console.error('Failed to disconnect gateway:', error);
     }

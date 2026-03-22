@@ -15,24 +15,10 @@ import jwt from "@fastify/jwt";
 import { prisma } from "@witylogix/db";
 import { UnauthorizedError, ForbiddenError } from "../lib/errors.js";
 import { getConfig } from "../lib/config.js";
+import type { AuthContext } from "../types/fastify.js";
 
-// ─── Types ──────────────────────────────────────────────────
-
-export interface AuthContext {
-  shopId: string;
-  orgId?: string;       // Set when user belongs to an org
-  userId?: string;
-  driverId?: string;
-  role: "SUPER_ADMIN" | "ADMIN" | "DISPATCHER" | "VIEWER" | "DRIVER";
-  orgRole?: "OWNER" | "ADMIN" | "MEMBER"; // Org-level role (if in org context)
-  shopDomain?: string;
-}
-
-declare module "fastify" {
-  interface FastifyRequest {
-    auth: AuthContext;
-  }
-}
+// Export AuthContext for external use
+export type { AuthContext };
 
 // ─── JWT Auth (Dashboard + Driver) ──────────────────────────
 

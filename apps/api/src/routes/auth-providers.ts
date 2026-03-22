@@ -693,11 +693,11 @@ async function exchangeGoogle(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    const error = await response.json().catch(() => ({})) as { error_description?: string };
     throw new Error(`Google token exchange failed: ${error.error_description || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -736,11 +736,11 @@ async function exchangeMicrosoft(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    const error = await response.json().catch(() => ({})) as { error_description?: string };
     throw new Error(`Microsoft token exchange failed: ${error.error_description || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -783,11 +783,11 @@ async function exchangeOkta(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    const error = await response.json().catch(() => ({})) as { error_description?: string };
     throw new Error(`Okta token exchange failed: ${error.error_description || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -830,11 +830,11 @@ async function exchangeAuth0(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    const error = await response.json().catch(() => ({})) as { error_description?: string };
     throw new Error(`Auth0 token exchange failed: ${error.error_description || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   const decoded = decodeJWT(data.id_token);
 
   return {
@@ -876,11 +876,11 @@ async function exchangeCustomOAuth(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
+    const error = await response.json().catch(() => ({})) as { error_description?: string };
     throw new Error(`Custom OAuth token exchange failed: ${error.error_description || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
 
   // For custom providers, try to decode id_token if available, otherwise use access_token metadata
   let metadata: Record<string, any> = {};

@@ -2,13 +2,36 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { z } from "zod";
+import { prisma } from "@witylogix/db";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
-import {
-  createActivityLogSchema,
-  activityLogFilterSchema,
-  type CreateActivityLog,
-  type ActivityLogFilter,
-} from "@witylogix/validators";
+
+// Activity log schemas (temporary local definitions until validators export is fixed)
+const createActivityLogSchema = z.object({
+  entityType: z.string().min(1).max(50),
+  entityId: z.string().uuid(),
+  action: z.string().min(1).max(100),
+  actorType: z.enum(["USER", "SYSTEM", "WEBHOOK", "API", "CRON"]),
+  actorId: z.string().uuid().optional(),
+  changes: z.record(z.unknown()).default({}),
+  metadata: z.record(z.unknown()).default({}),
+  ipAddress: z.string().ip().optional(),
+  shipmentId: z.string().uuid().optional(),
+});
+
+const activityLogFilterSchema = z.object({
+  entityType: z.string().optional(),
+  entityId: z.string().uuid().optional(),
+  action: z.string().optional(),
+  actorType: z.string().optional(),
+  actorId: z.string().uuid().optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+type CreateActivityLog = z.infer<typeof createActivityLogSchema>;
+type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
 
 export default async function activityLogRoutes(
   fastify: FastifyInstance

@@ -210,4 +210,3 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
 
 StatusTimeline.displayName = "StatusTimeline";
 
-export { StatusTimeline };

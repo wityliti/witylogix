@@ -137,8 +137,8 @@ export default function MapsSettingsPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
-      {/* Page Header */}
-      <div>
+        {/* Page Header */}
+        <div>
         <h1 className="text-3xl font-bold text-white">Google Maps Settings</h1>
         <p className="text-gray-400 mt-2">
           Configure your Google Maps API and customize default map behavior
@@ -438,6 +438,7 @@ export default function MapsSettingsPage() {
           )}
           {isSaving ? 'Saving...' : 'Save Settings'}
         </Button>
+        </div>
       </div>
     </div>
   );

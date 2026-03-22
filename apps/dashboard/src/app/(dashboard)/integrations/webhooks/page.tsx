@@ -199,7 +199,7 @@ export default function WebhooksPage() {
           <Plus className="w-4 h-4" />
           Create Endpoint
         </Button>
-        {webhooks?.dlqCount ?? 0 > 0 && (
+        {(webhooks?.dlqCount ?? 0) > 0 && (
           <Button variant="danger" className="gap-2">
             <Trash2 className="w-4 h-4" />
             Purge DLQ ({webhooks?.dlqCount})

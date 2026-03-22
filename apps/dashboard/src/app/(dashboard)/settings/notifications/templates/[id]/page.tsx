@@ -71,15 +71,6 @@ interface TemplateContent {
   };
 }
 
-export default function NotificationTemplateDetailPage() {
-  const params = useParams();
-  const templateId = params.id as string;
-  const { data: template, loading, error, refetch } = useApiQuery<TemplateContent>(`/api/v4/notification-templates/${templateId}`);
-  const { execute: updateTemplate } = useApiMutation('PATCH', `/api/v4/notification-templates/${templateId}`);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
 const VARIABLES = [
   { name: "customer_name", label: "Customer Name" },
   { name: "order_id", label: "Order ID" },
@@ -110,7 +101,7 @@ const INITIAL_TEMPLATE: TemplateContent = {
   <p><a href="{{tracking_url}}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Track Your Order</a></p>
   <p>Thank you!</p>
 </div>`,
-    text: "Hi {{customer_name}},\n\nYour order {{order_id}} will be delivered on {{delivery_date}} between {{time_window}}.\n\nTrack here: {{tracking_url}}\n\nThank you!",
+    text: "Hi {{customer_name}},\\n\\nYour order {{order_id}} will be delivered on {{delivery_date}} between {{time_window}}.\\n\\nTrack here: {{tracking_url}}\\n\\nThank you!",
   },
   sms: {
     text: "Hi {{customer_name}}, your order {{order_id}} will arrive on {{delivery_date}} {{time_window}}. Track: {{tracking_url}}",
@@ -119,7 +110,7 @@ const INITIAL_TEMPLATE: TemplateContent = {
     templateId: "delivery_update",
     headerType: "text",
     headerText: "{{order_id}}",
-    body: "Hi {{customer_name}},\n\nYour order is arriving on {{delivery_date}} between {{time_window}}.\n\nDriver: {{driver_name}}",
+    body: "Hi {{customer_name}},\\n\\nYour order is arriving on {{delivery_date}} between {{time_window}}.\\n\\nDriver: {{driver_name}}",
     footer: "Thank you for your order!",
     buttons: [
       {
@@ -572,3 +563,4 @@ export default function TemplateEditorPage({
     </div>
   );
 }
+

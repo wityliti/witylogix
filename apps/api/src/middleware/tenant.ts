@@ -24,16 +24,8 @@ import { forTenant, forTenantInOrg, forOrg } from "@witylogix/db";
 import { TenantRedis } from "../lib/redis.js";
 import { UnauthorizedError } from "../lib/errors.js";
 
-// Extend Fastify request with tenant-scoped services
-declare module "fastify" {
-  interface FastifyRequest {
-    tenantDb: ReturnType<typeof forTenant>;
-    orgDb?: ReturnType<typeof forOrg>;
-    tenantRedis: TenantRedis;
-    shopId: string;
-    orgId?: string;
-  }
-}
+// Type augmentation is now centralized in types/fastify.d.ts
+// This file just implements the tenantContext middleware
 
 /**
  * Standard tenant context — used by all shop-scoped routes.
@@ -66,6 +58,7 @@ export async function tenantContext(
 
   // Convenience accessors
   request.shopId = shopId;
+  request.tenantId = shopId; // Alias for shopId
 }
 
 /**

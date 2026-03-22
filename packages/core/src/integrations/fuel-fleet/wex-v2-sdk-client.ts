@@ -5,8 +5,8 @@
  * real-time transaction feeds, advanced reporting, and fleet controls.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 
 import type {
   SDKConfig,

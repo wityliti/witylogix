@@ -5,7 +5,6 @@
  * load posting, rate management, carrier lookup, and shipment tracking.
  */
 
-import type { Response } from "node-fetch";
 import { EventEmitter } from "events";
 
 import type {

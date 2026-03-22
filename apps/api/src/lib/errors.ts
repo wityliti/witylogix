@@ -74,3 +74,17 @@ export class ExternalServiceError extends AppError {
     this.name = "ExternalServiceError";
   }
 }
+
+export class InternalServerError extends AppError {
+  constructor(message = "Internal server error") {
+    super(message, 500, "INTERNAL_SERVER_ERROR");
+    this.name = "InternalServerError";
+  }
+}
+
+export class BadRequestError extends AppError {
+  constructor(message = "Bad request") {
+    super(message, 400, "BAD_REQUEST");
+    this.name = "BadRequestError";
+  }
+}

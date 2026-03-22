@@ -28,8 +28,8 @@ interface TableProps<T> {
 }
 
 export function Table<T extends { id?: string }>({
-  columns,
-  data,
+  columns = [] as any,
+  data = [] as any,
   onRowClick,
   selectedId,
   emptyMessage = "No data available",

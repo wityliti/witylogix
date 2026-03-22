@@ -6,11 +6,7 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
-declare module "fastify" {
-  interface FastifyRequest {
-    rawBody?: Buffer;
-  }
-}
+// Type augmentation is now centralized in types/fastify.d.ts
 
 async function rawBodyPlugin(fastify: FastifyInstance): Promise<void> {
   fastify.addContentTypeParser(

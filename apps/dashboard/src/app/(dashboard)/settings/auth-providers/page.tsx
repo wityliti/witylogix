@@ -42,15 +42,7 @@ interface AuthProvider {
   };
 }
 
-export default function AuthProvidersPage() {
-  const { items: providers, loading, error, refetch } = useApiList<AuthProvider>('/api/v4/auth-providers');
-  const { execute: updateProvider } = useApiMutation('PATCH', '/api/v4/auth-providers/:id');
-  const { execute: deleteProvider } = useApiMutation('DELETE', '/api/v4/auth-providers/:id');
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const mockProviders: AuthProvider[] = providers ?? [
+const mockProviders: AuthProvider[] = [
   {
     id: "auth0-prod",
     name: "Auth0",

@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "lib": ["ES2022"],
     "strict": true,
     "esModuleInterop": true,
@@ -15,7 +16,15 @@
     "sourceMap": true,
     "downlevelIteration": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {
+      "@repo/core": ["packages/repo-core/src/index.ts"],
+      "@repo/core/*": ["packages/repo-core/src/*"],
+      "@repo/db": ["packages/repo-db/src/index.ts"],
+      "@repo/db/*": ["packages/repo-db/src/*"],
+      "@witylogix/core/integrations/traffic/index.js": ["packages/core/src/integrations/traffic/index.ts"],
+      "@witylogix/core/integrations/ecommerce/index.js": ["packages/core/src/integrations/ecommerce/index.ts"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }

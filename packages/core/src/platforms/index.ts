@@ -15,7 +15,7 @@
  */
 
 import { PlatformSource, isPlatformSource } from "@witylogix/types";
-import { PlatformAdapter } from "./types";
+import { PlatformAdapter } from "./types.js";
 
 /**
  * Platform adapter implementations
@@ -342,9 +342,9 @@ export {
   PlatformAuthError,
   PlatformRateLimitError,
   PlatformNotFoundError,
-} from "./types";
+} from "./types.js";
 
-export { default as PlatformAdapter } from "./types";
+export { default as PlatformAdapter } from "./types.js";
 
 /**
  * Default initialization

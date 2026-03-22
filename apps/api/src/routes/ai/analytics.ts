@@ -129,7 +129,7 @@ export default async function aiAnalyticsRoutes(
     '/route-efficiency/:routeId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { routeId } = request.params;
+        const { routeId } = request.params as { routeId: string };
 
         // In production, fetch from database
         const mockRoute = {
@@ -198,7 +198,7 @@ export default async function aiAnalyticsRoutes(
     '/driver-score/:driverId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { driverId } = request.params;
+        const { driverId } = request.params as { driverId: string };
 
         // Mock driver metrics (in production, fetch from database)
         const mockMetrics: DriverMetrics = {
@@ -295,7 +295,7 @@ export default async function aiAnalyticsRoutes(
     '/anomalies/:routeId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { routeId } = request.params;
+        const { routeId } = request.params as { routeId: string };
 
         // Mock route data
         const mockRoute = {
@@ -354,7 +354,7 @@ export default async function aiAnalyticsRoutes(
     '/co2/:routeId',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { routeId } = request.params;
+        const { routeId } = request.params as { routeId: string };
 
         // Mock route data
         const report = calculateCO2(
@@ -387,8 +387,8 @@ export default async function aiAnalyticsRoutes(
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const tenantId = (request.params as any).tenantId || 'default';
-        const startDate = request.query.startDate || '2026-03-01';
-        const endDate = request.query.endDate || '2026-03-31';
+        const startDate = (request.query as { startDate?: string; endDate?: string }).startDate || '2026-03-01';
+        const endDate = (request.query as { startDate?: string; endDate?: string }).endDate || '2026-03-31';
 
         const summary = getCO2Summary(tenantId, startDate, endDate);
 
@@ -414,8 +414,8 @@ export default async function aiAnalyticsRoutes(
     '/leaderboard',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const period = (request.query.period as any) || '7d';
-        const zoneId = request.query.zoneId;
+        const period = (request.query as { period?: '24h' | '7d' | '30d'; zoneId?: string }).period || '7d';
+        const zoneId = (request.query as { period?: '24h' | '7d' | '30d'; zoneId?: string }).zoneId;
 
         // Mock multiple drivers
         const driverIds = ['driver_1', 'driver_2', 'driver_3', 'driver_4', 'driver_5'];

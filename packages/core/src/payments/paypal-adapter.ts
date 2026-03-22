@@ -9,7 +9,8 @@
  * - Order status tracking
  */
 
-import { fetch as nodeFetch } from 'node-fetch';
+// Node 22+ has global fetch — no need for node-fetch
+const nodeFetch = globalThis.fetch;
 import type {
   PaymentIntent,
   Transaction,

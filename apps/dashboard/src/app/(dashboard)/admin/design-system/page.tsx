@@ -37,37 +37,37 @@ import {
 // Color tokens definition
 const COLOR_TOKENS = {
   "Background Colors": {
-    "--bg-root': '#0a0a0f'
-    "--bg-base': '#0a0a0f'
-    "--bg-surface': '#12121a'
-    "--bg-elevated': '#1a1a2e'
-    "--bg-overlay': '#1a1a2e'
-    "#000": "#07070a",
-    "#000": "#0c0c10",
+    "--bg-root": "#0a0a0f",
+    "--bg-base": "#0a0a0f",
+    "--bg-surface": "#12121a",
+    "--bg-elevated": "#1a1a2e",
+    "--bg-overlay": "#1a1a2e",
+    "--black-900": "#07070a",
+    "--black-950": "#0c0c10",
   },
   "Neutral Colors": {
-    "#000": "#f8f8fa",
-    "#000": "#ececf1",
-    "#000": "#d5d5dd",
-    "#000": "#b0b0bf",
-    "#000": "#8585a0",
-    "#000": "#62627e",
-    "#000": "#4a4a62",
-    "#000": "#35354a",
-    "#000": "#232336",
-    "#000": "#17172a",
+    "--white": "#f8f8fa",
+    "--gray-100": "#ececf1",
+    "--gray-200": "#d5d5dd",
+    "--gray-300": "#b0b0bf",
+    "--gray-400": "#8585a0",
+    "--gray-500": "#62627e",
+    "--gray-600": "#4a4a62",
+    "--gray-700": "#35354a",
+    "--gray-800": "#232336",
+    "--gray-900": "#17172a",
   },
   "Primary Colors (Amber)": {
-    "--blue-50": "#fff9eb",
-    "#000": "#ffefc4",
-    "#000": "#ffe09d",
-    "#000": "#ffd06a",
-    "--blue-500": "#ffc240",
-    "--blue-600": "#f5a623",
-    "--blue-700": "#d98b0a",
-    "#000": "#b06f05",
-    "#000": "#8d5704",
-    "#000": "#6b4203",
+    "--amber-50": "#fff9eb",
+    "--amber-100": "#ffefc4",
+    "--amber-200": "#ffe09d",
+    "--amber-300": "#ffd06a",
+    "--amber-500": "#ffc240",
+    "--amber-600": "#f5a623",
+    "--amber-700": "#d98b0a",
+    "--amber-800": "#b06f05",
+    "--amber-900": "#8d5704",
+    "--amber-950": "#6b4203",
   },
   "Status Colors": {
     "--emerald-600": "#10b981",
@@ -76,15 +76,15 @@ const COLOR_TOKENS = {
     "--blue-600": "#3b82f6",
   },
   "Text Colors": {
-    "--text-primary': '#ffffff'
-    "--text-secondary': '#9ca3af'
-    "#000": "#5e5e78",
-    "#000": "#0a0a0c",
+    "--text-primary": "#ffffff",
+    "--text-secondary": "#9ca3af",
+    "--text-tertiary": "#5e5e78",
+    "--text-disabled": "#0a0a0c",
   },
   "Border Colors": {
-    "--border-subtle': '#1e1e2e'
-    "#000": "rgba(255, 255, 255, 0.10)",
-    "#000": "rgba(255, 255, 255, 0.16)",
+    "--border-subtle": "#1e1e2e",
+    "--border-default": "rgba(255, 255, 255, 0.10)",
+    "--border-hover": "rgba(255, 255, 255, 0.16)",
   },
 };
 

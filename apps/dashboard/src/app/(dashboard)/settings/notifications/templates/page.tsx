@@ -59,14 +59,7 @@ interface NotificationTemplate {
   createdAt: Date;
 }
 
-export default function NotificationTemplatesPage() {
-  const { items: templates, loading, error, refetch } = useApiList<NotificationTemplate>('/api/v4/notification-templates');
-  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notification-templates/:id');
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const TEMPLATES: NotificationTemplate[] = templates ?? [
+const TEMPLATES: NotificationTemplate[] = [
   {
     id: "t1",
     eventType: "order_confirmed",
@@ -424,3 +417,4 @@ export default function NotificationTemplatesPage() {
     </div>
   );
 }
+

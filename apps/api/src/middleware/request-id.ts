@@ -15,11 +15,7 @@ import { randomUUID } from "crypto";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 
-declare module "fastify" {
-  interface FastifyRequest {
-    requestId: string;
-  }
-}
+// Type augmentation is now centralized in types/fastify.d.ts
 
 /**
  * Attach request ID to request and reply headers

@@ -80,9 +80,10 @@ export default function TeamPage() {
     setShowInviteDialog(false);
   };
 
-  const removeMember = (id: string) => {
-    setMembers((prev) => prev.filter((member) => member.id !== id));
+  const handleRemoveMember = (id: string) => {
+    removeMember({ params: { id } });
     setRemoveConfirmId(null);
+    refetch();
   };
 
   const changeRole = (id: string, role: "admin" | "member" | "viewer") => {
@@ -279,7 +280,7 @@ export default function TeamPage() {
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => removeMember(member.id)}
+                            onClick={() => handleRemoveMember(member.id)}
                           >
                             Remove
                           </Button>

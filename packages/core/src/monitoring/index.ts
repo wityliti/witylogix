@@ -27,7 +27,7 @@ export {
   type StructuredLog,
   type LogTransport,
   type LoggerConfig,
-} from "./structured-logger";
+} from "./structured-logger.js";
 
 // ─── SENTRY EXPORTS ────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export {
   type ErrorContext,
   type BreadcrumbData,
   type Transaction,
-} from "./sentry-integration";
+} from "./sentry-integration.js";
 
 // ─── METRICS EXPORTS ───────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ export {
   type MetricType,
   type MetricDefinition,
   type HistogramBucket,
-} from "./metrics-collector";
+} from "./metrics-collector.js";
 
 // ─── HEALTH CHECK EXPORTS ──────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ export {
   type ComponentHealth,
   type HealthCheckResponse,
   type HealthCheckFn,
-} from "./health-endpoint";
+} from "./health-endpoint.js";
 
 // ─── TRACING EXPORTS ────────────────────────────────────────────────────
 
@@ -81,7 +81,7 @@ export {
   type SpanEvent,
   type SpanData,
   type TracerConfig,
-} from "./request-tracer";
+} from "./request-tracer.js";
 
 // ─── ALERTING EXPORTS ──────────────────────────────────────────────────
 
@@ -101,12 +101,12 @@ export {
   type WebhookChannelConfig,
   type EmailChannelConfig,
   type SlackChannelConfig,
-} from "./alerting";
+} from "./alerting.js";
 
 // ─── CONVENIENCE SINGLETONS ──────────────────────────────────────────────
 
-import { getMetricsCollector } from "./metrics-collector";
-import { getHealthChecker } from "./health-endpoint";
+import { getMetricsCollector } from "./metrics-collector.js";
+import { getHealthChecker } from "./health-endpoint.js";
 
 /**
  * Pre-configured MetricsCollector singleton for convenience.
@@ -116,7 +116,7 @@ export const metrics = getMetricsCollector();
 /**
  * HealthCheckRegistry — alias for HealthChecker for backward compatibility.
  */
-export { HealthChecker as HealthCheckRegistry } from "./health-endpoint";
+export { HealthChecker as HealthCheckRegistry } from "./health-endpoint.js";
 
 /**
  * Pre-configured HealthCheckRegistry singleton.

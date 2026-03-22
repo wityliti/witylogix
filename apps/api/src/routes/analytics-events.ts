@@ -121,7 +121,7 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const tenantId = request.tenantId as string;
 
         // Inject dashboard provider from container
-        const provider = fastify.diContainer.get("dashboardDataProvider");
+        const provider = (fastify as any).diContainer.get("dashboardDataProvider");
         const dashboard = await provider.getDashboardSummary(tenantId, {
           from,
           to,
@@ -167,7 +167,7 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const tenantId = request.tenantId as string;
 
         // Inject event repository from container
-        const repo = fastify.diContainer.get("analyticsEventRepository");
+        const repo = (fastify as any).diContainer.get("analyticsEventRepository");
         const { events, totalCount } = await repo.findEvents({
           tenantId,
           eventType: query.eventType,
@@ -244,7 +244,7 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Inject aggregator from container
-        const aggregator = fastify.diContainer.get("analyticsAggregator");
+        const aggregator = (fastify as any).diContainer.get("analyticsAggregator");
         const result = await aggregator.aggregate({
           id: metricId,
           name: metricId,
@@ -299,7 +299,7 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const tenantId = request.tenantId as string;
 
         // Inject aggregator from container
-        const aggregator = fastify.diContainer.get("analyticsAggregator");
+        const aggregator = (fastify as any).diContainer.get("analyticsAggregator");
         const metricDef = {
           id: query.metric,
           name: query.metric,
@@ -350,7 +350,7 @@ async function analyticsV2Routes(fastify: FastifyInstance): Promise<void> {
         const tenantId = request.tenantId as string;
 
         // Implement export logic via event repository
-        const repo = fastify.diContainer.get("analyticsEventRepository");
+        const repo = (fastify as any).diContainer.get("analyticsEventRepository");
         const events = await repo.findEventsForExport({
           tenantId,
           timeRange: { from, to },

@@ -16,7 +16,7 @@ export {
   CspEnvironment,
   CspManager,
   type CspViolationReport,
-} from "./csp-headers";
+} from "./csp-headers.js";
 
 // CORS Configuration
 export {
@@ -24,21 +24,21 @@ export {
   type CorsPolicyOverride,
   type CorsContext,
   type CorsValidationResult,
-} from "./cors-config";
+} from "./cors-config.js";
 
 // Input Sanitization
 export {
   InputSanitizer,
   type SanitizerConfig,
   type SanitizationResult,
-} from "./input-sanitizer";
+} from "./input-sanitizer.js";
 
 // Security Headers Middleware
 export {
   SecurityHeadersMiddleware,
   type SecurityHeadersConfig,
   type SecurityHeaderOverride,
-} from "./security-headers";
+} from "./security-headers.js";
 
 // Request Fingerprinting
 export {
@@ -46,7 +46,7 @@ export {
   type RequestAttributes,
   type StoredFingerprint,
   type AnomalyResult,
-} from "./request-fingerprint";
+} from "./request-fingerprint.js";
 
 // Audit Logging
 export {
@@ -57,11 +57,11 @@ export {
   type AuditQuery,
   type AuditQueryResult,
   type StateChange,
-} from "./audit-logger";
+} from "./audit-logger.js";
 
 // Secret Scanning
 export {
   SecretScanner,
   type SecretScannerConfig,
   type SecretDetectionResult,
-} from "./secret-scanner";
+} from "./secret-scanner.js";

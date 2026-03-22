@@ -29,7 +29,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     {
       className,
       label,
-      options,
+      options = [],
       placeholder,
       error,
       disabled = false,

@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import {
 import { useApiList } from '@/hooks/use-api';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import {
   PartnerCard,
   PartnerStatsWidget,
   type PartnerStatus,
@@ -31,7 +31,7 @@ interface Partner {
   totalRatings: number;
 }
 
-
+const MOCK_PARTNERS: Partner[] = [];
 
 type ViewMode = "grid" | "list";
 

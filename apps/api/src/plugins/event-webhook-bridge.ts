@@ -129,11 +129,4 @@ export default fp(eventWebhookBridgePlugin, {
   dependencies: ["event-bus", "prisma"],
 });
 
-/**
- * Type augmentation for Fastify instance
- */
-declare module "fastify" {
-  interface FastifyInstance {
-    eventWebhookBridge: EventWebhookBridge;
-  }
-}
+// Type augmentation is now centralized in types/fastify.d.ts

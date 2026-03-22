@@ -5,8 +5,8 @@
  * rate estimates, carrier search, and fleet management.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 
 import { FreightAdapter } from "./freight-adapter";
 import type {

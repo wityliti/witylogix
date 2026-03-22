@@ -33,7 +33,7 @@ const fuzzySearch = (query: string, options: ComboboxOption[]): ComboboxOption[]
 const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
   (
     {
-      options,
+      options = [],
       value,
       onChange,
       placeholder = "Select an option...",

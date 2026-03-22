@@ -14,18 +14,18 @@ export {
   type Geofence,
   type ETAResult,
   GPSTrackingService,
-} from "./gps-service";
+} from "./gps-service.js";
 
 export {
   type ETAResult as ETACalculatorResult,
   type DeliveryRecord,
   type ETAConfig,
   ETACalculator,
-} from "./eta-calculator";
+} from "./eta-calculator.js";
 
 export {
   type Geofence as GeofenceDefinition,
   type GeofenceEvent as GeofenceEventType,
   type ProximityThreshold,
   GeofenceManager,
-} from "./geofence";
+} from "./geofence.js";

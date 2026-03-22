@@ -158,7 +158,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error predicting ETA:', error);
+        fastify.log.error({ err: error }, 'Error predicting ETA:');
         return reply.status(500).send({
           error: 'Failed to predict ETA',
           message: error instanceof Error ? error.message : 'Unknown error',
@@ -225,7 +225,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error in batch ETA prediction:', error);
+        fastify.log.error({ err: error }, 'Error in batch ETA prediction:');
         return reply.status(500).send({
           error: 'Failed to predict batch ETAs',
           message: error instanceof Error ? error.message : 'Unknown error',
@@ -239,7 +239,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   fastify.post<{ Body: z.infer<typeof trainSchema> }>(
     '/train',
     {
-      preHandler: [requireRole('admin')],
+      preHandler: [requireRole('ADMIN')],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = trainSchema.parse(request.body);
@@ -278,7 +278,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error training models:', error);
+        fastify.log.error({ err: error }, 'Error training models:');
         return reply.status(500).send({
           error: 'Failed to train models',
           message: error instanceof Error ? error.message : 'Unknown error',
@@ -306,7 +306,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error getting model performance:', error);
+        fastify.log.error({ err: error }, 'Error getting model performance:');
         return reply.status(500).send({
           error: 'Failed to get model performance',
         });
@@ -336,7 +336,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error getting feature importance:', error);
+        fastify.log.error({ err: error }, 'Error getting feature importance:');
         return reply.status(500).send({
           error: 'Failed to get feature importance',
         });
@@ -349,7 +349,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   fastify.post<{ Body: z.infer<typeof calibrateSchema> }>(
     '/calibrate',
     {
-      preHandler: [requireRole('admin')],
+      preHandler: [requireRole('ADMIN')],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = calibrateSchema.parse(request.body);
@@ -371,7 +371,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error calibrating models:', error);
+        fastify.log.error({ err: error }, 'Error calibrating models:');
         return reply.status(500).send({
           error: 'Failed to calibrate models',
         });
@@ -401,7 +401,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error generating accuracy report:', error);
+        fastify.log.error({ err: error }, 'Error generating accuracy report:');
         return reply.status(500).send({
           error: 'Failed to generate accuracy report',
         });
@@ -441,7 +441,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error checking health:', error);
+        fastify.log.error({ err: error }, 'Error checking health:');
         return reply.status(500).send({
           healthy: false,
           status: 'error',

@@ -91,6 +91,9 @@ export function TableSkeleton({
   );
 }
 
+// Alias for pages that import LoadingSkeleton directly
+export const LoadingSkeleton = Skeleton;
+
 export function CardSkeleton({ className }: { className?: string }) {
   return (
     <div

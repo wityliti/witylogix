@@ -261,4 +261,4 @@ export function cleanupRateLimit(): void {
   store.destroy();
 }
 
-export type { RateLimitConfig, TokenBucket };
+export type { TokenBucket };

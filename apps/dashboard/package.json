@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3003 --turbopack",
-    "build": "echo build-ok",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",

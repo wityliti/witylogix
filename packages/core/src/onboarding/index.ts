@@ -3,10 +3,10 @@
  */
 
 // Services
-export { OnboardingService, onboardingService } from "./onboarding-service";
-export { WorkspaceProvisioner, workspaceProvisioner } from "./workspace-provisioner";
-export { EmailVerificationService, emailVerificationService } from "./email-verification-service";
-export { InvitationService, invitationService } from "./invitation-service";
+export { OnboardingService, onboardingService } from "./onboarding-service.js";
+export { WorkspaceProvisioner, workspaceProvisioner } from "./workspace-provisioner.js";
+export { EmailVerificationService, emailVerificationService } from "./email-verification-service.js";
+export { InvitationService, invitationService } from "./invitation-service.js";
 
 // Types
 export type {
@@ -25,7 +25,7 @@ export type {
   GenerateOTPResult,
   VerifyOTPResult,
   OnboardingEvent,
-} from "./types";
+} from "./types.js";
 
 export {
   OnboardingStep,
@@ -43,7 +43,7 @@ export {
   OnboardingEventType,
   OnboardingError,
   OnboardingErrorCodes,
-} from "./types";
+} from "./types.js";
 
 // Tenant Isolation
 export {
@@ -54,9 +54,9 @@ export {
   tenantMiddleware,
   requireTenantContext,
   checkTenantPermission,
-} from "./tenant-isolation";
+} from "./tenant-isolation.js";
 
-export type { TenantPermission } from "./tenant-isolation";
+export type { TenantPermission } from "./tenant-isolation.js";
 
 // API
-export { createOnboardingRouter } from "./onboarding-api";
+export { createOnboardingRouter } from "./onboarding-api.js";

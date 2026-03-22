@@ -37,6 +37,9 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
+// Alias for `import { db } from '@witylogix/db'` convention
+export const db = prisma;
+
 // Re-export Prisma types
 export { PrismaClient };
 export type { Prisma };

@@ -15,6 +15,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { prisma } from '@witylogix/db';
 import { QuickBooksAdapter, XeroAdapter, AccountingSyncService } from '@witylogix/core/integrations/accounting';
 import { requireAuth } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
@@ -180,7 +181,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         }
 
         // Save connection to database
-        const savedConnection = await (fastify.db.accountingConnection as any).create({
+        const savedConnection = await (prisma as any).accountingConnection.create({
           data: {
             tenantId,
             provider,
@@ -214,7 +215,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     async (request: FastifyRequest, reply: FastifyReply) => {
       const tenantId = request.user.tenantId;
 
-      const connections = await (fastify.db.accountingConnection as any).findMany({
+      const connections = await (prisma as any).accountingConnection.findMany({
         where: { tenantId, isActive: true },
         select: {
           id: true,
@@ -227,15 +228,15 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       });
 
       const syncCounts = await Promise.all(
-        connections.map(async conn => {
-          const syncedCount = await (fastify.db.accountingSyncRecord as any).count({
+        connections.map(async (conn: typeof connections[0]) => {
+          const syncedCount = await (prisma as any).accountingSyncRecord.count({
             where: {
               connectionId: conn.id,
               syncStatus: 'synced',
             },
           });
 
-          const failedCount = await (fastify.db.accountingSyncRecord as any).count({
+          const failedCount = await (prisma as any).accountingSyncRecord.count({
             where: {
               connectionId: conn.id,
               syncStatus: 'failed',
@@ -274,14 +275,8 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       const tenantId = request.user.tenantId;
 
       // Fetch invoice
-      const invoice = await (fastify.db.invoice as any).findUnique({
+      const invoice = await prisma.invoice.findUnique({
         where: { id },
-        include: {
-          lineItems: true,
-          discounts: true,
-          taxes: true,
-          payments: true,
-        },
       });
 
       if (!invoice || invoice.tenantId !== tenantId) {
@@ -293,7 +288,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Get active connections
-      const connections = await (fastify.db.accountingConnection as any).findMany({
+      const connections = await (prisma as any).accountingConnection.findMany({
         where: { tenantId, isActive: true },
       });
 
@@ -302,13 +297,13 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Sync to all active providers
-      const syncService = new AccountingSyncService(fastify.db);
+      const syncService = new AccountingSyncService(prisma);
       const results = await Promise.allSettled(
-        connections.map(conn => syncService.syncInvoice(invoice, conn.provider, { force, autoRetry })),
+        connections.map((conn: typeof connections[0]) => syncService.syncInvoice(invoice as any, conn.provider, { force, autoRetry })),
       );
 
-      const successful = results.filter(r => r.status === 'fulfilled');
-      const failed = results.filter(r => r.status === 'rejected');
+      const successful = results.filter((r: PromiseSettledResult<any>) => r.status === 'fulfilled');
+      const failed = results.filter((r: PromiseSettledResult<any>) => r.status === 'rejected');
 
       return reply.send({
         invoiceId: id,
@@ -352,14 +347,8 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Fetch invoices
-      const invoices = await (fastify.db.invoice as any).findMany({
+      const invoices = await prisma.invoice.findMany({
         where: { id: { in: invoiceIds }, tenantId },
-        include: {
-          lineItems: true,
-          discounts: true,
-          taxes: true,
-          payments: true,
-        },
       });
 
       if (invoices.length === 0) {
@@ -367,7 +356,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Get connections to sync
-      const connections = await (fastify.db.accountingConnection as any).findMany({
+      const connections = await (prisma as any).accountingConnection.findMany({
         where: {
           tenantId,
           isActive: true,
@@ -380,18 +369,17 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Sync all invoices
-      const syncService = new AccountingSyncService(fastify.db);
+      const syncService = new AccountingSyncService(prisma);
       const results: Record<string, any> = {};
 
       for (const invoice of invoices) {
         results[invoice.id] = {
-          invoiceNumber: invoice.invoiceNumber,
           syncs: [],
         };
 
         for (const connection of connections) {
           try {
-            const syncRecord = await syncService.syncInvoice(invoice, connection.provider, {
+            const syncRecord = await syncService.syncInvoice(invoice as any, connection.provider, {
               force,
               autoRetry: true,
             });
@@ -449,7 +437,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       if (status) where.syncStatus = status;
 
       const [records, total] = await Promise.all([
-        (fastify.db.accountingSyncRecord as any).findMany({
+        (prisma as any).accountingSyncRecord.findMany({
           where,
           include: {
             connection: {
@@ -460,7 +448,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
           take: limit,
           skip: offset,
         }),
-        (fastify.db.accountingSyncRecord as any).count({ where }),
+        (prisma as any).accountingSyncRecord.count({ where }),
       ]);
 
       return reply.send({
@@ -494,7 +482,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
       const tenantId = request.user.tenantId;
 
-      const connection = await (fastify.db.accountingConnection as any).findFirst({
+      const connection = await (prisma as any).accountingConnection.findFirst({
         where: { tenantId, provider, isActive: true },
       });
 
@@ -503,7 +491,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
       }
 
       // Deactivate connection
-      await (fastify.db.accountingConnection as any).update({
+      await (prisma as any).accountingConnection.update({
         where: { id: connection.id },
         data: { isActive: false },
       });
@@ -542,7 +530,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         throw new ValidationError('fromDate must be before toDate');
       }
 
-      const connection = await (fastify.db.accountingConnection as any).findFirst({
+      const connection = await (prisma as any).accountingConnection.findFirst({
         where: { tenantId, provider, isActive: true },
       });
 
@@ -550,7 +538,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         throw new NotFoundError(`No active connection for provider: ${provider}`);
       }
 
-      const syncService = new AccountingSyncService(fastify.db);
+      const syncService = new AccountingSyncService(prisma);
       const result = await syncService.reconcile(tenantId, provider, {
         from: fromDate,
         to: toDate,

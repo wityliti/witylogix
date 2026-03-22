@@ -79,7 +79,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error predicting ETA:', error);
+        fastify.log.error({ err: error }, 'Error predicting ETA:');
         return reply.status(500).send({
           error: 'Failed to predict ETA',
         });
@@ -106,7 +106,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error in batch ETA prediction:', error);
+        fastify.log.error({ err: error }, 'Error in batch ETA prediction:');
         return reply.status(500).send({
           error: 'Failed to predict batch ETAs',
         });
@@ -130,7 +130,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error getting accuracy metrics:', error);
+        fastify.log.error({ err: error }, 'Error getting accuracy metrics:');
         return reply.status(500).send({
           error: 'Failed to get accuracy metrics',
         });
@@ -157,7 +157,7 @@ export default async function aiETARoutes(
           message: 'Delivery time recorded for model training',
         });
       } catch (error) {
-        fastify.log.error('Error recording delivery:', error);
+        fastify.log.error({ err: error }, 'Error recording delivery:');
         return reply.status(500).send({
           error: 'Failed to record delivery time',
         });
@@ -178,7 +178,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error getting statistics:', error);
+        fastify.log.error({ err: error }, 'Error getting statistics:');
         return reply.status(500).send({
           error: 'Failed to get statistics',
         });
@@ -220,7 +220,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error checking health:', error);
+        fastify.log.error({ err: error }, 'Error checking health:');
         return reply.status(500).send({
           healthy: false,
           status: 'error',
@@ -241,7 +241,7 @@ export default async function aiETARoutes(
   }>(
     '/config',
     {
-      preHandler: [requireRole('admin')],
+      preHandler: [requireRole('ADMIN')],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { model, weight, enabled } = request.body as any;
@@ -268,7 +268,7 @@ export default async function aiETARoutes(
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error('Error updating configuration:', error);
+        fastify.log.error({ err: error }, 'Error updating configuration:');
         return reply.status(500).send({
           error: 'Failed to update configuration',
         });

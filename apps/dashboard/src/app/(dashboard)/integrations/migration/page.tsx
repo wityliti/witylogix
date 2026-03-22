@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
 import { useApiQuery } from '@/hooks/use-api';
+import {
   useMigrations,
   useMigrationWizard,
   useShadowMode,
@@ -91,17 +91,17 @@ export default function MigrationWizard() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-[#3b82f6]">
+    <div className="flex h-screen flex-col bg-[#0a0a0f]">
       {/* Header */}
-      <div className="border-b border-[#3b82f6] bg-[#3b82f6] px-8 py-6">
-        <h1 className="text-3xl font-bold text-[#3b82f6]">Migration Wizard</h1>
-        <p className="mt-2 text-[#3b82f6]">
+      <div className="border-b border-[#1e1e2e] bg-[#0a0a0f] px-8 py-6">
+        <h1 className="text-3xl font-bold text-white">Migration Wizard</h1>
+        <p className="mt-2 text-white">
           Safely migrate between payment and integration providers
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#3b82f6] px-8">
+      <div className="border-b border-[#1e1e2e] px-8">
         <div className="flex gap-8">
           {(['wizard', 'progress', 'history'] as const).map((tab) => (
             <button
@@ -110,8 +110,8 @@ export default function MigrationWizard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-[#3b82f6] text-[#3b82f6]'
-                  : 'border-transparent text-[#3b82f6] hover:text-[#3b82f6]'
+                  ? 'border-[#1e1e2e] text-white'
+                  : 'border-transparent text-white hover:text-white'
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -133,8 +133,8 @@ export default function MigrationWizard() {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-colors',
                       currentStep >= step
-                        ? 'bg-[#3b82f6] text-white'
-                        : 'bg-[#3b82f6] text-[#3b82f6]'
+                        ? 'bg-[#0a0a0f] text-white'
+                        : 'bg-[#0a0a0f] text-white'
                     )}
                   >
                     {step}
@@ -143,7 +143,7 @@ export default function MigrationWizard() {
                     <div
                       className={cn(
                         'mx-2 h-1 w-12',
-                        currentStep > step ? 'bg-[#3b82f6]' : 'bg-[#3b82f6]'
+                        currentStep > step ? 'bg-[#0a0a0f]' : 'bg-[#0a0a0f]'
                       )}
                     />
                   )}
@@ -152,7 +152,7 @@ export default function MigrationWizard() {
             </div>
 
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-[#3b82f6]">
+              <h2 className="text-2xl font-bold text-white">
                 {currentStep === 1 && 'Select Source Provider'}
                 {currentStep === 2 && 'Select Target Provider'}
                 {currentStep === 3 && 'Configure Field Mapping'}
@@ -254,8 +254,8 @@ function ProviderSelection({
   title: string;
 }) {
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
-      <h3 className="mb-4 text-lg font-semibold text-[#3b82f6]">{title}</h3>
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+      <h3 className="mb-4 text-lg font-semibold text-white">{title}</h3>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {providers.map((provider) => (
           <button
@@ -264,8 +264,8 @@ function ProviderSelection({
             className={cn(
               'rounded-lg border-2 px-4 py-6 text-center font-medium transition-all',
               selected === provider
-                ? 'border-[#3b82f6] bg-[#3b82f6] bg-opacity-10 text-[#3b82f6]'
-                : 'border-[#3b82f6] text-[#3b82f6] hover:border-[#3b82f6]'
+                ? 'border-[#1e1e2e] bg-[#0a0a0f] bg-opacity-10 text-white'
+                : 'border-[#1e1e2e] text-white hover:border-[#1e1e2e]'
             )}
           >
             {provider}
@@ -306,21 +306,21 @@ function FieldMappingEditor({
   };
 
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
-      <h3 className="mb-4 text-lg font-semibold text-[#3b82f6]">Field Mapping</h3>
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+      <h3 className="mb-4 text-lg font-semibold text-white">Field Mapping</h3>
       <div className="space-y-4">
         {mappings.length === 0 ? (
-          <p className="text-sm text-[#3b82f6]">No mappings configured yet.</p>
+          <p className="text-sm text-white">No mappings configured yet.</p>
         ) : (
           mappings.map((mapping, idx) => (
-            <div key={idx} className="flex items-end gap-3 rounded bg-[#3b82f6] p-4">
+            <div key={idx} className="flex items-end gap-3 rounded bg-[#0a0a0f] p-4">
               <div className="flex-1">
-                <Label className="text-sm text-[#3b82f6]">Source Field</Label>
+                <Label className="text-sm text-white">Source Field</Label>
                 <Select
                   value={mapping.sourceField}
                   onValueChange={(value) => handleUpdateMapping(idx, { sourceField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-[#3b82f6] text-[#3b82f6]">
+                  <SelectTrigger className="mt-1 bg-[#0a0a0f] text-white">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -333,12 +333,12 @@ function FieldMappingEditor({
                 </Select>
               </div>
               <div className="flex-1">
-                <Label className="text-sm text-[#3b82f6]">Target Field</Label>
+                <Label className="text-sm text-white">Target Field</Label>
                 <Select
                   value={mapping.targetField}
                   onValueChange={(value) => handleUpdateMapping(idx, { targetField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-[#3b82f6] text-[#3b82f6]">
+                  <SelectTrigger className="mt-1 bg-[#0a0a0f] text-white">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -357,7 +357,7 @@ function FieldMappingEditor({
                     handleUpdateMapping(idx, { required: checked as boolean })
                   }
                 />
-                <Label className="text-sm text-[#3b82f6]">Required</Label>
+                <Label className="text-sm text-white">Required</Label>
               </div>
             </div>
           ))
@@ -382,12 +382,12 @@ function ShadowModeSettings({
   comparisons: Record<string, unknown>[];
 }) {
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-[#3b82f6]">Shadow Mode</h3>
-            <p className="mt-1 text-sm text-[#3b82f6]">
+            <h3 className="text-lg font-semibold text-white">Shadow Mode</h3>
+            <p className="mt-1 text-sm text-white">
               Run both providers in parallel and compare responses
             </p>
           </div>
@@ -397,12 +397,12 @@ function ShadowModeSettings({
         {enabled && comparisons.length > 0 && (
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-[#3b82f6]">Match Rate</span>
+              <span className="text-sm font-medium text-white">Match Rate</span>
               <Badge variant="success">{matchPercentage}%</Badge>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#3b82f6]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
               <div
-                className="h-full bg-[#3b82f6] transition-all"
+                className="h-full bg-[#0a0a0f] transition-all"
                 style={{ width: `${matchPercentage}%` }}
               />
             </div>
@@ -425,28 +425,28 @@ function ReviewCutover({
   fieldMappings: FieldMapping[];
 }) {
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
-      <h3 className="mb-6 text-lg font-semibold text-[#3b82f6]">Review Migration Plan</h3>
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+      <h3 className="mb-6 text-lg font-semibold text-white">Review Migration Plan</h3>
       <div className="space-y-4">
-        <div className="rounded bg-[#3b82f6] p-4">
-          <div className="text-sm text-[#3b82f6]">Source Provider</div>
-          <div className="text-lg font-semibold text-[#3b82f6]">{sourceProvider}</div>
+        <div className="rounded bg-[#0a0a0f] p-4">
+          <div className="text-sm text-white">Source Provider</div>
+          <div className="text-lg font-semibold text-white">{sourceProvider}</div>
         </div>
-        <div className="rounded bg-[#3b82f6] p-4">
-          <div className="text-sm text-[#3b82f6]">Target Provider</div>
-          <div className="text-lg font-semibold text-[#3b82f6]">{targetProvider}</div>
+        <div className="rounded bg-[#0a0a0f] p-4">
+          <div className="text-sm text-white">Target Provider</div>
+          <div className="text-lg font-semibold text-white">{targetProvider}</div>
         </div>
-        <div className="rounded bg-[#3b82f6] p-4">
-          <div className="text-sm text-[#3b82f6]">Shadow Mode</div>
-          <div className="text-lg font-semibold text-[#3b82f6]">
+        <div className="rounded bg-[#0a0a0f] p-4">
+          <div className="text-sm text-white">Shadow Mode</div>
+          <div className="text-lg font-semibold text-white">
             {shadowModeEnabled ? 'Enabled' : 'Disabled'}
           </div>
         </div>
-        <div className="rounded bg-[#3b82f6] p-4">
-          <div className="text-sm text-[#3b82f6]">Field Mappings</div>
+        <div className="rounded bg-[#0a0a0f] p-4">
+          <div className="text-sm text-white">Field Mappings</div>
           <div className="mt-2 space-y-1">
             {fieldMappings.map((mapping, idx) => (
-              <div key={idx} className="text-sm text-[#3b82f6]">
+              <div key={idx} className="text-sm text-white">
                 {mapping.sourceField} → {mapping.targetField}
               </div>
             ))}
@@ -459,16 +459,16 @@ function ReviewCutover({
 
 function MigrationProgress({ migrationId }: { migrationId: string }) {
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
-      <h3 className="mb-6 text-lg font-semibold text-[#3b82f6]">Migration in Progress</h3>
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+      <h3 className="mb-6 text-lg font-semibold text-white">Migration in Progress</h3>
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-[#3b82f6]">Overall Progress</span>
-            <span className="text-sm font-semibold text-[#3b82f6]">65%</span>
+            <span className="text-sm font-medium text-white">Overall Progress</span>
+            <span className="text-sm font-semibold text-white">65%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#3b82f6]">
-            <div className="h-full w-2/3 bg-[#3b82f6]" />
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a0a0f]">
+            <div className="h-full w-2/3 bg-[#0a0a0f]" />
           </div>
         </div>
 
@@ -486,29 +486,29 @@ function MigrationProgress({ migrationId }: { migrationId: string }) {
 
 function MigrationHistory({ migrations }: { migrations: Migration[] }) {
   return (
-    <Card className="border border-[#3b82f6] bg-[#3b82f6] p-6">
-      <h3 className="mb-4 text-lg font-semibold text-[#3b82f6]">Migration History</h3>
+    <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">
+      <h3 className="mb-4 text-lg font-semibold text-white">Migration History</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#3b82f6]">
-              <th className="px-4 py-2 text-left text-[#3b82f6]">Source</th>
-              <th className="px-4 py-2 text-left text-[#3b82f6]">Target</th>
-              <th className="px-4 py-2 text-left text-[#3b82f6]">Status</th>
-              <th className="px-4 py-2 text-left text-[#3b82f6]">Progress</th>
-              <th className="px-4 py-2 text-left text-[#3b82f6]">Error Rate</th>
+            <tr className="border-b border-[#1e1e2e]">
+              <th className="px-4 py-2 text-left text-white">Source</th>
+              <th className="px-4 py-2 text-left text-white">Target</th>
+              <th className="px-4 py-2 text-left text-white">Status</th>
+              <th className="px-4 py-2 text-left text-white">Progress</th>
+              <th className="px-4 py-2 text-left text-white">Error Rate</th>
             </tr>
           </thead>
           <tbody>
             {migrations.map((migration) => (
-              <tr key={migration.id} className="border-b border-[#3b82f6]">
-                <td className="px-4 py-2 text-[#3b82f6]">{migration.sourceProvider}</td>
-                <td className="px-4 py-2 text-[#3b82f6]">{migration.targetProvider}</td>
+              <tr key={migration.id} className="border-b border-[#1e1e2e]">
+                <td className="px-4 py-2 text-white">{migration.sourceProvider}</td>
+                <td className="px-4 py-2 text-white">{migration.targetProvider}</td>
                 <td className="px-4 py-2">
                   <Badge variant={migration.status as any}>{migration.status}</Badge>
                 </td>
-                <td className="px-4 py-2 text-[#3b82f6]">{migration.progress}%</td>
-                <td className="px-4 py-2 text-[#3b82f6]">
+                <td className="px-4 py-2 text-white">{migration.progress}%</td>
+                <td className="px-4 py-2 text-white">
                   {(migration.errorRate * 100).toFixed(2)}%
                 </td>
               </tr>
@@ -522,9 +522,9 @@ function MigrationHistory({ migrations }: { migrations: Migration[] }) {
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-[#3b82f6] bg-[#3b82f6] p-4">
-      <div className="text-xs text-[#3b82f6]">{label}</div>
-      <div className="mt-1 text-xl font-bold text-[#3b82f6]">{value}</div>
+    <div className="rounded border border-[#1e1e2e] bg-[#0a0a0f] p-4">
+      <div className="text-xs text-white">{label}</div>
+      <div className="mt-1 text-xl font-bold text-white">{value}</div>
     </div>
   );
 }

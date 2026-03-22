@@ -280,7 +280,7 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                       style={{
                         backgroundColor: getPlanColor(store.planTier) + '20',
                         color: getPlanColor(store.planTier),
-                        fontSize: ''0.75rem'',
+                        fontSize: '0.75rem',
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >

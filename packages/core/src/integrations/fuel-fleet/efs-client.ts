@@ -5,8 +5,8 @@
  * location-based controls, and driver settlement.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
 import type {

@@ -9,7 +9,8 @@
  * - Invoice creation and tracking
  */
 
-import { fetch as nodeFetch } from 'node-fetch';
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 import type {
   PaymentIntent,
   Transaction,

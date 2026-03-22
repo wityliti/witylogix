@@ -92,14 +92,14 @@ export {
   getSeasonalityStrength,
   getTrendStrength,
   decomposeSeries,
-} from "./models/seasonal-decomposition";
+} from "./models/seasonal-decomposition.js";
 
 export {
   trainZoneRegression,
   predictWithRegression,
   extractFeatures,
   predictWithCrossZoneLearning,
-} from "./models/zone-regression";
+} from "./models/zone-regression.js";
 
 export {
   findSimilarDays,
@@ -108,7 +108,7 @@ export {
   matchHolidayPattern,
   getClusterAverageFallback,
   aggregateToDailyForecast,
-} from "./models/pattern-matcher";
+} from "./models/pattern-matcher.js";
 
 export {
   initializeStatistics,
@@ -119,12 +119,12 @@ export {
   detectAnomaly,
   detectAnomalies,
   calculateControlLimits,
-} from "./models/anomaly-detector";
+} from "./models/anomaly-detector.js";
 
 // ─── ENSEMBLE & SCHEDULER EXPORTS ──────────────────────────────
 
-export { DemandEnsemble } from "./demand-ensemble";
-export { SmartScheduler } from "./smart-scheduler";
+export { DemandEnsemble } from "./demand-ensemble.js";
+export { SmartScheduler } from "./smart-scheduler.js";
 
 // ─── FEATURE STORE & AGGREGATOR EXPORTS ────────────────────────
 

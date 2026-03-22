@@ -19,6 +19,7 @@ import {
   Clock,
   Filter,
   ArrowRight,
+  Settings,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════

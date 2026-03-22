@@ -36,12 +36,12 @@
  */
 
 // Environment validation
-export { validateEnv, EnvSchema, env } from "./env-validator.ts";
-export type { Env } from "./env-validator.ts";
+export { validateEnv, EnvSchema, env } from "./env-validator.js";
+export type { Env } from "./env-validator.js";
 
 // Configuration service
-export { ConfigService, getConfig } from "./config-service.ts";
-export type { ConfigStructure } from "./config-service.ts";
+export { ConfigService, getConfig } from "./config-service.js";
+export type { ConfigStructure } from "./config-service.js";
 
 // Feature flags
 export {
@@ -53,8 +53,8 @@ export {
   getAllFlagDefinitions,
   resetTenantOverrides,
   FEATURE_FLAG_DEFINITIONS,
-} from "./feature-flags.ts";
-export type { FeatureFlagContext } from "./feature-flags.ts";
+} from "./feature-flags.js";
+export type { FeatureFlagContext } from "./feature-flags.js";
 
 // Secrets management
 export {
@@ -63,18 +63,18 @@ export {
   FileSecretsProvider,
   VaultSecretsProvider,
   AWSSecretsProvider,
-} from "./secrets-manager.ts";
+} from "./secrets-manager.js";
 export type {
   SecretsProvider,
   SecretValue,
-} from "./secrets-manager.ts";
+} from "./secrets-manager.js";
 
 // Deployment checklist
 export {
   DeploymentChecker,
   formatDeploymentReport,
-} from "./deployment-checklist.ts";
+} from "./deployment-checklist.js";
 export type {
   DeploymentReport,
   HealthCheckResult,
-} from "./deployment-checklist.ts";
+} from "./deployment-checklist.js";

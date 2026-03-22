@@ -34,67 +34,69 @@ export default function NotificationsConfigPage() {
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-  {
-    id: "shipment-created",
-    name: "Shipment Created",
-    description: "New shipment has been created in the system",
-    channels: { email: true, sms: false, push: true, webhook: true },
-  },
-  {
-    id: "shipment-picked",
-    name: "Shipment Picked Up",
-    description: "Driver has picked up the shipment",
-    channels: { email: true, sms: true, push: true, webhook: true },
-  },
-  {
-    id: "shipment-in-transit",
-    name: "Shipment In Transit",
-    description: "Shipment is currently in transit",
-    channels: { email: false, sms: false, push: true, webhook: true },
-  },
-  {
-    id: "shipment-delivered",
-    name: "Shipment Delivered",
-    description: "Shipment has been successfully delivered",
-    channels: { email: true, sms: true, push: true, webhook: true },
-  },
-  {
-    id: "shipment-failed",
-    name: "Delivery Failed",
-    description: "Delivery attempt failed",
-    channels: { email: true, sms: true, push: true, webhook: true },
-  },
-  {
-    id: "driver-available",
-    name: "Driver Available",
-    description: "Driver has become available for new assignments",
-    channels: { email: true, sms: false, push: false, webhook: true },
-  },
-  {
-    id: "driver-offline",
-    name: "Driver Offline",
-    description: "Driver has gone offline",
-    channels: { email: true, sms: true, push: true, webhook: true },
-  },
-  {
-    id: "alert-low-balance",
-    name: "Low Account Balance",
-    description: "Account balance is below minimum threshold",
-    channels: { email: true, sms: true, push: false, webhook: false },
-  },
-  {
-    id: "team-invitation",
-    name: "Team Invitation Sent",
-    description: "Team member has been invited",
-    channels: { email: true, sms: false, push: true, webhook: false },
-  },
-  {
-    id: "api-error",
-    name: "API Integration Error",
-    description: "Error occurred during API call",
-    channels: { email: true, sms: false, push: false, webhook: true },
-  },
-];
+
+  const defaultEvents: NotificationEvent[] = [
+    {
+      id: "shipment-created",
+      name: "Shipment Created",
+      description: "New shipment has been created in the system",
+      channels: { email: true, sms: false, push: true, webhook: true },
+    },
+    {
+      id: "shipment-picked",
+      name: "Shipment Picked Up",
+      description: "Driver has picked up the shipment",
+      channels: { email: true, sms: true, push: true, webhook: true },
+    },
+    {
+      id: "shipment-in-transit",
+      name: "Shipment In Transit",
+      description: "Shipment is currently in transit",
+      channels: { email: false, sms: false, push: true, webhook: true },
+    },
+    {
+      id: "shipment-delivered",
+      name: "Shipment Delivered",
+      description: "Shipment has been successfully delivered",
+      channels: { email: true, sms: true, push: true, webhook: true },
+    },
+    {
+      id: "shipment-failed",
+      name: "Delivery Failed",
+      description: "Delivery attempt failed",
+      channels: { email: true, sms: true, push: true, webhook: true },
+    },
+    {
+      id: "driver-available",
+      name: "Driver Available",
+      description: "Driver has become available for new assignments",
+      channels: { email: true, sms: false, push: false, webhook: true },
+    },
+    {
+      id: "driver-offline",
+      name: "Driver Offline",
+      description: "Driver has gone offline",
+      channels: { email: true, sms: true, push: true, webhook: true },
+    },
+    {
+      id: "alert-low-balance",
+      name: "Low Account Balance",
+      description: "Account balance is below minimum threshold",
+      channels: { email: true, sms: true, push: false, webhook: false },
+    },
+    {
+      id: "team-invitation",
+      name: "Team Invitation Sent",
+      description: "Team member has been invited",
+      channels: { email: true, sms: false, push: true, webhook: false },
+    },
+    {
+      id: "api-error",
+      name: "API Integration Error",
+      description: "Error occurred during API call",
+      channels: { email: true, sms: false, push: false, webhook: true },
+    },
+  ];
 
   const channelInfo = [
     {
@@ -307,7 +309,7 @@ export default function NotificationsConfigPage() {
                   className="flex-1 px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
                 >
                   Regenerate
@@ -335,7 +337,7 @@ export default function NotificationsConfigPage() {
                 Test Webhook
               </label>
               <Button
-                variant="outline"
+                variant="secondary"
                 className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
               >
                 Send Test Event
@@ -408,7 +410,7 @@ export default function NotificationsConfigPage() {
         {/* Action Buttons */}
         <div className="flex gap-4 justify-end mt-8">
           <Button
-            variant="outline"
+            variant="secondary"
             className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
           >
             Cancel

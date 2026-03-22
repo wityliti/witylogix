@@ -1,14 +1,14 @@
 // Barrel exports
-export { LabelData, LabelAddress, LabelOptions, GeneratedLabel } from "./types";
-export { encodeCode128B, renderBarcodeToSVG, generateBarcodeBase64PNG } from "./barcode";
-export { generateZPL } from "./generators/zpl";
-export { generatePDF } from "./generators/pdf";
-export { generateHTML } from "./generators/html";
+export { LabelData, LabelAddress, LabelOptions, GeneratedLabel } from "./types.js";
+export { encodeCode128B, renderBarcodeToSVG, generateBarcodeBase64PNG } from "./barcode.js";
+export { generateZPL } from "./generators/zpl.js";
+export { generatePDF } from "./generators/pdf.js";
+export { generateHTML } from "./generators/html.js";
 
-import { LabelData, LabelOptions, GeneratedLabel } from "./types";
-import { generateZPL } from "./generators/zpl";
-import { generatePDF } from "./generators/pdf";
-import { generateHTML } from "./generators/html";
+import { LabelData, LabelOptions, GeneratedLabel } from "./types.js";
+import { generateZPL } from "./generators/zpl.js";
+import { generatePDF } from "./generators/pdf.js";
+import { generateHTML } from "./generators/html.js";
 
 /**
  * Factory function to generate labels in the specified format

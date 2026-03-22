@@ -5,8 +5,8 @@
  * money code generation, fuel purchase authorization, and IFTA compliance.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 
 import type {
   SDKConfig,

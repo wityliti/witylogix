@@ -5,8 +5,8 @@
  * real-time transaction streaming, bulk fuel purchasing, and fleet analytics.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 import { createHmac } from "crypto";
 
 import type {

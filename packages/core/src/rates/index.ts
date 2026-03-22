@@ -17,10 +17,10 @@ export type {
   ShippingProfile,
   WeightTier,
   DistanceTier,
-} from "./types";
+} from "./types.js";
 
 // Calculator exports
-export { calculateRate, calculateRatesBatch } from "./calculator";
+export { calculateRate, calculateRatesBatch } from "./calculator.js";
 
 // Comparison exports
 export {
@@ -29,10 +29,10 @@ export {
   findBestRate,
   type DetailedComparisonResult,
   type RateSortCriteria,
-} from "./comparison";
+} from "./comparison.js";
 
 // Zone utilities
-export { getZone, isRemoteArea, getZoneMultiplier, getRemoteAreaSurcharge, getEstimatedDays } from "./zones";
+export { getZone, isRemoteArea, getZoneMultiplier, getRemoteAreaSurcharge, getEstimatedDays } from "./zones.js";
 
 // Surcharge utilities
 export {
@@ -44,4 +44,4 @@ export {
   calculateSaturdaySurcharge,
   calculateRemoteAreaSurcharge,
   calculateAllSurcharges,
-} from "./surcharges";
+} from "./surcharges.js";

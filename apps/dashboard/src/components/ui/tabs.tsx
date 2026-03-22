@@ -24,7 +24,7 @@ interface TabsProps {
 }
 
 export function Tabs({
-  tabs,
+  tabs = [],
   activeTab,
   onChange,
   variant = "pills",

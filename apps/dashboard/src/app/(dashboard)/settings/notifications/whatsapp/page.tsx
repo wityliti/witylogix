@@ -66,152 +66,6 @@ interface WhatsAppTemplate {
   rejectionReason?: string;
 }
 
-export default function WhatsAppPage() {
-  const { items: templates, loading, error, refetch } = useApiList<WhatsAppTemplate>('/api/v4/notifications/whatsapp-templates');
-  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notifications/whatsapp-templates/:id');
-  const { execute: syncTemplates } = useApiMutation('POST', '/api/v4/notifications/whatsapp-templates/sync');
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const TEMPLATES: WhatsAppTemplate[] = templates ?? [
-  {
-    id: "wa1",
-    name: "Order Confirmation",
-    category: "UTILITY",
-    status: "APPROVED",
-    language: "en",
-    components: [
-      {
-        type: "HEADER",
-        subType: "text",
-        text: "Order {{order_id}} Confirmed",
-      },
-      {
-        type: "BODY",
-        text: "Hi {{customer_name}},\n\nYour order has been confirmed and will be processed shortly.\n\nOrder Date: {{order_date}}\nEstimated Delivery: {{delivery_date}}",
-      },
-      {
-        type: "FOOTER",
-        text: "Thank you for your order!",
-      },
-      {
-        type: "BUTTONS",
-        buttons: [
-          {
-            type: "url",
-            text: "Track Order",
-            value: "{{tracking_url}}",
-          },
-        ],
-      },
-    ],
-    variables: [
-      { placeholder: "1", variable: "order_id" },
-      { placeholder: "2", variable: "customer_name" },
-      { placeholder: "3", variable: "order_date" },
-      { placeholder: "4", variable: "delivery_date" },
-      { placeholder: "5", variable: "tracking_url" },
-    ],
-    createdAt: new Date("2026-02-01"),
-    lastEdited: new Date("2026-03-10"),
-  },
-  {
-    id: "wa2",
-    name: "Delivery Status Update",
-    category: "UTILITY",
-    status: "APPROVED",
-    language: "en",
-    components: [
-      {
-        type: "HEADER",
-        subType: "text",
-        text: "Your delivery is on the way!",
-      },
-      {
-        type: "BODY",
-        text: "Hi {{customer_name}},\n\nYour order is out for delivery.\n\nDriver: {{driver_name}}\nEstimated arrival: {{eta}}\n\nTrack your package in real time.",
-      },
-      {
-        type: "BUTTONS",
-        buttons: [
-          {
-            type: "url",
-            text: "Track Now",
-            value: "{{tracking_url}}",
-          },
-          {
-            type: "phone",
-            text: "Call Driver",
-            value: "{{driver_phone}}",
-          },
-        ],
-      },
-    ],
-    variables: [
-      { placeholder: "1", variable: "customer_name" },
-      { placeholder: "2", variable: "driver_name" },
-      { placeholder: "3", variable: "eta" },
-      { placeholder: "4", variable: "tracking_url" },
-      { placeholder: "5", variable: "driver_phone" },
-    ],
-    createdAt: new Date("2026-02-05"),
-    lastEdited: new Date("2026-03-09"),
-  },
-  {
-    id: "wa3",
-    name: "Delivery Confirmation",
-    category: "UTILITY",
-    status: "PENDING",
-    language: "en",
-    components: [
-      {
-        type: "BODY",
-        text: "Your order {{order_id}} has been delivered.\n\nThank you for shopping with us!",
-      },
-      {
-        type: "BUTTONS",
-        buttons: [
-          {
-            type: "quick_reply",
-            text: "Rate Delivery",
-            value: "rate",
-          },
-          {
-            type: "quick_reply",
-            text: "Report Issue",
-            value: "issue",
-          },
-        ],
-      },
-    ],
-    variables: [{ placeholder: "1", variable: "order_id" }],
-    createdAt: new Date("2026-03-08"),
-    lastEdited: new Date("2026-03-08"),
-  },
-  {
-    id: "wa4",
-    name: "Delivery Failed",
-    category: "UTILITY",
-    status: "REJECTED",
-    language: "en",
-    components: [
-      {
-        type: "BODY",
-        text: "We couldn't deliver your order {{order_id}}.\n\nReason: {{reason}}\n\nPlease contact us to reschedule.",
-      },
-    ],
-    variables: [
-      { placeholder: "1", variable: "order_id" },
-      { placeholder: "2", variable: "reason" },
-    ],
-    rejectionReason:
-      "Template violates Meta's guidelines. Avoid negative language in business templates.",
-    createdAt: new Date("2026-03-05"),
-    lastEdited: new Date("2026-03-05"),
-  },
-];
-
 const getStatusIcon = (status: TemplateStatus) => {
   switch (status) {
     case "APPROVED":
@@ -314,32 +168,34 @@ const TemplateModal = ({
   );
 };
 
-export default function WhatsAppTemplatePage() {
-  const [templates, setTemplates] = useState<WhatsAppTemplate[]>(TEMPLATES);
-  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | "all">("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function WhatsAppPage() {
+  const { items: templates, loading, error, refetch } = useApiList<WhatsAppTemplate>('/api/v4/notifications/whatsapp-templates');
+  const { execute: deleteTemplate } = useApiMutation('DELETE', '/api/v4/notifications/whatsapp-templates/:id');
+  const { execute: syncTemplates } = useApiMutation('POST', '/api/v4/notifications/whatsapp-templates/sync');
+
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplate>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const filteredTemplates =
-    selectedCategory === "all"
-      ? templates
-      : templates.filter((t) => t.category === selectedCategory);
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const handleSync = async () => {
     setSyncing(true);
     try {
-      // API call to sync with Meta Business API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      // Update template statuses based on Meta API response
+      await syncTemplates({});
+      refetch();
     } finally {
       setSyncing(false);
     }
   };
 
-  const handleDelete = (templateId: string) => {
-    setTemplates(templates.filter((t) => t.id !== templateId));
+  const handleDelete = async (id: string) => {
+    await deleteTemplate({ id });
+    refetch();
   };
+
+  const TEMPLATES: WhatsAppTemplate[] = templates ?? [];
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -362,10 +218,9 @@ export default function WhatsAppTemplatePage() {
                     (category) => (
                       <button
                         key={category}
-                        onClick={() => setSelectedCategory(category as typeof selectedCategory)}
                         className={cn(
                           "px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                          selectedCategory === category
+                          category === "all"
                             ? "bg-blue-500 text-white"
                             : "bg-[#1a1a2e] text-white hover:bg-[#202030]"
                         )}
@@ -404,13 +259,11 @@ export default function WhatsAppTemplatePage() {
         <Card className="border border-[#1e1e2e] bg-[#12121a]">
           <CardHeader>
             <CardTitle>
-              {filteredTemplates.length} Template
-              {filteredTemplates.length !== 1 ? "s" : ""}
+              {TEMPLATES.length} Template
+              {TEMPLATES.length !== 1 ? "s" : ""}
             </CardTitle>
             <CardDescription>
-              {selectedCategory === "all"
-                ? "All WhatsApp templates"
-                : `${selectedCategory} templates`}
+              All WhatsApp templates
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -428,7 +281,7 @@ export default function WhatsAppTemplatePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTemplates.length === 0 ? (
+                  {TEMPLATES.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
                         <p className="text-gray-400 text-sm">
@@ -437,7 +290,7 @@ export default function WhatsAppTemplatePage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredTemplates.map((template) => (
+                    TEMPLATES.map((template) => (
                       <TableRow key={template.id}>
                         <TableCell>
                           <div>
@@ -527,7 +380,7 @@ export default function WhatsAppTemplatePage() {
             Template Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredTemplates.map((template) => (
+            {TEMPLATES.map((template) => (
               <Card key={template.id} className="border border-[#1e1e2e] bg-[#12121a]">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
@@ -595,23 +448,8 @@ export default function WhatsAppTemplatePage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={(template) => {
-            if (selectedTemplate) {
-              setTemplates(
-                templates.map((t) =>
-                  t.id === template.id ? template : t
-                )
-              );
-            } else {
-              setTemplates([
-                ...templates,
-                {
-                  ...template,
-                  id: `wa${Date.now()}`,
-                  status: "PENDING",
-                  createdAt: new Date(),
-                },
-              ]);
-            }
+            setIsModalOpen(false);
+            refetch();
           }}
         />
       </main>

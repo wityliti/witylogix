@@ -10,8 +10,8 @@
  * - Saved searches
  */
 
-export { SearchEngine, createSearchEngine } from "./search-engine";
-export type { SearchableEntity, SearchConfig, SearchResult, SearchHighlight } from "./search-engine";
+export { SearchEngine, createSearchEngine } from "./search-engine.js";
+export type { SearchableEntity, SearchConfig, SearchResult, SearchHighlight } from "./search-engine.js";
 
 export {
   SearchApiService,
@@ -19,15 +19,15 @@ export {
   searchQuerySchema,
   suggestionsQuerySchema,
   savedSearchSchema,
-} from "./search-api";
-export type { SavedSearch } from "./search-api";
+} from "./search-api.js";
+export type { SavedSearch } from "./search-api.js";
 
 export {
   FilterBuilder,
   ORDER_FILTERS,
   DRIVER_FILTERS,
   validateFilter,
-} from "./filter-builder";
+} from "./filter-builder.js";
 export type {
   FilterOperator,
   FieldType,
@@ -35,7 +35,7 @@ export type {
   FilterRule,
   CompositeFilter,
   FilterConfig,
-} from "./filter-builder";
+} from "./filter-builder.js";
 
-export { SearchAnalytics, createSearchAnalytics } from "./search-analytics";
-export type { SearchAnalyticsEvent, SearchAnalyticsReport } from "./search-analytics";
+export { SearchAnalytics, createSearchAnalytics } from "./search-analytics.js";
+export type { SearchAnalyticsEvent, SearchAnalyticsReport } from "./search-analytics.js";

@@ -174,8 +174,6 @@ export {
   LoginAttemptResult,
   AuthProvider,
   AuthError,
-  InvalidCredentialsError,
-  TokenExpiredError,
   MfaRequiredError,
   PermissionDeniedError,
   SessionInvalidError,

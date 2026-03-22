@@ -5,8 +5,8 @@
  * fuel price data, and real-time alerts.
  */
 
-import { fetch as nodeFetch } from "node-fetch";
-import type { Response } from "node-fetch";
+// Node 22+ has global fetch
+const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
 import type {

@@ -11,38 +11,38 @@
  * - Connection pool monitoring and leak detection
  */
 
-export { NPlusOneDetector } from "./n-plus-one-detector";
-export type { QueryPattern, NPlusOneReport } from "./n-plus-one-detector";
+export { NPlusOneDetector } from "./n-plus-one-detector.js";
+export type { QueryPattern, NPlusOneReport } from "./n-plus-one-detector.js";
 
-export { QueryAnalyzer } from "./query-analyzer";
+export { QueryAnalyzer } from "./query-analyzer.js";
 export type {
   IndexIssue,
   JoinAnalysis,
   QueryAnalysis,
-} from "./query-analyzer";
+} from "./query-analyzer.js";
 
-export { IndexAdvisor } from "./index-advisor";
-export type { IndexRecommendation } from "./index-advisor";
+export { IndexAdvisor } from "./index-advisor.js";
+export type { IndexRecommendation } from "./index-advisor.js";
 
-export { SlowQueryLogger } from "./slow-query-logger";
+export { SlowQueryLogger } from "./slow-query-logger.js";
 export type {
   QueryFingerprint,
   SlowQueryReport,
-} from "./slow-query-logger";
+} from "./slow-query-logger.js";
 
-export { QueryCache } from "./query-cache";
-export type { CacheStats } from "./query-cache";
+export { QueryCache } from "./query-cache.js";
+export type { CacheStats } from "./query-cache.js";
 
 export {
   BatchLoader,
   CompositeKeyBatchLoader,
   createPrismaBatchLoader,
-} from "./batch-loader";
-export type { LoaderConfig } from "./batch-loader";
+} from "./batch-loader.js";
+export type { LoaderConfig } from "./batch-loader.js";
 
-export { ConnectionMonitor } from "./connection-monitor";
+export { ConnectionMonitor } from "./connection-monitor.js";
 export type {
   PoolHealth,
   ConnectionLeak,
   PoolAlert,
-} from "./connection-monitor";
+} from "./connection-monitor.js";

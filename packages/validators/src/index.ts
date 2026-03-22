@@ -361,7 +361,11 @@ export const syncCustomersSchema = z.object({
 export type SyncProduct = z.infer<typeof syncProductSchema>;
 export type SyncCustomer = z.infer<typeof syncCustomerSchema>;
 
+// Schema re-exports for bundler visibility
+
 // Type exports (moved to end to avoid vitest parsing issues)
+export type CreateActivityLog = z.infer<typeof createActivityLogSchema>;
+export type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
 export type CreateOrder = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatus = z.infer<typeof updateOrderStatusSchema>;
 export type CreateDriver = z.infer<typeof createDriverSchema>;

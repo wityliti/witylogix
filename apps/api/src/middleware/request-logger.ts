@@ -32,12 +32,7 @@ interface RequestStartTime {
   startTime: number;
 }
 
-declare module "fastify" {
-  interface FastifyRequest {
-    requestId: string;
-    startTime?: number;
-  }
-}
+// Type augmentation is now centralized in types/fastify.d.ts
 
 // ─── Sensitive Field Redaction ──────────────────────────────
 

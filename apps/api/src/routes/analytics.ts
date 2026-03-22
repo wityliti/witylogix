@@ -94,7 +94,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       const { dateFrom, dateTo, zoneId } = query;
       const { from, to } = getDateRange(dateFrom, dateTo);
 
-      const where: Prisma.ShipmentWhereInput = {
+      const where: any = {
         createdAt: { gte: from, lte: to },
       };
 

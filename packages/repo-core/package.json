@@ -1,0 +1,22 @@
+{
+  "name": "@repo/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./demand-prediction/feature-store": "./src/demand-prediction/feature-store.ts",
+    "./demand-prediction/data-aggregator": "./src/demand-prediction/data-aggregator.ts",
+    "./demand-prediction/zone-profiler": "./src/demand-prediction/zone-profiler.ts",
+    "./demand-prediction/holiday-calendar": "./src/demand-prediction/holiday-calendar.ts",
+    "./demand-prediction/time-series-extractor": "./src/demand-prediction/time-series-extractor.ts"
+  },
+  "dependencies": {
+    "@witylogix/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

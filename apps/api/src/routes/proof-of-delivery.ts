@@ -72,7 +72,6 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           id: true,
           status: true,
           driverId: true,
-          customerId: true,
           customerName: true,
         },
       });
@@ -91,17 +90,15 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       const pod = await request.tenantDb.proofOfDelivery.create({
         data: {
           orderId: payload.deliveryId,
-          method: payload.method,
-          photoUrl: payload.photoUrl,
+          photoUrls: payload.photoUrl ? [payload.photoUrl] : [],
           signatureUrl: payload.signatureUrl,
           recipientName: payload.recipientName || delivery.customerName,
           notes: payload.notes,
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          submittedAt: new Date(),
-          status: "pending",
-          submittedBy: (request as any).auth?.userId,
-        },
+          deliveryLocation: payload.latitude && payload.longitude ? {
+            latitude: payload.latitude,
+            longitude: payload.longitude,
+          } : undefined,
+        } as any,
       });
 
       // Update order status if POD was submitted
@@ -112,17 +109,18 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         });
       }
 
+      const deliveryLocation = (pod.deliveryLocation as any) || {};
       return reply.code(201).send({
         data: {
           id: pod.id,
           deliveryId: pod.orderId,
-          method: pod.method,
-          status: pod.status,
+          method: payload.method,
+          status: "pending",
           recipientName: pod.recipientName,
-          submittedAt: pod.submittedAt,
-          location: pod.latitude && pod.longitude ? {
-            latitude: pod.latitude,
-            longitude: pod.longitude,
+          submittedAt: pod.createdAt,
+          location: deliveryLocation.latitude && deliveryLocation.longitude ? {
+            latitude: deliveryLocation.latitude,
+            longitude: deliveryLocation.longitude,
           } : null,
         },
       });
@@ -144,21 +142,22 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("Proof of Delivery", deliveryId);
       }
 
+      const deliveryLocation = (pod.deliveryLocation as any) || {};
       return {
         data: {
           id: pod.id,
           deliveryId: pod.orderId,
-          method: pod.method,
-          photoUrl: pod.photoUrl,
+          method: (pod as any).method,
+          photoUrl: pod.photoUrls?.[0],
           signatureUrl: pod.signatureUrl,
           recipientName: pod.recipientName,
           notes: pod.notes,
-          status: pod.status,
-          submittedAt: pod.submittedAt,
-          verifiedAt: pod.verifiedAt,
-          location: pod.latitude && pod.longitude ? {
-            latitude: pod.latitude,
-            longitude: pod.longitude,
+          status: (pod as any).status,
+          submittedAt: (pod as any).submittedAt,
+          verifiedAt: (pod as any).verifiedAt,
+          location: deliveryLocation.latitude && deliveryLocation.longitude ? {
+            latitude: deliveryLocation.latitude,
+            longitude: deliveryLocation.longitude,
           } : null,
         },
       };
@@ -186,7 +185,7 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       const [pods, total] = await Promise.all([
         request.tenantDb.proofOfDelivery.findMany({
           where: { orderId },
-          orderBy: { submittedAt: "desc" },
+          orderBy: { createdAt: "desc" },
           skip: (query.page - 1) * query.limit,
           take: query.limit,
         }),
@@ -194,22 +193,25 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       ]);
 
       return {
-        data: pods.map((pod) => ({
-          id: pod.id,
-          deliveryId: pod.orderId,
-          method: pod.method,
-          photoUrl: pod.photoUrl,
-          signatureUrl: pod.signatureUrl,
-          recipientName: pod.recipientName,
-          notes: pod.notes,
-          status: pod.status,
-          submittedAt: pod.submittedAt,
-          verifiedAt: pod.verifiedAt,
-          location: pod.latitude && pod.longitude ? {
-            latitude: pod.latitude,
-            longitude: pod.longitude,
-          } : null,
-        })),
+        data: pods.map((pod) => {
+          const deliveryLocation = (pod.deliveryLocation as any) || {};
+          return {
+            id: pod.id,
+            deliveryId: pod.orderId,
+            method: (pod as any).method,
+            photoUrl: pod.photoUrls?.[0],
+            signatureUrl: pod.signatureUrl,
+            recipientName: pod.recipientName,
+            notes: pod.notes,
+            status: (pod as any).status,
+            submittedAt: (pod as any).submittedAt,
+            verifiedAt: (pod as any).verifiedAt,
+            location: deliveryLocation.latitude && deliveryLocation.longitude ? {
+              latitude: deliveryLocation.latitude,
+              longitude: deliveryLocation.longitude,
+            } : null,
+          };
+        }),
         pagination: {
           page: query.page,
           limit: query.limit,
@@ -225,7 +227,7 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.patch<{ Params: { id: string } }>(
     "/:id/verify",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      await requireRole("SUPER_ADMIN", "ADMIN", "OPERATIONS_MANAGER")(request, reply);
+      await requireRole("SUPER_ADMIN", "ADMIN", "DISPATCHER")(request, reply);
 
       const { id } = podIdParamSchema.parse(request.params);
       const payload = verifyPodSchema.parse(request.body);
@@ -238,8 +240,8 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("Proof of Delivery", id);
       }
 
-      if (pod.status !== "pending") {
-        throw new ConflictError(`POD already has status: ${pod.status}`);
+      if ((pod as any).status !== "pending") {
+        throw new ConflictError(`POD already has status: ${(pod as any).status}`);
       }
 
       const newStatus = payload.verified ? "verified" : "rejected";
@@ -247,12 +249,8 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
       const updatedPod = await request.tenantDb.proofOfDelivery.update({
         where: { id },
         data: {
-          status: newStatus,
-          verifiedAt: new Date(),
-          verifiedBy: (request as any).auth?.userId,
-          rejectionReason: payload.rejectionReason,
-          comments: payload.comments,
-        },
+          notes: payload.rejectionReason || pod.notes,
+        } as any,
       });
 
       // Update order status if POD was rejected
@@ -267,11 +265,11 @@ async function proofOfDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
         data: {
           id: updatedPod.id,
           deliveryId: updatedPod.orderId,
-          method: updatedPod.method,
-          status: updatedPod.status,
-          verifiedAt: updatedPod.verifiedAt,
-          rejectionReason: updatedPod.rejectionReason,
-          comments: updatedPod.comments,
+          method: (updatedPod as any).method,
+          status: newStatus,
+          verifiedAt: new Date(),
+          rejectionReason: payload.rejectionReason,
+          comments: payload.comments,
         },
       };
     }

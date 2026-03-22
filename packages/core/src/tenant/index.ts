@@ -16,16 +16,16 @@ export type {
   ApiKeyValidationResult,
   RateLimitState,
   WebhookSignature,
-} from "./types";
+} from "./types.js";
 
 export {
   ApiKeyScope,
   TenantResolutionStrategy,
   TenantResolutionError,
   QuotaExceededError,
-} from "./types";
+} from "./types.js";
 
-export type { PlanTier } from "./types";
+export type { PlanTier } from "./types.js";
 
 // ─── TENANT RESOLVER ────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ export {
   resolveTenant,
   invalidateTenantCache,
   clearTenantCache,
-} from "./tenant-resolver";
+} from "./tenant-resolver.js";
 
 // ─── MIDDLEWARE ────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ export {
   requireFeature,
   rateLimitMiddleware,
   tenantLoggingMiddleware,
-} from "./tenant-middleware";
+} from "./tenant-middleware.js";
 
 // ─── API KEY SERVICE ───────────────────────────────────────────────────
 
@@ -62,7 +62,7 @@ export {
   recordApiKeyUsage,
   deleteApiKey,
   checkApiKeyQuota,
-} from "./api-key-service";
+} from "./api-key-service.js";
 
 // ─── USAGE METERING ────────────────────────────────────────────────────
 
@@ -75,7 +75,7 @@ export {
   aggregateDailyUsage,
   cleanupOldRecords,
   shutdownUsageMeter,
-} from "./usage-meter";
+} from "./usage-meter.js";
 
 // ─── WORKSPACE SWITCHING ───────────────────────────────────────────────
 
@@ -86,9 +86,9 @@ export {
   canAccessWorkspace,
   getMemberWorkspaces,
   updateMemberWorkspaceAccess,
-} from "./workspace-switcher";
+} from "./workspace-switcher.js";
 
-export type { Workspace, WorkspaceContext } from "./workspace-switcher";
+export type { Workspace, WorkspaceContext } from "./workspace-switcher.js";
 
 // ─── WEBHOOK SECRETS ───────────────────────────────────────────────────
 
@@ -104,6 +104,6 @@ export {
   buildSignatureHeader,
   parseSignatureHeader,
   verifyWithTimestamp,
-} from "./webhook-secret-service";
+} from "./webhook-secret-service.js";
 
-export type { WebhookSecret } from "./webhook-secret-service";
+export type { WebhookSecret } from "./webhook-secret-service.js";

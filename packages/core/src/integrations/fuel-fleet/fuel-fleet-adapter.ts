@@ -5,7 +5,6 @@
  * card management, transaction monitoring, policy enforcement, and fraud detection.
  */
 
-import type { Response } from "node-fetch";
 import { EventEmitter } from "events";
 
 import type {

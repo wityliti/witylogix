@@ -46,7 +46,7 @@ export {
   type OperatingAuthority,
   type InsuranceInfo,
   type RateNegotiationTracker,
-} from "./freight-types";
+} from "./freight-types.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // FREIGHT MANAGEMENT ENGINE
@@ -60,7 +60,7 @@ export {
   FreightManagementEngine,
   createFreightManagementEngine,
   type ScorecardConfig,
-} from "./freight-management-engine";
+} from "./freight-management-engine.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // AUDIT ENGINE
@@ -79,7 +79,7 @@ export {
   type DisputeResolution,
   type AuditMetrics,
   type CarrierAccuracy,
-} from "./freight-audit-engine";
+} from "./freight-audit-engine.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // FMCSA SAFER CLIENT
@@ -92,7 +92,7 @@ export {
   type CarrierLookupRequest,
   type SafetyInspectionQuery,
   type CrashDataQuery,
-} from "./fmcsa-safer-client";
+} from "./fmcsa-safer-client.js";
 
 // ────────────────────────────────────────────────────────────────────────────
 // API HANDLERS & SCHEMAS
@@ -129,4 +129,4 @@ export {
   fmcsaAudit,
   type ApiHandlerContext,
   type ApiResponse,
-} from "./freight-api";
+} from "./freight-api.js";
