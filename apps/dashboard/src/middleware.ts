@@ -65,8 +65,10 @@ export function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   // Check if route is under dashboard (protected)
-  const isDashboardRoute = pathname.startsWith('/(dashboard)') ||
-                           pathname.match(/^\/(dashboard|orders|drivers|deliveries|settings|integrations|admin|profile|analytics|support|customers|onboarding)/);
+  // Also protect root '/' and '/home' which are dashboard entry points
+  const isDashboardRoute = pathname === '/' ||
+                           pathname.startsWith('/(dashboard)') ||
+                           pathname.match(/^\/(home|dashboard|orders|drivers|deliveries|settings|integrations|admin|profile|analytics|support|customers|onboarding|routes|zones|reports|billing|inventory|dispatch|fleet|freight|returns|pos|supply-chain)/);
 
   // For dashboard routes, require valid auth token
   if (isDashboardRoute) {

@@ -88,7 +88,7 @@ export interface DriverFilters extends ApiFilters {
 export function useDrivers(
   filters?: DriverFilters,
 ): UseApiListResult<Driver> {
-  return useApiList<Driver>('/drivers', filters);
+  return useApiList<Driver>('/api/v4/drivers', filters);
 }
 
 /**
@@ -107,7 +107,7 @@ export function useDriver(
  * @returns Array of driver locations
  */
 export function useDriverLocations(): UseApiQueryResult<DriverLocation[]> {
-  return useApiQuery<DriverLocation[]>('/drivers/locations');
+  return useApiQuery<DriverLocation[]>('/api/v4/drivers/locations');
 }
 
 /**

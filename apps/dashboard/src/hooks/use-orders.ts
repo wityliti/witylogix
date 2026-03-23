@@ -93,7 +93,7 @@ export interface OrderFilters extends ApiFilters {
 export function useOrders(
   filters?: OrderFilters,
 ): UseApiListResult<Order> {
-  return useApiList<Order>('/orders', filters);
+  return useApiList<Order>('/api/v4/orders', filters);
 }
 
 /**
@@ -112,7 +112,7 @@ export function useOrder(
  * @returns Mutation to create order
  */
 export function useCreateOrder(): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('POST', '/orders');
+  return useApiMutation<Order>('POST', '/api/v4/orders');
 }
 
 /**
@@ -131,5 +131,5 @@ export function useUpdateOrderStatus(
  * @returns Order stats (totals, rates, metrics)
  */
 export function useOrderStats(): UseApiQueryResult<OrderStats> {
-  return useApiQuery<OrderStats>('/orders/stats');
+  return useApiQuery<OrderStats>('/api/v4/orders/stats');
 }

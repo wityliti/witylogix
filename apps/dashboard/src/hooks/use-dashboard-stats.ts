@@ -61,7 +61,7 @@ export interface DeliveryHeatmap {
  * @returns Dashboard statistics
  */
 export function useDashboardStats(): UseApiQueryResult<DashboardStats> {
-  return useApiQuery<DashboardStats>('/dashboard/stats');
+  return useApiQuery<DashboardStats>('/api/v4/dashboard/stats');
 }
 
 /**
@@ -83,5 +83,5 @@ export function useRecentOrders(
  * @returns Heatmap data with points and geographic bounds
  */
 export function useDeliveryHeatmap(): UseApiQueryResult<DeliveryHeatmap> {
-  return useApiQuery<DeliveryHeatmap>('/analytics/heatmap');
+  return useApiQuery<DeliveryHeatmap>('/api/v4/analytics/heatmap');
 }

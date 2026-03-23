@@ -69,7 +69,7 @@ export interface CustomerFilters extends ApiFilters {
 export function useCustomers(
   filters?: CustomerFilters,
 ): UseApiListResult<Customer> {
-  return useApiList<Customer>('/customers', filters);
+  return useApiList<Customer>('/api/v4/customers', filters);
 }
 
 /**

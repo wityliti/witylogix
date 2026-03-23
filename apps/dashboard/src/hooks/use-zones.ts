@@ -40,7 +40,7 @@ export interface Zone {
  * @returns Array of zones
  */
 export function useZones(): UseApiQueryResult<Zone[]> {
-  return useApiQuery<Zone[]>('/zones');
+  return useApiQuery<Zone[]>('/api/v4/zones');
 }
 
 /**
@@ -59,7 +59,7 @@ export function useZone(
  * @returns Mutation to create zone
  */
 export function useCreateZone(): UseApiMutationResult<Zone> {
-  return useApiMutation<Zone>('POST', '/zones');
+  return useApiMutation<Zone>('POST', '/api/v4/zones');
 }
 
 /**

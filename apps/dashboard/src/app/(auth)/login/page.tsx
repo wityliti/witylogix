@@ -35,7 +35,7 @@ function LoginPageInner() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      const returnUrl = searchParams.get("returnUrl") || "/";
+      const returnUrl = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
       router.push(returnUrl);
     }
   }, [isAuthenticated, authLoading, router, searchParams]);
@@ -77,7 +77,7 @@ function LoginPageInner() {
 
     try {
       await login(email, password, rememberMe);
-      const returnUrl = searchParams.get("returnUrl") || "/";
+      const returnUrl = searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
       router.push(returnUrl);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed. Please try again.";

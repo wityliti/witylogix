@@ -93,7 +93,7 @@ export interface ReturnFilters extends ApiFilters {
 export function useReturns(
   filters?: ReturnFilters,
 ): UseApiListResult<Return> {
-  return useApiList<Return>('/returns', filters);
+  return useApiList<Return>('/api/v4/returns', filters);
 }
 
 /**
@@ -145,5 +145,5 @@ export function useProcessRefund(
  * @returns Return stats (totals, rates, top reasons)
  */
 export function useReturnStats(): UseApiQueryResult<ReturnStats> {
-  return useApiQuery<ReturnStats>('/returns/stats');
+  return useApiQuery<ReturnStats>('/api/v4/returns/stats');
 }
