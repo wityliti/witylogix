@@ -61,7 +61,7 @@ model BillingSubscription {
 // Supports prorations, discounts, and payment status tracking.
 
 model Invoice {
-  id             String    @id @default(cuid())
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   subscriptionId String    @map("subscription_id")
   shopId         String    @map("shop_id") @db.Uuid
   amount         Decimal   @db.Decimal(10, 2) // Total amount due

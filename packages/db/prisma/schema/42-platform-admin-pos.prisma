@@ -4,7 +4,7 @@
 
 model PlatformAdmin {
   id          String    @id @default(cuid())
-  userId      String    @unique
+  userId      String    @unique @db.Uuid
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   role        String    @default("admin") // "super_admin" | "admin" | "support"
   permissions String[]  @default([])

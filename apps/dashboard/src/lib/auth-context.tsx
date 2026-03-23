@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + "/api/v4";
 
   // Initialize auth state from cookie and localStorage
   useEffect(() => {
@@ -127,7 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          shopDomain: process.env.NEXT_PUBLIC_SHOP_DOMAIN || "demo.witylogix.io",
+        }),
         credentials: "include", // Allow cookies to be set by backend
       });
 
@@ -146,13 +150,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const data: AuthResponse = await response.json();
+      const raw = await response.json();
+      // API wraps response in { data: { accessToken, user, shop, ... } }
+      const payload = raw.data || raw;
+      const data: AuthResponse = {
+        token: payload.accessToken || payload.token,
+        user: payload.user,
+        refreshToken: payload.refreshToken,
+      };
       setToken(data.token);
       setUser(data.user);
 
       // Token is stored in httpOnly cookie by backend
       // Only store user profile in localStorage (non-sensitive)
       localStorage.setItem("authUser", JSON.stringify(data.user));
+      if (payload.shop) {
+        localStorage.setItem("authShop", JSON.stringify(payload.shop));
+      }
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (data.token) {
