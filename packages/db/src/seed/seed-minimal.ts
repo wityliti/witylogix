@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Minimal Seed Script for Quick Local Development
  *

@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@witylogix/db";
 
 // Mock types matching billing architecture
 interface CreateBillingPlanRequest {

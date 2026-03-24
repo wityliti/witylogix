@@ -18,7 +18,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import type { PlanTier } from "@prisma/client";
+import type { PlanTier } from "@witylogix/db";
 import {
   PLANS,
   checkUsageLimit,

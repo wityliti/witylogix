@@ -14,7 +14,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";

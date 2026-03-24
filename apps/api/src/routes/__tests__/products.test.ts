@@ -7,8 +7,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import type { PrismaClient } from "@prisma/client";
-import { Prisma } from "@prisma/client";
+import type { PrismaClient } from "@witylogix/db";
+import { Prisma } from "@witylogix/db";
 
 // Mock types for Fastify request/reply
 interface MockRequest extends Partial<FastifyRequest> {

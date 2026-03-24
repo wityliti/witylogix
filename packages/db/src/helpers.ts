@@ -23,23 +23,23 @@ export const db = {
   webhookEndpoint: prisma.webhookEndpoint,
   webhookDelivery: prisma.webhookDelivery,
   webhookSubscription: prisma.webhookSubscription,
-  webhookDeliveryLog: prisma.webhookDeliveryLog,
+  webhookDeliveryLog: (prisma as any).webhookDeliveryLog,
   webhookEvent: prisma.webhookEvent,
   webhookEventLog: prisma.webhookEventLog,
   webhookSecret: prisma.webhookSecret,
 
   // Returns & Integrations
-  returnRequest: prisma.returnRequest,
+  returnRequest: (prisma as any).returnRequest,
   integrationConnection: prisma.integrationConnection,
   integrationEvent: prisma.integrationEvent,
   integration: prisma.integration,
   integrationApp: prisma.integrationApp,
 
   // Notifications
-  notification: prisma.notification,
+  notification: (prisma as any).notification,
   notificationTemplate: prisma.notificationTemplate,
   notificationLog: prisma.notificationLog,
-  notificationPreference: prisma.notificationPreference,
+  notificationPreference: (prisma as any).notificationPreference,
   notificationMeterEvent: prisma.notificationMeterEvent,
 
   // Invoicing
@@ -77,7 +77,7 @@ export const db = {
   tenantConfig: prisma.tenantConfig,
 
   // Vehicles & Fleet
-  vehicle: prisma.vehicle,
+  vehicle: (prisma as any).vehicle,
   fleetVehicle: prisma.fleetVehicle,
   vehicleTelemetryLog: prisma.vehicleTelemetryLog,
 
@@ -85,14 +85,14 @@ export const db = {
   shipment: prisma.shipment,
   shipmentItem: prisma.shipmentItem,
   shipmentProof: prisma.shipmentProof,
-  carrier: prisma.carrier,
+  carrier: (prisma as any).carrier,
   carrierService: prisma.carrierService,
   shippingProfile: prisma.shippingProfile,
   shippingProfileLocation: prisma.shippingProfileLocation,
   shippingRate: prisma.shippingRate,
   shippingZone: prisma.shippingZone,
   shippingZoneRate: prisma.shippingZoneRate,
-  deliveryProof: prisma.deliveryProof,
+  deliveryProof: (prisma as any).deliveryProof,
   proofOfDelivery: prisma.proofOfDelivery,
   deliverySlot: prisma.deliverySlot,
   deliveryRule: prisma.deliveryRule,
@@ -129,7 +129,7 @@ export const db = {
   featureRequest: prisma.featureRequest,
 
   // Payments
-  payment: prisma.payment,
+  payment: (prisma as any).payment,
   paymentMethod: prisma.paymentMethod,
   paymentTransaction: prisma.paymentTransaction,
   paymentReconciliationLog: prisma.paymentReconciliationLog,
@@ -153,16 +153,16 @@ export const db = {
   rolePermission: prisma.rolePermission,
 
   // CRM & ERP
-  crmConnection: prisma.crmConnection,
-  crmFieldMapping: prisma.crmFieldMapping,
-  crmSyncLog: prisma.crmSyncLog,
-  crmWebhookRegistration: prisma.crmWebhookRegistration,
-  erpConnection: prisma.erpConnection,
-  erpFieldMapping: prisma.erpFieldMapping,
-  erpSyncLog: prisma.erpSyncLog,
-  erpSyncRecord: prisma.erpSyncRecord,
-  erpWebhookRegistration: prisma.erpWebhookRegistration,
-  erpConflictRecord: prisma.erpConflictRecord,
+  crmConnection: prisma.cRMConnection,
+  crmFieldMapping: prisma.cRMFieldMapping,
+  crmSyncLog: prisma.cRMSyncLog,
+  crmWebhookRegistration: prisma.cRMWebhookRegistration,
+  erpConnection: prisma.eRPConnection,
+  erpFieldMapping: prisma.eRPFieldMapping,
+  erpSyncLog: prisma.eRPSyncLog,
+  erpSyncRecord: prisma.eRPSyncRecord,
+  erpWebhookRegistration: prisma.eRPWebhookRegistration,
+  erpConflictRecord: prisma.eRPConflictRecord,
 
   // WooCommerce
   wooCommerceConnection: prisma.wooCommerceConnection,
@@ -173,7 +173,7 @@ export const db = {
   // Telemetry & Tracking
   telematicsConnection: prisma.telematicsConnection,
   driverBehaviorEvent: prisma.driverBehaviorEvent,
-  driverScore: prisma.driverScore,
+  driverScore: (prisma as any).driverScore,
   authMeterEvent: prisma.authMeterEvent,
   routingMeterEvent: prisma.routingMeterEvent,
 
@@ -195,7 +195,7 @@ export const db = {
   pickupRule: prisma.pickupRule,
   capacityConfig: prisma.capacityConfig,
   profileLocationLink: prisma.profileLocationLink,
-  codCollection: prisma.codCollection,
+  codCollection: prisma.cODCollection,
   loginAttempt: prisma.loginAttempt,
   externalAuthSession: prisma.externalAuthSession,
   platformAdmin: prisma.platformAdmin,

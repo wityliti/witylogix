@@ -13,7 +13,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { ZodError } from "zod";
 import {
   createDriverSchema,

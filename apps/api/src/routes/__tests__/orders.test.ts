@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@witylogix/db';
 
 /**
  * Orders Route Integration Tests

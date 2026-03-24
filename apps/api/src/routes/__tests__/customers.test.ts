@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@witylogix/db';
 import { NotFoundError } from '../../lib/errors.js';
 
 describe('Customer Routes', () => {

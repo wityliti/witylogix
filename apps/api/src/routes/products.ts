@@ -13,7 +13,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { paginationSchema, syncProductsSchema } from "@witylogix/validators";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";

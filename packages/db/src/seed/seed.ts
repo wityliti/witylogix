@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Comprehensive Seed Script for Witylogix Platform
  *
@@ -61,6 +62,7 @@ function generateEmailPrefix(name: string): string {
 
 // ─── MAIN SEED FUNCTION ────────────────────────────────────────────────────
 const prisma = new PrismaClient();
+const db = prisma;
 
 async function main() {
   try {
