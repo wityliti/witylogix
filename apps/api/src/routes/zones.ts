@@ -33,7 +33,16 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
         orderBy: [{ priority: "desc" }, { name: "asc" }],
         skip: (page - 1) * limit,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          name: true,
+          priority: true,
+          baseRate: true,
+          perKmRate: true,
+          minOrder: true,
+          freeAbove: true,
+          isActive: true,
+          boundary: true,
           timeSlots: {
             where: { isActive: true },
             select: { id: true, name: true, startTime: true, endTime: true },
@@ -44,25 +53,9 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.deliveryZone.count(),
     ]);
 
-    // Fetch GeoJSON boundaries via raw SQL (Prisma can't query Unsupported types)
-    const zoneIds = zones.map((z) => z.id);
-    let boundaries: Array<{ id: string; boundary_geojson: string }> = [];
-    if (zoneIds.length > 0) {
-      boundaries = await request.tenantDb.$queryRaw`
-        SELECT id::text, ST_AsGeoJSON(boundary) as boundary_geojson
-        FROM delivery_zones
-        WHERE id = ANY(${zoneIds}::uuid[])
-          AND boundary IS NOT NULL
-      `;
-    }
-
-    const boundaryMap = new Map(
-      boundaries.map((b) => [b.id, JSON.parse(b.boundary_geojson)]),
-    );
-
     const data = zones.map((zone) => ({
       ...zone,
-      boundary: boundaryMap.get(zone.id) || null,
+      boundary: zone.boundary || null,
     }));
 
     return {
@@ -85,21 +78,10 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
 
     if (!zone) throw new NotFoundError("DeliveryZone", id);
 
-    // Fetch boundary GeoJSON
-    const [geoResult] = await request.tenantDb.$queryRaw<
-      Array<{ boundary_geojson: string }>
-    >`
-      SELECT ST_AsGeoJSON(boundary) as boundary_geojson
-      FROM delivery_zones
-      WHERE id = ${id}::uuid
-    `;
-
     return {
       data: {
         ...zone,
-        boundary: geoResult?.boundary_geojson
-          ? JSON.parse(geoResult.boundary_geojson)
-          : null,
+        boundary: zone.boundary || null,
       },
     };
   });

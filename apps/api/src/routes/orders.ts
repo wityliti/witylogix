@@ -13,7 +13,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { ZodError } from "zod";
 import {
   createOrderSchema,
@@ -126,6 +126,34 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
       }
       throw err;
     }
+  });
+
+  // ── GET ORDER STATS ─────────────────────────────────────────
+
+  fastify.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
+    const stats = await request.tenantDb.order.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      where: { shopId: request.shopId },
+    });
+
+    const totalOrders = stats.reduce((sum, s) => sum + s._count.id, 0);
+    const statusCounts: Record<string, number> = {};
+    for (const s of stats) {
+      statusCounts[s.status] = s._count.id;
+    }
+
+    return reply.send({
+      data: {
+        total: totalOrders,
+        byStatus: statusCounts,
+        pending: statusCounts["PENDING"] || 0,
+        processing: statusCounts["PROCESSING"] || 0,
+        shipped: statusCounts["SHIPPED"] || 0,
+        delivered: statusCounts["DELIVERED"] || 0,
+        cancelled: statusCounts["CANCELLED"] || 0,
+      },
+    });
   });
 
   // ── GET ORDER ───────────────────────────────────────────────

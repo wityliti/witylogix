@@ -8,9 +8,12 @@ const TEST_CREDS = {
 
 test.describe("Authentication", () => {
   test("login page loads", async ({ page }) => {
-    await page.goto("/login", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('input[type="email"], input[id="email"]')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('input[type="password"], input[id="password"]')).toBeVisible();
+    // First test in suite hits cold Next.js compilation — allow extra time
+    test.setTimeout(90000);
+    await page.goto("/login", { waitUntil: "domcontentloaded", timeout: 45000 });
+    // Wait for form to render (skeleton loading state may persist during compilation)
+    await expect(page.locator('input[type="email"], input[id="email"]')).toBeVisible({ timeout: 60000 });
+    await expect(page.locator('input[type="password"], input[id="password"]')).toBeVisible({ timeout: 10000 });
   });
 
   test("login with valid credentials", async ({ page }) => {

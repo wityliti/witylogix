@@ -14,7 +14,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { ZodError } from "zod";
 import { paginationSchema, syncCustomersSchema } from "@witylogix/validators";
 import { z } from "zod";
@@ -26,7 +26,7 @@ import { NotFoundError } from "../lib/errors.js";
 
 const listCustomersQuery = paginationSchema.extend({
   search: z.string().optional(),
-  sortBy: z.enum(["firstName", "email", "totalSpent", "syncedAt"]).default("syncedAt"),
+  sortBy: z.enum(["firstName", "email", "totalSpent", "lastSyncAt"]).default("lastSyncAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 

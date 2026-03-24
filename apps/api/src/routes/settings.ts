@@ -11,7 +11,7 @@ import { tenantContext } from "../middleware/tenant.js";
 /**
  * Settings API Routes
  *
- * Stores settings as JSON in the Shop model's metadata field.
+ * Stores settings as JSON in the Shop model's settings field.
  * All routes require authentication and tenant context.
  *
  * Routes:
@@ -81,23 +81,20 @@ const TeamInviteSchema = z.object({
   role: z.enum(["admin", "manager", "viewer"]),
 });
 
-// ─── Helper: Get / Update Shop Metadata ──────────────────
+// ─── Helper: Get / Update Shop Settings ──────────────────
 
-function getShopConfig(metadata: any, section?: string): any {
-  const config = metadata?.settings || {};
+function getShopConfig(settings: any, section?: string): any {
+  const config = settings || {};
   return section ? config[section] || {} : config;
 }
 
-function mergeShopConfig(metadata: any, section: string, data: any): any {
-  const current = metadata || {};
+function mergeShopConfig(settings: any, section: string, data: any): any {
+  const current = settings || {};
   return {
-    ...current,
-    settings: {
-      ...(current.settings || {}),
-      [section]: {
-        ...((current.settings || {})[section] || {}),
-        ...data,
-      },
+    ...(current),
+    [section]: {
+      ...(current[section] || {}),
+      ...data,
     },
   };
 }
@@ -115,12 +112,12 @@ export default async function settingsRoutes(
   fastify.get("/", async (request: any, reply: FastifyReply) => {
     const shop = await request.tenantDb.shop.findUnique({
       where: { id: request.shopId },
-      select: { id: true, name: true, metadata: true },
+      select: { id: true, name: true, settings: true },
     });
 
     if (!shop) throw new NotFoundError("Shop not found");
 
-    const config = getShopConfig(shop.metadata);
+    const config = getShopConfig(shop.settings);
 
     return reply.code(200).send({
       success: true,
@@ -140,14 +137,14 @@ export default async function settingsRoutes(
 
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const updatedMetadata = mergeShopConfig(shop?.metadata, "general", body);
+      const updatedSettings = mergeShopConfig(shop?.settings, "general", body);
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: updatedMetadata },
+        data: { settings: updatedSettings },
       });
 
       return reply.code(200).send({
@@ -171,14 +168,14 @@ export default async function settingsRoutes(
 
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const updatedMetadata = mergeShopConfig(shop?.metadata, "branding", body);
+      const updatedSettings = mergeShopConfig(shop?.settings, "branding", body);
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: updatedMetadata },
+        data: { settings: updatedSettings },
       });
 
       return reply.code(200).send({
@@ -202,14 +199,14 @@ export default async function settingsRoutes(
 
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const updatedMetadata = mergeShopConfig(shop?.metadata, "notifications", body);
+      const updatedSettings = mergeShopConfig(shop?.settings, "notifications", body);
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: updatedMetadata },
+        data: { settings: updatedSettings },
       });
 
       return reply.code(200).send({
@@ -230,10 +227,10 @@ export default async function settingsRoutes(
   fastify.get("/api-keys", async (request: any, reply: FastifyReply) => {
     const shop = await request.tenantDb.shop.findUnique({
       where: { id: request.shopId },
-      select: { metadata: true },
+      select: { settings: true },
     });
 
-    const config = getShopConfig(shop?.metadata);
+    const config = getShopConfig(shop?.settings);
     const apiKeys: any[] = config.apiKeys || [];
 
     // Mask all key values
@@ -269,10 +266,10 @@ export default async function settingsRoutes(
 
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const config = getShopConfig(shop?.metadata);
+      const config = getShopConfig(shop?.settings);
       const existingKeys: any[] = config.apiKeys || [];
 
       const newKey = {
@@ -289,16 +286,13 @@ export default async function settingsRoutes(
         revoked: false,
       };
 
-      const updatedMetadata = mergeShopConfig(shop?.metadata, "apiKeys", null);
-      // Directly set the apiKeys array
-      const meta = shop?.metadata || {};
-      const settings = (meta as any).settings || {};
-      settings.apiKeys = [...existingKeys, newKey];
-      (meta as any).settings = settings;
+      const settings = shop?.settings || {};
+      const apiKeys: any[] = settings.apiKeys || [];
+      apiKeys.push(newKey);
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: meta },
+        data: { settings: { ...settings, apiKeys } },
       });
 
       // Return plaintext key ONLY on creation
@@ -332,11 +326,10 @@ export default async function settingsRoutes(
 
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const meta = (shop?.metadata || {}) as any;
-      const settings = meta.settings || {};
+      const settings = (shop?.settings || {}) as any;
       const apiKeys: any[] = settings.apiKeys || [];
 
       const keyIndex = apiKeys.findIndex((k: any) => k.id === id);
@@ -346,12 +339,10 @@ export default async function settingsRoutes(
 
       apiKeys[keyIndex].revoked = true;
       apiKeys[keyIndex].revokedAt = new Date().toISOString();
-      settings.apiKeys = apiKeys;
-      meta.settings = settings;
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: meta },
+        data: { settings: { ...settings, apiKeys } },
       });
 
       return reply.code(200).send({
@@ -403,14 +394,13 @@ export default async function settingsRoutes(
       // Generate invite token
       const inviteToken = crypto.randomBytes(32).toString("hex");
 
-      // Store invitation in shop metadata
+      // Store invitation in shop settings
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
-        select: { metadata: true },
+        select: { settings: true },
       });
 
-      const meta = (shop?.metadata || {}) as any;
-      const settings = meta.settings || {};
+      const settings = (shop?.settings || {}) as any;
       const invitations: any[] = settings.invitations || [];
 
       invitations.push({
@@ -422,12 +412,9 @@ export default async function settingsRoutes(
         status: "pending",
       });
 
-      settings.invitations = invitations;
-      meta.settings = settings;
-
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
-        data: { metadata: meta },
+        data: { settings: { ...settings, invitations } },
       });
 
       return reply.code(201).send({

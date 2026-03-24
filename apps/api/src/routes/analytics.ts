@@ -11,7 +11,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@witylogix/db";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
@@ -116,7 +116,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       // Get payment data for revenue
-      const payments = await (request as any).tenantDb.payment.findMany({
+      const payments = await (request as any).tenantDb.paymentTransaction.findMany({
         where: {
           createdAt: { gte: from, lte: to },
           ...(zoneId && { shipment: { location: { id: zoneId } } }),
@@ -144,9 +144,9 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         avgDeliveryTime = Math.round((totalTime / deliveredShipments.length) * 100) / 100;
       }
 
-      // Revenue (completed payments)
-      const completedPayments = payments.filter((p: any) => p.status === "COMPLETED");
-      const revenue = completedPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+      // Revenue (completed payments) - amount is in BigInt (cents), convert to number
+      const completedPayments = payments.filter((p: any) => p.status === "completed");
+      const revenue = completedPayments.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
 
       // Cost per delivery
       const totalShippingCost = shipments.reduce((sum: number, s: any) => sum + (s.shippingCost || 0), 0);
@@ -470,7 +470,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       // Get payments for detailed costs
-      const payments = await (request as any).tenantDb.payment.findMany({
+      const payments = await (request as any).tenantDb.paymentTransaction.findMany({
         where: { createdAt: { gte: from, lte: to } },
         select: { amount: true, type: true, metadata: true },
       });
