@@ -4,7 +4,8 @@
 #  Interactive launcher for all platform apps & services
 # ═══════════════════════════════════════════════════════════════
 
-set -e
+set -euo pipefail
+# Note: functions that use check_port must use || true to avoid set -e exit
 
 # ── Colors ────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -112,19 +113,38 @@ show_status() {
 # ── Resolve tsx loader path (works across macOS/Linux, any tsx version) ──
 resolve_tsx() {
   local tsx_esm
-  # Try npx tsx resolution first (most reliable)
+
+  # Strategy 1: Node require.resolve (works when tsx is properly installed)
   tsx_esm=$(node -e "try{console.log(require.resolve('tsx/esm/index.mjs'))}catch{}" 2>/dev/null)
   if [ -n "$tsx_esm" ] && [ -f "$tsx_esm" ]; then
     echo "$tsx_esm"
     return
   fi
-  # Fallback: find in node_modules
+
+  # Strategy 2: Check dist/esm path via require.resolve on tsx package
+  tsx_esm=$(node -e "try{const p=require.resolve('tsx');console.log(p.replace(/dist\/.*$/,'dist/esm/index.mjs'))}catch{}" 2>/dev/null)
+  if [ -n "$tsx_esm" ] && [ -f "$tsx_esm" ]; then
+    echo "$tsx_esm"
+    return
+  fi
+
+  # Strategy 3: Direct path from pnpm store
   tsx_esm=$(find "$ROOT_DIR/node_modules/.pnpm" -path "*/tsx@*/node_modules/tsx/dist/esm/index.mjs" -print -quit 2>/dev/null)
   if [ -n "$tsx_esm" ] && [ -f "$tsx_esm" ]; then
     echo "$tsx_esm"
     return
   fi
-  # Last resort: npx
+
+  # Strategy 4: Check if tsx is globally available
+  if command -v tsx &>/dev/null; then
+    tsx_esm=$(tsx -e "console.log(require.resolve('tsx/esm/index.mjs'))" 2>/dev/null)
+    if [ -n "$tsx_esm" ] && [ -f "$tsx_esm" ]; then
+      echo "$tsx_esm"
+      return
+    fi
+  fi
+
+  # Last resort
   echo "npx:tsx"
 }
 
@@ -154,8 +174,38 @@ start_api() {
   set +a
   : > /tmp/wl-api.log
   nohup node --import "$TSX_LOADER" apps/api/src/server.ts > /tmp/wl-api.log 2>&1 &
+  local api_pid=$!
   disown
-  wait_for_port 8000 "API Server" 25
+  info "API process started (PID: $api_pid)"
+
+  # Wait with progress and crash detection
+  local elapsed=0
+  local timeout=60
+  echo -ne "  ${DIM}Waiting for API Server on port 8000...${NC}"
+  while ! check_port 8000; do
+    sleep 2
+    elapsed=$((elapsed + 2))
+    # Check if process died
+    if ! kill -0 "$api_pid" 2>/dev/null; then
+      echo ""
+      error "API Server process crashed! Last 15 lines of log:"
+      echo ""
+      tail -15 /tmp/wl-api.log 2>/dev/null || echo "  (no log file)"
+      echo ""
+      return 1
+    fi
+    if [ $elapsed -ge $timeout ]; then
+      echo ""
+      error "API Server failed to start within ${timeout}s"
+      info "Check logs: cat /tmp/wl-api.log"
+      info "Last 10 lines:"
+      tail -10 /tmp/wl-api.log 2>/dev/null || true
+      return 1
+    fi
+    echo -ne "."
+  done
+  echo ""
+  success "API Server is running on port 8000 (took ${elapsed}s)"
 }
 
 start_dashboard() {
@@ -232,13 +282,17 @@ start_core() {
   echo ""
   echo -e "  ${BOLD}Starting core services (API + Dashboard)...${NC}"
   echo ""
-  start_api
-  start_dashboard
+  start_api || { error "API failed — check /tmp/wl-api.log"; }
+  start_dashboard || { error "Dashboard failed — check /tmp/wl-dashboard.log"; }
   echo ""
-  success "Core services ready!"
-  echo -e "  ${CYAN}→${NC} API:       ${BOLD}http://localhost:8000${NC}"
-  echo -e "  ${CYAN}→${NC} Dashboard: ${BOLD}http://localhost:3003${NC}"
-  echo -e "  ${DIM}  Login: admin@demo.witylogix.io / Admin123!${NC}"
+  if check_port 8000 && check_port 3003; then
+    success "Core services ready!"
+    echo -e "  ${CYAN}→${NC} API:       ${BOLD}http://localhost:8000${NC}"
+    echo -e "  ${CYAN}→${NC} Dashboard: ${BOLD}http://localhost:3003${NC}"
+    echo -e "  ${DIM}  Login: admin@demo.witylogix.io / Admin123!${NC}"
+  else
+    warn "Some services failed to start. Check logs above."
+  fi
   echo ""
 }
 
@@ -246,13 +300,13 @@ start_all_web() {
   echo ""
   echo -e "  ${BOLD}Starting all web apps...${NC}"
   echo ""
-  start_api
-  start_dashboard
-  start_customer_portal
-  start_docs
-  start_tracking
+  start_api || { error "API failed — check /tmp/wl-api.log"; }
+  start_dashboard || { error "Dashboard failed — check /tmp/wl-dashboard.log"; }
+  start_customer_portal || { error "Customer Portal failed — check /tmp/wl-portal.log"; }
+  start_docs || { error "Docs failed — check /tmp/wl-docs.log"; }
+  start_tracking || { error "Tracking failed — check /tmp/wl-tracking.log"; }
   echo ""
-  success "All web apps ready!"
+  success "Web app startup sequence complete. Check status above for details."
   echo ""
 }
 
