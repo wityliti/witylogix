@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Search, Filter } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OrderCard } from '@/components/order-card';
 import type { Order, OrderStatus } from '@/types';
@@ -154,60 +154,41 @@ export default function OrdersPage() {
   }, [searchQuery, statusFilter, sortBy]);
 
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8'
-    )}>
+    <div className="page-container">
       {/* Header */}
-      <section>
-        <h1 className="text-3xl sm:text-4xl font-bold text-wl-text-primary mb-2">
-          Orders
-        </h1>
-        <p className="text-wl-text-secondary">
-          Manage and track all your deliveries
-        </p>
-      </section>
+      <header className="page-header animate-fade-in">
+        <h1 className="page-title">Orders</h1>
+        <p className="page-subtitle">Manage and track all your deliveries</p>
+      </header>
 
-      {/* Filters and Search */}
-      <section className={cn(
-        'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-        'p-4 sm:p-6'
-      )}>
+      {/* Search & Filters */}
+      <div className="section-card animate-fade-in stagger-1">
         {/* Search Bar */}
-        <div className="mb-6">
-          <div className={cn(
-            'relative flex items-center',
-            'bg-wl-bg-root border border-wl-border-subtle rounded-lg',
-            'px-4 py-3'
-          )}>
-            <Search size={18} className="text-wl-text-tertiary mr-3" />
-            <input
-              type="text"
-              placeholder="Search by order number, address, or item..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                'flex-1 bg-transparent outline-none',
-                'text-wl-text-primary placeholder-wl-text-tertiary'
-              )}
-            />
-          </div>
+        <div className="relative mb-5">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search by order number, address, or item..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input pl-9"
+          />
         </div>
 
-        {/* Filters */}
-        <div className={cn(
-          'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2'
-        )}>
+        {/* Filter Pills */}
+        <div className="flex flex-wrap gap-2">
           {statusFilters.map((filter) => (
             <button
               key={filter.value}
               onClick={() => setStatusFilter(filter.value as OrderStatus | 'all')}
               className={cn(
-                'px-3 py-2 rounded-md text-sm font-medium',
-                'transition-colors duration-fast',
+                'btn',
                 statusFilter === filter.value
-                  ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-                  : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                  ? 'btn-primary'
+                  : 'btn-ghost'
               )}
             >
               {filter.label}
@@ -216,50 +197,43 @@ export default function OrdersPage() {
         </div>
 
         {/* Sort */}
-        <div className={cn(
-          'mt-6 pt-6 border-t border-wl-border-subtle',
-          'flex items-center justify-between'
-        )}>
-          <div className="flex items-center gap-2 text-sm text-wl-text-secondary">
-            <Filter size={16} />
-            Sort:
+        <div className="mt-5 pt-5 border-t border-wl-border-subtle flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-wl-text-tertiary">
+            <SlidersHorizontal size={14} />
+            <span>Sort by</span>
           </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest')}
-            className={cn(
-              'bg-wl-bg-elevated border border-wl-border-subtle rounded-md',
-              'px-3 py-2 text-sm',
-              'text-wl-text-primary',
-              'cursor-pointer'
-            )}
+            className="input w-auto"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
           </select>
         </div>
-      </section>
+      </div>
 
-      {/* Results Info */}
-      <p className="text-sm text-wl-text-secondary">
-        Showing {filteredOrders.length} of {allOrders.length} orders
+      {/* Results Count */}
+      <p className="text-xs text-wl-text-tertiary animate-fade-in stagger-2">
+        Showing <span className="mono">{filteredOrders.length}</span> of{' '}
+        <span className="mono">{allOrders.length}</span> orders
       </p>
 
-      {/* Orders List */}
+      {/* Orders Grid */}
       {filteredOrders.length > 0 ? (
-        <div className={cn(
-          'grid grid-cols-1 lg:grid-cols-2 gap-4'
-        )}>
-          {filteredOrders.map((order) => (
-            <OrderCard key={order.id} order={order} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredOrders.map((order, i) => (
+            <div
+              key={order.id}
+              className={cn('animate-fade-in', `stagger-${Math.min(i + 1, 6)}`)}
+            >
+              <OrderCard order={order} />
+            </div>
           ))}
         </div>
       ) : (
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-          'p-12 text-center'
-        )}>
-          <p className="text-wl-text-secondary text-lg">
+        <div className="section-card text-center py-16 animate-fade-in">
+          <p className="text-wl-text-secondary mb-1">
             No orders found matching your criteria
           </p>
           <button
@@ -267,10 +241,7 @@ export default function OrdersPage() {
               setSearchQuery('');
               setStatusFilter('all');
             }}
-            className={cn(
-              'mt-4 text-wl-primary-400 hover:text-wl-primary-300',
-              'text-sm font-medium transition-colors'
-            )}
+            className="btn btn-ghost mt-3"
           >
             Clear filters
           </button>

@@ -42,7 +42,7 @@ export default function DashboardsPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error?.message ?? 'Failed to load dashboards'} />;
   }
 
   return (

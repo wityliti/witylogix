@@ -18,26 +18,22 @@ export function RatingStars({
   size = 'md',
   className,
 }: RatingStarsProps) {
-  const sizeMap = {
-    sm: 16,
-    md: 24,
-    lg: 32,
-  };
-
+  const sizeMap = { sm: 14, md: 22, lg: 30 };
   const iconSize = sizeMap[size];
 
   return (
-    <div className={cn('flex gap-1', className)}>
+    <div className={cn('flex gap-0.5', className)} role="group" aria-label="Rating">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
+          type="button"
           onClick={() => !readonly && onChange?.(star)}
           disabled={readonly}
           className={cn(
-            'transition-colors duration-fast',
+            'transition-all duration-fast p-0.5',
             !readonly && 'cursor-pointer hover:scale-110 active:scale-95'
           )}
-          aria-label={`Rate ${star} stars`}
+          aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
         >
           <Star
             size={iconSize}
@@ -45,7 +41,7 @@ export function RatingStars({
               'transition-colors duration-fast',
               star <= value
                 ? 'fill-wl-warning-500 text-wl-warning-500'
-                : 'text-wl-neutral-500'
+                : 'text-wl-neutral-600'
             )}
           />
         </button>

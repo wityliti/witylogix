@@ -167,13 +167,13 @@ start_api() {
     warn "API already running on port 8000"
     return
   fi
-  ensure_tsx || return 1
   # Load env vars
   set -a
   source "$ROOT_DIR/.env" 2>/dev/null || true
   set +a
   : > /tmp/wl-api.log
-  nohup node --import "$TSX_LOADER" apps/api/src/server.ts > /tmp/wl-api.log 2>&1 &
+  # Use pnpm --filter to run dev script which uses tsx correctly via pnpm resolution
+  nohup pnpm --filter @witylogix/api dev > /tmp/wl-api.log 2>&1 &
   local api_pid=$!
   disown
   info "API process started (PID: $api_pid)"
@@ -214,12 +214,10 @@ start_dashboard() {
     warn "Dashboard already running on port 3003"
     return
   fi
-  cd "$ROOT_DIR/apps/dashboard"
   : > /tmp/wl-dashboard.log
-  nohup npx next dev -p 3003 > /tmp/wl-dashboard.log 2>&1 &
+  nohup pnpm --filter @witylogix/dashboard dev > /tmp/wl-dashboard.log 2>&1 &
   disown
-  cd "$ROOT_DIR"
-  wait_for_port 3003 "Dashboard" 30
+  wait_for_port 3003 "Dashboard" 45
 }
 
 start_customer_portal() {
@@ -228,10 +226,9 @@ start_customer_portal() {
     warn "Customer Portal already running on port 3004"
     return
   fi
-  cd "$ROOT_DIR/apps/customer-portal"
-  nohup npx next dev --port 3004 > /tmp/wl-portal.log 2>&1 &
+  : > /tmp/wl-portal.log
+  nohup pnpm --filter @witylogix/customer-portal dev > /tmp/wl-portal.log 2>&1 &
   disown
-  cd "$ROOT_DIR"
   wait_for_port 3004 "Customer Portal" 30
 }
 
@@ -241,10 +238,9 @@ start_docs() {
     warn "Docs already running on port 3005"
     return
   fi
-  cd "$ROOT_DIR/apps/docs"
-  nohup npx next dev --port 3005 > /tmp/wl-docs.log 2>&1 &
+  : > /tmp/wl-docs.log
+  nohup pnpm --filter @witylogix/docs dev > /tmp/wl-docs.log 2>&1 &
   disown
-  cd "$ROOT_DIR"
   wait_for_port 3005 "Docs" 30
 }
 
@@ -254,10 +250,9 @@ start_tracking() {
     warn "Tracking Page already running on port 5173"
     return
   fi
-  cd "$ROOT_DIR/apps/tracking-page"
-  nohup npx vite dev > /tmp/wl-tracking.log 2>&1 &
+  : > /tmp/wl-tracking.log
+  nohup pnpm --filter @witylogix/tracking-page dev > /tmp/wl-tracking.log 2>&1 &
   disown
-  cd "$ROOT_DIR"
   wait_for_port 5173 "Tracking Page" 15
 }
 
@@ -335,42 +330,38 @@ db_menu() {
   echo ""
   read -rp "  Choose: " db_choice
 
-  local PRISMA="./node_modules/.pnpm/node_modules/.bin/prisma"
-  local SCHEMA="--schema packages/db/prisma/schema"
-
   case $db_choice in
     1)
       info "Generating Prisma Client..."
-      cd "$ROOT_DIR/packages/db" && ../../node_modules/.pnpm/node_modules/.bin/prisma generate --schema prisma/schema
-      cd "$ROOT_DIR"
+      pnpm --filter @witylogix/db db:generate
       success "Prisma Client generated"
       ;;
     2)
       info "Pushing schema to database..."
-      cd "$ROOT_DIR/packages/db" && ../../node_modules/.pnpm/node_modules/.bin/prisma db push --schema prisma/schema
+      cd "$ROOT_DIR/packages/db" && npx prisma db push --schema prisma/schema
       cd "$ROOT_DIR"
       success "Schema pushed"
       ;;
     3)
       info "Seeding database..."
       set -a; source "$ROOT_DIR/.env" 2>/dev/null || true; set +a
-      ensure_tsx && node --import "$TSX_LOADER" packages/db/prisma/seed.ts
+      pnpm --filter @witylogix/db db:seed
       success "Database seeded"
       ;;
     4)
       warn "This will reset the database. Continue? (y/N)"
       read -rp "  " confirm
       if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        cd "$ROOT_DIR/packages/db" && ../../node_modules/.pnpm/node_modules/.bin/prisma db push --schema prisma/schema --force-reset
+        cd "$ROOT_DIR/packages/db" && npx prisma db push --schema prisma/schema --force-reset
         cd "$ROOT_DIR"
         set -a; source "$ROOT_DIR/.env" 2>/dev/null || true; set +a
-        ensure_tsx && node --import "$TSX_LOADER" packages/db/prisma/seed.ts
+        pnpm --filter @witylogix/db db:seed
         success "Database reset and seeded"
       fi
       ;;
     5)
       info "Opening Prisma Studio..."
-      cd "$ROOT_DIR/packages/db" && ../../node_modules/.pnpm/node_modules/.bin/prisma studio --schema prisma/schema &
+      cd "$ROOT_DIR/packages/db" && npx prisma studio --schema prisma/schema &
       cd "$ROOT_DIR"
       ;;
     0|"") return ;;
@@ -406,7 +397,7 @@ test_menu() {
       ;;
     3)
       info "Running unit tests..."
-      ./node_modules/.pnpm/node_modules/.bin/vitest run 2>&1 || true
+      npx vitest run 2>&1 || true
       ;;
     4)
       info "Running type check..."
@@ -550,10 +541,10 @@ if [ $# -gt 0 ]; then
     db)
       shift
       case "${1:-}" in
-        generate) cd packages/db && ../../node_modules/.pnpm/node_modules/.bin/prisma generate --schema prisma/schema ;;
-        push)     cd packages/db && ../../node_modules/.pnpm/node_modules/.bin/prisma db push --schema prisma/schema ;;
-        seed)     set -a; source "$ROOT_DIR/.env" 2>/dev/null; set +a; ensure_tsx && node --import "$TSX_LOADER" packages/db/prisma/seed.ts ;;
-        studio)   cd packages/db && ../../node_modules/.pnpm/node_modules/.bin/prisma studio --schema prisma/schema ;;
+        generate) pnpm --filter @witylogix/db db:generate ;;
+        push)     cd packages/db && npx prisma db push --schema prisma/schema ;;
+        seed)     set -a; source "$ROOT_DIR/.env" 2>/dev/null; set +a; pnpm --filter @witylogix/db db:seed ;;
+        studio)   cd packages/db && npx prisma studio --schema prisma/schema ;;
         *) error "Unknown db command: $1. Options: generate, push, seed, studio" ;;
       esac
       ;;

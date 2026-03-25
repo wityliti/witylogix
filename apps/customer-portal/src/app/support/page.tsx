@@ -81,27 +81,21 @@ export default function SupportPage() {
   };
 
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8 pb-12'
-    )}>
+    <div className="page-container animate-fade-in">
       {/* Header */}
-      <section>
-        <h1 className="text-3xl sm:text-4xl font-bold text-wl-text-primary mb-2">
-          Support Center
-        </h1>
-        <p className="text-wl-text-secondary">
+      <div className="page-header">
+        <h1 className="page-title">Support Center</h1>
+        <p className="page-subtitle">
           Get help with your deliveries and account
         </p>
-      </section>
+      </div>
 
       {/* Quick Contact Options */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-1">
         <a
           href="mailto:support@witylogix.com"
           className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6',
-            'flex items-start gap-4',
+            'section-card flex items-start gap-4',
             'hover:border-wl-primary-500 transition-colors'
           )}
         >
@@ -120,8 +114,7 @@ export default function SupportPage() {
         <a
           href="tel:1-800-WITYLOGIX"
           className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6',
-            'flex items-start gap-4',
+            'section-card flex items-start gap-4',
             'hover:border-wl-primary-500 transition-colors'
           )}
         >
@@ -138,8 +131,8 @@ export default function SupportPage() {
         </a>
 
         <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6',
-          'flex items-start gap-4'
+          'section-card flex items-start gap-4',
+          'hover:border-wl-primary-500 transition-colors'
         )}>
           <MessageCircle size={24} className="text-wl-primary-500 flex-shrink-0" />
           <div>
@@ -156,10 +149,8 @@ export default function SupportPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* FAQ Section */}
-        <div className="lg:col-span-2">
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+        <div className="lg:col-span-2 stagger-2">
+          <div className="section-card">
             <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
               Frequently Asked Questions
             </h2>
@@ -174,11 +165,9 @@ export default function SupportPage() {
                     setExpandedFAQ(null);
                   }}
                   className={cn(
-                    'px-3 py-1 rounded-full text-sm font-medium',
-                    'transition-colors duration-fast',
                     selectedCategory === category.id
-                      ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-                      : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                      ? 'btn btn-primary'
+                      : 'btn btn-ghost'
                   )}
                 >
                   {category.label}
@@ -192,8 +181,8 @@ export default function SupportPage() {
                 <div
                   key={index}
                   className={cn(
-                    'border border-wl-border-subtle rounded-lg overflow-hidden',
-                    'transition-colors duration-fast',
+                    'section-card overflow-hidden transition-colors duration-fast',
+                    'hover:border-wl-primary-500/50',
                     expandedFAQ === index && 'border-wl-primary-500'
                   )}
                 >
@@ -202,8 +191,7 @@ export default function SupportPage() {
                     className={cn(
                       'w-full px-4 py-4 text-left',
                       'flex items-center justify-between gap-3',
-                      'hover:bg-wl-bg-elevated transition-colors',
-                      expandedFAQ === index && 'bg-wl-primary-500/10'
+                      'hover:bg-wl-bg-elevated transition-colors'
                     )}
                   >
                     <p className={cn(
@@ -218,14 +206,14 @@ export default function SupportPage() {
                       'text-wl-text-tertiary transition-transform duration-fast flex-shrink-0',
                       expandedFAQ === index && 'rotate-180'
                     )}>
-                      ▼
+                      &#x25BC;
                     </span>
                   </button>
 
                   {expandedFAQ === index && (
                     <div className={cn(
                       'px-4 py-4 border-t border-wl-border-subtle',
-                      'bg-wl-bg-elevated text-wl-text-secondary'
+                      'bg-wl-bg-elevated text-wl-text-secondary text-sm'
                     )}>
                       {faq.answer}
                     </div>
@@ -237,10 +225,8 @@ export default function SupportPage() {
         </div>
 
         {/* Contact Form */}
-        <div className="flex flex-col gap-6">
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+        <div className="flex flex-col gap-6 stagger-3">
+          <div className="section-card">
             <div className="flex items-center gap-2 mb-4">
               <HelpCircle size={24} className="text-wl-primary-500" />
               <h2 className="text-xl font-bold text-wl-text-primary">
@@ -250,63 +236,47 @@ export default function SupportPage() {
 
             {messageSent && (
               <div className={cn(
-                'bg-wl-success-bg border border-wl-success-500/30',
-                'rounded-lg p-3 mb-4 text-sm',
+                'section-card border-l-2 border-wl-success-500',
+                'p-3 mb-4 text-sm',
                 'flex items-center gap-2'
               )}>
-                <span>✓</span>
+                <span>&#x2713;</span>
                 <span className="text-wl-text-primary">Message sent!</span>
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="label block mb-2">
                   Your Email
                 </label>
                 <input
                   type="email"
                   placeholder="john@example.com"
-                  className={cn(
-                    'w-full px-4 py-2 rounded-lg border border-wl-border-subtle',
-                    'bg-wl-bg-elevated text-wl-text-primary',
-                    'placeholder-wl-text-tertiary',
-                    'focus:outline-none focus:border-wl-primary-500'
-                  )}
+                  className="input w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="label block mb-2">
                   Subject
                 </label>
                 <input
                   type="text"
                   placeholder="How can we help?"
-                  className={cn(
-                    'w-full px-4 py-2 rounded-lg border border-wl-border-subtle',
-                    'bg-wl-bg-elevated text-wl-text-primary',
-                    'placeholder-wl-text-tertiary',
-                    'focus:outline-none focus:border-wl-primary-500'
-                  )}
+                  className="input w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-wl-text-primary mb-2">
+                <label className="label block mb-2">
                   Message
                 </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Describe your issue..."
-                  className={cn(
-                    'w-full px-4 py-2 rounded-lg border border-wl-border-subtle',
-                    'bg-wl-bg-elevated text-wl-text-primary',
-                    'placeholder-wl-text-tertiary',
-                    'focus:outline-none focus:border-wl-primary-500',
-                    'resize-none h-24'
-                  )}
+                  className="input w-full resize-none h-24"
                 />
               </div>
 
@@ -314,12 +284,9 @@ export default function SupportPage() {
                 onClick={handleSendMessage}
                 disabled={!message.trim()}
                 className={cn(
-                  'w-full px-4 py-3 rounded-lg font-medium',
+                  'btn btn-primary btn-lg w-full',
                   'flex items-center justify-center gap-2',
-                  'transition-colors duration-fast',
-                  !message.trim()
-                    ? 'bg-wl-neutral-800 text-wl-text-tertiary cursor-not-allowed'
-                    : 'bg-wl-primary-500 text-wl-text-inverse hover:bg-wl-primary-600'
+                  !message.trim() && 'opacity-50 cursor-not-allowed'
                 )}
               >
                 <Send size={16} />
@@ -329,14 +296,11 @@ export default function SupportPage() {
           </div>
 
           {/* Response Time Info */}
-          <div className={cn(
-            'bg-wl-info-bg border border-wl-info-500/30',
-            'rounded-lg p-4'
-          )}>
-            <p className="text-sm text-wl-info-500 font-medium mb-2">
+          <div>
+            <p className="text-sm font-medium text-wl-text-secondary mb-1">
               Response Time
             </p>
-            <p className="text-xs text-wl-text-secondary">
+            <p className="text-xs text-wl-text-tertiary">
               We typically respond within 2 hours during business hours (9 AM - 6 PM EST, Monday to Friday).
             </p>
           </div>

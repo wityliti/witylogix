@@ -16,8 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Modal } from '@/components/ui/modal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import {
   CheckCircle,
@@ -31,7 +30,6 @@ import {
   DollarSign,
   Shield,
   TestTube,
-  ChevronRight,
   Loader,
 } from 'lucide-react';
 
@@ -56,7 +54,7 @@ interface GatewayConfig {
   monthlyVolume?: number;
 }
 
-export default function PaymentSettingsPage(): JSX.Element {
+export default function PaymentSettingsPage() {
   const { items: gateways, loading, error, refetch } = useApiList<GatewayConfig>('/api/v4/payments/gateways');
   const { execute: setDefault } = useApiMutation('PATCH', '/api/v4/payments/gateways/:id/default');
   const { execute: disconnect } = useApiMutation('DELETE', '/api/v4/payments/gateways/:id');
@@ -64,7 +62,7 @@ export default function PaymentSettingsPage(): JSX.Element {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockGatewayConfigs: GatewayConfig[] = gateways ?? [
+  const mockGatewayConfigs: GatewayConfig[] = gateways.length > 0 ? gateways : [
     {
     id: 'stripe-prod',
     name: 'Stripe',
@@ -139,6 +137,7 @@ export default function PaymentSettingsPage(): JSX.Element {
     { gateway: 'Square', percent: 2.6, fixed: 0, for100: 260, for1000: 2600 },
   ];
 
+  const [activeTab, setActiveTab] = useState('overview');
   const [isTestPaymentLoading, setIsTestPaymentLoading] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
@@ -189,20 +188,25 @@ export default function PaymentSettingsPage(): JSX.Element {
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
       <Header
         title="Payment Gateways"
-        description="Configure and manage payment processing providers"
+        subtitle="Configure and manage payment processing providers"
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-[#1a1a2e] border border-[#1e1e2e]">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="configuration">Configuration</TabsTrigger>
-            <TabsTrigger value="fees">Fee Comparison</TabsTrigger>
-          </TabsList>
+        <Tabs
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'configuration', label: 'Configuration' },
+            { id: 'fees', label: 'Fee Comparison' },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          variant="segment"
+          className="mb-8"
+        />
 
-          <TabsContent value="overview" className="space-y-6">
+          {activeTab === 'overview' && <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
-              {gateways.map((gateway) => (
+              {mockGatewayConfigs.map((gateway) => (
                 <Card
                   key={gateway.id}
                   className={cn(
@@ -266,7 +270,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                         {gateway.supportedMethods.map((method) => (
                           <Badge
                             key={method}
-                            variant="secondary"
+                            variant="default"
                             className="text-xs capitalize bg-[#1a1a2e]"
                           >
                             {method.replace('_', ' ')}
@@ -363,10 +367,10 @@ export default function PaymentSettingsPage(): JSX.Element {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>}
 
-          <TabsContent value="configuration" className="space-y-6">
-            {gateways
+          {activeTab === 'configuration' && <div className="space-y-6">
+            {mockGatewayConfigs
               .filter((g) => g.status === 'connected')
               .map((gateway) => (
                 <Card key={gateway.id}>
@@ -497,9 +501,9 @@ export default function PaymentSettingsPage(): JSX.Element {
                   </CardContent>
                 </Card>
               ))}
-          </TabsContent>
+          </div>}
 
-          <TabsContent value="fees" className="space-y-6">
+          {activeTab === 'fees' && <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Transaction Fee Comparison</CardTitle>
@@ -583,8 +587,7 @@ export default function PaymentSettingsPage(): JSX.Element {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>}
       </div>
     </div>
   );

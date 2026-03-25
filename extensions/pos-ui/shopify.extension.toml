@@ -1,4 +1,6 @@
-api_version = "2024-10"
+# Witylogix POS UI Extension
+# Delivery assignment and order lookup for Shopify POS
+api_version = "2025-04"
 
 [[extensions]]
 name = "Witylogix POS Delivery"

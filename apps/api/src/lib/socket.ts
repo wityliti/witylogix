@@ -202,10 +202,10 @@ export async function setupSocketServer(
 
   // ─── Redis Adapter (for horizontal scaling) ─────────────────
   try {
+    // ioredis duplicate() auto-connects; skip explicit .connect() calls
     const pubClient = redis.duplicate();
     const subClient = redis.duplicate();
 
-    await Promise.all([pubClient.connect(), subClient.connect()]);
     ioServer.adapter(createAdapter(pubClient, subClient));
     logger.info("Socket.io Redis adapter configured");
   } catch (err) {

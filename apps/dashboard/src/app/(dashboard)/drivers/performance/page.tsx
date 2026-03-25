@@ -42,7 +42,7 @@ const getTierColor = (tier: DriverTier): "primary" | "warning" | "default" | "su
     platinum: "primary",
     gold: "warning",
     silver: "default",
-    bronze: "info",
+    bronze: "warning",
   };
   return tierMap[tier];
 };
@@ -91,18 +91,18 @@ export default function DriverPerformancePage() {
   const totalDeliveries = drivers.reduce((sum, d) => sum + d.deliveriesCount, 0);
 
   if (loading) {
-    return <LoadingSkeleton type="list" />;
+    return <LoadingSkeleton />;
   }
 
   if (error) {
-    return <ErrorState error={error} onRetry={refetch} />;
+    return <ErrorState message={error?.message ?? 'Failed to load driver performance'} onRetry={refetch} />;
   }
 
   return (
     <>
       <Header
         title="Driver Performance"
-        subtitle={`${DRIVER_LEADERBOARD.length} drivers tracked · Top performer: ${topThree[0]?.name}`}
+        subtitle={`${drivers.length} drivers tracked · Top performer: ${topThree[0]?.name ?? 'N/A'}`}
         actions={
           <div className="flex gap-2">
             <Button variant="secondary" size="md">

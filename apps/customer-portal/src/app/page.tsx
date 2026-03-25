@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { format, addDays } from 'date-fns';
-import { ArrowRight, TrendingUp } from 'lucide-react';
+import { addDays } from 'date-fns';
+import { ArrowRight, Package, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OrderCard } from '@/components/order-card';
 import type { Order } from '@/types';
 
-// Mock data for upcoming deliveries
 const upcomingDeliveries: Order[] = [
   {
     id: '1',
@@ -49,7 +48,6 @@ const upcomingDeliveries: Order[] = [
   },
 ];
 
-// Mock data for recent orders
 const recentOrders: Order[] = [
   {
     id: '3',
@@ -99,123 +97,70 @@ const recentOrders: Order[] = [
 ];
 
 export default function DashboardPage() {
+  const totalSpent = (
+    upcomingDeliveries.reduce((sum, o) => sum + o.totalPrice, 0) +
+    recentOrders.reduce((sum, o) => sum + o.totalPrice, 0)
+  ).toFixed(2);
+
   return (
-    <div className={cn(
-      'flex flex-col gap-8 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8'
-    )}>
-      {/* Welcome Section */}
-      <section className={cn(
-        'bg-gradient-to-r from-wl-primary-600 to-wl-primary-700',
-        'rounded-lg p-6 sm:p-8',
-        'text-white'
-      )}>
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-          Welcome back, John!
-        </h1>
-        <p className="text-wl-primary-100 text-lg">
-          You have {upcomingDeliveries.length} active deliveries
-        </p>
-      </section>
+    <div className="page-container">
+      {/* Greeting — clean, no garish banner */}
+      <div className="page-header animate-fade-in">
+        <p className="text-wl-text-secondary text-sm">Good afternoon</p>
+        <h1 className="page-title">Welcome back, John</h1>
+      </div>
 
-      {/* Quick Stats */}
-      <div className={cn(
-        'grid grid-cols-1 sm:grid-cols-3 gap-4'
-      )}>
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-          'p-6'
-        )}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-wl-text-tertiary">Active Orders</p>
-              <p className="text-3xl font-bold text-wl-text-primary mt-2">
-                {upcomingDeliveries.length}
-              </p>
-            </div>
-            <TrendingUp size={28} className="text-wl-primary-500" />
-          </div>
+      {/* Quick stats — tight, numbers-first */}
+      <div className="grid grid-cols-3 gap-3 animate-fade-in stagger-1">
+        <div className="stat-card">
+          <p className="label">Active</p>
+          <p className="value mt-1">{upcomingDeliveries.length}</p>
         </div>
-
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-          'p-6'
-        )}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-wl-text-tertiary">Delivered</p>
-              <p className="text-3xl font-bold text-wl-text-primary mt-2">
-                {recentOrders.filter(o => o.status === 'delivered').length}
-              </p>
-            </div>
-            <div className={cn(
-              'w-10 h-10 rounded-full',
-              'bg-wl-success-500/20 flex items-center justify-center'
-            )}>
-              <span className="text-wl-success-500 font-bold">✓</span>
-            </div>
-          </div>
+        <div className="stat-card">
+          <p className="label">Delivered</p>
+          <p className="value mt-1">{recentOrders.filter(o => o.status === 'delivered').length}</p>
         </div>
-
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-          'p-6'
-        )}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-wl-text-tertiary">Total Spent</p>
-              <p className="text-3xl font-bold text-wl-text-primary mt-2">
-                ${(upcomingDeliveries.reduce((sum, o) => sum + o.totalPrice, 0) +
-                  recentOrders.reduce((sum, o) => sum + o.totalPrice, 0)).toFixed(2)}
-              </p>
-            </div>
-            <div className={cn(
-              'w-10 h-10 rounded-full',
-              'bg-wl-info-bg flex items-center justify-center'
-            )}>
-              <span className="text-wl-info-500 text-lg">$</span>
-            </div>
-          </div>
+        <div className="stat-card">
+          <p className="label">Total Spent</p>
+          <p className="value mt-1 text-xl sm:text-2xl">${totalSpent}</p>
         </div>
       </div>
 
-      {/* Upcoming Deliveries */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-wl-text-primary">
-            Upcoming Deliveries
-          </h2>
+      {/* Active deliveries — these get prominence */}
+      <section className="animate-fade-in stagger-2">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Truck size={16} className="text-wl-primary-500" />
+            <h2 className="text-base font-semibold text-wl-text-primary">
+              Active Deliveries
+            </h2>
+          </div>
           <Link
             href="/orders"
-            className={cn(
-              'text-sm font-medium text-wl-primary-400',
-              'hover:text-wl-primary-300 transition-colors',
-              'flex items-center gap-1'
-            )}
+            className="flex items-center gap-1 text-xs font-medium text-wl-text-tertiary hover:text-wl-text-secondary transition-colors"
           >
             View all
-            <ArrowRight size={16} />
+            <ArrowRight size={12} />
           </Link>
         </div>
 
-        <div className={cn(
-          'grid grid-cols-1 lg:grid-cols-2 gap-4'
-        )}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {upcomingDeliveries.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}
         </div>
       </section>
 
-      {/* Recent Orders */}
-      <section>
-        <h2 className="text-2xl font-bold text-wl-text-primary mb-4">
-          Recent Orders
-        </h2>
+      {/* Recent orders — receded, less visual weight */}
+      <section className="animate-fade-in stagger-3">
+        <div className="flex items-center gap-2 mb-3">
+          <Package size={16} className="text-wl-text-tertiary" />
+          <h2 className="text-base font-semibold text-wl-text-primary">
+            Recent Orders
+          </h2>
+        </div>
 
-        <div className={cn(
-          'grid grid-cols-1 lg:grid-cols-2 gap-4'
-        )}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {recentOrders.slice(0, 2).map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}

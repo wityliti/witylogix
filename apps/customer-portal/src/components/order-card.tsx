@@ -2,39 +2,49 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ChevronRight, Package } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Order } from '@/types';
+import type { Order, OrderStatus } from '@/types';
 
 interface OrderCardProps {
   order: Order;
 }
 
-const statusConfig = {
+const statusConfig: Record<OrderStatus, {
+  label: string;
+  dotClass: string;
+  badgeClass: string;
+  accentClass: string;
+}> = {
   pending: {
     label: 'Pending',
-    bg: 'bg-wl-warning-bg',
-    text: 'text-wl-warning-500',
+    dotClass: 'bg-wl-warning-500',
+    badgeClass: 'status-pending',
+    accentClass: 'card-accent-pending',
   },
   confirmed: {
     label: 'Confirmed',
-    bg: 'bg-wl-info-bg',
-    text: 'text-wl-info-500',
+    dotClass: 'bg-wl-info-500',
+    badgeClass: 'status-confirmed',
+    accentClass: 'card-accent-confirmed',
   },
   'out-for-delivery': {
     label: 'Out for Delivery',
-    bg: 'bg-wl-primary-500/20',
-    text: 'text-wl-primary-400',
+    dotClass: 'bg-wl-primary-500',
+    badgeClass: 'status-active',
+    accentClass: 'card-accent-active',
   },
   delivered: {
     label: 'Delivered',
-    bg: 'bg-wl-success-bg',
-    text: 'text-wl-success-500',
+    dotClass: 'bg-wl-success-500',
+    badgeClass: 'status-delivered',
+    accentClass: 'card-accent-delivered',
   },
   cancelled: {
     label: 'Cancelled',
-    bg: 'bg-wl-danger-bg',
-    text: 'text-wl-danger-500',
+    dotClass: 'bg-wl-danger-500',
+    badgeClass: 'status-cancelled',
+    accentClass: 'card-accent-cancelled',
   },
 };
 
@@ -43,85 +53,53 @@ export function OrderCard({ order }: OrderCardProps) {
 
   return (
     <Link href={`/orders/${order.id}`}>
-      <div
-        className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-          'p-4 sm:p-6',
-          'hover:border-wl-border-default hover:shadow-md',
-          'transition-all duration-fast',
-          'cursor-pointer'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className={cn(
-              'w-10 h-10 rounded-md flex-shrink-0',
-              'bg-wl-primary-500/20 flex items-center justify-center'
-            )}>
-              <Package size={20} className="text-wl-primary-400" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-medium text-wl-text-primary truncate">
-                Order #{order.orderNumber}
-              </h3>
-              <p className="text-xs text-wl-text-tertiary">
-                {format(order.createdAt, 'PPP')}
-              </p>
-            </div>
+      <div className={cn('card-accent', config.accentClass, 'cursor-pointer group')}>
+        {/* Top row: order number + status */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-wl-text-primary truncate mono">
+              {order.orderNumber}
+            </p>
+            <p className="text-xs text-wl-text-tertiary mt-0.5">
+              {format(order.createdAt, 'MMM d, yyyy')}
+            </p>
           </div>
 
-          <ChevronRight
-            size={20}
-            className="text-wl-text-tertiary flex-shrink-0 mt-1"
-          />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className={cn('status-badge', config.badgeClass)}>
+              <span className="status-badge-dot" />
+              {config.label}
+            </span>
+            <ChevronRight
+              size={16}
+              className="text-wl-text-tertiary group-hover:text-wl-text-secondary transition-colors"
+            />
+          </div>
         </div>
 
-        {/* Status Badge */}
-        <div className="mb-4">
-          <span className={cn(
-            'inline-block px-3 py-1 rounded-full',
-            'text-xs font-medium',
-            config.bg,
-            config.text
-          )}>
-            {config.label}
+        {/* Details row */}
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-wl-text-secondary">
+            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+          </span>
+          <span className="font-semibold text-wl-text-primary mono">
+            ${order.totalPrice.toFixed(2)}
           </span>
         </div>
 
-        {/* Details */}
-        <div className="space-y-3 text-sm mb-4">
-          <div className="flex justify-between items-center">
-            <span className="text-wl-text-secondary">Items:</span>
-            <span className="text-wl-text-primary font-medium">
-              {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+        {/* Delivery info */}
+        <div className="flex items-center justify-between text-xs text-wl-text-tertiary mt-2">
+          <span>
+            {order.status === 'delivered' && order.actualDeliveryDate
+              ? `Delivered ${format(order.actualDeliveryDate, 'MMM d')}`
+              : `Delivery ${format(order.scheduledDeliveryDate, 'MMM d')}`}
+          </span>
+          {order.estimatedDelivery && (
+            <span className="text-wl-primary-400 font-medium">
+              ETA: {order.estimatedDelivery}
             </span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-wl-text-secondary">Scheduled Delivery:</span>
-            <span className="text-wl-text-primary font-medium">
-              {format(order.scheduledDeliveryDate, 'PPP')}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-wl-text-secondary">Total:</span>
-            <span className="text-wl-text-primary font-bold">
-              ${order.totalPrice.toFixed(2)}
-            </span>
-          </div>
+          )}
         </div>
-
-        {/* ETA if available */}
-        {order.estimatedDelivery && (
-          <div className={cn(
-            'text-xs p-3 rounded-md',
-            'bg-wl-primary-500/10 text-wl-primary-400'
-          )}>
-            ETA: {order.estimatedDelivery}
-          </div>
-        )}
       </div>
     </Link>
   );

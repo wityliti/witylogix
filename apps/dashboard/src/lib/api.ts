@@ -46,17 +46,12 @@ function getAuthToken(): string | null {
 }
 
 /**
- * Handle 401 responses by redirecting to login
+ * Handle 401 responses — throw error but don't aggressively clear auth state.
+ * The auth-context manages token lifecycle; the API client just reports the error.
  */
 function handleUnauthorized(): void {
-  if (typeof window !== 'undefined') {
-    // Clear auth state
-    localStorage.removeItem('authUser');
-    document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax; secure';
-
-    // Redirect to login with return URL
-    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-  }
+  // Don't clear cookies or redirect here — let the auth context handle it.
+  // Aggressive clearing causes cascading auth failures across concurrent requests.
 }
 
 async function request<T>(
@@ -75,11 +70,18 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  // Add timeout if no signal provided
+  const controller = !options.signal ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 30000) : null;
+
   const res = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include', // Include cookies in request
+    credentials: 'include',
+    signal: options.signal ?? controller?.signal,
   });
+
+  if (timeoutId) clearTimeout(timeoutId);
 
   if (res.status === 401) {
     // Token is invalid or expired

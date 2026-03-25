@@ -101,16 +101,12 @@ export default function TrackingPage() {
 
   if (!activeData) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen animate-fade-in">
         <div className="text-center">
           <p className="text-wl-text-secondary mb-4">Delivery not found</p>
           <button
             onClick={() => router.back()}
-            className={cn(
-              'px-4 py-2 rounded-md',
-              'bg-wl-primary-500 text-white font-medium',
-              'hover:bg-wl-primary-600 transition-colors'
-            )}
+            className="btn btn-primary"
           >
             Go Back
           </button>
@@ -186,10 +182,8 @@ export default function TrackingPage() {
               }}
               className={cn(
                 'absolute top-6 right-6 z-10',
-                'flex items-center gap-2 px-4 py-3 rounded-md',
-                'bg-white/90 backdrop-blur-sm shadow-md',
-                'text-wl-text-primary font-medium text-sm',
-                'hover:bg-white transition-colors'
+                'btn btn-secondary backdrop-blur-sm',
+                'flex items-center gap-2 shadow-md'
               )}
             >
               <Share2 className="w-4 h-4" />
@@ -202,43 +196,44 @@ export default function TrackingPage() {
             'w-96 flex flex-col border-l border-wl-border-subtle',
             'bg-wl-bg-root overflow-y-auto'
           )}>
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 animate-fade-in">
               {/* ETA Section */}
-              <ETACountdown
-                eta={activeData.eta}
-                routeProgress={routeProgress}
-                lastUpdated={activeData.lastUpdated}
-              />
+              <div className="section-card">
+                <ETACountdown
+                  eta={activeData.eta}
+                  routeProgress={routeProgress}
+                  lastUpdated={activeData.lastUpdated}
+                />
+              </div>
 
               {/* Driver Info */}
-              <DriverInfoCard
-                driver={activeData.driver}
-                isConnected={activeData.isConnected}
-              />
+              <div className="section-card">
+                <DriverInfoCard
+                  driver={activeData.driver}
+                  isConnected={activeData.isConnected}
+                />
+              </div>
 
               {/* Order Items */}
-              <div className={cn(
-                'rounded-lg border border-wl-border-subtle',
-                'bg-wl-bg-surface p-6 space-y-3'
-              )}>
+              <div className="section-card space-y-3">
                 <h3 className="font-semibold text-wl-text-primary">Delivery Items</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
                     <span className="text-sm text-wl-text-secondary">2x Fresh Vegetables Bundle</span>
-                    <span className="text-sm font-medium text-wl-text-primary">$24.99</span>
+                    <span className="text-sm font-medium text-wl-text-primary mono">$24.99</span>
                   </div>
                   <div className="flex justify-between items-start">
                     <span className="text-sm text-wl-text-secondary">1x Organic Milk (1L)</span>
-                    <span className="text-sm font-medium text-wl-text-primary">$5.99</span>
+                    <span className="text-sm font-medium text-wl-text-primary mono">$5.99</span>
                   </div>
                   <div className="flex justify-between items-start">
                     <span className="text-sm text-wl-text-secondary">1x Whole Wheat Bread</span>
-                    <span className="text-sm font-medium text-wl-text-primary">$3.49</span>
+                    <span className="text-sm font-medium text-wl-text-primary mono">$3.49</span>
                   </div>
                   <div className="pt-2 border-t border-wl-border-subtle">
                     <div className="flex justify-between">
                       <span className="font-semibold text-wl-text-primary">Total</span>
-                      <span className="font-semibold text-wl-text-primary">$34.47</span>
+                      <span className="font-semibold text-wl-text-primary mono">$34.47</span>
                     </div>
                   </div>
                 </div>
@@ -246,8 +241,8 @@ export default function TrackingPage() {
 
               {/* Special Instructions */}
               <div className={cn(
-                'rounded-lg border border-wl-border-subtle',
-                'bg-wl-bg-elevated p-4 flex gap-3'
+                'section-card flex gap-3',
+                'bg-wl-bg-elevated'
               )}>
                 <MapPin className="w-4 h-4 text-wl-info-500 flex-shrink-0 mt-1" />
                 <p className="text-sm text-wl-text-secondary">
@@ -256,7 +251,7 @@ export default function TrackingPage() {
               </div>
 
               {/* Timeline */}
-              <div>
+              <div className="section-card">
                 <h3 className="font-semibold text-wl-text-primary mb-4">Delivery Status</h3>
                 <DeliveryStatusTimeline steps={statusSteps} />
               </div>
@@ -285,10 +280,8 @@ export default function TrackingPage() {
               <button
                 onClick={() => setShowDetailsSheet(true)}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md',
-                  'bg-white/90 backdrop-blur-sm shadow-md',
-                  'text-wl-text-primary font-medium text-sm',
-                  'hover:bg-white transition-colors'
+                  'flex-1 btn btn-secondary backdrop-blur-sm shadow-md',
+                  'flex items-center justify-center gap-2'
                 )}
               >
                 <Clock className="w-4 h-4" />
@@ -301,12 +294,7 @@ export default function TrackingPage() {
                   navigator.clipboard.writeText(url);
                   alert('Link copied!');
                 }}
-                className={cn(
-                  'px-4 py-3 rounded-md',
-                  'bg-white/90 backdrop-blur-sm shadow-md',
-                  'text-wl-text-primary font-medium',
-                  'hover:bg-white transition-colors'
-                )}
+                className="btn btn-secondary backdrop-blur-sm shadow-md"
               >
                 <Share2 className="w-4 h-4" />
               </button>
@@ -322,43 +310,47 @@ export default function TrackingPage() {
           >
             <div className="space-y-6 pb-6">
               {/* ETA Section */}
-              <ETACountdown
-                eta={activeData.eta}
-                routeProgress={routeProgress}
-                lastUpdated={activeData.lastUpdated}
-              />
+              <div className="section-card">
+                <ETACountdown
+                  eta={activeData.eta}
+                  routeProgress={routeProgress}
+                  lastUpdated={activeData.lastUpdated}
+                />
+              </div>
 
               {/* Driver Info */}
-              <DriverInfoCard
-                driver={activeData.driver}
-                isConnected={activeData.isConnected}
-              />
+              <div className="section-card">
+                <DriverInfoCard
+                  driver={activeData.driver}
+                  isConnected={activeData.isConnected}
+                />
+              </div>
 
               {/* Order Items */}
-              <div className="space-y-3">
+              <div className="section-card space-y-3">
                 <h3 className="font-semibold text-wl-text-primary">Items</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-wl-text-secondary">2x Vegetables Bundle</span>
-                    <span className="font-medium">$24.99</span>
+                    <span className="font-medium mono">$24.99</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-wl-text-secondary">1x Milk (1L)</span>
-                    <span className="font-medium">$5.99</span>
+                    <span className="font-medium mono">$5.99</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-wl-text-secondary">1x Bread</span>
-                    <span className="font-medium">$3.49</span>
+                    <span className="font-medium mono">$3.49</span>
                   </div>
                   <div className="pt-2 border-t border-wl-border-subtle flex justify-between font-semibold">
                     <span>Total</span>
-                    <span>$34.47</span>
+                    <span className="mono">$34.47</span>
                   </div>
                 </div>
               </div>
 
               {/* Timeline */}
-              <div>
+              <div className="section-card">
                 <h3 className="font-semibold text-wl-text-primary mb-3">Status</h3>
                 <DeliveryStatusTimeline steps={statusSteps} />
               </div>

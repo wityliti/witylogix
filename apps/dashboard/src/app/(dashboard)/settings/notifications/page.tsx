@@ -73,13 +73,16 @@ export default function NotificationsPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const handlePreferenceChange = (channel: string, category: string) => {
-    setPreferences((prev) => ({
-      ...prev,
-      [channel]: {
-        ...prev[channel],
-        [category]: !prev[channel][category],
-      },
-    }));
+    setPreferences((prev) => {
+      const channelPrefs = prev[channel] ?? {};
+      return {
+        ...prev,
+        [channel]: {
+          ...channelPrefs,
+          [category]: !channelPrefs[category],
+        },
+      };
+    });
     setHasChanges(true);
   };
 

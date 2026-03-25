@@ -11,72 +11,51 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
-  ShoppingBag,
   Plug,
-  FileText,
   Activity,
   Webhook,
   Key,
   Zap,
   GitBranch,
   BookOpen,
+  ShoppingBag,
+  Link2,
+  Truck,
+  CreditCard,
+  Users,
+  Building2,
+  MessageSquare,
+  ShoppingCart,
 } from "lucide-react";
 
 interface IntegrationTab {
   href: string;
   label: string;
   icon: React.ReactNode;
-  description?: string;
+  group?: "main" | "categories" | "tools";
 }
 
 const INTEGRATION_TABS: IntegrationTab[] = [
-  {
-    href: "/integrations",
-    label: "Health Center",
-    icon: <Activity className="w-4 h-4" />,
-    description: "Overall health and status",
-  },
-  {
-    href: "/integrations/providers",
-    label: "Providers",
-    icon: <Plug className="w-4 h-4" />,
-    description: "Provider metrics and configuration",
-  },
-  {
-    href: "/integrations/webhooks",
-    label: "Webhooks",
-    icon: <Webhook className="w-4 h-4" />,
-    description: "Webhook monitoring and DLQ",
-  },
-  {
-    href: "/integrations/credentials",
-    label: "Credentials",
-    icon: <Key className="w-4 h-4" />,
-    description: "Credential management and rotation",
-  },
-  {
-    href: "/integrations/chaos",
-    label: "Chaos Testing",
-    icon: <Zap className="w-4 h-4" />,
-    description: "Failure injection testing",
-  },
-  {
-    href: "/integrations/migration",
-    label: "Migration",
-    icon: <GitBranch className="w-4 h-4" />,
-    description: "Provider migration tools",
-  },
-  {
-    href: "/integrations/docs",
-    label: "Docs",
-    icon: <BookOpen className="w-4 h-4" />,
-    description: "API documentation",
-  },
+  // Main tabs
+  { href: "/integrations", label: "Health Center", icon: <Activity className="w-4 h-4" />, group: "main" },
+  { href: "/integrations/catalog", label: "Catalog", icon: <ShoppingBag className="w-4 h-4" />, group: "main" },
+  { href: "/integrations/connected", label: "Connected", icon: <Link2 className="w-4 h-4" />, group: "main" },
+  // Category tabs
+  { href: "/integrations/shipping", label: "Shipping", icon: <Truck className="w-4 h-4" />, group: "categories" },
+  { href: "/integrations/payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, group: "categories" },
+  { href: "/integrations/crm", label: "CRM", icon: <Users className="w-4 h-4" />, group: "categories" },
+  { href: "/integrations/erp", label: "ERP", icon: <Building2 className="w-4 h-4" />, group: "categories" },
+  { href: "/integrations/ecommerce", label: "eCommerce", icon: <ShoppingCart className="w-4 h-4" />, group: "categories" },
+  { href: "/integrations/messaging", label: "Messaging", icon: <MessageSquare className="w-4 h-4" />, group: "categories" },
+  // Tools tabs
+  { href: "/integrations/providers", label: "Providers", icon: <Plug className="w-4 h-4" />, group: "tools" },
+  { href: "/integrations/webhooks", label: "Webhooks", icon: <Webhook className="w-4 h-4" />, group: "tools" },
+  { href: "/integrations/credentials", label: "Credentials", icon: <Key className="w-4 h-4" />, group: "tools" },
+  { href: "/integrations/chaos", label: "Chaos Testing", icon: <Zap className="w-4 h-4" />, group: "tools" },
+  { href: "/integrations/migration", label: "Migration", icon: <GitBranch className="w-4 h-4" />, group: "tools" },
+  { href: "/integrations/docs", label: "Docs", icon: <BookOpen className="w-4 h-4" />, group: "tools" },
 ];
 
-/**
- * Get breadcrumb segment label
- */
 function getBreadcrumbLabel(pathname: string): string {
   const match = pathname.match(/\/integrations\/([^\/]+)/);
   if (!match) return "Integrations";
@@ -97,6 +76,10 @@ export default function IntegrationsLayout({
   const pathname = usePathname();
   const currentTab = getBreadcrumbLabel(pathname);
 
+  const mainTabs = INTEGRATION_TABS.filter((t) => t.group === "main");
+  const categoryTabs = INTEGRATION_TABS.filter((t) => t.group === "categories");
+  const toolsTabs = INTEGRATION_TABS.filter((t) => t.group === "tools");
+
   return (
     <>
       <Header
@@ -106,7 +89,7 @@ export default function IntegrationsLayout({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <Breadcrumb className="mb-8">
+        <Breadcrumb className="mb-6">
           <BreadcrumbItem>
             <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
@@ -120,22 +103,71 @@ export default function IntegrationsLayout({
           </BreadcrumbItem>
         </Breadcrumb>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-8 border-b border-wl-neutral-700 overflow-x-auto">
-          {INTEGRATION_TABS.map((tab) => {
+        {/* Tab Navigation — grouped */}
+        <div className="flex items-center gap-1 mb-8 border-b border-white/[0.06] overflow-x-auto scrollbar-none">
+          {/* Main */}
+          {mainTabs.map((tab) => {
             const isActive =
-              pathname === tab.href ||
-              pathname.startsWith(tab.href + "/");
+              (tab.href === "/integrations" && pathname === "/integrations") ||
+              (tab.href !== "/integrations" && (pathname === tab.href || pathname.startsWith(tab.href + "/")));
 
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
+                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
                   isActive
-                    ? "border-wl-primary-500 text-wl-primary-400"
-                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                    ? "border-amber-500 text-amber-400"
+                    : "border-transparent text-white/35 hover:text-white/60"
+                )}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-white/[0.08] mx-1.5 shrink-0" />
+
+          {/* Categories */}
+          {categoryTabs.map((tab) => {
+            const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
+
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
+                  isActive
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-white/35 hover:text-white/60"
+                )}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-white/[0.08] mx-1.5 shrink-0" />
+
+          {/* Tools */}
+          {toolsTabs.map((tab) => {
+            const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
+
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
+                  isActive
+                    ? "border-violet-500 text-violet-400"
+                    : "border-transparent text-white/35 hover:text-white/60"
                 )}
               >
                 {tab.icon}

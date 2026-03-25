@@ -1,34 +1,78 @@
-# Shopify App Configuration
-# See: https://shopify.dev/docs/apps/tools/cli/configuration
+# ═══════════════════════════════════════════════════════════
+#  Witylogix — Shopify App Configuration (Production)
+#  See: https://shopify.dev/docs/apps/tools/cli/configuration
+# ═══════════════════════════════════════════════════════════
 
 name = "Witylogix"
 client_id = "${SHOPIFY_API_KEY}"
-application_url = "https://localhost:3000"
+application_url = "${SHOPIFY_APP_URL}"
 embedded = true
 
+# ─── Access Scopes ─────────────────────────────────────────
 [access_scopes]
 scopes = "read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers"
 
+# ─── OAuth ─────────────────────────────────────────────────
 [auth]
-redirect_urls = [ "https://localhost:3000/auth/callback" ]
+redirect_urls = [
+  "${SHOPIFY_APP_URL}/auth/callback",
+]
 
+# ─── App Proxy ─────────────────────────────────────────────
+# Allows storefront pages to make authenticated requests to your app.
+# Merchants access via: https://their-shop.myshopify.com/apps/witylogix/...
+[app_proxy]
+url = "${SHOPIFY_APP_URL}/api/proxy"
+subpath = "witylogix"
+prefix = "apps"
+
+# ─── Webhooks ──────────────────────────────────────────────
 [webhooks]
-api_version = "2025-01"
+api_version = "2025-04"
 
+# GDPR mandatory webhooks (required for App Store approval)
 [[webhooks.subscriptions]]
-compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+compliance_topics = [
+  "customers/data_request",
+  "customers/redact",
+  "shop/redact",
+]
 uri = "/api/v4/webhooks/shopify/gdpr"
 
+# Order lifecycle webhooks
 [[webhooks.subscriptions]]
 topics = [
   "orders/create",
   "orders/updated",
   "orders/cancelled",
   "orders/fulfilled",
-  "app/uninstalled",
-  "shop/update"
+  "orders/paid",
 ]
 uri = "/api/v4/webhooks/shopify"
 
+# App lifecycle webhooks
+[[webhooks.subscriptions]]
+topics = [
+  "app/uninstalled",
+  "shop/update",
+]
+uri = "/api/v4/webhooks/shopify"
+
+# Fulfillment webhooks (for delivery tracking)
+[[webhooks.subscriptions]]
+topics = [
+  "fulfillments/create",
+  "fulfillments/update",
+]
+uri = "/api/v4/webhooks/shopify"
+
+# ─── POS Extension ─────────────────────────────────────────
 [pos]
 embedded = false
+
+# ─── App Store Listing (URLs) ──────────────────────────────
+# These point to the docs site hosted publicly
+[app_settings]
+privacy_url = "https://docs.witylogix.io/docs/legal/privacy-policy"
+terms_url = "https://docs.witylogix.io/docs/legal/terms-of-service"
+gdpr_url = "https://docs.witylogix.io/docs/legal/gdpr"

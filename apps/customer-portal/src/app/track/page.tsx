@@ -15,7 +15,7 @@ const mockTracking: LiveTracking = {
     name: 'Michael Johnson',
     phone: '(555) 123-4567',
     email: 'michael.johnson@witylogix.com',
-    photo: '👨‍💼',
+    photo: '\u{1F468}\u200D\u{1F4BC}',
     vehicle: {
       type: 'Van',
       plate: 'WLX-2024',
@@ -46,28 +46,19 @@ export default function TrackPage() {
   );
 
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8'
-    )}>
+    <div className="page-container animate-fade-in">
       {/* Header */}
-      <section>
-        <h1 className="text-3xl sm:text-4xl font-bold text-wl-text-primary mb-2">
-          Live Tracking
-        </h1>
-        <p className="text-wl-text-secondary">
-          Real-time delivery tracking
-        </p>
-      </section>
+      <div className="page-header">
+        <h1 className="page-title">Live Tracking</h1>
+        <p className="page-subtitle">Real-time delivery tracking</p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Map Area */}
         <div className="lg:col-span-2">
           <div className={cn(
-            'bg-gradient-to-br from-wl-neutral-800 to-wl-neutral-900',
-            'rounded-lg overflow-hidden aspect-video',
-            'border border-wl-border-subtle',
-            'flex items-center justify-center relative'
+            'section-card overflow-hidden aspect-video',
+            'flex items-center justify-center relative p-0'
           )}>
             {/* Map background pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -86,7 +77,6 @@ export default function TrackPage() {
               className="absolute inset-0 w-full h-full"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Route line */}
               <polyline
                 points="10%,10% 50%,30% 90%,50%"
                 fill="none"
@@ -98,22 +88,17 @@ export default function TrackPage() {
 
             {/* Driver position */}
             <div className="absolute z-10 left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/2">
-              <div className={cn(
-                'relative',
-                'animate-pulse'
-              )}>
+              <div className="relative animate-pulse">
                 <div className={cn(
                   'w-6 h-6 rounded-full',
                   'bg-wl-primary-500 border-2 border-white',
                   'shadow-lg'
-                )}
-                />
+                )} />
                 <div className={cn(
                   'absolute inset-0 rounded-full',
                   'border-2 border-wl-primary-500',
                   'animate-ping'
-                )}
-                />
+                )} />
               </div>
             </div>
 
@@ -134,25 +119,20 @@ export default function TrackPage() {
         </div>
 
         {/* Sidebar Info */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 stagger-1">
           {/* ETA Card */}
-          <div className={cn(
-            'bg-gradient-to-br from-wl-primary-600 to-wl-primary-700',
-            'rounded-lg p-6 text-white'
-          )}>
-            <p className="text-sm opacity-90 mb-2">Estimated Arrival</p>
-            <p className="text-3xl sm:text-4xl font-bold mb-2">
+          <div className="stat-card">
+            <span className="label">Estimated Arrival</span>
+            <span className="value text-3xl sm:text-4xl mono">
               {minutesRemaining} min
-            </p>
-            <p className="text-sm opacity-90">
+            </span>
+            <span className="label">
               Around {format(mockTracking.eta, 'p')}
-            </p>
+            </span>
           </div>
 
           {/* Driver Info */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-2">
             <h3 className="font-bold text-wl-text-primary mb-4">Driver</h3>
 
             <div className="flex items-center gap-3 mb-4">
@@ -176,24 +156,14 @@ export default function TrackPage() {
             <div className="flex flex-col gap-2">
               <a
                 href={`tel:${mockTracking.driver.phone}`}
-                className={cn(
-                  'flex items-center justify-center gap-2 px-4 py-2 rounded-md',
-                  'bg-wl-primary-500/20 text-wl-primary-400',
-                  'hover:bg-wl-primary-500/30 transition-colors',
-                  'text-sm font-medium'
-                )}
+                className="btn btn-primary flex items-center justify-center gap-2 text-sm"
               >
                 <Phone size={16} />
                 Call Driver
               </a>
               <a
                 href={`sms:${mockTracking.driver.phone}`}
-                className={cn(
-                  'flex items-center justify-center gap-2 px-4 py-2 rounded-md',
-                  'bg-wl-neutral-700 text-wl-text-primary',
-                  'hover:bg-wl-neutral-600 transition-colors',
-                  'text-sm font-medium'
-                )}
+                className="btn btn-secondary flex items-center justify-center gap-2 text-sm"
               >
                 <MessageCircle size={16} />
                 Message
@@ -202,9 +172,7 @@ export default function TrackPage() {
           </div>
 
           {/* Delivery Status */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-3">
             <h3 className="font-bold text-wl-text-primary mb-4">
               Delivery Status
             </h3>
@@ -237,9 +205,7 @@ export default function TrackPage() {
           </div>
 
           {/* Address */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-4">
             <h3 className="font-bold text-wl-text-primary mb-3">
               Delivery Address
             </h3>
@@ -253,8 +219,8 @@ export default function TrackPage() {
 
           {/* Alert Box */}
           <div className={cn(
-            'bg-wl-warning-bg border border-wl-warning-500/30',
-            'rounded-lg p-4 flex gap-3'
+            'section-card border-l-2 border-wl-warning-500',
+            'flex gap-3 stagger-5'
           )}>
             <AlertCircle size={20} className="text-wl-warning-500 flex-shrink-0 mt-0.5" />
             <div>
@@ -273,12 +239,7 @@ export default function TrackPage() {
       <div className="flex justify-center">
         <button
           onClick={() => setLastUpdate(new Date())}
-          className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-lg',
-            'bg-wl-neutral-700 text-wl-text-primary',
-            'hover:bg-wl-neutral-600 transition-colors',
-            'text-sm font-medium'
-          )}
+          className="btn btn-ghost flex items-center gap-2"
         >
           <Navigation size={16} />
           Refresh Location

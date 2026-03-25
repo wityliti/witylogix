@@ -100,11 +100,11 @@ export default function LocationsPage() {
   };
 
   if (loading) {
-    return <LoadingSkeleton type="list" />;
+    return <LoadingSkeleton />;
   }
 
   if (error) {
-    return <ErrorState error={error} onRetry={refetch} />;
+    return <ErrorState message={error?.message ?? 'Failed to load locations'} onRetry={refetch} />;
   }
 
   return (

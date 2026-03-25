@@ -38,7 +38,7 @@ export default function ReportsPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error?.message ?? 'Failed to load reports'} />;
   }
 
   return (

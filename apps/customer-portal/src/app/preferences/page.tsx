@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, X } from 'lucide-react';
+import { Check, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CustomerPreferences, SafePlaceInstruction, NotificationChannel } from '@/types';
 
@@ -57,11 +57,12 @@ export default function PreferencesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const handleSafePlaceChange = (field: 'instruction' | 'customNote', value: any) => {
+  const handleSafePlaceChange = (field: 'instruction' | 'customNote', value: SafePlaceInstruction | string) => {
     setPreferences(prev => ({
       ...prev,
       safePlace: {
-        ...prev.safePlace,
+        instruction: prev.safePlace?.instruction ?? 'front-door',
+        customNote: prev.safePlace?.customNote,
         [field]: value,
       },
     }));
@@ -110,58 +111,46 @@ export default function PreferencesPage() {
   const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8 pb-12'
-    )}>
+    <div className="page-container pb-24 animate-fade-in">
       {/* Header */}
-      <section>
-        <h1 className="text-3xl sm:text-4xl font-bold text-wl-text-primary mb-2">
-          Delivery Preferences
-        </h1>
-        <p className="text-wl-text-secondary">
+      <div className="page-header">
+        <h1 className="page-title">Delivery Preferences</h1>
+        <p className="page-subtitle">
           Customize how you want to receive your deliveries
         </p>
-      </section>
+      </div>
 
-      {/* Success Message */}
+      {/* Success Toast */}
       {saveSuccess && (
-        <div className={cn(
-          'bg-wl-success-bg border border-wl-success-500/30',
-          'rounded-lg p-4 flex items-center gap-3'
-        )}>
-          <span className="text-lg">✓</span>
-          <p className="text-sm text-wl-text-primary font-medium">
+        <div className="bg-wl-success-bg rounded-lg p-4 flex items-center gap-3 animate-fade-in">
+          <Check className="w-4 h-4 text-wl-success-500 flex-shrink-0" />
+          <p className="text-sm text-wl-success-500 font-medium">
             Preferences saved successfully!
           </p>
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {/* Safe Place Instructions */}
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-        )}>
-          <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+        <div className="section-card animate-fade-in stagger-1">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
             Safe Place Instructions
           </h2>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <p className="text-sm font-medium text-wl-text-secondary mb-3">
                 Where should we leave your package?
-              </label>
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {safeInstructions.map((instruction) => (
                   <button
                     key={instruction.value}
                     onClick={() => handleSafePlaceChange('instruction', instruction.value)}
                     className={cn(
-                      'px-3 py-2 rounded-md text-sm font-medium',
-                      'transition-colors duration-fast',
+                      'btn btn-ghost',
                       preferences.safePlace?.instruction === instruction.value
-                        ? 'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-                        : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
+                        && 'bg-wl-bg-elevated border border-wl-primary-500 text-wl-text-primary'
                     )}
                   >
                     {instruction.label}
@@ -171,115 +160,86 @@ export default function PreferencesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <p className="text-sm font-medium text-wl-text-secondary mb-2">
                 Custom Instructions (Optional)
-              </label>
+              </p>
               <textarea
                 value={preferences.safePlace?.customNote || ''}
                 onChange={(e) => handleSafePlaceChange('customNote', e.target.value)}
                 placeholder="e.g., Ring doorbell, do not knock..."
-                className={cn(
-                  'w-full p-3 rounded-lg border border-wl-border-subtle',
-                  'bg-wl-bg-elevated text-wl-text-primary',
-                  'placeholder-wl-text-tertiary',
-                  'focus:outline-none focus:border-wl-primary-500',
-                  'resize-none h-20'
-                )}
+                className="input resize-none h-20"
               />
             </div>
           </div>
         </div>
 
         {/* Access Codes */}
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-        )}>
-          <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+        <div className="section-card animate-fade-in stagger-2">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
             Access Codes
           </h2>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <p className="text-sm font-medium text-wl-text-secondary mb-2">
                 Gate Code (Optional)
-              </label>
+              </p>
               <input
                 type="text"
                 value={preferences.accessCodes?.gateCode || ''}
                 onChange={(e) => handleAccessCodeChange('gateCode', e.target.value)}
                 placeholder="e.g., 1234#"
-                className={cn(
-                  'w-full px-4 py-2 rounded-lg border border-wl-border-subtle',
-                  'bg-wl-bg-elevated text-wl-text-primary',
-                  'placeholder-wl-text-tertiary',
-                  'focus:outline-none focus:border-wl-primary-500'
-                )}
+                className="input"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-wl-text-primary mb-2">
+              <p className="text-sm font-medium text-wl-text-secondary mb-2">
                 Building Entry (Optional)
-              </label>
+              </p>
               <input
                 type="text"
                 value={preferences.accessCodes?.buildingEntry || ''}
                 onChange={(e) => handleAccessCodeChange('buildingEntry', e.target.value)}
                 placeholder="e.g., Apt 4B"
-                className={cn(
-                  'w-full px-4 py-2 rounded-lg border border-wl-border-subtle',
-                  'bg-wl-bg-elevated text-wl-text-primary',
-                  'placeholder-wl-text-tertiary',
-                  'focus:outline-none focus:border-wl-primary-500'
-                )}
+                className="input"
               />
             </div>
           </div>
         </div>
 
         {/* Preferred Delivery Times */}
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-        )}>
-          <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+        <div className="section-card animate-fade-in stagger-3">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-1">
             Preferred Delivery Times
           </h2>
-
-          <p className="text-sm text-wl-text-secondary mb-4">
+          <p className="text-sm text-wl-text-secondary mb-5">
             Set your preferred delivery windows for each day
           </p>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {[1, 2, 3, 4, 5, 6, 0].map((day) => {
               const dayLabel = dayLabels[day];
               const preferred = preferences.preferredDeliveryTimes?.find(t => t.dayOfWeek === day);
 
               return (
                 <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <label className="w-24 text-sm font-medium text-wl-text-primary">
+                  <span className="text-sm font-medium text-wl-text-primary w-24">
                     {dayLabel}
-                  </label>
-                  <div className="flex gap-2 flex-1">
+                  </span>
+                  <div className="flex items-center gap-2 flex-1">
                     <input
                       type="time"
                       value={preferred?.startTime || '10:00'}
                       onChange={(e) => handlePreferredTimeChange(day, 'startTime', e.target.value)}
-                      className={cn(
-                        'flex-1 px-3 py-2 rounded-md border border-wl-border-subtle',
-                        'bg-wl-bg-elevated text-wl-text-primary text-sm',
-                        'focus:outline-none focus:border-wl-primary-500'
-                      )}
+                      className="input flex-1"
                     />
-                    <span className="text-wl-text-tertiary py-2">to</span>
+                    <span className="text-wl-text-tertiary text-sm">to</span>
                     <input
                       type="time"
                       value={preferred?.endTime || '18:00'}
                       onChange={(e) => handlePreferredTimeChange(day, 'endTime', e.target.value)}
-                      className={cn(
-                        'flex-1 px-3 py-2 rounded-md border border-wl-border-subtle',
-                        'bg-wl-bg-elevated text-wl-text-primary text-sm',
-                        'focus:outline-none focus:border-wl-primary-500'
-                      )}
+                      className="input flex-1"
                     />
                   </div>
                 </div>
@@ -289,62 +249,55 @@ export default function PreferencesPage() {
         </div>
 
         {/* Notification Preferences */}
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-        )}>
-          <h2 className="text-xl font-bold text-wl-text-primary mb-4">
+        <div className="section-card animate-fade-in stagger-4">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-1">
             Notification Preferences
           </h2>
-
-          <p className="text-sm text-wl-text-secondary mb-4">
+          <p className="text-sm text-wl-text-secondary mb-5">
             Choose how you want to be notified about your deliveries
           </p>
 
-          <div className="space-y-3">
-            {notificationChannels.map((channel) => (
-              <div
-                key={channel}
-                className={cn(
-                  'flex items-center justify-between p-3 rounded-lg',
-                  'bg-wl-bg-elevated'
-                )}
-              >
-                <label className="text-sm font-medium text-wl-text-primary cursor-pointer">
-                  {channelLabels[channel]}
-                </label>
-                <button
-                  onClick={() => handleNotificationChange(channel, !preferences.notificationPreferences?.[channel])}
-                  className={cn(
-                    'relative w-12 h-6 rounded-full transition-colors duration-fast',
-                    preferences.notificationPreferences?.[channel]
-                      ? 'bg-wl-primary-500'
-                      : 'bg-wl-neutral-700'
-                  )}
+          <div className="flex flex-col gap-3">
+            {notificationChannels.map((channel) => {
+              const isOn = !!preferences.notificationPreferences?.[channel];
+
+              return (
+                <div
+                  key={channel}
+                  className="flex items-center justify-between p-3 rounded-lg bg-wl-bg-elevated"
                 >
-                  <div
+                  <span className="text-sm font-medium text-wl-text-primary">
+                    {channelLabels[channel]}
+                  </span>
+                  <button
+                    onClick={() => handleNotificationChange(channel, !isOn)}
                     className={cn(
-                      'absolute top-1 left-1 w-4 h-4 rounded-full',
-                      'bg-white transition-transform duration-fast',
-                      preferences.notificationPreferences?.[channel] && 'translate-x-6'
+                      'toggle',
+                      isOn ? 'toggle-on' : 'toggle-off'
                     )}
-                  />
-                </button>
-              </div>
-            ))}
+                  >
+                    <div className="toggle-knob" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Default Address */}
-        <div className={cn(
-          'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-        )}>
-          <h2 className="text-xl font-bold text-wl-text-primary mb-4">
-            Default Address
-          </h2>
+        <div className="section-card animate-fade-in stagger-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary">
+              Default Address
+            </h2>
+            <button className="btn btn-ghost">
+              Edit Address
+            </button>
+          </div>
 
-          <div className="space-y-3 text-sm">
+          <div className="flex flex-col gap-3 text-sm">
             <div>
-              <p className="text-wl-text-secondary mb-1">Street Address</p>
+              <p className="text-wl-text-tertiary mb-0.5">Street Address</p>
               <p className="text-wl-text-primary font-medium">
                 {preferences.defaultAddress.street}
               </p>
@@ -352,13 +305,13 @@ export default function PreferencesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-wl-text-secondary mb-1">City</p>
+                <p className="text-wl-text-tertiary mb-0.5">City</p>
                 <p className="text-wl-text-primary font-medium">
                   {preferences.defaultAddress.city}
                 </p>
               </div>
               <div>
-                <p className="text-wl-text-secondary mb-1">State</p>
+                <p className="text-wl-text-tertiary mb-0.5">State</p>
                 <p className="text-wl-text-primary font-medium">
                   {preferences.defaultAddress.state}
                 </p>
@@ -367,42 +320,28 @@ export default function PreferencesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-wl-text-secondary mb-1">ZIP Code</p>
-                <p className="text-wl-text-primary font-medium">
+                <p className="text-wl-text-tertiary mb-0.5">ZIP Code</p>
+                <p className="text-wl-text-primary font-medium mono">
                   {preferences.defaultAddress.zipCode}
                 </p>
               </div>
               <div>
-                <p className="text-wl-text-secondary mb-1">Country</p>
+                <p className="text-wl-text-tertiary mb-0.5">Country</p>
                 <p className="text-wl-text-primary font-medium">
                   {preferences.defaultAddress.country}
                 </p>
               </div>
             </div>
-
-            <button className={cn(
-              'px-4 py-2 rounded-md text-sm',
-              'text-wl-primary-400 hover:text-wl-primary-300',
-              'transition-colors'
-            )}>
-              Edit Address
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="flex gap-3 sticky bottom-6">
+      {/* Save Button — sticky bottom */}
+      <div className="sticky bottom-6 z-10">
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className={cn(
-            'flex items-center gap-2 px-6 py-3 rounded-lg font-medium',
-            'transition-colors duration-fast',
-            isSaving
-              ? 'bg-wl-neutral-800 text-wl-text-tertiary cursor-not-allowed'
-              : 'bg-wl-primary-500 text-wl-text-inverse hover:bg-wl-primary-600'
-          )}
+          className="btn btn-primary btn-lg w-full sm:w-auto"
         >
           <Save size={18} />
           {isSaving ? 'Saving...' : 'Save Preferences'}

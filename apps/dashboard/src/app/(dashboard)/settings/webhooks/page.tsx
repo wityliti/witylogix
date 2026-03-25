@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useApiList, useApiMutation } from '@/hooks/use-api';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
@@ -31,7 +31,7 @@ import {
 
 interface WebhookEvent {
   id: string;
-  timestamp: Date;
+  timestamp: string;
   eventType: string;
   endpointUrl: string;
   status: 'success' | 'failed' | 'pending' | 'retrying';
@@ -51,19 +51,16 @@ interface WebhookStats {
 
 export default function WebhooksDebuggerPage() {
   const { items: webhookEvents, loading, error, refetch } = useApiList<WebhookEvent>('/api/v4/webhooks/events');
-  const { data: webhookStats } = useApiList<WebhookStats>('/api/v4/webhooks/stats');
 
-  const [events, setEvents] = useState<WebhookEvent[]>(webhookEvents ?? []);
+  const [events, setEvents] = useState<WebhookEvent[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<WebhookEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<WebhookEvent | null>(null);
-  const [stats, setStats] = useState<WebhookStats>(
-    webhookStats?.items?.[0] ?? {
-      successRate: 0,
-      avgDeliveryTime: 0,
-      eventsPerHour: 0,
-      totalEvents: 0,
-    }
-  );
+  const [stats, setStats] = useState<WebhookStats>({
+    successRate: 0,
+    avgDeliveryTime: 0,
+    eventsPerHour: 0,
+    totalEvents: 0,
+  });
 
   // Filters
   const [filters, setFilters] = useState({
@@ -76,8 +73,12 @@ export default function WebhooksDebuggerPage() {
 
   const [isLiveSubscribed, setIsLiveSubscribed] = useState(true);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
+  // Sync events from API response
+  useEffect(() => {
+    if (webhookEvents && webhookEvents.length > 0) {
+      setEvents(webhookEvents);
+    }
+  }, [webhookEvents]);
 
   // Apply filters
   useEffect(() => {
@@ -125,6 +126,9 @@ export default function WebhooksDebuggerPage() {
       totalEvents: filteredEvents.length,
     });
   }, [filteredEvents]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -325,7 +329,7 @@ export default function WebhooksDebuggerPage() {
                             <div className="flex items-center gap-2 mb-1">
                               {getStatusIcon(event.status)}
                               <span className="font-mono text-xs text-gray-400">
-                                {event.timestamp.toLocaleTimeString()}
+                                {new Date(event.timestamp).toLocaleTimeString()}
                               </span>
                               <Badge variant="info">{event.eventType}</Badge>
                             </div>
@@ -383,7 +387,7 @@ export default function WebhooksDebuggerPage() {
                         Timestamp
                       </div>
                       <div className="text-sm text-white">
-                        {selectedEvent.timestamp.toLocaleString()}
+                        {new Date(selectedEvent.timestamp).toLocaleString()}
                       </div>
                     </div>
 

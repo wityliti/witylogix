@@ -203,7 +203,7 @@ export default function OrganizationPage() {
                   <CardTitle className="text-white">Current Plan</CardTitle>
                   <CardDescription className="text-gray-400">Manage your billing and subscription</CardDescription>
                 </div>
-                <Badge variant="primary" className="bg-blue-500 text-white">{billing.plan} Plan</Badge>
+                <Badge variant="primary" className="bg-blue-500 text-white">{billing?.plan ?? 'Free'} Plan</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -213,7 +213,7 @@ export default function OrganizationPage() {
                     Monthly Cost
                   </p>
                   <p className="text-2xl font-bold text-white">
-                    ${billing.monthlyPrice}
+                    ${billing?.monthlyPrice ?? 0}
                   </p>
                 </div>
                 <div className="p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
@@ -221,7 +221,7 @@ export default function OrganizationPage() {
                     Cycle Start
                   </p>
                   <p className="text-lg font-semibold text-white">
-                    {billing.cycleStart}
+                    {billing?.cycleStart ?? '—'}
                   </p>
                 </div>
                 <div className="p-4 bg-[var(--wl-bg-secondary)] rounded-lg">
@@ -229,7 +229,7 @@ export default function OrganizationPage() {
                     Next Billing
                   </p>
                   <p className="text-lg font-semibold text-white">
-                    {billing.nextBilling}
+                    {billing?.nextBilling ?? '—'}
                   </p>
                 </div>
               </div>

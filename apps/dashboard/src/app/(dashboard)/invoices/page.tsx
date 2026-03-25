@@ -77,9 +77,6 @@ export default function InvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   // Get unique customers
   const customers = useMemo(() => {
     return Array.from(new Set(invoices.map((i) => i.customerName))).sort();
@@ -239,8 +236,8 @@ export default function InvoicesPage() {
       i.customerName,
       i.amount.toFixed(2),
       i.status,
-      i.dueDate.toLocaleDateString(),
-      i.sentDate?.toLocaleDateString() || "N/A",
+      new Date(i.dueDate).toLocaleDateString(),
+      i.sentDate ? new Date(i.sentDate).toLocaleDateString() : "N/A",
     ]);
 
     const csv = [
@@ -278,6 +275,9 @@ export default function InvoicesPage() {
       amountMin ||
       amountMax
   );
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">

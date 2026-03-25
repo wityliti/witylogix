@@ -209,9 +209,6 @@ const QuickActions = () => {
 const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[]; loading: boolean; error: Error | null; onRetry: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  if (loading) return <TableSkeleton rows={5} columns={8} className="mb-6" />;
-  if (error) return <ErrorState message={error.message} onRetry={onRetry} />;
-
   const filteredStores = useMemo(() => {
     return stores.filter(
       (store) =>
@@ -220,6 +217,9 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
         store.owner.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [stores, searchTerm]);
+
+  if (loading) return <TableSkeleton rows={5} columns={8} className="mb-6" />;
+  if (error) return <ErrorState message={error.message} onRetry={onRetry} />;
 
   return (
     <Card className="bg-[#12121a] border border-[#1e1e2e]">

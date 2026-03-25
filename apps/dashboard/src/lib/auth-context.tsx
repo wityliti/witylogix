@@ -65,15 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(cookieToken);
           setUser(JSON.parse(storedUser));
 
-          // Attempt token refresh with exponential backoff
-          try {
-            await refreshTokenFn(cookieToken);
-          } catch (error) {
-            // If refresh fails, clear auth
-            localStorage.removeItem("authUser");
-            document.cookie = "auth-token=; path=/; max-age=0; samesite=lax";
-            setToken(null);
-            setUser(null);
+          // Only attempt refresh if we have a stored refresh token
+          const storedRefreshToken = localStorage.getItem("refreshToken");
+          if (storedRefreshToken) {
+            try {
+              await refreshTokenFn(storedRefreshToken);
+            } catch {
+              // Refresh failed but access token may still be valid — don't clear auth
+              console.warn("Token refresh failed, using existing access token");
+            }
           }
         }
       } catch (error) {
@@ -86,42 +86,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
   }, []);
 
-  const refreshTokenFn = async (currentToken: string, retryCount = 0) => {
+  const refreshTokenFn = async (refreshTokenValue: string, retryCount = 0) => {
     try {
       const response = await fetch(`${API_URL}/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${currentToken}`,
         },
-        credentials: "include", // Include cookies for httpOnly cookie support
+        body: JSON.stringify({ refreshToken: refreshTokenValue }),
+        credentials: "include",
       });
 
       if (response.ok) {
-        const data: AuthResponse = await response.json();
-        setToken(data.token);
-        setUser(data.user);
-        // Token stored in httpOnly cookie by backend
-        // Only store user profile in localStorage (non-sensitive)
-        localStorage.setItem("authUser", JSON.stringify(data.user));
+        const raw = await response.json();
+        const payload = raw.data || raw;
+        const newToken = payload.accessToken || payload.token;
+        const newRefreshToken = payload.refreshToken;
+
+        if (newToken) {
+          setToken(newToken);
+          document.cookie = `auth-token=${newToken}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
+        }
+        if (newRefreshToken) {
+          localStorage.setItem("refreshToken", newRefreshToken);
+        }
+        if (payload.user) {
+          setUser(payload.user);
+          localStorage.setItem("authUser", JSON.stringify(payload.user));
+        }
       } else {
         throw new Error("Token refresh failed");
       }
     } catch (error) {
-      // Exponential backoff retry logic
-      if (retryCount < 3) {
-        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-        console.warn(`Token refresh failed, retrying in ${delay}ms...`);
+      if (retryCount < 2) {
+        const delay = Math.pow(2, retryCount) * 1000;
         await new Promise(resolve => setTimeout(resolve, delay));
-        return refreshTokenFn(currentToken, retryCount + 1);
+        return refreshTokenFn(refreshTokenValue, retryCount + 1);
       }
-      console.error("Token refresh error:", error);
       throw error;
     }
   };
 
   const login = async (email: string, password: string, rememberMe = false) => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
@@ -132,8 +142,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           password,
           shopDomain: process.env.NEXT_PUBLIC_SHOP_DOMAIN || "demo.witylogix.io",
         }),
-        credentials: "include", // Allow cookies to be set by backend
+        credentials: "include",
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -161,16 +174,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setUser(data.user);
 
-      // Token is stored in httpOnly cookie by backend
-      // Only store user profile in localStorage (non-sensitive)
+      // Store user profile and refresh token in localStorage
       localStorage.setItem("authUser", JSON.stringify(data.user));
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
       if (payload.shop) {
         localStorage.setItem("authShop", JSON.stringify(payload.shop));
       }
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (data.token) {
-        document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax; secure`;
+        document.cookie = `auth-token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
       }
 
       if (rememberMe) {
@@ -181,6 +196,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("rememberedEmail");
       }
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new Error("Login request timed out. Please check that the API server is running.");
+      }
       throw error;
     }
   };
@@ -218,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Fallback: also set cookie in case backend doesn't set httpOnly
       if (responseData.token) {
-        document.cookie = `auth-token=${responseData.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax; secure`;
+        document.cookie = `auth-token=${responseData.token}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}`;
       }
     } catch (error) {
       throw error;
@@ -230,13 +248,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setToken(null);
 
-    // Clear localStorage (non-sensitive data only)
+    // Clear localStorage
     localStorage.removeItem("authUser");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("authShop");
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("rememberedEmail");
 
     // Clear auth cookie
-    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax; secure";
+    document.cookie = "auth-token=; path=/; max-age=0; samesite=lax${window.location.protocol === 'https:' ? '; secure' : ''}";
 
     // Notify backend of logout
     if (token) {

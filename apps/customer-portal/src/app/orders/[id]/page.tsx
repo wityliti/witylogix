@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ArrowLeft, Phone, MapPin, Clock } from 'lucide-react';
+import { ArrowLeft, Phone, MessageSquare, Clock, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeliveryTimeline } from '@/components/delivery-timeline';
 import { MiniMap } from '@/components/mini-map';
@@ -74,120 +74,102 @@ const deliverySteps: DeliveryTimestep[] = [
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8 pb-12'
-    )}>
-      {/* Header with Back Button */}
-      <div className={cn(
-        'flex items-center gap-4'
-      )}>
+    <div className="page-container">
+      {/* Back + Breadcrumb */}
+      <div className="flex items-center gap-3 animate-fade-in">
         <Link
           href="/orders"
-          className={cn(
-            'p-2 hover:bg-wl-bg-surface rounded-lg',
-            'transition-colors duration-fast'
-          )}
+          className="btn btn-ghost p-2"
           aria-label="Back to orders"
         >
-          <ArrowLeft size={20} className="text-wl-text-primary" />
+          <ArrowLeft size={18} />
         </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-wl-text-primary">
-            Order #{mockOrder.orderNumber}
-          </h1>
-          <p className="text-wl-text-secondary text-sm mt-1">
-            Placed on {format(mockOrder.createdAt, 'PPP p')}
-          </p>
-        </div>
+        <span className="text-xs text-wl-text-tertiary">
+          <Link href="/orders" className="hover:text-wl-text-secondary transition-colors">
+            Orders
+          </Link>
+          {' / '}
+          <span className="text-wl-text-secondary mono">{mockOrder.orderNumber}</span>
+        </span>
       </div>
 
+      {/* Page Title */}
+      <header className="page-header animate-fade-in stagger-1">
+        <h1 className="page-title">
+          Order <span className="mono">{mockOrder.orderNumber}</span>
+        </h1>
+        <p className="page-subtitle">
+          Placed on {format(mockOrder.createdAt, 'PPP p')}
+        </p>
+      </header>
+
+      {/* 3-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
+        {/* Main Content — spans 2 columns */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Status Badge */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-wl-text-primary">
+          {/* Delivery Status */}
+          <div className="section-card animate-fade-in stagger-2">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-wl-text-primary">
                 Delivery Status
               </h2>
-              <span className={cn(
-                'px-4 py-2 rounded-full text-sm font-medium',
-                'bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/30'
-              )}>
+              <span className={cn('status-badge', 'status-active')}>
+                <span className="status-badge-dot" />
                 Out for Delivery
               </span>
             </div>
           </div>
 
           {/* Timeline */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <h2 className="text-lg font-bold text-wl-text-primary mb-6">
+          <div className="section-card animate-fade-in stagger-3">
+            <h2 className="font-semibold text-wl-text-primary mb-5">
               Delivery Timeline
             </h2>
             <DeliveryTimeline steps={deliverySteps} />
           </div>
 
           {/* Driver Info */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <h2 className="text-lg font-bold text-wl-text-primary mb-4">
+          <div className="section-card animate-fade-in stagger-4">
+            <h2 className="font-semibold text-wl-text-primary mb-4">
               Driver Information
             </h2>
-            <div className={cn(
-              'flex items-start gap-4'
-            )}>
+            <div className="flex items-start gap-4">
               <div className={cn(
-                'w-16 h-16 rounded-full',
-                'bg-wl-primary-500/20 flex items-center justify-center',
-                'text-3xl flex-shrink-0'
+                'w-14 h-14 rounded-full flex-shrink-0',
+                'bg-wl-bg-elevated flex items-center justify-center',
+                'text-2xl'
               )}>
                 {mockDriver.photo}
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-wl-text-primary">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-wl-text-primary">
                   {mockDriver.name}
-                </h3>
-                <p className="text-sm text-wl-text-secondary mt-1">
-                  {mockDriver.vehicle.color} {mockDriver.vehicle.type} • {mockDriver.vehicle.plate}
                 </p>
-                <div className="flex items-center gap-2 mt-3">
+                <p className="text-sm text-wl-text-secondary mt-0.5">
+                  {mockDriver.vehicle.color} {mockDriver.vehicle.type} &middot;{' '}
+                  <span className="mono">{mockDriver.vehicle.plate}</span>
+                </p>
+                <div className="flex items-center gap-2 mt-2">
                   <RatingStars value={Math.round(mockDriver.rating)} readonly size="sm" />
-                  <span className="text-sm text-wl-text-secondary">
+                  <span className="text-xs text-wl-text-tertiary mono">
                     {mockDriver.rating}/5
                   </span>
                 </div>
 
                 {/* Driver Actions */}
-                <div className={cn(
-                  'flex gap-2 mt-4'
-                )}>
+                <div className="flex gap-2 mt-4">
                   <a
                     href={`tel:${mockDriver.phone}`}
-                    className={cn(
-                      'flex items-center gap-2 px-3 py-2 rounded-md',
-                      'bg-wl-primary-500/20 text-wl-primary-400',
-                      'hover:bg-wl-primary-500/30 transition-colors duration-fast',
-                      'text-sm font-medium'
-                    )}
+                    className="btn btn-primary"
                   >
-                    <Phone size={16} />
+                    <Phone size={14} />
                     Call
                   </a>
                   <a
                     href={`sms:${mockDriver.phone}`}
-                    className={cn(
-                      'flex items-center gap-2 px-3 py-2 rounded-md',
-                      'bg-wl-neutral-700 text-wl-text-primary',
-                      'hover:bg-wl-neutral-600 transition-colors duration-fast',
-                      'text-sm font-medium'
-                    )}
+                    className="btn btn-secondary"
                   >
+                    <MessageSquare size={14} />
                     Message
                   </a>
                 </div>
@@ -195,13 +177,20 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </div>
           </div>
 
-          {/* Delivery Address Map */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <h2 className="text-lg font-bold text-wl-text-primary mb-4">
+          {/* Delivery Address */}
+          <div className="section-card animate-fade-in stagger-5">
+            <h2 className="font-semibold text-wl-text-primary mb-4">
               Delivery Address
             </h2>
+            <div className="flex items-start gap-2 mb-4 text-sm text-wl-text-secondary">
+              <MapPin size={14} className="mt-0.5 flex-shrink-0 text-wl-text-tertiary" />
+              <span>
+                {mockOrder.deliveryAddress.street},{' '}
+                {mockOrder.deliveryAddress.city},{' '}
+                {mockOrder.deliveryAddress.state}{' '}
+                {mockOrder.deliveryAddress.zipCode}
+              </span>
+            </div>
             <MiniMap address={mockOrder.deliveryAddress} />
           </div>
         </div>
@@ -209,28 +198,23 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
           {/* Order Summary */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <h2 className="text-lg font-bold text-wl-text-primary mb-4">
+          <div className="section-card animate-fade-in stagger-2">
+            <h2 className="font-semibold text-wl-text-primary mb-4">
               Order Summary
             </h2>
 
-            <div className={cn(
-              'space-y-3 mb-4 pb-4',
-              'border-b border-wl-border-subtle'
-            )}>
+            <div className="space-y-3 mb-4 pb-4 border-b border-wl-border-subtle">
               {mockOrder.items.map((item) => (
                 <div key={item.id} className="flex justify-between items-start">
                   <div>
                     <p className="text-sm text-wl-text-primary font-medium">
                       {item.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary mt-1">
-                      Qty: {item.quantity}
+                    <p className="text-xs text-wl-text-tertiary mt-0.5">
+                      Qty: <span className="mono">{item.quantity}</span>
                     </p>
                   </div>
-                  <p className="text-sm font-medium text-wl-text-primary">
+                  <p className="text-sm font-medium text-wl-text-primary mono">
                     ${(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
@@ -240,7 +224,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-wl-text-secondary">Subtotal</span>
-                <span className="text-wl-text-primary font-medium">
+                <span className="text-wl-text-primary font-medium mono">
                   ${mockOrder.totalPrice.toFixed(2)}
                 </span>
               </div>
@@ -248,73 +232,56 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <span className="text-wl-text-secondary">Delivery Fee</span>
                 <span className="text-wl-text-primary font-medium">Free</span>
               </div>
-              <div className={cn(
-                'flex justify-between pt-2 border-t border-wl-border-subtle'
-              )}>
-                <span className="font-bold text-wl-text-primary">Total</span>
-                <span className="font-bold text-lg text-wl-primary-400">
+              <div className="flex justify-between pt-3 border-t border-wl-border-subtle">
+                <span className="font-semibold text-wl-text-primary">Total</span>
+                <span className="font-semibold text-wl-text-primary mono">
                   ${mockOrder.totalPrice.toFixed(2)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Estimated Delivery */}
+          {/* Estimated Delivery — border-left accent, no amber background */}
           {mockOrder.estimatedDelivery && (
             <div className={cn(
-              'bg-wl-primary-500/20 border border-wl-primary-500/30',
-              'rounded-lg p-4'
+              'section-card animate-fade-in stagger-3',
+              'border-l-[3px] border-l-wl-primary-500'
             )}>
-              <div className="flex items-center gap-2 text-wl-primary-400 mb-2">
-                <Clock size={16} />
-                <span className="font-medium">Estimated Delivery</span>
+              <div className="flex items-center gap-2 text-wl-text-secondary mb-1">
+                <Clock size={14} />
+                <span className="text-xs font-medium uppercase tracking-wide">
+                  Estimated Delivery
+                </span>
               </div>
-              <p className="text-2xl font-bold text-wl-text-primary">
+              <p className="text-lg font-semibold text-wl-text-primary">
                 {mockOrder.estimatedDelivery}
               </p>
             </div>
           )}
 
           {/* Quick Actions */}
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
-            <h3 className="font-bold text-wl-text-primary mb-3">
+          <div className="section-card animate-fade-in stagger-4">
+            <h3 className="font-semibold text-wl-text-primary mb-3">
               Actions
             </h3>
             <div className="flex flex-col gap-2">
               <Link
                 href={`/orders/${mockOrder.id}/reschedule`}
-                className={cn(
-                  'px-4 py-2 rounded-md text-center',
-                  'bg-wl-primary-500/20 text-wl-primary-400',
-                  'hover:bg-wl-primary-500/30 transition-colors',
-                  'text-sm font-medium'
-                )}
+                className="btn btn-primary w-full"
               >
                 Reschedule
               </Link>
-              <button className={cn(
-                'px-4 py-2 rounded-md text-center',
-                'bg-wl-neutral-700 text-wl-text-primary',
-                'hover:bg-wl-neutral-600 transition-colors',
-                'text-sm font-medium'
-              )}>
+              <button className="btn btn-secondary w-full">
                 Download Invoice
               </button>
             </div>
           </div>
 
-          {/* Rate Order - only show after delivery */}
+          {/* Rate Order — only show after delivery */}
           {mockOrder.status === 'delivered' && !mockOrder.rating && (
             <Link
               href={`/orders/${mockOrder.id}/rate`}
-              className={cn(
-                'px-4 py-3 rounded-md text-center',
-                'bg-wl-success-500 text-wl-text-inverse',
-                'hover:bg-wl-success-600 transition-colors',
-                'font-medium text-sm'
-              )}
+              className="btn btn-primary btn-lg w-full animate-fade-in stagger-5"
             >
               Rate This Delivery
             </Link>

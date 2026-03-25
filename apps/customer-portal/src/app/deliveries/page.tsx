@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Filter, MapPin, Star, Truck } from 'lucide-react';
+import { Calendar, Filter, MapPin, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Order } from '@/types';
 
@@ -116,14 +116,40 @@ const mockDeliveries: Order[] = [
   },
 ];
 
-interface Filter {
+interface DeliveryFilter {
   dateRange: 'all' | '7days' | '30days' | '90days';
   status: 'all' | 'delivered' | 'cancelled';
 }
 
+const getStatusAccentClass = (status: string): string => {
+  switch (status) {
+    case 'delivered':
+      return 'card-accent-delivered';
+    case 'cancelled':
+      return 'card-accent-cancelled';
+    default:
+      return '';
+  }
+};
+
+const getStatusBadgeClass = (status: string): string => {
+  switch (status) {
+    case 'delivered':
+      return 'status-delivered';
+    case 'cancelled':
+      return 'status-cancelled';
+    default:
+      return '';
+  }
+};
+
+const getStatusLabel = (status: string): string => {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 export default function DeliveriesPage() {
   const [deliveries, setDeliveries] = useState<Order[]>([]);
-  const [filters, setFilters] = useState<Filter>({ dateRange: 'all', status: 'all' });
+  const [filters, setFilters] = useState<DeliveryFilter>({ dateRange: 'all', status: 'all' });
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   useEffect(() => {
@@ -147,43 +173,41 @@ export default function DeliveriesPage() {
     setDeliveries(filtered);
   }, [filters]);
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return 'bg-wl-success-bg text-wl-success-600 border-wl-success-500';
-      case 'cancelled':
-        return 'bg-wl-danger-bg text-wl-danger-600 border-wl-danger-500';
-      default:
-        return 'bg-wl-neutral-700 text-wl-text-secondary border-wl-neutral-600';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
   if (deliveries.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
-        <div className={cn(
-          'rounded-lg border border-wl-border-subtle',
-          'bg-wl-bg-surface p-12 text-center'
-        )}>
-          <div className="text-5xl mb-4">📦</div>
-          <h2 className="text-xl font-semibold text-wl-text-primary mb-2">
+      <div className="page-container animate-fade-in">
+        <div className="page-header">
+          <h1 className="page-title">Delivery History</h1>
+          <p className="page-subtitle">Your past deliveries</p>
+        </div>
+
+        {/* Filter row even on empty state */}
+        <div className="flex justify-end relative">
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className="btn btn-secondary"
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+          </button>
+
+          {showFilterMenu && (
+            <FilterDropdown
+              filters={filters}
+              onFilterChange={setFilters}
+              onClose={() => setShowFilterMenu(false)}
+            />
+          )}
+        </div>
+
+        <div className="section-card flex flex-col items-center py-12 text-center">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-2">
             No deliveries found
           </h2>
-          <p className="text-wl-text-secondary mb-6">
+          <p className="text-sm text-wl-text-secondary mb-6 max-w-xs">
             Try adjusting your filters or place a new order
           </p>
-          <Link
-            href="/orders"
-            className={cn(
-              'inline-block px-4 py-2 rounded-md',
-              'bg-wl-primary-500 text-white font-medium',
-              'hover:bg-wl-primary-600 transition-colors'
-            )}
-          >
+          <Link href="/orders" className="btn btn-primary">
             View Orders
           </Link>
         </div>
@@ -192,13 +216,13 @@ export default function DeliveriesPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="page-container animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-wl-text-primary">Delivery History</h1>
-          <p className="text-wl-text-secondary mt-2">
-            {deliveries.length} deliveries found
+        <div className="page-header">
+          <h1 className="page-title">Delivery History</h1>
+          <p className="page-subtitle">
+            <span className="mono">{deliveries.length}</span> deliveries found
           </p>
         </div>
 
@@ -206,114 +230,43 @@ export default function DeliveriesPage() {
         <div className="relative">
           <button
             onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-md',
-              'border border-wl-border-subtle bg-wl-bg-surface',
-              'text-wl-text-primary font-medium',
-              'hover:bg-wl-bg-elevated transition-colors'
-            )}
+            className="btn btn-secondary"
           >
             <Filter className="w-4 h-4" />
             Filters
           </button>
 
-          {/* Filter Menu */}
           {showFilterMenu && (
-            <div className={cn(
-              'absolute right-0 top-full mt-2 z-20',
-              'rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface shadow-lg p-4 w-48 space-y-4'
-            )}>
-              {/* Date Range */}
-              <div>
-                <label className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 block">
-                  Date Range
-                </label>
-                <select
-                  value={filters.dateRange}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      dateRange: e.target.value as Filter['dateRange'],
-                    }))
-                  }
-                  className={cn(
-                    'w-full px-3 py-2 rounded-md',
-                    'border border-wl-border-subtle',
-                    'bg-wl-bg-elevated text-wl-text-primary',
-                    'text-sm focus:outline-none focus:border-wl-primary-500'
-                  )}
-                >
-                  <option value="all">All Time</option>
-                  <option value="7days">Last 7 Days</option>
-                  <option value="30days">Last 30 Days</option>
-                  <option value="90days">Last 90 Days</option>
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 block">
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      status: e.target.value as Filter['status'],
-                    }))
-                  }
-                  className={cn(
-                    'w-full px-3 py-2 rounded-md',
-                    'border border-wl-border-subtle',
-                    'bg-wl-bg-elevated text-wl-text-primary',
-                    'text-sm focus:outline-none focus:border-wl-primary-500'
-                  )}
-                >
-                  <option value="all">All Status</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              <button
-                onClick={() => {
-                  setFilters({ dateRange: 'all', status: 'all' });
-                  setShowFilterMenu(false);
-                }}
-                className={cn(
-                  'w-full py-2 rounded-md text-sm',
-                  'text-wl-text-secondary hover:text-wl-text-primary',
-                  'transition-colors'
-                )}
-              >
-                Clear Filters
-              </button>
-            </div>
+            <FilterDropdown
+              filters={filters}
+              onFilterChange={setFilters}
+              onClose={() => setShowFilterMenu(false)}
+            />
           )}
         </div>
       </div>
 
       {/* Deliveries List */}
-      <div className="space-y-4">
-        {deliveries.map((delivery) => (
+      <div className="flex flex-col gap-3">
+        {deliveries.map((delivery, index) => (
           <Link
             key={delivery.id}
             href={`/orders/${delivery.id}`}
           >
-            <div className={cn(
-              'rounded-lg border border-wl-border-subtle',
-              'bg-wl-bg-surface p-6',
-              'hover:border-wl-primary-500 hover:bg-wl-bg-elevated',
-              'transition-all cursor-pointer group'
-            )}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left: Date and Order Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-wl-text-secondary">
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-sm">
+            <div
+              className={cn(
+                'card-accent group cursor-pointer',
+                'animate-fade-in',
+                `stagger-${Math.min(index + 1, 6)}`,
+                getStatusAccentClass(delivery.status)
+              )}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Left: Date + Order */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-wl-text-tertiary">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span className="text-xs mono">
                       {delivery.createdAt.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -321,50 +274,41 @@ export default function DeliveriesPage() {
                       })}
                     </span>
                   </div>
-                  <div>
-                    <p className="text-sm text-wl-text-secondary mb-1">Order</p>
-                    <p className="text-lg font-semibold text-wl-text-primary group-hover:text-wl-primary-500 transition-colors">
-                      {delivery.orderNumber}
-                    </p>
-                  </div>
-                  <div className={cn(
-                    'inline-block px-3 py-1 rounded-full text-xs font-semibold',
-                    'border',
-                    getStatusBadgeColor(delivery.status)
-                  )}>
+                  <p className="text-base font-semibold text-wl-text-primary group-hover:text-wl-primary-400 transition-colors">
+                    Order {delivery.orderNumber}
+                  </p>
+                  <div className={cn('status-badge', getStatusBadgeClass(delivery.status))}>
+                    <span className="status-badge-dot" />
                     {getStatusLabel(delivery.status)}
                   </div>
                 </div>
 
-                {/* Center: Items Summary */}
-                <div className="space-y-2">
-                  <p className="text-sm text-wl-text-secondary font-medium">Items</p>
-                  <div className="space-y-1">
-                    {delivery.items.slice(0, 2).map((item) => (
-                      <p key={item.id} className="text-sm text-wl-text-primary">
-                        {item.quantity}x {item.name}
-                      </p>
-                    ))}
-                    {delivery.items.length > 2 && (
-                      <p className="text-sm text-wl-text-tertiary">
-                        +{delivery.items.length - 2} more
-                      </p>
-                    )}
-                  </div>
+                {/* Center: Items */}
+                <div className="flex flex-col gap-1">
+                  <p className="label mb-1">Items</p>
+                  {delivery.items.slice(0, 2).map((item) => (
+                    <p key={item.id} className="text-sm text-wl-text-primary">
+                      <span className="mono">{item.quantity}x</span> {item.name}
+                    </p>
+                  ))}
+                  {delivery.items.length > 2 && (
+                    <p className="text-xs text-wl-text-tertiary">
+                      +{delivery.items.length - 2} more
+                    </p>
+                  )}
                 </div>
 
-                {/* Right: Rating and Price */}
+                {/* Right: Rating + Price */}
                 <div className="flex flex-col justify-between">
                   <div>
-                    <p className="text-sm text-wl-text-secondary font-medium mb-2">Rating</p>
                     {delivery.rating ? (
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
                               key={i}
                               className={cn(
-                                'w-4 h-4',
+                                'w-3.5 h-3.5',
                                 i < Math.round(delivery.rating!.driverRating)
                                   ? 'fill-wl-warning-500 text-wl-warning-500'
                                   : 'text-wl-neutral-700'
@@ -372,51 +316,107 @@ export default function DeliveriesPage() {
                             />
                           ))}
                         </div>
-                        <span className="text-sm font-medium text-wl-text-primary">
+                        <span className="text-xs font-medium text-wl-text-secondary mono">
                           {delivery.rating.driverRating.toFixed(1)}
                         </span>
                       </div>
                     ) : (
-                      <p className="text-sm text-wl-text-tertiary">Not rated</p>
+                      <p className="text-xs text-wl-text-tertiary">Not rated</p>
                     )}
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-sm text-wl-text-secondary mb-1">Total</p>
-                    <p className="text-2xl font-bold text-wl-text-primary">
+                  <div className="text-right mt-3 md:mt-0">
+                    <p className="text-xl font-bold text-wl-text-primary mono">
                       ${delivery.totalPrice.toFixed(2)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Delivery Address */}
-              <div className={cn(
-                'mt-6 pt-6 border-t border-wl-border-subtle',
-                'flex items-start gap-3'
-              )}>
-                <MapPin className="w-4 h-4 text-wl-text-secondary flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-wl-text-secondary">
+              {/* Address Row */}
+              <div className="mt-4 pt-4 border-t border-wl-border-subtle flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-wl-text-tertiary flex-shrink-0" />
+                <span className="text-xs text-wl-text-tertiary">
                   {delivery.deliveryAddress.street}, {delivery.deliveryAddress.city},{' '}
                   {delivery.deliveryAddress.state} {delivery.deliveryAddress.zipCode}
-                </div>
+                </span>
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Load More Button */}
-      <div className="text-center pt-6">
-        <button
-          className={cn(
-            'px-6 py-3 rounded-md',
-            'border border-wl-border-subtle',
-            'text-wl-text-primary font-medium',
-            'hover:bg-wl-bg-elevated transition-colors'
-          )}
-        >
+      {/* Load More */}
+      <div className="flex justify-center pt-2">
+        <button className="btn btn-secondary">
           Load More
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Filter Dropdown ────────────────────────── */
+
+function FilterDropdown({
+  filters,
+  onFilterChange,
+  onClose,
+}: {
+  filters: DeliveryFilter;
+  onFilterChange: (filters: DeliveryFilter) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="section-card absolute right-0 top-full mt-2 z-20 w-52 shadow-lg animate-fade-in">
+      <div className="flex flex-col gap-4">
+        {/* Date Range */}
+        <div>
+          <p className="label mb-2">Date Range</p>
+          <select
+            value={filters.dateRange}
+            onChange={(e) =>
+              onFilterChange({
+                ...filters,
+                dateRange: e.target.value as DeliveryFilter['dateRange'],
+              })
+            }
+            className="input"
+          >
+            <option value="all">All Time</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+            <option value="90days">Last 90 Days</option>
+          </select>
+        </div>
+
+        {/* Status */}
+        <div>
+          <p className="label mb-2">Status</p>
+          <select
+            value={filters.status}
+            onChange={(e) =>
+              onFilterChange({
+                ...filters,
+                status: e.target.value as DeliveryFilter['status'],
+              })
+            }
+            className="input"
+          >
+            <option value="all">All Status</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <button
+          onClick={() => {
+            onFilterChange({ dateRange: 'all', status: 'all' });
+            onClose();
+          }}
+          className="btn btn-ghost w-full"
+        >
+          Clear Filters
         </button>
       </div>
     </div>

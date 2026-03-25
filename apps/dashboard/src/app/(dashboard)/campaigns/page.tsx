@@ -70,10 +70,6 @@ const typeIcon = (t: CampaignType) => {
 
 export default function CampaignsPage() {
   const { items, loading, error, refetch } = useApiList<Campaign>("/api/v4/campaigns");
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [filterType, setFilterType] = useState<CampaignType | "ALL">("ALL");
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "ALL">("ALL");
@@ -98,6 +94,9 @@ export default function CampaignsPage() {
 
     return { active, totalSent, avgOpenRate, avgClickRate };
   }, [items]);
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6">

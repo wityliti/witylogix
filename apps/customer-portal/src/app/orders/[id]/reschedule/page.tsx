@@ -49,30 +49,22 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
     (step === 'select-date' && !selectedDate) ||
     (step === 'select-time' && !selectedTime);
 
+  const stepIndex = ['select-date', 'select-time', 'confirm', 'success'].indexOf(step);
+
   return (
-    <div className={cn(
-      'flex flex-col gap-6 px-4 sm:px-6 lg:px-8',
-      'py-6 sm:py-8 pb-12'
-    )}>
+    <div className="page-container animate-fade-in">
       {/* Header */}
-      <div className={cn(
-        'flex items-center gap-4'
-      )}>
+      <div className="flex items-center gap-4">
         <Link
           href={`/orders/${params.id}`}
-          className={cn(
-            'p-2 hover:bg-wl-bg-surface rounded-lg',
-            'transition-colors duration-fast'
-          )}
+          className="btn btn-ghost p-2"
           aria-label="Back to order"
         >
           <ArrowLeft size={20} className="text-wl-text-primary" />
         </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-wl-text-primary">
-            Reschedule Delivery
-          </h1>
-          <p className="text-wl-text-secondary text-sm mt-1">
+        <div className="page-header">
+          <h1 className="page-title">Reschedule Delivery</h1>
+          <p className="page-subtitle">
             Current delivery: {format(currentDeliveryDate, 'PPP')}
           </p>
         </div>
@@ -86,7 +78,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
               key={s}
               className={cn(
                 'flex-1 h-2 rounded-full transition-colors duration-fast',
-                (['select-date', 'select-time', 'confirm', 'success'].indexOf(step) >= i)
+                stepIndex >= i
                   ? 'bg-wl-primary-500'
                   : 'bg-wl-neutral-700'
               )}
@@ -98,9 +90,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
       {/* Content */}
       <div className="max-w-2xl">
         {step === 'select-date' && (
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-1">
             <div className="flex items-center gap-2 mb-6">
               <Calendar size={24} className="text-wl-primary-500" />
               <h2 className="text-2xl font-bold text-wl-text-primary">
@@ -114,11 +104,10 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
                   key={date.toISOString()}
                   onClick={() => setSelectedDate(date)}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all duration-fast',
-                    'text-left',
+                    'section-card text-left transition-all duration-fast',
                     selectedDate?.toDateString() === date.toDateString()
-                      ? 'border-wl-primary-500 bg-wl-primary-500/20'
-                      : 'border-wl-border-subtle hover:border-wl-primary-500'
+                      ? 'border-wl-primary-500 bg-wl-bg-elevated'
+                      : 'hover:border-wl-primary-500/50'
                   )}
                 >
                   <p className="font-medium text-wl-text-primary">
@@ -134,9 +123,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
         )}
 
         {step === 'select-time' && (
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-1">
             <div className="flex items-center gap-2 mb-6">
               <Clock size={24} className="text-wl-primary-500" />
               <h2 className="text-2xl font-bold text-wl-text-primary">
@@ -154,11 +141,10 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
                   key={slot}
                   onClick={() => setSelectedTime(slot)}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all duration-fast',
-                    'text-center font-medium',
+                    'section-card text-center font-medium mono transition-all duration-fast',
                     selectedTime === slot
-                      ? 'border-wl-primary-500 bg-wl-primary-500/20 text-wl-primary-400'
-                      : 'border-wl-border-subtle text-wl-text-primary hover:border-wl-primary-500'
+                      ? 'border-wl-primary-500 bg-wl-bg-elevated text-wl-primary-400'
+                      : 'text-wl-text-primary hover:border-wl-primary-500/50'
                   )}
                 >
                   {slot}
@@ -169,33 +155,30 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
         )}
 
         {step === 'confirm' && (
-          <div className={cn(
-            'bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-6'
-          )}>
+          <div className="section-card stagger-1">
             <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
               Confirm Reschedule
             </h2>
 
             <div className={cn(
-              'space-y-4 p-4 rounded-lg bg-wl-bg-elevated',
-              'mb-6'
+              'section-card bg-wl-bg-elevated space-y-4 mb-6'
             )}>
               <div className="flex justify-between items-center">
-                <span className="text-wl-text-secondary">Original Date:</span>
-                <span className="font-medium text-wl-text-primary">
+                <span className="label">Original Date</span>
+                <span className="value mono">
                   {format(currentDeliveryDate, 'PPP')}
                 </span>
               </div>
-              <div className="border-t border-wl-border-subtle my-4" />
+              <div className="border-t border-wl-border-subtle" />
               <div className="flex justify-between items-center">
-                <span className="text-wl-text-secondary">New Date:</span>
-                <span className="font-bold text-wl-primary-400">
+                <span className="label">New Date</span>
+                <span className="value text-wl-primary-400 mono">
                   {selectedDate && format(selectedDate, 'PPP')}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-wl-text-secondary">New Time:</span>
-                <span className="font-bold text-wl-primary-400">
+                <span className="label">New Time</span>
+                <span className="value text-wl-primary-400 mono">
                   {selectedTime}
                 </span>
               </div>
@@ -203,21 +186,15 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
 
             <textarea
               placeholder="Optional: Add a reason for rescheduling..."
-              className={cn(
-                'w-full p-4 rounded-lg border border-wl-border-subtle',
-                'bg-wl-bg-elevated text-wl-text-primary',
-                'placeholder-wl-text-tertiary',
-                'focus:outline-none focus:border-wl-primary-500',
-                'resize-none h-32'
-              )}
+              className="input w-full resize-none h-32"
             />
           </div>
         )}
 
         {step === 'success' && (
           <div className={cn(
-            'bg-wl-success-bg border border-wl-success-500/30 rounded-lg p-8',
-            'text-center'
+            'section-card border-l-2 border-wl-success-500',
+            'text-center stagger-1'
           )}>
             <div className={cn(
               'w-16 h-16 mx-auto mb-4 rounded-full',
@@ -240,21 +217,13 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href={`/orders/${params.id}`}
-                className={cn(
-                  'px-6 py-3 rounded-lg font-medium',
-                  'bg-wl-primary-500 text-wl-text-inverse',
-                  'hover:bg-wl-primary-600 transition-colors'
-                )}
+                className="btn btn-primary"
               >
                 Back to Order
               </Link>
               <Link
                 href="/orders"
-                className={cn(
-                  'px-6 py-3 rounded-lg font-medium',
-                  'bg-wl-neutral-700 text-wl-text-primary',
-                  'hover:bg-wl-neutral-600 transition-colors'
-                )}
+                className="btn btn-secondary"
               >
                 View All Orders
               </Link>
@@ -269,11 +238,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
           {step !== 'select-date' && (
             <button
               onClick={handleBack}
-              className={cn(
-                'px-6 py-3 rounded-lg font-medium',
-                'bg-wl-neutral-700 text-wl-text-primary',
-                'hover:bg-wl-neutral-600 transition-colors'
-              )}
+              className="btn btn-secondary"
             >
               Back
             </button>
@@ -282,11 +247,8 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
             onClick={handleNext}
             disabled={isNextDisabled}
             className={cn(
-              'flex-1 px-6 py-3 rounded-lg font-medium',
-              'transition-colors',
-              isNextDisabled
-                ? 'bg-wl-neutral-800 text-wl-text-tertiary cursor-not-allowed'
-                : 'bg-wl-primary-500 text-wl-text-inverse hover:bg-wl-primary-600'
+              'btn btn-primary flex-1',
+              isNextDisabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             {step === 'confirm' ? 'Confirm Reschedule' : 'Continue'}

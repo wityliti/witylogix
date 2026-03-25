@@ -9,134 +9,90 @@ interface DriverInfoCardProps {
   isConnected: boolean;
 }
 
-/**
- * Driver information card with contact options
- */
 export function DriverInfoCard({ driver, isConnected }: DriverInfoCardProps) {
   if (!driver) {
     return (
-      <div className={cn(
-        'rounded-lg border border-wl-border-subtle',
-        'bg-wl-bg-surface p-6 text-center'
-      )}>
+      <div className="section-card">
         <p className="text-sm text-wl-text-secondary">Loading driver information...</p>
       </div>
     );
   }
 
   return (
-    <div className={cn(
-      'rounded-lg border border-wl-border-subtle',
-      'bg-wl-bg-surface overflow-hidden'
-    )}>
-      {/* Header with Driver Photo */}
-      <div className="relative h-32 bg-gradient-to-r from-wl-primary-600 to-wl-primary-500">
-        {driver.photo && (
-          <img
-            src={driver.photo}
-            alt={driver.name}
-            className="w-full h-full object-cover"
-          />
-        )}
-        {!driver.photo && (
-          <div className="w-full h-full bg-gradient-to-br from-wl-primary-600 to-wl-primary-700 flex items-center justify-center">
-            <span className="text-4xl">👤</span>
-          </div>
-        )}
-
-        {/* Connection Status Badge */}
-        <div className="absolute top-3 right-3">
+    <div className="section-card space-y-4">
+      {/* Driver identity */}
+      <div className="flex items-center gap-3">
+        <div className="relative">
           <div className={cn(
-            'w-3 h-3 rounded-full',
-            isConnected ? 'bg-wl-success-500' : 'bg-wl-danger-500',
-            'animate-pulse'
+            'w-11 h-11 rounded-full flex items-center justify-center',
+            'bg-wl-neutral-800 text-lg flex-shrink-0'
+          )}>
+            {driver.photo && !driver.photo.startsWith('http') ? (
+              driver.photo
+            ) : (
+              <span className="text-sm font-semibold text-wl-text-primary">
+                {driver.name.split(' ').map(n => n[0]).join('')}
+              </span>
+            )}
+          </div>
+          {/* Connection indicator */}
+          <div className={cn(
+            'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-wl-bg-surface',
+            isConnected ? 'bg-wl-success-500' : 'bg-wl-neutral-600'
           )} />
         </div>
-      </div>
 
-      {/* Driver Info */}
-      <div className="p-6 space-y-4">
-        {/* Name and Rating */}
-        <div>
-          <h2 className="text-xl font-bold text-wl-text-primary">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-wl-text-primary truncate">
             {driver.name}
-          </h2>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1">
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
+                  size={10}
                   className={cn(
-                    'w-4 h-4',
-                    i < Math.floor(driver.rating) ? 'fill-wl-warning-500 text-wl-warning-500' : 'text-wl-neutral-700'
+                    i < Math.floor(driver.rating)
+                      ? 'fill-wl-warning-500 text-wl-warning-500'
+                      : 'text-wl-neutral-700'
                   )}
                 />
               ))}
             </div>
-            <span className="text-sm font-medium text-wl-text-secondary">
-              {driver.rating.toFixed(1)}
-            </span>
+            <span className="text-xs text-wl-text-tertiary">{driver.rating.toFixed(1)}</span>
           </div>
         </div>
-
-        {/* Vehicle Info */}
-        <div className={cn(
-          'rounded-md p-3',
-          'bg-wl-bg-elevated border border-wl-border-subtle'
-        )}>
-          <p className="text-xs text-wl-text-secondary font-medium uppercase tracking-wide">
-            Vehicle
-          </p>
-          <p className="text-sm text-wl-text-primary font-semibold mt-1">
-            {driver.vehicle.color} {driver.vehicle.type}
-          </p>
-          <p className="text-xs text-wl-text-tertiary mt-1">
-            Plate: {driver.vehicle.plate}
-          </p>
-        </div>
-
-        {/* Contact Options */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => window.location.href = `tel:${driver.phone}`}
-            className={cn(
-              'flex items-center justify-center gap-2 py-3 rounded-md',
-              'bg-wl-primary-500 text-white font-medium text-sm',
-              'hover:bg-wl-primary-600 transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
-            disabled={!isConnected}
-          >
-            <Phone className="w-4 h-4" />
-            Call
-          </button>
-
-          <button
-            onClick={() => window.location.href = `sms:${driver.phone}`}
-            className={cn(
-              'flex items-center justify-center gap-2 py-3 rounded-md',
-              'bg-wl-bg-elevated border border-wl-border-subtle',
-              'text-wl-text-primary font-medium text-sm',
-              'hover:bg-wl-bg-sunken transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
-            )}
-            disabled={!isConnected}
-          >
-            <MessageCircle className="w-4 h-4" />
-            Text
-          </button>
-        </div>
-
-        {/* Connection Status Message */}
-        {!isConnected && (
-          <div className={cn(
-            'rounded-md p-3 text-sm',
-            'bg-wl-warning-bg border border-wl-warning-500 text-wl-warning-500'
-          )}>
-            Driver temporarily unavailable
-          </div>
-        )}
       </div>
+
+      {/* Vehicle */}
+      <div className="text-xs text-wl-text-tertiary">
+        {driver.vehicle.color} {driver.vehicle.type} &middot; {driver.vehicle.plate}
+      </div>
+
+      {/* Contact buttons */}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => { window.location.href = `tel:${driver.phone}`; }}
+          disabled={!isConnected}
+          className="btn btn-primary"
+        >
+          <Phone size={14} />
+          Call
+        </button>
+        <button
+          onClick={() => { window.location.href = `sms:${driver.phone}`; }}
+          disabled={!isConnected}
+          className="btn btn-secondary"
+        >
+          <MessageCircle size={14} />
+          Text
+        </button>
+      </div>
+
+      {!isConnected && (
+        <p className="text-xs text-wl-warning-500">Driver temporarily unavailable</p>
+      )}
     </div>
   );
 }

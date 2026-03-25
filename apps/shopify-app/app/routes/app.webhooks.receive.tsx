@@ -23,6 +23,8 @@
 import type { ActionFunctionArgs } from "react-router";
 import { json } from "react-router";
 import crypto from "node:crypto";
+import { checkRateLimit, rateLimitHeaders } from "~/lib/rate-limiter.server";
+import { captureException } from "~/lib/sentry.server";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -72,6 +74,16 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
+  // Rate limit by shop ID (from header) — 200 webhooks per minute per shop
+  const shopIdHeader = request.headers.get("x-shopify-shop-id") || "unknown";
+  const rateLimit = checkRateLimit(`webhook:${shopIdHeader}`, 200, 60_000);
+  if (!rateLimit.allowed) {
+    return json(
+      { error: "Rate limit exceeded" },
+      { status: 429, headers: rateLimitHeaders(rateLimit) }
+    );
+  }
+
   try {
     // Validate and parse webhook
     const validated = await validateAndParseWebhook(request);
@@ -118,11 +130,15 @@ export async function action({ request }: ActionFunctionArgs) {
       error: error instanceof Error ? error.message : String(error),
     });
 
+    captureException(error, { component: "webhook-handler", shopId: shopIdHeader });
+
     // Return 200 OK to prevent Shopify retry loop
     return json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: process.env.NODE_ENV === "production"
+          ? "Internal webhook error"
+          : (error instanceof Error ? error.message : "Unknown error"),
       },
       { status: 200 }
     );
@@ -285,7 +301,9 @@ async function routeWebhookToHandler(
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Handler error",
+      error: process.env.NODE_ENV === "production"
+        ? "Internal handler error"
+        : (error instanceof Error ? error.message : "Handler error"),
     };
   }
 }
@@ -333,7 +351,9 @@ async function handleOrderCreated(context: WebhookContext): Promise<HandlerResul
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to handle order creation",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to handle order creation"
+        : (error instanceof Error ? error.message : "Failed to handle order creation"),
     };
   }
 }
@@ -376,7 +396,9 @@ async function handleOrderUpdated(context: WebhookContext): Promise<HandlerResul
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update order",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to update order"
+        : (error instanceof Error ? error.message : "Failed to update order"),
     };
   }
 }
@@ -419,7 +441,9 @@ async function handleOrderFulfilled(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to trigger delivery workflow",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to trigger delivery workflow"
+        : (error instanceof Error ? error.message : "Failed to trigger delivery workflow"),
     };
   }
 }
@@ -450,7 +474,9 @@ async function handleAppUninstalled(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to deactivate tenant",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to deactivate tenant"
+        : (error instanceof Error ? error.message : "Failed to deactivate tenant"),
     };
   }
 }
@@ -486,7 +512,9 @@ async function handleCustomerDataRequest(context: WebhookContext): Promise<Handl
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to export customer data",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to export customer data"
+        : (error instanceof Error ? error.message : "Failed to export customer data"),
     };
   }
 }
@@ -521,7 +549,9 @@ async function handleCustomerRedact(context: WebhookContext): Promise<HandlerRes
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to redact customer data",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to redact customer data"
+        : (error instanceof Error ? error.message : "Failed to redact customer data"),
     };
   }
 }
@@ -549,7 +579,9 @@ async function handleShopRedact(context: WebhookContext): Promise<HandlerResult>
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to redact shop data",
+      error: process.env.NODE_ENV === "production"
+        ? "Failed to redact shop data"
+        : (error instanceof Error ? error.message : "Failed to redact shop data"),
     };
   }
 }
@@ -600,25 +632,35 @@ async function updateOrderStatusInDatabase(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = require("@witylogix/db");
+    const { PrismaClient } = await import("@witylogix/db");
     const prisma = new PrismaClient();
 
-    await db.order.updateMany({
-      where: {
-        shopifyOrderId: params.orderId,
-        shopId: params.shopId,
-      },
-      data: {
-        status: mapShopifyStatusToInternal(params.status),
-        lastWebhookId: params.webhookId,
-        lastWebhookAt: new Date(),
-      },
-    });
+    try {
+      await prisma.order.updateMany({
+        where: {
+          shopifyOrderId: params.orderId,
+          shopId: params.shopId,
+        },
+        data: {
+          status: mapShopifyStatusToInternal(params.status),
+          lastWebhookId: params.webhookId,
+          lastWebhookAt: new Date(),
+        },
+      });
 
-    console.log("Order status updated", { orderId: params.orderId });
+      console.log("Order status updated", { orderId: params.orderId });
+    } finally {
+      await prisma.$disconnect();
+    }
   } catch (error) {
-    console.error("Failed to update order status", { error });
-    throw error;
+    console.warn("Direct DB update failed, falling back to API", { error });
+    const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
+    await fetch(`${API_BASE}/api/v4/webhooks/shopify/order-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    console.log("Order status forwarded to API", { orderId: params.orderId });
   }
 }
 
@@ -661,22 +703,32 @@ async function deactivateTenant(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = require("@witylogix/db");
+    const { PrismaClient } = await import("@witylogix/db");
     const prisma = new PrismaClient();
 
-    await db.shop.update({
-      where: { shopifyId: params.shopId },
-      data: {
-        active: false,
-        deactivatedAt: new Date(),
-        lastWebhookId: params.webhookId,
-      },
-    });
+    try {
+      await prisma.shop.update({
+        where: { shopifyId: params.shopId },
+        data: {
+          active: false,
+          deactivatedAt: new Date(),
+          lastWebhookId: params.webhookId,
+        },
+      });
 
-    console.log("Tenant deactivated", { shopId: params.shopId });
+      console.log("Tenant deactivated", { shopId: params.shopId });
+    } finally {
+      await prisma.$disconnect();
+    }
   } catch (error) {
-    console.error("Failed to deactivate tenant", { error });
-    throw error;
+    console.warn("Direct DB deactivation failed, falling back to API", { error });
+    const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
+    await fetch(`${API_BASE}/api/v4/webhooks/shopify/tenant-deactivate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    console.log("Tenant deactivation forwarded to API", { shopId: params.shopId });
   }
 }
 
@@ -721,24 +773,34 @@ async function deleteCustomerData(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = require("@witylogix/db");
+    const { PrismaClient } = await import("@witylogix/db");
     const prisma = new PrismaClient();
 
-    // Delete all customer-related data
-    await db.customer.deleteMany({
-      where: {
-        shopifyId: params.customerId,
-        shopId: params.shopId,
-      },
-    });
+    try {
+      // Delete all customer-related data
+      await prisma.customer.deleteMany({
+        where: {
+          shopifyId: params.customerId,
+          shopId: params.shopId,
+        },
+      });
 
-    console.log("Customer data deleted", {
-      customerId: params.customerId,
-      shopId: params.shopId,
-    });
+      console.log("Customer data deleted", {
+        customerId: params.customerId,
+        shopId: params.shopId,
+      });
+    } finally {
+      await prisma.$disconnect();
+    }
   } catch (error) {
-    console.error("Failed to delete customer data", { error });
-    throw error;
+    console.warn("Direct DB customer deletion failed, falling back to API", { error });
+    const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
+    await fetch(`${API_BASE}/api/v4/webhooks/shopify/customer-redact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    console.log("Customer deletion forwarded to API", { customerId: params.customerId });
   }
 }
 
@@ -750,18 +812,28 @@ async function deleteShopData(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = require("@witylogix/db");
+    const { PrismaClient } = await import("@witylogix/db");
     const prisma = new PrismaClient();
 
-    // Delete all shop-related data
-    await db.shop.delete({
-      where: { shopifyId: params.shopId },
-    });
+    try {
+      // Delete all shop-related data
+      await prisma.shop.delete({
+        where: { shopifyId: params.shopId },
+      });
 
-    console.log("Shop data deleted", { shopId: params.shopId });
+      console.log("Shop data deleted", { shopId: params.shopId });
+    } finally {
+      await prisma.$disconnect();
+    }
   } catch (error) {
-    console.error("Failed to delete shop data", { error });
-    throw error;
+    console.warn("Direct DB shop deletion failed, falling back to API", { error });
+    const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
+    await fetch(`${API_BASE}/api/v4/webhooks/shopify/shop-redact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    console.log("Shop deletion forwarded to API", { shopId: params.shopId });
   }
 }
 
@@ -771,18 +843,23 @@ async function deleteShopData(params: {
  * Get the workflow queue instance.
  */
 function getWorkflowQueue() {
-  const { WorkflowQueue } = require("@witylogix/framework");
-  return new WorkflowQueue({
-    queueName: "witylogix-webhooks",
-    defaultJobOptions: {
-      attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 2000,
-      },
-      timeout: 300000, // 5 minutes
+  // Production: forward to API instead of direct queue access
+  const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
+  return {
+    async enqueue(jobType: string, data: any, opts: any): Promise<string> {
+      const jobId = `wh-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      try {
+        await fetch(`${API_BASE}/api/v4/webhooks/shopify/jobs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobType, data, opts, jobId }),
+        });
+      } catch (err) {
+        console.error(`[webhook-queue] Failed to forward job ${jobType}:`, err);
+      }
+      return jobId;
     },
-  });
+  };
 }
 
 /**

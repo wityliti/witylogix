@@ -12,8 +12,8 @@ function LoginPageInner() {
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(process.env.NODE_ENV === "development" ? "admin@demo.witylogix.io" : "");
+  const [password, setPassword] = useState(process.env.NODE_ENV === "development" ? "Admin123!" : "");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");

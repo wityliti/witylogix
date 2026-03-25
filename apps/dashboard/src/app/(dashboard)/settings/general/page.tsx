@@ -304,7 +304,7 @@ export default function GeneralSettingsPage() {
                     </p>
                   </div>
                   {day.closed ? (
-                    <Badge variant="secondary">Closed</Badge>
+                    <Badge variant="default">Closed</Badge>
                   ) : (
                     <div className="flex items-center gap-2">
                       <input
