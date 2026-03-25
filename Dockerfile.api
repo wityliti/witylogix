@@ -1,0 +1,21 @@
+FROM node:20-alpine AS builder
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma client explicitly
+RUN cd packages/db && npx prisma generate --schema=prisma/schema
+
+FROM node:20-alpine
+RUN npm install -g tsx && apk add --no-cache dumb-init curl
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/api ./apps/api
+COPY --from=builder /app/tsconfig.json ./
+ENV NODE_ENV=production
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s CMD curl -f http://localhost:3000/health || exit 1
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["tsx", "apps/api/src/server.ts"]

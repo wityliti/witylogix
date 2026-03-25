@@ -5,7 +5,9 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════
-   CUSTOMER PORTAL GLOBAL STYLES
+   CUSTOMER PORTAL — QUIET AUTHORITY
+   Matte dark surfaces, warm undertones, surgical amber accent.
+   Typography does the heavy lifting. Borders are rare.
    ═══════════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
@@ -25,14 +27,15 @@ html {
 body {
   background: var(--wl-bg-root);
   color: var(--wl-text-primary);
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
 }
 
 /* ─── Scrollbar ─────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -50,7 +53,7 @@ body {
 
 /* ─── Selection ─────────────────────────────── */
 ::selection {
-  background: rgba(245, 166, 35, 0.25);
+  background: rgba(245, 166, 35, 0.2);
   color: var(--wl-text-primary);
 }
 
@@ -62,34 +65,30 @@ body {
 
 /* ─── Links ─────────────────────────────────── */
 a {
-  color: var(--wl-primary-400);
+  color: inherit;
   text-decoration: none;
   transition: color var(--wl-duration-fast) var(--wl-ease-default);
 }
 
-a:hover {
-  color: var(--wl-primary-300);
-}
-
-/* ─── Utility: Animations ────────────────────── */
+/* ─── Keyframes ─────────────────────────────── */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-12px); }
+  from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
-  50%      { box-shadow: 0 0 16px rgba(245, 166, 35, 0.15); }
+  50%      { box-shadow: 0 0 12px rgba(245, 166, 35, 0.12); }
 }
 
 @keyframes shimmer {
@@ -97,15 +96,314 @@ a:hover {
   100% { background-position: 200% 0; }
 }
 
-/* ─── Utility Classes ────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ─── Animation Utilities ───────────────────── */
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in 0.4s ease-out both;
 }
 
 .animate-slide-in {
-  animation: slide-in-left 0.3s ease-out;
+  animation: slide-in-left 0.3s ease-out both;
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out;
+  animation: scale-in 0.3s ease-out both;
+}
+
+/* Staggered entrance for lists */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* ─── Card System ───────────────────────────── */
+@layer components {
+  /* Base card — matte surface, no border by default */
+  .card {
+    background: var(--wl-bg-surface);
+    border-radius: var(--wl-radius-lg);
+    padding: 1.25rem;
+    transition: background var(--wl-duration-fast) var(--wl-ease-default),
+                box-shadow var(--wl-duration-fast) var(--wl-ease-default);
+  }
+
+  .card:hover {
+    background: var(--wl-bg-elevated);
+  }
+
+  /* Card with left accent border */
+  .card-accent {
+    background: var(--wl-bg-surface);
+    border-radius: var(--wl-radius-lg);
+    border-left: 3px solid transparent;
+    padding: 1.25rem;
+    transition: all var(--wl-duration-fast) var(--wl-ease-default);
+  }
+
+  .card-accent:hover {
+    background: var(--wl-bg-elevated);
+    transform: translateX(2px);
+  }
+
+  .card-accent-pending {
+    border-left-color: var(--wl-warning-500);
+  }
+
+  .card-accent-confirmed {
+    border-left-color: var(--wl-info-500);
+  }
+
+  .card-accent-active {
+    border-left-color: var(--wl-primary-500);
+  }
+
+  .card-accent-delivered {
+    border-left-color: var(--wl-success-500);
+  }
+
+  .card-accent-cancelled {
+    border-left-color: var(--wl-danger-500);
+  }
+
+  /* Stat card — tighter, numbers-focused */
+  .stat-card {
+    background: var(--wl-bg-surface);
+    border-radius: var(--wl-radius-lg);
+    padding: 1rem 1.25rem;
+  }
+
+  /* Section card — subtle border for grouped content */
+  .section-card {
+    background: var(--wl-bg-surface);
+    border: 1px solid var(--wl-border-subtle);
+    border-radius: var(--wl-radius-lg);
+    padding: 1.5rem;
+  }
+
+  /* ─── Button System ───────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: var(--wl-text-sm);
+    border-radius: var(--wl-radius-md);
+    padding: 0.5rem 1rem;
+    transition: all var(--wl-duration-fast) var(--wl-ease-default);
+    cursor: pointer;
+    border: none;
+    line-height: 1.4;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--wl-primary-500);
+    color: var(--wl-text-inverse);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--wl-primary-600);
+  }
+
+  .btn-secondary {
+    background: var(--wl-bg-elevated);
+    color: var(--wl-text-primary);
+    border: 1px solid var(--wl-border-subtle);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--wl-bg-overlay);
+    border-color: var(--wl-border-default);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--wl-text-secondary);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--wl-text-primary);
+    background: var(--wl-bg-elevated);
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: var(--wl-text-base);
+  }
+
+  /* ─── Status Badge System ─────────────────── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: var(--wl-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--wl-radius-full);
+  }
+
+  .status-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-pending .status-badge-dot { background: var(--wl-warning-500); }
+  .status-pending { color: var(--wl-warning-500); background: var(--wl-warning-bg); }
+
+  .status-confirmed .status-badge-dot { background: var(--wl-info-500); }
+  .status-confirmed { color: var(--wl-info-500); background: var(--wl-info-bg); }
+
+  .status-active .status-badge-dot { background: var(--wl-primary-500); animation: pulse-dot 2s ease-in-out infinite; }
+  .status-active { color: var(--wl-primary-400); background: rgba(245, 166, 35, 0.12); }
+
+  .status-delivered .status-badge-dot { background: var(--wl-success-500); }
+  .status-delivered { color: var(--wl-success-500); background: var(--wl-success-bg); }
+
+  .status-cancelled .status-badge-dot { background: var(--wl-danger-500); }
+  .status-cancelled { color: var(--wl-danger-500); background: var(--wl-danger-bg); }
+
+  /* ─── Form Elements ───────────────────────── */
+  .input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--wl-radius-md);
+    border: 1px solid var(--wl-border-subtle);
+    background: var(--wl-bg-elevated);
+    color: var(--wl-text-primary);
+    font-size: var(--wl-text-sm);
+    transition: border-color var(--wl-duration-fast) var(--wl-ease-default);
+  }
+
+  .input::placeholder {
+    color: var(--wl-text-tertiary);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--wl-primary-500);
+  }
+
+  /* ─── Toggle Switch ──────────────────────── */
+  .toggle {
+    position: relative;
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: var(--wl-radius-full);
+    transition: background var(--wl-duration-fast) var(--wl-ease-default);
+    cursor: pointer;
+    border: none;
+  }
+
+  .toggle-off {
+    background: var(--wl-neutral-700);
+  }
+
+  .toggle-on {
+    background: var(--wl-primary-500);
+  }
+
+  .toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: white;
+    transition: transform var(--wl-duration-fast) var(--wl-ease-spring);
+  }
+
+  .toggle-on .toggle-knob {
+    transform: translateX(1.25rem);
+  }
+
+  /* ─── Page Layout Helpers ─────────────────── */
+  .page-container {
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 640px) {
+    .page-container {
+      padding: 2rem 1.5rem;
+      gap: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .page-container {
+      padding: 2rem 2rem;
+    }
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .page-title {
+    font-size: var(--wl-text-2xl);
+    font-weight: 700;
+    color: var(--wl-text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: var(--wl-text-sm);
+    color: var(--wl-text-secondary);
+    font-weight: 400;
+  }
+
+  /* ─── Typography Helpers ──────────────────── */
+  .label {
+    font-size: var(--wl-text-xs);
+    font-weight: 500;
+    color: var(--wl-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .value {
+    font-size: var(--wl-text-3xl);
+    font-weight: 700;
+    color: var(--wl-text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mono {
+    font-family: var(--wl-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ─── Reduced Motion ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

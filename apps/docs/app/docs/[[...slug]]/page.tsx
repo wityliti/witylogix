@@ -10,6 +10,8 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
 }

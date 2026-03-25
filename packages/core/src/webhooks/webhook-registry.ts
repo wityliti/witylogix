@@ -186,7 +186,7 @@ export class WebhookRegistry {
 
     return Array.from(endpoints)
       .map((id) => this.endpoints.get(id))
-      .filter((e): e is RegisteredEndpoint => e && e.active);
+      .filter((e): e is RegisteredEndpoint => e !== undefined && e.active === true);
   }
 
   /**

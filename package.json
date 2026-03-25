@@ -28,13 +28,15 @@
     "docker:dev": "docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "deploy": "./infra/deploy-scripts/railway.sh deploy",
+    "deploy:all": "./infra/deploy-scripts/railway.sh deploy-all",
     "deploy:setup": "./infra/deploy-scripts/railway.sh setup",
     "deploy:link": "./infra/deploy-scripts/railway.sh link",
     "deploy:logs": "./infra/deploy-scripts/railway.sh logs",
     "deploy:status": "./infra/deploy-scripts/railway.sh status",
     "deploy:redeploy": "./infra/deploy-scripts/railway.sh redeploy",
     "deploy:open": "./infra/deploy-scripts/railway.sh open",
-    "deploy:domain": "./infra/deploy-scripts/railway.sh domain"
+    "deploy:domain": "./infra/deploy-scripts/railway.sh domain",
+    "deploy:services": "./infra/deploy-scripts/railway.sh services"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

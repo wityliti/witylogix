@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "echo build-ok",
+    "build": "tsc --project tsconfig.json --skipLibCheck",
     "start": "node dist/server.js",
     "lint": "eslint src/"
   },

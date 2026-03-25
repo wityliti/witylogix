@@ -5,7 +5,7 @@
   "description": "Developer documentation for Witylogix delivery logistics platform",
   "scripts": {
     "dev": "next dev --port 3005",
-    "build": "echo build-ok",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
