@@ -26,6 +26,13 @@ COPY packages/db/ packages/db/
 # Generate Prisma client (outputs to packages/db/src/generated/prisma)
 RUN cd /app/packages/db && npx prisma generate --schema=./prisma/schema
 
+# Compile @witylogix/db TypeScript → dist/ (dist/ is gitignored so it must be built here)
+RUN pnpm --filter @witylogix/db exec tsc
+
+# Copy Prisma-generated JS files into dist/generated/ so dist/index.js can resolve them at runtime
+# (Prisma generates plain JS files in src/generated/; tsc does not copy them to dist/generated/)
+RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated
+
 # Build
 WORKDIR /app/apps/shopify-app
 RUN pnpm build
@@ -47,8 +54,6 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 # Build output is separate from pnpm deploy output
 COPY --from=builder /app/apps/shopify-app/build ./build
-# Generated Prisma client referenced by @prisma/client at runtime
-COPY --from=builder /app/packages/db/src/generated/prisma ./packages/db/src/generated/prisma
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \

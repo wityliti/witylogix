@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./helpers": {
-      "import": "./src/helpers.ts",
-      "types": "./src/helpers.ts"
+      "types": "./src/helpers.ts",
+      "import": "./dist/helpers.js",
+      "default": "./dist/helpers.js"
     }
   },
   "scripts": {
