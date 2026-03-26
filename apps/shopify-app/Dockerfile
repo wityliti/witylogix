@@ -14,8 +14,8 @@ COPY packages/types/package.json packages/types/
 COPY packages/validators/package.json packages/validators/
 COPY packages/db/package.json packages/db/
 
-# Install dependencies (includes prisma CLI from packages/db devDependencies)
-RUN pnpm install --frozen-lockfile --filter @witylogix/shopify-app... --filter @witylogix/db
+# Install dependencies (@witylogix/db is a declared dep, so ... includes it)
+RUN pnpm install --frozen-lockfile --filter @witylogix/shopify-app...
 
 # Copy source
 COPY apps/shopify-app/ apps/shopify-app/
