@@ -4,83 +4,14 @@ import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useReturns, Return } from '@/hooks/use-returns';
 import { Plus, ChevronRight } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — RMA lifecycle with status pipeline
    Clean, data-focused design emphasizing return workflow stages
    ═══════════════════════════════════════════════════════════ */
-
-interface ReturnRecord {
-  id: string;
-  orderId: string;
-  customerId: string;
-  customerName: string;
-  customerEmail?: string;
-  status: string;
-  reason: string;
-  refundAmount: number;
-  createdAt: string;
-  approvedAt?: string;
-  receivedAt?: string;
-  refundedAt?: string;
-  notes?: string | null;
-}
-
-const MOCK_RETURNS: ReturnRecord[] = [
-  {
-    id: 'RET-001',
-    orderId: 'ORD-1001',
-    customerId: 'cust-1',
-    customerName: 'Alice Johnson',
-    customerEmail: 'alice@example.com',
-    status: 'requested',
-    reason: 'Item damaged on arrival',
-    refundAmount: 49.99,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'RET-002',
-    orderId: 'ORD-1045',
-    customerId: 'cust-2',
-    customerName: 'Bob Martinez',
-    customerEmail: 'bob@example.com',
-    status: 'approved',
-    reason: 'Wrong item shipped',
-    refundAmount: 129.0,
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    approvedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'RET-003',
-    orderId: 'ORD-998',
-    customerId: 'cust-3',
-    customerName: 'Carol White',
-    status: 'received',
-    reason: 'Changed mind',
-    refundAmount: 75.5,
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    approvedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-    receivedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'RET-004',
-    orderId: 'ORD-876',
-    customerId: 'cust-4',
-    customerName: 'David Lee',
-    status: 'refunded',
-    reason: 'Defective product',
-    refundAmount: 220.0,
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    approvedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    receivedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    refundedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
 
 type ReturnStatusDisplay = 'requested' | 'approved' | 'shipped_back' | 'received' | 'inspected' | 'refunded';
 
@@ -104,13 +35,82 @@ const normalizeStatus = (status: string): ReturnStatusDisplay => {
   return 'requested';
 };
 
+// Mock returns data for development (fallback when API has no ReturnRequest model yet)
+const MOCK_RETURNS: Return[] = [
+  {
+    id: "RET-2024-001",
+    orderId: "ORD-2024-115",
+    customerId: "CUST-001",
+    customerName: "John Smith",
+    customerEmail: "john.smith@email.com",
+    status: "requested",
+    reason: "Product arrived damaged",
+    items: [{ id: "I-1", name: "Blue Wireless Headphones", quantity: 1, condition: "damaged" }],
+    refundAmount: 89.99,
+    createdAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+    requestedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+    notes: "Customer reports broken cable connector",
+    timeline: [],
+  },
+  {
+    id: "RET-2024-002",
+    orderId: "ORD-2024-114",
+    customerId: "CUST-002",
+    customerName: "Sarah Johnson",
+    customerEmail: "sarah.j@email.com",
+    status: "approved",
+    reason: "Wrong size",
+    items: [{ id: "I-2", name: "Wool Winter Jacket (L)", quantity: 1, condition: "good" }],
+    refundAmount: 159.99,
+    createdAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
+    requestedAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
+    approvedAt: new Date(Date.now() - 4 * 24 * 3600000).toISOString(),
+    notes: "Customer ordered size L but needed M",
+    timeline: [],
+  },
+  {
+    id: "RET-2024-003",
+    orderId: "ORD-2024-113",
+    customerId: "CUST-003",
+    customerName: "Emily Davis",
+    customerEmail: "emily.davis@email.com",
+    status: "received",
+    reason: "Defective unit",
+    items: [{ id: "I-3", name: "Portable Phone Charger 20K", quantity: 2, condition: "defective" }],
+    refundAmount: 119.98,
+    createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
+    requestedAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
+    approvedAt: new Date(Date.now() - 6 * 24 * 3600000).toISOString(),
+    receivedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
+    notes: "Units won't charge. Package received on 3/17.",
+    timeline: [],
+  },
+  {
+    id: "RET-2024-004",
+    orderId: "ORD-2024-112",
+    customerId: "CUST-004",
+    customerName: "Michael Brown",
+    customerEmail: "m.brown@email.com",
+    status: "refunded",
+    reason: "Changed mind",
+    items: [{ id: "I-4", name: "Gaming Mouse RGB", quantity: 1, condition: "good" }],
+    refundAmount: 74.99,
+    createdAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
+    requestedAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
+    approvedAt: new Date(Date.now() - 9 * 24 * 3600000).toISOString(),
+    receivedAt: new Date(Date.now() - 3 * 24 * 3600000).toISOString(),
+    refundedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
+    notes: "Quick return and refund processed",
+    timeline: [],
+  },
+];
 
-const StatusPipeline = ({ returns }: { returns: ReturnRecord[] }) => {
+const StatusPipeline = ({ returns }: { returns: Return[] }) => {
   const statuses: ReturnStatusDisplay[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
 
   const countByStatus = statuses.reduce(
     (acc, status) => {
-      acc[status] = returns.filter((r) => normalizeStatus(r.status) === status).length;
+      acc[status] = returns.filter((r) => normalizeStatus(r.status as string) === status).length;
       return acc;
     },
     {} as Record<ReturnStatusDisplay, number>
@@ -143,7 +143,7 @@ const StatusPipeline = ({ returns }: { returns: ReturnRecord[] }) => {
   );
 };
 
-const ReturnsTable = ({ returns }: { returns: ReturnRecord[] }) => {
+const ReturnsTable = ({ returns }: { returns: Return[] }) => {
   return (
     <div className="bg-[#13131a] border border-white/[0.08] rounded-xl overflow-hidden">
       {/* Table header */}
@@ -161,9 +161,10 @@ const ReturnsTable = ({ returns }: { returns: ReturnRecord[] }) => {
       {/* Table rows */}
       <div className="divide-y divide-white/[0.05]">
         {returns.map((ret) => {
-          const status = normalizeStatus(ret.status);
+          const status = normalizeStatus(ret.status as string);
           const config = statusConfig[status];
           const date = new Date(ret.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const amount = ret.refundAmount ?? ret.totalRefundAmount ?? 0;
 
           return (
             <div key={ret.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
@@ -186,6 +187,9 @@ const ReturnsTable = ({ returns }: { returns: ReturnRecord[] }) => {
               <div className="col-span-2">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Customer</div>
                 <div className="text-sm text-wl-text-primary">{ret.customerName}</div>
+                {ret.customerEmail && (
+                  <div className="text-xs text-wl-text-tertiary mt-0.5">{ret.customerEmail}</div>
+                )}
               </div>
 
               {/* Reason */}
@@ -203,7 +207,7 @@ const ReturnsTable = ({ returns }: { returns: ReturnRecord[] }) => {
               {/* Refund amount */}
               <div className="col-span-1">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Refund</div>
-                <div className="text-sm font-semibold text-wl-success-400">${Number(ret.refundAmount).toFixed(2)}</div>
+                <div className="text-sm font-semibold text-wl-success-400">${Number(amount).toFixed(2)}</div>
               </div>
 
               {/* Date */}
@@ -230,19 +234,15 @@ const ReturnsTable = ({ returns }: { returns: ReturnRecord[] }) => {
 };
 
 export default function ReturnsPage() {
-  const { items: apiReturns, loading, error, refetch } = useApiList<ReturnRecord>('/api/v4/returns', { limit: 50 });
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const returns = apiReturns.length > 0 ? apiReturns : MOCK_RETURNS;
+  const { items: apiReturns } = useReturns();
+  const returnsData = apiReturns.length > 0 ? apiReturns : MOCK_RETURNS;
 
   return (
     <>
       {/* Header */}
       <Header
         title="Returns & RMA"
-        subtitle={`${returns.length} active returns`}
+        subtitle={`${returnsData.length} active returns`}
         actions={
           <Button variant="primary" size="md">
             <Plus className="w-4 h-4" />
@@ -252,10 +252,10 @@ export default function ReturnsPage() {
       />
 
       {/* Status pipeline */}
-      <StatusPipeline returns={returns} />
+      <StatusPipeline returns={returnsData} />
 
       {/* Returns table */}
-      <ReturnsTable returns={returns} />
+      <ReturnsTable returns={returnsData} />
     </>
   );
 }
