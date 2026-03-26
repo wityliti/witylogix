@@ -1,7 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "../../Dockerfile"
-dockerTarget = "customer-portal"
+dockerfilePath = "../../Dockerfile.customer-portal"
 
 [deploy]
 healthcheckPath = "/"
