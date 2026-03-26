@@ -18,7 +18,7 @@ import "@shopify/shopify-app-react-router/adapters/node";
 import {
   AppDistribution,
   shopifyApp,
-} from "@shopify/shopify-app-react-router";
+} from "@shopify/shopify-app-react-router/server";
 
 // Prisma session storage stores Shopify OAuth sessions in our database
 // so they survive server restarts. Uses the same @witylogix/db Prisma client.
