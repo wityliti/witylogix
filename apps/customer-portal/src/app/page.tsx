@@ -1,8 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { addDays } from 'date-fns';
-import { ArrowRight, Package, Truck } from 'lucide-react';
+import { addDays, format } from 'date-fns';
+import {
+  ArrowRight,
+  Clock,
+  HelpCircle,
+  MapPin,
+  Package,
+  PackageCheck,
+  Truck,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OrderCard } from '@/components/order-card';
 import type { Order } from '@/types';
@@ -96,47 +104,119 @@ const recentOrders: Order[] = [
   },
 ];
 
+const allOrders = [...upcomingDeliveries, ...recentOrders];
+
+const statCards = [
+  {
+    label: 'Total Orders',
+    value: allOrders.length,
+    icon: Package,
+    color: 'text-wl-primary-400',
+  },
+  {
+    label: 'Active Deliveries',
+    value: allOrders.filter((o) => o.status === 'out-for-delivery').length,
+    icon: Truck,
+    color: 'text-wl-info-500',
+  },
+  {
+    label: 'Pending',
+    value: allOrders.filter(
+      (o) => o.status === 'pending' || o.status === 'confirmed',
+    ).length,
+    icon: Clock,
+    color: 'text-wl-warning-500',
+  },
+  {
+    label: 'Delivered',
+    value: allOrders.filter((o) => o.status === 'delivered').length,
+    icon: PackageCheck,
+    color: 'text-wl-success-500',
+  },
+] as const;
+
+const quickActions = [
+  {
+    label: 'Track a Delivery',
+    href: '/track',
+    icon: MapPin,
+  },
+  {
+    label: 'View All Orders',
+    href: '/orders',
+    icon: Package,
+  },
+  {
+    label: 'Get Support',
+    href: '/support',
+    icon: HelpCircle,
+  },
+] as const;
+
 export default function DashboardPage() {
-  const totalSpent = (
-    upcomingDeliveries.reduce((sum, o) => sum + o.totalPrice, 0) +
-    recentOrders.reduce((sum, o) => sum + o.totalPrice, 0)
-  ).toFixed(2);
+  const today = format(new Date(), 'EEEE, MMMM d, yyyy');
 
   return (
     <div className="page-container">
-      {/* Greeting — clean, no garish banner */}
+      {/* Welcome greeting */}
       <div className="page-header animate-fade-in">
-        <p className="text-wl-text-secondary text-sm">Good afternoon</p>
+        <p className="text-wl-text-tertiary text-sm">{today}</p>
         <h1 className="page-title">Welcome back, John</h1>
+        <p className="page-subtitle">
+          Here is an overview of your deliveries and orders.
+        </p>
       </div>
 
-      {/* Quick stats — tight, numbers-first */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-in stagger-1">
-        <div className="stat-card">
-          <p className="label">Active</p>
-          <p className="value mt-1">{upcomingDeliveries.length}</p>
-        </div>
-        <div className="stat-card">
-          <p className="label">Delivered</p>
-          <p className="value mt-1">{recentOrders.filter(o => o.status === 'delivered').length}</p>
-        </div>
-        <div className="stat-card">
-          <p className="label">Total Spent</p>
-          <p className="value mt-1 text-xl sm:text-2xl">${totalSpent}</p>
-        </div>
+      {/* Summary stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in stagger-1">
+        {statCards.map((card) => (
+          <div key={card.label} className="section-card flex flex-col items-center gap-2 py-5">
+            <card.icon size={24} className={card.color} />
+            <p className="text-3xl font-bold text-wl-text-primary">
+              {card.value}
+            </p>
+            <p className="text-sm text-wl-text-secondary">{card.label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Active deliveries — these get prominence */}
+      {/* Quick actions row */}
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-in stagger-1">
+        {quickActions.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className={cn(
+              'section-card flex-1 flex items-center gap-3 px-4 py-3',
+              'hover:border-wl-primary-500/40 transition-colors',
+            )}
+          >
+            <action.icon size={18} className="text-wl-primary-400 shrink-0" />
+            <span className="text-sm font-medium text-wl-text-primary">
+              {action.label}
+            </span>
+            <ArrowRight
+              size={14}
+              className="ml-auto text-wl-text-tertiary"
+            />
+          </Link>
+        ))}
+      </div>
+
+      {/* Upcoming deliveries */}
       <section className="animate-fade-in stagger-2">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Truck size={16} className="text-wl-primary-500" />
             <h2 className="text-base font-semibold text-wl-text-primary">
-              Active Deliveries
+              Upcoming Deliveries
             </h2>
+            <span className="status-badge text-xs px-2 py-0.5 rounded-full bg-wl-primary-500/10 text-wl-primary-400">
+              {upcomingDeliveries.length}
+            </span>
           </div>
           <Link
-            href="/orders"
+            href="/deliveries"
             className="flex items-center gap-1 text-xs font-medium text-wl-text-tertiary hover:text-wl-text-secondary transition-colors"
           >
             View all
@@ -151,13 +231,25 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Recent orders — receded, less visual weight */}
+      {/* Recent orders */}
       <section className="animate-fade-in stagger-3">
-        <div className="flex items-center gap-2 mb-3">
-          <Package size={16} className="text-wl-text-tertiary" />
-          <h2 className="text-base font-semibold text-wl-text-primary">
-            Recent Orders
-          </h2>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Package size={16} className="text-wl-text-tertiary" />
+            <h2 className="text-base font-semibold text-wl-text-primary">
+              Recent Orders
+            </h2>
+            <span className="status-badge text-xs px-2 py-0.5 rounded-full bg-wl-bg-elevated text-wl-text-secondary">
+              {recentOrders.length}
+            </span>
+          </div>
+          <Link
+            href="/orders"
+            className="flex items-center gap-1 text-xs font-medium text-wl-text-tertiary hover:text-wl-text-secondary transition-colors"
+          >
+            View all orders
+            <ArrowRight size={12} />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
