@@ -193,7 +193,7 @@ const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
 };
 
 export default function FleetPage() {
-  const { items: vehiclesData = MOCK_VEHICLES, loading, error, refetch } = useApiList<Vehicle>('/api/v4/vehicles');
+  const { items: vehiclesData = MOCK_VEHICLES, loading, error, refetch } = useApiList<Vehicle>('/api/v4/fleet/vehicles');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

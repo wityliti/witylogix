@@ -10,7 +10,7 @@ export default defineConfig({
   timeout: 45000,
 
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3003",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -36,9 +36,9 @@ export default defineConfig({
       },
     },
     {
-      // Next.js dev server
-      command: "npx next dev -p 3000",
-      port: 3000,
+      // Next.js production server (build with: pnpm build)
+      command: "npx next start -p 3003",
+      port: 3003,
       reuseExistingServer: true,
       timeout: 30000,
     },

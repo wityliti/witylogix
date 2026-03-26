@@ -107,7 +107,7 @@ export default function CapacityPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error.message} />;
   }
 
   return (

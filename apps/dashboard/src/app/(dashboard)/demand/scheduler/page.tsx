@@ -67,7 +67,7 @@ export default function SchedulerPage() {
   const [selectedScenario, setSelectedScenario] = useState<number>(0);
 
   const { data, loading, error } = useApiQuery<SchedulerData>(
-    '/api/v4/analytics?type=scheduler'
+    '/api/v4/analytics/demand-scheduler'
   );
 
   const schedule = data?.schedule || [];
@@ -91,7 +91,7 @@ export default function SchedulerPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error.message} />;
   }
 
   return (

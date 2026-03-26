@@ -12,6 +12,7 @@ import {
   useTransactions,
   useTerminals,
   useTopSellingItems,
+  type POSOverview,
   type TransactionStatus,
 } from "@/hooks/use-pos";
 
@@ -48,11 +49,20 @@ const paymentMethodIcon: Record<string, string> = {
   gift_card: "🎁",
 };
 
+const DEFAULT_OVERVIEW: POSOverview = {
+  todaysSales: 0,
+  transactionCount: 0,
+  avgTicket: 0,
+  paymentBreakdown: { cash: 0, card: 0, mobile: 0, other: 0 },
+};
+
 export default function POSPage() {
-  const overview = usePOSOverview();
-  const { transactions: liveTransactions } = useTransactions();
-  const { terminals } = useTerminals();
+  const { data: overviewData } = usePOSOverview();
+  const { items: liveTransactions } = useTransactions();
+  const { items: terminals } = useTerminals();
   const { items: topItems } = useTopSellingItems();
+
+  const overview = overviewData ?? DEFAULT_OVERVIEW;
 
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
@@ -60,7 +70,7 @@ export default function POSPage() {
   // Get recent transactions (last 10)
   const recentTransactions = useMemo(
     () =>
-      liveTransactions
+      [...liveTransactions]
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10),
     [liveTransactions]
@@ -68,12 +78,12 @@ export default function POSPage() {
 
   // Calculate payment breakdown percentages
   const paymentBreakdownPercentages = useMemo(() => {
-    const total = Object.values(overview.paymentBreakdown).reduce((a, b) => a + b, 0);
+    const total = Object.values(overview.paymentBreakdown).reduce((a: number, b: number) => a + b, 0);
     return {
-      cash: total > 0 ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1) : 0,
-      card: total > 0 ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1) : 0,
-      mobile: total > 0 ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1) : 0,
-      other: total > 0 ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1) : 0,
+      cash: total > 0 ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1) : "0",
+      card: total > 0 ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1) : "0",
+      mobile: total > 0 ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1) : "0",
+      other: total > 0 ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1) : "0",
     };
   }, [overview.paymentBreakdown]);
 

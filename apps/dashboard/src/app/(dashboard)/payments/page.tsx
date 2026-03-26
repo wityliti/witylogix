@@ -50,7 +50,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 2750.0,
     method: "bank_transfer",
     status: "completed",
-    date: new Date("2024-02-10"),
+    date: "2024-02-10",
     reference: "TXN-20240210-12345",
   },
   {
@@ -60,7 +60,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 4500.0,
     method: "bank_transfer",
     status: "completed",
-    date: new Date("2024-01-28"),
+    date: "2024-01-28",
     reference: "TXN-20240128-67890",
   },
   {
@@ -70,7 +70,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 1450.0,
     method: "card",
     status: "completed",
-    date: new Date("2024-02-18"),
+    date: "2024-02-18",
     reference: "CARD-20240218-11111",
   },
   {
@@ -80,7 +80,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 3200.0,
     method: "bank_transfer",
     status: "pending",
-    date: new Date("2024-03-05"),
+    date: "2024-03-05",
     reference: "TXN-20240305-22222",
   },
   {
@@ -90,7 +90,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 1850.5,
     method: "check",
     status: "pending",
-    date: new Date("2024-03-08"),
+    date: "2024-03-08",
     reference: "CHK-20240308-33333",
   },
   {
@@ -100,7 +100,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 3050.0,
     method: "bank_transfer",
     status: "completed",
-    date: new Date("2024-02-25"),
+    date: "2024-02-25",
     reference: "TXN-20240225-44444",
   },
   {
@@ -110,7 +110,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 1600.0,
     method: "card",
     status: "failed",
-    date: new Date("2024-02-28"),
+    date: "2024-02-28",
     reference: "CARD-20240228-55555",
   },
   {
@@ -120,7 +120,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 2200.0,
     method: "bank_transfer",
     status: "pending",
-    date: new Date("2024-03-10"),
+    date: "2024-03-10",
     reference: "TXN-20240310-66666",
   },
   {
@@ -130,7 +130,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 5200.0,
     method: "bank_transfer",
     status: "completed",
-    date: new Date("2024-03-01"),
+    date: "2024-03-01",
     reference: "TXN-20240301-77777",
   },
   {
@@ -140,7 +140,7 @@ const MOCK_PAYMENTS: Payment[] = [
     amount: 3800.0,
     method: "card",
     status: "completed",
-    date: new Date("2024-03-02"),
+    date: "2024-03-02",
     reference: "CARD-20240302-88888",
   },
 ];
@@ -279,15 +279,6 @@ export default function PaymentsPage() {
 
   const { items: payments, loading, error, refetch } = useApiList<Payment>('/api/v4/payments');
 
-  if (error) {
-    return (
-      <ErrorState
-        message={error.message || 'Failed to load payments'}
-        onRetry={refetch}
-      />
-    );
-  }
-
   // Filter payments
   const filtered = useMemo(() => {
     let result = payments;
@@ -403,6 +394,15 @@ export default function PaymentsPage() {
     searchQuery || selectedMethod || selectedStatus || dateFrom || dateTo
   );
 
+  if (error) {
+    return (
+      <ErrorState
+        message={error.message || 'Failed to load payments'}
+        onRetry={refetch}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
       {/* Header */}
@@ -425,27 +425,23 @@ export default function PaymentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
           label="Total Collected"
-          value={`$${stats.totalCollected.toFixed(2)}`}
-          trend={null}
-          icon={null}
+          value={stats.totalCollected}
+          format={(v) => `$${v.toFixed(2)}`}
         />
         <MetricCard
           label="Pending Payments"
-          value={`$${stats.totalPending.toFixed(2)}`}
-          trend={null}
-          icon={null}
+          value={stats.totalPending}
+          format={(v) => `$${v.toFixed(2)}`}
         />
         <MetricCard
           label="Failed Payments"
-          value={`$${stats.totalFailed.toFixed(2)}`}
-          trend={null}
-          icon={null}
+          value={stats.totalFailed}
+          format={(v) => `$${v.toFixed(2)}`}
         />
         <MetricCard
           label="Avg Payment"
-          value={`$${stats.avgPaymentAmount.toFixed(2)}`}
-          trend={null}
-          icon={null}
+          value={stats.avgPaymentAmount}
+          format={(v) => `$${v.toFixed(2)}`}
         />
       </div>
 
@@ -534,45 +530,44 @@ export default function PaymentsPage() {
           </div>
 
           <Select
-            value={selectedMethod as string}
-            onChange={(value) =>
-              setSelectedMethod((value as PaymentMethod) || "")
-            }
+            value={selectedMethod}
+            onChange={(e) => setSelectedMethod((e.target.value as PaymentMethod) || "")}
             label="Method"
             className="w-40"
-          >
-            <option value="">All Methods</option>
-            <option value="bank_transfer">Bank Transfer</option>
-            <option value="card">Card</option>
-            <option value="cash">Cash</option>
-            <option value="check">Check</option>
-          </Select>
+            options={[
+              { value: "", label: "All Methods" },
+              { value: "bank_transfer", label: "Bank Transfer" },
+              { value: "card", label: "Card" },
+              { value: "cash", label: "Cash" },
+              { value: "check", label: "Check" },
+            ]}
+          />
 
           <Select
-            value={selectedStatus as string}
-            onChange={(value) =>
-              setSelectedStatus((value as PaymentStatus) || "")
-            }
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus((e.target.value as PaymentStatus) || "")}
             label="Status"
             className="w-32"
-          >
-            <option value="">All Status</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="cancelled">Cancelled</option>
-          </Select>
+            options={[
+              { value: "", label: "All Status" },
+              { value: "completed", label: "Completed" },
+              { value: "pending", label: "Pending" },
+              { value: "failed", label: "Failed" },
+              { value: "cancelled", label: "Cancelled" },
+            ]}
+          />
 
           <Select
             value={sortBy}
-            onChange={(value) => setSortBy(value as "date" | "amount" | "status")}
+            onChange={(e) => setSortBy(e.target.value as "date" | "amount" | "status")}
             label="Sort By"
             className="w-32"
-          >
-            <option value="date">Date</option>
-            <option value="amount">Amount</option>
-            <option value="status">Status</option>
-          </Select>
+            options={[
+              { value: "date", label: "Date" },
+              { value: "amount", label: "Amount" },
+              { value: "status", label: "Status" },
+            ]}
+          />
 
           {hasActiveFilters && (
             <Button
@@ -625,12 +620,12 @@ export default function PaymentsPage() {
         </Card>
       ) : (
         <Card className={cn("overflow-hidden bg-[#12121a] border border-[#1e1e2e]")}>
-          <Table
+          <Table<Payment>
             columns={[
               {
                 key: "invoiceNumber",
                 header: "Invoice #",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <div className="font-mono text-sm font-medium text-blue-500">
                     {item.invoiceNumber}
                   </div>
@@ -647,7 +642,7 @@ export default function PaymentsPage() {
               {
                 key: "amount",
                 header: "Amount",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <div className="font-medium text-white">
                     ${item.amount.toFixed(2)}
                   </div>
@@ -659,7 +654,7 @@ export default function PaymentsPage() {
               {
                 key: "method",
                 header: "Method",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <div className="text-sm text-gray-300">
                     {getMethodLabel(item.method)}
                   </div>
@@ -669,7 +664,7 @@ export default function PaymentsPage() {
               {
                 key: "status",
                 header: "Status",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <Badge variant={getStatusBadgeVariant(item.status)}>
                     {getStatusLabel(item.status)}
                   </Badge>
@@ -679,9 +674,9 @@ export default function PaymentsPage() {
               {
                 key: "date",
                 header: "Date",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <div className="text-sm text-gray-300">
-                    {item.date.toLocaleDateString()}
+                    {new Date(item.date).toLocaleDateString()}
                   </div>
                 ),
                 sortable: true,
@@ -690,7 +685,7 @@ export default function PaymentsPage() {
               {
                 key: "reference",
                 header: "Reference",
-                render: (item: Record<string, unknown>) => (
+                render: (item) => (
                   <div className="font-mono text-xs text-gray-400">
                     {item.reference}
                   </div>
@@ -732,7 +727,7 @@ export default function PaymentsPage() {
                     {getStatusLabel(payment.status)}
                   </Badge>
                   <span className="text-xs text-gray-400">
-                    {payment.date.toLocaleDateString()}
+                    {new Date(payment.date).toLocaleDateString()}
                   </span>
                 </div>
               </div>

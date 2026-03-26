@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -14,20 +14,29 @@ import { Badge } from "@/components/ui/badge";
 import {
   ChevronDown,
   ChevronUp,
-  Mail,
   MessageSquare,
-  Clock,
-  AlertCircle,
-  CheckCircle,
   Plus,
 } from "lucide-react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
 
-interface Ticket {
+interface SupportTicket {
   id: string;
   subject: string;
-  status: "open" | "in-progress" | "resolved";
-  created: string;
-  updated: string;
+  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  category?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TicketsResponse {
+  data: SupportTicket[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 interface FAQ {
@@ -70,80 +79,82 @@ const faqs: FAQ[] = [
   },
 ];
 
+function getStatusBadge(status: string): "warning" | "info" | "success" | "default" {
+  switch (status) {
+    case "OPEN":
+      return "warning";
+    case "IN_PROGRESS":
+      return "info";
+    case "RESOLVED":
+    case "CLOSED":
+      return "success";
+    default:
+      return "default";
+  }
+}
+
+function formatStatus(status: string): string {
+  return status.replace(/_/g, " ");
+}
+
 export default function SupportPage() {
   const [expandedFaq, setExpandedFaq] = useState<string | null>("delivery-1");
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
     subject: "",
-    message: "",
-    priority: "normal",
+    description: "",
+    priority: "MEDIUM" as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
   });
-  const [tickets, setTickets] = useState<Ticket[]>([
-    {
-      id: "TKT-001",
-      subject: "Delivery tracking not updating",
-      status: "in-progress",
-      created: "2026-03-04",
-      updated: "2026-03-05",
-    },
-    {
-      id: "TKT-002",
-      subject: "Integration with Shopify",
-      status: "resolved",
-      created: "2026-03-02",
-      updated: "2026-03-05",
-    },
-    {
-      id: "TKT-003",
-      subject: "API rate limit questions",
-      status: "open",
-      created: "2026-03-05",
-      updated: "2026-03-05",
-    },
-    {
-      id: "TKT-004",
-      subject: "Billing invoice inquiry",
-      status: "open",
-      created: "2026-03-03",
-      updated: "2026-03-04",
-    },
-  ]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "open":
-        return "warning";
-      case "in-progress":
-        return "info";
-      case "resolved":
-        return "success";
-      default:
-        return "default";
-    }
-  };
+  // Fetch tickets from real API
+  const {
+    data: ticketsData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<TicketsResponse>("/api/v4/support/tickets");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newTicket: Ticket = {
-      id: `TKT-${String(tickets.length + 1).padStart(3, "0")}`,
-      subject: formData.subject,
-      status: "open",
-      created: new Date().toISOString().split("T")[0],
-      updated: new Date().toISOString().split("T")[0],
-    };
-    setTickets([newTicket, ...tickets]);
-    setFormData({ name: "", email: "", subject: "", message: "", priority: "normal" });
-  };
+  // Create ticket mutation
+  const { execute: createTicket, loading: creating } = useApiMutation<SupportTicket>(
+    "POST",
+    "/api/v4/support/tickets"
+  );
+
+  const tickets = ticketsData?.data ?? [];
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        await createTicket(formData);
+        setFormData({ subject: "", description: "", priority: "MEDIUM" });
+        refetch();
+      } catch {
+        // error surfaced via mutation hook
+      }
+    },
+    [formData, createTicket, refetch]
+  );
+
+  // Group FAQs by category
+  const faqSections = faqs.reduce(
+    (acc, item) => {
+      const group = acc.find((g) => g.category === item.category);
+      if (group) {
+        group.items.push(item);
+      } else {
+        acc.push({ category: item.category, items: [item] });
+      }
+      return acc;
+    },
+    [] as { category: string; items: FAQ[] }[]
+  );
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6">
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Support & Help Center
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Support & Help Center</h1>
           <p className="text-gray-400 text-sm">
             Get help with Witylogix platform and manage support tickets
           </p>
@@ -157,23 +168,17 @@ export default function SupportPage() {
                 <CardTitle className="text-white">Frequently Asked Questions</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                {faqs.reduce((acc, item) => {
-                  const categoryGroup = acc.find(g => g.category === item.category);
-                  if (categoryGroup) {
-                    categoryGroup.items.push(item);
-                  } else {
-                    acc.push({ category: item.category, items: [item] });
-                  }
-                  return acc;
-                }, [] as any[]).map((section) => (
+                {faqSections.map((section) => (
                   <div key={section.category} className="mb-2">
                     <h3 className="text-blue-400 text-xs font-semibold mb-2 uppercase">
                       {section.category}
                     </h3>
-                    {section.items.map((item: FAQ) => (
+                    {section.items.map((item) => (
                       <div key={item.id} className="mb-2">
                         <button
-                          onClick={() => setExpandedFaq(expandedFaq === item.id ? null : item.id)}
+                          onClick={() =>
+                            setExpandedFaq(expandedFaq === item.id ? null : item.id)
+                          }
                           className="w-full flex items-center justify-between p-3 bg-[#1a1a2e] border border-[#1e1e2e] rounded hover:bg-[#1a1a2e]/80 cursor-pointer text-white text-sm font-medium transition-all"
                         >
                           <span className="text-left">{item.q}</span>
@@ -201,73 +206,52 @@ export default function SupportPage() {
             <Card className="bg-[#12121a] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="text-white">Contact Support</CardTitle>
-                <CardDescription className="text-gray-400">Create a new support ticket</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Create a new support ticket
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                      className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">
-                      Subject
-                    </label>
+                    <label className="block text-white text-sm font-medium mb-1.5">Subject</label>
                     <input
                       type="text"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
+                      minLength={5}
                       className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">
-                      Priority
-                    </label>
+                    <label className="block text-white text-sm font-medium mb-1.5">Priority</label>
                     <select
                       value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          priority: e.target.value as typeof formData.priority,
+                        })
+                      }
                       className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm cursor-pointer focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     >
-                      <option value="low">Low</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
+                      <option value="LOW">Low</option>
+                      <option value="MEDIUM">Medium</option>
+                      <option value="HIGH">High</option>
+                      <option value="URGENT">Urgent</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-white text-sm font-medium mb-1.5">
-                      Message
+                      Description
                     </label>
                     <textarea
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
+                      minLength={10}
                       className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm min-h-[100px] resize-vertical placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                     />
                   </div>
@@ -276,9 +260,10 @@ export default function SupportPage() {
                     type="submit"
                     variant="primary"
                     className="w-full flex items-center justify-center gap-1.5"
+                    disabled={creating}
                   >
                     <Plus size={16} />
-                    Create Ticket
+                    {creating ? "Creating..." : "Create Ticket"}
                   </Button>
                 </form>
               </CardContent>
@@ -293,9 +278,24 @@ export default function SupportPage() {
               <MessageSquare size={20} />
               Your Support Tickets
             </CardTitle>
-            <CardDescription className="text-gray-400">Recent tickets and their status</CardDescription>
+            <CardDescription className="text-gray-400">
+              Recent tickets and their status
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-between">
+                <span className="text-sm text-red-400">Failed to load tickets</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refetch()}
+                  className="text-red-400"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -303,42 +303,68 @@ export default function SupportPage() {
                     <th className="p-3 text-left text-gray-400 text-xs font-semibold">
                       Ticket ID
                     </th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">
-                      Subject
-                    </th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">
-                      Status
-                    </th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">
-                      Created
-                    </th>
-                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">
-                      Updated
-                    </th>
+                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Subject</th>
+                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Priority</th>
+                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Status</th>
+                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Created</th>
+                    <th className="p-3 text-left text-gray-400 text-xs font-semibold">Updated</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tickets.map((ticket) => (
-                    <tr key={ticket.id} className="border-b border-b-[#1e1e2e] hover:bg-[#1a1a2e]/40 transition-colors">
-                      <td className="p-3 text-white text-sm font-medium font-mono">
-                        {ticket.id}
-                      </td>
-                      <td className="p-3 text-white text-sm">
-                        {ticket.subject}
-                      </td>
-                      <td className="p-3">
-                        <Badge variant={getStatusBadge(ticket.status) as any}>
-                          {ticket.status.replace("-", " ").toUpperCase()}
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-gray-400 text-xs">
-                        {ticket.created}
-                      </td>
-                      <td className="p-3 text-gray-400 text-xs">
-                        {ticket.updated}
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <tr key={i} className="border-b border-b-[#1e1e2e]">
+                        <td
+                          colSpan={6}
+                          className="px-3 py-4 h-12 bg-[#1a1a2e]/30 animate-pulse"
+                        />
+                      </tr>
+                    ))
+                  ) : tickets.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-400 text-sm">
+                        No support tickets yet. Create one above.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    tickets.map((ticket) => (
+                      <tr
+                        key={ticket.id}
+                        className={cn(
+                          "border-b border-b-[#1e1e2e] hover:bg-[#1a1a2e]/40 transition-colors"
+                        )}
+                      >
+                        <td className="p-3 text-white text-sm font-medium font-mono">
+                          {ticket.id.slice(0, 8).toUpperCase()}
+                        </td>
+                        <td className="p-3 text-white text-sm">{ticket.subject}</td>
+                        <td className="p-3">
+                          <Badge
+                            variant={
+                              ticket.priority === "URGENT"
+                                ? "danger"
+                                : ticket.priority === "HIGH"
+                                  ? "warning"
+                                  : "default"
+                            }
+                          >
+                            {ticket.priority}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <Badge variant={getStatusBadge(ticket.status)}>
+                            {formatStatus(ticket.status)}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-gray-400 text-xs">
+                          {new Date(ticket.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-3 text-gray-400 text-xs">
+                          {new Date(ticket.updatedAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

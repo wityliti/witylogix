@@ -92,7 +92,7 @@ const RateComparisonTable = forwardRef<HTMLDivElement, RateComparisonTableProps>
     }, [items, sortField, sortOrder]);
 
     // Find best values for highlighting
-    const getBestValue = (field: SortField): number | string => {
+    const getBestValue = (field: SortField): number | string | null => {
       if (items.length === 0) return null;
 
       switch (field) {
@@ -114,6 +114,7 @@ const RateComparisonTable = forwardRef<HTMLDivElement, RateComparisonTableProps>
           return null;
       }
     };
+
 
     const SortIcon = ({ field }: { field: SortField }) => {
       if (sortField !== field) {

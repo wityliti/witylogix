@@ -5,8 +5,6 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import type { WizardStep } from './types';
 
-export type { WizardStep };
-
 /* ═══════════════════════════════════════════════════════════
    Wizard Compound Components for CRM Connection Setup
    ═══════════════════════════════════════════════════════════ */

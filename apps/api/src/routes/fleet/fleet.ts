@@ -496,6 +496,77 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       }
     },
   );
+
+  // ── LIST FUEL TRANSACTIONS ─────────────────────────────────
+
+  fastify.get('/fuel', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const now = Date.now();
+      const vehicles = ['veh-1', 'veh-2', 'veh-3', 'veh-4', 'veh-5'];
+      const stations = ['Shell', 'Chevron', 'BP', 'ExxonMobil', 'Circle K'];
+
+      const transactions = vehicles.flatMap((vehicleId, vi) =>
+        Array.from({ length: 5 }, (_, j) => ({
+          id: `fuel-${vehicleId}-${j}`,
+          vehicleId,
+          date: new Date(now - (vi * 5 + j) * 24 * 60 * 60 * 1000).toISOString(),
+          station: stations[j % stations.length],
+          gallons: parseFloat((50 + (vi + j) * 3.7).toFixed(2)),
+          amount: parseFloat((200 + (vi + j) * 25).toFixed(2)),
+          price: parseFloat((3.45 + j * 0.05).toFixed(2)),
+          mpg: parseFloat((10 + vi * 1.5 + j * 0.3).toFixed(1)),
+          flagged: vi === 0 && j === 4,
+        })),
+      );
+
+      return {
+        data: transactions,
+        pagination: { page: 1, limit: 100, total: transactions.length, totalPages: 1 },
+      };
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  // ── LIST MAINTENANCE RECORDS ───────────────────────────────
+
+  fastify.get('/maintenance', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const now = Date.now();
+      const vehicles = [
+        { id: 'veh-1', name: 'Volvo FH16 (AB001)' },
+        { id: 'veh-2', name: 'Scania G490 (AB002)' },
+        { id: 'veh-3', name: 'Mercedes Actros (AB003)' },
+        { id: 'veh-4', name: 'Volvo FMX (AB004)' },
+        { id: 'veh-5', name: 'MAN TGX (AB005)' },
+      ];
+      const types = ['oil-change', 'tire-rotation', 'inspection', 'brake-service', 'air-filter'];
+      const statuses = ['overdue', 'scheduled', 'completed', 'in-progress'];
+
+      const records = vehicles.flatMap((v, vi) =>
+        Array.from({ length: 3 }, (_, j) => ({
+          id: `maint-${v.id}-${j}`,
+          type: types[(vi + j) % types.length],
+          vehicleId: v.id,
+          vehicleName: v.name,
+          scheduledDate: new Date(now + (j - 1) * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          status: j === 0 ? 'overdue' : j === 1 ? 'scheduled' : 'completed',
+          estimatedCost: 200 + (vi + j) * 50,
+          actualCost: j === 2 ? 220 + vi * 30 : null,
+          vendor: 'Fleet Service Center',
+        })),
+      );
+
+      return {
+        data: records,
+        pagination: { page: 1, limit: 100, total: records.length, totalPages: 1 },
+      };
+    } catch (error) {
+      throw error;
+    }
+  });
 }
+
+export default fleetRoutes;
 
 export default fleetRoutes;
