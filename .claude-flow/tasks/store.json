@@ -152,6 +152,40 @@
       "createdAt": "2026-03-26T11:39:54.114Z",
       "startedAt": "2026-03-26T11:40:10.694Z",
       "completedAt": null
+    },
+    "task-1774527707147-4haj2w": {
+      "taskId": "task-1774527707147-4haj2w",
+      "type": "feature",
+      "description": "Enhance customer portal order cards with: better visual hierarchy, refined status badges with icon+color+label, progress indicator for active deliveries, subtle hover scale animation (0.98->1.0), improved typography spacing, item preview thumbnails, delivery progress bar for out-for-delivery status.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "customer-portal",
+        "order-card"
+      ],
+      "createdAt": "2026-03-26T12:21:47.147Z",
+      "startedAt": "2026-03-26T12:22:15.632Z",
+      "completedAt": null
+    },
+    "task-1774527708451-cmdzef": {
+      "taskId": "task-1774527708451-cmdzef",
+      "type": "feature",
+      "description": "Enhance customer portal dashboard page with: summary stats cards (total orders, active deliveries, pending, delivered), quick actions section, recent activity timeline, improved layout with better content hierarchy.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "customer-portal",
+        "dashboard"
+      ],
+      "createdAt": "2026-03-26T12:21:48.452Z",
+      "startedAt": "2026-03-26T12:22:16.186Z",
+      "completedAt": null
     }
   },
   "version": "3.0.0"
