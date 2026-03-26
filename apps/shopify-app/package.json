@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "shopify app dev --skip-dependencies-installation --use-localhost --localhost-port 3001",
     "build": "react-router build",
-    "start": "react-router-serve ./build/server/index.js",
-    "start:prod": "NODE_ENV=production react-router-serve ./build/server/index.js",
+    "start": "node node_modules/@react-router/serve/bin.js ./build/server/index.js",
+    "start:prod": "NODE_ENV=production node node_modules/@react-router/serve/bin.js ./build/server/index.js",
     "test": "vitest run --passWithNoTests",
     "typecheck": "react-router typegen && tsc",
     "lint": "eslint app/"
