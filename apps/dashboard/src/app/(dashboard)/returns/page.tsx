@@ -13,9 +13,9 @@ import { Plus, ChevronRight } from 'lucide-react';
    Clean, data-focused design emphasizing return workflow stages
    ═══════════════════════════════════════════════════════════ */
 
-type ReturnStatusDisplay = 'requested' | 'approved' | 'shipped_back' | 'received' | 'inspected' | 'refunded';
+type ReturnStatus = 'requested' | 'approved' | 'shipped_back' | 'received' | 'inspected' | 'refunded';
 
-const statusConfig: Record<ReturnStatusDisplay, { badge: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }> = {
+const statusConfig: Record<ReturnStatus, { badge: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'; label: string }> = {
   requested: { badge: 'info', label: 'Requested' },
   approved: { badge: 'primary', label: 'Approved' },
   shipped_back: { badge: 'primary', label: 'Shipped Back' },
@@ -24,8 +24,8 @@ const statusConfig: Record<ReturnStatusDisplay, { badge: 'default' | 'success' |
   refunded: { badge: 'success', label: 'Refunded' },
 };
 
-const normalizeStatus = (status: string): ReturnStatusDisplay => {
-  const s = status.toLowerCase();
+const normalizeStatus = (status: string): ReturnStatus => {
+  const s = status.toLowerCase().replace(/_/g, '_');
   if (s === 'requested' || s === 'initiated') return 'requested';
   if (s === 'approved') return 'approved';
   if (s === 'shipped_back' || s === 'picked_up' || s === 'in_transit') return 'shipped_back';
@@ -35,7 +35,7 @@ const normalizeStatus = (status: string): ReturnStatusDisplay => {
   return 'requested';
 };
 
-// Mock returns data for development (fallback when API has no ReturnRequest model yet)
+// Mock returns data for development
 const MOCK_RETURNS: Return[] = [
   {
     id: "RET-2024-001",
@@ -106,14 +106,14 @@ const MOCK_RETURNS: Return[] = [
 ];
 
 const StatusPipeline = ({ returns }: { returns: Return[] }) => {
-  const statuses: ReturnStatusDisplay[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
+  const statuses: ReturnStatus[] = ['requested', 'approved', 'shipped_back', 'received', 'inspected', 'refunded'];
 
   const countByStatus = statuses.reduce(
     (acc, status) => {
       acc[status] = returns.filter((r) => normalizeStatus(r.status as string) === status).length;
       return acc;
     },
-    {} as Record<ReturnStatusDisplay, number>
+    {} as Record<ReturnStatus, number>
   );
 
   return (
@@ -121,6 +121,7 @@ const StatusPipeline = ({ returns }: { returns: Return[] }) => {
       <CardContent className="p-6">
         <div className="flex items-center gap-3 overflow-x-auto pb-2">
           {statuses.map((status, idx) => {
+            const config = statusConfig[status];
             const count = countByStatus[status];
 
             return (
