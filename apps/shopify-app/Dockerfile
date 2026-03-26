@@ -28,23 +28,19 @@ RUN pnpm build
 # ── Production Stage ─────────────────────────────────────
 FROM node:22-alpine AS runner
 
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
-
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy built app and all node_modules (workspace root + app-level)
+# Copy built app
 COPY --from=builder /app/apps/shopify-app/build ./build
 COPY --from=builder /app/apps/shopify-app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/shopify-app/node_modules ./node_modules_app
 
-# Merge app-level bins into node_modules so npx can find react-router-serve
-RUN cp -rn ./node_modules_app/.bin/* ./node_modules/.bin/ 2>/dev/null || true && \
-    cp -rn ./node_modules_app/* ./node_modules/ 2>/dev/null || true && \
-    rm -rf ./node_modules_app
+# Copy BOTH workspace root and app-level node_modules
+COPY --from=builder /app/node_modules ./node_modules
+# Overwrite with app-level modules (has react-router-serve)
+COPY --from=builder /app/apps/shopify-app/node_modules ./node_modules
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \

@@ -1,0 +1,73 @@
+{
+  "tasks": {
+    "task-1774523765485-cuge1d": {
+      "taskId": "task-1774523765485-cuge1d",
+      "type": "bugfix",
+      "description": "Fix shopify-app build failure: @shopify/shopify-app-react-router subpath import error. The import was changed to ./server but build still fails on Railway. Investigate and fix remaining build issues.",
+      "priority": "critical",
+      "status": "in_progress",
+      "progress": 80,
+      "assignedTo": [],
+      "tags": [
+        "shopify-app",
+        "railway",
+        "build-fix"
+      ],
+      "createdAt": "2026-03-26T11:16:05.486Z",
+      "startedAt": "2026-03-26T11:16:25.866Z",
+      "completedAt": null
+    },
+    "task-1774523767530-w4o7fv": {
+      "taskId": "task-1774523767530-w4o7fv",
+      "type": "feature",
+      "description": "Production hardening for API (Witylogix service): verify health endpoint works, validate DATABASE_URL and REDIS_URL connections, ensure proper error handling and graceful shutdown, check env vars are set correctly.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "api",
+        "production",
+        "health-check"
+      ],
+      "createdAt": "2026-03-26T11:16:07.530Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774523769594-q1lxj9": {
+      "taskId": "task-1774523769594-q1lxj9",
+      "type": "feature",
+      "description": "Verify all Next.js services (dashboard, customer-portal, docs) are production-ready: check NEXT_PUBLIC_API_URL is set, verify pages load correctly, ensure standalone output is working with correct static assets.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "nextjs",
+        "production",
+        "verification"
+      ],
+      "createdAt": "2026-03-26T11:16:09.594Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774523770508-vo3zog": {
+      "taskId": "task-1774523770508-vo3zog",
+      "type": "feature",
+      "description": "Set up cross-service environment variables on Railway: NEXT_PUBLIC_API_URL on dashboard/customer-portal/docs pointing to Witylogix API domain, verify all services can communicate.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "railway",
+        "env-vars",
+        "cross-service"
+      ],
+      "createdAt": "2026-03-26T11:16:10.508Z",
+      "startedAt": "2026-03-26T11:16:26.093Z",
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}
