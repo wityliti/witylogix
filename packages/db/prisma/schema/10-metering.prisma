@@ -1,0 +1,42 @@
+// ─── ROUTING METER EVENTS ──────────────────────────────────
+// Tracks usage of the deployer's fallback routing credentials.
+// When BYOK is enabled and a tenant hasn't configured their own
+// credentials, every routing API call lands here so deployers
+// can bill tenants for platform routing usage.
+
+model RoutingMeterEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  provider     String // e.g. "mapbox", "google_maps"
+  operation    String // "route" | "matrix" | "geocode" | "reverse_geocode" | "eta"
+  usedFallback Boolean  @default(true) @map("used_fallback")
+  timestamp    DateTime @default(now())
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, timestamp])
+  @@index([timestamp])
+  @@map("routing_meter_events")
+}
+
+// ─── NOTIFICATION METERING ─────────────────────────────────
+// Tracks per-tenant fallback usage of deployer notification credentials.
+// Same pattern as RoutingMeterEvent — when NOTIFICATIONS_BYOK=true and a
+// tenant hasn't configured their own provider, every notification sent
+// through deployer credentials is metered here for billing dashboards.
+
+model NotificationMeterEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  channel      String // "email" | "sms" | "whatsapp" | "push"
+  provider     String // e.g. "sendgrid", "twilio", "meta_cloud"
+  operation    String // "send"
+  usedFallback Boolean  @default(true) @map("used_fallback")
+  timestamp    DateTime @default(now())
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, timestamp])
+  @@index([channel, timestamp])
+  @@map("notification_meter_events")
+}

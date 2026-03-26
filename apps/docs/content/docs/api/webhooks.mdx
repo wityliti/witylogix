@@ -1,0 +1,409 @@
+---
+title: Webhooks
+description: Witylogix webhook setup, verification, and event handling
+---
+
+# Webhooks
+
+Webhooks allow you to receive real-time notifications when events occur in the Witylogix system. This enables you to build reactive workflows and keep your systems synchronized.
+
+## Overview
+
+When a subscribed event occurs, the Witylogix API sends an HTTP POST request to your configured webhook URL with details about the event. Your endpoint should acknowledge receipt with a `200 OK` response.
+
+## Setting Up Webhooks
+
+### Register a Webhook Endpoint
+
+Use the webhooks API to register your endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v4/webhooks \
+  -H "Authorization: Bearer token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-domain.com/webhooks/witylogix",
+    "events": [
+      "order.created",
+      "order.status_changed",
+      "shipment.created",
+      "shipment.status_changed"
+    ],
+    "active": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "webhook_123",
+  "url": "https://your-domain.com/webhooks/witylogix",
+  "events": [
+    "order.created",
+    "order.status_changed",
+    "shipment.created",
+    "shipment.status_changed"
+  ],
+  "active": true,
+  "secret": "whsec_secret_key_for_verification",
+  "created_at": "2024-03-10T12:00:00Z"
+}
+```
+
+Save the `secret` value - you'll need it to verify webhook signatures.
+
+## Webhook Event Types
+
+### Order Events
+
+- `order.created` - New order created
+- `order.confirmed` - Order confirmed and ready for processing
+- `order.assigned` - Order assigned to driver
+- `order.status_changed` - Order status changed
+- `order.delivered` - Order successfully delivered
+- `order.cancelled` - Order cancelled
+- `order.updated` - Order details updated
+
+### Shipment Events
+
+- `shipment.created` - New shipment created
+- `shipment.picked_up` - Shipment picked up from origin
+- `shipment.in_transit` - Shipment is in transit
+- `shipment.out_for_delivery` - Shipment out for delivery
+- `shipment.status_changed` - Shipment status changed
+- `shipment.delivered` - Shipment delivered
+- `shipment.failed` - Delivery failed
+
+### Driver Events
+
+- `driver.created` - New driver registered
+- `driver.status_changed` - Driver availability changed
+- `driver.location_updated` - Driver location updated
+
+### Zone Events
+
+- `zone.created` - New delivery zone created
+- `zone.updated` - Zone configuration updated
+- `zone.deleted` - Zone deleted
+
+### Analytics Events
+
+- `analytics.daily_summary` - Daily analytics summary generated
+
+## Webhook Request Format
+
+When an event occurs, Witylogix sends a POST request to your endpoint with this structure:
+
+```bash
+POST /webhooks/witylogix HTTP/1.1
+Host: your-domain.com
+Content-Type: application/json
+X-Witylogix-Signature: sha256=abc123def456...
+X-Witylogix-Event-Id: evt_123abc
+X-Witylogix-Timestamp: 1678890000
+```
+
+```json
+{
+  "id": "evt_123abc",
+  "type": "order.created",
+  "timestamp": "2024-03-10T12:00:00Z",
+  "data": {
+    "order_id": "order_456",
+    "customer_id": "cust_789",
+    "status": "pending",
+    "total_amount": 49.99,
+    "delivery_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10001",
+      "country": "US"
+    },
+    "items": [
+      {
+        "product_id": "prod_123",
+        "quantity": 2
+      }
+    ]
+  }
+}
+```
+
+## Verifying Webhook Signatures
+
+Always verify the webhook signature to ensure the request came from Witylogix. The signature is provided in the `X-Witylogix-Signature` header.
+
+### Verification Process
+
+1. Get the timestamp from `X-Witylogix-Timestamp` header
+2. Get the signature from `X-Witylogix-Signature` header
+3. Create a string: `timestamp.json_body`
+4. Compute HMAC-SHA256 using your webhook secret
+5. Compare with provided signature
+
+### Node.js Example
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(body, signature, secret, timestamp) {
+  // Prevent timestamp attacks (older than 5 minutes)
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - timestamp) > 300) {
+    return false;
+  }
+
+  // Create signed content
+  const signedContent = `${timestamp}.${body}`;
+
+  // Compute HMAC-SHA256
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(signedContent)
+    .digest('hex');
+
+  // Compare signatures
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(`sha256=${expectedSignature}`)
+  );
+}
+
+// Express middleware example
+app.post('/webhooks/witylogix', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-witylogix-signature'];
+  const timestamp = parseInt(req.headers['x-witylogix-timestamp']);
+
+  if (!verifyWebhookSignature(req.body.toString(), signature, WEBHOOK_SECRET, timestamp)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  const event = JSON.parse(req.body);
+  handleWebhookEvent(event);
+
+  res.json({ success: true });
+});
+```
+
+### Python Example
+
+```python
+import hmac
+import hashlib
+import time
+from flask import request
+
+def verify_webhook_signature(body, signature, secret, timestamp):
+    # Prevent timestamp attacks
+    if abs(time.time() - timestamp) > 300:
+        return False
+
+    # Create signed content
+    signed_content = f"{timestamp}.{body}".encode()
+
+    # Compute HMAC-SHA256
+    expected_signature = hmac.new(
+        secret.encode(),
+        signed_content,
+        hashlib.sha256
+    ).hexdigest()
+
+    # Compare signatures
+    return hmac.compare_digest(
+        signature,
+        f"sha256={expected_signature}"
+    )
+
+@app.route('/webhooks/witylogix', methods=['POST'])
+def webhook():
+    signature = request.headers.get('X-Witylogix-Signature')
+    timestamp = int(request.headers.get('X-Witylogix-Timestamp'))
+
+    if not verify_webhook_signature(
+        request.data.decode(),
+        signature,
+        WEBHOOK_SECRET,
+        timestamp
+    ):
+        return {'error': 'Invalid signature'}, 401
+
+    event = request.json
+    handle_webhook_event(event)
+
+    return {'success': True}
+```
+
+## Retry Policy
+
+If your endpoint doesn't respond with `200 OK` within 30 seconds, Witylogix retries the webhook with exponential backoff:
+
+- Attempt 1: Immediate
+- Attempt 2: 5 seconds later
+- Attempt 3: 30 seconds later
+- Attempt 4: 2 minutes later
+- Attempt 5: 5 minutes later
+
+After 5 failed attempts, the webhook is marked as failed. You can retry failed webhooks from the dashboard.
+
+### Retry Headers
+
+Each retry attempt includes:
+
+```
+X-Witylogix-Retry-Count: 2
+X-Witylogix-Max-Retries: 5
+```
+
+## Best Practices
+
+### 1. Respond Quickly
+
+Return a `200 OK` response immediately, then process the webhook asynchronously:
+
+```javascript
+app.post('/webhooks/witylogix', (req, res) => {
+  // Verify signature
+  if (!verifySignature(req)) {
+    return res.status(401).json({ error: 'Invalid' });
+  }
+
+  // Respond immediately
+  res.json({ success: true });
+
+  // Process asynchronously
+  processWebhookEvent(req.body).catch(err => {
+    console.error('Webhook processing failed:', err);
+  });
+});
+```
+
+### 2. Handle Duplicate Events
+
+Events may be delivered multiple times. Use idempotency to handle duplicates:
+
+```javascript
+async function processWebhookEvent(event) {
+  // Check if event already processed
+  const exists = await db.webhookEvents.findOne({ id: event.id });
+  if (exists) {
+    console.log(`Event ${event.id} already processed`);
+    return;
+  }
+
+  // Process event
+  await handleOrderCreated(event.data);
+
+  // Mark as processed
+  await db.webhookEvents.create({ id: event.id });
+}
+```
+
+### 3. Use Appropriate Timeouts
+
+Set reasonable timeouts for webhook processing. If processing takes too long, fail fast:
+
+```javascript
+async function processWebhookEvent(event) {
+  return Promise.race([
+    handleEvent(event),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), 25000)
+    )
+  ]);
+}
+```
+
+### 4. Log All Webhooks
+
+Maintain a log of all webhook events for debugging:
+
+```javascript
+async function logWebhook(event, status, error = null) {
+  await db.webhookLogs.create({
+    event_id: event.id,
+    event_type: event.type,
+    status,
+    error: error?.message,
+    timestamp: new Date()
+  });
+}
+```
+
+### 5. Use Webhook Testing
+
+Use tools like Webhook.cool or RequestBin to test webhook implementations:
+
+```bash
+# Test your webhook endpoint
+curl -X POST https://webhook.cool/xxxxx \
+  -H "X-Witylogix-Signature: sha256=test" \
+  -H "X-Witylogix-Timestamp: $(date +%s)" \
+  -d '{
+    "id": "evt_test",
+    "type": "order.created",
+    "timestamp": "2024-03-10T12:00:00Z",
+    "data": {"order_id": "order_test"}
+  }'
+```
+
+## Webhook Management
+
+### List Webhooks
+
+```bash
+curl -X GET http://localhost:8000/api/v4/webhooks \
+  -H "Authorization: Bearer token"
+```
+
+### Update Webhook
+
+```bash
+curl -X PUT http://localhost:8000/api/v4/webhooks/webhook_123 \
+  -H "Authorization: Bearer token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-domain.com/webhooks/v2",
+    "events": ["order.created", "shipment.delivered"]
+  }'
+```
+
+### Delete Webhook
+
+```bash
+curl -X DELETE http://localhost:8000/api/v4/webhooks/webhook_123 \
+  -H "Authorization: Bearer token"
+```
+
+## Troubleshooting
+
+### Webhooks Not Received
+
+1. Check that the endpoint is publicly accessible
+2. Verify the webhook is active in the dashboard
+3. Check firewall/network rules allowing inbound traffic
+4. Review server logs for incoming requests
+5. Check retry logs for failure details
+
+### Signature Verification Fails
+
+1. Verify you're using the correct secret
+2. Ensure you're verifying the raw request body (not parsed JSON)
+3. Check timestamp is within 5 minutes of current time
+4. Verify HMAC-SHA256 implementation
+
+### Processing Timeouts
+
+1. Implement async processing for long operations
+2. Return 200 OK immediately
+3. Use background jobs for complex logic
+4. Monitor webhook processing performance
+
+## Support
+
+For webhook issues, contact support@witylogix.com with:
+- Webhook ID
+- Recent event IDs from logs
+- Error messages
+- Request/response timestamps

@@ -1,0 +1,143 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Eye,
+  Download,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react';
+
+interface DVIRIssue {
+  id: string;
+  category: string;
+  severity: "critical" | "warning" | "info";
+  description: string;
+  resolved: boolean;
+}
+
+interface DVIRReport {
+  id: string;
+  driverId: string;
+  driverName: string;
+  vehicleId: string;
+  vehicle: string;
+  date: string;
+  status: "pass" | "fail" | "pending";
+  issues: DVIRIssue[];
+}
+
+interface DVIRReportCardProps {
+  report: DVIRReport;
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "pass":
+      return "bg-green-500/20 text-green-400 border-green-500/50";
+    case "fail":
+      return "bg-red-500/20 text-red-400 border-red-500/50";
+    case "pending":
+      return "bg-gray-500/20 text-gray-400 border-gray-500/50";
+    default:
+      return "";
+  }
+};
+
+const getSeverityColor = (severity: string) => {
+  switch (severity) {
+    case "critical":
+      return "bg-red-500/20 text-red-400 border-red-500/50";
+    case "warning":
+      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+    case "info":
+      return "bg-blue-500/20 text-blue-400 border-blue-500/50";
+    default:
+      return "";
+  }
+};
+
+export function DVIRReportCard({ report }: DVIRReportCardProps) {
+  return (
+    <Card className="bg-[#1a1a2e]">
+      <CardContent className="pt-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-white">
+              {report.vehicle}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              {report.driverName} • {report.date}
+            </p>
+          </div>
+          <Badge
+            variant={report.status === "pass" ? "success" : report.status === "fail" ? "danger" : "default"}
+            className={cn(
+              "capitalize",
+              getStatusColor(report.status)
+            )}
+          >
+            {report.status === "pass" && <CheckCircle2 className="w-3 h-3 mr-1" />}
+            {report.status === "fail" && <AlertCircle className="w-3 h-3 mr-1" />}
+            {report.status}
+          </Badge>
+        </div>
+
+        {/* Issues */}
+        {report.issues.length > 0 && (
+          <div className="mb-4 pb-4 border-b border-[#1e1e2e]">
+            <p className="text-xs font-medium text-gray-500 uppercase mb-3">
+              Reported Issues
+            </p>
+            <div className="space-y-2">
+              {report.issues.map((issue) => (
+                <div key={issue.id} className="flex items-start gap-3 p-3 bg-[#12121a] rounded-lg">
+                  <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                    issue.severity === "critical" ? "bg-red-500" : issue.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
+                  )} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-sm text-white">
+                        {issue.category}
+                      </p>
+                      <Badge variant="secondary" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>
+                        {issue.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {issue.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            View Report
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

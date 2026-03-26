@@ -1,0 +1,450 @@
+{
+  "common": {
+    "navigation": {
+      "dashboard": "Tableau de Bord",
+      "orders": "Commandes",
+      "drivers": "Conducteurs",
+      "deliveries": "Livraisons",
+      "settings": "Paramètres",
+      "integrations": "Intégrations",
+      "admin": "Administration",
+      "profile": "Profil",
+      "analytics": "Analytique",
+      "support": "Support"
+    },
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "create": "Créer",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "export": "Exporter",
+      "import": "Importer",
+      "submit": "Soumettre",
+      "apply": "Appliquer",
+      "close": "Fermer",
+      "back": "Retour",
+      "next": "Suivant",
+      "previous": "Précédent",
+      "download": "Télécharger",
+      "upload": "Télécharger",
+      "copy": "Copier",
+      "paste": "Coller",
+      "duplicate": "Dupliquer",
+      "archive": "Archiver",
+      "restore": "Restaurer",
+      "refresh": "Actualiser",
+      "clear": "Effacer",
+      "reset": "Réinitialiser",
+      "confirm": "Confirmer",
+      "retry": "Réessayer"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "pending": "En attente",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "cancelled": "Annulé",
+      "archived": "Archivé",
+      "processing": "Traitement en cours",
+      "draft": "Brouillon",
+      "published": "Publié",
+      "paused": "En pause",
+      "suspended": "Suspendu"
+    },
+    "time": {
+      "justNow": "à l'instant",
+      "minutesAgo": "il y a {count} minute",
+      "minutesAgoPlural": "il y a {count} minutes",
+      "hoursAgo": "il y a {count} heure",
+      "hoursAgoPlural": "il y a {count} heures",
+      "daysAgo": "il y a {count} jour",
+      "daysAgoPlural": "il y a {count} jours",
+      "weeksAgo": "il y a {count} semaine",
+      "weeksAgoPlural": "il y a {count} semaines",
+      "monthsAgo": "il y a {count} mois",
+      "monthsAgoPlural": "il y a {count} mois",
+      "yearsAgo": "il y a {count} année",
+      "yearsAgoPlural": "il y a {count} années"
+    },
+    "errors": {
+      "notFound": "Non trouvé",
+      "unauthorized": "Non autorisé",
+      "forbidden": "Interdit",
+      "serverError": "Erreur serveur",
+      "badRequest": "Mauvaise requête",
+      "conflict": "Conflit",
+      "validation": "Erreur de validation",
+      "networkError": "Erreur réseau",
+      "timeout": "Délai d'expiration dépassé",
+      "unknown": "Erreur inconnue"
+    },
+    "success": {
+      "saved": "Enregistré avec succès",
+      "created": "Créé avec succès",
+      "updated": "Mis à jour avec succès",
+      "deleted": "Supprimé avec succès",
+      "archived": "Archivé avec succès",
+      "restored": "Restauré avec succès",
+      "published": "Publié avec succès",
+      "imported": "Importé avec succès",
+      "exported": "Exporté avec succès",
+      "submitted": "Soumis avec succès"
+    },
+    "loading": "Chargement...",
+    "noResults": "Aucun résultat trouvé",
+    "empty": "Aucune donnée disponible",
+    "required": "Ce champ est obligatoire",
+    "optional": "Facultatif"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Adresse E-mail",
+      "password": "Mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié?",
+      "submit": "Connexion",
+      "noAccount": "Pas encore de compte?",
+      "signUp": "S'inscrire",
+      "error": "E-mail ou mot de passe invalide",
+      "emailRequired": "L'e-mail est obligatoire",
+      "passwordRequired": "Le mot de passe est obligatoire"
+    },
+    "register": {
+      "title": "Créer un Compte",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Adresse E-mail",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le Mot de passe",
+      "agreeTerms": "J'accepte les conditions générales",
+      "submit": "Créer un Compte",
+      "haveAccount": "Déjà un compte?",
+      "signIn": "Connexion",
+      "passwordMismatch": "Les mots de passe ne correspondent pas"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser le Mot de passe",
+      "email": "Adresse E-mail",
+      "submit": "Envoyer le Lien de Réinitialisation",
+      "checkEmail": "Vérifiez votre e-mail pour les instructions de réinitialisation",
+      "backToLogin": "Retour à la connexion"
+    },
+    "mfa": {
+      "title": "Authentification à Deux Facteurs",
+      "code": "Code de Vérification",
+      "send": "Envoyer le Code",
+      "verify": "Vérifier",
+      "useApp": "Utiliser l'application d'authentification",
+      "useEmail": "Utiliser le code e-mail",
+      "backupCodes": "Utiliser le code de sauvegarde"
+    },
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "signOut": "Déconnexion"
+  },
+  "onboarding": {
+    "title": "Bienvenue sur Witylogix",
+    "subtitle": "Configurons votre compte",
+    "step": "Étape {current} sur {total}",
+    "verifyEmail": {
+      "title": "Vérifier l'E-mail",
+      "description": "Nous avons envoyé un lien de vérification à votre e-mail",
+      "resend": "Renvoyer le Lien",
+      "verified": "E-mail vérifié avec succès"
+    },
+    "deployment": {
+      "title": "Déploiement",
+      "description": "Choisissez votre préférence de déploiement",
+      "cloud": "Cloud",
+      "onPremise": "Sur Place",
+      "hybrid": "Hybride"
+    },
+    "company": {
+      "title": "Informations de l'Entreprise",
+      "name": "Nom de l'Entreprise",
+      "size": "Taille de l'Entreprise",
+      "industry": "Secteur d'Activité",
+      "website": "Site Web",
+      "phone": "Numéro de Téléphone"
+    },
+    "industry": {
+      "title": "Sélectionnez le Secteur",
+      "description": "Cela nous aide à personnaliser votre expérience",
+      "logistics": "Logistique",
+      "retail": "Commerce de Détail",
+      "ecommerce": "Commerce Électronique",
+      "healthcare": "Santé",
+      "food": "Alimentation et Boissons",
+      "other": "Autre"
+    },
+    "goals": {
+      "title": "Quels sont vos objectifs?",
+      "description": "Sélectionnez tous ceux qui s'appliquent",
+      "optimize": "Optimiser les routes de livraison",
+      "tracking": "Suivi en temps réel",
+      "scale": "Augmenter les opérations",
+      "integration": "Intégration tierce",
+      "analytics": "Analytique avancée"
+    },
+    "integrations": {
+      "title": "Connecter les Intégrations",
+      "description": "Connectez vos systèmes existants",
+      "shopify": "Shopify",
+      "woocommerce": "WooCommerce",
+      "stripe": "Stripe",
+      "segment": "Segment",
+      "skip": "Ignorer pour l'instant"
+    },
+    "dashboard": {
+      "title": "Explorer le Tableau de Bord",
+      "description": "Familiarisez-vous avec le tableau de bord"
+    },
+    "import": {
+      "title": "Importer les Données",
+      "description": "Importez les commandes et les conducteurs",
+      "file": "Choisir un fichier CSV",
+      "template": "Télécharger le modèle",
+      "process": "Traitement en cours..."
+    },
+    "review": {
+      "title": "Examiner et Terminer",
+      "description": "Examinez votre configuration",
+      "complete": "Terminer la Configuration",
+      "edit": "Modifier"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de Bord",
+    "welcome": "Bienvenue de retour",
+    "sidebar": {
+      "home": "Accueil",
+      "orders": "Commandes",
+      "drivers": "Conducteurs",
+      "deliveries": "Livraisons",
+      "analytics": "Analytique",
+      "settings": "Paramètres",
+      "help": "Aide et Support"
+    },
+    "stats": {
+      "activeOrders": "Commandes Actives",
+      "totalDeliveries": "Livraisons Totales",
+      "completionRate": "Taux de Réussite",
+      "avgDeliveryTime": "Durée Moyenne de Livraison",
+      "activeDrivers": "Conducteurs Actifs",
+      "revenue": "Revenu"
+    },
+    "charts": {
+      "ordersTrend": "Tendance des Commandes",
+      "deliveryStatus": "État des Livraisons",
+      "driverPerformance": "Performance du Conducteur",
+      "routeEfficiency": "Efficacité de la Route"
+    }
+  },
+  "orders": {
+    "title": "Commandes",
+    "list": {
+      "title": "Toutes les Commandes",
+      "columns": {
+        "id": "ID Commande",
+        "customer": "Client",
+        "destination": "Destination",
+        "status": "État",
+        "date": "Date",
+        "amount": "Montant",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Détails de la Commande",
+      "id": "ID Commande",
+      "customer": "Client",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "address": "Adresse de Livraison",
+      "items": "Articles",
+      "quantity": "Quantité",
+      "price": "Prix",
+      "total": "Total",
+      "notes": "Remarques Spéciales",
+      "createdAt": "Créé",
+      "updatedAt": "Mis à Jour"
+    },
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmé",
+      "assigned": "Assigné",
+      "enRoute": "En Route",
+      "delivered": "Livré",
+      "cancelled": "Annulé",
+      "failed": "Échoué"
+    },
+    "actions": {
+      "view": "Voir",
+      "edit": "Modifier",
+      "assign": "Assigner un Conducteur",
+      "cancel": "Annuler la Commande",
+      "reassign": "Réassigner"
+    }
+  },
+  "drivers": {
+    "title": "Conducteurs",
+    "list": {
+      "title": "Tous les Conducteurs",
+      "columns": {
+        "id": "ID Conducteur",
+        "name": "Nom",
+        "status": "État",
+        "assignments": "Actifs",
+        "rating": "Évaluation",
+        "actions": "Actions"
+      }
+    },
+    "detail": {
+      "title": "Détails du Conducteur",
+      "name": "Nom Complet",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "vehicle": "Véhicule",
+      "license": "Numéro de Permis",
+      "joinDate": "Date d'Adhésion",
+      "status": "État",
+      "rating": "Évaluation",
+      "deliveries": "Livraisons Totales",
+      "avgTime": "Durée Moyenne de Livraison"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "onBreak": "En Pause",
+      "unavailable": "Non Disponible",
+      "suspended": "Suspendu"
+    },
+    "actions": {
+      "view": "Voir",
+      "edit": "Modifier",
+      "assign": "Assigner une Livraison",
+      "message": "Envoyer un Message",
+      "deactivate": "Désactiver"
+    }
+  },
+  "deliveries": {
+    "title": "Livraisons",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Accepté",
+      "pickupScheduled": "Enlèvement Prévu",
+      "pickedUp": "Enlevé",
+      "inTransit": "En Transit",
+      "delivered": "Livré",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    },
+    "timeline": {
+      "created": "Créé",
+      "assigned": "Assigné",
+      "accepted": "Accepté",
+      "pickup": "Enlèvement",
+      "delivered": "Livré"
+    },
+    "proof": {
+      "signature": "Signature",
+      "photo": "Photo",
+      "timestamp": "Horodatage",
+      "notes": "Remarques de Livraison",
+      "recipient": "Nom du Destinataire"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "tabs": {
+      "general": "Général",
+      "account": "Compte",
+      "notifications": "Notifications",
+      "billing": "Facturation",
+      "integrations": "Intégrations",
+      "team": "Équipe",
+      "security": "Sécurité"
+    },
+    "general": {
+      "companyName": "Nom de l'Entreprise",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "website": "Site Web",
+      "timezone": "Fuseau Horaire",
+      "language": "Langue",
+      "currency": "Devise"
+    },
+    "notifications": {
+      "emailNotifications": "Notifications par E-mail",
+      "smsNotifications": "Notifications par SMS",
+      "pushNotifications": "Notifications Push",
+      "orderUpdates": "Mises à Jour des Commandes",
+      "driverAlerts": "Alertes des Conducteurs",
+      "weeklyReport": "Rapport Hebdomadaire"
+    },
+    "billing": {
+      "plan": "Plan Actuel",
+      "nextBillingDate": "Prochaine Date de Facturation",
+      "paymentMethod": "Méthode de Paiement",
+      "upgrade": "Mettre à Niveau le Plan",
+      "downgrade": "Rétrograder le Plan",
+      "cancel": "Annuler l'Abonnement"
+    },
+    "team": {
+      "members": "Membres de l'Équipe",
+      "invite": "Inviter un Membre",
+      "role": "Rôle",
+      "admin": "Administrateur",
+      "manager": "Gestionnaire",
+      "user": "Utilisateur",
+      "pending": "En attente"
+    },
+    "security": {
+      "password": "Mot de passe",
+      "twoFactor": "Authentification à Deux Facteurs",
+      "sessions": "Sessions Actives",
+      "logout": "Déconnexion de Tous les Appareils",
+      "apiKeys": "Clés API",
+      "generateKey": "Générer une Nouvelle Clé"
+    }
+  },
+  "integrations": {
+    "title": "Intégrations",
+    "categories": {
+      "ecommerce": "Commerce Électronique",
+      "payment": "Paiement",
+      "shipping": "Expédition",
+      "analytics": "Analytique",
+      "communication": "Communication",
+      "crm": "CRM"
+    },
+    "status": {
+      "connected": "Connecté",
+      "disconnected": "Déconnecté",
+      "pending": "En attente",
+      "error": "Erreur",
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "setup": {
+      "configure": "Configurer",
+      "connect": "Connecter",
+      "disconnect": "Déconnecter",
+      "reconnect": "Reconnecter",
+      "test": "Tester la Connexion",
+      "remove": "Supprimer l'Intégration"
+    },
+    "common": {
+      "apiKey": "Clé API",
+      "apiSecret": "Secret API",
+      "webhook": "Webhook",
+      "lastSync": "Dernière Synchronisation",
+      "syncFrequency": "Fréquence de Synchronisation",
+      "testConnection": "Tester la Connexion"
+    }
+  }
+}

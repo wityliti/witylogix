@@ -1,0 +1,29 @@
+# Witylogix Checkout UI Extension
+# Delivery date & time picker for Shopify Checkout
+name = "Witylogix Delivery Date & Time Picker"
+handle = "witylogix-delivery-picker"
+type = "checkout_ui_extension"
+api_version = "2025-04"
+
+[[targets]]
+target = "purchase.checkout.block.render"
+
+[build]
+command = "npm run build"
+watch = ["src/**/*"]
+
+[settings]
+[[settings.fields]]
+key = "show_date_picker"
+type = "boolean"
+name = "Show delivery date picker"
+
+[[settings.fields]]
+key = "show_time_slots"
+type = "boolean"
+name = "Show time slot selector"
+
+[[settings.fields]]
+key = "max_days_ahead"
+type = "number_integer"
+name = "Maximum days ahead for scheduling"

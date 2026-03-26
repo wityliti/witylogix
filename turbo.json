@@ -1,46 +1,75 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
-  "globalEnv": [
-    "NODE_ENV",
+  "globalDependencies": ["**/.env.*local", "tsconfig.json"],
+  "globalEnv": ["NODE_ENV", "TURBO_TELEMETRY_DISABLED"],
+  "globalPassThroughEnv": [
     "DATABASE_URL",
     "REDIS_URL",
+    "JWT_SECRET",
     "SHOPIFY_API_KEY",
-    "SHOPIFY_API_SECRET"
+    "SHOPIFY_API_SECRET",
+    "ANTHROPIC_API_KEY",
+    "NEXT_PUBLIC_API_URL",
+    "CI",
+    "GITHUB_TOKEN",
+    "GITHUB_SHA",
+    "GITHUB_REF"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json", "package.json"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["NODE_ENV"]
+      "env": ["NODE_ENV"],
+      "cache": true
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "JWT_SECRET", "NEXT_PUBLIC_API_URL", "SHOPIFY_API_KEY", "SHOPIFY_API_SECRET"]
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", ".eslintrc.js", ".eslintrc.json", "package.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tsconfig.json", "package.json"],
+      "outputs": [],
+      "cache": true
     },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["DATABASE_URL"]
-    },
-    "typecheck": {
-      "dependsOn": ["^build"]
-    },
-    "clean": {
-      "cache": false
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.test.ts", "src/**/*.spec.ts", "vitest.config.ts", "vitest.config.js", "package.json"],
+      "outputs": ["coverage/**"],
+      "env": ["DATABASE_URL", "NODE_ENV"],
+      "cache": true
     },
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "inputs": ["prisma/schema.prisma"],
+      "outputs": ["node_modules/.prisma/**"]
+    },
+    "db:push": {
+      "cache": false,
+      "dependsOn": ["db:generate"],
+      "env": ["DATABASE_URL"]
     },
     "db:migrate": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["db:generate"],
+      "env": ["DATABASE_URL"]
     },
     "db:seed": {
       "cache": false,
-      "dependsOn": ["db:migrate"]
+      "dependsOn": ["db:migrate"],
+      "env": ["DATABASE_URL"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

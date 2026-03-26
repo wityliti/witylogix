@@ -1,0 +1,87 @@
+---
+title: Places
+description: Addresses, warehouses, and delivery zones — geocoding, geofencing, and service areas.
+---
+
+# Places
+
+A **Place** represents a physical location in the Witylogix platform. Places include customer addresses, warehouse locations, and delivery zones. Every pickup and delivery stop resolves to a Place.
+
+## Place Types
+
+| Type | Description |
+|------|-------------|
+| `address` | A specific street address for pickup or delivery |
+| `warehouse` | A distribution center or fulfillment hub |
+| `store` | A retail store or merchant location |
+| `zone` | A geographic delivery zone or service area |
+| `hub` | A sorting or transfer hub between legs |
+
+## Geocoding
+
+Witylogix automatically geocodes addresses to latitude/longitude coordinates using the configured [maps provider](/docs/integrations) (Google Maps or Mapbox):
+
+```typescript
+const place = await client.places.create({
+  type: 'address',
+  address: {
+    street: '456 Oak Ave',
+    city: 'Austin',
+    state: 'TX',
+    postalCode: '78702',
+    country: 'US',
+  },
+});
+// place.coordinates → { lat: 30.2603, lng: -97.7256 }
+```
+
+## Delivery Zones
+
+Define service areas using polygon geofences:
+
+```typescript
+const zone = await client.places.createZone({
+  name: 'Downtown Austin',
+  polygon: [
+    { lat: 30.28, lng: -97.76 },
+    { lat: 30.28, lng: -97.72 },
+    { lat: 30.25, lng: -97.72 },
+    { lat: 30.25, lng: -97.76 },
+  ],
+  serviceLevel: 'same_day',
+  surcharge: 0,
+});
+```
+
+Zones are used to:
+
+- Determine if a delivery address is within your service area
+- Apply zone-based pricing and surcharges
+- Route orders to the nearest warehouse or hub
+- Set delivery time expectations by zone
+
+## Geofencing Events
+
+Trigger events when a driver enters or exits a geofenced area:
+
+- `driver.entered_zone` — driver enters a delivery zone
+- `driver.exited_zone` — driver leaves a zone
+- `driver.arrived_at_stop` — driver is within radius of a stop
+
+## Saved Addresses
+
+Frequent addresses can be saved for quick reuse:
+
+```typescript
+const saved = await client.places.save({
+  label: 'Main Warehouse',
+  address: { /* ... */ },
+  isDefault: true,
+});
+```
+
+## Related
+
+- [Orders](/docs/core-concepts/orders) — orders reference places for pickup and delivery
+- [Routes](/docs/core-concepts/routes) — routes are sequences of places
+- [Contacts](/docs/core-concepts/contacts) — contacts have associated addresses

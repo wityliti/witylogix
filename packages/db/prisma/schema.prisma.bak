@@ -1,0 +1,1216 @@
+// ─── Witylogix Database Schema ──────────────────────────────
+// PostgreSQL 16 + PostGIS + Row-Level Security
+//
+// Tenant hierarchy:  Organization (optional) → Shop → Data
+//
+// - Single-shop merchants: Shop is the tenant root, no org needed.
+// - Multi-shop merchants: Organization groups shops. Drivers, zones,
+//   and users can be shared across shops within the same org.
+// - Shopify flow is unchanged: each install creates one Shop.
+//   The org link is set post-install from the dashboard.
+//
+// RLS policies are applied via SQL migrations (see migrations/).
+// Two RLS modes:
+//   app.current_shop_id  — per-shop isolation (default, used by all tables)
+//   app.current_org_id   — org-level access (used for cross-shop queries)
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // NOTE: postgis removed temporarily for dev without PostGIS extension
+  // In production: extensions = [postgis, pgcrypto, uuid_ossp(map: "uuid-ossp")]
+  extensions = [pgcrypto, uuid_ossp(map: "uuid-ossp")]
+}
+
+// ─── ORGANIZATIONS (Multi-Shop Tenant Root) ─────────────────
+// Optional grouping layer. A merchant with multiple Shopify stores
+// creates one org and links their shops to it. Single-shop merchants
+// don't need an org — the Shop operates independently.
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  slug      String   @unique // URL-safe identifier, e.g. "acme-logistics"
+  email     String? // billing contact
+  planTier  PlanTier @default(FREE) @map("plan_tier")
+  settings  Json     @default("{}") // org-wide defaults (branding, notification prefs)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shops         Shop[]
+  orgMembers    OrgMember[]
+  drivers       Driver[] // Org-level drivers (shared across shops)
+  deliveryZones DeliveryZone[] // Org-level zones (shared across shops)
+  locations     Location[] // Org-level locations (shared across shops)
+
+  @@map("organizations")
+}
+
+// ─── ORG MEMBERS (User ↔ Org junction with role) ────────────
+// Controls which users can access the org dashboard and which
+// shops within the org they can manage.
+
+model OrgMember {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      OrgRole  @default(MEMBER)
+  shopIds   String[] @map("shop_ids") @db.Uuid // empty = access to ALL shops in org
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([orgId])
+  @@index([userId])
+  @@map("org_members")
+}
+
+enum OrgRole {
+  OWNER // Full control: billing, add/remove shops, manage members
+  ADMIN // Manage all shops, drivers, zones within org
+  MEMBER // Access only assigned shops (via shopIds)
+}
+
+// ─── SHOPS (Shopify Install = One Shop) ─────────────────────
+// Shop remains the primary RLS boundary for Shopify-facing operations
+// (webhooks, carrier service, session tokens). The orgId link is
+// optional and set post-install, never during the Shopify OAuth flow.
+
+model Shop {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId              String?   @map("org_id") @db.Uuid // null = standalone shop
+  shopifyDomain      String    @unique @map("shopify_domain")
+  shopifyAccessToken String    @map("shopify_access_token") // encrypted at app layer
+  shopifyShopId      String    @unique @map("shopify_shop_id")
+  name               String
+  email              String?
+  phone              String?
+  timezone           String    @default("UTC")
+  currency           String    @default("USD")
+  planTier           PlanTier  @default(FREE) @map("plan_tier") // overridden by org plan if linked
+  settings           Json      @default("{}") // shop-specific overrides
+  isActive           Boolean   @default(true) @map("is_active")
+  installedAt        DateTime  @default(now()) @map("installed_at")
+  uninstalledAt      DateTime? @map("uninstalled_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization            Organization?            @relation(fields: [orgId], references: [id])
+  orders                  Order[]
+  drivers                 Driver[] // Shop-specific drivers (not shared)
+  deliveryZones           DeliveryZone[] // Shop-specific zones
+  timeSlots               TimeSlot[]
+  routes                  Route[]
+  notificationLogs        NotificationLog[]
+  carrierServices         CarrierService[]
+  webhookSubscriptions    WebhookSubscription[]
+  routingMeterEvents      RoutingMeterEvent[]
+  notificationMeterEvents NotificationMeterEvent[]
+  integrations            Integration[]
+  integrationEvents       IntegrationEvent[]
+  users                   User[]
+  // Phase 1 relations
+  locations               Location[]
+  shipments               Shipment[]
+  shippingProfiles        ShippingProfile[]
+  calendarRules           CalendarRule[]
+  notificationTemplates   NotificationTemplate[]
+  activityLogs            ActivityLog[]
+  paymentTransactions     PaymentTransaction[]
+  products                Product[]
+  customers               Customer[]
+
+  @@index([orgId])
+  @@map("shops")
+}
+
+enum PlanTier {
+  FREE
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+// ─── USERS (Dashboard Users) ────────────────────────────────
+// Users are created per-shop (via Shopify install or invite).
+// Optionally linked to an org via OrgMember for cross-shop access.
+
+model User {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId    String    @map("shop_id") @db.Uuid // primary shop (where they were created)
+  email     String
+  name      String
+  role      UserRole  @default(ADMIN)
+  password  String? // hashed; null for Shopify-auth users
+  isActive  Boolean   @default(true) @map("is_active")
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orgMembers OrgMember[] // org-level access (if any)
+
+  @@unique([shopId, email])
+  @@index([shopId])
+  @@index([email]) // for cross-shop login lookups
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  DISPATCHER
+  VIEWER
+}
+
+// ─── ORDERS ─────────────────────────────────────────────────
+// Always shop-scoped. Orders come from a specific Shopify store
+// and must stay within that shop's data boundary. Org users can
+// VIEW orders across shops but each order belongs to one shop.
+
+model Order {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId             String      @map("shop_id") @db.Uuid
+  shopifyOrderId     String      @map("shopify_order_id")
+  shopifyOrderNumber String?     @map("shopify_order_number")
+  status             OrderStatus @default(PENDING)
+
+  // Customer info (snapshot at creation)
+  customerName  String? @map("customer_name")
+  customerEmail String? @map("customer_email")
+  customerPhone String? @map("customer_phone")
+
+  // Delivery address (denormalized snapshot)
+  addressLine1     String? @map("address_line1")
+  addressLine2     String? @map("address_line2")
+  city             String?
+  province         String?
+  postalCode       String? @map("postal_code")
+  country          String?
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  deliveryLocation Json?   @map("delivery_location")
+
+  // Delivery details
+  deliveryDate     DateTime? @map("delivery_date")
+  timeSlotId       String?   @map("time_slot_id") @db.Uuid
+  driverId         String?   @map("driver_id") @db.Uuid
+  routeStopId      String?   @map("route_stop_id") @db.Uuid
+  estimatedArrival DateTime? @map("estimated_arrival")
+  actualDelivery   DateTime? @map("actual_delivery")
+
+  // Order value
+  totalPrice  Decimal? @map("total_price") @db.Decimal(12, 2)
+  totalWeight Decimal? @map("total_weight") @db.Decimal(10, 2)
+  itemCount   Int      @default(1) @map("item_count")
+  lineItems   Json     @default("[]") @map("line_items")
+
+  // Fulfillment
+  trackingToken String?  @unique @map("tracking_token")
+  fulfillmentId String?  @map("fulfillment_id")
+  tags          String[] @default([])
+  notes         String?
+  metadata      Json     @default("{}") // custom fields
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop             Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver           Driver?           @relation(fields: [driverId], references: [id])
+  timeSlot         TimeSlot?         @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery  ProofOfDelivery?
+  notificationLogs NotificationLog[]
+  shipments        Shipment[]
+
+  @@unique([shopId, shopifyOrderId])
+  @@index([shopId, status, createdAt(sort: Desc)])
+  @@index([shopId, driverId])
+  @@index([shopId, deliveryDate])
+  @@index([trackingToken])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  ASSIGNED
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  ARRIVED
+  DELIVERED
+  FAILED
+  RETURNED
+  CANCELLED
+}
+
+// ─── DRIVERS ────────────────────────────────────────────────
+// Drivers can be org-level (shared across shops) or shop-level.
+// - orgId set + shopId null = shared driver across all org shops
+// - orgId null + shopId set = shop-specific driver (legacy/standalone)
+// - orgId set + shopId set = org driver assigned primarily to one shop
+
+model Driver {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String?      @map("org_id") @db.Uuid
+  shopId       String?      @map("shop_id") @db.Uuid
+  name         String
+  email        String?
+  phone        String
+  vehicleType  VehicleType  @default(CAR) @map("vehicle_type")
+  vehiclePlate String?      @map("vehicle_plate")
+  maxCapacity  Int          @default(20) @map("max_capacity")
+  maxWeight    Decimal?     @map("max_weight") @db.Decimal(10, 2)
+  status       DriverStatus @default(OFFLINE)
+  isActive     Boolean      @default(true) @map("is_active")
+
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  currentLocation Json?     @map("current_location")
+  lastLocationAt  DateTime? @map("last_location_at")
+  heading         Float?
+
+  // Push notifications
+  fcmToken String? @map("fcm_token")
+
+  // Auth
+  password     String?
+  refreshToken String? @map("refresh_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization? @relation(fields: [orgId], references: [id])
+  shop         Shop?         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  routeStops   RouteStop[]
+  routes       Route[]
+  shipments    Shipment[]
+
+  @@unique([orgId, phone])
+  @@index([orgId, status])
+  @@index([shopId, status])
+  @@map("drivers")
+}
+
+enum DriverStatus {
+  OFFLINE
+  AVAILABLE
+  ON_ROUTE
+  ON_BREAK
+}
+
+enum VehicleType {
+  BICYCLE
+  MOTORCYCLE
+  CAR
+  VAN
+  TRUCK
+}
+
+// ─── DELIVERY ZONES ────────────────────────────────────────
+// Zones can be org-level (shared) or shop-level.
+
+model DeliveryZone {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  shopId    String?  @map("shop_id") @db.Uuid
+  name      String
+  // TODO: Restore PostGIS: Unsupported("geometry(Polygon, 4326)")? when PostGIS is available
+  boundary  Json?    @map("boundary")
+  baseRate  Decimal  @default(0) @map("base_rate") @db.Decimal(10, 2)
+  perKmRate Decimal  @default(0) @map("per_km_rate") @db.Decimal(10, 2)
+  minOrder  Decimal  @default(0) @map("min_order") @db.Decimal(10, 2)
+  freeAbove Decimal? @map("free_above") @db.Decimal(10, 2)
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organization Organization? @relation(fields: [orgId], references: [id])
+  shop         Shop?         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  timeSlots    TimeSlot[]
+
+  @@index([orgId, isActive])
+  @@index([shopId, isActive])
+  @@map("delivery_zones")
+}
+
+// ─── TIME SLOTS ─────────────────────────────────────────────
+
+model TimeSlot {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String   @map("shop_id") @db.Uuid
+  deliveryZoneId String?  @map("delivery_zone_id") @db.Uuid
+  name           String
+  startTime      String   @map("start_time")
+  endTime        String   @map("end_time")
+  daysOfWeek     Int[]    @map("days_of_week")
+  maxCapacity    Int      @default(50) @map("max_capacity")
+  cutoffMinutes  Int      @default(120) @map("cutoff_minutes")
+  surcharge      Decimal  @default(0) @db.Decimal(10, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  deliveryZone DeliveryZone? @relation(fields: [deliveryZoneId], references: [id])
+  orders       Order[]
+  shipments    Shipment[]
+
+  @@index([shopId, isActive])
+  @@map("time_slots")
+}
+
+// ─── ROUTES ─────────────────────────────────────────────────
+
+model Route {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String      @map("shop_id") @db.Uuid
+  driverId       String?     @map("driver_id") @db.Uuid
+  name           String?
+  status         RouteStatus @default(DRAFT)
+  date           DateTime    @db.Date
+  startAddress   String?     @map("start_address")
+  optimizedOrder Json        @default("[]") @map("optimized_order")
+  totalDistance  Decimal?    @map("total_distance") @db.Decimal(12, 2)
+  totalDuration  Int?        @map("total_duration")
+  startedAt      DateTime?   @map("started_at")
+  completedAt    DateTime?   @map("completed_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  shop   Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver Driver?     @relation(fields: [driverId], references: [id])
+  stops  RouteStop[]
+
+  @@index([shopId, date, status])
+  @@index([shopId, driverId])
+  @@map("routes")
+}
+
+enum RouteStatus {
+  DRAFT
+  OPTIMIZED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model RouteStop {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  routeId          String     @map("route_id") @db.Uuid
+  orderId          String?    @map("order_id") @db.Uuid
+  driverId         String?    @map("driver_id") @db.Uuid
+  sequence         Int
+  stopType         StopType   @default(DELIVERY) @map("stop_type")
+  status           StopStatus @default(PENDING)
+  estimatedArrival DateTime?  @map("estimated_arrival")
+  actualArrival    DateTime?  @map("actual_arrival")
+  departedAt       DateTime?  @map("departed_at")
+  notes            String?
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  route  Route   @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  driver Driver? @relation(fields: [driverId], references: [id])
+
+  @@index([routeId, sequence])
+  @@map("route_stops")
+}
+
+enum StopType {
+  PICKUP
+  DELIVERY
+  RETURN
+  DEPOT
+}
+
+enum StopStatus {
+  PENDING
+  EN_ROUTE
+  ARRIVED
+  COMPLETED
+  SKIPPED
+  FAILED
+}
+
+// ─── PROOF OF DELIVERY ──────────────────────────────────────
+
+model ProofOfDelivery {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId          String   @unique @map("order_id") @db.Uuid
+  photoUrls        String[] @map("photo_urls")
+  signatureUrl     String?  @map("signature_url")
+  recipientName    String?  @map("recipient_name")
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  deliveryLocation Json?    @map("delivery_location")
+  notes            String?
+  deliveredAt      DateTime @default(now()) @map("delivered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("proof_of_delivery")
+}
+
+// ─── NOTIFICATION LOG ───────────────────────────────────────
+
+model NotificationLog {
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String              @map("shop_id") @db.Uuid
+  orderId       String?             @map("order_id") @db.Uuid
+  channel       NotificationChannel
+  eventType     String              @map("event_type")
+  recipient     String
+  status        NotificationStatus  @default(QUEUED)
+  providerMsgId String?             @map("provider_msg_id")
+  errorMessage  String?             @map("error_message")
+  sentAt        DateTime?           @map("sent_at")
+  deliveredAt   DateTime?           @map("delivered_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  shop  Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([orderId])
+  @@map("notification_logs")
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+}
+
+// ─── CARRIER SERVICES ───────────────────────────────────────
+
+model CarrierService {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId           String   @map("shop_id") @db.Uuid
+  shopifyCarrierId String?  @map("shopify_carrier_id")
+  name             String
+  callbackUrl      String   @map("callback_url")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@map("carrier_services")
+}
+
+// ─── WEBHOOK SUBSCRIPTIONS ──────────────────────────────────
+
+model WebhookSubscription {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId           String   @map("shop_id") @db.Uuid
+  shopifyWebhookId String?  @map("shopify_webhook_id")
+  topic            String
+  callbackUrl      String   @map("callback_url")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, topic])
+  @@map("webhook_subscriptions")
+}
+
+// ─── ROUTING METER EVENTS ──────────────────────────────────
+// Tracks usage of the deployer's fallback routing credentials.
+// When BYOK is enabled and a tenant hasn't configured their own
+// credentials, every routing API call lands here so deployers
+// can bill tenants for platform routing usage.
+
+model RoutingMeterEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  provider     String // e.g. "mapbox", "google_maps"
+  operation    String // "route" | "matrix" | "geocode" | "reverse_geocode" | "eta"
+  usedFallback Boolean  @default(true) @map("used_fallback")
+  timestamp    DateTime @default(now())
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, timestamp])
+  @@index([timestamp])
+  @@map("routing_meter_events")
+}
+
+// ─── NOTIFICATION METERING ─────────────────────────────────
+// Tracks per-tenant fallback usage of deployer notification credentials.
+// Same pattern as RoutingMeterEvent — when NOTIFICATIONS_BYOK=true and a
+// tenant hasn't configured their own provider, every notification sent
+// through deployer credentials is metered here for billing dashboards.
+
+model NotificationMeterEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  channel      String // "email" | "sms" | "whatsapp" | "push"
+  provider     String // e.g. "sendgrid", "twilio", "meta_cloud"
+  operation    String // "send"
+  usedFallback Boolean  @default(true) @map("used_fallback")
+  timestamp    DateTime @default(now())
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, timestamp])
+  @@index([channel, timestamp])
+  @@map("notification_meter_events")
+}
+
+// ─── INTEGRATION MARKETPLACE ─────────────────────────────────
+// Unified integration registry with category-aware catalog,
+// per-shop installations, and audit/metering events.
+// Consolidates routing + notification registries into a single
+// marketplace pattern. Plugin-ready via IntegrationProvider interface.
+
+// ─── Integration Enums ────────────────────────────────────────
+
+enum IntegrationCategory {
+  COMMUNICATION
+  ROUTING
+  ORDER_MANAGEMENT
+  INVENTORY
+  PAYMENT
+  ANALYTICS
+}
+
+enum IntegrationStatus {
+  AVAILABLE
+  COMING_SOON
+  BETA
+  DEPRECATED
+}
+
+enum IntegrationAuthType {
+  API_KEY
+  OAUTH
+  NONE
+  MULTI_CREDENTIAL
+}
+
+enum IntegrationHealthStatus {
+  HEALTHY
+  DEGRADED
+  ERROR
+  UNKNOWN
+}
+
+enum IntegrationEventType {
+  INSTALL
+  UNINSTALL
+  SYNC
+  WEBHOOK
+  HEALTH_CHECK
+  METER
+  CONFIG_UPDATE
+}
+
+// ─── INTEGRATION APPS (Marketplace Catalog) ──────────────────
+// Static catalog of all available integrations. Seeded from the
+// unified registry at startup. Each entry describes a provider
+// (e.g. SendGrid, Mapbox, Stripe) with its metadata, credential
+// schema, and capabilities. "COMING_SOON" entries are displayed
+// in the marketplace but cannot be installed.
+
+model IntegrationApp {
+  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug             String              @unique // e.g. "sendgrid", "mapbox", "stripe"
+  name             String // Display name, e.g. "SendGrid"
+  description      String // Short description for card view
+  longDescription  String?             @map("long_description") // Detailed markdown for detail view
+  category         IntegrationCategory
+  subcategory      String? // e.g. "email", "sms" for COMMUNICATION
+  logoUrl          String?             @map("logo_url")
+  websiteUrl       String?             @map("website_url")
+  docsUrl          String?             @map("docs_url")
+  authType         IntegrationAuthType @default(API_KEY) @map("auth_type")
+  credentialSchema Json                @default("[]") @map("credential_schema") // Array of CredentialField definitions
+  capabilities     Json                @default("[]") // What the integration can do
+  status           IntegrationStatus   @default(AVAILABLE)
+  isBuiltIn        Boolean             @default(true) @map("is_built_in") // platform-managed vs future third-party
+  version          String              @default("1.0.0")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  installations Integration[]
+
+  @@index([category, status])
+  @@index([status])
+  @@map("integration_apps")
+}
+
+// ─── INTEGRATIONS (Per-Shop Installation) ────────────────────
+// When a tenant "installs" an integration from the marketplace,
+// a row is created here with their credentials and configuration.
+// Follows the BYOK model: tenant credentials → deployer fallback.
+// Credentials are encrypted at the application layer.
+
+model Integration {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String                  @map("shop_id") @db.Uuid
+  appSlug           String                  @map("app_slug") // FK to IntegrationApp.slug
+  isEnabled         Boolean                 @default(true) @map("is_enabled")
+  credentials       Json                    @default("{}") // Encrypted credential key-value pairs
+  config            Json                    @default("{}") // Non-secret configuration
+  lastSyncAt        DateTime?               @map("last_sync_at")
+  lastHealthCheckAt DateTime?               @map("last_health_check_at")
+  healthStatus      IntegrationHealthStatus @default(UNKNOWN) @map("health_status")
+  installedAt       DateTime                @default(now()) @map("installed_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  // Relations
+  shop   Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  app    IntegrationApp     @relation(fields: [appSlug], references: [slug], onDelete: Cascade)
+  events IntegrationEvent[]
+
+  @@unique([shopId, appSlug])
+  @@index([shopId])
+  @@index([appSlug])
+  @@index([shopId, healthStatus])
+  @@map("integrations")
+}
+
+// ─── INTEGRATION EVENTS (Audit Trail + Metering) ─────────────
+// Unified event log that replaces separate RoutingMeterEvent and
+// NotificationMeterEvent models. Tracks installs, uninstalls,
+// syncs, webhooks, health checks, and metered usage. Deployers
+// use this for billing dashboards and usage analytics.
+
+model IntegrationEvent {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String               @map("shop_id") @db.Uuid
+  appSlug       String               @map("app_slug")
+  integrationId String?              @map("integration_id") @db.Uuid
+  eventType     IntegrationEventType @map("event_type")
+  operation     String? // e.g. "send", "route", "geocode", "sync"
+  usedFallback  Boolean              @default(false) @map("used_fallback")
+  metadata      Json                 @default("{}") // Additional event-specific data
+  timestamp     DateTime             @default(now())
+
+  // Relations
+  shop        Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  integration Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, timestamp])
+  @@index([appSlug, timestamp])
+  @@index([shopId, eventType, timestamp])
+  @@map("integration_events")
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHASE 1 — NEW MODELS (AR: Arjun Rajput, CTO)
+// ═══════════════════════════════════════════════════════════
+// Architecture principles:
+//   1. Models are MODULAR — not a 1:1 copy of the old MongoDB schemas
+//   2. Relations are explicit via FK, not buried in JSON blobs
+//   3. Enums are fine-grained for type safety, not loose strings
+//   4. Indexes are query-driven (we add what the API actually queries)
+//   5. JSON fields are only for truly dynamic/schemaless data
+//   6. Every model is shop-scoped (RLS) or org-scoped (shared resources)
+
+// ─── LOCATIONS (Warehouse / Store / Hub) ─────────────────
+// A physical location from which shipments originate or return.
+// Org-level locations are shared across shops. Shop-level locations
+// are private. Replaces old storeDetail.locations + warehouse model.
+
+model Location {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String?      @map("org_id") @db.Uuid
+  shopId       String?      @map("shop_id") @db.Uuid
+  name         String
+  type         LocationType @default(WAREHOUSE)
+  addressLine1 String       @map("address_line1")
+  addressLine2 String?      @map("address_line2")
+  city         String
+  province     String?
+  postalCode   String?      @map("postal_code")
+  country      String       @default("US")
+  // TODO: Restore PostGIS when available
+  coordinates  Json? // { lat: number, lng: number }
+  phone        String?
+  email        String?
+  isDefault    Boolean      @default(false) @map("is_default")
+  isActive     Boolean      @default(true) @map("is_active")
+
+  // Operating hours: { monday: { open: "09:00", close: "17:00" }, ... }
+  operatingHours  Json? @map("operating_hours")
+  // Preparation time in minutes before an order can be dispatched
+  prepTimeMinutes Int   @default(0) @map("prep_time_minutes")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization             Organization?             @relation(fields: [orgId], references: [id])
+  shop                     Shop?                     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipments                Shipment[]
+  shippingProfileLocations ShippingProfileLocation[]
+
+  @@index([orgId, isActive])
+  @@index([shopId, isActive])
+  @@map("locations")
+}
+
+enum LocationType {
+  WAREHOUSE
+  STORE
+  HUB
+  DEPOT
+  PICKUP_POINT
+}
+
+// ─── SHIPMENTS (Fulfillment Unit) ────────────────────────
+// A shipment represents a single package being delivered.
+// One order can have multiple shipments (split delivery).
+// This was the MOST critical gap — the old system had a rich
+// shipment lifecycle completely separate from orders.
+
+model Shipment {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String  @map("shop_id") @db.Uuid
+  orderId     String  @map("order_id") @db.Uuid
+  locationId  String? @map("location_id") @db.Uuid // origin location
+  driverId    String? @map("driver_id") @db.Uuid
+  routeStopId String? @map("route_stop_id") @db.Uuid
+
+  // Identifiers
+  shipmentNumber String         @map("shipment_number") // human-readable, e.g. SHP-1001
+  trackingNumber String?        @unique @map("tracking_number")
+  status         ShipmentStatus @default(PENDING)
+  deliveryMethod DeliveryMethod @default(LOCAL_DELIVERY) @map("delivery_method")
+
+  // Recipient (snapshot at creation — may differ from order customer)
+  recipientName  String? @map("recipient_name")
+  recipientPhone String? @map("recipient_phone")
+  recipientEmail String? @map("recipient_email")
+
+  // Delivery address (denormalized)
+  addressLine1     String? @map("address_line1")
+  addressLine2     String? @map("address_line2")
+  city             String?
+  province         String?
+  postalCode       String? @map("postal_code")
+  country          String?
+  // TODO: Restore PostGIS
+  deliveryLocation Json?   @map("delivery_location") // { lat, lng }
+
+  // Scheduling
+  deliveryDate     DateTime? @map("delivery_date")
+  timeSlotId       String?   @map("time_slot_id") @db.Uuid
+  estimatedArrival DateTime? @map("estimated_arrival")
+  actualDelivery   DateTime? @map("actual_delivery")
+  pickedUpAt       DateTime? @map("picked_up_at")
+
+  // Package details
+  weight     Decimal? @db.Decimal(10, 2)
+  dimensions Json? // { length, width, height, unit }
+  itemCount  Int      @default(1) @map("item_count")
+  lineItems  Json     @default("[]") @map("line_items")
+
+  // Financial
+  shippingCost    Decimal? @map("shipping_cost") @db.Decimal(12, 2)
+  codAmount       Decimal? @map("cod_amount") @db.Decimal(12, 2)
+  insuranceAmount Decimal? @map("insurance_amount") @db.Decimal(12, 2)
+
+  // Fulfillment
+  labelUrl           String? @map("label_url")
+  fulfillmentId      String? @map("fulfillment_id") // Shopify fulfillment ID
+  carrier            String? // external carrier name
+  carrierTrackingUrl String? @map("carrier_tracking_url")
+
+  // Metadata
+  tags          String[] @default([])
+  notes         String?
+  metadata      Json     @default("{}")
+  failureReason String?  @map("failure_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order               Order                @relation(fields: [orderId], references: [id])
+  location            Location?            @relation(fields: [locationId], references: [id])
+  driver              Driver?              @relation(fields: [driverId], references: [id])
+  timeSlot            TimeSlot?            @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery     ShipmentProof?
+  activityLogs        ActivityLog[]
+  paymentTransactions PaymentTransaction[]
+
+  @@unique([shopId, shipmentNumber])
+  @@index([shopId, status, createdAt(sort: Desc)])
+  @@index([shopId, orderId])
+  @@index([shopId, driverId])
+  @@index([shopId, deliveryDate])
+  @@index([trackingNumber])
+  @@map("shipments")
+}
+
+enum ShipmentStatus {
+  PENDING // Created, awaiting processing
+  PROCESSING // Being prepared at origin
+  READY_FOR_PICKUP // Packaged, waiting for driver/carrier
+  PICKED_UP // Driver collected from origin
+  IN_TRANSIT // On the way to customer
+  OUT_FOR_DELIVERY // Last-mile delivery in progress
+  ARRIVED // Driver at delivery location
+  DELIVERED // Successfully delivered + POD captured
+  FAILED // Delivery attempt failed
+  RETURNED // Returned to origin
+  CANCELLED // Cancelled before delivery
+}
+
+enum DeliveryMethod {
+  LOCAL_DELIVERY // In-house fleet delivery
+  STORE_PICKUP // Customer picks up at store
+  STANDARD_SHIPPING // Third-party carrier (UPS, FedEx, etc.)
+  EXPRESS_SHIPPING // Third-party carrier (expedited)
+  SAME_DAY // Same-day in-house delivery
+}
+
+// ─── SHIPMENT PROOF (replaces old POD model) ─────────────
+// Linked to shipment instead of order for split-delivery support.
+
+model ShipmentProof {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId       String   @unique @map("shipment_id") @db.Uuid
+  photoUrls        String[] @map("photo_urls")
+  signatureUrl     String?  @map("signature_url")
+  recipientName    String?  @map("recipient_name")
+  // TODO: Restore PostGIS
+  deliveryLocation Json?    @map("delivery_location")
+  notes            String?
+  deliveredAt      DateTime @default(now()) @map("delivered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("shipment_proofs")
+}
+
+// ─── SHIPPING PROFILES ───────────────────────────────────
+// A shipping profile defines HOW and HOW MUCH to charge for delivery.
+// It bundles locations, zones, rates, and rules into a reusable config.
+// This was the heart of the old system's rate calculation engine.
+
+model ShippingProfile {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String         @map("shop_id") @db.Uuid
+  name           String
+  description    String?
+  deliveryMethod DeliveryMethod @default(LOCAL_DELIVERY) @map("delivery_method")
+  isDefault      Boolean        @default(false) @map("is_default")
+  isActive       Boolean        @default(true) @map("is_active")
+
+  // Processing time before dispatch (hours)
+  processingTimeHours Int @default(0) @map("processing_time_hours")
+
+  // Rate calculation method
+  rateType          RateType @default(FLAT) @map("rate_type")
+  flatRate          Decimal? @map("flat_rate") @db.Decimal(10, 2)
+  freeShippingAbove Decimal? @map("free_shipping_above") @db.Decimal(10, 2)
+  minOrderAmount    Decimal? @map("min_order_amount") @db.Decimal(10, 2)
+
+  // Conditional rules (JSON array of rule objects)
+  // e.g. [{ type: "weight", ranges: [...] }, { type: "distance", ranges: [...] }]
+  rateRules Json @default("[]") @map("rate_rules")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop          Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  locations     ShippingProfileLocation[]
+  calendarRules CalendarRule[]
+
+  @@index([shopId, isActive])
+  @@map("shipping_profiles")
+}
+
+enum RateType {
+  FLAT // Single price for all
+  WEIGHT_BASED // Price varies by package weight
+  DISTANCE_BASED // Price varies by delivery distance
+  ZONE_BASED // Price varies by delivery zone
+  TIERED // Price tiers (e.g. 0-5kg, 5-10kg)
+  CALCULATED // Dynamic: combines multiple factors
+}
+
+// Junction: which locations use which shipping profile
+model ShippingProfileLocation {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+  locationId        String @map("location_id") @db.Uuid
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+  location        Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([shippingProfileId, locationId])
+  @@map("shipping_profile_locations")
+}
+
+// ─── CALENDAR RULES ──────────────────────────────────────
+// Defines when a shipping profile is available: operating days,
+// blackout dates, capacity limits, cutoff times, holiday schedules.
+// Replaces old calenderRule + calenderProfile models.
+
+model CalendarRule {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String           @map("shop_id") @db.Uuid
+  shippingProfileId String?          @map("shipping_profile_id") @db.Uuid
+  name              String
+  type              CalendarRuleType @default(OPERATING_DAYS)
+
+  // Operating days (bitmask or array): [0=Sun, 1=Mon, ..., 6=Sat]
+  daysOfWeek Int[] @map("days_of_week")
+
+  // Time window for this rule
+  startTime String? @map("start_time") // "09:00"
+  endTime   String? @map("end_time") // "17:00"
+
+  // Cutoff: how many minutes before the slot a customer must order
+  cutoffMinutes Int @default(120) @map("cutoff_minutes")
+
+  // Capacity per day/slot
+  maxCapacityPerDay Int? @map("max_capacity_per_day")
+
+  // Blackout dates: specific dates when this rule is inactive
+  blackoutDates DateTime[] @map("blackout_dates")
+
+  // Date range: when this rule is effective (null = always)
+  effectiveFrom DateTime? @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+
+  // Surcharge for this window (e.g. weekend surcharge)
+  surcharge Decimal @default(0) @db.Decimal(10, 2)
+
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0) // higher = overrides lower
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop            Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shippingProfile ShippingProfile? @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, isActive])
+  @@index([shippingProfileId, isActive])
+  @@map("calendar_rules")
+}
+
+enum CalendarRuleType {
+  OPERATING_DAYS // Regular operating schedule
+  BLACKOUT // Dates when service is unavailable
+  SPECIAL_HOURS // Modified hours (holidays, events)
+  CAPACITY_OVERRIDE // Override capacity for specific periods
+}
+
+// ─── NOTIFICATION TEMPLATES ──────────────────────────────
+// Templates for each notification channel × event type.
+// Supports variable interpolation: {{order.number}}, {{customer.name}}, etc.
+// Replaces old emailTemplate, whatsappTemplate, notificationTemplate.
+
+model NotificationTemplate {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String              @map("shop_id") @db.Uuid
+  channel    NotificationChannel
+  eventType  String              @map("event_type") // e.g. "order.created", "shipment.delivered"
+  name       String
+  subject    String? // For email
+  body       String // Template body (supports {{variables}})
+  designJson Json?               @map("design_json") // Unlayer/MJML design data (email)
+  variables  Json                @default("[]") // Available variables: [{ key, description, example }]
+  language   String              @default("en")
+  version    Int                 @default(1)
+  isActive   Boolean             @default(true) @map("is_active")
+  isDefault  Boolean             @default(false) @map("is_default") // system-provided template
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, channel, eventType, language])
+  @@index([shopId, channel, isActive])
+  @@map("notification_templates")
+}
+
+// ─── ACTIVITY LOG (Audit Trail) ──────────────────────────
+// Immutable log of every significant action in the system.
+// Used for audit trail, debugging, and compliance.
+
+model ActivityLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String   @map("shop_id") @db.Uuid
+  entityType String   @map("entity_type") // "order", "shipment", "driver", etc.
+  entityId   String   @map("entity_id") @db.Uuid // polymorphic — no FK constraint
+  action     String // "created", "status_changed", "assigned", "delivered", etc.
+  actorType  String   @map("actor_type") // "user", "driver", "system", "webhook"
+  actorId    String?  @map("actor_id") @db.Uuid
+  changes    Json     @default("{}") // { field: { from: old, to: new } }
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  timestamp  DateTime @default(now())
+
+  // Optional typed FK for the most common entity type (shipment)
+  // Other entity types are resolved at the application layer via entityType + entityId
+  shipmentId String? @map("shipment_id") @db.Uuid
+
+  // Relations
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, entityType, entityId])
+  @@index([shopId, timestamp(sort: Desc)])
+  @@index([entityType, entityId, timestamp(sort: Desc)])
+  @@index([shipmentId])
+  @@map("activity_logs")
+}
+
+// ─── PAYMENT TRANSACTIONS ────────────────────────────────
+// Tracks every financial transaction against a shipment/order.
+// Supports COD collection, online payments, refunds.
+
+model PaymentTransaction {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String        @map("shop_id") @db.Uuid
+  shipmentId    String?       @map("shipment_id") @db.Uuid
+  orderId       String?       @map("order_id") @db.Uuid
+  type          PaymentType
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(12, 2)
+  currency      String        @default("USD")
+  providerTxnId String?       @map("provider_txn_id")
+  providerName  String?       @map("provider_name") // "stripe", "cod", "shopify"
+  refundOf      String?       @map("refund_of") @db.Uuid // references original txn id
+  errorMessage  String?       @map("error_message")
+  metadata      Json          @default("{}")
+  completedAt   DateTime?     @map("completed_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id])
+
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([shopId, status])
+  @@index([providerTxnId])
+  @@map("payment_transactions")
+}
+
+enum PaymentType {
+  CHARGE // Customer payment
+  COD_COLLECTION // Cash on delivery collected by driver
+  REFUND // Refund to customer
+  ADJUSTMENT // Manual adjustment
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  COD
+  BANK_TRANSFER
+  WALLET
+  SHOPIFY_PAYMENT
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ─── PRODUCTS (Shopify Product Cache) ────────────────────
+// Local cache of Shopify products for fast queries, rule matching,
+// and analytics. Synced via webhooks. NOT the source of truth.
+
+model Product {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String   @map("shop_id") @db.Uuid
+  shopifyProductId  String   @map("shopify_product_id")
+  title             String
+  productType       String?  @map("product_type")
+  vendor            String?
+  tags              String[] @default([])
+  status            String   @default("active") // active, draft, archived
+  imageUrl          String?  @map("image_url")
+  variants          Json     @default("[]") // Array of variant snapshots
+  weight            Decimal? @db.Decimal(10, 2) // default variant weight
+  requiresShipping  Boolean  @default(true) @map("requires_shipping")
+  inventoryQuantity Int?     @map("inventory_quantity")
+  lastSyncAt        DateTime @default(now()) @map("last_sync_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, shopifyProductId])
+  @@index([shopId, status])
+  @@index([shopId, productType])
+  @@map("products")
+}
+
+// ─── CUSTOMERS (Shopify Customer Cache) ──────────────────
+// Local cache of Shopify customers. Synced via webhooks.
+
+model Customer {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String   @map("shop_id") @db.Uuid
+  shopifyCustomerId String   @map("shopify_customer_id")
+  email             String?
+  phone             String?
+  firstName         String?  @map("first_name")
+  lastName          String?  @map("last_name")
+  ordersCount       Int      @default(0) @map("orders_count")
+  totalSpent        Decimal  @default(0) @map("total_spent") @db.Decimal(12, 2)
+  tags              String[] @default([])
+  addresses         Json     @default("[]") // Array of address objects
+  marketingConsent  Boolean  @default(false) @map("marketing_consent")
+  notes             String?
+  lastSyncAt        DateTime @default(now()) @map("last_sync_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, shopifyCustomerId])
+  @@index([shopId, email])
+  @@index([shopId, phone])
+  @@map("customers")
+}

@@ -1,0 +1,186 @@
+// ═══════════════════════════════════════════════════════════
+// PHASE 1 — NEW MODELS (AR: Arjun Rajput, CTO)
+// ═══════════════════════════════════════════════════════════
+// Architecture principles:
+//   1. Models are MODULAR — not a 1:1 copy of the old MongoDB schemas
+//   2. Relations are explicit via FK, not buried in JSON blobs
+//   3. Enums are fine-grained for type safety, not loose strings
+//   4. Indexes are query-driven (we add what the API actually queries)
+//   5. JSON fields are only for truly dynamic/schemaless data
+//   6. Every model is shop-scoped (RLS) or org-scoped (shared resources)
+
+// ─── LOCATIONS (Warehouse / Store / Hub) ─────────────────
+// A physical location from which shipments originate or return.
+// Org-level locations are shared across shops. Shop-level locations
+// are private. Replaces old storeDetail.locations + warehouse model.
+
+model Location {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String?      @map("org_id") @db.Uuid
+  shopId       String?      @map("shop_id") @db.Uuid
+  name         String
+  type         LocationType @default(WAREHOUSE)
+  addressLine1 String       @map("address_line1")
+  addressLine2 String?      @map("address_line2")
+  city         String
+  province     String?
+  postalCode   String?      @map("postal_code")
+  country      String       @default("US")
+  // TODO: Restore PostGIS when available
+  coordinates  Json? // { lat: number, lng: number }
+  phone        String?
+  email        String?
+  isDefault    Boolean      @default(false) @map("is_default")
+  isActive     Boolean      @default(true) @map("is_active")
+
+  // Operating hours: { monday: { open: "09:00", close: "17:00" }, ... }
+  operatingHours  Json? @map("operating_hours")
+  // Preparation time in minutes before an order can be dispatched
+  prepTimeMinutes Int   @default(0) @map("prep_time_minutes")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization             Organization?             @relation(fields: [orgId], references: [id])
+  shop                     Shop?                     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipments                Shipment[]
+  shippingProfileLocations ShippingProfileLocation[]
+  workingHours             LocationWorkingHours[]
+  capacity                 LocationCapacity?
+  zoneLinks                LocationZoneLink[]
+  profileLocationLinks     ProfileLocationLink[]
+  deliverySlots            DeliverySlot[]
+  capacityConfigs          CapacityConfig[]
+  blackoutDates            BlackoutDate[]
+  deadlineConfig           DeadlineConfig?
+  surgePrices              SurgePrice[]
+
+  @@index([orgId, isActive])
+  @@index([shopId, isActive])
+  @@map("locations")
+}
+
+enum LocationType {
+  WAREHOUSE
+  STORE
+  HUB
+  DEPOT
+  PICKUP_POINT
+}
+
+// ── Sprint 2.5 additions ──
+
+// ═══════════════════════════════════════════════════════════
+// LOCATIONS V2 — Enhanced Location Management
+// PostGIS-ready, working hours, capacity, zone associations
+// ═══════════════════════════════════════════════════════════
+
+// ─── LOCATION WORKING HOURS ─────────────────────────────────
+// Operating hours per day of week for each location
+// Supports seasonal closures and special hours
+
+model LocationWorkingHours {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId String   @map("location_id") @db.Uuid
+  dayOfWeek  Int      @map("day_of_week") // 0-6 (Sunday-Saturday)
+  openTime   String?  @map("open_time") // HH:mm format, null = closed
+  closeTime  String?  @map("close_time") // HH:mm format
+  isClosed   Boolean  @default(false) @map("is_closed")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, dayOfWeek])
+  @@index([locationId])
+  @@map("location_working_hours")
+}
+
+// ─── LOCATION CAPACITY ──────────────────────────────────────
+// Warehouse/location capacity and current utilization
+// Tracks slots for inventory management
+
+model LocationCapacity {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId    String   @unique @map("location_id") @db.Uuid
+  totalSlots    Int      @map("total_slots") // Total capacity slots
+  usedSlots     Int      @default(0) @map("used_slots") // Currently used
+  reservedSlots Int      @default(0) @map("reserved_slots") // Reserved but not used
+  category      String? // e.g., 'standard', 'cold_storage', 'hazmat'
+  lastUpdated   DateTime @default(now()) @map("last_updated") @db.Timestamp()
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId])
+  @@map("location_capacity")
+}
+
+// ─── LOCATION ZONE ASSOCIATION ─────────────────────────────
+// Links locations to delivery zones
+// Enables point-in-polygon queries and zone-based rules
+
+model LocationZoneLink {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId     String   @map("location_id") @db.Uuid
+  deliveryZoneId String   @map("delivery_zone_id") @db.Uuid
+  priority       Int      @default(0) // Priority order for multi-zone locations
+  isDefault      Boolean  @default(false) @map("is_default")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  location     Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  deliveryZone DeliveryZone @relation(fields: [deliveryZoneId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, deliveryZoneId])
+  @@index([locationId])
+  @@index([deliveryZoneId])
+  @@map("location_zone_links")
+}
+
+// ─── EXTEND LOCATION MODEL ─────────────────────────────────
+// Add new fields to existing Location model for enhanced features
+
+// NOTE: The following fields should be added to the Location model
+// in schema/20-locations.prisma via migration:
+//
+// // PostGIS-ready coordinates (not yet using PostGIS type)
+// latitude      Float?                @db.Real
+// longitude     Float?                @db.Real
+//
+// // Pickup/delivery rules per location
+// allowPickup   Boolean              @default(true) @map("allow_pickup")
+// allowDelivery Boolean              @default(true) @map("allow_delivery")
+// maxPickupHour Int?                 @map("max_pickup_hour") // Latest hour (24h format)
+// minDeliveryDay Int?                @map("min_delivery_day") // Minimum delivery time in days
+//
+// // Service level
+// serviceLevel  String               @default("standard") @map("service_level")
+//
+// Relations (existing):
+// workingHours  LocationWorkingHours[]
+// capacity      LocationCapacity?
+// zones         LocationZoneLink[]
+//
+// New indexes:
+// @@index([latitude, longitude])
+// @@index([shopId, allowPickup])
+// @@index([shopId, allowDelivery])
+
+// ─── ZONE MODEL (referenced by LocationZoneLink) ────────────
+// Ensure Zone model exists in routing schema
+// Basic structure (verify in existing schema):
+// model Zone {
+//   id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+//   shopId String @map("shop_id") @db.Uuid
+//   name String
+//   type String // 'postal_code', 'polygon', 'radius'
+//   ...
+//   locations LocationZoneLink[]
+// }

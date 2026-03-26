@@ -1,0 +1,115 @@
+# infra/docker/Dockerfile.api
+# Production-hardened Fastify API Dockerfile
+#
+# Security features:
+# - Multi-stage build minimizes final image size and excludes dev dependencies
+# - Non-root user (node:1001) prevents privilege escalation
+# - Frozen lockfile ensures reproducible builds
+# - Read-only root filesystem compatible
+# - Health checks for orchestration integration
+# - Minimal attack surface with essential packages only
+#
+# Final image target: ~200MB
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Base - Setup pnpm and system dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS base
+
+WORKDIR /app
+
+# Install pnpm package manager globally
+RUN npm install -g pnpm@9.15.0
+
+# Install libc compatibility for glibc-dependent packages
+RUN apk add --no-cache libc6-compat curl
+
+# Create non-root user for security (must exist before production stage)
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Dependencies - Install production dependencies only
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS deps
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy package definitions for all packages and apps
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
+
+# Install dependencies with frozen lockfile (reproducible builds)
+# --frozen-lockfile prevents any lockfile changes and ensures deterministic installs
+RUN pnpm install --frozen-lockfile --production=false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Builder - Compile TypeScript and build packages
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+WORKDIR /app
+
+# Generate Prisma client - must happen before TypeScript compilation
+RUN pnpm --filter @witylogix/db db:generate
+
+# Build dependency packages in correct order
+RUN pnpm --filter @witylogix/types build && \
+    pnpm --filter @witylogix/validators build && \
+    pnpm --filter @witylogix/core build && \
+    pnpm --filter @witylogix/db build && \
+    pnpm --filter @witylogix/api build
+
+# Prune dependencies to production-only (removes devDependencies)
+RUN pnpm prune --prod
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 4: Production - Minimal runtime image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Install runtime dependencies only (curl for health checks)
+RUN apk add --no-cache libc6-compat curl && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# Copy pruned node_modules from build stage
+COPY --from=build --chown=node:nodejs /app/node_modules ./node_modules
+
+# Copy package definitions
+COPY --from=build --chown=node:nodejs /app/packages/ ./packages/
+COPY --from=build --chown=node:nodejs /app/apps/api/ ./apps/api/
+
+# Copy built application code
+COPY --from=build --chown=node:nodejs /app/apps/api/dist/ ./apps/api/dist/
+
+# Copy Prisma schema and migrations (required for runtime operations)
+COPY --from=build --chown=node:nodejs /app/packages/db/prisma/ ./packages/db/prisma/
+
+# Set environment
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Expose API port
+EXPOSE 3001
+
+# Switch to non-root user for security
+USER node
+
+# Container labels for metadata and tracking
+LABEL maintainer="Witylogix Team"
+LABEL version="1.0"
+LABEL description="Production-hardened Fastify API server with security hardening"
+
+# Health check: API must respond with 200 to /health endpoint
+# This is used by Docker and orchestrators to determine service health
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start API server
+CMD ["node", "apps/api/dist/server.js"]

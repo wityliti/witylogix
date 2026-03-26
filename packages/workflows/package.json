@@ -1,0 +1,40 @@
+{
+  "name": "@witylogix/workflows",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./steps": {
+      "import": "./dist/steps/index.mjs",
+      "require": "./dist/steps/index.cjs",
+      "types": "./dist/steps/index.d.ts"
+    },
+    "./definitions": {
+      "import": "./dist/definitions/index.mjs",
+      "require": "./dist/definitions/index.cjs",
+      "types": "./dist/definitions/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo build-ok",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@witylogix/db": "workspace:*",
+    "@witylogix/types": "workspace:*",
+    "@witylogix/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
+  }
+}

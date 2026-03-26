@@ -1,0 +1,106 @@
+// ─── SAVED VIEWS (User Defined Table Views) ────────────────────
+// Allows users to save custom views of various tables with filters and sorts
+// Supports sharing views with other team members
+
+model SavedView {
+  id               String   @id @default(cuid())
+  shopId           String
+  userId           String
+  name             String
+  tableName        String // orders, shipments, drivers, routes, customers, inventory
+  filters          Json     @default("[]") // [{column, operator, value}]
+  sortConfig       Json? // {column, direction}
+  columnVisibility Json? // {columnName: boolean}
+  isDefault        Boolean  @default(false)
+  isShared         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([shopId, userId])
+  @@index([shopId, tableName])
+  @@map("saved_views")
+}
+
+// ─── WIDGETS (Dashboard Components) ────────────────────────────
+// Customizable dashboard widgets with position and configuration
+
+model Widget {
+  id          String   @id @default(cuid())
+  shopId      String
+  userId      String
+  type        String // stat_card, chart_line, chart_bar, chart_pie, table, map, activity_feed, calendar
+  name        String
+  config      Json     @default("{}") // widget-specific configuration
+  position    Json     @default("{}") // {x, y, w, h} grid position
+  styling     Json     @default("{}") // custom styling overrides
+  isActive    Boolean  @default(true)
+  targetPages String[] @default(["/"]) // pages where widget appears
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopId, userId])
+  @@map("widgets")
+}
+
+// ─── SUPPORT TICKETS (Customer Support System) ──────────────────
+// Support ticket management with status tracking and internal messaging
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  shopId      String
+  userId      String
+  subject     String
+  description String
+  status      String   @default("open") // open, in_progress, waiting, resolved, closed
+  priority    String   @default("medium") // low, medium, high, urgent
+  category    String? // billing, technical, feature, other
+  assigneeId  String?
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages SupportMessage[]
+
+  @@index([shopId])
+  @@index([status])
+  @@index([priority])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id          String   @id @default(cuid())
+  ticketId    String
+  userId      String
+  content     String
+  isInternal  Boolean  @default(false)
+  attachments Json     @default("[]")
+  createdAt   DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("support_messages")
+}
+
+// ─── FEATURE REQUESTS (Product Feedback) ────────────────────────
+// Community-driven feature requests with voting
+
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  shopId      String
+  userId      String
+  title       String
+  description String
+  status      String   @default("submitted") // submitted, under_review, planned, in_progress, completed, declined
+  category    String? // delivery, tracking, billing, integration, other
+  votes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([status])
+  @@index([votes])
+  @@map("feature_requests")
+}

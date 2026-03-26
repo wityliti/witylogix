@@ -1,0 +1,131 @@
+// ─── SHIPMENTS (Fulfillment Unit) ────────────────────────
+// A shipment represents a single package being delivered.
+// One order can have multiple shipments (split delivery).
+// This was the MOST critical gap — the old system had a rich
+// shipment lifecycle completely separate from orders.
+
+model Shipment {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String  @map("shop_id") @db.Uuid
+  orderId     String  @map("order_id") @db.Uuid
+  locationId  String? @map("location_id") @db.Uuid // origin location
+  driverId    String? @map("driver_id") @db.Uuid
+  routeStopId String? @map("route_stop_id") @db.Uuid
+
+  // Identifiers
+  shipmentNumber String         @map("shipment_number") // human-readable, e.g. SHP-1001
+  trackingNumber String?        @unique @map("tracking_number")
+  status         ShipmentStatus @default(PENDING)
+  deliveryMethod DeliveryMethod @default(LOCAL_DELIVERY) @map("delivery_method")
+
+  // Recipient (snapshot at creation — may differ from order customer)
+  recipientName  String? @map("recipient_name")
+  recipientPhone String? @map("recipient_phone")
+  recipientEmail String? @map("recipient_email")
+
+  // Delivery address (denormalized)
+  addressLine1     String? @map("address_line1")
+  addressLine2     String? @map("address_line2")
+  city             String?
+  province         String?
+  postalCode       String? @map("postal_code")
+  country          String?
+  // TODO: Restore PostGIS
+  deliveryLocation Json?   @map("delivery_location") // { lat, lng }
+
+  // Scheduling
+  deliveryDate     DateTime? @map("delivery_date")
+  timeSlotId       String?   @map("time_slot_id") @db.Uuid
+  estimatedArrival DateTime? @map("estimated_arrival")
+  actualDelivery   DateTime? @map("actual_delivery")
+  pickedUpAt       DateTime? @map("picked_up_at")
+
+  // Package details
+  weight     Decimal? @db.Decimal(10, 2)
+  dimensions Json? // { length, width, height, unit }
+  itemCount  Int      @default(1) @map("item_count")
+  lineItems  Json     @default("[]") @map("line_items")
+
+  // Financial
+  shippingCost    Decimal? @map("shipping_cost") @db.Decimal(12, 2)
+  codAmount       Decimal? @map("cod_amount") @db.Decimal(12, 2)
+  insuranceAmount Decimal? @map("insurance_amount") @db.Decimal(12, 2)
+
+  // Fulfillment
+  labelUrl           String? @map("label_url")
+  fulfillmentId      String? @map("fulfillment_id") // Shopify fulfillment ID
+  carrier            String? // external carrier name
+  carrierTrackingUrl String? @map("carrier_tracking_url")
+
+  // Metadata
+  tags          String[] @default([])
+  notes         String?
+  metadata      Json     @default("{}")
+  failureReason String?  @map("failure_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  order               Order                @relation(fields: [orderId], references: [id])
+  location            Location?            @relation(fields: [locationId], references: [id])
+  driver              Driver?              @relation(fields: [driverId], references: [id])
+  timeSlot            TimeSlot?            @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery     ShipmentProof?
+  activityLogs        ActivityLog[]
+  paymentTransactions PaymentTransaction[]
+  codcollections      CODCollection[]
+  deliveryTimeSlot    DeliveryTimeSlot?    @relation(fields: [deliveryTimeSlotId], references: [id])
+  deliveryTimeSlotId  String?              @db.Uuid
+
+  @@unique([shopId, shipmentNumber])
+  @@index([shopId, status, createdAt(sort: Desc)])
+  @@index([shopId, orderId])
+  @@index([shopId, driverId])
+  @@index([shopId, deliveryDate])
+  @@index([trackingNumber])
+  @@map("shipments")
+}
+
+// ─── SHIPMENT PROOF (replaces old POD model) ─────────────
+// Linked to shipment instead of order for split-delivery support.
+
+model ShipmentProof {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId       String   @unique @map("shipment_id") @db.Uuid
+  photoUrls        String[] @map("photo_urls")
+  signatureUrl     String?  @map("signature_url")
+  recipientName    String?  @map("recipient_name")
+  // TODO: Restore PostGIS
+  deliveryLocation Json?    @map("delivery_location")
+  notes            String?
+  deliveredAt      DateTime @default(now()) @map("delivered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("shipment_proofs")
+}
+
+enum ShipmentStatus {
+  PENDING // Created, awaiting processing
+  PROCESSING // Being prepared at origin
+  READY_FOR_PICKUP // Packaged, waiting for driver/carrier
+  PICKED_UP // Driver collected from origin
+  IN_TRANSIT // On the way to customer
+  OUT_FOR_DELIVERY // Last-mile delivery in progress
+  ARRIVED // Driver at delivery location
+  DELIVERED // Successfully delivered + POD captured
+  FAILED // Delivery attempt failed
+  RETURNED // Returned to origin
+  CANCELLED // Cancelled before delivery
+}
+
+enum DeliveryMethod {
+  LOCAL_DELIVERY // In-house fleet delivery
+  STORE_PICKUP // Customer picks up at store
+  STANDARD_SHIPPING // Third-party carrier (UPS, FedEx, etc.)
+  EXPRESS_SHIPPING // Third-party carrier (expedited)
+  SAME_DAY // Same-day in-house delivery
+}

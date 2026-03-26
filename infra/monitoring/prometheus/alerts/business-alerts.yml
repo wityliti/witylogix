@@ -1,0 +1,147 @@
+groups:
+  - name: business_alerts
+    interval: 60s
+    rules:
+      # Order processing delay alert
+      - alert: BusinessOrderProcessingDelay
+        expr: |
+          sum(orders_processing_delay_seconds_sum / orders_processing_delay_seconds_count) > 300
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Order processing delayed"
+          description: "Average order processing time is {{ $value }}s (threshold: 5 minutes)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Critical order processing delay
+      - alert: BusinessCriticalOrderProcessingDelay
+        expr: |
+          sum(orders_processing_delay_seconds_sum / orders_processing_delay_seconds_count) > 900
+        for: 2m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "Critical order processing delay"
+          description: "Average order processing time is {{ $value }}s (threshold: 15 minutes)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Driver assignment failure rate
+      - alert: BusinessHighDriverAssignmentFailure
+        expr: |
+          sum(rate(driver_assignment_failures_total[5m])) /
+          sum(rate(driver_assignment_attempts_total[5m])) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High driver assignment failure rate"
+          description: "Driver assignment failure rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Integration health check failure
+      - alert: BusinessIntegrationHealthCheckFailed
+        expr: |
+          integration_health_check_status{environment="production"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Integration health check failed"
+          description: "Integration {{ $labels.provider }} in {{ $labels.environment }} health check failed"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Webhook delivery backlog
+      - alert: BusinessWebhookDeliveryBacklog
+        expr: |
+          webhook_dlq_size{environment="production"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Webhook delivery backlog growing"
+          description: "Webhook DLQ size is {{ $value }} (threshold: 1000)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Critical webhook delivery backlog
+      - alert: BusinessCriticalWebhookDeliveryBacklog
+        expr: |
+          webhook_dlq_size{environment="production"} > 5000
+        for: 5m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "Critical webhook delivery backlog"
+          description: "Webhook DLQ size is {{ $value }} (threshold: 5000)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Zero orders during business hours
+      - alert: BusinessZeroOrdersDuringBusinessHours
+        expr: |
+          sum(increase(orders_created_total[1h])) == 0 and hour(now()) >= 7 and hour(now()) <= 22
+        for: 10m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "No orders received in 1 hour during business hours"
+          description: "Zero orders created in the last hour during business hours (7 AM - 10 PM)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Low delivery completion rate
+      - alert: BusinessLowDeliveryCompletionRate
+        expr: |
+          (sum(increase(deliveries_completed_total[1h])) / sum(increase(deliveries_assigned_total[1h]))) < 0.80
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low delivery completion rate"
+          description: "Delivery completion rate is {{ $value | humanizePercentage }} (threshold: 80%)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # SLA breach
+      - alert: BusinessSLABreach
+        expr: |
+          (sum(deliveries_on_time_total) / sum(deliveries_completed_total)) < 0.98
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "SLA compliance below threshold"
+          description: "Delivery SLA compliance is {{ $value | humanizePercentage }} (target: 98%)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Revenue anomaly detection
+      - alert: BusinessRevenueAnomaly
+        expr: |
+          abs(sum(increase(revenue_cents[1h])) - avg_over_time(sum(increase(revenue_cents[1h]))[7d:1h])) > 3 * stddev_over_time(sum(increase(revenue_cents[1h]))[7d:1h])
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Revenue anomaly detected"
+          description: "Revenue is significantly different from expected baseline"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Tenant onboarding stuck
+      - alert: BusinessTenantOnboardingStuck
+        expr: |
+          increase(tenants_onboarding_failed_total[1h]) > 10
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High tenant onboarding failure rate"
+          description: "{{ $value }} tenant onboarding failures in the last hour"
+          runbook: "/docs/runbooks/incident-response.md"

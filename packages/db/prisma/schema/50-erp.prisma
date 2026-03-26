@@ -1,0 +1,159 @@
+// ─── ERP INTEGRATIONS ──────────────────────────────────────────────────
+// Manages connections to ERP systems (SAP, NetSuite, Dynamics365, Sage)
+// Stores credentials, configurations, and sync state
+
+// ─── ERP CONNECTIONS ────────────────────────────────────────────────────
+// Connection metadata and credentials for ERP providers
+
+model ERPConnection {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  provider          String // 'sap', 'netsuite', 'dynamics365', 'sage'
+  connectionName    String?   @map("connection_name")
+  status            String    @default("PENDING_AUTH") // ACTIVE, INACTIVE, ERROR, EXPIRED, PENDING_AUTH
+  credentials       Json      @default("{}") // Encrypted by application
+  config            Json      @default("{}") // Connection configuration
+  syncConfig        Json?     @map("sync_config") // Sync direction, conflict resolution, etc.
+  lastSyncAt        DateTime? @map("last_sync_at")
+  lastHealthCheckAt DateTime? @map("last_health_check_at")
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  fieldMappings ERPFieldMapping[]
+  syncLogs      ERPSyncLog[]
+  webhooks      ERPWebhookRegistration[]
+
+  @@index([tenantId, provider])
+  @@index([status])
+  @@map("erp_connections")
+}
+
+// ─── FIELD MAPPINGS ────────────────────────────────────────────────────
+// Maps Witylogix fields to ERP system fields with transformation logic
+
+model ERPFieldMapping {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId   String   @map("connection_id") @db.Uuid
+  entity         String // 'customer', 'vendor', 'product', 'invoice', 'order', 'payment', 'journal_entry', 'inventory'
+  witylogixField String   @map("witylogix_field")
+  erpField       String   @map("erp_field")
+  fieldType      String   @map("field_type") // 'string', 'number', 'date', 'boolean', etc.
+  readOnly       Boolean  @default(false) @map("read_only")
+  required       Boolean  @default(false)
+  transform      Json? // { direction: 'push'|'pull'|'bidirectional', encode?: {...}, decode?: {...} }
+  metadata       Json?    @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  connection ERPConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, entity, witylogixField])
+  @@index([connectionId, entity])
+  @@map("erp_field_mappings")
+}
+
+// ─── SYNC LOGS ──────────────────────────────────────────────────────────
+// Detailed audit trail of all sync operations
+
+model ERPSyncLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId     String   @map("connection_id") @db.Uuid
+  syncId           String   @map("sync_id") // Sync batch identifier
+  entity           String // Entity type being synced
+  direction        String // 'push', 'pull', 'bidirectional'
+  recordsProcessed Int      @default(0) @map("records_processed")
+  recordsSucceeded Int      @default(0) @map("records_succeeded")
+  recordsFailed    Int      @default(0) @map("records_failed")
+  recordsConflict  Int      @default(0) @map("records_conflict")
+  errors           Json? // Array of error details
+  duration         Int // Duration in milliseconds
+  startedAt        DateTime @map("started_at")
+  completedAt      DateTime @map("completed_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  connection ERPConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, syncId])
+  @@index([connectionId, entity])
+  @@index([startedAt])
+  @@map("erp_sync_logs")
+}
+
+// ─── WEBHOOK REGISTRATIONS ─────────────────────────────────────────────
+// Tracks webhook endpoints for ERP event notifications
+
+model ERPWebhookRegistration {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId    String    @map("connection_id") @db.Uuid
+  url             String // Webhook endpoint URL
+  secret          String? // HMAC secret for signature verification
+  events          String[] // Array of event types to listen for
+  isActive        Boolean   @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  failureCount    Int       @default(0) @map("failure_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  connection ERPConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, url])
+  @@index([connectionId, isActive])
+  @@map("erp_webhook_registrations")
+}
+
+// ─── SYNC RECORDS (For tracking individual record sync status) ────────────
+// Links between Witylogix records and their ERP counterparts
+
+model ERPSyncRecord {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId String    @map("connection_id") @db.Uuid
+  entity       String // Entity type
+  witylogixId  String    @map("witylogix_id") // ID in Witylogix system
+  externalId   String    @map("external_id") // ID in ERP system
+  status       String // 'synced', 'failed', 'conflict', 'pending'
+  direction    String // 'push' or 'pull'
+  lastSyncAt   DateTime? @map("last_sync_at")
+  nextRetryAt  DateTime? @map("next_retry_at")
+  retryCount   Int       @default(0) @map("retry_count")
+  errorMessage String?   @map("error_message")
+  errorDetails Json?     @map("error_details")
+  metadata     Json?     @default("{}")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([connectionId, entity, witylogixId])
+  @@index([connectionId, status])
+  @@index([witylogixId, externalId])
+  @@index([lastSyncAt])
+  @@map("erp_sync_records")
+}
+
+// ─── CONFLICT RECORDS (For tracking sync conflicts) ──────────────────────
+// Stores conflicting records for manual review and resolution
+
+model ERPConflictRecord {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId       String    @map("connection_id") @db.Uuid
+  entity             String // Entity type
+  recordId           String    @map("record_id")
+  localVersion       Json      @map("local_version") // Witylogix version
+  remoteVersion      Json      @map("remote_version") // ERP version
+  localModifiedAt    DateTime  @map("local_modified_at")
+  remoteModifiedAt   DateTime  @map("remote_modified_at")
+  resolutionStrategy String    @default("timestamp") @map("resolution_strategy")
+  resolvedData       Json?     @map("resolved_data")
+  resolvedBy         String?   @map("resolved_by") // User ID who resolved
+  resolvedAt         DateTime? @map("resolved_at")
+  notes              String?
+  status             String    @default("PENDING") // PENDING, RESOLVED, IGNORED
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  @@index([connectionId, status])
+  @@index([createdAt])
+  @@map("erp_conflict_records")
+}

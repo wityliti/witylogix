@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  shopify-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SHOPIFY_API_KEY=${SHOPIFY_API_KEY}
+      - SHOPIFY_API_SECRET=${SHOPIFY_API_SECRET}
+      - SHOPIFY_APP_URL=${SHOPIFY_APP_URL}
+      - SHOPIFY_SCOPES=${SHOPIFY_SCOPES}
+      - SHOPIFY_WEBHOOK_SECRET=${SHOPIFY_WEBHOOK_SECRET}
+      - API_BASE_URL=${API_BASE_URL:-http://host.docker.internal:8000}
+      - DATABASE_URL=${DATABASE_URL}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

@@ -1,0 +1,131 @@
+---
+title: Components
+description: Witylogix UI Component Library — dark-first, industrial, minimal design system
+---
+
+# Component Library
+
+The Witylogix UI component library provides production-ready, accessible components built with React, TypeScript, and Tailwind CSS. Each component follows our dark-first, industrial design philosophy.
+
+## Design Philosophy
+
+Our components are built with three core principles:
+
+- **Dark-First**: Components are designed for dark backgrounds with careful attention to contrast and readability
+- **Industrial**: Clean, minimal aesthetic with strong typography and purposeful spacing
+- **Minimal**: Every detail has a purpose; unnecessary decoration is removed
+
+## CSS Variables
+
+Witylogix uses CSS custom properties for theming. All color and spacing tokens use the `--wl-` prefix:
+
+```css
+--wl-primary: #0f172a
+--wl-secondary: #1e293b
+--wl-accent: #3b82f6
+--wl-text-primary: #f1f5f9
+--wl-text-secondary: #cbd5e1
+--wl-border: #334155
+```
+
+## Installation
+
+Install the component library via npm:
+
+```bash
+npm install @witylogix/ui
+```
+
+## Using Components
+
+All components use named imports from `@/components/ui`:
+
+```typescript
+import { Button, Card, Input } from "@/components/ui"
+```
+
+## Conditional Classes with cn()
+
+Use the `cn()` utility from `@/lib/utils` to merge Tailwind classes conditionally:
+
+```typescript
+import { cn } from "@/lib/utils"
+
+<button className={cn(
+  "px-4 py-2 rounded",
+  isActive && "bg-blue-500"
+)}>
+  Click me
+</button>
+```
+
+## Accessibility
+
+All components are built with accessibility in mind:
+
+- Semantic HTML (`<button>`, `<input>`, `<table>`)
+- ARIA labels and roles where needed
+- Keyboard navigation support
+- Focus management
+- Color contrast compliance (WCAG AA)
+
+## Responsive Design
+
+Components use Tailwind's responsive prefixes for mobile-first breakpoints:
+
+```typescript
+className="md:grid-cols-2 lg:grid-cols-3"
+```
+
+## TypeScript Support
+
+All components are fully typed with TypeScript. Props are well-documented and type-safe:
+
+```typescript
+interface ButtonProps {
+  variant?: "primary" | "secondary" | "ghost" | "danger"
+  size?: "sm" | "md" | "lg"
+  disabled?: boolean
+  loading?: boolean
+}
+```
+
+## Component Organization
+
+Components are organized by category:
+
+- **Inputs**: Button, Input, Textarea, Select, Switch, Checkbox
+- **Data Display**: Card, Badge, Table, Avatar, Skeleton, Tooltip, StatCard, EmptyState
+- **Layout**: Modal, Pagination, Breadcrumb
+- **Feedback**: Alert, Progress
+
+## Dark Mode Support
+
+All components include full dark mode support via Tailwind's dark mode classes. The library uses dark mode by default but respects the user's system preference.
+
+## Customization
+
+Components accept standard HTML attributes and className props for customization:
+
+```typescript
+<Button className="custom-class" data-testid="submit-btn">
+  Submit
+</Button>
+```
+
+## Browser Support
+
+Components support all modern browsers:
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Contributing
+
+When adding new components:
+1. Follow the existing component structure
+2. Add TypeScript types for all props
+3. Include accessibility features
+4. Write comprehensive documentation
+5. Test across breakpoints and browsers

@@ -1,0 +1,80 @@
+// Inventory Management Models
+
+/// Inventory items tracked by shop, product, variant, and location
+model InventoryItem {
+  id         String  @id @default(cuid())
+  shopId     String
+  productId  String
+  variantId  String? // Optional variant ID
+  locationId String
+
+  quantity         Int @default(0) // Physical quantity on hand
+  reservedQuantity Int @default(0) // Quantity reserved for orders
+  reorderPoint     Int @default(10) // Low stock alert threshold
+  reorderQuantity  Int @default(50) // Suggested reorder amount
+
+  movements InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, productId, variantId, locationId])
+  @@index([shopId])
+  @@index([productId])
+  @@index([locationId])
+}
+
+/// Track all inventory movements
+model InventoryMovement {
+  id     String        @id @default(cuid())
+  itemId String
+  item   InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  type     String // RECEIVE, SHIP, ADJUST, TRANSFER
+  quantity Int
+
+  fromLocationId String? // For transfers
+  toLocationId   String? // For transfers
+  reference      String? // PO#, Order#, etc
+
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+/// Product collections for grouping and bulk operations
+model Collection {
+  id           String  @id @default(cuid())
+  shopId       String
+  externalId   String? // Shopify collection ID for sync
+  title        String
+  handle       String?
+  description  String?
+  type         String  @default("manual") // manual, auto
+  sortOrder    String  @default("manual") // manual, best-selling, alpha-asc, alpha-desc, price-asc, price-desc, created-desc
+  imageUrl     String?
+  isActive     Boolean @default(true)
+  rules        Json? // auto collection rules: [{column, relation, condition}]
+  productCount Int     @default(0)
+
+  products CollectionProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, externalId])
+  @@index([shopId])
+}
+
+model CollectionProduct {
+  id           String     @id @default(cuid())
+  collectionId String
+  productId    String
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, productId])
+}

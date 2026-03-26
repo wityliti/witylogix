@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Witylogix Driver",
+    "slug": "witylogix-driver",
+    "version": "1.0.0",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.witylogix.driver"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.witylogix.driver"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "witylogix",
+    "plugins": [
+      "expo-camera",
+      "expo-image-picker",
+      "expo-location",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermissions": "Allow Witylogix to use your location"
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "dashboard": {
+    "title": "Webhook Delivery",
+    "description": "Webhook event delivery and reliability monitoring",
+    "tags": ["webhooks", "delivery", "events"],
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(webhook_delivery_total, environment)",
+          "current": {"value": "production", "text": "production"}
+        },
+        {
+          "name": "event_type",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(webhook_delivery_total{environment=\"$environment\"}, event_type)",
+          "current": {"value": "all", "text": "All"},
+          "multi": true
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Delivery Rate (events/sec)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\"}[1m]))",
+            "legendFormat": "Events/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "yaxes": [{"label": "events/sec"}]
+      },
+      {
+        "id": 2,
+        "title": "Success/Failure Ratio",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\",status=\"success\"}[1m]))",
+            "legendFormat": "Success"
+          },
+          {
+            "expr": "sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\",status=\"failed\"}[1m]))",
+            "legendFormat": "Failed"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Average Delivery Time (ms)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(webhook_delivery_time_ms_sum{environment=\"$environment\",event_type=~\"$event_type\"}[1m])) / sum(rate(webhook_delivery_time_ms_count{environment=\"$environment\",event_type=~\"$event_type\"}[1m]))",
+            "legendFormat": "Avg Delivery Time"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "yaxes": [{"label": "ms"}]
+      },
+      {
+        "id": 4,
+        "title": "Retry Rate (%)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 * (sum(rate(webhook_retry_total{environment=\"$environment\",event_type=~\"$event_type\"}[1m])) / sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\"}[1m])))"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "options": {"colorMode": "value"}
+      },
+      {
+        "id": 5,
+        "title": "DLQ Size",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(webhook_dlq_size{environment=\"$environment\"})"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
+        "options": {"colorMode": "background"}
+      },
+      {
+        "id": 6,
+        "title": "Circuit Breaker Status by Endpoint",
+        "type": "table",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "webhook_circuit_breaker_status{environment=\"$environment\"}",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 8}
+      },
+      {
+        "id": 7,
+        "title": "Event Type Distribution",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\"}[5m])) by (event_type)",
+            "legendFormat": "{{event_type}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8}
+      },
+      {
+        "id": 8,
+        "title": "Top Failing Endpoints",
+        "type": "table",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "topk(10, sum(rate(webhook_delivery_total{environment=\"$environment\",event_type=~\"$event_type\",status=\"failed\"}[5m])) by (endpoint_url))",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8}
+      },
+      {
+        "id": 9,
+        "title": "Delivery Latency P95",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(webhook_delivery_time_ms_bucket{environment=\"$environment\",event_type=~\"$event_type\"}[1m])) by (le))",
+            "legendFormat": "P95 Latency"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "yaxes": [{"label": "ms"}]
+      },
+      {
+        "id": 10,
+        "title": "HTTP Status Code Distribution",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(webhook_http_status_total{environment=\"$environment\",event_type=~\"$event_type\"}[5m])) by (status_code)",
+            "legendFormat": "{{status_code}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ]
+  }
+}

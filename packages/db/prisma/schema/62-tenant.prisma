@@ -1,0 +1,129 @@
+// ─── TENANT CONFIGURATION (Multi-Tenant Setup) ──────────────────────────
+// Stores tenant-specific configuration including subdomain, custom domain,
+// feature flags, and resource limits per plan tier.
+
+model TenantConfig {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String   @unique @map("org_id") @db.Uuid
+  subdomain    String   @unique // e.g., "acme" for acme.witylogix.com
+  customDomain String?  @unique @map("custom_domain") // e.g., "logistics.acme.com"
+  features     Json     @default("{}") @map("features") // Feature flags per plan tier
+  limits       Json     @default("{}") @map("limits") // Resource limits (requests/day, etc.)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([subdomain])
+  @@index([customDomain])
+  @@map("tenant_configs")
+}
+
+// ─── USAGE RECORDS (Raw API Usage Logs) ────────────────────────────────────
+// Captures individual API requests for billing, analytics, and troubleshooting.
+// Non-blocking async writes; aggregated into UsageSummary nightly.
+
+model UsageRecord {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  apiKeyId          String?  @map("api_key_id") @db.Uuid // NULL if authenticated via JWT/header
+  endpoint          String // API endpoint path (e.g., "/api/v1/routes")
+  method            String // HTTP method (GET, POST, PUT, DELETE, PATCH)
+  statusCode        Int      @map("status_code") // HTTP status code (200, 400, 500, etc.)
+  responseTimeMs    Int      @map("response_time_ms") // Round-trip time in milliseconds
+  requestSizeBytes  Int      @default(0) @map("request_size_bytes") // Request body size
+  responseSizeBytes Int      @default(0) @map("response_size_bytes") // Response body size
+  ipAddress         String   @map("ip_address") // Client IP for geo-location
+  timestamp         DateTime @default(now()) // When the request occurred
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  apiKey       ApiKey?      @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([orgId])
+  @@index([apiKeyId])
+  @@index([timestamp])
+  @@index([endpoint])
+  @@index([statusCode])
+  @@map("usage_records")
+}
+
+// ─── USAGE SUMMARY (Aggregated Daily Metrics) ─────────────────────────────
+// Pre-aggregated usage data per day for efficient querying and reporting.
+// Populated nightly by scheduled job from UsageRecord table.
+
+model UsageSummary {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  period            DateTime @db.Date // Date of aggregation (YYYY-MM-DD)
+  requestCount      Int      @default(0) @map("request_count") // Total requests
+  bandwidthBytes    BigInt   @default(0) @map("bandwidth_bytes") // Request + response bytes
+  errorCount        Int      @default(0) @map("error_count") // 4xx + 5xx responses
+  avgResponseTimeMs Int      @default(0) @map("avg_response_time_ms") // Mean response time
+  uniqueEndpoints   Int      @default(0) @map("unique_endpoints") // Distinct endpoints called
+  topEndpoints      Json     @default("[]") @map("top_endpoints") // Top 10 most-used endpoints with counts
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, period])
+  @@index([orgId])
+  @@index([period])
+  @@map("usage_summaries")
+}
+
+// ─── RATE LIMIT OVERRIDES (Custom Quotas) ────────────────────────────────
+// Allows per-endpoint or org-wide custom rate limits beyond plan defaults.
+// E.g., ENTERPRISE customer gets 50k req/min instead of 10k for /api/v1/routes.
+
+model RateLimitOverride {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  endpoint          String? // NULL = org-wide limit; specific path = endpoint-specific
+  requestsPerMinute Int      @map("requests_per_minute")
+  requestsPerHour   Int      @map("requests_per_hour")
+  burstLimit        Int      @map("burst_limit") // Max concurrent requests
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, endpoint])
+  @@index([orgId])
+  @@map("rate_limit_overrides")
+}
+
+// ─── WEBHOOK SECRETS (Secure Webhook Signing) ─────────────────────────────
+// Stores HMAC secrets for signing outbound webhooks and verifying signature
+// in webhook handlers. Supports secret rotation with overlap period.
+
+model WebhookSecret {
+  id        String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String               @map("org_id") @db.Uuid
+  endpoint  String // Webhook destination URL (e.g., "https://acme.com/webhooks/shipments")
+  secret    String // Base64-encoded HMAC secret (kept encrypted in practice)
+  algorithm WebhookSignatureAlgo @default(HMAC_SHA256) // HMAC_SHA256 or HMAC_SHA512
+  isActive  Boolean              @default(true) @map("is_active")
+  rotatedAt DateTime?            @map("rotated_at") // When secret was last rotated
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, endpoint])
+  @@index([orgId])
+  @@index([endpoint])
+  @@map("webhook_secrets")
+}
+
+enum WebhookSignatureAlgo {
+  HMAC_SHA256
+  HMAC_SHA512
+}
+
+// Note: Relations to Organization (tenantConfig, apiKeys, usageRecords,
+// usageSummaries, rateLimitOverrides, webhookSecrets) are defined
+// in the Organization model in its respective schema file.

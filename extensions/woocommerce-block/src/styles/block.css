@@ -1,0 +1,582 @@
+/**
+ * WooCommerce Delivery Scheduler Block Styles
+ * Clean, WooCommerce-native styling for checkout block
+ */
+
+:root {
+  --witylogix-primary: #007cba;
+  --witylogix-primary-dark: #005a87;
+  --witylogix-primary-light: #e7f5ff;
+  --witylogix-success: #46b450;
+  --witylogix-warning: #ffb81c;
+  --witylogix-error: #d32f2f;
+  --witylogix-neutral-light: #f9f9f9;
+  --witylogix-neutral-bg: #fafbfc;
+  --witylogix-border: #ddd;
+  --witylogix-border-dark: #999;
+  --witylogix-text-primary: #1e1e1e;
+  --witylogix-text-secondary: #666;
+  --witylogix-spacing: 1rem;
+}
+
+/* Date Picker */
+.witylogix-date-picker {
+  background: white;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  padding: var(--witylogix-spacing);
+}
+
+.date-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.date-picker-nav-btn {
+  background: transparent;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--witylogix-text-primary);
+  transition: all 0.2s ease;
+}
+
+.date-picker-nav-btn:hover:not(:disabled) {
+  background: var(--witylogix-neutral-light);
+  border-color: var(--witylogix-border-dark);
+}
+
+.date-picker-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.date-picker-month-label {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.date-picker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  background: var(--witylogix-neutral-bg);
+  border-radius: 4px;
+  padding: 0.5rem 0;
+}
+
+.date-picker-weekday {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--witylogix-text-secondary);
+  padding: 0.5rem 0;
+}
+
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.date-picker-day {
+  aspect-ratio: 1;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  color: var(--witylogix-text-primary);
+}
+
+.date-picker-day:hover:not(:disabled) {
+  background: var(--witylogix-neutral-light);
+  border-color: var(--witylogix-primary);
+}
+
+.date-picker-day--other-month {
+  color: var(--witylogix-text-secondary);
+  background: var(--witylogix-neutral-bg);
+}
+
+.date-picker-day--other-month:hover {
+  background: var(--witylogix-neutral-bg);
+}
+
+.date-picker-day--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--witylogix-neutral-light);
+}
+
+.date-picker-day--available {
+  border-color: var(--witylogix-success);
+}
+
+.date-picker-day--limited {
+  border-color: var(--witylogix-warning);
+}
+
+.date-picker-day--unavailable {
+  border-color: var(--witylogix-border);
+}
+
+.date-picker-day--selected {
+  background: var(--witylogix-primary);
+  color: white;
+  border-color: var(--witylogix-primary-dark);
+  font-weight: 600;
+}
+
+.date-picker-day-number {
+  font-weight: 500;
+}
+
+.date-picker-day-indicator {
+  position: absolute;
+  bottom: 2px;
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+.date-picker-legend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-indicator {
+  font-size: 0.75rem;
+}
+
+.legend-indicator.available {
+  color: var(--witylogix-success);
+}
+
+.legend-indicator.limited {
+  color: var(--witylogix-warning);
+}
+
+.legend-label {
+  color: var(--witylogix-text-secondary);
+}
+
+/* Time Slots */
+.witylogix-time-slots {
+  background: white;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  padding: var(--witylogix-spacing);
+}
+
+.witylogix-time-slots--empty {
+  text-align: center;
+  color: var(--witylogix-text-secondary);
+}
+
+.time-slots-empty-message {
+  padding: var(--witylogix-spacing) 0;
+  margin: 0;
+}
+
+.time-slots-group {
+  margin-bottom: 1.5rem;
+}
+
+.time-slots-group:last-child {
+  margin-bottom: 0;
+}
+
+.time-slots-group-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.time-slot-card {
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  background: white;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.time-slot-card:hover:not(:disabled) {
+  border-color: var(--witylogix-primary);
+  background: var(--witylogix-primary-light);
+}
+
+.time-slot-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--witylogix-neutral-light);
+}
+
+.time-slot-card--selected {
+  background: var(--witylogix-primary);
+  border-color: var(--witylogix-primary-dark);
+  color: white;
+}
+
+.time-slot-card--selected .time-slot-time,
+.time-slot-card--selected .time-slot-label,
+.time-slot-card--selected .time-slot-capacity,
+.time-slot-card--selected .time-slot-price {
+  color: white;
+}
+
+.time-slot-time {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.time-slot-separator {
+  font-size: 0.75rem;
+}
+
+.time-slot-label {
+  font-size: 0.8rem;
+  color: var(--witylogix-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.time-slot-capacity {
+  margin: 0.5rem 0;
+}
+
+.capacity-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.capacity-used {
+  height: 100%;
+  background: var(--witylogix-warning);
+}
+
+.time-slot-card--selected .capacity-used {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.capacity-text {
+  font-size: 0.7rem;
+  color: var(--witylogix-text-secondary);
+  display: block;
+}
+
+.time-slot-price {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--witylogix-success);
+  margin-top: 0.5rem;
+}
+
+.time-slot-badge-unavailable,
+.time-slot-badge-selected {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--witylogix-error);
+  color: white;
+}
+
+.time-slot-badge-selected {
+  background: var(--witylogix-success);
+}
+
+/* Rate Display */
+.witylogix-rate-display {
+  background: white;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  padding: var(--witylogix-spacing);
+  margin: var(--witylogix-spacing) 0;
+}
+
+.witylogix-rate-display--error {
+  background: #fef3f2;
+  border-color: var(--witylogix-error);
+}
+
+.rate-error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.rate-error-message {
+  text-align: left;
+}
+
+.rate-error-title {
+  font-weight: 600;
+  color: var(--witylogix-error);
+  margin: 0 0 0.25rem;
+}
+
+.rate-error-text {
+  color: var(--witylogix-text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.rate-loading-skeleton {
+  animation: skeleton-loading 1s linear infinite alternate;
+}
+
+.skeleton-bar {
+  height: 16px;
+  background: var(--witylogix-border);
+  border-radius: 2px;
+  margin: 0.5rem 0;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.witylogix-rate-display--empty {
+  background: var(--witylogix-neutral-bg);
+  color: var(--witylogix-text-secondary);
+  text-align: center;
+}
+
+.rate-empty-message {
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.rate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--witylogix-border);
+}
+
+.rate-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+  margin: 0;
+}
+
+.rate-zone-badge {
+  background: var(--witylogix-primary-light);
+  color: var(--witylogix-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rate-content {
+  margin-bottom: 1rem;
+}
+
+.rate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.rate-row--highlight {
+  background: var(--witylogix-neutral-bg);
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.rate-label {
+  color: var(--witylogix-text-secondary);
+  font-weight: 500;
+}
+
+.rate-value {
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+}
+
+.rate-value--delivery {
+  color: var(--witylogix-success);
+}
+
+.rate-divider {
+  height: 1px;
+  background: var(--witylogix-border);
+  margin: 0.5rem 0;
+}
+
+.rate-disclaimer {
+  font-size: 0.75rem;
+  color: var(--witylogix-text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Delivery Notes */
+.witylogix-delivery-notes {
+  margin: var(--witylogix-spacing) 0;
+}
+
+.delivery-notes-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--witylogix-text-primary);
+  font-size: 0.95rem;
+}
+
+.label-text {
+  display: inline;
+}
+
+.label-required {
+  color: var(--witylogix-error);
+  margin-left: 0.25rem;
+}
+
+.delivery-notes-textarea {
+  width: 100%;
+  border: 1px solid var(--witylogix-border);
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--witylogix-text-primary);
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.delivery-notes-textarea:focus {
+  outline: none;
+  border-color: var(--witylogix-primary);
+  box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+}
+
+.delivery-notes-textarea--focused {
+  border-color: var(--witylogix-primary);
+}
+
+.delivery-notes-textarea--warning {
+  border-color: var(--witylogix-warning);
+}
+
+.delivery-notes-textarea--error {
+  border-color: var(--witylogix-error);
+  background: #fef3f2;
+}
+
+.delivery-notes-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.delivery-notes-help {
+  font-size: 0.8rem;
+  color: var(--witylogix-text-secondary);
+  margin: 0;
+}
+
+.delivery-notes-counter {
+  font-size: 0.8rem;
+  color: var(--witylogix-text-secondary);
+  font-weight: 500;
+}
+
+.delivery-notes-counter--warning {
+  color: var(--witylogix-warning);
+}
+
+.delivery-notes-counter--error {
+  color: var(--witylogix-error);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .date-picker-legend {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .time-slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .time-slots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .date-picker-day {
+    font-size: 0.75rem;
+  }
+
+  .date-picker-weekday {
+    font-size: 0.75rem;
+  }
+}

@@ -1,0 +1,145 @@
+groups:
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # CPU usage alert
+      - alert: InfraHighCPUUsage
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total[5m])) by (instance, environment) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} CPU usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Critical CPU usage alert
+      - alert: InfraCriticalCPUUsage
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total[2m])) by (instance, environment) > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} CPU usage is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Memory usage alert
+      - alert: InfraHighMemoryUsage
+        expr: |
+          (1 - (container_memory_available_bytes / container_spec_memory_limit_bytes)) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} memory usage is {{ $value | humanizePercentage }} (threshold: 85%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Critical memory usage alert
+      - alert: InfraCriticalMemoryUsage
+        expr: |
+          (1 - (container_memory_available_bytes / container_spec_memory_limit_bytes)) > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} memory usage is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Disk usage alert
+      - alert: InfraHighDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) > 0.90
+        for: 10m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} disk usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Container restart rate
+      - alert: InfraHighContainerRestartRate
+        expr: |
+          increase(container_last_seen[10m]) > 3
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High container restart rate on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} has restarted {{ $value }} times in 10 minutes (threshold: 3)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Redis memory usage alert
+      - alert: InfraHighRedisMemory
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High Redis memory usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} memory usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Redis critical memory usage alert
+      - alert: InfraCriticalRedisMemory
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Critical Redis memory usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} memory usage is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # PostgreSQL connections alert
+      - alert: InfraHighPostgreSQLConnections
+        expr: |
+          (pg_stat_activity / pg_settings_max_connections) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High PostgreSQL connection usage on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} connections are {{ $value | humanizePercentage }} of max (threshold: 80%)"
+          runbook: "/docs/runbooks/scaling.md"
+
+      # Network packet loss alert
+      - alert: InfraNetworkPacketLoss
+        expr: |
+          (increase(node_network_receive_errs_total[5m]) + increase(node_network_transmit_errs_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Network packet loss on {{ $labels.instance }}"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} experiencing packet loss"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Instance down alert
+      - alert: InfraInstanceDown
+        expr: up{environment="production"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "{{ $labels.instance }} in {{ $labels.environment }} is unreachable"
+          runbook: "/docs/runbooks/incident-response.md"

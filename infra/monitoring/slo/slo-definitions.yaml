@@ -1,0 +1,173 @@
+service_level_objectives:
+  # API Availability SLO
+  api_availability:
+    name: "API Availability"
+    description: "Percentage of successful API requests over 30-day period"
+    target: 0.999  # 99.9%
+    error_budget_seconds: 2592  # ~43.2 minutes per month
+    metrics:
+      - name: "http_requests_total"
+        filters:
+          - key: "service"
+            value: "api"
+          - key: "environment"
+            value: "production"
+    thresholds:
+      - period: "1h"
+        min_target: 0.999
+      - period: "1d"
+        min_target: 0.999
+      - period: "30d"
+        min_target: 0.999
+    burn_rate_alerts:
+      - burn_rate: 10  # 10x fast burn
+        window: "1h"
+        severity: "critical"
+      - burn_rate: 5   # 5x medium burn
+        window: "6h"
+        severity: "warning"
+
+  # API Latency SLO
+  api_latency:
+    name: "API Response Latency"
+    description: "95th percentile API response time must be under 500ms"
+    target: 0.500  # 500ms
+    metric: "http_request_duration_seconds"
+    metric_type: "histogram_quantile"
+    quantile: 0.95
+    thresholds:
+      - period: "1h"
+        max_value: 0.500
+      - period: "1d"
+        max_value: 0.500
+      - period: "30d"
+        max_value: 0.500
+    acceptable_threshold: 0.700  # 700ms is acceptable for short periods
+    error_budget:
+      period: "30d"
+      allowed_breaches_minutes: 43  # ~1.43 hours
+
+  # Webhook Delivery SLO
+  webhook_delivery:
+    name: "Webhook Delivery Reliability"
+    description: "99.5% of webhooks delivered successfully within 30 seconds"
+    target: 0.995  # 99.5%
+    delivery_window: 30  # seconds
+    metrics:
+      - name: "webhook_delivery_total"
+        filters:
+          - key: "environment"
+            value: "production"
+          - key: "status"
+            value: "success"
+          - key: "delivery_time_ms"
+            comparison: "le"
+            value: 30000
+    error_budget_seconds: 1296  # ~21.6 minutes per month
+    burn_rate_alerts:
+      - burn_rate: 10
+        window: "1h"
+        severity: "critical"
+      - burn_rate: 5
+        window: "6h"
+        severity: "warning"
+
+  # Authentication Latency SLO
+  auth_login_latency:
+    name: "Login Response Time"
+    description: "95th percentile login latency must be under 1 second"
+    target: 1.0  # 1 second
+    metric: "auth_login_duration_seconds"
+    metric_type: "histogram_quantile"
+    quantile: 0.95
+    thresholds:
+      - period: "1h"
+        max_value: 1.0
+      - period: "1d"
+        max_value: 1.0
+      - period: "30d"
+        max_value: 1.0
+    acceptable_threshold: 1.5  # 1.5s acceptable for short periods
+
+  # Database Availability SLO
+  database_availability:
+    name: "Database Availability"
+    description: "Database must be available and responding to queries 99.95% of the time"
+    target: 0.9995  # 99.95%
+    error_budget_seconds: 1296  # ~21.6 minutes per month
+    metrics:
+      - name: "pg_up"
+        value: 1
+    thresholds:
+      - period: "1h"
+        min_target: 0.9995
+      - period: "1d"
+        min_target: 0.9995
+      - period: "30d"
+        min_target: 0.9995
+
+  # Delivery SLA Compliance
+  delivery_sla_compliance:
+    name: "Delivery On-Time Completion"
+    description: "98% of deliveries must be completed on time per SLA"
+    target: 0.98  # 98%
+    metrics:
+      - name: "deliveries_completed_on_time_total"
+        compared_to: "deliveries_completed_total"
+    error_budget:
+      period: "30d"
+      allowed_missed_deliveries: 20  # for every 1000 deliveries
+
+recording_rules:
+  # API availability recording rule
+  - name: "api:availability:5m"
+    expr: |
+      sum(rate(http_requests_total{status!~"5.."}[5m])) /
+      sum(rate(http_requests_total[5m]))
+    interval: "5m"
+
+  # API availability monthly
+  - name: "api:availability:30d"
+    expr: |
+      sum(increase(http_requests_total{status!~"5.."}[30d])) /
+      sum(increase(http_requests_total[30d]))
+    interval: "1h"
+
+  # API latency P95 recording rule
+  - name: "api:latency:p95:5m"
+    expr: |
+      histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+    interval: "5m"
+
+  # Webhook delivery success rate
+  - name: "webhooks:delivery_success:5m"
+    expr: |
+      sum(rate(webhook_delivery_total{status="success"}[5m])) /
+      sum(rate(webhook_delivery_total[5m]))
+    interval: "5m"
+
+burn_rate_windows:
+  - duration: "1h"
+    multiplier: 10  # burn 10x the budget per hour
+  - duration: "6h"
+    multiplier: 5   # burn 5x the budget per 6 hours
+  - duration: "24h"
+    multiplier: 2   # burn 2x the budget per day
+  - duration: "7d"
+    multiplier: 1   # normal burn rate over 7 days
+
+alerting_rules:
+  - name: "SLOBurnRateFast"
+    description: "SLO is burning 10x faster than expected"
+    severity: "critical"
+    action: "Page on-call immediately"
+
+  - name: "SLOBurnRateMedium"
+    description: "SLO is burning 5x faster than expected"
+    severity: "warning"
+    action: "Alert on-call engineer"
+
+  - name: "SLOBreachImminent"
+    description: "SLO will be breached within next hour"
+    severity: "warning"
+    action: "Escalate to team lead"

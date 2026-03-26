@@ -1,0 +1,73 @@
+---
+title: Architecture Overview
+description: Understand the Witylogix platform architecture
+---
+
+# Architecture Overview
+
+The Witylogix platform is built on a modern, scalable microservices architecture designed for high availability and performance.
+
+## System Components
+
+### API Gateway
+- Routes all incoming requests to appropriate services
+- Handles authentication and rate limiting
+- Provides API versioning
+
+### Shipment Service
+- Core service for managing shipments
+- Handles creation, updates, and queries
+- Manages shipment lifecycle and status
+
+### Tracking Service
+- Real-time shipment location tracking
+- GPS and delivery updates
+- Historical tracking data
+
+### Notification Service
+- Webhook delivery
+- Email notifications
+- SMS alerts (optional)
+
+### Analytics Service
+- Aggregates usage metrics
+- Provides insights and reporting
+- Tracks performance KPIs
+
+## Database Architecture
+
+- **Primary** - PostgreSQL for transactional data
+- **Cache** - Redis for caching and real-time updates
+- **Search** - Elasticsearch for advanced queries
+
+## Data Flow
+
+```
+User Request
+    ↓
+API Gateway (auth, rate limiting)
+    ↓
+Service Layer (business logic)
+    ↓
+Database (PostgreSQL)
+    ↓
+Cache (Redis)
+    ↓
+Response
+```
+
+## Scalability
+
+The platform scales horizontally:
+- Services deployed on Kubernetes
+- Auto-scaling based on load
+- Load balanced across regions
+- Global CDN for API responses
+
+## Deployment
+
+- Production: Multiple availability zones
+- Staging: Isolated environment
+- Development: Local development environment
+
+All deployments use Infrastructure as Code (Terraform).

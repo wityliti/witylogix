@@ -13,20 +13,43 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rm -rf node_modules",
     "db:generate": "turbo db:generate",
     "db:migrate": "turbo db:migrate",
     "db:seed": "turbo db:seed",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "docker:build": "docker compose build",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "docker:build": "docker compose -f infra/docker-compose.yml build",
+    "docker:dev": "docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "deploy": "./infra/deploy-scripts/railway.sh deploy",
+    "deploy:all": "./infra/deploy-scripts/railway.sh deploy-all",
+    "deploy:setup": "./infra/deploy-scripts/railway.sh setup",
+    "deploy:link": "./infra/deploy-scripts/railway.sh link",
+    "deploy:logs": "./infra/deploy-scripts/railway.sh logs",
+    "deploy:status": "./infra/deploy-scripts/railway.sh status",
+    "deploy:redeploy": "./infra/deploy-scripts/railway.sh redeploy",
+    "deploy:open": "./infra/deploy-scripts/railway.sh open",
+    "deploy:domain": "./infra/deploy-scripts/railway.sh domain",
+    "deploy:services": "./infra/deploy-scripts/railway.sh services"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/node": "^22.0.0",
     "prettier": "^3.4.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@fastify/multipart": "^9.0.0",
+    "@types/uuid": "^9.0.0",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "^0.18.0",
+    "uuid": "^13.0.0"
   }
 }

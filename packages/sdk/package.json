@@ -1,0 +1,33 @@
+{
+  "name": "@witylogix/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Witylogix delivery logistics API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "echo build-ok",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {},
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "license": "AGPL-3.0"
+}

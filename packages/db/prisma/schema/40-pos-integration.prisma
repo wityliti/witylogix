@@ -1,0 +1,53 @@
+// POS Integration — Point-of-sale checkout, in-store pickup, local delivery from store
+// Sprint 2.8
+
+model PosConfig {
+  id             String        @id @default(cuid())
+  shopId         String
+  terminalId     String?
+  provider       String        @default("CUSTOM") // SHOPIFY_POS, SQUARE, CUSTOM
+  apiKey         String?
+  enabled        Boolean       @default(false)
+  settings       Json          @default("{}")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+
+  @@unique([shopId, terminalId])
+  @@index([shopId])
+}
+
+model PosOrder {
+  id            String    @id @default(cuid())
+  shopId        String
+  posConfigId   String
+  externalId    String?
+  customerName  String?
+  customerPhone String?
+  items         Json      @default("[]")
+  total         Float     @default(0)
+  status        String    @default("PENDING") // PENDING, CONFIRMED, READY, PICKED_UP, DELIVERED
+  deliveryType  String    @default("LOCAL_DELIVERY") // LOCAL_DELIVERY, IN_STORE_PICKUP, CURBSIDE
+  address       Json?
+  notes         String?
+  scheduledAt   DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([shopId, status])
+  @@index([posConfigId])
+}
+
+model PosCustomForm {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  fields    Json     @default("[]") // Array of {name, type, required, options?}
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId])
+}

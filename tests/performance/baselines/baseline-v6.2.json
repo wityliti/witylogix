@@ -1,0 +1,186 @@
+{
+  "version": "6.2",
+  "recordedDate": "2026-03-16",
+  "environment": "staging",
+  "testDuration": "5m",
+  "virtualUsers": 50,
+  "endpoints": {
+    "auth": {
+      "login": {
+        "p50": 150,
+        "p90": 350,
+        "p95": 450,
+        "p99": 850,
+        "avg": 250,
+        "min": 50,
+        "max": 2100,
+        "throughput": 150,
+        "errorRate": 0.005
+      },
+      "register": {
+        "p50": 300,
+        "p90": 600,
+        "p95": 750,
+        "p99": 1400,
+        "avg": 500,
+        "min": 100,
+        "max": 3000,
+        "throughput": 80,
+        "errorRate": 0.015
+      },
+      "tokenRefresh": {
+        "p50": 80,
+        "p90": 200,
+        "p95": 280,
+        "p99": 450,
+        "avg": 200,
+        "min": 30,
+        "max": 800,
+        "throughput": 200,
+        "errorRate": 0.002
+      }
+    },
+    "orders": {
+      "create": {
+        "p50": 200,
+        "p90": 400,
+        "p95": 500,
+        "p99": 900,
+        "avg": 300,
+        "throughput": 100,
+        "errorRate": 0.008
+      },
+      "list": {
+        "p50": 80,
+        "p90": 150,
+        "p95": 180,
+        "p99": 350,
+        "avg": 120,
+        "throughput": 500,
+        "errorRate": 0.002
+      },
+      "get": {
+        "p50": 60,
+        "p90": 120,
+        "p95": 150,
+        "p99": 250,
+        "avg": 100,
+        "throughput": 600,
+        "errorRate": 0.001
+      },
+      "update": {
+        "p50": 150,
+        "p90": 320,
+        "p95": 400,
+        "p99": 750,
+        "avg": 250,
+        "throughput": 120,
+        "errorRate": 0.01
+      }
+    },
+    "drivers": {
+      "create": {
+        "p50": 250,
+        "p90": 450,
+        "p95": 550,
+        "p99": 1000,
+        "avg": 350,
+        "throughput": 80,
+        "errorRate": 0.01
+      },
+      "list": {
+        "p50": 100,
+        "p90": 180,
+        "p95": 220,
+        "p99": 400,
+        "avg": 150,
+        "throughput": 400,
+        "errorRate": 0.003
+      },
+      "updateLocation": {
+        "p50": 100,
+        "p90": 200,
+        "p95": 280,
+        "p99": 500,
+        "avg": 200,
+        "throughput": 300,
+        "errorRate": 0.015
+      }
+    },
+    "deliveries": {
+      "create": {
+        "p50": 250,
+        "p90": 450,
+        "p95": 550,
+        "p99": 1000,
+        "avg": 350,
+        "throughput": 80,
+        "errorRate": 0.01
+      },
+      "updateStatus": {
+        "p50": 100,
+        "p90": 200,
+        "p95": 280,
+        "p99": 500,
+        "avg": 200,
+        "throughput": 200,
+        "errorRate": 0.005
+      }
+    },
+    "webhooks": {
+      "delivery": {
+        "p50": 600,
+        "p90": 1500,
+        "p95": 1900,
+        "p99": 4500,
+        "avg": 1000,
+        "throughput": 100,
+        "errorRate": 0.01,
+        "retrySuccess": 0.95
+      }
+    }
+  },
+  "aggregated": {
+    "totalRequests": 15000,
+    "successfulRequests": 14850,
+    "failedRequests": 150,
+    "overallErrorRate": 0.01,
+    "p50ResponseTime": 120,
+    "p90ResponseTime": 350,
+    "p95ResponseTime": 450,
+    "p99ResponseTime": 850,
+    "avgResponseTime": 250,
+    "minResponseTime": 30,
+    "maxResponseTime": 5000,
+    "requestsPerSecond": 50
+  },
+  "performance": {
+    "cpuUsage": {
+      "avg": 35,
+      "max": 65,
+      "unit": "%"
+    },
+    "memoryUsage": {
+      "avg": 45,
+      "max": 70,
+      "unit": "%"
+    },
+    "databaseConnections": {
+      "avg": 15,
+      "max": 40,
+      "unit": "connections"
+    },
+    "cacheHitRate": {
+      "value": 82,
+      "unit": "%"
+    }
+  },
+  "sustainability": {
+    "duration": "5m",
+    "noErrorSpikes": true,
+    "noMemoryLeaks": true,
+    "noConnectionLeaks": true,
+    "stableErrorRate": true
+  },
+  "notes": "Baseline metrics recorded from v6.2 staging load test. Used for performance regression detection."
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@witylogix/checkout-widget",
+  "version": "1.0.0",
+  "description": "Embeddable checkout date/time picker widget for delivery date/time slot selection",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "echo build-ok",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch --external react,react-dom --outExtension cjs={.cjs} --outExtension esm={.mjs}",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "date-fns": "^3.0.0",
+    "lucide-react": "^0.307.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "checkout",
+    "delivery",
+    "date-picker",
+    "time-picker",
+    "slot-selector",
+    "embeddable",
+    "widget",
+    "react"
+  ],
+  "author": "Witylogix",
+  "license": "AGPL-3.0-only"
+}

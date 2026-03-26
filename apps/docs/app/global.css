@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   WITYLOGIX BRAND THEME
+   Teal #2A9D8F + Coral #E76F51
+   ============================================ */
+
+:root {
+  --forge-bg: #0a0a0a;
+  --forge-surface: #141414;
+  --forge-elevated: #1c1c1c;
+  --forge-raised: #252525;
+  --forge-border: #2a2a2a;
+  --forge-border-light: #3a3a3a;
+
+  --teal: #2A9D8F;
+  --teal-light: #3DB8A9;
+  --teal-lighter: #5ECEC0;
+  --teal-dark: #228176;
+  --teal-glow: rgba(42, 157, 143, 0.15);
+
+  --coral: #E76F51;
+  --coral-light: #EE8B72;
+  --coral-lighter: #F4A794;
+  --coral-dark: #D35A3D;
+  --coral-glow: rgba(231, 111, 81, 0.15);
+
+  --sand: #fafaf9;
+  --sand-muted: #a8a29e;
+  --sand-dim: #78716c;
+
+  /* Fumadocs overrides */
+  --fd-background: var(--forge-bg);
+  --fd-background-fd: var(--forge-surface);
+  --fd-foreground: var(--sand);
+  --fd-muted: var(--forge-elevated);
+  --fd-muted-foreground: var(--sand-muted);
+  --fd-popover: var(--forge-surface);
+  --fd-popover-foreground: var(--sand);
+  --fd-card: var(--forge-surface);
+  --fd-card-foreground: var(--sand);
+  --fd-border: var(--forge-border);
+  --fd-input: var(--forge-border);
+  --fd-primary: var(--teal);
+  --fd-primary-foreground: #fff;
+  --fd-secondary: var(--forge-elevated);
+  --fd-secondary-foreground: var(--sand);
+  --fd-accent: var(--forge-elevated);
+  --fd-accent-foreground: var(--sand);
+  --fd-ring: var(--teal);
+}
+
+/* ============================================
+   BASE
+   ============================================ */
+@layer base {
+  * { border-color: var(--forge-border); }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background-color: var(--forge-bg);
+    color: var(--sand);
+    line-height: 1.7;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.02;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--sand);
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; }
+  h2 { font-size: clamp(1.5rem, 3.5vw, 2.5rem); line-height: 1.15; }
+  h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); line-height: 1.2; }
+  h4 { font-size: clamp(1.125rem, 2vw, 1.5rem); line-height: 1.3; }
+
+  a { color: var(--teal); text-decoration: none; transition: color 0.2s ease; }
+  a:hover { color: var(--teal-light); }
+  a::after { display: none; }
+
+  code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.875em;
+    color: var(--teal-light);
+    background: var(--forge-elevated);
+    padding: 0.15em 0.4em;
+    border-radius: 0.375rem;
+    border: 1px solid var(--forge-border);
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: var(--forge-surface) !important;
+    border: 1px solid var(--forge-border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--coral);
+    background: var(--coral-glow);
+    border-radius: 0 0.75rem 0.75rem 0;
+    padding: 1rem 1.25rem;
+    color: var(--sand-muted);
+    font-style: italic;
+  }
+
+  hr { border-color: var(--forge-border); }
+  ::selection { background-color: var(--teal); color: #fff; }
+}
+
+/* ============================================
+   FUMADOCS OVERRIDES — minimal color theming only
+   ============================================ */
+#nd-sidebar a,
+#nd-sidebar button {
+  color: var(--sand-muted) !important;
+}
+#nd-sidebar a[data-active='true'],
+#nd-sidebar a[aria-current='page'] {
+  color: var(--sand) !important;
+  font-weight: 600;
+}
+
+[data-fd-toc] a[data-active='true'] {
+  color: var(--teal) !important;
+}
+
+/* ============================================
+   COMPONENTS
+   ============================================ */
+@layer components {
+  .forge-card {
+    @apply relative overflow-hidden rounded-xl border border-forge-border bg-forge-surface p-6;
+    transition: all 0.3s ease;
+  }
+  .forge-card:hover {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 1px rgba(42, 157, 143, 0.1), 0 8px 30px rgba(42, 157, 143, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-medium rounded-xl;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: #fff;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(42, 157, 143, 0.3);
+  }
+  .btn-primary:hover {
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(42, 157, 143, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-coral {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-medium rounded-xl;
+    background: linear-gradient(135deg, var(--coral), var(--coral-dark));
+    color: #fff;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(231, 111, 81, 0.3);
+  }
+  .btn-coral:hover {
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(231, 111, 81, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-medium rounded-xl;
+    border: 1px solid var(--forge-border-light);
+    color: var(--sand);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.3s ease;
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    color: var(--teal);
+    border-color: var(--teal);
+    background: var(--teal-glow);
+  }
+
+  .terminal {
+    @apply rounded-xl border border-forge-border overflow-hidden;
+    background: var(--forge-surface);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .terminal-header {
+    @apply flex items-center gap-2 px-4 py-3 border-b border-forge-border;
+    background: var(--forge-elevated);
+  }
+  .terminal-dot { @apply w-3 h-3 rounded-full; }
+  .terminal-body {
+    @apply p-5 font-mono text-sm leading-relaxed;
+    color: var(--sand-muted);
+    min-height: 320px;
+  }
+
+  .feature-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center text-xl;
+    background: var(--teal-glow);
+    border: 1px solid rgba(42, 157, 143, 0.2);
+  }
+
+  .stat-value {
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    background: linear-gradient(135deg, var(--coral), var(--coral-lighter));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .text-gradient-brand {
+    background: linear-gradient(135deg, var(--teal), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient { position: relative; }
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--teal), transparent, var(--coral));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .border-gradient:hover::before { opacity: 1; }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--forge-border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sand-dim); }
+
+/* ============================================
+   MARQUEE
+   ============================================ */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-marquee {
+  animation: marquee 45s linear infinite;
+}
+.animate-marquee-reverse {
+  animation: marquee-reverse 50s linear infinite;
+}
+
+/* ============================================
+   STAGGER DELAYS
+   ============================================ */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+/* ============================================
+   ACCESSIBILITY & PRINT
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  body::before { display: none; }
+  a { color: #0066cc; text-decoration: underline; }
+  .no-print { display: none; }
+}

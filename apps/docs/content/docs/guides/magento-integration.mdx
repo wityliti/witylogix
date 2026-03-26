@@ -1,0 +1,576 @@
+---
+title: Magento 2 Integration Guide
+description: Integrate Magento 2 with Witylogix. Learn how to configure REST API authentication, webhooks, and handle complex product attributes.
+---
+
+# Magento 2 Integration Guide
+
+Witylogix integrates with Magento 2 through OAuth 2.0 bearer token authentication and REST API v1, supporting complex product attributes via the EAV (Entity-Attribute-Value) model.
+
+## Prerequisites
+
+- Magento 2.3+ (with REST API enabled)
+- Magento admin access
+- OAuth consumer credentials or integration account
+- HTTPS enabled (required for API calls)
+- Database access for advanced queries
+
+## Step 1: Create OAuth Integration
+
+### 1.1 Create Integration Account
+
+1. Log in to Magento Admin Panel
+2. Navigate to **System** → **Integrations**
+3. Click **Add New Integration**
+4. Fill in the form:
+   - **Name**: "Witylogix"
+   - **Email**: Your integration email
+   - **Callback URL**: `https://your-app.com/auth/magento/callback`
+   - **Identity Link URL**: `https://your-app.com/auth/magento/identity`
+
+### 1.2 Configure API Permissions
+
+1. Go to the **API** tab
+2. Select these resource scopes:
+   - **Orders** - View, Create, Update, Delete
+   - **Products** - View, Create, Update, Delete
+   - **Customers** - View, Create, Update, Delete
+   - **Inventory** - View, Update
+   - **Quotes** - View, Create
+
+3. Click **Allow** to authorize
+4. Magento will generate:
+   - **Consumer Key**
+   - **Consumer Secret**
+   - **Access Token** (after authorization)
+   - **Access Token Secret**
+
+### 1.3 Alternative: Bearer Token
+
+For simpler authentication, create a bearer token directly:
+
+1. Go to **System** → **User Roles**
+2. Create a new role with API access permissions
+3. Create a new admin user with that role
+4. Use this user's credentials to generate access tokens
+
+## Step 2: Configure Environment Variables
+
+```bash
+# Magento Configuration
+MAGENTO_BASE_URL=https://your-magento-store.com
+MAGENTO_OAUTH_CONSUMER_KEY=your_consumer_key
+MAGENTO_OAUTH_CONSUMER_SECRET=your_consumer_secret
+MAGENTO_OAUTH_ACCESS_TOKEN=your_access_token
+MAGENTO_OAUTH_ACCESS_TOKEN_SECRET=your_token_secret
+
+# Alternative: Bearer Token
+MAGENTO_BEARER_TOKEN=your_bearer_token
+
+# App Configuration
+APP_URL=https://your-domain.com
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost/witylogix_db
+```
+
+## Step 3: REST API Authentication
+
+### 3.1 OAuth 1.0a Request Signing
+
+Magento uses OAuth 1.0a. Implement signature generation:
+
+```typescript
+// services/magentoApi.ts
+import fetch from "node-fetch";
+import crypto from "crypto";
+import querystring from "querystring";
+
+interface OAuthConfig {
+  consumerKey: string;
+  consumerSecret: string;
+  accessToken: string;
+  accessTokenSecret: string;
+}
+
+function generateOAuthSignature(
+  method: string,
+  url: string,
+  params: Record<string, string>,
+  config: OAuthConfig
+): string {
+  const baseString = [
+    method.toUpperCase(),
+    encodeURIComponent(url),
+    encodeURIComponent(
+      querystring.stringify(
+        Object.entries(params)
+          .sort()
+          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+      )
+    )
+  ].join("&");
+
+  const signingKey = [
+    encodeURIComponent(config.consumerSecret),
+    encodeURIComponent(config.accessTokenSecret)
+  ].join("&");
+
+  return crypto.createHmac("sha256", signingKey).update(baseString).digest("base64");
+}
+
+export async function magentoAPI<T>(
+  endpoint: string,
+  method: string = "GET",
+  body?: any,
+  config?: OAuthConfig
+): Promise<T> {
+  const baseUrl = process.env.MAGENTO_BASE_URL;
+  const url = `${baseUrl}/rest/V1${endpoint}`;
+
+  // If bearer token is available, use it for simpler auth
+  if (process.env.MAGENTO_BEARER_TOKEN) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${process.env.MAGENTO_BEARER_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+
+    if (!response.ok) {
+      throw new Error(`Magento API error: ${response.statusText}`);
+    }
+
+    return response.json() as Promise<T>;
+  }
+
+  // Otherwise use OAuth 1.0a
+  const oauthConfig = config || {
+    consumerKey: process.env.MAGENTO_OAUTH_CONSUMER_KEY,
+    consumerSecret: process.env.MAGENTO_OAUTH_CONSUMER_SECRET,
+    accessToken: process.env.MAGENTO_OAUTH_ACCESS_TOKEN,
+    accessTokenSecret: process.env.MAGENTO_OAUTH_ACCESS_TOKEN_SECRET
+  };
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const nonce = crypto.randomBytes(16).toString("hex");
+
+  const authParams: Record<string, string> = {
+    oauth_consumer_key: oauthConfig.consumerKey,
+    oauth_token: oauthConfig.accessToken,
+    oauth_signature_method: "HMAC-SHA256",
+    oauth_signature_version: "1.0",
+    oauth_timestamp: timestamp,
+    oauth_nonce: nonce
+  };
+
+  const signature = generateOAuthSignature(method, url, authParams, oauthConfig);
+  authParams.oauth_signature = signature;
+
+  const authHeader = Object.entries(authParams)
+    .map(([key, value]) => `${key}="${encodeURIComponent(value)}"`)
+    .join(", ");
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `OAuth ${authHeader}`,
+      "Content-Type": "application/json"
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  if (!response.ok) {
+    throw new Error(`Magento API error: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+```
+
+### 3.2 Simple Bearer Token Authentication
+
+If using bearer token, use this simpler approach:
+
+```typescript
+// services/magentoApi.ts
+export async function magentoAPI<T>(
+  endpoint: string,
+  method: string = "GET",
+  body?: any
+): Promise<T> {
+  const baseUrl = process.env.MAGENTO_BASE_URL;
+  const url = `${baseUrl}/rest/V1${endpoint}`;
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${process.env.MAGENTO_BEARER_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+
+  if (!response.ok) {
+    throw new Error(`Magento API error: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+```
+
+## Step 4: Webhook Configuration
+
+### 4.1 Enable Webhooks Module
+
+1. SSH into your Magento server
+2. Run: `bin/magento module:enable Magento_Webhooks`
+3. Run: `bin/magento setup:upgrade`
+
+### 4.2 Create Webhooks via API
+
+```typescript
+// services/webhooks.ts
+export async function createMagentoWebhooks() {
+  const webhookTopics = [
+    "order.placed",
+    "product.created",
+    "product.updated",
+    "customer.created",
+    "customer.updated"
+  ];
+
+  for (const topic of webhookTopics) {
+    await magentoAPI("/webhooks", "POST", {
+      name: `Witylogix - ${topic}`,
+      topic: topic,
+      endpoint_url: `${process.env.APP_URL}/api/webhooks/magento`,
+      is_active: true
+    });
+  }
+}
+```
+
+### 4.3 Admin Panel Configuration
+
+Alternative: Configure manually in Magento Admin:
+
+1. Go to **System** → **Webhooks** → **Events**
+2. Click **Create New Event**
+3. Fill in:
+   - **Name**: "Witylogix Order Sync"
+   - **Topic**: Select event (e.g., "order.placed")
+   - **Endpoint URL**: `https://your-app.com/api/webhooks/magento`
+   - **Is Active**: Yes
+
+4. Save webhook
+
+## Step 5: Data Mapping
+
+### 5.1 Magento Order to Witylogix Order
+
+Implement order mapping with address and item details:
+
+```typescript
+// adapters/MagentoAdapter.ts
+import { PlatformAdapter, Order, Product, Customer } from "@witylogix/types";
+import { magentoAPI } from "../services/magentoApi";
+
+export class MagentoAdapter implements PlatformAdapter {
+  validateWebhook(payload: unknown, headers: Record<string, string>): boolean {
+    // Magento webhooks can include custom validation if configured
+    return true;
+  }
+
+  getWebhookEventType(payload: unknown): string {
+    const data = payload as Record<string, any>;
+    return data.event_name || "unknown";
+  }
+
+  mapOrder(platformOrder: unknown): Order {
+    const order = platformOrder as MagentoOrder;
+
+    return {
+      id: `mg-${order.entity_id}`,
+      externalId: order.entity_id.toString(),
+      shopId: order.store_id.toString(),
+      customerId: order.customer_id.toString(),
+      items: order.items.map((item) => ({
+        sku: item.sku,
+        quantity: item.qty_ordered,
+        price: parseFloat(item.price),
+        title: item.name
+      })),
+      totalPrice: parseFloat(order.grand_total),
+      currency: order.order_currency_code,
+      status: order.status,
+      createdAt: new Date(order.created_at),
+      updatedAt: new Date(order.updated_at),
+      billingAddress: {
+        firstName: order.billing_address.firstname,
+        lastName: order.billing_address.lastname,
+        email: order.customer_email,
+        phone: order.billing_address.telephone,
+        address: order.billing_address.street[0],
+        city: order.billing_address.city,
+        state: order.billing_address.region,
+        postalCode: order.billing_address.postcode,
+        country: order.billing_address.country_id
+      },
+      shippingAddress: {
+        firstName: order.shipping_address.firstname,
+        lastName: order.shipping_address.lastname,
+        address: order.shipping_address.street[0],
+        city: order.shipping_address.city,
+        state: order.shipping_address.region,
+        postalCode: order.shipping_address.postcode,
+        country: order.shipping_address.country_id
+      }
+    };
+  }
+
+  async fetchOrder(orderId: string): Promise<Order> {
+    const order = await magentoAPI<MagentoOrder>(`/orders/${orderId}`);
+    return this.mapOrder(order);
+  }
+
+  mapProduct(platformProduct: unknown): Product {
+    const product = platformProduct as MagentoProduct;
+
+    // Handle configurable products (parent with variants)
+    const variants = product.type_id === "configurable"
+      ? (product.extension_attributes?.configurable_product_options || []).map(
+          (option) => ({
+            id: option.id.toString(),
+            sku: option.sku || product.sku,
+            price: parseFloat(option.price || product.price),
+            title: option.label || product.name,
+            options: option.values || {}
+          })
+        )
+      : [
+          {
+            id: product.id.toString(),
+            sku: product.sku,
+            price: parseFloat(product.price),
+            title: product.name,
+            options: {}
+          }
+        ];
+
+    return {
+      id: `mg-${product.id}`,
+      externalId: product.id.toString(),
+      shopId: product.store_id?.toString() || "1",
+      title: product.name,
+      sku: product.sku,
+      price: parseFloat(product.price),
+      description: product.description,
+      images: (product.media_gallery_entries || []).map(
+        (entry) => entry.file
+      ),
+      variants: variants
+    };
+  }
+
+  async fetchProducts(): Promise<Product[]> {
+    const response = await magentoAPI<{
+      items: MagentoProduct[];
+      search_criteria: Record<string, any>;
+    }>("/products?searchCriteria[pageSize]=100");
+
+    return response.items.map((p) => this.mapProduct(p));
+  }
+
+  mapCustomer(platformCustomer: unknown): Customer {
+    const customer = platformCustomer as MagentoCustomer;
+
+    return {
+      id: `mg-${customer.id}`,
+      externalId: customer.id.toString(),
+      shopId: customer.store_id?.toString() || "1",
+      email: customer.email,
+      firstName: customer.firstname,
+      lastName: customer.lastname,
+      phone: customer.custom_attributes?.find((attr) => attr.attribute_code === "telephone")
+        ?.value || "",
+      createdAt: new Date(customer.created_at)
+    };
+  }
+}
+```
+
+### 5.2 Handle EAV Attributes
+
+Magento stores custom attributes via EAV (Entity-Attribute-Value). Query them directly:
+
+```typescript
+// services/productAttributes.ts
+export async function getProductAttributes(productId: string) {
+  const response = await magentoAPI<{
+    items: {
+      attribute_code: string;
+      value: any;
+    }[];
+  }>(`/products/${productId}/attributes`);
+
+  return response.items.reduce(
+    (acc, attr) => ({ ...acc, [attr.attribute_code]: attr.value }),
+    {}
+  );
+}
+```
+
+### 5.3 Configurable Product Handling
+
+```typescript
+// adapters/MagentoAdapter.ts
+async function fetchConfigurableVariants(productId: string) {
+  const response = await magentoAPI<{
+    extension_attributes: {
+      configurable_product_links: number[];
+    };
+  }>(`/products/${productId}`);
+
+  const variantIds =
+    response.extension_attributes.configurable_product_links || [];
+
+  const variants = await Promise.all(
+    variantIds.map((id) => magentoAPI(`/products/${id}`))
+  );
+
+  return variants;
+}
+```
+
+## Step 6: Webhook Handling
+
+### 6.1 Webhook Endpoint
+
+```typescript
+// webhooks.ts
+import express from "express";
+
+const app = express();
+
+app.post("/api/webhooks/magento", express.json(), async (req, res) => {
+  const { event_name, data } = req.body;
+  const adapter = new MagentoAdapter();
+
+  try {
+    switch (event_name) {
+      case "order.placed":
+      case "order.updated":
+        const order = adapter.mapOrder(data);
+        await saveOrder(order);
+        break;
+
+      case "product.created":
+      case "product.updated":
+        const product = adapter.mapProduct(data);
+        await syncProduct(product);
+        break;
+
+      case "customer.created":
+      case "customer.updated":
+        const customer = adapter.mapCustomer(data);
+        await syncCustomer(customer);
+        break;
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ error: "Processing failed" });
+  }
+});
+```
+
+### 6.2 Verify Webhook Source
+
+Some Magento installations sign webhooks. Validate if configured:
+
+```typescript
+function validateMagentoWebhook(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  if (!signature || !secret) return true; // Validation disabled
+
+  const hash = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  return hash === signature;
+}
+```
+
+## Step 7: Testing
+
+### 7.1 Manual API Test
+
+```bash
+curl -X GET https://your-magento.com/rest/V1/products \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 7.2 Test Webhook Delivery
+
+1. In Magento Admin, go to **System** → **Webhooks** → **Webhook Logs**
+2. View webhook delivery history and status
+
+### 7.3 Simulate Webhook
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks/magento \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event_name": "order.placed",
+    "data": {
+      "entity_id": 1,
+      "increment_id": "100000001",
+      "status": "processing"
+    }
+  }'
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Invalid consumer" error | Verify OAuth credentials and that integration is active |
+| 401 Unauthorized | Check bearer token is valid; regenerate if expired |
+| Webhooks not firing | Verify webhooks module is enabled and webhook is active |
+| EAV attributes not loading | Query directly via REST API; may not be in product response |
+| Configurable products not syncing | Fetch parent product first, then query linked variants |
+
+## Data Type Reference
+
+### MagentoOrder Interface
+
+```typescript
+interface MagentoOrder {
+  entity_id: number;
+  increment_id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  customer_email: string;
+  customer_id: number;
+  order_currency_code: string;
+  grand_total: string;
+  subtotal: string;
+  tax_amount: string;
+  store_id: number;
+  items: MagentoOrderItem[];
+  billing_address: MagentoAddress;
+  shipping_address: MagentoAddress;
+}
+```
+
+## Next Steps
+
+- Implement custom attribute mapping for your specific Magento setup
+- Set up automated inventory sync based on stock updates
+- Configure order status webhook for fulfillment tracking

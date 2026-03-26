@@ -1,0 +1,13 @@
+{
+  "title": "Core Concepts",
+  "pages": [
+    "orders",
+    "shipments",
+    "drivers",
+    "vehicles",
+    "routes",
+    "places",
+    "contacts",
+    "fleets"
+  ]
+}

@@ -1,0 +1,60 @@
+// ─── PRODUCTS (Platform Product Cache) ────────────────────
+// Local cache of products from any e-commerce platform for fast queries,
+// rule matching, and analytics. Synced via webhooks. NOT the source of truth.
+
+model Product {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String   @map("shop_id") @db.Uuid
+  externalProductId String   @map("external_product_id")
+  source            String   @default("SHOPIFY") @map("source")
+  title             String
+  productType       String?  @map("product_type")
+  vendor            String?
+  tags              String[] @default([])
+  status            String   @default("active") // active, draft, archived
+  imageUrl          String?  @map("image_url")
+  variants          Json     @default("[]") // Array of variant snapshots
+  weight            Decimal? @db.Decimal(10, 2) // default variant weight
+  requiresShipping  Boolean  @default(true) @map("requires_shipping")
+  inventoryQuantity Int?     @map("inventory_quantity")
+  lastSyncAt        DateTime @default(now()) @map("last_sync_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, externalProductId, source])
+  @@index([shopId, status])
+  @@index([shopId, productType])
+  @@map("products")
+}
+
+// ─── CUSTOMERS (Platform Customer Cache) ──────────────────
+// Local cache of customers from any e-commerce platform. Synced via webhooks.
+
+model Customer {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId             String   @map("shop_id") @db.Uuid
+  externalCustomerId String   @map("external_customer_id")
+  source             String   @default("SHOPIFY") @map("source")
+  email              String?
+  phone              String?
+  firstName          String?  @map("first_name")
+  lastName           String?  @map("last_name")
+  ordersCount        Int      @default(0) @map("orders_count")
+  totalSpent         Decimal  @default(0) @map("total_spent") @db.Decimal(12, 2)
+  tags               String[] @default([])
+  addresses          Json     @default("[]") // Array of address objects
+  marketingConsent   Boolean  @default(false) @map("marketing_consent")
+  notes              String?
+  lastSyncAt         DateTime @default(now()) @map("last_sync_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, externalCustomerId, source])
+  @@index([shopId, email])
+  @@index([shopId, phone])
+  @@map("customers")
+}

@@ -1,0 +1,16 @@
+// ─── PLATFORM ADMINS ────────────────────────────────────────────
+// Witylogix platform-level admin users (not shop/org users).
+// Controls access to global settings, monitoring, support functions.
+
+model PlatformAdmin {
+  id          String    @id @default(cuid())
+  userId      String    @unique @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    @default("admin") // "super_admin" | "admin" | "support"
+  permissions String[]  @default([])
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("platform_admins")
+}

@@ -1,0 +1,140 @@
+// ─── INTEGRATION APPS (Marketplace Catalog) ──────────────────
+// Static catalog of all available integrations. Seeded from the
+// unified registry at startup. Each entry describes a provider
+// (e.g. SendGrid, Mapbox, Stripe) with its metadata, credential
+// schema, and capabilities. "COMING_SOON" entries are displayed
+// in the marketplace but cannot be installed.
+
+model IntegrationApp {
+  id               String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug             String              @unique // e.g. "sendgrid", "mapbox", "stripe"
+  name             String // Display name, e.g. "SendGrid"
+  description      String // Short description for card view
+  longDescription  String?             @map("long_description") // Detailed markdown for detail view
+  category         IntegrationCategory
+  subcategory      String? // e.g. "email", "sms" for COMMUNICATION
+  logoUrl          String?             @map("logo_url")
+  websiteUrl       String?             @map("website_url")
+  docsUrl          String?             @map("docs_url")
+  authType         IntegrationAuthType @default(API_KEY) @map("auth_type")
+  credentialSchema Json                @default("[]") @map("credential_schema") // Array of CredentialField definitions
+  capabilities     Json                @default("[]") // What the integration can do
+  status           IntegrationStatus   @default(AVAILABLE)
+  isBuiltIn        Boolean             @default(true) @map("is_built_in") // platform-managed vs future third-party
+  version          String              @default("1.0.0")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  installations Integration[]
+
+  @@index([category, status])
+  @@index([status])
+  @@map("integration_apps")
+}
+
+// ─── INTEGRATIONS (Per-Shop Installation) ────────────────────
+// When a tenant "installs" an integration from the marketplace,
+// a row is created here with their credentials and configuration.
+// Follows the BYOK model: tenant credentials → deployer fallback.
+// Credentials are encrypted at the application layer.
+
+model Integration {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String                  @map("shop_id") @db.Uuid
+  appSlug           String                  @map("app_slug") // FK to IntegrationApp.slug
+  isEnabled         Boolean                 @default(true) @map("is_enabled")
+  credentials       Json                    @default("{}") // Encrypted credential key-value pairs
+  config            Json                    @default("{}") // Non-secret configuration
+  lastSyncAt        DateTime?               @map("last_sync_at")
+  lastHealthCheckAt DateTime?               @map("last_health_check_at")
+  healthStatus      IntegrationHealthStatus @default(UNKNOWN) @map("health_status")
+  installedAt       DateTime                @default(now()) @map("installed_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  // Relations
+  shop   Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  app    IntegrationApp     @relation(fields: [appSlug], references: [slug], onDelete: Cascade)
+  events IntegrationEvent[]
+
+  @@unique([shopId, appSlug])
+  @@index([shopId])
+  @@index([appSlug])
+  @@index([shopId, healthStatus])
+  @@map("integrations")
+}
+
+// ─── INTEGRATION EVENTS (Audit Trail + Metering) ─────────────
+// Unified event log that replaces separate RoutingMeterEvent and
+// NotificationMeterEvent models. Tracks installs, uninstalls,
+// syncs, webhooks, health checks, and metered usage. Deployers
+// use this for billing dashboards and usage analytics.
+
+model IntegrationEvent {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String               @map("shop_id") @db.Uuid
+  appSlug       String               @map("app_slug")
+  integrationId String?              @map("integration_id") @db.Uuid
+  eventType     IntegrationEventType @map("event_type")
+  operation     String? // e.g. "send", "route", "geocode", "sync"
+  usedFallback  Boolean              @default(false) @map("used_fallback")
+  metadata      Json                 @default("{}") // Additional event-specific data
+  timestamp     DateTime             @default(now())
+
+  // Relations
+  shop        Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  integration Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, timestamp])
+  @@index([appSlug, timestamp])
+  @@index([shopId, eventType, timestamp])
+  @@map("integration_events")
+}
+
+// ─── INTEGRATION MARKETPLACE ─────────────────────────────────
+// Unified integration registry with category-aware catalog,
+// per-shop installations, and audit/metering events.
+// Consolidates routing + notification registries into a single
+// marketplace pattern. Plugin-ready via IntegrationProvider interface.
+
+// ─── Integration Enums ────────────────────────────────────────
+
+enum IntegrationCategory {
+  COMMUNICATION
+  ROUTING
+  ORDER_MANAGEMENT
+  INVENTORY
+  PAYMENT
+  ANALYTICS
+}
+
+enum IntegrationAuthType {
+  API_KEY
+  OAUTH
+  NONE
+  MULTI_CREDENTIAL
+}
+
+enum IntegrationStatus {
+  AVAILABLE
+  COMING_SOON
+  BETA
+  DEPRECATED
+}
+
+enum IntegrationHealthStatus {
+  HEALTHY
+  DEGRADED
+  ERROR
+  UNKNOWN
+}
+
+enum IntegrationEventType {
+  INSTALL
+  UNINSTALL
+  SYNC
+  WEBHOOK
+  HEALTH_CHECK
+  METER
+  CONFIG_UPDATE
+}

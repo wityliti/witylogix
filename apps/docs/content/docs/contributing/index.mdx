@@ -1,0 +1,617 @@
+---
+title: Contributing Guide
+description: Get started contributing to Witylogix. Learn our development workflow, code style, and project structure.
+---
+
+# Contributing to Witylogix
+
+Welcome to the Witylogix project! This guide will help you get up and running as a contributor. We follow modern development practices including TypeScript strict mode, conventional commits, and comprehensive testing.
+
+## Getting Started for Contributors
+
+### Prerequisites
+
+- **Node.js**: 18.x or later
+- **pnpm**: 8.x or later (we use pnpm workspaces)
+- **Git**: Latest stable version
+- Basic familiarity with TypeScript, React, and Node.js
+
+### Initial Setup
+
+1. **Fork the repository**
+   ```bash
+   # Click "Fork" on GitHub to create your own copy
+   ```
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/witylogix-platform.git
+   cd witylogix-platform
+   ```
+
+3. **Add upstream remote**
+   ```bash
+   git remote add upstream https://github.com/witylogix/witylogix-platform.git
+   ```
+
+4. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+5. **Set up environment variables**
+   ```bash
+   # Copy the example file
+   cp .env.example .env.local
+
+   # Update with your local values
+   # For development, you can use defaults for most vars
+   ```
+
+6. **Verify your setup**
+   ```bash
+   pnpm build
+   pnpm test
+   ```
+
+## Development Workflow
+
+### Creating a Feature Branch
+
+Always create a new branch for your work:
+
+```bash
+# Update main branch
+git fetch upstream
+git checkout main
+git merge upstream/main
+
+# Create feature branch (use descriptive names)
+git checkout -b feat/user-authentication
+git checkout -b fix/payment-reconciliation
+git checkout -b docs/api-reference
+```
+
+Branch naming convention:
+- `feat/`: New feature
+- `fix/`: Bug fix
+- `docs/`: Documentation
+- `refactor/`: Code refactoring
+- `test/`: Test additions or fixes
+- `chore/`: Maintenance tasks
+
+### Development Process
+
+1. **Make your changes**
+   ```bash
+   # Edit files as needed
+   ```
+
+2. **Run linting and formatting**
+   ```bash
+   pnpm lint
+   pnpm format
+   ```
+
+3. **Write or update tests**
+   ```bash
+   pnpm test
+   pnpm test:coverage
+   ```
+
+4. **Build locally**
+   ```bash
+   pnpm build
+   ```
+
+5. **Run dev server** (if applicable)
+   ```bash
+   pnpm dev
+   ```
+
+6. **Commit your changes** (see Commit Conventions below)
+
+7. **Push to your fork**
+   ```bash
+   git push origin feat/user-authentication
+   ```
+
+8. **Create a Pull Request** on GitHub
+
+## Code Style Guide
+
+### TypeScript Configuration
+
+We enforce **TypeScript strict mode** across the entire project:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true
+  }
+}
+```
+
+**Key requirements:**
+- Always provide explicit type annotations
+- Use `unknown` instead of `any` (and avoid `any` entirely if possible)
+- No implicit `any` types
+- Handle `null` and `undefined` explicitly
+
+### ESLint and Prettier
+
+**ESLint** enforces code quality rules. **Prettier** enforces consistent formatting.
+
+```bash
+# Lint code
+pnpm lint
+
+# Auto-fix lint issues
+pnpm lint --fix
+
+# Format code
+pnpm format
+```
+
+Both tools run automatically on git commit (husky hook), but it's good to run them manually before committing.
+
+### Import Style: NAMED IMPORTS ONLY
+
+We use **named imports exclusively**. No default imports.
+
+**✅ CORRECT:**
+```typescript
+import { Button, Card } from '@witylogix/ui';
+import { useQuery } from '@tanstack/react-query';
+import { calculateShipping } from '@/lib/shipping';
+```
+
+**❌ INCORRECT:**
+```typescript
+// Don't use default imports
+import Button from '@witylogix/ui';
+import useQuery from '@tanstack/react-query';
+import calculateShipping from '@/lib/shipping';
+```
+
+This makes it easier to track dependencies, enables better tree-shaking, and improves IDE support.
+
+### Naming Conventions
+
+- **Files**: `kebab-case` (e.g., `user-service.ts`, `order-page.tsx`)
+- **Functions/Variables**: `camelCase` (e.g., `getUserOrders()`, `isValidEmail`)
+- **Classes/Types**: `PascalCase` (e.g., `OrderService`, `User`, `ApiResponse`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `API_TIMEOUT`, `DEFAULT_PAGE_SIZE`)
+- **React Components**: `PascalCase` (e.g., `UserProfile.tsx`, `OrderCard.tsx`)
+
+## Commit Conventions
+
+We follow **Conventional Commits** for clear, structured commit messages.
+
+### Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, semicolons, etc.)
+- `refactor`: Code refactoring without behavior change
+- `perf`: Performance improvements
+- `test`: Test additions or changes
+- `chore`: Build, dependencies, or tooling changes
+- `ci`: CI/CD configuration changes
+
+### Examples
+
+```bash
+# Simple feature
+git commit -m "feat(auth): add multi-factor authentication"
+
+# Bug fix with scope
+git commit -m "fix(orders): prevent duplicate order processing"
+
+# Breaking change
+git commit -m "feat(api)!: change pagination from offset to cursor
+
+This is a breaking change affecting all list endpoints.
+
+BREAKING CHANGE: offset/limit pagination replaced with cursor-based pagination"
+
+# With detailed body
+git commit -m "refactor(shipping): optimize distance calculation
+
+- Use haversine formula for accuracy
+- Cache calculation results
+- Add unit tests
+
+Closes #123"
+```
+
+### Commit Best Practices
+
+- One logical change per commit
+- Write commit messages in imperative mood ("add feature" not "added feature")
+- Provide context in the body for non-obvious changes
+- Reference issues: "Closes #123" or "Fixes #456"
+- Keep commits atomic and testable
+
+## Pull Request Process
+
+### Before Opening a PR
+
+1. **Sync with upstream**
+   ```bash
+   git fetch upstream
+   git rebase upstream/main
+   ```
+
+2. **Run full test suite**
+   ```bash
+   pnpm test
+   pnpm test:coverage
+   ```
+
+3. **Verify linting and formatting**
+   ```bash
+   pnpm lint
+   pnpm format
+   ```
+
+4. **Build successfully**
+   ```bash
+   pnpm build
+   ```
+
+### PR Title and Description
+
+Use the following template:
+
+**Title:** Follow Conventional Commits format
+```
+feat: add user profile page
+fix: handle null shipping address
+docs: update API reference
+```
+
+**Description:**
+```markdown
+## Description
+Brief explanation of what this PR does.
+
+## Related Issues
+Closes #123
+Relates to #456
+
+## Changes
+- Added user profile page
+- Implemented profile edit form
+- Added profile avatar upload
+
+## Testing
+- [x] Unit tests added
+- [x] Integration tests added
+- [x] Manual testing completed
+
+## Checklist
+- [x] Code follows style guidelines
+- [x] Commits follow conventional format
+- [x] Tests pass (pnpm test)
+- [x] Coverage maintained (80%+ core, 100% API routes)
+- [x] Build succeeds (pnpm build)
+- [x] Documentation updated
+```
+
+### Review Process
+
+1. **Automated checks** run on every PR:
+   - Linting (ESLint)
+   - Formatting (Prettier)
+   - Tests (Vitest)
+   - Coverage (80%+ for core modules, 100% for API routes)
+   - Build verification
+
+2. **Code review** by maintainers:
+   - Architecture and design feedback
+   - Code quality suggestions
+   - Testing completeness
+   - Documentation accuracy
+
+3. **Approval and merge**:
+   - Requires at least one maintainer approval
+   - All CI checks must pass
+   - Commits must be clean (squash if needed)
+   - Merge with "Squash and merge" to keep history clean
+
+## Project Structure
+
+The Witylogix project uses a monorepo structure with `pnpm` workspaces:
+
+```
+witylogix-platform/
+├── apps/
+│   ├── api/                    # Core API (Fastify)
+│   │   ├── src/
+│   │   │   ├── routes/         # API route handlers
+│   │   │   ├── services/       # Business logic (core modules)
+│   │   │   ├── middleware/     # Express-like middleware
+│   │   │   └── prisma.ts       # Database client
+│   │   └── tests/              # Route tests
+│   │
+│   ├── web/                    # Frontend (Next.js)
+│   │   ├── app/                # App router (new structure)
+│   │   ├── components/         # React components
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── lib/                # Utilities, helpers
+│   │   └── __tests__/          # Component tests
+│   │
+│   └── docs/                   # Documentation site
+│       ├── content/            # MDX files
+│       └── components/         # Doc-specific components
+│
+├── packages/
+│   ├── ui/                     # Shared UI component library
+│   │   ├── src/
+│   │   │   ├── components/     # Reusable components
+│   │   │   └── styles/         # Tailwind/CSS
+│   │   └── __tests__/
+│   │
+│   ├── types/                  # Shared TypeScript types
+│   │   └── src/
+│   │       ├── api/            # API types
+│   │       ├── domain/         # Domain models
+│   │       └── db/             # Database types
+│   │
+│   ├── config/                 # Shared configuration
+│   │   └── src/
+│   │       ├── env.ts          # Environment variables
+│   │       └── constants.ts    # Shared constants
+│   │
+│   └── utils/                  # Shared utilities
+│       └── src/
+│           ├── formatting/     # Date, currency, etc.
+│           ├── validation/     # Input validation
+│           └── errors/         # Error handling
+│
+├── prisma/
+│   ├── schema.prisma           # Database schema
+│   └── migrations/             # Database migrations
+│
+├── .github/
+│   └── workflows/              # CI/CD (GitHub Actions)
+│
+├── pnpm-workspace.yaml         # Workspace configuration
+├── tsconfig.base.json          # Base TypeScript config
+└── package.json                # Root package config
+```
+
+## Where to Find Things
+
+### API Routes and Handlers
+
+All API routes live in `apps/api/src/routes/`:
+
+```
+apps/api/src/routes/
+├── health.ts                   # GET /health
+├── orders/
+│   ├── index.ts                # GET/POST /orders
+│   ├── [id].ts                 # GET/PATCH /orders/:id
+│   └── shipments/
+│       └── [id].ts             # POST /orders/:id/shipments
+└── users/
+    ├── index.ts                # GET/POST /users
+    └── profile.ts              # GET/PATCH /users/profile
+```
+
+Route files export a `handler` function:
+```typescript
+import { FastifyRequest, FastifyReply } from 'fastify';
+
+export async function handler(request: FastifyRequest, reply: FastifyReply) {
+  // Route logic here
+}
+```
+
+### Core Modules and Business Logic
+
+Business logic lives in `apps/api/src/services/` organized by domain:
+
+```
+apps/api/src/services/
+├── orders/
+│   ├── createOrder.ts
+│   ├── updateOrder.ts
+│   ├── getOrder.ts
+│   └── types.ts
+├── users/
+│   ├── createUser.ts
+│   ├── getUserProfile.ts
+│   └── types.ts
+└── shipping/
+    ├── calculateShipping.ts
+    └── types.ts
+```
+
+These modules contain pure business logic that's testable and reusable.
+
+### UI Components
+
+React components live in two locations:
+
+**Shared components** (`packages/ui/src/components/`):
+- Used across the entire platform
+- Styled with Tailwind CSS
+- Tested and documented
+- Examples: `Button`, `Card`, `Modal`, `Input`, `Badge`
+
+**App-specific components** (`apps/web/components/`):
+- Page-specific or app-specific components
+- Compose shared UI components
+- Examples: `UserProfile`, `OrderList`, `CheckoutFlow`
+
+### Hooks
+
+Custom React hooks in `apps/web/hooks/`:
+
+```
+apps/web/hooks/
+├── useUser.ts                  # Get current user
+├── useOrders.ts                # Fetch user orders
+├── useLocalStorage.ts          # Persist state
+└── useDebounce.ts              # Debounce values
+```
+
+## Common Gotchas
+
+### 1. Prisma Type Casting
+
+When working with Prisma and dynamic property access, use this pattern:
+
+**✅ CORRECT:**
+```typescript
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+const modelName = 'user'; // Dynamic
+const user = await (prisma as any)[modelName].findUnique({ where: { id: 1 } });
+```
+
+**❌ INCORRECT:**
+```typescript
+// Don't try: prisma.user (TypeScript will complain about unknown property)
+// This only works with explicit model names
+```
+
+Use `(prisma as any).modelName` only when you have a dynamic model name. For static access, use `prisma.user`, `prisma.order`, etc. directly.
+
+### 2. Tailwind CSS Version
+
+We use **Tailwind CSS v3.4**, not v4.
+
+**✅ CORRECT:**
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#0066cc',
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+**❌ INCORRECT:**
+```javascript
+// Don't use v4 features like @layer, @apply syntax changes, or new color functions
+```
+
+### 3. Button Component Variants
+
+The `Button` component from `@witylogix/ui` has specific variants. There is **no "outline" variant**.
+
+**✅ AVAILABLE VARIANTS:**
+```typescript
+<Button variant="primary">Primary Action</Button>
+<Button variant="secondary">Secondary Action</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="ghost">Link-like Button</Button>
+```
+
+**❌ INCORRECT:**
+```typescript
+<Button variant="outline">This doesn't exist!</Button>
+```
+
+If you need an outlined button, use `variant="secondary"`.
+
+### 4. Badge Component Variants
+
+Badge variants follow a specific pattern:
+
+**✅ CORRECT:**
+```typescript
+<Badge variant="default">Default</Badge>
+<Badge variant="secondary">Secondary</Badge>
+<Badge variant="destructive">Cancelled</Badge>
+<Badge variant="outline">Pending</Badge>
+```
+
+**❌ INCORRECT:**
+```typescript
+<Badge variant="primary">This isn't a variant</Badge>
+```
+
+### 5. Testing with Mocked Prisma
+
+When mocking Prisma in tests, follow this pattern:
+
+```typescript
+import { vi } from 'vitest';
+import { PrismaClient } from '@prisma/client';
+
+vi.mock('@/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
+
+// In test
+import { prisma } from '@/prisma';
+
+test('creates user', async () => {
+  (prisma as any).user.create.mockResolvedValue({ id: '1', name: 'John' });
+
+  // Test code
+});
+```
+
+### 6. Environment Variables
+
+Always use the shared config from `@witylogix/config`:
+
+```typescript
+import { env } from '@witylogix/config';
+
+const apiUrl = env.API_URL;
+const isDev = env.NODE_ENV === 'development';
+```
+
+Never read from `process.env` directly in application code. The config package handles validation and typing.
+
+## Getting Help
+
+- **Documentation**: Check `/apps/docs` for guides and API reference
+- **Issues**: Search existing issues before creating a new one
+- **Discussions**: Use GitHub Discussions for questions and ideas
+- **Discord**: Join our community Discord for real-time chat
+- **Email**: reach@witylogix.com for critical issues
+
+## License
+
+By contributing to Witylogix, you agree that your contributions will be licensed under the same license as the project.
+
+Thank you for contributing to Witylogix! We appreciate your effort to make this platform better.

@@ -1,0 +1,94 @@
+---
+title: Orders
+description: Understanding delivery orders in Witylogix — creation, lifecycle, statuses, and fulfillment.
+---
+
+# Orders
+
+An **Order** is the primary entity in Witylogix. It represents a request to deliver goods from a pickup location to a delivery destination. Orders flow through a defined lifecycle from creation to completion.
+
+## Order Lifecycle
+
+```
+created → confirmed → dispatched → in_transit → delivered
+                                         ↘ failed
+                                         ↘ returned
+```
+
+| Status | Description |
+|--------|-------------|
+| `created` | Order received but not yet confirmed |
+| `confirmed` | Validated and ready for dispatch |
+| `dispatched` | Assigned to a driver and route |
+| `in_transit` | Driver has picked up and is en route |
+| `delivered` | Successfully delivered with proof |
+| `failed` | Delivery attempt failed |
+| `returned` | Package returned to origin |
+| `cancelled` | Order cancelled before dispatch |
+
+## Order Structure
+
+Every order contains:
+
+- **Pickup address** — where the package is collected
+- **Delivery address** — the final destination
+- **Items** — line items with quantity, weight, and dimensions
+- **Customer** — the recipient contact information
+- **Priority** — standard, express, or same-day
+- **Scheduling** — pickup window and delivery deadline
+
+## Creating an Order
+
+```typescript
+const order = await client.orders.create({
+  pickupAddress: {
+    street: '100 Warehouse Blvd',
+    city: 'Austin',
+    state: 'TX',
+    postalCode: '78701',
+  },
+  deliveryAddress: {
+    street: '456 Elm St',
+    city: 'Austin',
+    state: 'TX',
+    postalCode: '78702',
+  },
+  items: [
+    { name: 'Electronics', quantity: 1, weight: 2.5 }
+  ],
+  priority: 'express',
+  scheduledPickup: '2026-03-15T09:00:00Z',
+});
+```
+
+## Order Events
+
+Orders emit events at each status transition. You can listen via [webhooks](/docs/guides/webhooks) or the [event bus](/docs/guides/events):
+
+- `order.created`
+- `order.confirmed`
+- `order.dispatched`
+- `order.in_transit`
+- `order.delivered`
+- `order.failed`
+- `order.cancelled`
+
+## Bulk Operations
+
+The API supports bulk order creation for high-volume use cases:
+
+```typescript
+const results = await client.orders.createBulk([
+  { /* order 1 */ },
+  { /* order 2 */ },
+  { /* order 3 */ },
+]);
+```
+
+Bulk operations return individual success/failure results for each order, allowing partial success handling.
+
+## Related
+
+- [Shipments](/docs/core-concepts/shipments) — the physical package within an order
+- [Routes](/docs/core-concepts/routes) — how orders get grouped for delivery
+- [Webhooks](/docs/guides/webhooks) — subscribe to order lifecycle events

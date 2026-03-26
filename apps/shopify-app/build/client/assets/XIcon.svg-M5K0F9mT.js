@@ -1,0 +1,2 @@
+import{R as a}from"./chunk-LFPYN7LY-ymgkwpZx.js";var t=function(e){return a.createElement("svg",Object.assign({viewBox:"0 0 20 20"},e),a.createElement("path",{d:"M13.97 15.03a.75.75 0 1 0 1.06-1.06l-3.97-3.97 3.97-3.97a.75.75 0 0 0-1.06-1.06l-3.97 3.97-3.97-3.97a.75.75 0 0 0-1.06 1.06l3.97 3.97-3.97 3.97a.75.75 0 1 0 1.06 1.06l3.97-3.97 3.97 3.97Z"}))};t.displayName="XIcon";export{t as S};
+//# sourceMappingURL=XIcon.svg-M5K0F9mT.js.map

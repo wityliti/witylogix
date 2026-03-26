@@ -1,0 +1,2 @@
+import{R as e}from"./chunk-LFPYN7LY-ymgkwpZx.js";var c=function(s){return e.createElement("svg",Object.assign({viewBox:"0 0 20 20"},s),e.createElement("path",{d:"M10.75 5.75c0-.414-.336-.75-.75-.75s-.75.336-.75.75v3.5h-3.5c-.414 0-.75.336-.75.75s.336.75.75.75h3.5v3.5c0 .414.336.75.75.75s.75-.336.75-.75v-3.5h3.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-3.5v-3.5Z"}))};c.displayName="PlusIcon";export{c as S};
+//# sourceMappingURL=PlusIcon.svg-Dlcv4NCW.js.map

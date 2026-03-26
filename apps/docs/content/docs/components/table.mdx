@@ -1,0 +1,394 @@
+---
+title: Table
+description: Structured data presentation with headers, rows, sorting, and selection
+---
+
+# Table
+
+The Table component displays structured data in rows and columns with support for sorting, row selection, and empty states.
+
+## Import
+
+```typescript
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead
+} from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Status</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>John Doe</TableCell>
+      <TableCell>john@example.com</TableCell>
+      <TableCell>Active</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>Jane Smith</TableCell>
+      <TableCell>jane@example.com</TableCell>
+      <TableCell>Active</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+## Structure
+
+| Component | Purpose | Notes |
+|-----------|---------|-------|
+| **Table** | Container | Root element |
+| **TableHeader** | Header section | Contains TableRow with TableHead |
+| **TableBody** | Body section | Contains data TableRow elements |
+| **TableRow** | Row container | Groups cells horizontally |
+| **TableHead** | Header cell | Bold text, darker background |
+| **TableCell** | Data cell | Regular text alignment |
+
+## Props Table
+
+### Table
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Table sections |
+
+### TableRow
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Table cells |
+| `selected` | boolean | false | Visual selection state |
+| `onClick` | function | - | Row click handler |
+
+### TableHead / TableCell
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | "left" \| "center" \| "right" | "left" | Text alignment |
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Cell content |
+
+## Usage Examples
+
+### Users Table
+
+```tsx
+const users = [
+  { id: 1, name: "Alice Johnson", email: "alice@example.com", role: "Admin" },
+  { id: 2, name: "Bob Smith", email: "bob@example.com", role: "User" },
+  { id: 3, name: "Carol White", email: "carol@example.com", role: "Editor" }
+]
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Role</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {users.map((user) => (
+      <TableRow key={user.id}>
+        <TableCell>{user.name}</TableCell>
+        <TableCell>{user.email}</TableCell>
+        <TableCell>{user.role}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+### Table with Selection
+
+```tsx
+import { Checkbox } from "@/components/ui"
+
+const [selected, setSelected] = useState<number[]>([])
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead className="w-12">
+        <Checkbox
+          checked={selected.length === users.length}
+          onChange={(checked) =>
+            setSelected(checked ? users.map(u => u.id) : [])
+          }
+        />
+      </TableHead>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {users.map((user) => (
+      <TableRow
+        key={user.id}
+        selected={selected.includes(user.id)}
+      >
+        <TableCell>
+          <Checkbox
+            checked={selected.includes(user.id)}
+            onChange={(checked) =>
+              setSelected(
+                checked
+                  ? [...selected, user.id]
+                  : selected.filter(id => id !== user.id)
+              )
+            }
+          />
+        </TableCell>
+        <TableCell>{user.name}</TableCell>
+        <TableCell>{user.email}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+### Table with Actions
+
+```tsx
+import { Button } from "@/components/ui"
+import { Edit, Trash2 } from "lucide-react"
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead className="text-right">Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {items.map((item) => (
+      <TableRow key={item.id}>
+        <TableCell>{item.name}</TableCell>
+        <TableCell>
+          <Badge variant={item.status === "active" ? "success" : "danger"}>
+            {item.status}
+          </Badge>
+        </TableCell>
+        <TableCell className="text-right">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleEdit(item.id)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleDelete(item.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+### Table with Sorting
+
+```tsx
+import { ChevronDown, ChevronUp } from "lucide-react"
+
+const [sortColumn, setSortColumn] = useState<string | null>(null)
+const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+
+const handleSort = (column: string) => {
+  if (sortColumn === column) {
+    setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+  } else {
+    setSortColumn(column)
+    setSortDirection("asc")
+  }
+}
+
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
+        <div className="flex items-center gap-2">
+          Name
+          {sortColumn === "name" && (
+            sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </TableHead>
+      <TableHead className="cursor-pointer" onClick={() => handleSort("email")}>
+        <div className="flex items-center gap-2">
+          Email
+          {sortColumn === "email" && (
+            sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {/* Sorted rows */}
+  </TableBody>
+</Table>
+```
+
+### Empty State
+
+```tsx
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Email</TableHead>
+      <TableHead>Status</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {items.length === 0 ? (
+      <TableRow>
+        <TableCell colSpan={3} className="text-center py-8">
+          <p className="text-slate-400">No items found</p>
+        </TableCell>
+      </TableRow>
+    ) : (
+      items.map((item) => (
+        <TableRow key={item.id}>
+          <TableCell>{item.name}</TableCell>
+          <TableCell>{item.email}</TableCell>
+          <TableCell>{item.status}</TableCell>
+        </TableRow>
+      ))
+    )}
+  </TableBody>
+</Table>
+```
+
+### Paginated Table
+
+```tsx
+import { Button } from "@/components/ui"
+
+const [page, setPage] = useState(1)
+const itemsPerPage = 10
+const totalPages = Math.ceil(items.length / itemsPerPage)
+const paginatedItems = items.slice(
+  (page - 1) * itemsPerPage,
+  page * itemsPerPage
+)
+
+<div className="space-y-4">
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Name</TableHead>
+        <TableHead>Email</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {paginatedItems.map((item) => (
+        <TableRow key={item.id}>
+          <TableCell>{item.name}</TableCell>
+          <TableCell>{item.email}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+
+  <div className="flex justify-between items-center">
+    <p className="text-sm text-slate-400">
+      Page {page} of {totalPages}
+    </p>
+    <div className="flex gap-2">
+      <Button
+        variant="secondary"
+        disabled={page === 1}
+        onClick={() => setPage(page - 1)}
+      >
+        Previous
+      </Button>
+      <Button
+        variant="secondary"
+        disabled={page === totalPages}
+        onClick={() => setPage(page + 1)}
+      >
+        Next
+      </Button>
+    </div>
+  </div>
+</div>
+```
+
+## Styling
+
+### Hover Effects
+
+```tsx
+<Table className="hover:[&_tbody_tr]:bg-slate-700">
+  {/* Table content */}
+</Table>
+```
+
+### Striped Rows
+
+```tsx
+<TableBody>
+  {items.map((item, index) => (
+    <TableRow
+      key={item.id}
+      className={index % 2 === 0 ? "bg-slate-800" : ""}
+    >
+      {/* Row content */}
+    </TableRow>
+  ))}
+</TableBody>
+```
+
+### Compact Table
+
+```tsx
+<Table className="text-sm">
+  {/* Smaller font size table */}
+</Table>
+```
+
+## Accessibility
+
+- Semantic table structure
+- Proper heading hierarchy with TableHead
+- Row selection with checkboxes
+- Keyboard navigation support
+- ARIA labels for actions
+- Color not the only indicator
+- Sufficient spacing between rows
+
+## Best Practices
+
+1. Use TableHeader for column labels
+2. Provide meaningful column headers
+3. Keep columns aligned and consistent
+4. Use badges or icons for status indicators
+5. Include row actions when needed
+6. Handle empty states gracefully
+7. Provide sorting/filtering for large datasets
+8. Test with keyboard navigation
+9. Ensure sufficient color contrast
+10. Consider responsive behavior on mobile

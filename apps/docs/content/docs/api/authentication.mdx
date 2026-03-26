@@ -1,0 +1,230 @@
+---
+title: Authentication
+description: JWT and API key authentication for Witylogix API
+---
+
+# Authentication
+
+The Witylogix API uses two authentication methods depending on your use case:
+
+## JWT Bearer Token Authentication
+
+JWT (JSON Web Token) authentication is recommended for client-side applications and individual user sessions.
+
+### Login Flow
+
+1. **Send credentials** to `/auth/login` endpoint
+2. **Receive access and refresh tokens** in response
+3. **Use access token** in Authorization header for API requests
+4. **Refresh token** when access token expires
+
+### Login Request
+
+```bash
+curl -X POST http://localhost:8000/api/v4/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+```
+
+### Login Response
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+### Token Details
+
+- **access_token**: JWT token valid for 1 hour. Use in Authorization header.
+- **refresh_token**: JWT token valid for 7 days. Use to obtain new access tokens.
+- **expires_in**: Token expiration time in seconds.
+- **token_type**: Always "Bearer"
+
+### Using Access Token
+
+Include the access token in the `Authorization` header with `Bearer` scheme:
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+## Token Refresh
+
+When your access token expires, use the refresh token to obtain a new access token without requiring the user to log in again.
+
+### Refresh Request
+
+```bash
+curl -X POST http://localhost:8000/api/v4/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }'
+```
+
+### Refresh Response
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+### Refresh Token Rotation
+
+The API uses refresh token rotation for enhanced security. Each time you refresh, you receive a new refresh token. Always use the latest refresh token for subsequent requests.
+
+## Token Validation
+
+You can validate your current token and retrieve user information without making a protected resource request.
+
+### Validation Request
+
+```bash
+curl -X POST http://localhost:8000/api/v4/auth/validate \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Validation Response
+
+```json
+{
+  "user_id": "user_123",
+  "email": "user@example.com",
+  "scopes": ["read:orders", "write:orders", "read:shipments"],
+  "expires_at": 1678886400
+}
+```
+
+## API Key Authentication
+
+API keys are recommended for server-to-server integrations where you need persistent, non-user-dependent authentication.
+
+### Using API Keys
+
+Include the API key in the `X-API-Key` header:
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders \
+  -H "X-API-Key: sk_live_xxxxxxxxxxxxx"
+```
+
+### API Key Formats
+
+- **Live Keys**: `sk_live_*` - Use in production
+- **Test Keys**: `sk_test_*` - Use in testing and development
+
+### API Key Management
+
+API keys can be created and rotated in the dashboard. Never commit API keys to version control.
+
+## Scopes
+
+JWT tokens include scopes that define what resources can be accessed. Common scopes include:
+
+- `read:orders` - Read order data
+- `write:orders` - Create and update orders
+- `read:shipments` - Read shipment tracking
+- `write:shipments` - Update shipments
+- `read:drivers` - Read driver information
+- `write:drivers` - Manage drivers
+- `read:analytics` - Access analytics endpoints
+- `write:settings` - Modify account settings
+- `admin` - Full administrative access
+
+## Error Responses
+
+### Invalid Credentials
+
+```json
+{
+  "type": "https://api.witylogix.com/errors/unauthorized",
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "Invalid email or password",
+  "code": "AUTH_001"
+}
+```
+
+### Expired Token
+
+```json
+{
+  "type": "https://api.witylogix.com/errors/token-expired",
+  "title": "Token Expired",
+  "status": 401,
+  "detail": "Access token has expired. Use refresh token to obtain new token.",
+  "code": "AUTH_002"
+}
+```
+
+### Invalid Token
+
+```json
+{
+  "type": "https://api.witylogix.com/errors/invalid-token",
+  "title": "Invalid Token",
+  "status": 401,
+  "detail": "Token is invalid or malformed",
+  "code": "AUTH_003"
+}
+```
+
+## Best Practices
+
+1. **Store tokens securely**: Never expose access tokens in client-side code or version control
+2. **Use HTTPS**: Always use HTTPS connections when transmitting tokens
+3. **Implement token refresh**: Refresh tokens before they expire to maintain uninterrupted access
+4. **Handle token expiry gracefully**: Implement logic to refresh tokens and retry failed requests
+5. **Use appropriate authentication**: Use JWT for user sessions, API keys for integrations
+6. **Rotate API keys regularly**: Rotate API keys periodically for security
+7. **Monitor authentication failures**: Track failed login attempts for security auditing
+8. **Use short-lived tokens**: Keep access token TTL short (1-2 hours) for better security
+
+## TypeScript Example
+
+```typescript
+import { WitylogixClient } from '@witylogix/sdk';
+
+const client = new WitylogixClient({
+  baseUrl: 'https://api.witylogix.com/v4'
+});
+
+// Login
+const auth = await client.auth.login({
+  email: 'user@example.com',
+  password: 'password'
+});
+
+// Store tokens securely (e.g., in secure storage)
+localStorage.setItem('accessToken', auth.accessToken);
+localStorage.setItem('refreshToken', auth.refreshToken);
+
+// Set token for subsequent requests
+client.setAccessToken(auth.accessToken);
+
+// Make authenticated requests
+const orders = await client.orders.list();
+
+// Refresh token when needed
+const newAuth = await client.auth.refresh({
+  refreshToken: auth.refreshToken
+});
+
+client.setAccessToken(newAuth.accessToken);
+```
+
+## Support
+
+For authentication issues or API key problems, contact support@witylogix.com

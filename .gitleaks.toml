@@ -1,0 +1,163 @@
+# Gitleaks configuration for Witylogix platform
+# Detects secrets while allowing safe demo/example API keys
+# Documentation: https://github.com/gitleaks/gitleaks/wiki/Configuration
+
+title = "Witylogix Gitleaks Configuration"
+
+# Allowed patterns (safe for commit)
+# - sk_example_* prefixes used in demo/fixture data
+# - test_* prefixes in test files
+
+[allowlist]
+description = "Allowlist patterns for demo and test data"
+paths = [
+  "(?:apps|packages)/.+/(fixtures|__tests__|test|examples)/.+",
+  "docs/examples/.+",
+]
+commits = [
+  "^(test|docs|fixture).*$",
+]
+regexes = [
+  "sk_example_.{20,}",  # Demo API keys (safe to commit)
+]
+
+# Stripe API key detection
+[[rules]]
+id = "stripe-api-key"
+description = "Stripe API Key"
+regexp = '''sk_(live|test)_[a-zA-Z0-9]{20,}'''
+secretGroup = 0
+
+[[rules.allowlist]]
+regexes = [
+  "sk_example_",  # Demo prefix
+  "sk_test_example",  # Example in tests
+]
+paths = [
+  "apps/dashboard/src/app/settings/api-keys/page.tsx",  # Demo data file
+  "apps/dashboard/src/app/stores/page.tsx",  # Demo data file
+]
+
+# AWS credentials detection
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regexp = '''AKIA[0-9A-Z]{16}'''
+secretGroup = 0
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regexp = '''aws_secret_access_key\s*=\s*[A-Za-z0-9/+=]{40}'''
+secretGroup = 1
+
+# Database URLs and connection strings
+[[rules]]
+id = "database-url"
+description = "Database Connection URL"
+regexp = '''(?:postgres|mongodb|mysql)://[a-zA-Z0-9._-]+:[^@\s]+@[^\s/]+(?:/[^\s]*)?'''
+secretGroup = 0
+
+[[rules.allowlist]]
+regexes = [
+  "postgresql://user:password@localhost",  # Local dev example
+  "mongodb://localhost:27017",  # Local dev example
+]
+
+# Generic OAuth/Bearer tokens
+[[rules]]
+id = "generic-bearer-token"
+description = "Generic Bearer Token"
+regexp = '''(?:bearer|authorization|token)["\s:=]+([A-Za-z0-9._\-~+/]+=*)'''
+secretGroup = 1
+
+[[rules.allowlist]]
+regexes = [
+  "Bearer\\s+example_",  # Example tokens
+  "authorization:\\s*['\"]test",  # Test tokens
+]
+
+# API Key generic pattern
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key in quotes"
+regexp = '''(?:api[_-]?key|apikey)["\s:=]+([A-Za-z0-9_\-]{20,})'''
+secretGroup = 1
+
+[[rules.allowlist]]
+regexes = [
+  "sk_example_",  # Safe demo prefix
+]
+
+# Private key detection (PEM format)
+[[rules]]
+id = "private-key"
+description = "Private Key (PEM format)"
+regexp = '''-----BEGIN (?:RSA|DSA|EC|OPENSSH) PRIVATE KEY-----'''
+secretGroup = 0
+
+# JSON Web Token (JWT)
+[[rules]]
+id = "jwt-token"
+description = "JSON Web Token"
+regexp = '''eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+'''
+secretGroup = 0
+
+[[rules.allowlist]]
+regexes = [
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",  # Standard JWT header (example)
+]
+
+# Google API key
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regexp = '''AIza[0-9A-Za-z\-_]{35}'''
+secretGroup = 0
+
+# Slack webhook
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook URL"
+regexp = '''https://hooks.slack.com/services/[A-Z0-9]+/[A-Z0-9]+/[A-Za-z0-9]+'''
+secretGroup = 0
+
+# Environment variable secrets
+[[rules]]
+id = "env-secret"
+description = "Environment variable with secret value"
+regexp = '''(DATABASE_PASSWORD|API_SECRET|JWT_SECRET|ENCRYPTION_KEY)\s*=\s*[^\s;'"]+'''
+secretGroup = 1
+
+# Global allowlist (applied to all rules)
+[allowlist]
+description = "Global patterns to allow"
+
+commits = [
+  # Allow commits with these patterns (demo, test, fixture, docs)
+  "(?i)(demo|test|fixture|example|placeholder)",
+]
+
+paths = [
+  # Allow secrets in these paths (demo/test data)
+  "(?:test|spec|__tests__|fixtures|examples)",
+  ".*\\.test\\..*",
+  ".*\\.spec\\..*",
+  ".*/mock.*",
+  "docs/examples/",
+  "CHANGELOG.md",  # Historical data
+]
+
+regexes = [
+  # Allow these patterns everywhere
+  "(?i)(example|demo|test|placeholder|mock).*",
+  "sk_example_.*",
+  "wl_test_.*",
+  "wl_example_.*",
+]
+
+# Gitleaks configuration
+[gitleaks]
+follow-symlinks = true
+verbose = true
+exit-code = 1  # Exit with error if secrets found

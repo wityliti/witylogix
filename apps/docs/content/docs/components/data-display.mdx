@@ -1,0 +1,411 @@
+---
+title: Data Display Components
+description: StatCard, EmptyState, Skeleton, Tooltip, Avatar, Badge for displaying data
+---
+
+# Data Display Components
+
+A collection of components for displaying data, status, and informational content.
+
+## Import
+
+```typescript
+import {
+  StatCard,
+  EmptyState,
+  Skeleton,
+  Tooltip,
+  Avatar,
+  Badge
+} from "@/components/ui"
+```
+
+## StatCard
+
+Display key metrics and statistics with optional trends.
+
+### Basic Usage
+
+```tsx
+<StatCard
+  label="Total Users"
+  value={2543}
+  trend={12}
+  trendLabel="vs last month"
+/>
+```
+
+### StatCard Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | string | - | Metric label |
+| `value` | string \| number | - | Main value |
+| `subValue` | string | - | Secondary value |
+| `trend` | number | - | Trend percentage |
+| `trendLabel` | string | - | Trend description |
+| `icon` | ReactNode | - | Icon component |
+| `className` | string | - | Additional classes |
+
+### StatCard Examples
+
+```tsx
+<div className="grid grid-cols-4 gap-4">
+  <StatCard
+    label="Revenue"
+    value="$125,340"
+    trend={8.5}
+    trendLabel="vs last quarter"
+  />
+  <StatCard
+    label="Orders"
+    value={1240}
+    trend={3.2}
+    trendLabel="vs yesterday"
+  />
+  <StatCard
+    label="Active Users"
+    value={542}
+    trend={-2.1}
+    trendLabel="vs last week"
+  />
+  <StatCard
+    label="Conversion"
+    value="3.2%"
+    trend={0.5}
+    trendLabel="vs average"
+  />
+</div>
+```
+
+## EmptyState
+
+Display friendly message when no data is available.
+
+### Basic Usage
+
+```tsx
+<EmptyState
+  title="No items found"
+  description="Try adjusting your search or filter criteria"
+  action={<Button>Create Item</Button>}
+/>
+```
+
+### EmptyState Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | string | - | Empty state heading |
+| `description` | string | - | Explanation text |
+| `icon` | ReactNode | - | Icon component |
+| `action` | ReactNode | - | Action button |
+| `className` | string | - | Additional classes |
+
+### EmptyState Examples
+
+```tsx
+// Search results empty
+<EmptyState
+  title="No results"
+  description="We couldn't find any users matching 'john'"
+  icon={<Search className="h-12 w-12" />}
+/>
+
+// No data in list
+<EmptyState
+  title="Get started"
+  description="Create your first project to begin"
+  icon={<Plus className="h-12 w-12" />}
+  action={
+    <Button onClick={handleCreate}>
+      Create Project
+    </Button>
+  }
+/>
+```
+
+## Skeleton
+
+Placeholder for loading states.
+
+### Basic Usage
+
+```tsx
+<div className="space-y-2">
+  <Skeleton className="h-4 w-full" />
+  <Skeleton className="h-4 w-3/4" />
+</div>
+```
+
+### Skeleton Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Size and shape |
+| `rounded` | boolean | true | Rounded corners |
+
+### Skeleton Examples
+
+```tsx
+// Card skeleton
+<Card>
+  <CardHeader>
+    <Skeleton className="h-6 w-32" />
+  </CardHeader>
+  <CardContent className="space-y-2">
+    <Skeleton className="h-4 w-full" />
+    <Skeleton className="h-4 w-3/4" />
+  </CardContent>
+</Card>
+
+// Table skeleton
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>
+        <Skeleton className="h-4 w-24" />
+      </TableHead>
+      <TableHead>
+        <Skeleton className="h-4 w-20" />
+      </TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {[1, 2, 3].map((i) => (
+      <TableRow key={i}>
+        <TableCell>
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+
+// Avatar skeleton
+<div className="flex items-center gap-3">
+  <Skeleton className="h-10 w-10 rounded-full" />
+  <div className="flex-1 space-y-2">
+    <Skeleton className="h-4 w-24" />
+    <Skeleton className="h-3 w-32" />
+  </div>
+</div>
+```
+
+## Tooltip
+
+Show additional information on hover or focus.
+
+### Basic Usage
+
+```tsx
+<Tooltip content="Click to save">
+  <Button>Save</Button>
+</Tooltip>
+```
+
+### Tooltip Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `content` | string | ReactNode | - | Tooltip text |
+| `side` | "top" \| "right" \| "bottom" \| "left" | "top" | Tooltip position |
+| `align` | "start" \| "center" \| "end" | "center" | Alignment |
+| `delay` | number | 200 | Delay in ms |
+| `className` | string | - | Additional classes |
+
+### Tooltip Examples
+
+```tsx
+<div className="flex gap-4">
+  <Tooltip content="Save changes" side="top">
+    <Button size="sm">
+      <Save className="h-4 w-4" />
+    </Button>
+  </Tooltip>
+
+  <Tooltip content="Duplicate this item" side="right">
+    <Button size="sm" variant="secondary">
+      <Copy className="h-4 w-4" />
+    </Button>
+  </Tooltip>
+
+  <Tooltip content="More options" side="bottom">
+    <Button size="sm" variant="ghost">
+      <MoreVertical className="h-4 w-4" />
+    </Button>
+  </Tooltip>
+</div>
+```
+
+## Avatar
+
+Display user profile pictures or initials.
+
+### Basic Usage
+
+```tsx
+<Avatar
+  src="https://example.com/user.jpg"
+  alt="John Doe"
+/>
+```
+
+### Avatar Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | string | - | Image URL |
+| `alt` | string | - | Alt text |
+| `initials` | string | - | Fallback initials |
+| `size` | "sm" \| "md" \| "lg" | "md" | Avatar size |
+| `status` | "online" \| "offline" \| "away" | - | Status indicator |
+| `className` | string | - | Additional classes |
+
+### Avatar Examples
+
+```tsx
+// Basic avatar
+<Avatar
+  src="/avatars/john.jpg"
+  alt="John Doe"
+  size="md"
+/>
+
+// With initials fallback
+<Avatar
+  src="/avatars/user.jpg"
+  alt="Jane Smith"
+  initials="JS"
+/>
+
+// With status indicator
+<div className="relative">
+  <Avatar
+    src="/avatars/alice.jpg"
+    alt="Alice"
+    size="lg"
+  />
+  <span className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-slate-900" />
+</div>
+
+// Avatar group
+<div className="flex -space-x-2">
+  <Avatar src="/avatars/user1.jpg" alt="User 1" />
+  <Avatar src="/avatars/user2.jpg" alt="User 2" />
+  <Avatar src="/avatars/user3.jpg" alt="User 3" />
+  <div className="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-medium">
+    +3
+  </div>
+</div>
+```
+
+### Avatar Sizes
+
+| Size | Dimensions | Use Case |
+|------|-----------|----------|
+| **sm** | 32x32 | List items, comments |
+| **md** | 40x40 | Standard, cards |
+| **lg** | 48x48 | Profile, headers |
+
+## Badge
+
+Small labeled component for status and categories (see Badge documentation).
+
+### Quick Reference
+
+```tsx
+<Badge variant="success">Active</Badge>
+<Badge variant="danger">Inactive</Badge>
+<Badge variant="warning">Pending</Badge>
+<Badge variant="info">New</Badge>
+```
+
+## Usage Patterns
+
+### Data Card with Skeleton
+
+```tsx
+const [loading, setLoading] = useState(true)
+const [data, setData] = useState(null)
+
+useEffect(() => {
+  // Fetch data
+}, [])
+
+return (
+  <Card>
+    {loading ? (
+      <>
+        <Skeleton className="h-6 w-32 mb-4" />
+        <Skeleton className="h-4 w-full" />
+      </>
+    ) : (
+      <>
+        <CardTitle>{data.title}</CardTitle>
+        <CardContent>{data.content}</CardContent>
+      </>
+    )}
+  </Card>
+)
+```
+
+### User List with Avatars
+
+```tsx
+<div className="space-y-3">
+  {users.map((user) => (
+    <div key={user.id} className="flex items-center gap-3">
+      <Avatar
+        src={user.avatar}
+        initials={user.initials}
+        size="sm"
+      />
+      <div className="flex-1">
+        <p className="font-medium">{user.name}</p>
+        <p className="text-sm text-slate-400">{user.email}</p>
+      </div>
+      <Badge variant={user.status === "active" ? "success" : "default"}>
+        {user.status}
+      </Badge>
+    </div>
+  ))}
+</div>
+```
+
+### Dashboard with Stats
+
+```tsx
+<div className="grid grid-cols-4 gap-4 mb-8">
+  <StatCard label="Revenue" value="$45,231" trend={12} />
+  <StatCard label="Users" value="2,543" trend={8.2} />
+  <StatCard label="Orders" value="1,234" trend={-2.1} />
+  <StatCard label="Conversion" value="3.2%" trend={0.5} />
+</div>
+```
+
+## Accessibility
+
+All data display components:
+- Use semantic HTML
+- Include proper color contrast
+- Support keyboard navigation
+- Have clear labels and descriptions
+- Work with screen readers
+- Use aria attributes when needed
+
+## Best Practices
+
+1. Use StatCard for key metrics
+2. Show Skeleton during loading
+3. Display EmptyState for no data
+4. Use Tooltip for additional context
+5. Use Avatar with alt text
+6. Keep Badge variants semantic
+7. Ensure sufficient spacing
+8. Test with accessibility tools
+9. Provide fallbacks for images
+10. Maintain consistent styling

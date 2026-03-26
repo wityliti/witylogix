@@ -1,0 +1,23 @@
+// ─── Shopify OAuth Session Storage ──────────────────────────
+// Used by @shopify/shopify-app-session-storage-prisma
+// Global table (not tenant-scoped) — stores Shopify Admin OAuth sessions
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String    @map("access_token")
+  userId              BigInt?   @map("user_id")
+  firstName           String?   @map("first_name")
+  lastName            String?   @map("last_name")
+  email               String?
+  accountOwner        Boolean?  @map("account_owner")
+  locale              String?
+  collaborator        Boolean?
+  emailVerified       Boolean?  @map("email_verified")
+  refreshToken        String?   @map("refresh_token")
+  refreshTokenExpires DateTime? @map("refresh_token_expires")
+}

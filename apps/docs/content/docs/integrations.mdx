@@ -1,0 +1,48 @@
+---
+title: Integrations
+description: Connect Witylogix with your existing tools and platforms
+---
+
+import { IntegrationsGrid } from '@/app/components/integrations-grid';
+
+# Integrations
+
+Witylogix connects with the tools you already use. Pre-built integrations handle the heavy lifting — order sync, payment processing, notifications, and route optimization — so you can focus on delivering.
+
+<IntegrationsGrid />
+
+## Custom Integrations
+
+Need to connect a platform we don't support yet? Use the Witylogix API and webhooks to build your own integration.
+
+- **REST API** — Full CRUD operations on shipments, drivers, and routes. See the [API Reference](/docs/api).
+- **Webhooks** — Real-time event notifications for shipment lifecycle events. See [Webhooks](/docs/guides/webhooks).
+- **SDK** — Type-safe clients for Node.js and Python. See [Getting Started](/docs/getting-started).
+
+### Building a Custom Adapter
+
+```typescript
+import { WitylogixClient } from '@witylogix/sdk';
+
+const client = new WitylogixClient({
+  apiKey: process.env.WITYLOGIX_API_KEY,
+});
+
+// Listen for new orders from your platform
+yourPlatform.on('order.created', async (order) => {
+  const shipment = await client.shipments.create({
+    orderId: order.id,
+    pickup: order.warehouse,
+    dropoff: order.customer.address,
+    items: order.lineItems,
+  });
+
+  // Update your platform with tracking info
+  await yourPlatform.updateOrder(order.id, {
+    trackingUrl: shipment.trackingUrl,
+    carrier: 'witylogix',
+  });
+});
+```
+
+For a full walkthrough, see the [Custom Platform Guide](/docs/guides/custom-platform).

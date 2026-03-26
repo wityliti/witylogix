@@ -1,0 +1,178 @@
+{
+  "dashboard": {
+    "title": "Auth & Security",
+    "description": "Authentication, authorization, and security metrics",
+    "tags": ["auth", "security", "monitoring"],
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(auth_login_attempts_total, environment)",
+          "current": {"value": "production", "text": "production"}
+        },
+        {
+          "name": "tenant",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(auth_login_attempts_total{environment=\"$environment\"}, tenant_id)",
+          "current": {"value": "all", "text": "All"},
+          "multi": true
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Login Rate (logins/min)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_login_attempts_total{environment=\"$environment\",status=\"success\",tenant_id=~\"$tenant\"}[1m]))",
+            "legendFormat": "Successful Logins"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+        "yaxes": [{"label": "logins/min"}]
+      },
+      {
+        "id": 2,
+        "title": "Failed Login Attempts",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_login_attempts_total{environment=\"$environment\",status=\"failed\",tenant_id=~\"$tenant\"}[1m]))",
+            "legendFormat": "Failed Logins"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+        "yaxes": [{"label": "attempts/min"}]
+      },
+      {
+        "id": 3,
+        "title": "MFA Usage (%)",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 * (sum(auth_mfa_enabled_users{environment=\"$environment\",tenant_id=~\"$tenant\"}) / sum(auth_total_users{environment=\"$environment\",tenant_id=~\"$tenant\"}))"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "green", "value": 90}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Sessions",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(auth_active_sessions{environment=\"$environment\",tenant_id=~\"$tenant\"})"
+          }
+        ],
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+        "options": {"colorMode": "value"}
+      },
+      {
+        "id": 5,
+        "title": "Token Refresh Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_token_refresh_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1m]))",
+            "legendFormat": "Refreshes/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 6},
+        "yaxes": [{"label": "refreshes/min"}]
+      },
+      {
+        "id": 6,
+        "title": "Rate Limit Hits (%)",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 * (sum(rate(auth_rate_limit_exceeded_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1m])) / sum(rate(auth_login_attempts_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1m])))"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 6},
+        "options": {"colorMode": "background"}
+      },
+      {
+        "id": 7,
+        "title": "Blocked IPs",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "count(auth_blocked_ips{environment=\"$environment\"})"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 6},
+        "options": {"colorMode": "background"}
+      },
+      {
+        "id": 8,
+        "title": "Auth Method Distribution",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_login_attempts_total{environment=\"$environment\",status=\"success\",tenant_id=~\"$tenant\"}[5m])) by (method)",
+            "legendFormat": "{{method}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 6}
+      },
+      {
+        "id": 9,
+        "title": "Failed Logins by Reason",
+        "type": "table",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "topk(10, sum(rate(auth_login_failed_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[5m])) by (reason))",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14}
+      },
+      {
+        "id": 10,
+        "title": "Suspicious Activity Events",
+        "type": "table",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "topk(10, sum(increase(auth_suspicious_activity_total{environment=\"$environment\",tenant_id=~\"$tenant\"}[1h])) by (activity_type))",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14}
+      }
+    ]
+  }
+}

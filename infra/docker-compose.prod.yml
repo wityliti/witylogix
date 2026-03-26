@@ -1,0 +1,380 @@
+# infra/docker-compose.prod.yml
+# Production-Grade Docker Compose Configuration for Witylogix
+#
+# Comprehensive production deployment with:
+# - Security hardening: non-root users, read-only filesystems, secrets management
+# - Resource management: CPU/memory limits and reservations
+# - Health monitoring: health checks with proper intervals and thresholds
+# - Reliability: restart policies, dependency management, graceful shutdown
+# - Observability: structured logging with json-file driver and rotation
+# - Network isolation: separate networks for frontend, backend, and database tiers
+# - Data persistence: named volumes with backup labels
+# - TLS/SSL: automatic certificate management with certbot
+#
+# Usage (from repo root):
+#   docker compose -f infra/docker-compose.prod.yml up -d
+#   docker compose -f infra/docker-compose.prod.yml logs -f api
+#   docker compose -f infra/docker-compose.prod.yml down -v
+
+version: "3.8"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Services
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # PostgreSQL 16 with PostGIS for geospatial functionality
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: witylogix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-witylogix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error PostgreSQL password required}
+      POSTGRES_DB: ${POSTGRES_DB:-witylogix}
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c effective_cache_size=1GB -c maintenance_work_mem=64MB -c work_mem=16MB"
+    volumes:
+      # Primary data storage with backup label
+      - postgres_data:/var/lib/postgresql/data:Z
+      # Initialization scripts
+      - ./infra/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Backup directory for database dumps
+      - postgres_backups:/backups
+      # Shared memory for improved performance
+    shm_size: 256mb
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-witylogix}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - db_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=postgres,environment=production"
+
+  # Redis 7 for caching, sessions, and job queues
+  redis:
+    image: redis:7-alpine
+    container_name: witylogix-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory ${REDIS_MAXMEMORY:-512mb}
+      --maxmemory-policy allkeys-lru
+      --tcp-backlog 511
+      --timeout 0
+      --tcp-keepalive 300
+      --loglevel warning
+    volumes:
+      # Data persistence with backup label
+      - redis_data:/data:Z
+      # Backup directory for Redis snapshots
+      - redis_backups:/backups
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - db_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=redis,environment=production"
+
+  # Fastify API Backend
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+      args:
+        NODE_ENV: production
+    container_name: witylogix-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-witylogix}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?error JWT_SECRET must be set in production}
+      API_URL: ${API_URL:-https://api.localhost}
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SHOPIFY_API_KEY: ${SHOPIFY_API_KEY:-}
+      SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET:-}
+    ports:
+      - "${API_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - backend_tier
+      - db_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=api,environment=production"
+    security_opt:
+      - no-new-privileges:true
+
+  # Next.js Dashboard (Admin UI)
+  dashboard:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.dashboard
+      args:
+        NODE_ENV: production
+    container_name: witylogix-dashboard
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.localhost}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.localhost}
+    ports:
+      - "${DASHBOARD_PORT:-3002}:3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - frontend_tier
+      - backend_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=dashboard,environment=production"
+    security_opt:
+      - no-new-privileges:true
+
+  # Background Job Worker for BullMQ
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+      args:
+        NODE_ENV: production
+    container_name: witylogix-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-witylogix}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?error JWT_SECRET must be set in production}
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    networks:
+      - backend_tier
+      - db_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=worker,environment=production"
+    security_opt:
+      - no-new-privileges:true
+
+  # Nginx Reverse Proxy and TLS Termination
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: witylogix-nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+      - dashboard
+    volumes:
+      # Nginx configuration
+      - ./infra/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/docker/nginx/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      # TLS certificates and keys
+      - ./certs:/etc/nginx/certs:ro
+      # DH parameters for perfect forward secrecy
+      - ./certs/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      # Cache directory
+      - nginx_cache:/var/cache/nginx
+    ports:
+      # HTTP (for Let's Encrypt ACME challenges)
+      - "80:80"
+      # HTTPS
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - frontend_tier
+      - backend_tier
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=nginx,environment=production"
+    security_opt:
+      - no-new-privileges:true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Volumes
+# ─────────────────────────────────────────────────────────────────────────────
+# Named volumes for persistent data across container restarts
+# Labels enable backup tooling to identify critical data
+
+volumes:
+  # PostgreSQL primary data storage
+  postgres_data:
+    driver: local
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "postgres"
+
+  # PostgreSQL backup directory
+  postgres_backups:
+    driver: local
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "postgres"
+
+  # Redis data storage (persistence)
+  redis_data:
+    driver: local
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "redis"
+
+  # Redis backup directory
+  redis_backups:
+    driver: local
+    labels:
+      com.witylogix.backup: "true"
+      com.witylogix.service: "redis"
+
+  # Nginx cache layer
+  nginx_cache:
+    driver: local
+    labels:
+      com.witylogix.service: "nginx"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────────────────────
+# Isolated networks for security and performance
+# - frontend_tier: Accessible services (Nginx, Dashboard)
+# - backend_tier: Application services (API, Worker)
+# - db_tier: Data services (PostgreSQL, Redis)
+
+networks:
+  # Frontend network: exposed to public internet via Nginx
+  frontend_tier:
+    driver: bridge
+    labels:
+      com.witylogix.tier: "frontend"
+
+  # Backend application network: internal only
+  backend_tier:
+    driver: bridge
+    labels:
+      com.witylogix.tier: "backend"
+
+  # Database network: restricted to data services and their clients
+  db_tier:
+    driver: bridge
+    labels:
+      com.witylogix.tier: "database"

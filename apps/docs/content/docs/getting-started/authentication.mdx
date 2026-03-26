@@ -1,0 +1,66 @@
+---
+title: Authentication
+description: Learn how to authenticate API requests to Witylogix
+---
+
+# Authentication
+
+All Witylogix API requests require authentication using your API key. This guide covers authentication methods and best practices.
+
+## API Key Authentication
+
+The simplest way to authenticate is with your API key:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.witylogix.com/v1/shipments
+```
+
+### Getting Your API Key
+
+1. Log in to dashboard.witylogix.com
+2. Go to Settings → API Keys
+3. Click "Create New Key"
+4. Copy the key and save it securely
+
+### Using API Key in Code
+
+**JavaScript:**
+
+```javascript
+import { WitylogixClient } from '@witylogix/sdk';
+
+const client = new WitylogixClient({
+  apiKey: process.env.WITYLOGIX_API_KEY,
+});
+```
+
+**Python:**
+
+```python
+from witylogix import WitylogixClient
+
+client = WitylogixClient(api_key=os.environ['WITYLOGIX_API_KEY'])
+```
+
+## Test vs Production Keys
+
+- **Test Keys** (start with `sk_test_`) - Use for development and testing
+- **Live Keys** (start with `sk_live_`) - Use in production
+
+Never commit API keys to version control. Use environment variables.
+
+## Security Best Practices
+
+1. Never share your API key
+2. Rotate keys regularly
+3. Use separate keys for different environments
+4. Revoke keys that are compromised
+5. Use least-privilege principles
+
+## Errors
+
+- **401 Unauthorized** - Invalid or missing API key
+- **403 Forbidden** - API key doesn't have required permissions
+
+See [Error Handling](/docs/guides/error-handling) for more info.

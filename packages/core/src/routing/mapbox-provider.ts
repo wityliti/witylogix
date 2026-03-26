@@ -48,7 +48,7 @@ export class MapboxProvider implements RoutingProvider {
       throw new Error(`Mapbox Directions API error: ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
+    const data = await res.json() as Record<string, any>;
     const route = data.routes?.[0];
 
     if (!route) {
@@ -84,7 +84,7 @@ export class MapboxProvider implements RoutingProvider {
       throw new Error(`Mapbox Matrix API error: ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
+    const data = await res.json() as Record<string, any>;
 
     return {
       durations: data.durations,
@@ -102,7 +102,7 @@ export class MapboxProvider implements RoutingProvider {
       throw new Error(`Mapbox Geocoding API error: ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
+    const data = await res.json() as Record<string, any>;
 
     return (data.features || []).map((f: any) => ({
       latitude: f.geometry.coordinates[1],
@@ -125,7 +125,7 @@ export class MapboxProvider implements RoutingProvider {
       throw new Error(`Mapbox Reverse Geocoding error: ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
+    const data = await res.json() as Record<string, any>;
     const feature = data.features?.[0];
 
     if (!feature) {

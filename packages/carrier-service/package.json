@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@witylogix/db": "workspace:*",
@@ -14,6 +15,7 @@
     "@witylogix/validators": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
   }
 }

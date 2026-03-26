@@ -1,0 +1,64 @@
+---
+title: Shipments
+description: Physical packages and parcels — dimensions, weight, labels, and proof of delivery.
+---
+
+# Shipments
+
+A **Shipment** represents the physical package or parcel being delivered. While an [Order](/docs/core-concepts/orders) captures the business intent, a Shipment tracks the physical item through the logistics pipeline.
+
+## Shipment vs Order
+
+| | Order | Shipment |
+|--|-------|----------|
+| Purpose | Business record | Physical tracking |
+| Contains | Items, pricing, customer | Dimensions, weight, tracking |
+| Lifecycle | created → delivered | picked_up → delivered |
+| Relation | One order → one or more shipments | One shipment → one order |
+
+An order with multiple items may result in multiple shipments if items ship from different warehouses or require different vehicle types.
+
+## Tracking
+
+Each shipment receives a unique tracking number in the format `WLX-XXXXXXXXXX`. Tracking data includes:
+
+- **GPS coordinates** — real-time location updates from the driver's device
+- **Status checkpoints** — timestamped events (picked up, in transit, out for delivery, delivered)
+- **ETA** — estimated time of arrival, updated dynamically based on traffic and route progress
+- **Proof of delivery** — photo, signature, or PIN confirmation
+
+```typescript
+const tracking = await client.shipments.track('WLX-1234567890');
+// {
+//   status: 'in_transit',
+//   currentLocation: { lat: 30.2672, lng: -97.7431 },
+//   eta: '2026-03-15T14:30:00Z',
+//   checkpoints: [...]
+// }
+```
+
+## Labels and Documents
+
+Generate shipping labels, packing slips, and customs documents:
+
+```typescript
+const label = await client.shipments.generateLabel('ship_abc123', {
+  format: 'pdf',
+  size: '4x6',
+});
+```
+
+## Proof of Delivery
+
+Witylogix supports multiple proof-of-delivery methods:
+
+- **Photo** — driver captures a photo at the delivery location
+- **Signature** — recipient signs on the driver's device
+- **PIN code** — recipient provides a PIN sent via SMS
+- **OTP** — one-time password verification
+
+## Related
+
+- [Orders](/docs/core-concepts/orders) — the business entity that creates shipments
+- [Drivers](/docs/core-concepts/drivers) — who carries the shipment
+- [Routes](/docs/core-concepts/routes) — how shipments are grouped for delivery

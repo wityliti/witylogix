@@ -1,0 +1,102 @@
+# Witylogix Platform Code Ownership
+#
+# This file defines code ownership and required reviewers for different parts of the codebase.
+# When a pull request modifies files in any of these paths, the corresponding team/person
+# is automatically requested for review.
+#
+# Format: <path> <owner> [additional-owners]
+#
+# Owners can be:
+#   - GitHub users: @username
+#   - Teams: @org/team-name
+#   - Email addresses: user@example.com
+
+# Root configuration files and infrastructure
+* @devops-team
+/.github @devops-team
+/.github/workflows @devops-team
+/infra @devops-team
+/docker @devops-team
+/Dockerfile @devops-team
+/.gitleaks.toml @devops-team
+/railway.json @devops-team
+
+# Backend core packages and API
+/packages/core @backend-team
+/packages/db @backend-team
+/packages/db/prisma @backend-team
+/packages/validators @backend-team
+/packages/framework @backend-team
+/packages/workflows @backend-team
+/packages/sdk @backend-team
+/packages/carrier-service @backend-team
+/apps/api @backend-team
+
+# Frontend and dashboard
+/packages/checkout-widget @frontend-team
+/apps/dashboard @frontend-team
+/apps/customer-portal @frontend-team
+/apps/driver-app @frontend-team
+/apps/tracking-page @frontend-team
+
+# Shopify integration
+/apps/shopify-app @shopify-team @backend-team
+
+# Types and utilities (shared across teams)
+/packages/types @backend-team
+/packages/extension-core @backend-team
+
+# Documentation
+/docs @docs-team @backend-team
+/CONTRIBUTING.md @devops-team @backend-team
+/README.md @docs-team
+
+# Build and package configuration
+/turbo.json @devops-team @backend-team
+/pnpm-workspace.yaml @devops-team @backend-team
+/pnpm-lock.yaml @devops-team
+/tsconfig.json @backend-team @frontend-team
+/vitest.config.ts @backend-team
+
+# CI/CD pipeline configuration
+/.github/workflows/ci.yml @devops-team
+/.github/workflows/release.yml @devops-team
+/.github/workflows/preview.yml @devops-team @frontend-team
+/.github/workflows/docker.yml @devops-team
+/.github/CODEOWNERS @devops-team
+/.github/dependabot.yml @devops-team
+
+# Environment and secrets
+/.env.example @devops-team
+/.env.integration.example @devops-team
+.env @devops-team
+.env.test @devops-team
+
+# Scripts and automation
+/scripts @devops-team @backend-team
+/infra/scripts @devops-team
+
+# Tests and integration tests
+/tests @backend-team @frontend-team
+/tests/e2e @frontend-team
+/playwright.config.ts @frontend-team
+
+# Docker and container configuration
+/docker-compose.yml @devops-team
+/.dockerignore @devops-team
+
+# Version and changelog
+/CHANGELOG.md @backend-team
+/package.json @devops-team @backend-team
+
+# Extensions (optional modules)
+/extensions @backend-team
+/extensions/woocommerce-block @backend-team
+
+# Git configuration
+.gitignore @devops-team
+.gitleaks.toml @devops-team
+
+# Default fallback for any unspecified files
+# This ensures at least core team reviews all changes
+* @backend-team

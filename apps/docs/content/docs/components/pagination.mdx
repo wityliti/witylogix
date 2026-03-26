@@ -1,0 +1,377 @@
+---
+title: Pagination
+description: Navigation component for splitting content across multiple pages
+---
+
+# Pagination
+
+The Pagination component provides navigation between pages of content with page size selector, ellipsis for large page counts, and boundary state handling.
+
+## Import
+
+```typescript
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis
+} from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+import { useState } from "react"
+
+const [page, setPage] = useState(1)
+const totalPages = 10
+
+<Pagination>
+  <PaginationContent>
+    <PaginationPrevious
+      onClick={() => setPage(Math.max(1, page - 1))}
+      disabled={page === 1}
+    />
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+      <PaginationItem key={pageNum}>
+        <PaginationLink
+          isActive={page === pageNum}
+          onClick={() => setPage(pageNum)}
+        >
+          {pageNum}
+        </PaginationLink>
+      </PaginationItem>
+    ))}
+    <PaginationNext
+      onClick={() => setPage(Math.min(totalPages, page + 1))}
+      disabled={page === totalPages}
+    />
+  </PaginationContent>
+</Pagination>
+```
+
+## Structure
+
+| Component | Purpose | Notes |
+|-----------|---------|-------|
+| **Pagination** | Container | Wraps pagination controls |
+| **PaginationContent** | Controls wrapper | Flexbox container |
+| **PaginationItem** | Page button wrapper | Semantic list item |
+| **PaginationLink** | Page number button | Clickable page link |
+| **PaginationPrevious** | Previous button | Navigates to previous page |
+| **PaginationNext** | Next button | Navigates to next page |
+| **PaginationEllipsis** | Ellipsis indicator | Shows omitted pages |
+
+## Props Table
+
+### Pagination / PaginationContent
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | string | - | Additional classes |
+| `children` | ReactNode | - | Pagination items |
+
+### PaginationLink
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isActive` | boolean | false | Mark current page |
+| `disabled` | boolean | false | Disable click |
+| `onClick` | function | - | Click handler |
+| `href` | string | - | Optional link href |
+| `className` | string | - | Additional classes |
+
+### PaginationPrevious / PaginationNext
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `disabled` | boolean | false | Disable navigation |
+| `onClick` | function | - | Click handler |
+| `className` | string | - | Additional classes |
+
+## Usage Examples
+
+### Simple Pagination
+
+```tsx
+import { useState } from "react"
+
+const [page, setPage] = useState(1)
+const totalPages = 5
+
+<Pagination>
+  <PaginationContent>
+    <PaginationPrevious
+      onClick={() => setPage(Math.max(1, page - 1))}
+      disabled={page === 1}
+    />
+    <PaginationItem>
+      <PaginationLink isActive>{page}</PaginationLink>
+    </PaginationItem>
+    <PaginationNext
+      onClick={() => setPage(Math.min(totalPages, page + 1))}
+      disabled={page === totalPages}
+    />
+  </PaginationContent>
+</Pagination>
+```
+
+### Pagination with Ellipsis
+
+```tsx
+import { useState } from "react"
+
+const [page, setPage] = useState(1)
+const totalPages = 100
+
+const getPageNumbers = () => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  const pages = []
+  pages.push(1)
+
+  if (page > 3) pages.push(-1) // Ellipsis marker
+
+  const start = Math.max(2, page - 1)
+  const end = Math.min(totalPages - 1, page + 1)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  if (page < totalPages - 2) pages.push(-1) // Ellipsis marker
+  pages.push(totalPages)
+
+  return pages
+}
+
+<Pagination>
+  <PaginationContent>
+    <PaginationPrevious
+      onClick={() => setPage(Math.max(1, page - 1))}
+      disabled={page === 1}
+    />
+    {getPageNumbers().map((pageNum, idx) => (
+      <PaginationItem key={idx}>
+        {pageNum === -1 ? (
+          <PaginationEllipsis />
+        ) : (
+          <PaginationLink
+            isActive={page === pageNum}
+            onClick={() => setPage(pageNum)}
+          >
+            {pageNum}
+          </PaginationLink>
+        )}
+      </PaginationItem>
+    ))}
+    <PaginationNext
+      onClick={() => setPage(Math.min(totalPages, page + 1))}
+      disabled={page === totalPages}
+    />
+  </PaginationContent>
+</Pagination>
+```
+
+### Pagination with Page Size
+
+```tsx
+import { useState } from "react"
+import { Select } from "@/components/ui"
+
+const [page, setPage] = useState(1)
+const [pageSize, setPageSize] = useState(10)
+const totalItems = 250
+const totalPages = Math.ceil(totalItems / pageSize)
+
+<div className="space-y-4">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <label>Items per page:</label>
+      <Select value={pageSize} onChange={(e) => {
+        setPageSize(Number(e.target.value))
+        setPage(1)
+      }}>
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+        <option value={100}>100</option>
+      </Select>
+    </div>
+    <p className="text-sm text-slate-400">
+      Page {page} of {totalPages}
+    </p>
+  </div>
+
+  {/* Table with data */}
+
+  <Pagination>
+    <PaginationContent>
+      <PaginationPrevious
+        onClick={() => setPage(Math.max(1, page - 1))}
+        disabled={page === 1}
+      />
+      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => (
+        <PaginationItem key={i}>
+          <PaginationLink
+            isActive={page === i + 1}
+            onClick={() => setPage(i + 1)}
+          >
+            {i + 1}
+          </PaginationLink>
+        </PaginationItem>
+      ))}
+      <PaginationNext
+        onClick={() => setPage(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+      />
+    </PaginationContent>
+  </Pagination>
+</div>
+```
+
+### Pagination with Info Text
+
+```tsx
+import { useState } from "react"
+
+const [page, setPage] = useState(1)
+const itemsPerPage = 20
+const totalItems = 450
+const totalPages = Math.ceil(totalItems / itemsPerPage)
+const startItem = (page - 1) * itemsPerPage + 1
+const endItem = Math.min(page * itemsPerPage, totalItems)
+
+<div className="space-y-4">
+  {/* Content */}
+
+  <div className="flex items-center justify-between">
+    <p className="text-sm text-slate-400">
+      Showing {startItem} to {endItem} of {totalItems} results
+    </p>
+
+    <Pagination>
+      <PaginationContent>
+        <PaginationPrevious
+          onClick={() => setPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+        />
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+          <PaginationItem key={pageNum}>
+            <PaginationLink
+              isActive={page === pageNum}
+              onClick={() => setPage(pageNum)}
+            >
+              {pageNum}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+        <PaginationNext
+          onClick={() => setPage(Math.min(totalPages, page + 1))}
+          disabled={page === totalPages}
+        />
+      </PaginationContent>
+    </Pagination>
+  </div>
+</div>
+```
+
+### Go to Page Input
+
+```tsx
+import { useState } from "react"
+import { Input, Button } from "@/components/ui"
+
+const [page, setPage] = useState(1)
+const [inputValue, setInputValue] = useState("")
+const totalPages = 50
+
+const handleGoToPage = () => {
+  const pageNum = parseInt(inputValue)
+  if (pageNum > 0 && pageNum <= totalPages) {
+    setPage(pageNum)
+    setInputValue("")
+  }
+}
+
+<div className="space-y-4">
+  <Pagination>
+    <PaginationContent>
+      <PaginationPrevious
+        onClick={() => setPage(Math.max(1, page - 1))}
+        disabled={page === 1}
+      />
+      <PaginationItem>
+        <PaginationLink isActive>{page}</PaginationLink>
+      </PaginationItem>
+      <PaginationNext
+        onClick={() => setPage(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+      />
+    </PaginationContent>
+  </Pagination>
+
+  <div className="flex gap-2">
+    <Input
+      type="number"
+      min={1}
+      max={totalPages}
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
+      placeholder="Go to page"
+      size="sm"
+    />
+    <Button onClick={handleGoToPage} size="sm">
+      Go
+    </Button>
+  </div>
+</div>
+```
+
+## Accessibility
+
+- Semantic HTML (nav, ol/li)
+- ARIA labels on navigation buttons
+- Keyboard navigation (Tab, Enter)
+- Current page indicator (aria-current="page")
+- Disabled state for boundary buttons
+- Clear focus visible styling
+- Screen reader friendly
+
+## Best Practices
+
+1. Disable Previous/Next at boundaries
+2. Show current page clearly
+3. Include page count information
+4. Use ellipsis for large page counts
+5. Support keyboard navigation
+6. Show items per page selector
+7. Preserve scroll position on page change
+8. Use proper ARIA labels
+9. Test with screen readers
+10. Consider mobile layout (show fewer pages)
+
+## Styling
+
+### Compact Pagination
+
+```tsx
+<Pagination className="justify-center gap-1">
+  {/* Smaller gaps between items */}
+</Pagination>
+```
+
+### Customized Colors
+
+```tsx
+<PaginationLink
+  isActive={page === pageNum}
+  className={page === pageNum ? "bg-blue-600" : ""}
+>
+  {pageNum}
+</PaginationLink>
+```

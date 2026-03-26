@@ -1,0 +1,1007 @@
+---
+title: Testing Guide
+description: Comprehensive testing guide for Witylogix. Learn about our test pyramid, patterns, tools, and how to write effective tests.
+---
+
+# Testing Guide
+
+Testing is a core part of development at Witylogix. This guide covers our testing philosophy, tools, patterns, and best practices.
+
+## Test Pyramid
+
+We follow the **test pyramid** principle: many unit tests, fewer integration tests, and minimal end-to-end tests.
+
+```
+        E2E Tests (Selenium, Playwright)
+           Integration Tests
+              Route Tests (API)
+                 Unit Tests
+```
+
+### Layer Breakdown
+
+| Layer | Scope | Tools | Coverage Goal | Speed |
+|-------|-------|-------|--------------|-------|
+| **Unit** | Core modules, business logic, utilities | Vitest | 80%+ | Fast (ms) |
+| **Route** | API endpoints, handlers | Vitest + Supertest | 100% | Fast (10s of ms) |
+| **Integration** | Multi-step flows, across services | Vitest + @testing-library/react | 60%+ | Moderate (100s of ms) |
+| **E2E** | Full user journeys, real browser | Playwright/Selenium | 20% (critical paths only) | Slow (seconds) |
+
+### Coverage Goals
+
+- **Core modules** (`apps/api/src/services/`): **80%+ coverage**
+- **API routes** (`apps/api/src/routes/`): **100% coverage** (achieved!)
+- **React components** (`apps/web/components/`, `packages/ui/`): **70%+ coverage**
+- **Overall**: **75%+**
+
+## Testing Tools
+
+### Vitest
+
+Unit and integration test runner. Fast, ESM-native, Vite-powered.
+
+```bash
+# Run all tests
+pnpm test
+
+# Run in watch mode (great for development)
+pnpm test:watch
+
+# Run specific file
+pnpm test src/services/orders/__tests__/createOrder.test.ts
+
+# Run with coverage
+pnpm test:coverage
+```
+
+**Configuration** (`vitest.config.ts`):
+```typescript
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['**/*.test.ts', '**/*.spec.ts'],
+    },
+  },
+});
+```
+
+### @testing-library/react
+
+React testing utilities. Tests components from the user's perspective.
+
+```bash
+pnpm add -D @testing-library/react @testing-library/jest-dom @testing-library/user-event
+```
+
+Key methods:
+- `render()`: Mount component in test
+- `screen.getByRole()`: Find elements by accessibility role
+- `screen.getByLabelText()`: Find form fields by label
+- `userEvent.click()`: Simulate user interactions
+- `waitFor()`: Wait for async updates
+
+### Supertest
+
+HTTP assertion library for testing APIs.
+
+```bash
+pnpm add -D supertest @types/supertest
+```
+
+Makes HTTP requests to your API and asserts responses:
+```typescript
+import request from 'supertest';
+
+const res = await request(app)
+  .post('/api/users')
+  .send({ email: 'test@example.com' })
+  .expect(201);
+```
+
+## Unit Test Pattern
+
+Unit tests focus on **pure functions** and **isolated business logic**.
+
+### Example: Shipping Service
+
+**File**: `apps/api/src/services/shipping/calculateShipping.ts`
+
+```typescript
+export interface ShippingInput {
+  weight: number; // kg
+  distance: number; // km
+  service: 'standard' | 'express';
+}
+
+export interface ShippingResult {
+  cost: number;
+  estimatedDays: number;
+}
+
+const STANDARD_RATE = 0.5; // $/kg/km
+const EXPRESS_RATE = 1.2;
+const STANDARD_DAYS = 7;
+const EXPRESS_DAYS = 2;
+
+export function calculateShipping(input: ShippingInput): ShippingResult {
+  const { weight, distance, service } = input;
+
+  if (weight <= 0 || distance <= 0) {
+    throw new Error('Invalid weight or distance');
+  }
+
+  const rate = service === 'express' ? EXPRESS_RATE : STANDARD_RATE;
+  const cost = Math.round((weight * distance * rate + Number.EPSILON) * 100) / 100;
+  const estimatedDays = service === 'express' ? EXPRESS_DAYS : STANDARD_DAYS;
+
+  return { cost, estimatedDays };
+}
+```
+
+**Test File**: `apps/api/src/services/shipping/__tests__/calculateShipping.test.ts`
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { calculateShipping } from '../calculateShipping';
+
+describe('calculateShipping', () => {
+  describe('standard shipping', () => {
+    it('calculates cost correctly', () => {
+      const result = calculateShipping({
+        weight: 2,
+        distance: 100,
+        service: 'standard',
+      });
+
+      // 2 * 100 * 0.5 = 100
+      expect(result.cost).toBe(100);
+      expect(result.estimatedDays).toBe(7);
+    });
+
+    it('handles fractional weights', () => {
+      const result = calculateShipping({
+        weight: 0.5,
+        distance: 50,
+        service: 'standard',
+      });
+
+      // 0.5 * 50 * 0.5 = 12.5
+      expect(result.cost).toBe(12.5);
+    });
+  });
+
+  describe('express shipping', () => {
+    it('uses express rate', () => {
+      const result = calculateShipping({
+        weight: 1,
+        distance: 100,
+        service: 'express',
+      });
+
+      // 1 * 100 * 1.2 = 120
+      expect(result.cost).toBe(120);
+      expect(result.estimatedDays).toBe(2);
+    });
+  });
+
+  describe('validation', () => {
+    it('throws on invalid weight', () => {
+      expect(() =>
+        calculateShipping({
+          weight: 0,
+          distance: 100,
+          service: 'standard',
+        })
+      ).toThrow('Invalid weight or distance');
+    });
+
+    it('throws on negative distance', () => {
+      expect(() =>
+        calculateShipping({
+          weight: 1,
+          distance: -10,
+          service: 'standard',
+        })
+      ).toThrow('Invalid weight or distance');
+    });
+  });
+});
+```
+
+### Best Practices
+
+- **Test one thing per test** (single responsibility)
+- **Use descriptive test names** (what is being tested + expected behavior)
+- **Group related tests** with `describe()` blocks
+- **Use `beforeEach` and `afterEach`** for setup/cleanup
+- **Avoid testing implementation details** (test behavior, not code)
+- **Mock external dependencies** (Prisma, HTTP, etc.)
+
+## Prisma Mocking Pattern
+
+When testing services that use Prisma, mock the database client.
+
+### Correct Pattern
+
+**File**: `apps/api/src/services/users/__tests__/getUser.test.ts`
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getUser } from '../getUser';
+
+// Mock the Prisma module
+vi.mock('@/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    order: {
+      findMany: vi.fn(),
+    },
+  },
+}));
+
+import { prisma } from '@/prisma';
+
+describe('getUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns user by id', async () => {
+    const mockUser = {
+      id: '1',
+      email: 'test@example.com',
+      name: 'John Doe',
+      createdAt: new Date(),
+    };
+
+    // Use (prisma as any) for dynamic property access
+    (prisma as any).user.findUnique.mockResolvedValue(mockUser);
+
+    const result = await getUser('1');
+
+    expect(result).toEqual(mockUser);
+    expect((prisma as any).user.findUnique).toHaveBeenCalledWith({
+      where: { id: '1' },
+    });
+  });
+
+  it('throws when user not found', async () => {
+    (prisma as any).user.findUnique.mockResolvedValue(null);
+
+    await expect(getUser('999')).rejects.toThrow('User not found');
+  });
+
+  it('includes related orders', async () => {
+    const mockUser = {
+      id: '1',
+      email: 'test@example.com',
+      orders: [
+        { id: 'order-1', total: 100 },
+        { id: 'order-2', total: 250 },
+      ],
+    };
+
+    (prisma as any).user.findUnique.mockResolvedValue(mockUser);
+
+    const result = await getUser('1', { includeOrders: true });
+
+    expect(result.orders).toHaveLength(2);
+  });
+});
+```
+
+### Key Points
+
+- **Always mock** the entire `@/prisma` module at the top
+- **Use `(prisma as any).modelName`** to access mocked methods
+- **Clear mocks** between tests with `vi.clearAllMocks()`
+- **Verify calls** with `toHaveBeenCalledWith()`
+- **Mock return values** with `mockResolvedValue()` or `mockRejectedValue()`
+
+## Route Test Pattern
+
+Routes handle HTTP requests. Test them with Fastify and Supertest.
+
+### Example: Create Order Route
+
+**File**: `apps/api/src/routes/orders/__tests__/createOrder.test.ts`
+
+```typescript
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import Fastify from 'fastify';
+import { createOrderHandler } from '../index';
+
+// Mock Prisma
+vi.mock('@/prisma', () => ({
+  prisma: {
+    order: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+    },
+  },
+}));
+
+import { prisma } from '@/prisma';
+
+describe('POST /orders', () => {
+  let app: ReturnType<typeof Fastify>;
+
+  beforeEach(async () => {
+    // Create a fresh Fastify app for each test
+    app = Fastify();
+
+    // Register the route
+    app.post('/orders', createOrderHandler);
+
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+    vi.clearAllMocks();
+  });
+
+  it('creates an order successfully', async () => {
+    const mockOrder = {
+      id: 'order-1',
+      userId: 'user-1',
+      total: 150.00,
+      status: 'pending',
+      createdAt: new Date(),
+    };
+
+    (prisma as any).order.create.mockResolvedValue(mockOrder);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/orders',
+      payload: {
+        userId: 'user-1',
+        items: [
+          { productId: 'prod-1', quantity: 2, price: 75 },
+        ],
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.json()).toEqual(mockOrder);
+  });
+
+  it('returns 400 on invalid input', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/orders',
+      payload: {
+        userId: 'user-1',
+        items: [], // Empty items
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().message).toMatch(/items/i);
+  });
+
+  it('returns 401 if user not authenticated', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/orders',
+      payload: {
+        userId: 'user-1',
+        items: [{ productId: 'prod-1', quantity: 1, price: 50 }],
+      },
+      // Missing authorization header
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('returns 500 on database error', async () => {
+    (prisma as any).order.create.mockRejectedValue(
+      new Error('Database error')
+    );
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/orders',
+      payload: {
+        userId: 'user-1',
+        items: [{ productId: 'prod-1', quantity: 1, price: 50 }],
+      },
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+});
+```
+
+### Key Points
+
+- **Create fresh app** for each test (`beforeEach`)
+- **Clean up** app and mocks after each test (`afterEach`)
+- **Use `app.inject()`** to make HTTP requests (no actual network)
+- **Test all status codes** (success, validation errors, auth, errors)
+- **Verify response shape** with `response.json()`
+- **Mock external services** (Prisma, payments, etc.)
+
+## Integration Test Pattern
+
+Integration tests verify multiple components work together.
+
+### Example: Order Fulfillment Flow
+
+**File**: `apps/api/src/services/orders/__tests__/fulfillOrder.integration.test.ts`
+
+```typescript
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { fulfillOrder } from '../fulfillOrder';
+
+// Mock external services
+vi.mock('@/prisma');
+vi.mock('@/services/inventory');
+vi.mock('@/services/shipping');
+vi.mock('@/services/notifications');
+
+import { prisma } from '@/prisma';
+import { reserveInventory, releaseInventory } from '@/services/inventory';
+import { createShipment } from '@/services/shipping';
+import { sendNotification } from '@/services/notifications';
+
+describe('Order Fulfillment Flow', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('fulfills order end-to-end', async () => {
+    const orderId = 'order-123';
+
+    // Setup: Mock the order
+    const mockOrder = {
+      id: orderId,
+      userId: 'user-1',
+      items: [
+        { productId: 'prod-1', quantity: 2 },
+        { productId: 'prod-2', quantity: 1 },
+      ],
+      shippingAddress: {
+        street: '123 Main St',
+        city: 'Boston',
+        zip: '02101',
+      },
+    };
+
+    (prisma as any).order.findUnique.mockResolvedValue(mockOrder);
+    (prisma as any).order.update.mockResolvedValue({
+      ...mockOrder,
+      status: 'fulfilled',
+    });
+
+    // Mock inventory reservation
+    (reserveInventory as any).mockResolvedValue({ reserved: true });
+
+    // Mock shipment creation
+    (createShipment as any).mockResolvedValue({
+      shipmentId: 'ship-456',
+      trackingNumber: 'TRK123456',
+    });
+
+    // Mock notification
+    (sendNotification as any).mockResolvedValue({ sent: true });
+
+    // Execute
+    const result = await fulfillOrder(orderId);
+
+    // Verify the flow
+    expect(result.status).toBe('fulfilled');
+    expect((reserveInventory as any)).toHaveBeenCalledWith(mockOrder.items);
+    expect((createShipment as any)).toHaveBeenCalledWith({
+      orderId,
+      address: mockOrder.shippingAddress,
+    });
+    expect((sendNotification as any)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        type: 'order_fulfilled',
+      })
+    );
+  });
+
+  it('releases inventory if shipment creation fails', async () => {
+    const orderId = 'order-123';
+
+    const mockOrder = {
+      id: orderId,
+      items: [{ productId: 'prod-1', quantity: 2 }],
+    };
+
+    (prisma as any).order.findUnique.mockResolvedValue(mockOrder);
+    (reserveInventory as any).mockResolvedValue({ reserved: true });
+
+    // Shipment fails
+    (createShipment as any).mockRejectedValue(
+      new Error('Shipping service unavailable')
+    );
+
+    // Execute and expect error
+    await expect(fulfillOrder(orderId)).rejects.toThrow('Shipping');
+
+    // Verify rollback: inventory was reserved but then released
+    expect((reserveInventory as any)).toHaveBeenCalled();
+    expect((releaseInventory as any)).toHaveBeenCalledWith(mockOrder.items);
+
+    // Notification not sent
+    expect((sendNotification as any)).not.toHaveBeenCalled();
+  });
+});
+```
+
+### Best Practices
+
+- **Test the happy path** and **error scenarios**
+- **Verify side effects** (database updates, notifications, etc.)
+- **Test rollback logic** when operations fail
+- **Mock at service boundaries** (Prisma, HTTP, etc.)
+- **Use descriptive test names** that explain the flow
+
+## Component Test Pattern
+
+Test React components from the user's perspective.
+
+### Example: Order Card Component
+
+**File**: `apps/web/components/__tests__/OrderCard.test.tsx`
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { OrderCard } from '../OrderCard';
+
+describe('OrderCard', () => {
+  const mockOrder = {
+    id: 'order-1',
+    total: 150.00,
+    status: 'pending' as const,
+    createdAt: new Date('2024-01-15'),
+    items: [
+      { id: '1', name: 'Widget A', price: 100 },
+      { id: '2', name: 'Widget B', price: 50 },
+    ],
+  };
+
+  it('renders order information', () => {
+    const { container } = render(<OrderCard order={mockOrder} />);
+
+    expect(screen.getByText('Order #order-1')).toBeInTheDocument();
+    expect(screen.getByText('$150.00')).toBeInTheDocument();
+    expect(screen.getByText('pending')).toBeInTheDocument();
+  });
+
+  it('displays all order items', () => {
+    render(<OrderCard order={mockOrder} />);
+
+    expect(screen.getByText('Widget A')).toBeInTheDocument();
+    expect(screen.getByText('Widget B')).toBeInTheDocument();
+    expect(screen.getByText('$100')).toBeInTheDocument();
+    expect(screen.getByText('$50')).toBeInTheDocument();
+  });
+
+  it('shows formatted date', () => {
+    render(<OrderCard order={mockOrder} />);
+
+    expect(screen.getByText(/January 15, 2024/)).toBeInTheDocument();
+  });
+
+  it('calls onClick callback when clicked', async () => {
+    const handleClick = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <OrderCard order={mockOrder} onClick={handleClick} />
+    );
+
+    const card = screen.getByRole('button', { name: /order #order-1/i });
+    await user.click(card);
+
+    expect(handleClick).toHaveBeenCalledWith(mockOrder.id);
+  });
+
+  it('shows status badge with correct color', () => {
+    const { rerender } = render(<OrderCard order={mockOrder} />);
+
+    let badge = screen.getByRole('status');
+    expect(badge).toHaveClass('bg-yellow-100'); // pending
+
+    // Update status to completed
+    rerender(
+      <OrderCard
+        order={{ ...mockOrder, status: 'completed' }}
+      />
+    );
+
+    badge = screen.getByRole('status');
+    expect(badge).toHaveClass('bg-green-100'); // completed
+  });
+
+  it('renders loading state', () => {
+    render(<OrderCard order={mockOrder} isLoading={true} />);
+
+    expect(screen.getByRole('status', { hidden: true })).toHaveClass('animate-pulse');
+  });
+});
+```
+
+### Key Points
+
+- **Test user interactions** with `userEvent` (not `fireEvent`)
+- **Query elements by accessibility** (getByRole, getByLabelText)
+- **Avoid implementation details** (testing className, internal state)
+- **Test props** and **callbacks**
+- **Test visual states** (loading, error, disabled)
+- **Verify accessibility** (ARIA attributes, roles)
+
+## Coverage Goals and Metrics
+
+We track test coverage to ensure code quality:
+
+```bash
+# Generate coverage report
+pnpm test:coverage
+
+# Output
+# -------------------|---------|---------|---------|---------|-------------------
+# File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+# -------------------|---------|---------|---------|---------|-------------------
+# services/          |   85.2% |   78.1% |   89.4% |   85.0% |
+# routes/            |  100.0% |   98.5% |  100.0% |  100.0% | ← API routes!
+# components/        |   72.3% |   68.9% |   75.1% |   72.1% |
+# -------------------|---------|---------|---------|---------|-------------------
+# TOTAL              |   79.5% |   75.2% |   82.0% |   79.3% |
+# -------------------|---------|---------|---------|---------|-------------------
+```
+
+### Current Achievement
+
+- ✅ **API routes**: 100% coverage
+- ✅ **Core services**: 85%+ coverage
+- ✅ **Overall**: 79.5% coverage
+
+## Running Tests
+
+### Development
+
+```bash
+# Run all tests
+pnpm test
+
+# Watch mode (re-runs on file changes)
+pnpm test:watch
+
+# Watch specific file
+pnpm test:watch src/services/orders
+
+# Debug mode (open in browser at chrome://inspect)
+pnpm test:debug
+```
+
+### Coverage
+
+```bash
+# Generate coverage report
+pnpm test:coverage
+
+# Generate and open HTML report
+pnpm test:coverage && open coverage/index.html
+```
+
+### Before Committing
+
+```bash
+# Run full test suite
+pnpm test
+
+# Verify coverage meets requirements
+pnpm test:coverage
+
+# Lint and format
+pnpm lint --fix
+pnpm format
+```
+
+## CI Integration
+
+Tests run automatically on every pull request via GitHub Actions.
+
+**File**: `.github/workflows/test.yml`
+
+```yaml
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm test:coverage
+      - run: pnpm build
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+```
+
+**What gets checked:**
+- ✅ Linting (ESLint)
+- ✅ Formatting (Prettier)
+- ✅ All tests pass
+- ✅ Coverage maintained (79%+)
+- ✅ Build succeeds
+
+**Status badge** in PR:
+- 🟢 All checks pass → Ready to merge
+- 🔴 Test fails → Fix before merging
+
+## Writing a New Test: Step-by-Step
+
+Let's write a complete test from scratch.
+
+### Step 1: Identify What to Test
+
+We're adding a `validateEmail()` function in `apps/api/src/services/validation/`.
+
+```typescript
+// validateEmail.ts
+export function validateEmail(email: string): boolean {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(email);
+}
+```
+
+### Step 2: Create Test File
+
+Create `validateEmail.test.ts` **next to the source file**:
+
+```
+src/services/validation/
+├── validateEmail.ts      ← Source
+└── validateEmail.test.ts ← Test
+```
+
+### Step 3: Import and Set Up
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { validateEmail } from '../validateEmail';
+
+describe('validateEmail', () => {
+  // Tests go here
+});
+```
+
+### Step 4: Write Happy Path Test
+
+```typescript
+describe('validateEmail', () => {
+  it('validates correct email format', () => {
+    const result = validateEmail('user@example.com');
+    expect(result).toBe(true);
+  });
+});
+```
+
+### Step 5: Write Edge Cases
+
+```typescript
+describe('validateEmail', () => {
+  it('validates correct email format', () => {
+    const result = validateEmail('user@example.com');
+    expect(result).toBe(true);
+  });
+
+  it('rejects empty string', () => {
+    expect(validateEmail('')).toBe(false);
+  });
+
+  it('rejects email without @', () => {
+    expect(validateEmail('userexample.com')).toBe(false);
+  });
+
+  it('rejects email without domain extension', () => {
+    expect(validateEmail('user@example')).toBe(false);
+  });
+
+  it('rejects email with spaces', () => {
+    expect(validateEmail('user @example.com')).toBe(false);
+  });
+
+  it('accepts subdomain emails', () => {
+    expect(validateEmail('user@mail.example.co.uk')).toBe(true);
+  });
+
+  it('accepts emails with plus addressing', () => {
+    expect(validateEmail('user+tag@example.com')).toBe(true);
+  });
+});
+```
+
+### Step 6: Run Tests
+
+```bash
+pnpm test src/services/validation/validateEmail.test.ts
+```
+
+### Step 7: Verify Coverage
+
+```bash
+pnpm test:coverage
+
+# Should show:
+# validateEmail.ts | 100% Stmts | 100% Branch | 100% Funcs | 100% Lines
+```
+
+### Step 8: Check Test Quality
+
+- ✅ All assertions pass
+- ✅ Coverage is high (100%)
+- ✅ Test names are descriptive
+- ✅ Related tests grouped with `describe()`
+
+## Testing Best Practices
+
+### Do's ✅
+
+- ✅ Write tests **first** or **alongside** code
+- ✅ Test **behavior**, not implementation
+- ✅ Use **descriptive test names**
+- ✅ **Group related tests** with `describe()`
+- ✅ **Mock external dependencies**
+- ✅ Test **error cases** and **edge cases**
+- ✅ Keep tests **isolated** and **independent**
+- ✅ Use **beforeEach** for setup
+- ✅ Verify **side effects** (database, notifications)
+
+### Don'ts ❌
+
+- ❌ Don't test **implementation details** (private methods, internal state)
+- ❌ Don't **skip flaky tests** (fix the root cause)
+- ❌ Don't **over-mock** (mock only at service boundaries)
+- ❌ Don't test **third-party libraries** (trust they work)
+- ❌ Don't use **fake timers** unless necessary
+- ❌ Don't test **UI details** (exact className, pixel dimensions)
+- ❌ Don't commit with **failing tests**
+
+## Common Testing Patterns
+
+### Testing Async Functions
+
+```typescript
+it('resolves with user data', async () => {
+  const user = await fetchUser('1');
+  expect(user.id).toBe('1');
+});
+
+it('rejects on not found', async () => {
+  await expect(fetchUser('999')).rejects.toThrow('Not found');
+});
+```
+
+### Testing with Setup/Teardown
+
+```typescript
+describe('Database operations', () => {
+  let db: Database;
+
+  beforeEach(async () => {
+    db = new Database();
+    await db.connect();
+  });
+
+  afterEach(async () => {
+    await db.disconnect();
+  });
+
+  it('stores and retrieves data', async () => {
+    await db.insert('users', { id: '1', name: 'John' });
+    const user = await db.findOne('users', { id: '1' });
+    expect(user.name).toBe('John');
+  });
+});
+```
+
+### Testing with Multiple Scenarios
+
+```typescript
+describe('calculateTax', () => {
+  const testCases = [
+    { amount: 100, rate: 0.1, expected: 10 },
+    { amount: 50, rate: 0.05, expected: 2.5 },
+    { amount: 1000, rate: 0.08, expected: 80 },
+  ];
+
+  testCases.forEach(({ amount, rate, expected }) => {
+    it(`calculates ${expected} for ${amount} at ${rate}`, () => {
+      expect(calculateTax(amount, rate)).toBe(expected);
+    });
+  });
+});
+```
+
+## Debugging Tests
+
+### View Console Logs
+
+```typescript
+it('processes order', async () => {
+  console.log('Debug: Order input', order);
+  const result = await processOrder(order);
+  console.log('Debug: Result', result);
+  expect(result.status).toBe('processed');
+});
+```
+
+### Debug in VSCode
+
+Add to `.vscode/launch.json`:
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Debug Tests",
+  "runtimeExecutable": "pnpm",
+  "runtimeArgs": ["test:debug"],
+  "console": "integratedTerminal",
+  "internalConsoleOptions": "neverOpen"
+}
+```
+
+Then press `F5` to debug.
+
+### Use `test.only` and `test.skip`
+
+```typescript
+// Only run this test
+it.only('test this specific case', () => {
+  // ...
+});
+
+// Skip this test
+it.skip('fix this later', () => {
+  // ...
+});
+```
+
+## Summary
+
+Testing at Witylogix follows these principles:
+
+1. **Test Pyramid**: Many unit tests, fewer integration tests
+2. **High Coverage**: 80%+ core, 100% API routes
+3. **Fast Feedback**: Tests run in seconds, on every commit
+4. **Clear Patterns**: Unit, Route, Integration, Component tests
+5. **Quality Assurance**: Tests catch bugs before production
+
+Happy testing! 🚀

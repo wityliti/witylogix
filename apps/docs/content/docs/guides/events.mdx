@@ -1,0 +1,810 @@
+---
+title: Event System Guide
+description: Emit and consume domain events with Redis Streams backend, webhooks with HMAC-SHA256, and circuit breaker retry logic.
+---
+
+# Event System Guide
+
+The Witylogix event system provides a TypedEventBus for reliable event publishing and consumption. It uses Redis Streams for durable storage and delivery, with support for webhooks, dead-letter queues, and middleware pipelines.
+
+## Architecture Overview
+
+The event system consists of:
+
+1. **TypedEventBus**: Type-safe event publishing and subscription
+2. **Redis Streams Backend**: Durable event storage (XADD, XREADGROUP, XACK)
+3. **InMemory Fallback**: For development environments
+4. **Domain Events**: 18 pre-defined event types
+5. **Middleware Pipeline**: Pre/post-processing hooks
+6. **Outbound Webhooks**: Send events to external systems
+7. **Dead-Letter Queue**: Handle failed event deliveries
+
+## TypedEventBus
+
+The event bus provides type-safe event emission and subscription with full TypeScript support.
+
+### Event Types
+
+```typescript
+// Domain events (18 types)
+export type DomainEvent =
+  | OrderCreatedEvent
+  | OrderUpdatedEvent
+  | OrderCancelledEvent
+  | DeliveryStartedEvent
+  | DeliveryCompletedEvent
+  | DeliveryFailedEvent
+  | DriverAssignedEvent
+  | DriverUnassignedEvent
+  | RouteOptimizedEvent
+  | RouteExecutedEvent
+  | CustomerCreatedEvent
+  | CustomerUpdatedEvent
+  | VehicleAddedEvent
+  | VehicleRemovedEvent
+  | PaymentProcessedEvent
+  | InvoiceGeneratedEvent
+  | WebhookDeliveredEvent
+  | WebhookFailedEvent;
+
+// Event interface
+interface OrderCreatedEvent {
+  type: 'order.created';
+  aggregateId: string; // orderId
+  aggregateType: 'order';
+  version: number;
+  timestamp: Date;
+  userId: string;
+  shopId: string;
+  data: {
+    orderId: string;
+    customerId: string;
+    items: Array<{ sku: string; quantity: number }>;
+    deliveryAddress: string;
+    totalAmount: number;
+  };
+  metadata: {
+    source: 'api' | 'mobile' | 'admin';
+    correlationId: string;
+    traceId: string;
+  };
+}
+```
+
+### Publishing Events
+
+```typescript
+import { eventBus } from '@witylogix/events';
+
+// Emit a single event
+await eventBus.emit({
+  type: 'order.created',
+  aggregateId: 'ord_123',
+  aggregateType: 'order',
+  version: 1,
+  userId: 'user_456',
+  shopId: 'shop_123',
+  data: {
+    orderId: 'ord_123',
+    customerId: 'cust_789',
+    items: [{ sku: 'ITEM1', quantity: 2 }],
+    deliveryAddress: '123 Main St, Springfield',
+    totalAmount: 49.99,
+  },
+  metadata: {
+    source: 'api',
+    correlationId: 'corr_abc123',
+    traceId: 'trace_xyz789',
+  },
+});
+
+// Emit multiple events atomically
+await eventBus.emitBatch([
+  {
+    type: 'order.created',
+    aggregateId: 'ord_124',
+    // ...
+  },
+  {
+    type: 'order.created',
+    aggregateId: 'ord_125',
+    // ...
+  },
+]);
+```
+
+### Subscribing to Events
+
+```typescript
+// Subscribe to specific event type
+eventBus.subscribe('order.created', async (event) => {
+  console.log(`New order: ${event.data.orderId}`);
+
+  // Trigger notifications
+  await notificationService.send({
+    templateId: 'order-confirmation',
+    variables: {
+      orderId: event.data.orderId,
+      customerName: event.data.customerId,
+    },
+  });
+
+  // Emit derived event
+  await eventBus.emit({
+    type: 'notification.queued',
+    aggregateId: event.aggregateId,
+    aggregateType: 'order',
+    // ...
+  });
+});
+
+// Subscribe to multiple event types
+eventBus.subscribe(['order.created', 'order.updated'], async (event) => {
+  console.log(`Order event: ${event.type}`);
+});
+
+// Subscribe to all events
+eventBus.subscribe('*', async (event) => {
+  console.log(`Event received: ${event.type}`);
+});
+```
+
+## Redis Streams Backend
+
+Events are stored durably in Redis Streams, ensuring no event loss.
+
+### Stream Configuration
+
+```typescript
+import Redis from 'ioredis';
+import { RedisEventBus } from '@witylogix/events';
+
+const redis = new Redis({
+  host: 'localhost',
+  port: 6379,
+  enableOfflineQueue: true,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+});
+
+const eventBus = new RedisEventBus({
+  redis,
+  namespace: 'witylogix:events',
+  streams: {
+    // Stream configuration
+    maxlen: 1000000, // Max 1M events per stream
+    trimStrategy: 'approximate', // ~approximation for performance
+  },
+  consumerGroup: {
+    name: 'api-server',
+    createIfMissing: true,
+    initialId: '0', // Start from beginning
+  },
+});
+```
+
+### Stream Operations
+
+The bus uses three core Redis Stream operations:
+
+**XADD** - Add event to stream:
+```typescript
+// Adds event to stream and returns event ID
+XADD witylogix:events:orders * \
+  type "order.created" \
+  aggregateId "ord_123" \
+  data "{...}" \
+  timestamp "2026-03-10T12:34:56Z"
+```
+
+**XREADGROUP** - Read from consumer group:
+```typescript
+// Consumer reads from assigned partition, ensures ordering
+XREADGROUP GROUP api-server consumer-1 STREAMS \
+  witylogix:events:orders >
+```
+
+**XACK** - Acknowledge delivery:
+```typescript
+// Marks event as processed, removes from pending list
+XACK witylogix:events:orders api-server event-id-123
+```
+
+### Partitioning by Shop
+
+Events are partitioned by shop for scalable consumption:
+
+```typescript
+// Events from shop_123 go to stream partition
+const streamId = `${config.namespace}:shop_${event.shopId}`;
+
+await redis.xadd(streamId, '*', 'event', JSON.stringify(event));
+
+// Consumers read from their assigned partition
+const [streamId, events] = await redis.xreadgroup(
+  'GROUP',
+  'api-server',
+  'consumer-1',
+  'STREAMS',
+  `witylogix:events:shop_123`,
+  '>'
+);
+```
+
+## InMemory Fallback
+
+For development and testing, use the InMemory backend:
+
+```typescript
+import { InMemoryEventBus } from '@witylogix/events';
+
+const eventBus = new InMemoryEventBus({
+  namespace: 'witylogix:events',
+  persistPath: './.dev/events.json', // Optional: persist to file
+});
+
+// Same API as RedisEventBus, but everything stays in memory
+await eventBus.emit(event);
+eventBus.subscribe('order.created', handler);
+```
+
+## Domain Events Catalog
+
+Witylogix defines 18 domain events covering the complete order and delivery lifecycle.
+
+### Order Events
+
+```typescript
+// order.created
+{
+  type: 'order.created',
+  data: { orderId, customerId, items, deliveryAddress, totalAmount }
+}
+
+// order.updated
+{
+  type: 'order.updated',
+  data: { orderId, changes }
+}
+
+// order.cancelled
+{
+  type: 'order.cancelled',
+  data: { orderId, reason }
+}
+```
+
+### Delivery Events
+
+```typescript
+// delivery.started
+{
+  type: 'delivery.started',
+  data: { orderId, driverId, startedAt, estimatedDuration }
+}
+
+// delivery.completed
+{
+  type: 'delivery.completed',
+  data: { orderId, driverId, completedAt, distance, duration }
+}
+
+// delivery.failed
+{
+  type: 'delivery.failed',
+  data: { orderId, driverId, failureReason, failedAt }
+}
+```
+
+### Driver Events
+
+```typescript
+// driver.assigned
+{
+  type: 'driver.assigned',
+  data: { driverId, orderId, assignmentId, location }
+}
+
+// driver.unassigned
+{
+  type: 'driver.unassigned',
+  data: { driverId, orderId, reason }
+}
+```
+
+### Route Events
+
+```typescript
+// route.optimized
+{
+  type: 'route.optimized',
+  data: { orderId, driverId, route, distance, duration }
+}
+
+// route.executed
+{
+  type: 'route.executed',
+  data: { driverId, route, completedWaypoints, failedWaypoints }
+}
+```
+
+### Customer and Vehicle Events
+
+```typescript
+// customer.created
+{
+  type: 'customer.created',
+  data: { customerId, email, phone, address }
+}
+
+// customer.updated
+{
+  type: 'customer.updated',
+  data: { customerId, changes }
+}
+
+// vehicle.added
+{
+  type: 'vehicle.added',
+  data: { vehicleId, driverId, type, capacity, licensePlate }
+}
+
+// vehicle.removed
+{
+  type: 'vehicle.removed',
+  data: { vehicleId, reason }
+}
+```
+
+### Payment and Billing Events
+
+```typescript
+// payment.processed
+{
+  type: 'payment.processed',
+  data: { orderId, amount, paymentMethod, transactionId, status }
+}
+
+// invoice.generated
+{
+  type: 'invoice.generated',
+  data: { invoiceId, orderId, amount, dueDate }
+}
+```
+
+### Webhook Events
+
+```typescript
+// webhook.delivered
+{
+  type: 'webhook.delivered',
+  data: { webhookId, eventType, statusCode, deliveryTime }
+}
+
+// webhook.failed
+{
+  type: 'webhook.failed',
+  data: { webhookId, eventType, error, attempt, nextRetryAt }
+}
+```
+
+## Middleware Pipeline
+
+Middleware allows pre/post-processing of events before delivery.
+
+### Creating Middleware
+
+```typescript
+import { EventMiddleware } from '@witylogix/events';
+
+// Logging middleware
+const loggingMiddleware: EventMiddleware = {
+  name: 'logging',
+  order: 100, // Runs early
+
+  async before(event, context) {
+    console.log(`[${event.type}] Processing event:`, {
+      aggregateId: event.aggregateId,
+      shopId: event.shopId,
+    });
+  },
+
+  async after(event, context, result) {
+    console.log(`[${event.type}] Event processed in ${result.duration}ms`);
+  },
+
+  async onError(event, context, error) {
+    console.error(`[${event.type}] Error: ${error.message}`);
+  },
+};
+
+// Enrichment middleware
+const enrichmentMiddleware: EventMiddleware = {
+  name: 'enrichment',
+  order: 200,
+
+  async before(event, context) {
+    // Fetch and attach related data
+    const customer = await db.customer.findUnique({
+      where: { id: event.data.customerId },
+    });
+
+    event.data.customerName = customer.name;
+    event.data.customerEmail = customer.email;
+  },
+};
+
+// Validation middleware
+const validationMiddleware: EventMiddleware = {
+  name: 'validation',
+  order: 50,
+
+  async before(event, context) {
+    // Validate event structure
+    if (!event.aggregateId || !event.type) {
+      throw new Error('Invalid event structure');
+    }
+  },
+};
+```
+
+### Registering Middleware
+
+```typescript
+const eventBus = new RedisEventBus(config);
+
+eventBus.use(loggingMiddleware);
+eventBus.use(enrichmentMiddleware);
+eventBus.use(validationMiddleware);
+```
+
+## Dead-Letter Queue
+
+Failed events are moved to a DLQ for inspection and manual recovery.
+
+### DLQ Configuration
+
+```typescript
+const eventBus = new RedisEventBus({
+  redis,
+  namespace: 'witylogix:events',
+  dlq: {
+    enabled: true,
+    streamName: 'witylogix:events:dlq',
+    maxRetries: 3,
+    retryBackoff: {
+      type: 'exponential',
+      initialDelay: 1000,
+      maxDelay: 30000,
+    },
+  },
+});
+```
+
+### Monitoring DLQ
+
+```typescript
+// Get DLQ statistics
+const stats = await eventBus.getDLQStats();
+console.log(stats);
+// {
+//   totalFailed: 42,
+//   byEventType: {
+//     'order.created': 10,
+//     'delivery.started': 32,
+//   },
+//   oldestEvent: '2026-03-09T10:00:00Z',
+// }
+
+// Process DLQ events
+const dlqEvents = await eventBus.readDLQ({ limit: 10 });
+
+for (const dlqEvent of dlqEvents) {
+  console.log(`Failed event: ${dlqEvent.event.type}`);
+  console.log(`Error: ${dlqEvent.error.message}`);
+  console.log(`Attempts: ${dlqEvent.attempts}`);
+
+  // Manually requeue after fixing issue
+  if (dlqEvent.event.type === 'order.created') {
+    await eventBus.requeueFromDLQ(dlqEvent.id);
+  }
+}
+
+// Clear DLQ after manual review
+await eventBus.clearDLQ();
+```
+
+## Outbound Webhooks
+
+Send events to external systems with reliable delivery, HMAC signing, and circuit breaker retry.
+
+### Webhook Configuration
+
+```typescript
+const webhook = {
+  id: 'wh_123',
+  shopId: 'shop_123',
+  url: 'https://external.example.com/webhooks/orders',
+  events: ['order.created', 'order.updated', 'delivery.completed'],
+  active: true,
+  signing: {
+    algorithm: 'sha256',
+    secret: 'wh_secret_xyz',
+  },
+  retry: {
+    maxAttempts: 5,
+    initialDelay: 1000,
+    maxDelay: 60000,
+    backoffMultiplier: 2,
+  },
+};
+```
+
+### HMAC-SHA256 Signing
+
+All webhook deliveries are signed with HMAC-SHA256 for verification:
+
+```typescript
+// Server (Witylogix) sends webhook
+const crypto = require('crypto');
+
+const payload = JSON.stringify(event);
+const timestamp = Math.floor(Date.now() / 1000);
+const signature = crypto
+  .createHmac('sha256', webhook.signing.secret)
+  .update(`${timestamp}.${payload}`)
+  .digest('hex');
+
+const headers = {
+  'X-Witylogix-Signature': signature,
+  'X-Witylogix-Timestamp': timestamp,
+  'Content-Type': 'application/json',
+};
+
+await fetch(webhook.url, {
+  method: 'POST',
+  headers,
+  body: payload,
+});
+```
+
+```typescript
+// Client (external system) verifies webhook
+const crypto = require('crypto');
+const express = require('express');
+
+app.post('/webhooks/orders', (req, res) => {
+  const signature = req.headers['x-witylogix-signature'];
+  const timestamp = req.headers['x-witylogix-timestamp'];
+  const payload = JSON.stringify(req.body);
+
+  // Verify signature
+  const expected = crypto
+    .createHmac('sha256', process.env.WEBHOOK_SECRET)
+    .update(`${timestamp}.${payload}`)
+    .digest('hex');
+
+  if (signature !== expected) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  // Verify timestamp (prevent replay attacks)
+  const requestTime = parseInt(timestamp) * 1000;
+  const now = Date.now();
+  if (Math.abs(now - requestTime) > 5 * 60 * 1000) {
+    return res.status(401).json({ error: 'Request too old' });
+  }
+
+  // Process webhook
+  console.log('Received verified webhook:', req.body);
+
+  res.json({ received: true });
+});
+```
+
+### Retry with Circuit Breaker
+
+Failed deliveries are retried with exponential backoff and circuit breaker protection:
+
+```typescript
+// Circuit breaker config
+const circuitBreaker = {
+  failureThreshold: 5, // Fail 5x then open circuit
+  successThreshold: 2, // 2 successes to close circuit
+  timeout: 60000, // 60s timeout in open state
+};
+
+// Delivery attempt logic
+async function deliverWebhook(webhook, event) {
+  if (isCircuitBreakerOpen(webhook)) {
+    // Circuit is open, don't try
+    scheduleRetry(webhook, event, circuitBreaker.timeout);
+    return;
+  }
+
+  try {
+    const response = await fetch(webhook.url, {
+      method: 'POST',
+      headers: { /* signed headers */ },
+      body: JSON.stringify(event),
+      timeout: 30000,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      recordSuccess(webhook); // Close circuit if needed
+      emitEvent({
+        type: 'webhook.delivered',
+        data: { webhookId: webhook.id, statusCode: response.status },
+      });
+    } else {
+      recordFailure(webhook);
+      scheduleRetry(webhook, event, calculateBackoff(attempt));
+    }
+  } catch (error) {
+    recordFailure(webhook);
+    scheduleRetry(webhook, event, calculateBackoff(attempt));
+
+    emitEvent({
+      type: 'webhook.failed',
+      data: {
+        webhookId: webhook.id,
+        error: error.message,
+        attempt,
+        nextRetryAt,
+      },
+    });
+  }
+}
+
+// Exponential backoff calculation
+function calculateBackoff(attempt, config) {
+  const delay = Math.min(
+    config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1),
+    config.maxDelay
+  );
+  return delay + Math.random() * delay * 0.1; // Add jitter
+}
+```
+
+## Event-Webhook Bridge
+
+The event-webhook bridge automatically forwards domain events to registered webhooks.
+
+### Setting Up the Bridge
+
+```typescript
+import { EventWebhookBridge } from '@witylogix/events';
+
+const bridge = new EventWebhookBridge({
+  eventBus,
+  webhookProvider: webhookService,
+  maxConcurrentDeliveries: 50,
+});
+
+// Start processing events -> webhook deliveries
+bridge.start();
+
+// Subscribe to webhook delivery events
+eventBus.subscribe('webhook.delivered', async (event) => {
+  console.log(`Webhook delivered to ${event.data.webhookId}`);
+});
+
+eventBus.subscribe('webhook.failed', async (event) => {
+  console.error(
+    `Webhook failed: ${event.data.webhookId}, attempt ${event.data.attempt}`
+  );
+});
+```
+
+### Filtering Events
+
+```typescript
+// Webhook receives only subscribed events
+const webhook = {
+  url: 'https://external.example.com/webhooks',
+  events: [
+    'order.created',
+    'order.updated', // Specific events
+    'delivery.*', // Wildcard: all delivery events
+    '*', // All events
+  ],
+};
+
+// Bridge filters events before delivery
+if (!webhook.events.some((pattern) => matchesPattern(event.type, pattern))) {
+  // Skip delivery, event doesn't match subscription
+  return;
+}
+```
+
+## Complete Event Workflow Example
+
+Here's a complete workflow showing event emission, subscription, and webhook delivery:
+
+```typescript
+async function processNewOrder(orderId) {
+  // 1. Create order in database
+  const order = await db.order.create({
+    data: { /* ... */ },
+  });
+
+  // 2. Emit domain event
+  await eventBus.emit({
+    type: 'order.created',
+    aggregateId: order.id,
+    aggregateType: 'order',
+    version: 1,
+    userId: req.user.id,
+    shopId: req.user.shopId,
+    data: {
+      orderId: order.id,
+      customerId: order.customerId,
+      items: order.items,
+      deliveryAddress: order.address,
+      totalAmount: order.total,
+    },
+    metadata: {
+      source: 'api',
+      correlationId: req.correlationId,
+      traceId: req.traceId,
+    },
+  });
+
+  return order;
+}
+
+// 3. Subscriber handles event
+eventBus.subscribe('order.created', async (event) => {
+  // Send confirmation notification
+  await notificationService.send({
+    shopId: event.shopId,
+    channels: ['email', 'sms'],
+    recipients: { email: event.data.customerId },
+    templateId: 'order-confirmation',
+    variables: {
+      orderId: event.data.orderId,
+      totalAmount: event.data.totalAmount,
+    },
+  });
+
+  // Trigger workflow
+  await workflowRegistry.enqueue('assign-driver', {
+    orderId: event.data.orderId,
+  });
+});
+
+// 4. Bridge forwards to webhooks
+// Webhooks configured for 'order.created' automatically receive:
+// POST https://external.example.com/webhooks
+// Headers: X-Witylogix-Signature, X-Witylogix-Timestamp
+// Body: { type: 'order.created', data: {...} }
+
+// 5. External system verifies and processes webhook
+app.post('/webhooks', (req, res) => {
+  // Verify HMAC signature
+  const verified = verifyWebhookSignature(req);
+
+  if (!verified) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  console.log('Processing order:', req.body.data.orderId);
+
+  // Update external system (e.g., sync to ERP, trigger fulfillment)
+  res.json({ received: true });
+});
+```
+
+## Summary
+
+The Witylogix event system provides:
+
+- **Type-safe events**: Full TypeScript support with domain event catalog
+- **Durable storage**: Redis Streams backend with partitioned consumption
+- **Reliable delivery**: Webhook delivery with HMAC signing and circuit breaker
+- **Middleware pipeline**: Pre/post-processing hooks for enrichment and validation
+- **Dead-letter queue**: Failed event recovery and inspection
+- **Event-webhook bridge**: Automatic forwarding to registered webhooks
+
+For API reference, see [Event System API Reference](/docs/api/events).
+
+For webhook setup, see [Webhook Configuration Guide](/docs/guides/webhooks).

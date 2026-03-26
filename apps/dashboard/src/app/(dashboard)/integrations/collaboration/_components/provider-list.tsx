@@ -1,0 +1,220 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Settings,
+  Power,
+  Plus,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Copy,
+} from 'lucide-react';
+
+interface Provider {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  status: 'connected' | 'disconnected' | 'error';
+  lastSync?: string;
+  connectedAt?: string;
+  config: {
+    channels?: string[];
+    webhookUrl?: string;
+    apiKey?: string;
+  };
+}
+
+interface ProviderListProps {
+  providers: Provider[];
+  selectedProvider: string | null;
+  onSelectProvider: (id: string | null) => void;
+}
+
+export function ProviderList({
+  providers,
+  selectedProvider,
+  onSelectProvider,
+}: ProviderListProps) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {providers.map((provider) => (
+        <Card
+          key={provider.id}
+          className={cn(
+            'cursor-pointer transition-all hover:border-blue-500/50',
+            selectedProvider === provider.id && 'border-blue-500/80 bg-[#1a1a2e]'
+          )}
+          onClick={() =>
+            onSelectProvider(
+              selectedProvider === provider.id ? null : provider.id
+            )
+          }
+        >
+          <CardContent className="pt-6">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="text-blue-500 text-2xl">{provider.icon}</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">
+                    {provider.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {provider.status === 'connected' &&
+                      `Connected on ${provider.connectedAt}`}
+                    {provider.status === 'disconnected' && 'Not connected'}
+                    {provider.status === 'error' && 'Connection error'}
+                  </p>
+                </div>
+              </div>
+              <Badge
+                variant={
+                  provider.status === 'connected'
+                    ? 'success'
+                    : provider.status === 'error'
+                      ? 'danger'
+                      : 'default'
+                }
+                className={cn(
+                  provider.status === 'connected' &&
+                    'bg-green-500/20 text-green-400 border border-green-500/50',
+                  provider.status === 'error' &&
+                    'bg-red-500/20 text-red-400 border border-red-500/50',
+                  provider.status === 'disconnected' &&
+                    'bg-gray-500/20 text-gray-400'
+                )}
+              >
+                {provider.status === 'connected' && (
+                  <>
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Connected
+                  </>
+                )}
+                {provider.status === 'disconnected' && 'Disconnected'}
+                {provider.status === 'error' && (
+                  <>
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Error
+                  </>
+                )}
+              </Badge>
+            </div>
+
+            {/* Status & Sync Info */}
+            {provider.status === 'connected' && (
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase">
+                    Last Sync
+                  </p>
+                  <p className="text-sm text-white mt-1 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-green-500" />
+                    {provider.lastSync}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase">
+                    Channels
+                  </p>
+                  <p className="text-sm text-white mt-1">
+                    {provider.config.channels?.length || 0} channels
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Config Details (Expanded) */}
+            {selectedProvider === provider.id && provider.status === 'connected' && (
+              <div className="space-y-4 mb-6 pb-6 border-b border-[#1e1e2e]">
+                {provider.config.channels && provider.config.channels.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+                      Connected Channels
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {provider.config.channels.map((channel) => (
+                        <Badge
+                          key={channel}
+                          variant="secondary"
+                          className="bg-[#12121a] text-white"
+                        >
+                          {channel}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {provider.config.webhookUrl && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+                      Webhook URL
+                    </p>
+                    <div className="bg-[#12121a] rounded-lg p-3 flex items-center justify-between font-mono text-xs">
+                      <span className="text-gray-500 truncate">
+                        {provider.config.webhookUrl.substring(0, 50)}...
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-500 hover:bg-[#1a1a2e]"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              {provider.status === 'connected' ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configure
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                  >
+                    <Power className="w-4 h-4 mr-2" />
+                    Disconnect
+                  </Button>
+                </>
+              ) : provider.status === 'error' ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="flex-1 bg-blue-500 hover:bg-blue-500/90"
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Reconnect
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="flex-1 bg-blue-500 hover:bg-blue-500/90"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Connect
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}

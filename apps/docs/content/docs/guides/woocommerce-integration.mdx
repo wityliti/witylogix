@@ -1,0 +1,506 @@
+---
+title: WooCommerce Integration Guide
+description: Set up WooCommerce integration with Witylogix. Configure REST API credentials, webhooks, and data mapping for seamless order and product synchronization.
+---
+
+# WooCommerce Integration Guide
+
+Witylogix integrates with WooCommerce through the REST API v3, enabling real-time order and product synchronization with HMAC-SHA256 webhook validation.
+
+## Prerequisites
+
+- WooCommerce 5.0+ with REST API enabled
+- WordPress admin access
+- API consumer key and secret
+- HTTPS enabled (required for webhooks)
+- Ngrok or tunnel tool for local testing
+
+## Step 1: Generate WooCommerce API Credentials
+
+### 1.1 Create API Consumer
+
+1. Log in to your WordPress admin dashboard
+2. Navigate to **WooCommerce** → **Settings** → **Advanced** → **REST API**
+3. Click **Create an API key**
+4. Fill in the form:
+   - **Description**: "Witylogix Integration"
+   - **User**: Select your admin user
+   - **Permissions**: Choose **Read/Write** for full access
+
+5. Click **Generate API key**
+6. You'll receive:
+   - **Consumer Key**
+   - **Consumer Secret**
+
+### 1.2 Configure API Permissions
+
+In the API key settings, enable permissions for:
+- **Read/Write** - Orders
+- **Read/Write** - Products
+- **Read/Write** - Customers
+- **Read/Write** - Webhooks (to verify webhook creation)
+
+## Step 2: Configure Environment Variables
+
+Create a `.env` file with your WooCommerce API credentials:
+
+```bash
+# WooCommerce API Configuration
+WOOCOMMERCE_STORE_URL=https://your-store.com
+WOOCOMMERCE_CONSUMER_KEY=your_consumer_key_here
+WOOCOMMERCE_CONSUMER_SECRET=your_consumer_secret_here
+WOOCOMMERCE_WEBHOOK_SECRET=your_webhook_secret_here
+
+# App Configuration
+APP_URL=https://your-domain.com
+NGROK_URL=https://your-ngrok-url.ngrok.io (for local development)
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost/witylogix_db
+```
+
+## Step 3: WooCommerce REST API Credentials
+
+### 3.1 Using Basic Auth
+
+WooCommerce REST API uses HTTP Basic Authentication. Create a Base64-encoded header:
+
+```typescript
+// services/woocommerceApi.ts
+import fetch from "node-fetch";
+
+const CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
+const CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET;
+const STORE_URL = process.env.WOOCOMMERCE_STORE_URL;
+
+const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString("base64");
+
+async function wooCommerceAPI<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${STORE_URL}/wp-json/wc/v3${endpoint}`;
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`WooCommerce API error: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export { wooCommerceAPI };
+```
+
+### 3.2 Fetch Orders Example
+
+```typescript
+// services/woocommerceApi.ts
+export async function fetchOrders(shopId: string): Promise<WCOrder[]> {
+  return wooCommerceAPI<WCOrder[]>("/orders?per_page=100");
+}
+
+export async function fetchOrder(orderId: string): Promise<WCOrder> {
+  return wooCommerceAPI<WCOrder>(`/orders/${orderId}`);
+}
+```
+
+## Step 4: Webhook Configuration
+
+### 4.1 Create Webhooks via REST API
+
+Instead of configuring webhooks manually, create them programmatically:
+
+```typescript
+// services/webhooks.ts
+export async function createWooCommerceWebhooks(shopId: string) {
+  const webhookTopics = [
+    "order.created",
+    "order.updated",
+    "product.created",
+    "product.updated",
+    "customer.created",
+    "customer.updated"
+  ];
+
+  for (const topic of webhookTopics) {
+    await wooCommerceAPI("/webhooks", {
+      method: "POST",
+      body: JSON.stringify({
+        name: `Witylogix - ${topic}`,
+        topic: topic,
+        delivery_url: `${process.env.NGROK_URL || process.env.APP_URL}/api/webhooks/woocommerce`,
+        active: true,
+        secret: process.env.WOOCOMMERCE_WEBHOOK_SECRET
+      })
+    });
+  }
+}
+```
+
+### 4.2 Configure Webhooks in WordPress Admin
+
+Alternatively, configure manually in WordPress:
+
+1. Go to **WooCommerce** → **Settings** → **Advanced** → **Webhooks**
+2. Click **Add webhook**
+3. Fill in details:
+   - **Name**: "Witylogix Order Sync"
+   - **Status**: Active
+   - **Topic**: Select webhook events (orders, products, customers)
+   - **Delivery URL**: `https://your-app.com/api/webhooks/woocommerce`
+   - **Secret**: Your webhook secret key
+
+4. Click **Save webhook**
+5. Repeat for each webhook topic needed
+
+## Step 5: Data Mapping
+
+### 5.1 WooCommerce Order to Witylogix Order
+
+Implement the mapping in your adapter:
+
+```typescript
+// adapters/WooCommerceAdapter.ts
+import { PlatformAdapter, Order, Product, Customer } from "@witylogix/types";
+import { wooCommerceAPI } from "../services/woocommerceApi";
+
+export class WooCommerceAdapter implements PlatformAdapter {
+  validateWebhook(payload: unknown, headers: Record<string, string>): boolean {
+    const signature = headers["x-wc-webhook-signature"];
+    const body = JSON.stringify(payload);
+    const secret = process.env.WOOCOMMERCE_WEBHOOK_SECRET;
+
+    const hash = crypto
+      .createHmac("sha256", secret)
+      .update(body)
+      .digest("base64");
+
+    return hash === signature;
+  }
+
+  getWebhookEventType(payload: unknown): string {
+    const data = payload as Record<string, any>;
+    // WooCommerce includes event data in the payload
+    return data.action || "unknown";
+  }
+
+  mapOrder(platformOrder: unknown): Order {
+    const order = platformOrder as WCOrder;
+
+    return {
+      id: `wc-${order.id}`,
+      externalId: order.id.toString(),
+      shopId: order.store_id || "",
+      customerId: order.customer_id.toString(),
+      items: order.line_items.map((item) => ({
+        sku: item.sku || "",
+        quantity: item.quantity,
+        price: parseFloat(item.price),
+        title: item.name
+      })),
+      totalPrice: parseFloat(order.total),
+      currency: order.currency || "USD",
+      status: order.status,
+      createdAt: new Date(order.date_created),
+      updatedAt: new Date(order.date_modified),
+      billingAddress: {
+        firstName: order.billing.first_name,
+        lastName: order.billing.last_name,
+        email: order.billing.email,
+        phone: order.billing.phone,
+        address: order.billing.address_1,
+        city: order.billing.city,
+        state: order.billing.state,
+        postalCode: order.billing.postcode,
+        country: order.billing.country
+      },
+      shippingAddress: {
+        firstName: order.shipping.first_name,
+        lastName: order.shipping.last_name,
+        address: order.shipping.address_1,
+        city: order.shipping.city,
+        state: order.shipping.state,
+        postalCode: order.shipping.postcode,
+        country: order.shipping.country
+      }
+    };
+  }
+
+  async fetchOrder(orderId: string, credentials: Record<string, string>): Promise<Order> {
+    const order = await wooCommerceAPI<WCOrder>(`/orders/${orderId}`);
+    return this.mapOrder(order);
+  }
+
+  mapProduct(platformProduct: unknown): Product {
+    const product = platformProduct as WCProduct;
+
+    return {
+      id: `wc-${product.id}`,
+      externalId: product.id.toString(),
+      shopId: product.store_id || "",
+      title: product.name,
+      sku: product.sku,
+      price: parseFloat(product.price),
+      description: product.description,
+      images: product.images.map((img) => img.src),
+      variants: product.variations
+        ? product.variations.map((variant) => ({
+            id: variant.id.toString(),
+            sku: variant.sku || "",
+            price: parseFloat(variant.price),
+            title: variant.name || product.name,
+            options: variant.attributes || {}
+          }))
+        : []
+    };
+  }
+
+  async fetchProducts(credentials: Record<string, string>): Promise<Product[]> {
+    const products = await wooCommerceAPI<WCProduct[]>("/products?per_page=100");
+    return products.map((p) => this.mapProduct(p));
+  }
+
+  mapCustomer(platformCustomer: unknown): Customer {
+    const customer = platformCustomer as WCCustomer;
+
+    return {
+      id: `wc-${customer.id}`,
+      externalId: customer.id.toString(),
+      shopId: customer.store_id || "",
+      email: customer.email,
+      firstName: customer.first_name,
+      lastName: customer.last_name,
+      phone: customer.billing.phone || "",
+      createdAt: new Date(customer.date_created)
+    };
+  }
+}
+```
+
+### 5.2 Webhook Event Mapping
+
+Map WooCommerce webhook topics to Witylogix events:
+
+```typescript
+// services/webhooks.ts
+export async function processWooCommerceWebhook(
+  payload: any,
+  topic: string,
+  shopId: string
+) {
+  const adapter = new WooCommerceAdapter();
+
+  // Topic format: "action.entity" (e.g., "order.created")
+  const [action, entity] = topic.split(".");
+
+  switch (topic) {
+    case "order.created":
+    case "order.updated":
+      const order = adapter.mapOrder(payload);
+      await saveOrder(shopId, order);
+      break;
+
+    case "product.created":
+    case "product.updated":
+      const product = adapter.mapProduct(payload);
+      await syncProduct(shopId, product);
+      break;
+
+    case "customer.created":
+    case "customer.updated":
+      const customer = adapter.mapCustomer(payload);
+      await syncCustomer(shopId, customer);
+      break;
+  }
+}
+```
+
+## Step 6: HMAC-SHA256 Webhook Validation
+
+WooCommerce signs webhooks with HMAC-SHA256. Validate in your webhook handler:
+
+```typescript
+// webhooks.ts
+import crypto from "crypto";
+import express from "express";
+
+const app = express();
+
+app.post(
+  "/api/webhooks/woocommerce",
+  express.json(),
+  async (req, res) => {
+    const signature = req.headers["x-wc-webhook-signature"] as string;
+    const payload = req.body;
+    const secret = process.env.WOOCOMMERCE_WEBHOOK_SECRET;
+
+    // Create HMAC-SHA256 hash of the request body
+    const hash = crypto
+      .createHmac("sha256", secret)
+      .update(JSON.stringify(payload))
+      .digest("base64");
+
+    // Compare signatures
+    if (hash !== signature) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const topic = req.headers["x-wc-webhook-topic"] as string;
+    const shopId = req.headers["x-wc-webhook-resource-id"] as string;
+
+    try {
+      await processWooCommerceWebhook(payload, topic, shopId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Webhook processing error:", error);
+      res.status(500).json({ error: "Processing failed" });
+    }
+  }
+);
+```
+
+## Step 7: Product Sync and Inventory
+
+### 7.1 Fetch Product Inventory
+
+```typescript
+// services/inventory.ts
+export async function getProductStock(productId: string): Promise<number> {
+  const product = await wooCommerceAPI<WCProduct>(`/products/${productId}`);
+  return product.stock_quantity || 0;
+}
+
+export async function updateProductStock(
+  productId: string,
+  quantity: number
+): Promise<void> {
+  await wooCommerceAPI(`/products/${productId}`, {
+    method: "PUT",
+    body: JSON.stringify({ stock_quantity: quantity })
+  });
+}
+```
+
+### 7.2 Batch Product Sync
+
+```typescript
+// services/sync.ts
+export async function syncAllProducts(shopId: string) {
+  const adapter = new WooCommerceAdapter();
+  const credentials = await getStoreCredentials(shopId);
+
+  const products = await adapter.fetchProducts(credentials);
+
+  for (const product of products) {
+    await saveProduct(shopId, product);
+  }
+}
+```
+
+## Step 8: Testing
+
+### 8.1 Test Webhook Delivery
+
+In WordPress admin, go to **WooCommerce** → **Settings** → **Advanced** → **Webhooks**:
+
+1. Click on your webhook
+2. Click **View logs**
+3. Check for successful deliveries (Status: Success)
+
+### 8.2 Simulate Webhook with curl
+
+```bash
+PAYLOAD='{"id":1,"order_number":12345,"status":"completed"}'
+SECRET="your_webhook_secret"
+SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$SECRET" -binary | base64)
+
+curl -X POST http://localhost:3000/api/webhooks/woocommerce \
+  -H "Content-Type: application/json" \
+  -H "X-WC-Webhook-Signature: $SIGNATURE" \
+  -H "X-WC-Webhook-Topic: order.created" \
+  -d "$PAYLOAD"
+```
+
+### 8.3 Monitor Sync Status
+
+Create an endpoint to check synchronization status:
+
+```typescript
+// routes/sync-status.ts
+app.get("/api/sync/woocommerce/:shopId", async (req, res) => {
+  const { shopId } = req.params;
+
+  const status = await db.query(
+    `SELECT * FROM sync_status WHERE shop_id = $1 AND source = 'woocommerce'`,
+    [shopId]
+  );
+
+  res.json({
+    lastSync: status.rows[0]?.last_sync,
+    syncedOrders: status.rows[0]?.synced_orders,
+    syncedProducts: status.rows[0]?.synced_products,
+    errors: status.rows[0]?.errors
+  });
+});
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Webhook signature invalid | Verify webhook secret matches in both WordPress and `.env` |
+| "Invalid consumer key" error | Check API credentials are correct and API consumer is active |
+| Webhooks not firing | Ensure HTTPS is enabled and your endpoint is publicly accessible |
+| Orders not syncing | Check webhook delivery logs in WordPress admin |
+| 403 Forbidden on API calls | Verify API consumer has "Read/Write" permissions |
+
+## Data Type Reference
+
+### WCOrder Interface
+
+```typescript
+interface WCOrder {
+  id: number;
+  order_number: number;
+  status: string; // pending, processing, on-hold, completed, cancelled, refunded, failed
+  currency: string;
+  date_created: string;
+  date_modified: string;
+  total: string;
+  subtotal: string;
+  total_tax: string;
+  total_shipping: string;
+  customer_id: number;
+  customer_note: string;
+  line_items: WCLineItem[];
+  billing: WCAddress;
+  shipping: WCAddress;
+}
+
+interface WCLineItem {
+  id: number;
+  name: string;
+  product_id: number;
+  variation_id: number;
+  quantity: number;
+  sku: string;
+  price: string;
+  subtotal: string;
+  subtotal_tax: string;
+}
+```
+
+## Next Steps
+
+- Set up inventory webhook to keep stock levels synchronized
+- Configure email notifications for order status changes
+- Implement order fulfillment status sync back to WooCommerce

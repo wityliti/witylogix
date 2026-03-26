@@ -1,0 +1,41 @@
+// ─── DELIVERY TIMELINE ──────────────────────────────────────────────
+// Track delivery status progression with attachments
+
+model DeliveryTimeline {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  deliveryId String @map("delivery_id") @db.Uuid
+
+  // Event: CREATED, CONFIRMED, PICKED_UP, OUT_FOR_DELIVERY, ARRIVED, DELIVERED, FAILED, RESCHEDULED, RETURNED
+  event String @map("event")
+
+  // Status: pending, confirmed, picked_up, out_for_delivery, arrived, delivered, failed, rescheduled, returned
+  status String @map("status")
+
+  description String @map("description") // Human readable event description
+
+  // Location tracking
+  latitude  Float? @map("latitude")
+  longitude Float? @map("longitude")
+
+  // Attachments (from timeline event)
+  photoUrl     String? @map("photo_url")
+  photoKey     String? @map("photo_key")
+  signatureUrl String? @map("signature_url")
+  signatureKey String? @map("signature_key")
+
+  // Metadata
+  notes    String? @map("notes")
+  metadata Json    @default("{}") // Event-specific data
+
+  // Timestamps
+  timestamp DateTime @default(now()) @map("timestamp")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([deliveryId])
+  @@index([event])
+  @@index([status])
+  @@index([timestamp])
+  @@index([deliveryId, timestamp]) // For timeline queries
+  @@map("delivery_timeline")
+}

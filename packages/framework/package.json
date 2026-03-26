@@ -1,0 +1,52 @@
+{
+  "name": "@witylogix/framework",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./workflow": {
+      "import": "./dist/workflow/index.js",
+      "require": "./dist/workflow/index.cjs",
+      "types": "./dist/workflow/index.d.ts"
+    },
+    "./container": {
+      "import": "./dist/container/index.js",
+      "require": "./dist/container/index.cjs",
+      "types": "./dist/container/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./queue": {
+      "import": "./dist/queue/index.js",
+      "require": "./dist/queue/index.cjs",
+      "types": "./dist/queue/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf dist",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@witylogix/db": "workspace:*",
+    "@witylogix/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
+  }
+}

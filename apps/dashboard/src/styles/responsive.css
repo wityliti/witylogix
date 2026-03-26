@@ -1,0 +1,462 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   Mobile-first media queries and touch-optimized styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────────────────
+   SAFE AREA INSETS (Notched devices)
+   ─────────────────────────────────────────────────────────────── */
+
+.safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-inset-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-inset-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .safe-area-inset-all {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     TOUCH TARGETS (Minimum 44x44px for mobile)
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (max-width: 768px) {
+    .touch-target {
+      min-width: 2.75rem; /* 44px */
+      min-height: 2.75rem; /* 44px */
+    }
+
+    .touch-target-sm {
+      min-width: 2.25rem; /* 36px */
+      min-height: 2.25rem; /* 36px */
+    }
+
+    .touch-target-lg {
+      min-width: 3.5rem; /* 56px */
+      min-height: 3.5rem; /* 56px */
+    }
+
+    /* Touch target minimum size for icon-only buttons */
+    button:not([class]),
+    [role="button"]:not([class]) {
+      min-height: 2.75rem;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE TYPOGRAPHY
+     ─────────────────────────────────────────────────────────────── */
+
+  /* Mobile-first, scale up on larger screens */
+  @media (min-width: 768px) {
+    .text-responsive {
+      font-size: clamp(0.875rem, 2vw, 1rem);
+    }
+
+    .text-responsive-lg {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .text-responsive-xl {
+      font-size: clamp(1.25rem, 4vw, 2rem);
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE SPACING
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (min-width: 768px) {
+    .px-responsive {
+      padding-left: clamp(1rem, 5vw, 2rem);
+      padding-right: clamp(1rem, 5vw, 2rem);
+    }
+
+    .py-responsive {
+      padding-top: clamp(1.5rem, 4vh, 2rem);
+      padding-bottom: clamp(1.5rem, 4vh, 2rem);
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     PORTRAIT/LANDSCAPE UTILITIES
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (orientation: portrait) {
+    .portrait-only {
+      display: block;
+    }
+
+    .landscape-only {
+      display: none;
+    }
+
+  }
+
+  @media (orientation: landscape) {
+    .portrait-only {
+      display: none;
+    }
+
+    .landscape-only {
+      display: block;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     REDUCED MOTION (Accessibility)
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* Disable transitions for elements with explicit motion */
+    .motion-safe {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    /* Show alternatives for motion-based interactions */
+    .motion-reduce-only {
+      display: block !important;
+    }
+
+    .motion-reduce-hidden {
+      display: none !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-safe {
+      animation: inherit;
+      transition: inherit;
+    }
+
+    .motion-reduce-only {
+      display: none;
+    }
+
+    .motion-reduce-hidden {
+      display: block;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     HIGH CONTRAST MODE (Accessibility)
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (prefers-contrast: more) {
+    .text-secondary {
+      color: var(--wl-text-primary) !important;
+    }
+
+    .border-subtle {
+      border-color: var(--wl-border-default) !important;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     DARK MODE (Explicit)
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (prefers-color-scheme: dark) {
+    .dark-mode-optimized {
+      /* Already optimized for dark mode in tailwind-tokens.css */
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     PRINT STYLES
+     ─────────────────────────────────────────────────────────────── */
+
+  @media print {
+    /* Hide interactive elements in print */
+    .no-print,
+    button,
+    [role="button"],
+    input[type="search"],
+    .sidebar,
+    .navbar,
+    nav {
+      display: none !important;
+    }
+
+    /* Optimize for printing */
+    * {
+      background: white !important;
+      color: black !important;
+      box-shadow: none !important;
+    }
+
+    a {
+      text-decoration: underline;
+    }
+
+    a[href]::after {
+      content: " (" attr(href) ")";
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      page-break-after: avoid;
+    }
+
+    img {
+      page-break-inside: avoid;
+      max-width: 100%;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    .no-page-break {
+      page-break-inside: avoid;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE TABLES
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (max-width: 768px) {
+    /* Stack table cells vertically on mobile */
+    .responsive-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .responsive-table thead {
+      display: none;
+    }
+
+    .responsive-table,
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .responsive-table tr {
+      margin-bottom: 1rem;
+      border: 1px solid var(--wl-border-subtle);
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    .responsive-table td {
+      text-align: right;
+      padding: 0.5rem 0;
+      position: relative;
+      padding-left: 50%;
+    }
+
+    .responsive-table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 50%;
+      font-weight: 600;
+      text-align: left;
+      color: var(--wl-text-secondary);
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     STICKY POSITIONING FALLBACK
+     ─────────────────────────────────────────────────────────────── */
+
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--wl-bg-surface);
+  }
+
+  .sticky-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: var(--wl-bg-surface);
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE FLEX/GRID UTILITIES
+     ─────────────────────────────────────────────────────────────── */
+
+  /* Stack vertically on mobile, horizontally on larger screens */
+  .responsive-stack {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 768px) {
+    .responsive-stack {
+      flex-direction: row;
+    }
+  }
+
+  /* Full width on mobile, constrained on desktop */
+  .responsive-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .responsive-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-container {
+      max-width: 1024px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .responsive-container {
+      max-width: 1280px;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     TOUCH-FRIENDLY SPACING
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (max-width: 1024px) {
+    /* Increase padding for touch-friendly spacing */
+    .touch-padding {
+      padding: 1rem;
+    }
+
+    /* Increase gap between items */
+    .touch-gap {
+      gap: 1.5rem;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     OVERFLOW HANDLING
+     ─────────────────────────────────────────────────────────────── */
+
+  .horizontal-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-thumb {
+    background: var(--wl-border-default);
+    border-radius: 2px;
+  }
+
+  /* ───────────────────────────────────────────────────────────────
+     VISIBILITY UTILITIES
+     ─────────────────────────────────────────────────────────────── */
+
+  @media (max-width: 640px) {
+    .hidden-sm {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 768px) {
+    .hidden-md {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .hidden-lg {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .mobile-only {
+      display: block !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .desktop-only {
+      display: block !important;
+    }
+
+    .mobile-only {
+      display: none !important;
+    }
+  }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT FOUNDATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Ensure touch-friendly interactions */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Smooth scrolling for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

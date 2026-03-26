@@ -1,0 +1,247 @@
+---
+title: API Overview
+description: Witylogix API v4 documentation with authentication, rate limits, and examples
+---
+
+# Witylogix API v4
+
+Welcome to the Witylogix API documentation. The API provides programmatic access to logistics and delivery management features including order management, route optimization, driver assignments, shipment tracking, and real-time analytics.
+
+## Base URL
+
+- **Development**: `http://localhost:8000/api/v4`
+- **Production**: `https://api.witylogix.com/v4`
+
+## API Versioning
+
+The Witylogix API uses URL-based versioning. The current stable version is `v4`. Backwards compatibility is maintained within a major version, but breaking changes may occur when upgrading to a new major version.
+
+## Authentication
+
+The API supports two authentication methods:
+
+### JWT Bearer Token
+For client applications and integrations, use JWT bearer tokens obtained via the login endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v4/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+```
+
+Include the token in the Authorization header:
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+### API Key Authentication
+For server-to-server communication, use API key authentication via the `X-API-Key` header:
+
+```bash
+curl -X GET http://localhost:8000/api/v4/orders \
+  -H "X-API-Key: sk_live_xxxxxxxxxxxxx"
+```
+
+## Rate Limiting
+
+API requests are rate-limited based on your subscription tier. Rate limit information is included in response headers:
+
+- `X-RateLimit-Limit`: Maximum requests per minute
+- `X-RateLimit-Remaining`: Requests remaining in current window
+- `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+### Rate Limit Tiers
+
+| Tier | Requests/Min | Requests/Day |
+|------|--------------|--------------|
+| FREE | 50 | 5,000 |
+| STARTER | 200 | 50,000 |
+| PRO | 500 | 500,000 |
+| ENTERPRISE | 1,000+ | Custom |
+
+When rate limit is exceeded, the API returns a `429 Too Many Requests` response with the `Retry-After` header.
+
+## Pagination
+
+List endpoints support pagination using offset and limit parameters. The response includes pagination metadata:
+
+```json
+{
+  "data": [...],
+  "total": 150,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+### Parameters
+- `limit` (default: 20, max: 100): Number of items per page
+- `offset` (default: 0): Number of items to skip
+
+### Example
+
+```bash
+# Get second page of orders (20 items per page)
+curl -X GET "http://localhost:8000/api/v4/orders?limit=20&offset=20" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+## Error Handling
+
+The API uses standard HTTP status codes and RFC 7807 Problem Details format for error responses.
+
+### Error Response Format
+
+```json
+{
+  "type": "https://api.witylogix.com/errors/invalid-request",
+  "title": "Invalid Request",
+  "status": 400,
+  "detail": "Missing required field: delivery_address",
+  "instance": "/orders",
+  "code": "ORDER_001"
+}
+```
+
+### Common Status Codes
+
+- `200 OK`: Successful request
+- `201 Created`: Resource successfully created
+- `400 Bad Request`: Invalid request parameters
+- `401 Unauthorized`: Missing or invalid authentication
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: Resource not found
+- `409 Conflict`: Resource conflict (e.g., duplicate entry)
+- `429 Too Many Requests`: Rate limit exceeded
+- `500 Internal Server Error`: Server error
+
+## Code Examples
+
+### cURL
+
+```bash
+# Login
+curl -X POST http://localhost:8000/api/v4/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password"
+  }'
+
+# List orders
+curl -X GET "http://localhost:8000/api/v4/orders?limit=10" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Create order
+curl -X POST http://localhost:8000/api/v4/orders \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "cust_123",
+    "delivery_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postal_code": "10001",
+      "country": "US"
+    },
+    "items": [
+      {
+        "product_id": "prod_456",
+        "quantity": 2
+      }
+    ]
+  }'
+```
+
+### TypeScript SDK
+
+```typescript
+import { WitylogixClient } from '@witylogix/sdk';
+
+const client = new WitylogixClient({
+  baseUrl: 'https://api.witylogix.com/v4',
+  accessToken: 'your_access_token'
+});
+
+// List orders
+const orders = await client.orders.list({
+  limit: 10,
+  status: 'pending'
+});
+
+// Create order
+const newOrder = await client.orders.create({
+  customerId: 'cust_123',
+  deliveryAddress: {
+    street: '123 Main St',
+    city: 'New York',
+    state: 'NY',
+    postalCode: '10001',
+    country: 'US'
+  },
+  items: [
+    {
+      productId: 'prod_456',
+      quantity: 2
+    }
+  ]
+});
+
+// Get order by ID
+const order = await client.orders.get('order_789');
+```
+
+### JavaScript Fetch
+
+```javascript
+// Login and get access token
+const loginResponse = await fetch(
+  'http://localhost:8000/api/v4/auth/login',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: 'user@example.com',
+      password: 'password'
+    })
+  }
+);
+
+const { access_token } = await loginResponse.json();
+
+// List orders
+const ordersResponse = await fetch(
+  'http://localhost:8000/api/v4/orders?limit=10',
+  {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${access_token}`
+    }
+  }
+);
+
+const orders = await ordersResponse.json();
+console.log(orders.data);
+```
+
+## Best Practices
+
+1. **Always use HTTPS in production** to ensure secure transmission of authentication tokens
+2. **Store tokens securely** and never commit them to version control
+3. **Implement exponential backoff** for rate-limited requests (429 responses)
+4. **Cache responses** when appropriate to reduce API calls
+5. **Monitor rate limits** using response headers to avoid hitting limits
+6. **Use pagination** for large result sets instead of fetching everything at once
+7. **Implement error handling** for all API responses
+
+## Support
+
+For API support, email support@witylogix.com or visit https://witylogix.com/support

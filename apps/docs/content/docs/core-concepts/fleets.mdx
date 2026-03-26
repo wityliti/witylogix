@@ -1,0 +1,63 @@
+---
+title: Fleets
+description: Fleet management groups — organize drivers and vehicles by region, team, or service type.
+---
+
+# Fleets
+
+A **Fleet** is an organizational group for [drivers](/docs/core-concepts/drivers) and [vehicles](/docs/core-concepts/vehicles). Fleets let you segment your delivery operations by region, service type, or business unit.
+
+## Use Cases
+
+| Scenario | Fleet Structure |
+|----------|----------------|
+| Regional operations | "Austin Fleet", "Houston Fleet", "Dallas Fleet" |
+| Service tiers | "Same-Day Fleet", "Standard Fleet", "Freight Fleet" |
+| Client-dedicated | "Amazon Fleet", "Shopify Merchants Fleet" |
+| Vehicle type | "Bike Couriers", "Van Fleet", "Truck Fleet" |
+
+## Fleet Properties
+
+- **Name** — descriptive name for the fleet
+- **Zone** — geographic [delivery zone](/docs/core-concepts/places) assignment
+- **Drivers** — list of assigned drivers
+- **Vehicles** — list of assigned vehicles
+- **Dispatch rules** — auto-dispatch strategy and priority settings
+
+```typescript
+const fleet = await client.fleets.create({
+  name: 'Downtown Austin Express',
+  zoneId: 'zone_downtown_atx',
+  dispatchStrategy: 'nearest',
+  maxDrivers: 25,
+});
+
+// Assign drivers to fleet
+await client.fleets.addDriver('fleet_abc', 'driver_123');
+await client.fleets.addVehicle('fleet_abc', 'veh_456');
+```
+
+## Fleet Dashboard
+
+Each fleet has its own dashboard view showing:
+
+- **Active drivers** — currently on-duty with real-time map view
+- **Active routes** — in-progress routes with completion percentage
+- **Pending orders** — orders waiting for dispatch within the fleet's zone
+- **Performance** — aggregated metrics (on-time %, success rate, avg delivery time)
+
+## Auto-Dispatch
+
+When a new order falls within a fleet's zone, auto-dispatch assigns it based on the fleet's strategy:
+
+- **Nearest** — assigns to the closest available driver
+- **Least busy** — assigns to the driver with the fewest active stops
+- **Round robin** — distributes evenly across all active drivers
+- **Manual** — requires dispatcher to assign manually
+
+## Related
+
+- [Drivers](/docs/core-concepts/drivers) — drivers belong to fleets
+- [Vehicles](/docs/core-concepts/vehicles) — vehicles are assigned to fleets
+- [Places](/docs/core-concepts/places) — fleets are linked to delivery zones
+- [Routes](/docs/core-concepts/routes) — routes are created within fleet context

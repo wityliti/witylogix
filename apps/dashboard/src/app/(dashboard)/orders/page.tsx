@@ -1,0 +1,564 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
+import { useOrders, Order } from '@/hooks/use-orders';
+
+/* ═════════════════════════════════════════════════════════════
+   PROFESSIONAL ORDERS MANAGEMENT PAGE
+   Logistics-focused interface with filtering, pagination, and actions
+   ═════════════════════════════════════════════════════════════ */
+
+const STATUS_TABS = [
+  { key: 'all', label: 'All Orders' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'confirmed', label: 'Confirmed' },
+  { key: 'in_transit', label: 'In Transit' },
+  { key: 'delivered', label: 'Delivered' },
+  { key: 'cancelled', label: 'Cancelled' },
+];
+
+const SORT_OPTIONS = [
+  { key: 'createdAt:desc', label: 'Newest First' },
+  { key: 'createdAt:asc', label: 'Oldest First' },
+  { key: 'totalAmount:desc', label: 'Highest Value' },
+  { key: 'totalAmount:asc', label: 'Lowest Value' },
+];
+
+const getStatusVariant = (
+  status: string
+): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
+  const map: Record<
+    string,
+    'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'
+  > = {
+    delivered: 'success',
+    in_transit: 'primary',
+    confirmed: 'info',
+    pending: 'warning',
+    cancelled: 'danger',
+  };
+  return map[status.toLowerCase()] ?? 'default';
+};
+
+const getAvatarInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getAvatarBgColor = (name: string): string => {
+  const colors = [
+    'bg-blue-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-amber-500',
+    'bg-green-500',
+    'bg-cyan-500',
+    'bg-red-500',
+    'bg-indigo-500',
+  ];
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
+const truncateAddress = (address: string, maxLength: number = 40): string => {
+  return address.length > maxLength ? `${address.slice(0, maxLength)}…` : address;
+};
+
+type OrderDisplay = Order;
+
+export default function OrdersPage() {
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt:desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+
+  const itemsPerPage = 15;
+
+  // Fetch orders with filters
+  const { items: orders, loading, error, refetch, pagination } = useOrders({
+    search: search || undefined,
+    sort: sortBy,
+    limit: 100,
+  });
+
+  // Filter orders by status
+  const filtered = useMemo(() => {
+    let result = orders;
+
+    if (statusFilter !== 'all') {
+      result = result.filter(
+        (o) => o.status.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    if (dateRange?.from || dateRange?.to) {
+      const fromDate = dateRange?.from ? new Date(dateRange.from) : null;
+      const toDate = dateRange?.to ? new Date(dateRange.to) : null;
+
+      result = result.filter((o) => {
+        const createdDate = new Date(o.createdAt);
+        if (fromDate && createdDate < fromDate) return false;
+        if (toDate && createdDate > toDate) return false;
+        return true;
+      });
+    }
+
+    return result;
+  }, [statusFilter, orders, dateRange]);
+
+  // Pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedOrders = filtered.slice(startIdx, endIdx);
+
+  // Status counts
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    STATUS_TABS.forEach((tab) => {
+      if (tab.key === 'all') {
+        counts[tab.key] = orders.length;
+      } else {
+        counts[tab.key] = orders.filter(
+          (o) => o.status.toLowerCase() === tab.key
+        ).length;
+      }
+    });
+    return counts;
+  }, [orders]);
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      {/* Page Header */}
+      <Header
+        title="Orders"
+        subtitle={`${pagination.total} total orders`}
+        actions={
+          <Button variant="primary" size="md">
+            + Create Order
+          </Button>
+        }
+      />
+
+      <div className="p-6 space-y-6">
+        {/* Error State */}
+        {error && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-red-500 rounded-full" />
+                <p className="text-sm text-red-200">Failed to load orders</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => refetch()}
+                className="text-red-300 hover:text-red-100"
+              >
+                Retry
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Status Tabs */}
+        <div className="flex items-center gap-1 border-b border-zinc-800 pb-0 overflow-x-auto scrollbar-hide">
+          {STATUS_TABS.map((tab) => {
+            const count = statusCounts[tab.key] || 0;
+            const isActive = statusFilter === tab.key;
+
+            return (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setStatusFilter(tab.key);
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  'relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-all',
+                  'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:transition-all',
+                  isActive
+                    ? 'text-white after:bg-white'
+                    : 'text-zinc-400 hover:text-zinc-300 after:bg-transparent'
+                )}
+              >
+                {tab.label}
+                <span
+                  className={cn(
+                    'ml-2 text-xs font-semibold px-2 py-0.5 rounded-full',
+                    isActive
+                      ? 'bg-white/10 text-white'
+                      : 'bg-zinc-800 text-zinc-400'
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filter & Sort Bar */}
+        <Card className="bg-zinc-900/50 border-zinc-800 p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            {/* Search Input */}
+            <div className="relative flex-1 lg:max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-600" />
+              <input
+                type="text"
+                placeholder="Search orders, customers, destinations..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  'w-full pl-10 pr-4 py-2 rounded-lg',
+                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100 text-sm',
+                  'placeholder:text-zinc-500',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20 focus:bg-zinc-800',
+                  'transition-all'
+                )}
+              />
+            </div>
+
+            {/* Date Range Inputs */}
+            <div className="flex gap-3">
+              <input
+                type="date"
+                value={dateRange?.from || ''}
+                onChange={(e) => {
+                  setDateRange((prev) => ({
+                    ...prev,
+                    from: e.target.value,
+                  } as any));
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  'px-3 py-2 rounded-lg text-sm',
+                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20',
+                  'transition-all'
+                )}
+              />
+              <input
+                type="date"
+                value={dateRange?.to || ''}
+                onChange={(e) => {
+                  setDateRange((prev) => ({
+                    ...prev,
+                    to: e.target.value,
+                  } as any));
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  'px-3 py-2 rounded-lg text-sm',
+                  'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                  'focus:outline-none focus:ring-2 focus:ring-white/20',
+                  'transition-all'
+                )}
+              />
+            </div>
+
+            {/* Sort Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setCurrentPage(1);
+              }}
+              className={cn(
+                'px-3 py-2 rounded-lg text-sm font-medium',
+                'bg-zinc-800/50 border border-zinc-700 text-zinc-100',
+                'focus:outline-none focus:ring-2 focus:ring-white/20',
+                'transition-all appearance-none cursor-pointer',
+                'pr-8'
+              )}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%2371717a' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E")`,
+                backgroundPosition: 'right 8px center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '16px',
+              }}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Card>
+
+        {/* Orders Table */}
+        <Card className="bg-zinc-900/50 border-zinc-800 overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-zinc-800 bg-zinc-900/80">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Order
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Destination
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Items
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Total
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Created
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800">
+                {loading ? (
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                      <td colSpan={8}>
+                        <div className="px-6 py-4">
+                          <div className="h-4 bg-zinc-800/50 rounded animate-pulse" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : paginatedOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={8}>
+                      <div className="flex flex-col items-center justify-center py-16 px-6">
+                        <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                          <Search className="w-6 h-6 text-zinc-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-zinc-200 mb-1">
+                          No orders found
+                        </h3>
+                        <p className="text-sm text-zinc-500 text-center max-w-sm">
+                          {search || dateRange?.from || dateRange?.to
+                            ? 'Try adjusting your filters or search terms'
+                            : 'No orders yet. Create your first order to get started.'}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedOrders.map((order, idx) => (
+                    <tr
+                      key={order.id}
+                      className={cn(
+                        'border-b border-zinc-800/50 last:border-b-0',
+                        'hover:bg-zinc-800/30 transition-colors animate-in fade-in slide-in-from-top-2',
+                        `animation-delay-[${idx * 50}ms]`
+                      )}
+                    >
+                      {/* Order ID */}
+                      <td className="px-6 py-4">
+                        <a
+                          href={`#order-${order.id}`}
+                          className={cn(
+                            'font-mono font-semibold text-sm',
+                            'text-amber-400 hover:text-amber-300',
+                            'transition-colors cursor-pointer'
+                          )}
+                        >
+                          #{order.id.slice(0, 8)}
+                        </a>
+                      </td>
+
+                      {/* Customer */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              'w-8 h-8 rounded-full flex items-center justify-center',
+                              'text-xs font-semibold text-white',
+                              getAvatarBgColor(order.customerName)
+                            )}
+                          >
+                            {getAvatarInitials(order.customerName)}
+                          </div>
+                          <span className="text-zinc-100 font-medium text-sm">
+                            {order.customerName}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Destination */}
+                      <td className="px-6 py-4">
+                        <span className="text-zinc-300 text-sm" title={order.deliveryAddress.street}>
+                          {truncateAddress(
+                            `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`,
+                            35
+                          )}
+                        </span>
+                      </td>
+
+                      {/* Status Badge */}
+                      <td className="px-6 py-4">
+                        <Badge
+                          variant={getStatusVariant(order.status)}
+                          className="text-xs font-semibold"
+                        >
+                          {order.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </td>
+
+                      {/* Items Count */}
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200">
+                          {order.items.length}
+                        </span>
+                      </td>
+
+                      {/* Total Amount */}
+                      <td className="px-6 py-4 text-right">
+                        <span className="font-mono font-semibold text-zinc-100 text-sm">
+                          {formatCurrency(order.totalAmount)}
+                        </span>
+                      </td>
+
+                      {/* Created Date */}
+                      <td className="px-6 py-4">
+                        <span className="text-zinc-400 text-sm">
+                          {new Date(order.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </td>
+
+                      {/* Actions Dropdown */}
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-zinc-400 hover:text-red-400 hover:bg-red-950/20"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-zinc-400">
+              Showing{' '}
+              <span className="font-semibold text-zinc-200">{startIdx + 1}</span> to{' '}
+              <span className="font-semibold text-zinc-200">
+                {Math.min(endIdx, filtered.length)}
+              </span>{' '}
+              of <span className="font-semibold text-zinc-200">{filtered.length}</span> orders
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const page = i + 1;
+                  const isCurrentPage = page === currentPage;
+                  const showPage =
+                    isCurrentPage ||
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1;
+
+                  if (!showPage && Math.abs(page - currentPage) === 2) {
+                    return (
+                      <span key={`ellipsis-${page}`} className="text-zinc-500">
+                        …
+                      </span>
+                    );
+                  }
+
+                  if (!showPage) return null;
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={cn(
+                        'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium transition-all',
+                        isCurrentPage
+                          ? 'bg-white text-black font-semibold'
+                          : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      )}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

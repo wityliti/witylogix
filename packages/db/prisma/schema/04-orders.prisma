@@ -1,0 +1,101 @@
+// ─── ORDERS ─────────────────────────────────────────────────
+// Always shop-scoped. Orders come from any e-commerce platform
+// and must stay within that shop's data boundary. Org users can
+// VIEW orders across shops but each order belongs to one shop.
+
+model Order {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId              String      @map("shop_id") @db.Uuid
+  externalOrderId     String      @map("external_order_id")
+  externalOrderNumber String?     @map("external_order_number")
+  source              String      @default("SHOPIFY") @map("source")
+  status              OrderStatus @default(PENDING)
+
+  // Customer info (snapshot at creation)
+  customerName  String? @map("customer_name")
+  customerEmail String? @map("customer_email")
+  customerPhone String? @map("customer_phone")
+
+  // Delivery address (denormalized snapshot)
+  addressLine1     String? @map("address_line1")
+  addressLine2     String? @map("address_line2")
+  city             String?
+  province         String?
+  postalCode       String? @map("postal_code")
+  country          String?
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  deliveryLocation Json?   @map("delivery_location")
+
+  // Delivery details
+  deliveryDate     DateTime? @map("delivery_date")
+  timeSlotId       String?   @map("time_slot_id") @db.Uuid
+  driverId         String?   @map("driver_id") @db.Uuid
+  routeStopId      String?   @map("route_stop_id") @db.Uuid
+  estimatedArrival DateTime? @map("estimated_arrival")
+  actualDelivery   DateTime? @map("actual_delivery")
+
+  // Order value
+  totalPrice  Decimal? @map("total_price") @db.Decimal(12, 2)
+  totalWeight Decimal? @map("total_weight") @db.Decimal(10, 2)
+  itemCount   Int      @default(1) @map("item_count")
+  lineItems   Json     @default("[]") @map("line_items")
+
+  // Fulfillment
+  trackingToken String?  @unique @map("tracking_token")
+  fulfillmentId String?  @map("fulfillment_id")
+  tags          String[] @default([])
+  notes         String?
+  metadata      Json     @default("{}") // custom fields
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver              Driver?              @relation(fields: [driverId], references: [id])
+  timeSlot            TimeSlot?            @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery     ProofOfDelivery?
+  notificationLogs    NotificationLog[]
+  shipments           Shipment[]
+  paymentTransactions PaymentTransaction[]
+  codcollections      CODCollection[]
+
+  @@unique([shopId, externalOrderId, source])
+  @@index([shopId, status, createdAt(sort: Desc)])
+  @@index([shopId, driverId])
+  @@index([shopId, deliveryDate])
+  @@index([trackingToken])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  ASSIGNED
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  ARRIVED
+  DELIVERED
+  FAILED
+  RETURNED
+  CANCELLED
+}
+
+// ─── PROOF OF DELIVERY ──────────────────────────────────────
+
+model ProofOfDelivery {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId          String   @unique @map("order_id") @db.Uuid
+  photoUrls        String[] @map("photo_urls")
+  signatureUrl     String?  @map("signature_url")
+  recipientName    String?  @map("recipient_name")
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  deliveryLocation Json?    @map("delivery_location")
+  notes            String?
+  deliveredAt      DateTime @default(now()) @map("delivered_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("proof_of_delivery")
+}

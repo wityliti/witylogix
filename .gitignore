@@ -6,6 +6,7 @@ node_modules/
 dist/
 .next/
 .turbo/
+.temp/
 out/
 
 # Environment
@@ -42,3 +43,4 @@ docker-compose.override.yml
 
 # Prisma
 packages/db/prisma/migrations/**/migration_lock.toml
+packages/db/src/generated/

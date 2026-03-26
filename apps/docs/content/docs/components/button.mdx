@@ -1,0 +1,192 @@
+---
+title: Button
+description: Clickable element for user actions with variants, sizes, and states
+---
+
+# Button
+
+The Button component is a fundamental interactive element. It supports multiple variants, sizes, loading states, and icons.
+
+## Import
+
+```typescript
+import { Button } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<Button>Click me</Button>
+```
+
+## Variants
+
+Button supports four semantic variants:
+
+```tsx
+<Button variant="primary">Primary Action</Button>
+<Button variant="secondary">Secondary Action</Button>
+<Button variant="ghost">Ghost Button</Button>
+<Button variant="danger">Delete</Button>
+```
+
+### Variant Details
+
+| Variant | Use Case | Background | Text |
+|---------|----------|------------|------|
+| **primary** | Main action, submissions, confirmations | Blue (`bg-blue-600`) | White |
+| **secondary** | Secondary actions, alternatives | Slate (`bg-slate-700`) | White |
+| **ghost** | Tertiary actions, links | Transparent | Blue text |
+| **danger** | Destructive actions (delete, remove) | Red (`bg-red-600`) | White |
+
+## Sizes
+
+Control button size with the `size` prop:
+
+```tsx
+<Button size="sm">Small</Button>
+<Button size="md">Medium (Default)</Button>
+<Button size="lg">Large</Button>
+```
+
+### Size Details
+
+| Size | Padding | Font | Min Width |
+|------|---------|------|-----------|
+| **sm** | px-3 py-1.5 | text-sm | 64px |
+| **md** | px-4 py-2 | text-base | 80px |
+| **lg** | px-6 py-3 | text-lg | 100px |
+
+## Loading State
+
+Show loading indicator with the `loading` prop:
+
+```tsx
+<Button loading>Processing...</Button>
+```
+
+The button displays a spinner and becomes disabled while loading. Text remains visible.
+
+## Disabled State
+
+Disable interaction with the `disabled` prop:
+
+```tsx
+<Button disabled>Disabled</Button>
+```
+
+Disabled buttons are visually distinct and prevent interaction.
+
+## Icons with Buttons
+
+Use icons alongside button text:
+
+```tsx
+import { Button } from "@/components/ui"
+import { ChevronRight, Trash2 } from "lucide-react"
+
+<Button>
+  <ChevronRight className="mr-2 h-4 w-4" />
+  Next
+</Button>
+
+<Button variant="danger">
+  <Trash2 className="mr-2 h-4 w-4" />
+  Delete
+</Button>
+```
+
+Icon-only buttons should use aria-label:
+
+```tsx
+<Button aria-label="Close" size="sm">
+  <X className="h-4 w-4" />
+</Button>
+```
+
+## As Child Component
+
+Render as a different element using `asChild`:
+
+```tsx
+import { Button } from "@/components/ui"
+
+<Button asChild>
+  <a href="/dashboard">Go to Dashboard</a>
+</Button>
+```
+
+This renders as an `<a>` tag with button styles.
+
+## Props Table
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | "primary" \| "secondary" \| "ghost" \| "danger" | "primary" | Visual style variant |
+| `size` | "sm" \| "md" \| "lg" | "md" | Button size |
+| `disabled` | boolean | false | Disables interaction and visual feedback |
+| `loading` | boolean | false | Shows loading spinner, disables interaction |
+| `asChild` | boolean | false | Render as child element with button styles |
+| `className` | string | - | Additional Tailwind classes |
+| `children` | ReactNode | - | Button content |
+| `onClick` | function | - | Click event handler |
+| `type` | "button" \| "submit" \| "reset" | "button" | HTML button type |
+
+## Usage Examples
+
+### Form Submission
+
+```tsx
+<form onSubmit={handleSubmit}>
+  <input type="text" placeholder="Name" />
+  <Button type="submit" loading={isSubmitting}>
+    Submit
+  </Button>
+</form>
+```
+
+### Button Group
+
+```tsx
+<div className="flex gap-2">
+  <Button variant="secondary">Cancel</Button>
+  <Button variant="primary">Save</Button>
+</div>
+```
+
+### Destructive Action with Confirmation
+
+```tsx
+<Button
+  variant="danger"
+  onClick={() => setShowConfirm(true)}
+>
+  Delete Account
+</Button>
+```
+
+## Accessibility
+
+- Semantic `<button>` element
+- Keyboard navigable (Tab, Enter, Space)
+- Disabled state prevents focus and interaction
+- Icon-only buttons include `aria-label`
+- Focus visible with clear outline
+- Sufficient color contrast ratio (WCAG AA)
+
+## Styling
+
+Customize with className:
+
+```tsx
+<Button className="w-full">Full Width Button</Button>
+<Button className="rounded-full">Rounded Button</Button>
+```
+
+Combine with other props:
+
+```tsx
+<Button variant="secondary" size="lg" className="uppercase">
+  Custom Button
+</Button>
+```

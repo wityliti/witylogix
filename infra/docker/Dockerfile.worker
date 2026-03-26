@@ -1,0 +1,123 @@
+# infra/docker/Dockerfile.worker
+# Production-hardened BullMQ Background Worker Dockerfile
+#
+# Security features:
+# - Based on proven API Dockerfile pattern
+# - Non-root user prevents privilege escalation
+# - Graceful shutdown signal handling (SIGTERM/SIGINT)
+# - Health checks for container orchestration
+# - Minimal attack surface with Alpine base
+# - Read-only root filesystem compatible
+#
+# Purpose: Process background jobs via BullMQ
+# - Email delivery, data exports, scheduled tasks, webhooks
+# - Integrates with Redis and PostgreSQL via network
+#
+# Final image target: ~200MB
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Base - Setup pnpm and system dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS base
+
+WORKDIR /app
+
+# Install pnpm package manager
+RUN npm install -g pnpm@9.15.0
+
+# Install libc compatibility and utilities
+RUN apk add --no-cache libc6-compat curl
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Dependencies - Install packages with frozen lockfile
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS deps
+
+WORKDIR /app
+
+# Copy workspace configuration and lock files
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all package definitions
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
+
+# Install dependencies with frozen lockfile (reproducible, deterministic)
+RUN pnpm install --frozen-lockfile --production=false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Builder - Compile TypeScript and build packages
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+WORKDIR /app
+
+# Generate Prisma client (required for database access)
+RUN pnpm --filter @witylogix/db db:generate
+
+# Build dependency packages in correct order
+RUN pnpm --filter @witylogix/types build && \
+    pnpm --filter @witylogix/validators build && \
+    pnpm --filter @witylogix/core build && \
+    pnpm --filter @witylogix/db build && \
+    pnpm --filter @witylogix/api build
+
+# Prune to production dependencies only (removes devDependencies)
+RUN pnpm prune --prod
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 4: Production - Minimal runtime image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk add --no-cache libc6-compat curl tini && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# Copy pruned node_modules from build
+COPY --from=build --chown=node:nodejs /app/node_modules ./node_modules
+
+# Copy package definitions
+COPY --from=build --chown=node:nodejs /app/packages/ ./packages/
+COPY --from=build --chown=node:nodejs /app/apps/api/ ./apps/api/
+
+# Copy compiled application code
+COPY --from=build --chown=node:nodejs /app/apps/api/dist/ ./apps/api/dist/
+
+# Copy Prisma schema for runtime migrations
+COPY --from=build --chown=node:nodejs /app/packages/db/prisma/ ./packages/db/prisma/
+
+# Environment configuration
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Worker runs without exposing a port (no EXPOSE needed)
+
+# Switch to non-root user
+USER node
+
+# Container metadata
+LABEL maintainer="Witylogix Team"
+LABEL version="1.0"
+LABEL description="Production-hardened BullMQ background worker for async job processing"
+
+# Health check: verify worker process is alive (can be customized based on needs)
+# Basic check ensures worker hasn't completely crashed
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ps aux | grep -v grep | grep "node.*worker.js" > /dev/null || exit 1
+
+# Use tini as init system for proper signal handling
+# tini ensures SIGTERM is properly forwarded to the Node process for graceful shutdown
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Start background worker
+# SIGTERM will trigger graceful shutdown in the worker process
+# Worker should clean up BullMQ jobs and close connections properly
+CMD ["node", "apps/api/dist/worker.js"]

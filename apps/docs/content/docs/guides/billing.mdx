@@ -1,0 +1,647 @@
+---
+title: Billing System Guide
+description: Manage subscriptions, quotas, metered billing, invoicing, and payment methods with atomic quota enforcement.
+---
+
+# Billing System Guide
+
+The Witylogix billing system manages subscription plans, usage tracking, quota enforcement, and invoice generation. It supports trial periods, plan upgrades/downgrades with proration, and metered billing with real-time quota checks.
+
+## Architecture Overview
+
+The billing system consists of:
+
+1. **Plan Management**: Trial periods, feature tiers, pricing
+2. **Quota System**: Per-shop usage tracking with atomic enforcement
+3. **Metered Billing**: Pay-as-you-go tracking for specific features
+4. **Invoice Generation**: Line items, PDF export, payment reconciliation
+5. **Payment Methods**: Credit cards, subscriptions, invoice-based billing
+
+## Plan Management
+
+Plans define features, pricing, and trial periods for each tier.
+
+### Plan Structure
+
+```typescript
+interface Plan {
+  id: string;
+  name: string;
+  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  monthlyPrice: number;
+  yearlyPrice: number;
+  trialDays: number;
+  features: {
+    maxShops: number;
+    maxOrders: number;
+    maxDrivers: number;
+    customDomain: boolean;
+    apiAccess: boolean;
+    webhooks: boolean;
+    advancedAnalytics: boolean;
+    whiteLabel: boolean;
+  };
+  quotas: {
+    routing: { limit: number; period: 'month' };
+    notifications: { limit: number; period: 'month' };
+    integrationEvents: { limit: number; period: 'month' };
+  };
+}
+```
+
+### Creating Plans
+
+```typescript
+import { BillingService } from '@witylogix/billing';
+
+const billingService = new BillingService();
+
+await billingService.createPlan({
+  name: 'Pro Plan',
+  tier: 'pro',
+  monthlyPrice: 99,
+  yearlyPrice: 990, // 1 month free
+  trialDays: 14,
+  features: {
+    maxShops: 10,
+    maxOrders: 50000,
+    maxDrivers: 100,
+    customDomain: true,
+    apiAccess: true,
+    webhooks: true,
+    advancedAnalytics: true,
+    whiteLabel: false,
+  },
+  quotas: {
+    routing: { limit: 100000, period: 'month' },
+    notifications: { limit: 50000, period: 'month' },
+    integrationEvents: { limit: 100000, period: 'month' },
+  },
+});
+```
+
+### Trial Periods
+
+Trial accounts have limited access but can test all features.
+
+```typescript
+// Create trial subscription
+const subscription = await billingService.createTrialSubscription({
+  shopId: 'shop_123',
+  planId: 'plan_pro',
+  trialDays: 14,
+});
+
+console.log(subscription);
+// {
+//   id: 'sub_abc123',
+//   shopId: 'shop_123',
+//   planId: 'plan_pro',
+//   status: 'trialing',
+//   currentPeriodStart: '2026-03-10T00:00:00Z',
+//   currentPeriodEnd: '2026-03-24T00:00:00Z',
+//   trialEndsAt: '2026-03-24T00:00:00Z',
+//   billingCycleDay: 24,
+// }
+
+// Check if subscription is in trial
+if (subscription.status === 'trialing') {
+  const daysRemaining = Math.ceil(
+    (new Date(subscription.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+  console.log(`${daysRemaining} days remaining in trial`);
+}
+```
+
+## Quota Enforcement
+
+Quotas are enforced atomically per shop. Usage is tracked in real-time, and quota checks prevent operations that exceed limits.
+
+### Checking Quota
+
+```typescript
+// Check if an operation would exceed quota
+const canRoute = await billingService.checkQuota({
+  shopId: 'shop_123',
+  meter: 'routing',
+  units: 1,
+});
+
+if (!canRoute) {
+  throw new Error('Routing quota exceeded for this billing period');
+}
+```
+
+### Recording Usage
+
+```typescript
+// Record a routing operation
+await billingService.recordUsage({
+  shopId: 'shop_123',
+  meter: 'routing',
+  units: 1,
+  metadata: {
+    orderId: 'ord_456',
+    driverId: 'drv_789',
+    timestamp: new Date(),
+  },
+});
+
+// Record multiple notifications
+await billingService.recordUsage({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  units: 3, // 1 email + 1 SMS + 1 WhatsApp
+  metadata: {
+    channels: ['email', 'sms', 'whatsapp'],
+    orderId: 'ord_456',
+  },
+});
+```
+
+### Atomic Quota Check & Record
+
+For critical paths, atomically check and record in one operation:
+
+```typescript
+const allocated = await billingService.allocateQuota({
+  shopId: 'shop_123',
+  meter: 'routing',
+  units: 1,
+});
+
+if (!allocated) {
+  throw new QuotaExceededError('Routing quota exceeded');
+}
+
+// If we reach here, quota was atomically reserved
+// Now proceed with the operation (routing, etc.)
+// If operation fails, you may want to release the quota:
+// await billingService.releaseQuota({ shopId: 'shop_123', meter: 'routing', units: 1 })
+```
+
+### Getting Usage Statistics
+
+```typescript
+// Get current usage for a meter
+const usage = await billingService.getUsage({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  period: 'month',
+});
+
+console.log(usage);
+// {
+//   meter: 'notifications',
+//   period: 'month',
+//   used: 12450,
+//   limit: 50000,
+//   remaining: 37550,
+//   percentageUsed: 24.9,
+//   resetAt: '2026-04-10T00:00:00Z',
+// }
+
+// Get all metered usage for a shop
+const allUsage = await billingService.getAllUsage({
+  shopId: 'shop_123',
+  period: 'month',
+});
+
+console.log(allUsage);
+// [
+//   { meter: 'routing', used: 5000, limit: 100000, remaining: 95000 },
+//   { meter: 'notifications', used: 12450, limit: 50000, remaining: 37550 },
+//   { meter: 'integrationEvents', used: 2100, limit: 100000, remaining: 97900 },
+// ]
+```
+
+## Upgrades and Downgrades
+
+Plan changes are processed with automatic proration based on usage.
+
+### Upgrading Plans
+
+```typescript
+// Upgrade from Starter to Pro
+const upgrade = await billingService.upgradePlan({
+  subscriptionId: 'sub_abc123',
+  newPlanId: 'plan_pro',
+  effectiveDate: new Date(), // Immediate
+});
+
+console.log(upgrade);
+// {
+//   previousPlanId: 'plan_starter',
+//   newPlanId: 'plan_pro',
+//   previousAmount: 29,
+//   newAmount: 99,
+//   proratedAmount: -17.50, // Credit for unused days on Starter
+//   effectiveDate: '2026-03-10T12:34:56Z',
+//   invoiceId: 'inv_xyz789', // Credit invoice
+// }
+```
+
+### Downgrading Plans
+
+```typescript
+// Downgrade from Pro to Starter with 30-day notice
+const downgrade = await billingService.downgradePlan({
+  subscriptionId: 'sub_abc123',
+  newPlanId: 'plan_starter',
+  effectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+});
+
+console.log(downgrade);
+// {
+//   previousPlanId: 'plan_pro',
+//   newPlanId: 'plan_starter',
+//   scheduledForDate: '2026-04-09T12:34:56Z',
+//   status: 'scheduled',
+// }
+```
+
+### Prorations
+
+Prorations are calculated automatically based on:
+- Daily rate of current plan
+- Days remaining in billing cycle
+- Difference in plan pricing
+
+```typescript
+// Get prorated amount without applying
+const prorationEstimate = await billingService.estimateProration({
+  subscriptionId: 'sub_abc123',
+  newPlanId: 'plan_pro',
+  effectiveDate: new Date(),
+});
+
+console.log(prorationEstimate);
+// {
+//   currentMonthlyRate: 29.00,
+//   newMonthlyRate: 99.00,
+//   daysRemainingInCycle: 21,
+//   dailyRateNew: 3.29,
+//   proratedCredit: -17.50,
+//   nextBillingAmount: 81.50, // 99 - 17.50
+// }
+```
+
+## Invoice Generation
+
+Invoices are generated for subscriptions, usage-based charges, and manual billing.
+
+### Invoice Structure
+
+```typescript
+interface Invoice {
+  id: string;
+  shopId: string;
+  subscriptionId?: string;
+  invoiceNumber: string;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  issuedAt: Date;
+  dueDate: Date;
+  paidAt?: Date;
+  subtotal: number;
+  tax: number;
+  discount?: number;
+  total: number;
+  currency: string;
+  lineItems: LineItem[];
+  pdfUrl?: string;
+}
+
+interface LineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  metadata?: Record<string, any>;
+}
+```
+
+### Creating Invoices
+
+```typescript
+// Create subscription invoice (auto-generated)
+const invoice = await billingService.generateInvoice({
+  shopId: 'shop_123',
+  subscriptionId: 'sub_abc123',
+  lineItems: [
+    {
+      description: 'Pro Plan - Monthly',
+      quantity: 1,
+      unitPrice: 99.00,
+    },
+  ],
+  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+});
+
+// Create manual invoice for additional services
+const customInvoice = await billingService.createInvoice({
+  shopId: 'shop_123',
+  lineItems: [
+    {
+      description: 'Custom Development - 40 hours',
+      quantity: 40,
+      unitPrice: 200.00,
+    },
+    {
+      description: 'Premium Support - Monthly',
+      quantity: 1,
+      unitPrice: 500.00,
+    },
+  ],
+  tax: 0.1, // 10% tax
+  dueDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
+});
+
+console.log(customInvoice);
+// {
+//   id: 'inv_cust_001',
+//   invoiceNumber: 'INV-2026-0042',
+//   status: 'draft',
+//   issuedAt: '2026-03-10T00:00:00Z',
+//   dueDate: '2026-04-24T00:00:00Z',
+//   subtotal: 9200.00,
+//   tax: 920.00,
+//   total: 10120.00,
+//   lineItems: [
+//     { description: 'Custom Development - 40 hours', quantity: 40, unitPrice: 200, amount: 8000 },
+//     { description: 'Premium Support - Monthly', quantity: 1, unitPrice: 500, amount: 500 },
+//   ],
+// }
+```
+
+### Generating PDF
+
+```typescript
+// Export invoice as PDF
+const pdfUrl = await billingService.exportInvoicePDF({
+  invoiceId: 'inv_cust_001',
+  includeCompanyInfo: true,
+  theme: 'light', // 'light' or 'dark'
+});
+
+console.log(`PDF available at: ${pdfUrl}`);
+// https://cdn.witylogix.com/invoices/inv_cust_001.pdf?expires=...
+
+// Or get PDF binary directly
+const pdfBuffer = await billingService.generateInvoicePDF({
+  invoiceId: 'inv_cust_001',
+});
+
+// Send via email
+await mailer.send({
+  to: 'accounting@myshop.com',
+  subject: 'Invoice INV-2026-0042',
+  attachments: [
+    {
+      filename: 'invoice.pdf',
+      content: pdfBuffer,
+    },
+  ],
+});
+```
+
+## Metered Billing
+
+Metered billing tracks specific operations and charges based on usage.
+
+### Metered Events
+
+Three primary meters track platform usage:
+
+1. **Routing Meter**: Route optimization API calls
+2. **Notification Meter**: Emails, SMS, WhatsApp, Push notifications
+3. **Integration Events Meter**: Webhook events, API calls, data syncs
+
+### Recording Metered Usage
+
+```typescript
+// Record a route optimization
+await billingService.recordMeteredUsage({
+  shopId: 'shop_123',
+  meter: 'routing',
+  units: 1,
+  metadata: {
+    orderId: 'ord_456',
+    routeDistance: 25.3,
+    optimizationTime: 1234, // ms
+  },
+});
+
+// Record notifications sent
+await billingService.recordMeteredUsage({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  units: 3, // 1 email + 1 SMS + 1 push
+  metadata: {
+    templateId: 'order-confirmation',
+    channels: ['email', 'sms', 'push'],
+  },
+});
+
+// Record integration events
+await billingService.recordMeteredUsage({
+  shopId: 'shop_123',
+  meter: 'integrationEvents',
+  units: 5,
+  metadata: {
+    eventType: 'order.created',
+    webhookDeliveries: 5,
+  },
+});
+```
+
+### Metered Billing Cycles
+
+Metered usage is accumulated monthly and billed at period end.
+
+```typescript
+// Get current period metered charges
+const charges = await billingService.getMeteredCharges({
+  shopId: 'shop_123',
+  period: 'current',
+});
+
+console.log(charges);
+// {
+//   period: '2026-03-01 to 2026-03-31',
+//   meters: [
+//     {
+//       meter: 'routing',
+//       units: 5000,
+//       unitPrice: 0.50,
+//       total: 2500.00,
+//     },
+//     {
+//       meter: 'notifications',
+//       units: 12450,
+//       unitPrice: 0.001,
+//       total: 12.45,
+//     },
+//     {
+//       meter: 'integrationEvents',
+//       units: 2100,
+//       unitPrice: 0.0001,
+//       total: 0.21,
+//     },
+//   ],
+//   totalMeteredCharges: 2512.66,
+// }
+```
+
+## Payment Methods and Subscriptions
+
+Manage payment methods and subscription billing.
+
+### Adding Payment Methods
+
+```typescript
+// Add credit card
+const paymentMethod = await billingService.addPaymentMethod({
+  shopId: 'shop_123',
+  type: 'card',
+  card: {
+    number: '4242424242424242',
+    expiry: '12/27',
+    cvc: '123',
+    holderName: 'Jane Doe',
+  },
+  setAsDefault: true,
+});
+
+// The actual card details are tokenized and never stored
+console.log(paymentMethod);
+// {
+//   id: 'pm_card_xyz',
+//   shopId: 'shop_123',
+//   type: 'card',
+//   last4: '4242',
+//   brand: 'Visa',
+//   expiryMonth: 12,
+//   expiryYear: 2027,
+//   isDefault: true,
+// }
+```
+
+### Subscription Billing
+
+```typescript
+// Create subscription with payment method
+const subscription = await billingService.createSubscription({
+  shopId: 'shop_123',
+  planId: 'plan_pro',
+  paymentMethodId: 'pm_card_xyz',
+  billingCycleDay: 10, // Bill on the 10th each month
+  autoRenew: true,
+});
+
+// Update billing details
+await billingService.updateSubscription({
+  subscriptionId: 'sub_abc123',
+  paymentMethodId: 'pm_card_new',
+  billingCycleDay: 15,
+});
+
+// Cancel subscription
+await billingService.cancelSubscription({
+  subscriptionId: 'sub_abc123',
+  effectiveDate: new Date(), // Immediate
+  reason: 'customer_request',
+});
+```
+
+## Complete Billing Workflow Example
+
+Here's a complete workflow for managing a customer's billing lifecycle:
+
+```typescript
+async function setupCustomerBilling(shopId, email) {
+  // 1. Create trial subscription
+  const trial = await billingService.createTrialSubscription({
+    shopId,
+    planId: 'plan_starter',
+    trialDays: 14,
+  });
+
+  console.log(`Trial created, ends ${trial.trialEndsAt}`);
+
+  // 2. Monitor trial period and send reminders
+  const daysRemaining = Math.ceil(
+    (new Date(trial.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysRemaining === 3) {
+    await notificationService.send({
+      to: email,
+      templateId: 'trial-ending-reminder',
+      variables: { daysRemaining },
+    });
+  }
+
+  // 3. Convert to paid subscription
+  const paymentMethod = await billingService.addPaymentMethod({
+    shopId,
+    type: 'card',
+    card: { /* ... */ },
+    setAsDefault: true,
+  });
+
+  const subscription = await billingService.createSubscription({
+    shopId,
+    planId: 'plan_pro',
+    paymentMethodId: paymentMethod.id,
+  });
+
+  // 4. Generate first invoice
+  const invoice = await billingService.generateInvoice({
+    shopId,
+    subscriptionId: subscription.id,
+    lineItems: [
+      {
+        description: 'Pro Plan - Monthly',
+        quantity: 1,
+        unitPrice: 99.00,
+      },
+    ],
+  });
+
+  // 5. Track usage during billing period
+  while (subscription.status === 'active') {
+    const usage = await billingService.getUsage({
+      shopId,
+      meter: 'routing',
+      period: 'month',
+    });
+
+    if (usage.percentageUsed > 80) {
+      // Warn customer of high usage
+      await notificationService.send({
+        to: email,
+        templateId: 'quota-warning',
+        variables: { used: usage.used, limit: usage.limit },
+      });
+    }
+
+    // Check every hour
+    await new Promise((resolve) => setTimeout(resolve, 60 * 60 * 1000));
+  }
+}
+```
+
+## Summary
+
+The Witylogix billing system provides:
+
+- **Flexible plans**: Multiple tiers with trial periods
+- **Atomic quotas**: Real-time enforcement without race conditions
+- **Transparent pricing**: Proration for upgrades/downgrades
+- **Detailed invoicing**: Line items, PDF export, payment reconciliation
+- **Metered billing**: Pay-as-you-go for routing, notifications, and events
+- **Payment flexibility**: Multiple payment methods and subscription management
+
+For API reference, see [Billing API Reference](/docs/api/billing).
+
+For payment provider integration, see [Payment Provider Setup](/docs/guides/payment-providers).

@@ -1,0 +1,487 @@
+---
+title: Form & Navigation Components
+description: Select, Switch, Checkbox, Alert, Progress, Breadcrumb controls
+---
+
+# Form & Navigation Components
+
+A collection of components for form inputs, navigation, and user feedback.
+
+## Import
+
+```typescript
+import {
+  Select,
+  Switch,
+  Checkbox,
+  Alert,
+  Progress,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink
+} from "@/components/ui"
+```
+
+## Select
+
+Dropdown selection component for choosing from multiple options.
+
+### Basic Usage
+
+```tsx
+<Select defaultValue="option1">
+  <option value="option1">Option 1</option>
+  <option value="option2">Option 2</option>
+  <option value="option3">Option 3</option>
+</Select>
+```
+
+### Select Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | string | - | Selected value |
+| `onChange` | function | - | Change handler |
+| `disabled` | boolean | false | Disables select |
+| `size` | "sm" \| "md" \| "lg" | "md" | Select size |
+| `hasError` | boolean | false | Error state |
+| `className` | string | - | Additional classes |
+
+### Select Examples
+
+```tsx
+// Basic select
+<Select onChange={(e) => setCategory(e.target.value)}>
+  <option value="">Select category</option>
+  <option value="tech">Technology</option>
+  <option value="business">Business</option>
+  <option value="health">Health</option>
+</Select>
+
+// With label
+<div className="space-y-2">
+  <Label htmlFor="role">User Role</Label>
+  <Select id="role">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+    <option value="moderator">Moderator</option>
+  </Select>
+</div>
+
+// Error state
+<Select hasError>
+  <option value="">Select option</option>
+  <option value="1">Option 1</option>
+</Select>
+<p className="text-sm text-red-500">Please select an option</p>
+```
+
+## Switch
+
+Toggle component for boolean values.
+
+### Basic Usage
+
+```tsx
+import { useState } from "react"
+
+const [enabled, setEnabled] = useState(false)
+
+<Switch
+  checked={enabled}
+  onChange={setEnabled}
+/>
+```
+
+### Switch Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `checked` | boolean | - | Toggle state |
+| `onChange` | function | - | Change handler |
+| `disabled` | boolean | false | Disables toggle |
+| `id` | string | - | Element id |
+| `className` | string | - | Additional classes |
+
+### Switch Examples
+
+```tsx
+// With label
+<div className="flex items-center gap-3">
+  <Switch
+    id="notifications"
+    checked={notificationsEnabled}
+    onChange={setNotificationsEnabled}
+  />
+  <Label htmlFor="notifications">Enable notifications</Label>
+</div>
+
+// Settings toggle
+<div className="space-y-3">
+  <div className="flex justify-between items-center">
+    <span>Dark Mode</span>
+    <Switch checked={darkMode} onChange={setDarkMode} />
+  </div>
+  <div className="flex justify-between items-center">
+    <span>Email Alerts</span>
+    <Switch checked={emailAlerts} onChange={setEmailAlerts} />
+  </div>
+</div>
+```
+
+## Checkbox
+
+Checkbox component for multiple selections.
+
+### Basic Usage
+
+```tsx
+import { useState } from "react"
+
+const [checked, setChecked] = useState(false)
+
+<Checkbox
+  checked={checked}
+  onChange={setChecked}
+  id="agree"
+/>
+<Label htmlFor="agree">I agree to the terms</Label>
+```
+
+### Checkbox Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `checked` | boolean | - | Checked state |
+| `onChange` | function | - | Change handler |
+| `disabled` | boolean | false | Disables checkbox |
+| `id` | string | - | Element id |
+| `className` | string | - | Additional classes |
+
+### Checkbox Examples
+
+```tsx
+// Single checkbox
+<div className="flex items-center gap-2">
+  <Checkbox id="remember" />
+  <Label htmlFor="remember">Remember me</Label>
+</div>
+
+// Multiple checkboxes
+const [permissions, setPermissions] = useState({
+  read: true,
+  write: false,
+  delete: false
+})
+
+<div className="space-y-2">
+  {['read', 'write', 'delete'].map((perm) => (
+    <div key={perm} className="flex items-center gap-2">
+      <Checkbox
+        id={perm}
+        checked={permissions[perm]}
+        onChange={(checked) => setPermissions({
+          ...permissions,
+          [perm]: checked
+        })}
+      />
+      <Label htmlFor={perm} className="capitalize">
+        {perm} access
+      </Label>
+    </div>
+  ))}
+</div>
+
+// Checkbox with description
+<div className="space-y-2">
+  <div className="flex items-start gap-2">
+    <Checkbox id="subscribe" />
+    <div>
+      <Label htmlFor="subscribe">Subscribe to updates</Label>
+      <p className="text-sm text-slate-400 mt-1">
+        Receive news and updates about new features
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+## Alert
+
+Component for displaying important messages.
+
+### Basic Usage
+
+```tsx
+<Alert>
+  This is an informational alert
+</Alert>
+```
+
+### Alert Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | "default" \| "success" \| "warning" \| "danger" | "default" | Alert type |
+| `title` | string | - | Alert title |
+| `icon` | ReactNode | - | Icon component |
+| `closable` | boolean | false | Show close button |
+| `className` | string | - | Additional classes |
+
+### Alert Examples
+
+```tsx
+// Information alert
+<Alert variant="default" title="Note">
+  This feature is currently in beta
+</Alert>
+
+// Success alert
+<Alert variant="success" title="Success">
+  Your changes have been saved
+</Alert>
+
+// Warning alert
+<Alert variant="warning" title="Warning">
+  You have 2 days left to renew your subscription
+</Alert>
+
+// Error alert
+<Alert variant="danger" title="Error">
+  Failed to save changes. Please try again
+</Alert>
+
+// Dismissible alert
+const [showAlert, setShowAlert] = useState(true)
+
+{showAlert && (
+  <Alert
+    variant="warning"
+    title="Maintenance"
+    closable
+    onClose={() => setShowAlert(false)}
+  >
+    Scheduled maintenance on March 15, 2024
+  </Alert>
+)}
+```
+
+## Progress
+
+Component for displaying progress bars.
+
+### Basic Usage
+
+```tsx
+<Progress value={65} />
+```
+
+### Progress Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | number | - | Progress percentage (0-100) |
+| `max` | number | 100 | Maximum value |
+| `variant` | "default" \| "success" \| "warning" \| "danger" | "default" | Progress style |
+| `label` | string | - | Progress label |
+| `showLabel` | boolean | false | Show percentage |
+| `className` | string | - | Additional classes |
+
+### Progress Examples
+
+```tsx
+// Simple progress
+<Progress value={45} />
+
+// With label
+<Progress value={75} label="Upload progress" showLabel />
+
+// Variant progress
+<div className="space-y-4">
+  <Progress value={100} variant="success" label="Complete" showLabel />
+  <Progress value={65} variant="default" label="In progress" showLabel />
+  <Progress value={25} variant="warning" label="Needs attention" showLabel />
+  <Progress value={10} variant="danger" label="Critical" showLabel />
+</div>
+
+// File upload progress
+<div className="space-y-2">
+  <div className="flex justify-between">
+    <p>Uploading file...</p>
+    <span className="text-sm">{uploadProgress}%</span>
+  </div>
+  <Progress value={uploadProgress} />
+</div>
+```
+
+## Breadcrumb
+
+Navigation component showing path through hierarchy.
+
+### Basic Usage
+
+```tsx
+<Breadcrumb>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/">Home</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem>
+    Laptop
+  </BreadcrumbItem>
+</Breadcrumb>
+```
+
+### Breadcrumb Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `separator` | string | "/" | Path separator |
+| `className` | string | - | Additional classes |
+
+### BreadcrumbItem Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isLast` | boolean | false | Mark as last item |
+| `className` | string | - | Additional classes |
+
+### Breadcrumb Examples
+
+```tsx
+// Product breadcrumb
+<Breadcrumb>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/">Home</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/products">Products</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/products/electronics">Electronics</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem isLast>
+    MacBook Pro 16"
+  </BreadcrumbItem>
+</Breadcrumb>
+
+// Settings breadcrumb
+<Breadcrumb>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem>
+    <BreadcrumbLink href="/settings">Settings</BreadcrumbLink>
+  </BreadcrumbItem>
+  <BreadcrumbItem isLast>
+    Account Preferences
+  </BreadcrumbItem>
+</Breadcrumb>
+
+// Dynamic breadcrumb
+const items = [
+  { label: "Home", href: "/" },
+  { label: "Blog", href: "/blog" },
+  { label: "React", href: "/blog/react" },
+  { label: "Hooks", href: "/blog/react/hooks" }
+]
+
+<Breadcrumb>
+  {items.map((item, index) => (
+    <BreadcrumbItem key={index} isLast={index === items.length - 1}>
+      {index === items.length - 1 ? (
+        item.label
+      ) : (
+        <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+      )}
+    </BreadcrumbItem>
+  ))}
+</Breadcrumb>
+```
+
+## Form Examples
+
+### Complete Login Form
+
+```tsx
+import { useState } from "react"
+import { Button, Input, Label, Checkbox, Alert } from "@/components/ui"
+
+const [email, setEmail] = useState("")
+const [password, setPassword] = useState("")
+const [remember, setRemember] = useState(false)
+const [error, setError] = useState("")
+
+const handleSubmit = (e) => {
+  e.preventDefault()
+  // Handle login
+}
+
+<form onSubmit={handleSubmit} className="space-y-4">
+  {error && (
+    <Alert variant="danger" title="Login Failed">
+      {error}
+    </Alert>
+  )}
+
+  <div className="space-y-2">
+    <Label htmlFor="email">Email</Label>
+    <Input
+      id="email"
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="you@example.com"
+    />
+  </div>
+
+  <div className="space-y-2">
+    <Label htmlFor="password">Password</Label>
+    <Input
+      id="password"
+      type="password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+  </div>
+
+  <div className="flex items-center gap-2">
+    <Checkbox
+      id="remember"
+      checked={remember}
+      onChange={setRemember}
+    />
+    <Label htmlFor="remember">Remember me</Label>
+  </div>
+
+  <Button type="submit" className="w-full">
+    Sign In
+  </Button>
+</form>
+```
+
+## Accessibility
+
+All form controls:
+- Support keyboard navigation
+- Have clear focus states
+- Include proper labels
+- Use semantic HTML
+- Work with screen readers
+- Have sufficient color contrast
+- Include error messaging
+
+## Best Practices
+
+1. Always pair inputs with labels
+2. Use error states for validation
+3. Provide clear help text
+4. Group related controls
+5. Use consistent spacing
+6. Test keyboard navigation
+7. Ensure sufficient contrast
+8. Provide success feedback
+9. Disable on submission
+10. Show loading states

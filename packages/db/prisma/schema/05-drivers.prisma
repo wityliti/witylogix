@@ -1,0 +1,65 @@
+// ─── DRIVERS ────────────────────────────────────────────────
+// Drivers can be org-level (shared across shops) or shop-level.
+// - orgId set + shopId null = shared driver across all org shops
+// - orgId null + shopId set = shop-specific driver (legacy/standalone)
+// - orgId set + shopId set = org driver assigned primarily to one shop
+
+model Driver {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId        String?      @map("org_id") @db.Uuid
+  shopId       String?      @map("shop_id") @db.Uuid
+  name         String
+  email        String?
+  phone        String
+  vehicleType  VehicleType  @default(CAR) @map("vehicle_type")
+  vehiclePlate String?      @map("vehicle_plate")
+  maxCapacity  Int          @default(20) @map("max_capacity")
+  maxWeight    Decimal?     @map("max_weight") @db.Decimal(10, 2)
+  status       DriverStatus @default(OFFLINE)
+  isActive     Boolean      @default(true) @map("is_active")
+
+  // TODO: Restore PostGIS: Unsupported("geometry(Point, 4326)")? when PostGIS is available
+  currentLocation Json?     @map("current_location")
+  lastLocationAt  DateTime? @map("last_location_at")
+  heading         Float?
+
+  // Push notifications
+  fcmToken String? @map("fcm_token")
+
+  // Auth
+  password     String?
+  refreshToken String? @map("refresh_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization         Organization?         @relation(fields: [orgId], references: [id])
+  shop                 Shop?                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orders               Order[]
+  routeStops           RouteStop[]
+  routes               Route[]
+  shipments            Shipment[]
+  codCollections       CODCollection[]
+  driverBehaviorEvents DriverBehaviorEvent[]
+
+  @@unique([orgId, phone])
+  @@index([orgId, status])
+  @@index([shopId, status])
+  @@map("drivers")
+}
+
+enum DriverStatus {
+  OFFLINE
+  AVAILABLE
+  ON_ROUTE
+  ON_BREAK
+}
+
+enum VehicleType {
+  BICYCLE
+  MOTORCYCLE
+  CAR
+  VAN
+  TRUCK
+}

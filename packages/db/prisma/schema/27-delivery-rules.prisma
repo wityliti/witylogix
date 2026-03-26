@@ -1,0 +1,70 @@
+// Delivery Rules Engine Models
+
+/// Calendar profiles define operational hours and order limits (delivery rules engine)
+model DeliveryCalendarProfile {
+  id        String                @id @default(cuid())
+  shopId    String
+  name      String
+  rules     CalendarProfileRule[]
+  isDefault Boolean               @default(false)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId])
+}
+
+/// Rules for specific days and time slots
+model CalendarProfileRule {
+  id        String                  @id @default(cuid())
+  profileId String
+  profile   DeliveryCalendarProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0 (Sunday) to 6 (Saturday)
+  startTime String // HH:mm format
+  endTime   String // HH:mm format
+  maxOrders Int // Maximum orders per time slot
+  isBlocked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, dayOfWeek, startTime])
+  @@index([profileId])
+}
+
+/// Delivery rules engine configuration
+model DeliveryRule {
+  id         String   @id @default(cuid())
+  shopId     String
+  name       String
+  type       String // LOCAL, PICKUP, STANDARD
+  conditions Json // Array of conditions: { field, operator, value }
+  actions    Json // Array of actions: { type, params }
+  priority   Int      @default(100) // Lower = higher priority
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@index([type])
+  @@index([enabled])
+}
+
+/// Pickup location specific rules
+model PickupRule {
+  id              String   @id @default(cuid())
+  shopId          String
+  locationId      String
+  preparationTime Int // Minutes to prepare order
+  maxOrders       Int // Maximum concurrent pickups
+  schedule        Json // Available time slots
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([shopId, locationId])
+  @@index([shopId])
+  @@index([locationId])
+}

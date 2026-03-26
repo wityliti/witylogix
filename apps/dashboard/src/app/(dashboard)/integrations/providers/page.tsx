@@ -1,0 +1,506 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  useProviderDetail,
+  type ProviderMetrics,
+} from '@/hooks/use-integration-health';
+import {
+  AlertCircle,
+  ArrowUp,
+  ArrowDown,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Zap,
+} from 'lucide-react';
+
+/**
+ * Provider Detail Page
+ * Metrics, latency charts, error breakdown, request logs, incidents, config
+ */
+
+interface TimeRange {
+  label: string;
+  value: "1h" | "6h" | "24h" | "7d";
+}
+
+const TIME_RANGES: TimeRange[] = [
+  { label: "1h", value: "1h" },
+  { label: "6h", value: "6h" },
+  { label: "24h", value: "24h" },
+  { label: "7d", value: "7d" },
+];
+
+function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
+  if (!metrics) return null;
+
+  const maxLatency = Math.max(
+    metrics.latencyP50,
+    metrics.latencyP95,
+    metrics.latencyP99
+  );
+  const scale = maxLatency > 0 ? 200 / maxLatency : 1;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-end gap-4 h-40 px-4 py-6 bg-[#1a1a2e] rounded-lg border border-[#1e1e2e]">
+        {/* P50 */}
+        <div className="flex-1 flex flex-col items-center gap-2">
+          <div
+            className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all"
+            style={{ height: `${metrics.latencyP50 * scale}px` }}
+          />
+          <div className="text-center text-xs">
+            <p className="text-gray-400">P50</p>
+            <p className="font-medium text-white">
+              {metrics.latencyP50}ms
+            </p>
+          </div>
+        </div>
+
+        {/* P95 */}
+        <div className="flex-1 flex flex-col items-center gap-2">
+          <div
+            className="w-full bg-gradient-to-t from-amber-500 to-amber-400 rounded-t transition-all"
+            style={{ height: `${metrics.latencyP95 * scale}px` }}
+          />
+          <div className="text-center text-xs">
+            <p className="text-gray-400">P95</p>
+            <p className="font-medium text-white">
+              {metrics.latencyP95}ms
+            </p>
+          </div>
+        </div>
+
+        {/* P99 */}
+        <div className="flex-1 flex flex-col items-center gap-2">
+          <div
+            className="w-full bg-gradient-to-t from-red-500 to-red-400 rounded-t transition-all"
+            style={{ height: `${metrics.latencyP99 * scale}px` }}
+          />
+          <div className="text-center text-xs">
+            <p className="text-gray-400">P99</p>
+            <p className="font-medium text-white">
+              {metrics.latencyP99}ms
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-blue-500" />
+          <span className="text-gray-400">P50 (50th percentile)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-amber-500" />
+          <span className="text-gray-400">P95 (95th percentile)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-red-500" />
+          <span className="text-gray-400">P99 (99th percentile)</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
+  if (!metrics || !metrics.errorBreakdown) return null;
+
+  const total = Object.values(metrics.errorBreakdown).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+  const entries = Object.entries(metrics.errorBreakdown).sort(
+    (a, b) => b[1] - a[1]
+  );
+
+  const colors = [
+    "bg-red-500",
+    "bg-amber-500",
+    "bg-blue-500",
+    "bg-blue-500",
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Pie Chart */}
+        <div className="flex items-center justify-center">
+          <div className="relative w-40 h-40">
+            <div className="absolute inset-0 rounded-full border-8 flex items-center justify-center" style={{
+              borderColor: `conic-gradient(${entries.map((e, i) => `${colors[i % colors.length].replace('bg-', '')} ${(e[1] / total) * 360}deg`).join(', ')}`
+            }}>
+              <div className="text-center bg-[#12121a] rounded-full w-24 h-24 flex items-center justify-center">
+                <div>
+                  <p className="text-sm text-gray-400">Total</p>
+                  <p className="text-2xl font-bold text-white">
+                    {total}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="space-y-2">
+          {entries.map((entry, idx) => (
+            <div key={entry[0]} className="flex items-center gap-3">
+              <div
+                className={cn("w-3 h-3 rounded", colors[idx % colors.length])}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">
+                  {entry[0]}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {entry[1]} ({((entry[1] / total) * 100).toFixed(1)}%)
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProvidersPage() {
+  const [selectedProviderId, setSelectedProviderId] = useState("stripe");
+  const [timeRange, setTimeRange] = useState<"1h" | "6h" | "24h" | "7d">("24h");
+  const [configMode, setConfigMode] = useState(false);
+
+  const { metrics, isLoading, error, updateConfiguration } =
+    useProviderDetail(selectedProviderId);
+
+  const circuitBreakerColor = useMemo(() => {
+    if (!metrics) return "text-gray-400";
+    if (metrics.currentCircuitBreaker === "closed")
+      return "text-emerald-500";
+    if (metrics.currentCircuitBreaker === "half-open")
+      return "text-amber-500";
+    return "text-red-500";
+  }, [metrics?.currentCircuitBreaker]);
+
+  if (error) {
+    return (
+      <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+        <div className="flex gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-white">
+              Failed to load provider
+            </h3>
+            <p className="text-sm text-gray-400 mt-1">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Provider Selector */}
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">
+          Select Provider
+        </label>
+        <select
+          value={selectedProviderId}
+          onChange={(e) => setSelectedProviderId(e.target.value)}
+          className="w-full md:w-80 px-3 py-2 rounded-lg bg-[#12121a] border border-[#1e1e2e] text-white focus:outline-none focus:border-blue-500"
+        >
+          <optgroup label="Payment">
+            <option value="stripe">Stripe</option>
+            <option value="paypal">PayPal</option>
+          </optgroup>
+          <optgroup label="Shipping">
+            <option value="fedex">FedEx</option>
+            <option value="ups">UPS</option>
+            <option value="usps">USPS</option>
+          </optgroup>
+          <optgroup label="ERP">
+            <option value="sap">SAP</option>
+            <option value="oracle">Oracle</option>
+          </optgroup>
+        </select>
+      </div>
+
+      {/* Status Header */}
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-400 mb-2">Uptime</p>
+              <p className="text-3xl font-bold text-white">
+                {metrics.uptime.toFixed(1)}%
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-400 mb-2">SLA Target</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-white">
+                  {metrics.slaTarget}%
+                </p>
+                {metrics.uptime >= metrics.slaTarget ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-400 mb-2">Circuit Breaker</p>
+              <p className={cn("text-lg font-bold capitalize", circuitBreakerColor)}>
+                {metrics.currentCircuitBreaker}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#12121a] border-[#1e1e2e]">
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-400 mb-2">Avg Latency</p>
+              <p className="text-2xl font-bold text-white">
+                {Math.round(metrics.latencyP50)}ms
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Latency Chart */}
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Latency by Percentile</CardTitle>
+            <div className="flex gap-1">
+              {TIME_RANGES.map((range) => (
+                <Button
+                  key={range.value}
+                  size="sm"
+                  variant={timeRange === range.value ? "primary" : "ghost"}
+                  onClick={() => setTimeRange(range.value)}
+                >
+                  {range.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <LatencyChart metrics={metrics} />
+        </CardContent>
+      </Card>
+
+      {/* Error Breakdown */}
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <CardHeader>
+          <CardTitle>Error Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ErrorBreakdown metrics={metrics} />
+        </CardContent>
+      </Card>
+
+      {/* Recent Requests */}
+      {metrics?.recentRequests && metrics.recentRequests.length > 0 && (
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardHeader>
+            <CardTitle>Recent Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#1e1e2e]">
+                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                      Status
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                      Endpoint
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                      Latency
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-400 font-medium">
+                      Time
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metrics.recentRequests.slice(0, 10).map((req) => (
+                    <tr
+                      key={req.id}
+                      className="border-b border-[#1e1e2e] hover:bg-[#1a1a2e]"
+                    >
+                      <td className="py-2 px-3">
+                        <Badge
+                          variant={
+                            req.status < 400
+                              ? "success"
+                              : req.status < 500
+                                ? "warning"
+                                : "danger"
+                          }
+                        >
+                          {req.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2 px-3 text-white font-mono text-xs">
+                        {req.endpoint}
+                      </td>
+                      <td className="py-2 px-3 text-white">
+                        {req.latency}ms
+                      </td>
+                      <td className="py-2 px-3 text-gray-400 text-xs">
+                        {new Date(req.timestamp).toLocaleTimeString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Incident History Timeline */}
+      {metrics?.incidents && metrics.incidents.length > 0 && (
+        <Card className="bg-[#12121a] border-[#1e1e2e]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Incident History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {metrics.incidents.map((incident, idx) => (
+                <div key={incident.id} className="flex gap-4">
+                  <div className="relative flex flex-col items-center">
+                    <div
+                      className={cn(
+                        "w-3 h-3 rounded-full",
+                        incident.resolved
+                          ? "bg-emerald-500"
+                          : "bg-amber-500"
+                      )}
+                    />
+                    {idx < metrics.incidents.length - 1 && (
+                      <div className="w-px h-12 bg-[#1e1e2e] my-2" />
+                    )}
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="font-medium text-white">
+                      {incident.title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(incident.timestamp).toLocaleString()}
+                    </p>
+                    <Badge
+                      variant={incident.resolved ? "success" : "warning"}
+                      className="mt-2"
+                    >
+                      {incident.resolved ? "Resolved" : "Ongoing"}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Configuration Panel */}
+      <Card className="bg-[#12121a] border-[#1e1e2e]">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Configuration
+            </CardTitle>
+            <Button
+              size="sm"
+              variant={configMode ? "danger" : "secondary"}
+              onClick={() => setConfigMode(!configMode)}
+            >
+              {configMode ? "Cancel" : "Edit"}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-white">
+                Rate Limit (req/s)
+              </label>
+              <input
+                type="number"
+                defaultValue="1000"
+                disabled={!configMode}
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-white">
+                Timeout (ms)
+              </label>
+              <input
+                type="number"
+                defaultValue="5000"
+                disabled={!configMode}
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-white">
+                Retry Policy
+              </label>
+              <select
+                defaultValue="exponential"
+                disabled={!configMode}
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+              >
+                <option value="exponential">Exponential Backoff</option>
+                <option value="linear">Linear Backoff</option>
+                <option value="fixed">Fixed Delay</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-white">
+                Circuit Breaker Threshold
+              </label>
+              <input
+                type="number"
+                defaultValue="50"
+                disabled={!configMode}
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-[#1e1e2e] text-white disabled:opacity-50"
+              />
+            </div>
+
+            {configMode && (
+              <Button className="w-full">Save Configuration</Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

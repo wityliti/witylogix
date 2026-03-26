@@ -1,0 +1,21 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "getting-started",
+    "core-concepts",
+    "architecture",
+    "api",
+    "api-reference",
+    "---",
+    "integrations",
+    "guides",
+    "components",
+    "---",
+    "self-hosting",
+    "contributing",
+    "adrs",
+    "troubleshooting",
+    "---",
+    "legal"
+  ]
+}

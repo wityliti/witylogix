@@ -1,0 +1,73 @@
+// ─── ROUTES ─────────────────────────────────────────────────
+
+model Route {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String      @map("shop_id") @db.Uuid
+  driverId       String?     @map("driver_id") @db.Uuid
+  name           String?
+  status         RouteStatus @default(DRAFT)
+  date           DateTime    @db.Date
+  startAddress   String?     @map("start_address")
+  optimizedOrder Json        @default("[]") @map("optimized_order")
+  totalDistance  Decimal?    @map("total_distance") @db.Decimal(12, 2)
+  totalDuration  Int?        @map("total_duration")
+  startedAt      DateTime?   @map("started_at")
+  completedAt    DateTime?   @map("completed_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  shop   Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver Driver?     @relation(fields: [driverId], references: [id])
+  stops  RouteStop[]
+
+  @@index([shopId, date, status])
+  @@index([shopId, driverId])
+  @@map("routes")
+}
+
+model RouteStop {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  routeId          String     @map("route_id") @db.Uuid
+  orderId          String?    @map("order_id") @db.Uuid
+  driverId         String?    @map("driver_id") @db.Uuid
+  sequence         Int
+  stopType         StopType   @default(DELIVERY) @map("stop_type")
+  status           StopStatus @default(PENDING)
+  estimatedArrival DateTime?  @map("estimated_arrival")
+  actualArrival    DateTime?  @map("actual_arrival")
+  departedAt       DateTime?  @map("departed_at")
+  notes            String?
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  route  Route   @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  driver Driver? @relation(fields: [driverId], references: [id])
+
+  @@index([routeId, sequence])
+  @@map("route_stops")
+}
+
+enum RouteStatus {
+  DRAFT
+  OPTIMIZED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum StopType {
+  PICKUP
+  DELIVERY
+  RETURN
+  DEPOT
+}
+
+enum StopStatus {
+  PENDING
+  EN_ROUTE
+  ARRIVED
+  COMPLETED
+  SKIPPED
+  FAILED
+}

@@ -1,0 +1,88 @@
+---
+title: File Upload
+description: Drag and drop file upload component with preview support
+---
+
+# File Upload
+
+A versatile file upload component that supports drag & drop, click to browse, file type filtering, and size validation.
+
+## Import
+
+```typescript
+import { FileUpload } from "@/components/ui"
+```
+
+## Basic Usage
+
+```tsx
+<FileUpload
+  onUpload={(files) => console.log(files)}
+  placeholder="Drag files here"
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `accept` | string | - | Accepted file types (e.g., "image/*,.pdf") |
+| `maxSize` | number | 5MB | Maximum file size in bytes |
+| `multiple` | boolean | false | Allow multiple file uploads |
+| `onUpload` | function | - | Callback when files are selected |
+| `disabled` | boolean | false | Disable the upload area |
+| `children` | ReactNode | "Drag & drop files here" | Custom placeholder text |
+
+## Examples
+
+### Basic File Upload
+
+```tsx
+import { FileUpload } from "@/components/ui"
+
+export default function UploadExample() {
+  return (
+    <FileUpload
+      onUpload={(files) => {
+        files.forEach(file => console.log(file.name))
+      }}
+    />
+  )
+}
+```
+
+### Image Upload Only
+
+```tsx
+<FileUpload
+  accept="image/*"
+  maxSize={2 * 1024 * 1024}
+  onUpload={(files) => uploadImages(files)}
+>
+  Drop images here or click to browse
+</FileUpload>
+```
+
+### Multiple Files
+
+```tsx
+<FileUpload
+  multiple
+  accept=".pdf,.doc,.docx"
+  maxSize={10 * 1024 * 1024}
+  onUpload={(files) => processDocuments(files)}
+/>
+```
+
+## Features
+
+- Drag & drop support
+- Click to browse fallback
+- File type filtering via `accept` prop
+- Maximum file size validation
+- Preview thumbnails for images
+- File size display in KB/MB
+- Remove individual files
+- Multiple file support
+- Disabled state
+- Error messaging

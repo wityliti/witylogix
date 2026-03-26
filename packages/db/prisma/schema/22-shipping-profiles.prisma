@@ -1,0 +1,410 @@
+// ─── SHIPPING PROFILES ───────────────────────────────────
+// A shipping profile defines HOW and HOW MUCH to charge for delivery.
+// It bundles locations, zones, rates, and rules into a reusable config.
+// This was the heart of the old system's rate calculation engine.
+
+model ShippingProfile {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId         String         @map("shop_id") @db.Uuid
+  name           String
+  description    String?
+  deliveryMethod DeliveryMethod @default(LOCAL_DELIVERY) @map("delivery_method")
+  isDefault      Boolean        @default(false) @map("is_default")
+  isActive       Boolean        @default(true) @map("is_active")
+
+  // Processing time before dispatch (hours)
+  processingTimeHours Int @default(0) @map("processing_time_hours")
+
+  // Rate calculation method
+  rateType          RateType @default(FLAT) @map("rate_type")
+  flatRate          Decimal? @map("flat_rate") @db.Decimal(10, 2)
+  freeShippingAbove Decimal? @map("free_shipping_above") @db.Decimal(10, 2)
+  minOrderAmount    Decimal? @map("min_order_amount") @db.Decimal(10, 2)
+
+  // Conditional rules (JSON array of rule objects)
+  // e.g. [{ type: "weight", ranges: [...] }, { type: "distance", ranges: [...] }]
+  rateRules Json @default("[]") @map("rate_rules")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop                 Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  locations            ShippingProfileLocation[]
+  calendarRules        CalendarRule[]
+  shippingRates        ShippingRate[]
+  shippingZones        ShippingZone[]
+  calendarProfiles     CalendarProfile[]
+  profileLocationLinks ProfileLocationLink[]
+
+  @@index([shopId, isActive])
+  @@map("shipping_profiles")
+}
+
+// Junction: which locations use which shipping profile
+model ShippingProfileLocation {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+  locationId        String @map("location_id") @db.Uuid
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+  location        Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([shippingProfileId, locationId])
+  @@map("shipping_profile_locations")
+}
+
+// ─── CALENDAR RULES ──────────────────────────────────────
+// Defines when a shipping profile is available: operating days,
+// blackout dates, capacity limits, cutoff times, holiday schedules.
+// Replaces old calenderRule + calenderProfile models.
+
+model CalendarRule {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String           @map("shop_id") @db.Uuid
+  shippingProfileId String?          @map("shipping_profile_id") @db.Uuid
+  name              String
+  type              CalendarRuleType @default(OPERATING_DAYS)
+
+  // Operating days (bitmask or array): [0=Sun, 1=Mon, ..., 6=Sat]
+  daysOfWeek Int[] @map("days_of_week")
+
+  // Time window for this rule
+  startTime String? @map("start_time") // "09:00"
+  endTime   String? @map("end_time") // "17:00"
+
+  // Cutoff: how many minutes before the slot a customer must order
+  cutoffMinutes Int @default(120) @map("cutoff_minutes")
+
+  // Capacity per day/slot
+  maxCapacityPerDay Int? @map("max_capacity_per_day")
+
+  // Blackout dates: specific dates when this rule is inactive
+  blackoutDates DateTime[] @map("blackout_dates")
+
+  // Date range: when this rule is effective (null = always)
+  effectiveFrom DateTime? @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+
+  // Surcharge for this window (e.g. weekend surcharge)
+  surcharge Decimal @default(0) @db.Decimal(10, 2)
+
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0) // higher = overrides lower
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop            Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shippingProfile ShippingProfile? @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, isActive])
+  @@index([shippingProfileId, isActive])
+  @@map("calendar_rules")
+}
+
+enum RateType {
+  FLAT // Single price for all
+  WEIGHT_BASED // Price varies by package weight
+  DISTANCE_BASED // Price varies by delivery distance
+  ZONE_BASED // Price varies by delivery zone
+  TIERED // Price tiers (e.g. 0-5kg, 5-10kg)
+  CALCULATED // Dynamic: combines multiple factors
+}
+
+enum CalendarRuleType {
+  OPERATING_DAYS // Regular operating schedule
+  BLACKOUT // Dates when service is unavailable
+  SPECIAL_HOURS // Modified hours (holidays, events)
+  CAPACITY_OVERRIDE // Override capacity for specific periods
+}
+
+// ── Sprint 2.5 additions ──
+
+// ─── SHIPPING RATES (v2) ─────────────────────────────────────
+// Enhanced rate model supporting multiple rate calculation methods
+// Includes weight tiers, price tiers, distance-based rates, and surcharges
+
+model ShippingRate {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+
+  // Rate calculation method
+  rateType RateTypeEnum @map("rate_type")
+
+  // Flat rate (simple fixed price)
+  flatRate Decimal? @map("flat_rate") @db.Decimal(10, 2)
+
+  // Weight tiers: [{ maxWeight: 5, rate: 10 }, { maxWeight: 10, rate: 15 }]
+  weightTiers Json? @map("weight_tiers") // WeightTier[]
+
+  // Price tiers: [{ orderAmount: 100, rate: 5 }, { orderAmount: 250, freeShipping: true }]
+  priceTiers Json? @map("price_tiers") // PriceTier[]
+
+  // Distance tiers: [{ maxDistance: 10, baseRate: 5, perKmRate: 0.50 }]
+  distanceTiers Json? @map("distance_tiers") // DistanceTier[]
+
+  // Tiered rates: [{ minWeight: 0, maxWeight: 5, rate: 10 }]
+  tieredRates Json? @map("tiered_rates") // TieredRate[]
+
+  // Rate constraints
+  minimumRate           Decimal? @map("minimum_rate") @db.Decimal(10, 2)
+  maximumRate           Decimal? @map("maximum_rate") @db.Decimal(10, 2)
+  freeShippingThreshold Decimal? @map("free_shipping_threshold") @db.Decimal(10, 2)
+
+  // Surcharges: fuel, remote area, residential, oversize, etc
+  surcharges Json @default("[]") // RateSurcharge[]
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+
+  @@index([shippingProfileId, isActive])
+  @@map("shipping_rates")
+}
+
+// ─── SHIPPING ZONES (Enhanced) ──────────────────────────────
+// Geographic zones for delivery rate calculation with postal code support
+
+model ShippingZone {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+  name              String
+
+  // Zone boundary (GeoJSON Polygon, PostGIS when available)
+  boundary Json? @map("boundary")
+
+  // Location criteria for zone matching
+  postalCodes String[] @map("postal_codes")
+  cities      String[] @default([])
+  states      String[] @default([])
+  countries   String[] @default([])
+
+  // Rates within this zone
+  rates ShippingZoneRate[]
+
+  // Zone priority (higher = checked first)
+  priority Int @default(0)
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+
+  @@index([shippingProfileId, isActive])
+  @@index([postalCodes])
+  @@map("shipping_zones")
+}
+
+// ─── ZONE RATES ────────────────────────────────────────────
+// Rates specific to a zone (overrides or supplements profile rates)
+
+model ShippingZoneRate {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  zoneId String @map("zone_id") @db.Uuid
+
+  // Rate type and calculation method
+  rateType RateTypeEnum @map("rate_type")
+
+  // Flat rate
+  baseRate Decimal? @map("base_rate") @db.Decimal(10, 2)
+
+  // Per km rate for distance-based calculation
+  perKmRate Decimal? @map("per_km_rate") @db.Decimal(10, 2)
+
+  // Weight tiers for this zone
+  weightTiers Json? @map("weight_tiers")
+
+  // Order constraints
+  minOrder  Decimal? @map("min_order") @db.Decimal(10, 2)
+  freeAbove Decimal? @map("free_above") @db.Decimal(10, 2)
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  zone ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId, isActive])
+  @@map("shipping_zone_rates")
+}
+
+// ─── CALENDAR BLACKOUT DATES ──────────────────────────────
+// Dates when delivery is completely unavailable
+
+model CalendarBlackout {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  calendarProfileId String @map("calendar_profile_id") @db.Uuid
+
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  reason    String
+
+  // If null, all zones are affected
+  affectedZones String[] @map("affected_zones")
+
+  // Whether only part of the day is unavailable
+  partialDay Boolean @default(false) @map("partial_day")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  calendarProfile CalendarProfile @relation(fields: [calendarProfileId], references: [id], onDelete: Cascade)
+
+  @@index([calendarProfileId, startDate])
+  @@map("calendar_blackouts")
+}
+
+// ─── CALENDAR OPERATING HOURS ─────────────────────────────
+// Operating hours for each day of week and holiday schedules
+
+model CalendarOperatingHours {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  calendarProfileId String @map("calendar_profile_id") @db.Uuid
+
+  dayOfWeek Int? @map("day_of_week") // 0-6, null = applies to all days
+
+  openTime  String @map("open_time") // HH:MM format
+  closeTime String @map("close_time") // HH:MM format
+
+  // For holidays or special dates
+  specialDate DateTime? @map("special_date")
+  isClosed    Boolean   @default(false) @map("is_closed")
+
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  calendarProfile CalendarProfile @relation(fields: [calendarProfileId], references: [id], onDelete: Cascade)
+
+  @@index([calendarProfileId, dayOfWeek])
+  @@map("calendar_operating_hours")
+}
+
+// ─── CALENDAR PROFILES (v2) ───────────────────────────────
+// Enhanced calendar for managing availability, time slots, blackout dates
+
+model CalendarProfile {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+
+  name     String
+  timezone String @default("UTC")
+
+  // Preparation/processing time before dispatch (minutes)
+  prepTimeMinutes Int @default(0) @map("prep_time_minutes")
+
+  // Conditional prep time: [{ condition: "weekend", additionalMinutes: 60 }]
+  conditionalPrepTime Json @default("[]") @map("conditional_prep_time")
+
+  // Cutoff rules for order placement
+  cutoffRules Json @default("[]") @map("cutoff_rules")
+
+  // Related data
+  operatingHours CalendarOperatingHours[]
+  blackoutDates  CalendarBlackout[]
+  timeSlots      DeliveryTimeSlot[]
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+
+  @@index([shippingProfileId, isActive])
+  @@map("calendar_profiles")
+}
+
+// ─── DELIVERY TIME SLOTS ───────────────────────────────────
+// Available delivery time windows for customers
+
+model DeliveryTimeSlot {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  calendarProfileId String @map("calendar_profile_id") @db.Uuid
+
+  name      String
+  startTime String @map("start_time") // HH:MM format
+  endTime   String @map("end_time") // HH:MM format
+
+  // Days of week this slot is available (0-6)
+  daysOfWeek Int[] @map("days_of_week")
+
+  // Capacity and utilization
+  maxCapacity        Int @default(50) @map("max_capacity")
+  currentUtilization Int @default(0) @map("current_utilization")
+
+  // Cutoff: must order X minutes before slot starts
+  cutoffMinutes Int @default(120) @map("cutoff_minutes")
+
+  // Extra charge for this time slot
+  surcharge Decimal @default(0) @db.Decimal(10, 2)
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  calendarProfile CalendarProfile @relation(fields: [calendarProfileId], references: [id], onDelete: Cascade)
+
+  // Relations to orders/shipments that use this slot
+  shipments Shipment[]
+
+  @@index([calendarProfileId, isActive])
+  @@map("delivery_time_slots")
+}
+
+// ─── PROFILE LOCATION LINKS (v2) ──────────────────────────
+// Junction linking shipping profiles to fulfillment locations with overrides
+
+model ProfileLocationLink {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shippingProfileId String @map("shipping_profile_id") @db.Uuid
+  locationId        String @map("location_id") @db.Uuid
+
+  // Default delivery method for this location
+  defaultDeliveryMethod DeliveryMethod @map("default_delivery_method")
+
+  // Operating hours override (null = use location default)
+  operatingHoursOverride Json? @map("operating_hours_override")
+
+  // Prep time override (null = use profile default) in minutes
+  prepTimeOverride Int? @map("prep_time_override")
+
+  // Priority for zone matching (higher = checked first)
+  priority Int @default(0)
+
+  metadata  Json     @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shippingProfile ShippingProfile @relation(fields: [shippingProfileId], references: [id], onDelete: Cascade)
+  location        Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([shippingProfileId, locationId])
+  @@index([shippingProfileId, isActive])
+  @@map("profile_location_links")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────
+
+enum RateTypeEnum {
+  FLAT
+  WEIGHT_BASED
+  PRICE_BASED
+  DISTANCE_BASED
+  TIERED
+  CALCULATED
+
+  @@map("rate_type_enum")
+}

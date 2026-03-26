@@ -1,0 +1,28 @@
+// ─── NOTIFICATION TEMPLATES ──────────────────────────────
+// Templates for each notification channel × event type.
+// Supports variable interpolation: {{order.number}}, {{customer.name}}, etc.
+// Replaces old emailTemplate, whatsappTemplate, notificationTemplate.
+
+model NotificationTemplate {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String              @map("shop_id") @db.Uuid
+  channel    NotificationChannel
+  eventType  String              @map("event_type") // e.g. "order.created", "shipment.delivered"
+  name       String
+  subject    String? // For email
+  body       String // Template body (supports {{variables}})
+  designJson Json?               @map("design_json") // Unlayer/MJML design data (email)
+  variables  Json                @default("[]") // Available variables: [{ key, description, example }]
+  language   String              @default("en")
+  version    Int                 @default(1)
+  isActive   Boolean             @default(true) @map("is_active")
+  isDefault  Boolean             @default(false) @map("is_default") // system-provided template
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, channel, eventType, language])
+  @@index([shopId, channel, isActive])
+  @@map("notification_templates")
+}

@@ -1,0 +1,453 @@
+---
+title: Notification System Guide
+description: Send multi-channel notifications via Email, SMS, WhatsApp, and Push with pluggable providers, metered billing, and BYOK support.
+---
+
+# Notification System Guide
+
+The Witylogix notification system is a flexible, multi-channel dispatcher that supports Email, SMS, WhatsApp, and Push notifications. It uses a provider abstraction pattern, allowing tenants to bring their own keys (BYOK) while deployers set intelligent defaults.
+
+## Architecture Overview
+
+The notification system consists of:
+
+1. **Multi-channel Dispatcher**: Route to Email, SMS, WhatsApp, Push
+2. **Provider Abstraction**: Multiple providers per channel
+3. **Template Rendering**: Dynamic variable substitution
+4. **Orchestrator & Worker**: Job-based async processing
+5. **Metered Billing**: Track usage per tenant
+6. **Fallback Strategy**: Automatic provider failover
+
+## Channels and Providers
+
+Each notification channel supports multiple providers. Tenants can configure preferences, and the system falls back to defaults if primary providers fail.
+
+### Email Providers
+
+| Provider | Use Case | Setup |
+| --- | --- | --- |
+| **SendGrid** | High volume, transactional | API key |
+| **Mailgun** | EU data residency | Domain + API key |
+| **AWS SES** | Cost-effective at scale | IAM credentials |
+| **Postmark** | Reliability-focused | API key |
+| **Resend** | Modern, developer-friendly | API key |
+| **SMTP** | Self-hosted | Host, port, auth |
+
+### SMS Providers
+
+| Provider | Use Case | Setup |
+| --- | --- | --- |
+| **Twilio** | Reliable, global coverage | Account SID + Auth Token |
+| **Vonage** | Cost-effective | API key + secret |
+| **AWS SNS** | AWS ecosystem | IAM credentials |
+| **MessageBird** | EU-friendly | API key |
+| **Plivo** | Alternative coverage | Auth ID + token |
+
+### WhatsApp Providers
+
+| Provider | Use Case | Setup |
+| --- | --- | --- |
+| **Meta Cloud API** | Official, feature-rich | Phone number ID + token |
+| **Twilio** | Integrated SMS+WhatsApp | Account SID + Auth Token |
+| **360dialog** | Premium service | API key |
+
+### Push Notification Providers
+
+| Provider | Use Case | Setup |
+| --- | --- | --- |
+| **Firebase (FCM v1)** | Google ecosystem | Service account JSON |
+| **OneSignal** | Multi-platform | API key + app ID |
+| **Expo** | React Native apps | Access token |
+
+## BYOK Pattern
+
+The "Bring Your Own Keys" pattern allows tenants to use their own provider credentials while maintaining deployer-set defaults.
+
+### Configuration Structure
+
+```typescript
+// Deployer defaults (server-side, immutable)
+const deployerDefaults = {
+  email: {
+    primary: 'sendgrid',
+    fallback: ['mailgun', 'ses'],
+    defaultSender: 'noreply@witylogix.com',
+  },
+  sms: {
+    primary: 'twilio',
+    fallback: ['vonage'],
+  },
+  whatsapp: {
+    primary: 'meta',
+    fallback: ['twilio'],
+  },
+  push: {
+    primary: 'firebase',
+    fallback: ['onesignal'],
+  },
+};
+
+// Tenant overrides (custom credentials)
+const tenantConfig = {
+  shopId: 'shop_123',
+  channels: {
+    email: {
+      sendgrid: {
+        apiKey: 'sg_...',
+        sender: 'orders@myshop.com',
+      },
+    },
+    sms: {
+      twilio: {
+        accountSid: 'AC...',
+        authToken: '...',
+        fromNumber: '+1234567890',
+      },
+    },
+  },
+};
+```
+
+### Loading Configuration
+
+```typescript
+import { NotificationDispatcher } from '@witylogix/notifications';
+
+const dispatcher = new NotificationDispatcher({
+  deployerDefaults,
+  getTenantConfig: async (shopId) => {
+    return await db.tenantNotificationConfig.findUnique({
+      where: { shopId },
+    });
+  },
+});
+```
+
+## Template Rendering
+
+Templates support dynamic variable substitution for personalized notifications.
+
+### Defining Templates
+
+```typescript
+const orderConfirmationTemplate = {
+  id: 'order-confirmation',
+  channels: {
+    email: {
+      subject: 'Order {{orderId}} Confirmed',
+      body: `
+        <p>Hi {{customerName}},</p>
+        <p>Your order has been confirmed!</p>
+        <ul>
+          <li>Order ID: {{orderId}}</li>
+          <li>Total: {{currencySymbol}}{{totalAmount}}</li>
+          <li>Estimated Delivery: {{estimatedDeliveryDate}}</li>
+        </ul>
+        <p>Track your delivery: {{trackingLink}}</p>
+      `,
+    },
+    sms: {
+      body: 'Order {{orderId}} confirmed! Delivery by {{estimatedDeliveryDate}}. Track: {{trackingLink}}',
+    },
+    whatsapp: {
+      templateName: 'order_confirmation',
+      headerVariables: ['{{orderImage}}'],
+      bodyVariables: ['{{orderId}}', '{{totalAmount}}', '{{estimatedDeliveryDate}}'],
+    },
+  },
+};
+```
+
+### Rendering with Variables
+
+```typescript
+const rendered = dispatcher.renderTemplate('order-confirmation', {
+  orderId: 'ord_123',
+  customerName: 'Jane Doe',
+  totalAmount: '49.99',
+  currencySymbol: '$',
+  estimatedDeliveryDate: '2026-03-12',
+  trackingLink: 'https://track.witylogix.com/ord_123',
+  orderImage: 'https://cdn.witylogix.com/orders/ord_123/receipt.png',
+});
+
+console.log(rendered.email.subject);
+// "Order ord_123 Confirmed"
+
+console.log(rendered.sms.body);
+// "Order ord_123 confirmed! Delivery by 2026-03-12. Track: https://track.witylogix.com/ord_123"
+```
+
+## Sending Notifications
+
+### Single-Channel Notifications
+
+```typescript
+import { NotificationDispatcher } from '@witylogix/notifications';
+
+const dispatcher = new NotificationDispatcher(config);
+
+// Send email
+await dispatcher.send({
+  shopId: 'shop_123',
+  channel: 'email',
+  recipient: 'customer@example.com',
+  templateId: 'order-confirmation',
+  variables: {
+    orderId: 'ord_123',
+    customerName: 'Jane Doe',
+    totalAmount: '49.99',
+    currencySymbol: '$',
+    estimatedDeliveryDate: '2026-03-12',
+    trackingLink: 'https://track.witylogix.com/ord_123',
+  },
+  metadata: {
+    orderId: 'ord_123',
+    event: 'order.confirmed',
+  },
+});
+```
+
+### Multi-Channel Notifications
+
+```typescript
+// Send order confirmation via email, SMS, and WhatsApp
+await dispatcher.send({
+  shopId: 'shop_123',
+  channels: ['email', 'sms', 'whatsapp'],
+  recipients: {
+    email: 'customer@example.com',
+    sms: '+1234567890',
+    whatsapp: '+1234567890',
+  },
+  templateId: 'order-confirmation',
+  variables: {
+    orderId: 'ord_123',
+    customerName: 'Jane Doe',
+    totalAmount: '49.99',
+    currencySymbol: '$',
+    estimatedDeliveryDate: '2026-03-12',
+    trackingLink: 'https://track.witylogix.com/ord_123',
+  },
+  metadata: {
+    orderId: 'ord_123',
+    event: 'order.confirmed',
+  },
+});
+```
+
+### Push Notifications
+
+```typescript
+// Send to specific device token
+await dispatcher.send({
+  shopId: 'shop_123',
+  channel: 'push',
+  recipient: 'device_token_xyz', // FCM token or push subscription
+  title: 'Order Delivered',
+  body: 'Your order has arrived! Tap to view details.',
+  data: {
+    orderId: 'ord_123',
+    actionUrl: '/orders/ord_123',
+  },
+  metadata: {
+    orderId: 'ord_123',
+    event: 'delivery.completed',
+  },
+});
+
+// Send to user (all registered devices)
+await dispatcher.sendToUser({
+  shopId: 'shop_123',
+  userId: 'user_456',
+  channel: 'push',
+  title: 'New Promotion',
+  body: 'Get 20% off on your next order!',
+});
+```
+
+## Orchestrator and Worker Architecture
+
+Notifications are processed asynchronously using an orchestrator-worker pattern with job queuing.
+
+### Orchestrator
+
+The orchestrator accepts notification requests and distributes them to workers.
+
+```typescript
+import { NotificationOrchestrator } from '@witylogix/notifications';
+import Queue from 'bull';
+
+const orchestrator = new NotificationOrchestrator({
+  queue: new Queue('notifications', { redis }),
+  concurrency: 50,
+});
+
+// Queue a notification
+const jobId = await orchestrator.schedule({
+  shopId: 'shop_123',
+  channels: ['email', 'sms'],
+  recipients: { email: 'customer@example.com', sms: '+1234567890' },
+  templateId: 'order-confirmation',
+  variables: { /* ... */ },
+  priority: 'high', // 'low', 'normal', 'high'
+  delayMs: 0, // Send immediately
+});
+
+console.log(`Notification job created: ${jobId}`);
+```
+
+### Worker
+
+The worker processes notification jobs from the queue.
+
+```typescript
+const worker = orchestrator.createWorker({
+  maxRetries: 3,
+  timeout: 30000, // 30 seconds per job
+  onProgress: (jobId, progress) => {
+    console.log(`Job ${jobId}: ${progress.percentage}% complete`);
+  },
+  onError: (jobId, error) => {
+    console.error(`Job ${jobId} failed: ${error.message}`);
+  },
+});
+
+// Start processing
+worker.start();
+```
+
+## Metered Billing Integration
+
+Notification usage is tracked per tenant for billing purposes.
+
+### Recording Usage
+
+```typescript
+import { BillingMeter } from '@witylogix/billing';
+
+const billingMeter = new BillingMeter();
+
+// Record email sent
+await billingMeter.record({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  value: 1,
+  metadata: {
+    channel: 'email',
+    templateId: 'order-confirmation',
+  },
+});
+
+// Record SMS sent (might cost more than email)
+await billingMeter.record({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  value: 2, // SMS costs 2x units
+  metadata: {
+    channel: 'sms',
+    country: 'US',
+  },
+});
+
+// Record WhatsApp sent
+await billingMeter.record({
+  shopId: 'shop_123',
+  meter: 'notifications',
+  value: 5, // WhatsApp costs more
+  metadata: {
+    channel: 'whatsapp',
+  },
+});
+```
+
+### Metered Fallback
+
+If a tenant exceeds their quota, notifications can fall back to more cost-effective channels:
+
+```typescript
+const dispatcher = new NotificationDispatcher({
+  billingMeter,
+  meteringRules: {
+    email: 1,
+    sms: 2,
+    whatsapp: 5,
+    push: 0.5, // Free push
+  },
+  fallbackStrategy: async (shopId, preferredChannels) => {
+    const remaining = await billingMeter.getRemainingQuota(shopId);
+
+    if (remaining < 2) {
+      // Replace expensive channels with free/cheap alternatives
+      return ['push']; // Only use push if quota is low
+    }
+
+    return preferredChannels;
+  },
+});
+```
+
+## Complete Multi-Channel Example
+
+Here's a complete workflow for sending an order confirmation across all channels:
+
+```typescript
+async function sendOrderConfirmation(orderId, customerId) {
+  const order = await db.order.findUnique({ where: { id: orderId } });
+  const customer = await db.customer.findUnique({ where: { id: customerId } });
+  const shop = await db.shop.findUnique({ where: { id: order.shopId } });
+
+  const notificationJobId = await notificationOrchestrator.schedule({
+    shopId: shop.id,
+    channels: ['email', 'sms', 'whatsapp', 'push'],
+    recipients: {
+      email: customer.email,
+      sms: customer.phone,
+      whatsapp: customer.phone,
+      push: customer.userId,
+    },
+    templateId: 'order-confirmation',
+    variables: {
+      orderId: order.id,
+      customerName: customer.name,
+      totalAmount: order.total.toFixed(2),
+      currencySymbol: shop.currency,
+      estimatedDeliveryDate: formatDate(order.estimatedDeliveryDate),
+      trackingLink: `https://${shop.domain}/track/${order.id}`,
+      orderImage: order.receiptImageUrl,
+    },
+    metadata: {
+      orderId: order.id,
+      customerId: customer.id,
+      shopId: shop.id,
+      event: 'order.confirmed',
+    },
+    priority: 'high',
+  });
+
+  // Emit event for tracking
+  await eventBus.emit('notification.queued', {
+    notificationJobId,
+    orderId,
+    customerId,
+    channels: ['email', 'sms', 'whatsapp', 'push'],
+  });
+
+  return notificationJobId;
+}
+```
+
+## Summary
+
+The Witylogix notification system provides:
+
+- **Multi-channel delivery**: Email, SMS, WhatsApp, Push
+- **Provider flexibility**: Multiple providers per channel with BYOK support
+- **Template system**: Dynamic variable rendering for personalized messages
+- **Async processing**: Orchestrator-worker architecture with job queuing
+- **Metered billing**: Track usage and apply quotas per tenant
+- **Intelligent fallback**: Graceful degradation when quotas are exceeded
+
+For provider-specific setup instructions, see [Provider Setup Guides](/docs/guides/notification-providers).
+
+For API reference, see [Notification API Reference](/docs/api/notifications).

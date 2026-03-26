@@ -1,0 +1,209 @@
+# .github/workflows/release.yml
+# Automated Release Pipeline for Witylogix Platform
+#
+# Handles semantic versioning, Docker image builds, and GitHub releases
+# Triggered on: git tag push matching v* pattern
+#
+# Multi-arch support: linux/amd64, linux/arm64
+# Publishes to: ghcr.io/wityliti/witylogix
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Build and Push Multi-arch Docker Images
+  # ───────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag_name=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Release version: ${VERSION}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (main image)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=v${{ steps.version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ steps.version.outputs.version }}
+            type=sha,suffix=-{{short}}
+            type=raw,value=latest
+
+      - name: Build and push Docker image (multi-arch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:3001
+
+      - name: Generate SBOM (Software Bill of Materials)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            anchore/syft:latest \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }} \
+            -o json > sbom.json || true
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom
+          path: sbom.json
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Create GitHub Release with auto-generated notes
+  # ───────────────────────────────────────────────────────────────────────────
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag_name=v${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate release notes from changelog
+        id: release-notes
+        run: |
+          # Extract changelog for this version
+          VERSION=${{ steps.version.outputs.version }}
+
+          # Find the version section in CHANGELOG.md
+          CHANGELOG=$(sed -n "/^## \[${VERSION}\]/,/^## \[/p" CHANGELOG.md | sed '$d')
+
+          if [ -z "$CHANGELOG" ]; then
+            # If structured changelog not found, use git log
+            CHANGELOG=$(git log $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo HEAD~10)..HEAD --pretty=format:"- %s (%h)" || git log -10 --pretty=format:"- %s (%h)")
+          fi
+
+          # Save to file for multi-line output
+          echo "$CHANGELOG" > release_notes.txt
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## Release v${{ steps.version.outputs.version }}
+
+            ### Docker Images
+            - **Main**: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}`
+            - **Multi-arch**: `linux/amd64`, `linux/arm64`
+
+            ### Changes
+            ${{ steps.release-notes.outputs.release_notes }}
+
+            ### Installation
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}
+            ```
+
+            ### Deployment
+            Refer to the [deployment guide](./docs/DEPLOYMENT.md) for upgrade instructions.
+          draft: false
+          prerelease: false
+
+      - name: Publish release event
+        run: |
+          echo "Release v${{ steps.version.outputs.version }} published successfully!"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job: Notify on release completion
+  # ───────────────────────────────────────────────────────────────────────────
+  notify:
+    name: Release Notification
+    runs-on: ubuntu-latest
+    needs: [build-and-push, create-release]
+    if: always()
+
+    steps:
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Release notification
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.version }} completed!"
+          echo "Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}"
+          echo "GitHub release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"

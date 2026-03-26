@@ -1,0 +1,12 @@
+# Witylogix POS UI Extension
+# Delivery assignment and order lookup for Shopify POS
+api_version = "2025-04"
+
+[[extensions]]
+name = "Witylogix POS Delivery"
+handle = "witylogix-pos-delivery"
+type = "pos_ui_extension"
+
+[extensions.targeting]
+module = "./src/index.tsx"
+target = "pos.home.tile.render"

@@ -1,11 +1,16 @@
 /**
  * RoutingProvider — Abstract interface for routing/geocoding services
  *
- * Phase 1: MapboxProvider (production-ready, familiar from v3)
- * Phase 2: OSRMProvider (self-hosted, zero marginal cost)
+ * Supported providers (built one-by-one):
+ *   ✅ Mapbox       — Phase 1 (production-ready, familiar from v3)
+ *   ✅ OSRM         — Phase 2 (self-hosted, zero marginal cost)
+ *   🔜 Google Maps  — coming
+ *   🔜 HERE         — coming
+ *   🔜 GraphHopper  — coming
+ *   🔜 TomTom       — coming
  *
  * Business logic imports ONLY this interface, never a concrete provider.
- * Swap providers via environment config without touching any service code.
+ * Swap providers via deployer config or per-tenant settings.
  */
 
 export interface Coordinates {
@@ -72,4 +77,60 @@ export interface RoutingProvider {
    * Get ETA from current position to destination
    */
   getETA(origin: Coordinates, destination: Coordinates): Promise<ETAResult>;
+}
+
+// ─── Provider Metadata ─────────────────────────────────────
+
+/** Unique identifier for a routing provider. */
+export type RoutingProviderSlug =
+  | "mapbox"
+  | "osrm"
+  | "google_maps"
+  | "here"
+  | "graphhopper"
+  | "tomtom";
+
+/** How authentication works for a provider. */
+export type AuthType = "api_key" | "none" | "oauth";
+
+/**
+ * Static metadata about a routing provider.
+ * Used by the Settings UI to render provider cards and credential forms.
+ */
+export interface ProviderMeta {
+  slug: RoutingProviderSlug;
+  displayName: string;
+  description: string;
+  authType: AuthType;
+  /** What the credential field is called (e.g., "Access Token", "API Key"). */
+  credentialLabel: string;
+  /** Placeholder for the credential input field. */
+  credentialPlaceholder: string;
+  /** Regex to validate the credential format (optional). */
+  credentialPattern?: RegExp;
+  /** URL where tenants can obtain their key. */
+  credentialHelpUrl?: string;
+  /** Whether the provider requires a self-hosted server URL. */
+  requiresBaseUrl: boolean;
+  /** Provider capability notes. */
+  capabilities: {
+    routing: boolean;
+    matrix: boolean;
+    geocoding: boolean;
+    eta: boolean;
+  };
+  /** Provider status: "available" (implemented), "coming_soon" (stub). */
+  status: "available" | "coming_soon";
+}
+
+/**
+ * Metering event emitted when a routing call uses the deployer's fallback
+ * credentials instead of the tenant's own key.
+ */
+export interface MeteringEvent {
+  shopId: string;
+  provider: RoutingProviderSlug;
+  operation: "route" | "matrix" | "geocode" | "reverse_geocode" | "eta";
+  usedFallback: boolean;
+  timestamp: Date;
 }

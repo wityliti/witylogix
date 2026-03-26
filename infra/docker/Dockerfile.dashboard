@@ -1,0 +1,113 @@
+# infra/docker/Dockerfile.dashboard
+# Production-hardened Next.js Dashboard Dockerfile
+#
+# Security features:
+# - Multi-stage build with Alpine base for minimal attack surface
+# - Next.js standalone output mode for production efficiency
+# - Non-root user (node:1001) prevents privilege escalation
+# - Optimized caching layers
+# - Health checks for orchestration
+# - Read-only root filesystem compatible
+#
+# Final image target: ~150MB
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 1: Base - Setup pnpm and dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS base
+
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm@9.15.0
+
+# Install build dependencies
+RUN apk add --no-cache libc6-compat curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 2: Dependencies - Install all packages and dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base AS deps
+
+WORKDIR /app
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy all packages and applications
+COPY packages/ ./packages/
+COPY apps/dashboard/ ./apps/dashboard/
+
+# Install dependencies with frozen lockfile
+RUN pnpm install --frozen-lockfile --production=false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 3: Builder - Build Next.js application
+# ─────────────────────────────────────────────────────────────────────────────
+FROM deps AS build
+
+WORKDIR /app
+
+# Build package dependencies
+RUN pnpm --filter @witylogix/types build && \
+    pnpm --filter @witylogix/core build
+
+# Build Next.js dashboard with standalone output
+# Standalone mode includes all required dependencies in a single directory
+RUN pnpm --filter @witylogix/dashboard build
+
+# Prune to production dependencies only
+RUN pnpm prune --prod
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAGE 4: Production - Minimal Alpine-based runtime
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk add --no-cache libc6-compat curl && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S node -u 1001
+
+# Copy pruned node_modules from build
+COPY --from=build --chown=node:nodejs /app/node_modules ./node_modules
+
+# Copy package definitions
+COPY --from=build --chown=node:nodejs /app/packages/ ./packages/
+COPY --from=build --chown=node:nodejs /app/apps/dashboard/ ./apps/dashboard/
+
+# Copy public assets
+COPY --from=build --chown=node:nodejs /app/apps/dashboard/public/ ./apps/dashboard/public/
+
+# Copy built application
+COPY --from=build --chown=node:nodejs /app/apps/dashboard/.next/standalone/ ./apps/dashboard/.next/standalone/
+COPY --from=build --chown=node:nodejs /app/apps/dashboard/.next/static/ ./apps/dashboard/.next/static/
+
+# Environment configuration
+ENV NODE_ENV=production
+ENV PORT=3002
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Expose port
+EXPOSE 3002
+
+# Switch to non-root user
+USER node
+
+# Container metadata
+LABEL maintainer="Witylogix Team"
+LABEL version="1.0"
+LABEL description="Production-hardened Next.js dashboard for admin operations"
+
+# Health check: dashboard must respond to root endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3002/ || exit 1
+
+# Start Next.js server
+CMD ["node", "apps/dashboard/.next/standalone/server.js"]

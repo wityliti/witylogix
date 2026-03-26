@@ -1,38 +1,36 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  # ─── PostgreSQL 16 with PostGIS ───────────────────────────
+  # PostgreSQL Database
   postgres:
-    image: postgis/postgis:16-3.4-alpine
+    image: postgres:16-alpine
     container_name: witylogix-postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: witylogix
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_dev}
-      POSTGRES_DB: witylogix
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-witylogix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-witylogix_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-witylogix_dev}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infra/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U witylogix"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-witylogix} -d ${POSTGRES_DB:-witylogix_dev}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - witylogix-network
 
-  # ─── Redis 7 ──────────────────────────────────────────────
+  # Redis Cache/Session Store
   redis:
     image: redis:7-alpine
     container_name: witylogix-redis
     restart: unless-stopped
-    command: >
-      redis-server
-      --appendonly yes
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     healthcheck:
@@ -40,42 +38,84 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - witylogix-network
 
-  # ─── OSRM (Route Engine) — PHASE 2 ──────────────────────
-  # Phase 1 uses Mapbox APIs. Enable this in Phase 2 for zero-cost routing.
-  # Pre-process OSM data before first run:
-  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-extract -p /opt/car.lua /data/region.osm.pbf
-  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-partition /data/region.osrm
-  #   docker run --rm -v ./infra/osrm:/data osrm/osrm-backend osrm-customize /data/region.osrm
-  # Then: docker compose --profile phase2 up
-  osrm:
-    image: osrm/osrm-backend:latest
-    container_name: witylogix-osrm
+  # API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    container_name: witylogix-api
     restart: unless-stopped
-    command: osrm-routed --algorithm mld /data/region.osrm
     ports:
-      - "5000:5000"
-    volumes:
-      - ./infra/osrm:/data
-    profiles:
-      - phase2  # Phase 2 only: docker compose --profile phase2 up
-
-  # ─── BullMQ Board (Queue Dashboard) ──────────────────────
-  bull-board:
-    image: deadly0/bull-board:latest
-    container_name: witylogix-bull-board
-    restart: unless-stopped
+      - "3001:3001"
     environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    ports:
-      - "3100:3000"
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_dev_password}@postgres:5432/${POSTGRES_DB:-witylogix_dev}
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379
+      API_PORT: 3001
+      API_HOST: 0.0.0.0
+      SHOPIFY_API_KEY: ${SHOPIFY_API_KEY:-}
+      SHOPIFY_API_SECRET: ${SHOPIFY_API_SECRET:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
-    profiles:
-      - tools  # Only start with: docker compose --profile tools up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - witylogix-network
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+
+  # Dashboard UI
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    container_name: witylogix-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-witylogix}:${POSTGRES_PASSWORD:-witylogix_dev_password}@postgres:5432/${POSTGRES_DB:-witylogix_dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - witylogix-network
+    volumes:
+      - ./apps/dashboard:/app/apps/dashboard
+      - ./packages:/app/packages
+
+networks:
+  witylogix-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local

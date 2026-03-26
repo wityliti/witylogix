@@ -1,0 +1,6 @@
+type = "frontend"
+name = "Witylogix Frontend"
+
+[commands]
+dev = "pnpm react-router dev --port 3000"
+build = "pnpm react-router build"

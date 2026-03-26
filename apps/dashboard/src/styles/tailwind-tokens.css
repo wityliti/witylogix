@@ -1,0 +1,327 @@
+/* ═══════════════════════════════════════════════════════════
+   TAILWIND DESIGN TOKENS LAYER
+   Bridge between CSS variables and Tailwind utilities
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+    /* ─── Color: Base ─────────────────────────── */
+    --wl-bg-root:        #0a0a0c;
+    --wl-bg-base:        #0f0f13;
+    --wl-bg-surface:     #111114;
+    --wl-bg-elevated:    #19191e;
+    --wl-bg-overlay:     #1f1f26;
+    --wl-bg-sunken:      #07070a;
+    --wl-bg-sidebar:     #0c0c10;
+
+    /* ─── Color: Neutral ────────────────────────── */
+    --wl-neutral-50:     #f8f8fa;
+    --wl-neutral-100:    #ececf1;
+    --wl-neutral-200:    #d5d5dd;
+    --wl-neutral-300:    #b0b0bf;
+    --wl-neutral-400:    #8585a0;
+    --wl-neutral-500:    #62627e;
+    --wl-neutral-600:    #4a4a62;
+    --wl-neutral-700:    #35354a;
+    --wl-neutral-800:    #232336;
+    --wl-neutral-900:    #17172a;
+
+    /* ─── Color: Primary (Amber — Logistics Warmth) ─ */
+    --wl-primary-50:     #fff9eb;
+    --wl-primary-100:    #ffefc4;
+    --wl-primary-200:    #ffe09d;
+    --wl-primary-300:    #ffd06a;
+    --wl-primary-400:    #ffc240;
+    --wl-primary-500:    #f5a623;
+    --wl-primary-600:    #d98b0a;
+    --wl-primary-700:    #b06f05;
+    --wl-primary-800:    #8d5704;
+    --wl-primary-900:    #6b4203;
+
+    /* ─── Color: Success ────────────────────────── */
+    --wl-success-400:    #34d399;
+    --wl-success-500:    #10b981;
+    --wl-success-600:    #059669;
+    --wl-success-bg:     rgba(16, 185, 129, 0.12);
+
+    /* ─── Color: Warning ────────────────────────── */
+    --wl-warning-400:    #fbbf24;
+    --wl-warning-500:    #f59e0b;
+    --wl-warning-bg:     rgba(245, 158, 11, 0.12);
+
+    /* ─── Color: Danger ─────────────────────────── */
+    --wl-danger-400:     #f87171;
+    --wl-danger-500:     #ef4444;
+    --wl-danger-600:     #dc2626;
+    --wl-danger-bg:      rgba(239, 68, 68, 0.12);
+
+    /* ─── Color: Info ───────────────────────────── */
+    --wl-info-400:       #60a5fa;
+    --wl-info-500:       #3b82f6;
+    --wl-info-bg:        rgba(59, 130, 246, 0.12);
+
+    /* ─── Color: Text ───────────────────────────── */
+    --wl-text-primary:   #f0f0f5;
+    --wl-text-secondary: #9494ac;
+    --wl-text-tertiary:  #5e5e78;
+    --wl-text-inverse:   #0a0a0c;
+
+    /* ─── Color: Border ─────────────────────────── */
+    --wl-border-subtle:  rgba(255, 255, 255, 0.06);
+    --wl-border-default: rgba(255, 255, 255, 0.10);
+    --wl-border-strong:  rgba(255, 255, 255, 0.16);
+    --wl-border-focus:   var(--wl-primary-500);
+
+    /* ─── Typography ────────────────────────────── */
+    --wl-font-sans:      'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --wl-font-mono:      'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+    --wl-text-xs:        0.6875rem;    /* 11px */
+    --wl-text-sm:        0.8125rem;    /* 13px */
+    --wl-text-base:      0.875rem;     /* 14px */
+    --wl-text-md:        0.9375rem;    /* 15px */
+    --wl-text-lg:        1.0625rem;    /* 17px */
+    --wl-text-xl:        1.25rem;      /* 20px */
+    --wl-text-2xl:       1.5rem;       /* 24px */
+    --wl-text-3xl:       1.875rem;     /* 30px */
+
+    /* ─── Spacing ───────────────────────────────── */
+    --wl-space-0:        0;
+    --wl-space-1:        0.25rem;      /* 4px */
+    --wl-space-2:        0.5rem;       /* 8px */
+    --wl-space-3:        0.75rem;      /* 12px */
+    --wl-space-4:        1rem;         /* 16px */
+    --wl-space-5:        1.25rem;      /* 20px */
+    --wl-space-6:        1.5rem;       /* 24px */
+    --wl-space-8:        2rem;         /* 32px */
+    --wl-space-10:       2.5rem;       /* 40px */
+    --wl-space-12:       3rem;         /* 48px */
+
+    /* ─── Radii ─────────────────────────────────── */
+    --wl-radius-sm:      4px;
+    --wl-radius-md:      6px;
+    --wl-radius-lg:      10px;
+    --wl-radius-xl:      14px;
+    --wl-radius-full:    9999px;
+
+    /* ─── Shadows ───────────────────────────────── */
+    --wl-shadow-sm:      0 1px 2px rgba(0, 0, 0, 0.3);
+    --wl-shadow-md:      0 2px 8px rgba(0, 0, 0, 0.4);
+    --wl-shadow-lg:      0 8px 24px rgba(0, 0, 0, 0.5);
+    --wl-shadow-glow:    0 0 20px rgba(245, 166, 35, 0.15);
+
+    /* ─── Transitions ───────────────────────────── */
+    --wl-ease-default:   cubic-bezier(0.4, 0, 0.2, 1);
+    --wl-ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+    --wl-duration-fast:  120ms;
+    --wl-duration-base:  200ms;
+    --wl-duration-slow:  400ms;
+
+    /* ─── Layout ────────────────────────────────── */
+    --wl-sidebar-width:  260px;
+    --wl-sidebar-collapsed: 72px;
+    --wl-header-height:  56px;
+  }
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   Component animations for entrance, transitions, and effects
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes wl-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wl-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes wl-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wl-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes wl-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes wl-slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes wl-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes wl-slide-out-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes wl-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes wl-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes wl-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(245, 166, 35, 0.15);
+  }
+}
+
+@keyframes wl-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes wl-skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes wl-toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes wl-toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes wl-modal-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes wl-modal-exit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(-8px);
+  }
+}
+
+@keyframes wl-spinner {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wl-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

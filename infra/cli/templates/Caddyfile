@@ -1,0 +1,163 @@
+# infra/cli/templates/Caddyfile
+# Witylogix Production Caddy v2 Configuration
+# Reverse proxy, security headers, rate limiting, and health checks
+#
+# This is the default production configuration (not a template with placeholders).
+# For local development with different domain patterns, use docker-compose.override.yml
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Global Options: Default behavior for all sites
+# ─────────────────────────────────────────────────────────────────────────────
+{
+	# Email for Let's Encrypt notifications and ACME account registration
+	email placeholder@example.com
+
+	# ACME (certificate authority) configuration
+	# Using Let's Encrypt staging for development/testing to avoid rate limits
+	# Switch to production endpoint in actual production deployment
+	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+
+	# Enable automatic HTTPS with HTTP/2
+	auto_https on
+
+	# Global timeouts
+	timeouts {
+		read_body 30s
+		read_header 10s
+		write 30s
+		idle 120s
+	}
+
+	# Persistence for certificates and data
+	storage file_system {
+		root /data/caddy
+	}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API Service Route: api.localhost → reverse proxy to api:3001
+# ─────────────────────────────────────────────────────────────────────────────
+api.localhost {
+	# Enable access logging to stdout for monitoring
+	log {
+		output stdout
+		format json
+	}
+
+	# Security headers: prevent clickjacking, MIME sniffing, improve referrer policy
+	header X-Frame-Options SAMEORIGIN
+	header X-Content-Type-Options nosniff
+	header Referrer-Policy strict-origin-when-cross-origin
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+	# Compression: automatically gzip responses for better bandwidth usage
+	encode gzip
+
+	# Rate limiting: prevent abuse by limiting requests per IP
+	# 100 requests per second per client IP
+	rate_limit {
+		zone api {
+			key {remote_ip}
+			window 1s
+			limit 100
+		}
+	}
+
+	# Reverse proxy to internal API service container (port 3001)
+	reverse_proxy api:3001 {
+		# Connection pooling for better performance
+		header_up X-Real-IP {remote_ip}
+		header_up X-Forwarded-For {remote_ip}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dashboard Service Route: app.localhost → reverse proxy to dashboard:3002
+# ─────────────────────────────────────────────────────────────────────────────
+app.localhost {
+	# Enable access logging to stdout for monitoring
+	log {
+		output stdout
+		format json
+	}
+
+	# Security headers: prevent clickjacking, MIME sniffing, improve referrer policy
+	header X-Frame-Options SAMEORIGIN
+	header X-Content-Type-Options nosniff
+	header Referrer-Policy strict-origin-when-cross-origin
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+	# Compression: automatically gzip responses for better bandwidth usage
+	encode gzip
+
+	# Rate limiting: prevent abuse by limiting requests per IP
+	# 100 requests per second per client IP
+	rate_limit {
+		zone dashboard {
+			key {remote_ip}
+			window 1s
+			limit 100
+		}
+	}
+
+	# Reverse proxy to internal dashboard service container (port 3002)
+	reverse_proxy dashboard:3002 {
+		# Connection pooling for better performance
+		header_up X-Real-IP {remote_ip}
+		header_up X-Forwarded-For {remote_ip}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Documentation Service Route: docs.localhost → reverse proxy to docs:3003
+# ─────────────────────────────────────────────────────────────────────────────
+docs.localhost {
+	# Enable access logging to stdout for monitoring
+	log {
+		output stdout
+		format json
+	}
+
+	# Security headers: prevent clickjacking, MIME sniffing, improve referrer policy
+	header X-Frame-Options SAMEORIGIN
+	header X-Content-Type-Options nosniff
+	header Referrer-Policy strict-origin-when-cross-origin
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+	# Compression: automatically gzip responses for better bandwidth usage
+	encode gzip
+
+	# Rate limiting: prevent abuse by limiting requests per IP
+	# 100 requests per second per client IP
+	rate_limit {
+		zone docs {
+			key {remote_ip}
+			window 1s
+			limit 100
+		}
+	}
+
+	# Reverse proxy to internal documentation service container (port 3003)
+	reverse_proxy docs:3003 {
+		# Connection pooling for better performance
+		header_up X-Real-IP {remote_ip}
+		header_up X-Forwarded-For {remote_ip}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Health Check Endpoint: caddy-health
+# ─────────────────────────────────────────────────────────────────────────────
+# This endpoint is used by container orchestration and monitoring systems
+# to verify that the Caddy service is operational and responding
+localhost:2019 {
+	# Direct health check response - returns 200 OK with simple JSON
+	# This is not forwarded to any backend service
+	respond /caddy-health "OK" 200
+}

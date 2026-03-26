@@ -1,0 +1,71 @@
+---
+title: Vehicles
+description: Fleet vehicles — types, capacity, maintenance schedules, and GPS tracking.
+---
+
+# Vehicles
+
+A **Vehicle** represents a delivery vehicle in your fleet. Vehicles are linked to [drivers](/docs/core-concepts/drivers) and managed within [fleets](/docs/core-concepts/fleets).
+
+## Vehicle Types
+
+| Type | Use Case | Typical Capacity |
+|------|----------|-----------------|
+| `motorcycle` | Small parcels, urban areas | 10 kg |
+| `car` | Standard deliveries | 50 kg |
+| `van` | Bulk/multi-stop routes | 500 kg |
+| `truck` | Large/heavy shipments | 2,000+ kg |
+| `bicycle` | Eco-friendly last-mile | 5 kg |
+
+## Vehicle Properties
+
+Each vehicle record includes:
+
+- **Registration** — plate number, VIN
+- **Capacity** — max weight and volume
+- **Type** — motorcycle, car, van, truck, bicycle
+- **Status** — active, maintenance, decommissioned
+- **GPS device** — tracker ID for real-time location
+
+## GPS Tracking
+
+Vehicles with connected GPS trackers report location data independently of the driver app:
+
+```typescript
+const vehicle = await client.vehicles.get('veh_456');
+// {
+//   plateNumber: 'TX-1234',
+//   type: 'van',
+//   currentLocation: { lat: 30.27, lng: -97.74 },
+//   odometer: 45230,
+//   fuelLevel: 0.72,
+// }
+```
+
+## Maintenance
+
+Schedule and track vehicle maintenance:
+
+- **Preventive** — oil changes, tire rotation on mileage/time intervals
+- **Reactive** — repairs flagged by driver inspection reports
+- **Compliance** — insurance renewal, registration expiry alerts
+
+When a vehicle enters maintenance, it is automatically unassigned from active routes and the driver is flagged for reassignment.
+
+## Capacity Planning
+
+The route optimizer uses vehicle capacity to determine how many shipments can be loaded per route:
+
+```typescript
+const route = await client.routes.optimize({
+  vehicleId: 'veh_456',
+  orders: ['order_1', 'order_2', 'order_3'],
+  // Optimizer respects vehicle weight/volume limits
+});
+```
+
+## Related
+
+- [Drivers](/docs/core-concepts/drivers) — who operates the vehicle
+- [Fleets](/docs/core-concepts/fleets) — how vehicles are grouped
+- [Routes](/docs/core-concepts/routes) — delivery routes assigned to vehicles
