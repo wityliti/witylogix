@@ -21,7 +21,6 @@
  */
 
 import type { ActionFunctionArgs } from "react-router";
-import { json } from "react-router";
 import crypto from "node:crypto";
 import { checkRateLimit, rateLimitHeaders } from "~/lib/rate-limiter.server";
 import { captureException } from "~/lib/sentry.server";
@@ -68,7 +67,7 @@ interface HandlerResult {
 export async function action({ request }: ActionFunctionArgs) {
   // Only accept POST requests
   if (request.method !== "POST") {
-    return json(
+    return Response.json(
       { error: "Method not allowed" },
       { status: 405 }
     );
@@ -78,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const shopIdHeader = request.headers.get("x-shopify-shop-id") || "unknown";
   const rateLimit = checkRateLimit(`webhook:${shopIdHeader}`, 200, 60_000);
   if (!rateLimit.allowed) {
-    return json(
+    return Response.json(
       { error: "Rate limit exceeded" },
       { status: 429, headers: rateLimitHeaders(rateLimit) }
     );
@@ -88,7 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Validate and parse webhook
     const validated = await validateAndParseWebhook(request);
     if (!validated) {
-      return json(
+      return Response.json(
         { error: "Invalid webhook signature" },
         { status: 401 }
       );
@@ -116,7 +115,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     // Always return 200 OK for webhook acknowledgment
-    return json(
+    return Response.json(
       {
         success: true,
         webhookId: validated.webhookId,
@@ -133,7 +132,7 @@ export async function action({ request }: ActionFunctionArgs) {
     captureException(error, { component: "webhook-handler", shopId: shopIdHeader });
 
     // Return 200 OK to prevent Shopify retry loop
-    return json(
+    return Response.json(
       {
         success: false,
         error: process.env.NODE_ENV === "production"

@@ -31,11 +31,7 @@ RUN pnpm --filter @witylogix/db exec tsc
 
 # Copy Prisma-generated JS files into dist/generated/ so dist/index.js can resolve them at runtime
 # (Prisma generates plain JS files in src/generated/; tsc does not copy them to dist/generated/)
-RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated && \
-    echo '{"type":"commonjs"}' > /app/packages/db/dist/generated/prisma/package.json && \
-    sed -i \
-      's|import { PrismaClient, Prisma } from "./generated/prisma";|import { createRequire as _cr } from "module"; const { PrismaClient, Prisma } = _cr(import.meta.url)("./generated/prisma/index.js");|' \
-      /app/packages/db/dist/index.js
+RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated
 
 # Build
 WORKDIR /app/apps/shopify-app
@@ -58,6 +54,10 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 # Build output is separate from pnpm deploy output
 COPY --from=builder /app/apps/shopify-app/build ./build
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -q --spider http://localhost:3000/health || exit 1
 
 EXPOSE 3000
 

@@ -83,6 +83,7 @@ model Shipment {
   @@index([shopId, status, createdAt(sort: Desc)])
   @@index([shopId, orderId])
   @@index([shopId, driverId])
+  @@index([shopId, locationId])
   @@index([shopId, deliveryDate])
   @@index([trackingNumber])
   @@map("shipments")
