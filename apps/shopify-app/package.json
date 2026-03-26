@@ -18,15 +18,16 @@
     "@react-router/node": "^7.13.1",
     "@react-router/serve": "^7.13.1",
     "@shopify/polaris": "^13.0.0",
+    "@shopify/polaris-icons": "^9.3.1",
     "@shopify/shopify-app-react-router": "^1.0.0",
     "@shopify/shopify-app-session-storage-prisma": "^5.0.0",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
+    "isbot": "^5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.0.0",
-    "socket.io-client": "^4.8.0",
-    "isbot": "^5"
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
