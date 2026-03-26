@@ -1,4 +1,4 @@
-# Shopify App Dockerfile — cache-bust 2026-03-26f json-alias
+# Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -42,9 +42,6 @@ ENV PORT=3000
 COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 COPY --from=builder /app/apps/shopify-app/build ./build
-
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD wget -q --spider http://localhost:3000/health || exit 1
 
 EXPOSE 3000
 
