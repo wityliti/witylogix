@@ -2,32 +2,32 @@ groups:
   - name: api_alerts
     interval: 30s
     rules:
-      # High error rate alert
+      # High error rate alert — >1% triggers warning
       - alert: APIHighErrorRate
         expr: |
           sum(rate(http_requests_total{status=~"5.."}[5m])) by (service, environment) /
-          sum(rate(http_requests_total[5m])) by (service, environment) > 0.05
+          sum(rate(http_requests_total[5m])) by (service, environment) > 0.01
         for: 5m
         labels:
           severity: warning
           service: api
         annotations:
           summary: "API high error rate"
-          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 5%)"
+          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 1%)"
           runbook: "/docs/runbooks/incident-response.md"
 
-      # Critical error rate alert
+      # Critical error rate alert — >5% triggers critical
       - alert: APICriticalErrorRate
         expr: |
           sum(rate(http_requests_total{status=~"5.."}[2m])) by (service, environment) /
-          sum(rate(http_requests_total[2m])) by (service, environment) > 0.10
+          sum(rate(http_requests_total[2m])) by (service, environment) > 0.05
         for: 2m
         labels:
           severity: critical
           service: api
         annotations:
           summary: "API critical error rate"
-          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 10%)"
+          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 5%)"
           runbook: "/docs/runbooks/incident-response.md"
 
       # High latency P95 alert

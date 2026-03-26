@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -10,10 +11,14 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*",
+        destination: `${process.env.API_URL ?? "http://localhost:8000"}/api/:path*`,
       },
     ];
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+});

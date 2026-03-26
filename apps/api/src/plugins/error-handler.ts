@@ -7,6 +7,7 @@ import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from
 import fp from "fastify-plugin";
 import { ZodError } from "zod";
 import { AppError } from "../lib/errors.js";
+import { captureException } from "../lib/sentry.js";
 
 async function errorHandlerPlugin(fastify: FastifyInstance): Promise<void> {
   fastify.setErrorHandler(
@@ -80,8 +81,9 @@ async function errorHandlerPlugin(fastify: FastifyInstance): Promise<void> {
         }
       }
 
-      // Unexpected errors — log full stack, return generic message
+      // Unexpected errors — log full stack, capture to Sentry, return generic message
       request.log.error({ err: error }, "Unhandled error");
+      void captureException(error, { url: request.url, method: request.method });
       return reply.status(500).send({
         statusCode: 500,
         error: "INTERNAL_ERROR",

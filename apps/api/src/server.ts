@@ -10,6 +10,8 @@
  */
 
 import "dotenv/config";
+import { initSentry } from "./lib/sentry.js";
+import { validateStartupEnv } from "./validate-env.js";
 // Import Fastify type augmentations early to ensure they're available throughout the app
 import type {} from "./types/fastify.js";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -273,6 +275,8 @@ export async function buildServer(): Promise<FastifyInstance> {
 // ─── Start Server ────────────────────────────────────────────
 
 async function start(): Promise<void> {
+  await initSentry();
+  validateStartupEnv();
   const config = getConfig();
   const app = await buildServer();
 

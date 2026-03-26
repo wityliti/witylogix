@@ -10,11 +10,12 @@ RUN cd packages/framework && npx tsup 2>/dev/null || true
 RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
 
 FROM node:20-alpine
-RUN npm install -g tsx && apk add --no-cache dumb-init curl
+RUN npm install -g tsx && apk add --no-cache dumb-init curl postgresql-client redis
 WORKDIR /app
 COPY --from=builder /app ./
+RUN chmod +x infra/docker/entrypoint.sh
 ENV NODE_ENV=production
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s CMD curl -f http://localhost:3000/health || exit 1
-ENTRYPOINT ["dumb-init", "--"]
+ENTRYPOINT ["/bin/sh", "/app/infra/docker/entrypoint.sh"]
 CMD ["tsx", "apps/api/src/server.ts"]

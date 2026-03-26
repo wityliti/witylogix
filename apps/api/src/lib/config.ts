@@ -22,9 +22,9 @@ const configSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default("7d"),
 
-  // Shopify
-  SHOPIFY_API_KEY: z.string().min(1),
-  SHOPIFY_API_SECRET: z.string().min(1),
+  // Shopify (optional in local dev — required for Shopify integration)
+  SHOPIFY_API_KEY: z.string().default(""),
+  SHOPIFY_API_SECRET: z.string().default(""),
   SHOPIFY_APP_URL: z.string().url().optional(),
   SHOPIFY_SCOPES: z.string().default(
     "read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers",
@@ -157,6 +157,9 @@ const configSchema = z.object({
 
   // Graceful shutdown timeout (milliseconds)
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000), // 30s
+
+  // Sentry error tracking (optional — set to enable)
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;
