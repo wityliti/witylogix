@@ -5,7 +5,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Build workspace packages that API depends on
-RUN cd packages/db && npx prisma generate --schema=prisma/schema
+RUN cd packages/db && npx prisma generate --schema=prisma/schema && npx tsc
 RUN cd packages/framework && npx tsup 2>/dev/null || true
 RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
 

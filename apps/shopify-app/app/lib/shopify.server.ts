@@ -23,6 +23,7 @@ import {
 // Prisma session storage stores Shopify OAuth sessions in our database
 // so they survive server restarts. Uses the same @witylogix/db Prisma client.
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+import { PrismaClient } from "@prisma/client";
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY!,
@@ -33,21 +34,14 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(
     // PrismaSessionStorage expects a PrismaClient instance.
-    // We pass a lightweight one here — not the tenant-scoped version.
+    // We pass a dedicated client here — not the tenant-scoped version.
     // Session storage is global (not tenant-scoped).
-    await createSessionStorageClient(),
+    new PrismaClient({ datasourceUrl: process.env.DATABASE_URL }),
   ),
   future: {
     unstable_newEmbeddedAuthStrategy: true,
   },
 });
-
-async function createSessionStorageClient() {
-  const { PrismaClient } = await import("@prisma/client");
-  return new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-  });
-}
 
 /**
  * Authenticate incoming requests from the Shopify Admin.

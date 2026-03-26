@@ -18,7 +18,7 @@ import {
   useActionData,
   useNavigate,
   useParams,
-  json,
+  data as json,
   redirect,
 } from "react-router";
 import {
