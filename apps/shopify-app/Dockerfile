@@ -56,4 +56,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 
 EXPOSE 3000
 
-CMD ["node_modules/.bin/react-router-serve", "./build/server/index.js"]
+CMD ["node", "node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
