@@ -116,8 +116,13 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         createdAt: { gte: from, lte: to },
       };
 
+      // Previous period for trend computation (same duration, shifted back)
+      const periodMs = to.getTime() - from.getTime();
+      const prevFrom = new Date(from.getTime() - periodMs);
+      const prevTo = new Date(from.getTime());
+
       // ── Fetch orders (Shopify data) ──────────────────────────
-      const [orders, activeDriversCount] = await Promise.all([
+      const [orders, activeDriversCount, prevOrders] = await Promise.all([
         db.order.findMany({
           where: orderWhere,
           select: {
@@ -138,6 +143,10 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
             isActive: true,
             status: { in: ["AVAILABLE", "ON_ROUTE"] },
           },
+        }),
+        db.order.findMany({
+          where: { shopId, createdAt: { gte: prevFrom, lte: prevTo } },
+          select: { id: true, status: true, totalPrice: true },
         }),
       ]);
 
@@ -173,6 +182,24 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         return sum + (o.totalPrice ? parseFloat(o.totalPrice.toString()) : 0);
       }, 0);
 
+      // ── Trend computation (previous period comparison) ────────
+      const prevDeliveredOrders = prevOrders.filter((o: any) => o.status === "DELIVERED");
+      const prevFailedOrders = prevOrders.filter((o: any) => o.status === "FAILED" || o.status === "CANCELLED");
+      const prevRevenue = prevDeliveredOrders.reduce((sum: number, o: any) => {
+        return sum + (o.totalPrice ? parseFloat(o.totalPrice.toString()) : 0);
+      }, 0);
+      const trendPct = (current: number, prev: number): number | null => {
+        if (prev === 0) return null;
+        return Math.round(((current - prev) / prev) * 1000) / 10;
+      };
+      const trends = {
+        totalOrders: trendPct(totalOrders, prevOrders.length),
+        totalDeliveries: trendPct(totalDeliveries, prevDeliveredOrders.length),
+        revenue: trendPct(revenue, prevRevenue),
+        failedDeliveries: trendPct(failedDeliveries, prevFailedOrders.length),
+        onTimeRate: null as number | null, // requires prev period on-time calc — skipped for perf
+      };
+
       const metrics = {
         totalOrders,
         totalDeliveries,
@@ -182,6 +209,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         customerSatisfaction: 4.5, // placeholder — no ratings model yet
         revenue: Math.round(revenue * 100) / 100,
         failedDeliveries,
+        trends,
       };
 
       // ── Hourly breakdown (group by hour of createdAt) ────────
@@ -359,7 +387,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Get all drivers with shipment counts
       const drivers = await (request as any).tenantDb.driver.findMany({
-        select: { id: true, name: true, rating: true },
+        select: { id: true, name: true },
         where: { isActive: true },
       });
 
@@ -433,7 +461,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           totalDeliveries,
           onTimeRate,
           avgDeliveryMinutes,
-          rating: driver.rating || 0,
+          rating: 0, // Driver model does not have a rating field
           activeRoutes,
         });
       }
@@ -708,7 +736,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         csvContent = "Driver ID,Name,Total Deliveries,On-Time Rate %,Avg Delivery Minutes,Rating\n";
 
         const drivers = await (request as any).tenantDb.driver.findMany({
-          select: { id: true, name: true, rating: true },
+          select: { id: true, name: true },
           where: { isActive: true },
         });
 
@@ -760,7 +788,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
             avgDeliveryMinutes = Math.round((totalMinutes / deliveredShipments.length) * 100) / 100;
           }
 
-          const row = [driver.id, driver.name, totalDeliveries, onTimeRate, avgDeliveryMinutes, driver.rating || 0]
+          const row = [driver.id, driver.name, totalDeliveries, onTimeRate, avgDeliveryMinutes, 0]
             .join(",");
           csvContent += row + "\n";
         }
@@ -772,19 +800,31 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           select: { id: true, name: true },
         });
 
+        // Batch all zone shipments in one query
+        const exportZoneIds = zones.map((z: any) => z.id);
+        const allExportZoneShipments = await (request as any).tenantDb.shipment.findMany({
+          where: {
+            locationId: { in: exportZoneIds },
+            createdAt: { gte: from, lte: to },
+          },
+          select: {
+            locationId: true,
+            status: true,
+            deliveryDate: true,
+            actualDelivery: true,
+            shippingCost: true,
+          },
+        });
+
+        const exportShipmentsByZone: Record<string, any[]> = {};
+        for (const s of allExportZoneShipments) {
+          if (s.locationId) {
+            (exportShipmentsByZone[s.locationId] ??= []).push(s);
+          }
+        }
+
         for (const zone of zones) {
-          const shipments = await (request as any).tenantDb.shipment.findMany({
-            where: {
-              location: { id: zone.id },
-              createdAt: { gte: from, lte: to },
-            },
-            select: {
-              status: true,
-              deliveryDate: true,
-              actualDelivery: true,
-              shippingCost: true,
-            },
-          });
+          const shipments = exportShipmentsByZone[zone.id] ?? [];
 
           const deliveryCount = shipments.length;
           const deliveredShipments = shipments.filter((s: any) => s.status === "DELIVERED");
@@ -808,7 +848,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
             avgDeliveryHours = Math.round((totalHours / deliveredShipments.length) * 100) / 100;
           }
 
-          const revenue = shipments.reduce((sum: number, s: any) => sum + (s.shippingCost || 0), 0);
+          const revenue = shipments.reduce((sum: number, s: any) => sum + (Number(s.shippingCost) || 0), 0);
 
           if (deliveryCount > 0) {
             const row = [zone.id, zone.name, deliveryCount, onTimeRate, avgDeliveryHours, revenue].join(",");
