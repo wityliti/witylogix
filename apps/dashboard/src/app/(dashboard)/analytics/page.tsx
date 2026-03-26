@@ -15,7 +15,7 @@ import {
   Activity,
   Zap,
   RefreshCw,
-  Calendar,
+  Radio,
 } from 'lucide-react';
 
 // ── Demo data for when API is unavailable ──────────────────────
@@ -73,15 +73,17 @@ function MetricTile({
   icon: Icon,
   accent,
   delay = 0,
+  loading = false,
 }: {
   label: string;
   value: string | number;
   suffix?: string;
-  trend?: number;
+  trend?: number | null;
   trendLabel?: string;
   icon: typeof Package;
   accent: string;
   delay?: number;
+  loading?: boolean;
 }) {
   const isUp = (trend ?? 0) >= 0;
   return (
@@ -103,12 +105,16 @@ function MetricTile({
         </div>
       </div>
       <div className="flex items-baseline gap-1.5">
-        <span className="text-[28px] font-bold text-white/90 leading-none tracking-tight font-mono">
-          {value}
-        </span>
-        {suffix && <span className="text-sm text-white/30">{suffix}</span>}
+        {loading ? (
+          <div className="h-8 w-24 rounded bg-white/[0.06] animate-pulse" />
+        ) : (
+          <span className="text-[28px] font-bold text-white/90 leading-none tracking-tight font-mono">
+            {value}
+          </span>
+        )}
+        {suffix && !loading && <span className="text-sm text-white/30">{suffix}</span>}
       </div>
-      {trend !== undefined && (
+      {trend != null && (
         <div className="flex items-center gap-1.5 mt-2.5">
           {isUp ? (
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -121,6 +127,7 @@ function MetricTile({
           {trendLabel && <span className="text-xs text-white/25">{trendLabel}</span>}
         </div>
       )}
+      {loading && <div className="h-4 w-20 rounded bg-white/[0.04] animate-pulse mt-2.5" />}
     </div>
   );
 }
@@ -187,16 +194,26 @@ function WeeklyChart({ data }: { data: typeof DEMO_WEEKLY }) {
 // ── Page Component ─────────────────────────────────────────────
 
 export default function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
+  const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | 'custom'>('7d');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
-  const { data, loading } = useApiQuery<any>(`/api/v4/analytics/overview?range=${timeRange}`);
+  // Build API URL — use dateFrom/dateTo for custom range, range param otherwise
+  const apiUrl = timeRange === 'custom' && customFrom && customTo
+    ? `/api/v4/analytics/overview?dateFrom=${encodeURIComponent(new Date(customFrom).toISOString())}&dateTo=${encodeURIComponent(new Date(customTo + 'T23:59:59').toISOString())}`
+    : `/api/v4/analytics/overview?range=${timeRange}`;
+
+  const skip = timeRange === 'custom' && (!customFrom || !customTo);
+  const { data, loading } = useApiQuery<any>(skip ? null : apiUrl);
 
   // Use API data if available, otherwise demo
+  const isLive = !loading && data !== null;
   const metrics = data?.metrics ?? DEMO_METRICS;
   const hourly = data?.hourly ?? DEMO_HOURLY;
   const weekly = data?.weekly ?? DEMO_WEEKLY;
   const topZones = data?.topZones ?? DEMO_TOP_ZONES;
   const topDrivers = data?.topDrivers ?? DEMO_DRIVERS_PERF;
+  const trends = metrics.trends ?? {};
 
   const maxHourly = Math.max(...hourly.map((h: any) => Math.max(h.orders, h.deliveries)));
 
@@ -204,13 +221,25 @@ export default function AnalyticsPage() {
     <div className="min-h-screen">
       {/* Page Header */}
       <div className="px-6 lg:px-8 pt-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white/90 tracking-tight">Analytics</h1>
-            <p className="text-sm text-white/35 mt-0.5">Monitor dashboards, reports, and data sources</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-white/90 tracking-tight">Analytics</h1>
+              <p className="text-sm text-white/35 mt-0.5">Monitor dashboards, reports, and data sources</p>
+            </div>
+            {/* Live / Demo badge */}
+            <div className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border",
+              isLive
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                : "bg-white/[0.04] border-white/[0.08] text-white/30"
+            )}>
+              <Radio className="w-3 h-3" />
+              {loading ? 'Loading…' : isLive ? 'Live' : 'Demo'}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {(['today', '7d', '30d'] as const).map((r) => (
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['today', '7d', '30d', 'custom'] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setTimeRange(r)}
@@ -221,9 +250,26 @@ export default function AnalyticsPage() {
                     : "text-white/30 hover:text-white/50 border border-transparent"
                 )}
               >
-                {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : '30 Days'}
+                {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : r === '30d' ? '30 Days' : 'Custom'}
               </button>
             ))}
+            {timeRange === 'custom' && (
+              <div className="flex items-center gap-2 ml-1">
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="bg-[#111118] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white/60 focus:outline-none focus:border-white/20"
+                />
+                <span className="text-white/20 text-xs">to</span>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="bg-[#111118] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white/60 focus:outline-none focus:border-white/20"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -234,48 +280,48 @@ export default function AnalyticsPage() {
           <MetricTile
             label="Total Orders"
             value={metrics.totalOrders.toLocaleString()}
-            trend={12.3}
+            trend={trends.totalOrders ?? undefined}
             trendLabel="vs last period"
             icon={Package}
             accent="#818cf8"
             delay={0}
+            loading={loading}
           />
           <MetricTile
             label="Deliveries"
             value={metrics.totalDeliveries.toLocaleString()}
-            trend={8.7}
-            trendLabel="completion rate"
+            trend={trends.totalDeliveries ?? undefined}
+            trendLabel="vs last period"
             icon={Truck}
             accent="#34d399"
             delay={50}
+            loading={loading}
           />
           <MetricTile
             label="Active Drivers"
             value={metrics.activeDrivers}
-            trend={4.2}
-            trendLabel="fleet utilization"
             icon={Users}
             accent="#60a5fa"
             delay={100}
+            loading={loading}
           />
           <MetricTile
             label="Avg Delivery"
             value={metrics.avgDeliveryTime}
             suffix="min"
-            trend={-5.1}
-            trendLabel="faster"
             icon={Clock}
             accent="#fbbf24"
             delay={150}
+            loading={loading}
           />
         </div>
 
         {/* Secondary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" trend={2.1} icon={Zap} accent="#a78bfa" />
-          <MetricTile label="Customer Rating" value={metrics.customerSatisfaction} suffix="/5" trend={0.3} icon={Activity} accent="#f472b6" />
-          <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} trend={15.4} icon={BarChart3} accent="#2dd4bf" />
-          <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} trend={-12} trendLabel="fewer" icon={RefreshCw} accent="#f87171" />
+          <MetricTile label="On-Time Rate" value={metrics.onTimeRate} suffix="%" trend={trends.onTimeRate ?? undefined} icon={Zap} accent="#a78bfa" loading={loading} />
+          <MetricTile label="Customer Rating" value={metrics.customerSatisfaction} suffix="/5" icon={Activity} accent="#f472b6" loading={loading} />
+          <MetricTile label="Revenue" value={`$${(metrics.revenue / 1000).toFixed(0)}k`} trend={trends.revenue ?? undefined} icon={BarChart3} accent="#2dd4bf" loading={loading} />
+          <MetricTile label="Failed Deliveries" value={metrics.failedDeliveries} trend={trends.failedDeliveries ?? undefined} trendLabel="vs last period" icon={RefreshCw} accent="#f87171" loading={loading} />
         </div>
 
         {/* Charts Row */}
