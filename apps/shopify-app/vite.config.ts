@@ -11,25 +11,33 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 // Packages that must never be bundled — they are runtime deps resolved from
-// node_modules. We need a resolveId plugin because pnpm workspace symlinks are
-// followed before rollup's string-based external list is checked, which makes
-// the bare package name never match. The plugin short-circuits resolution.
+// node_modules. enforce:'pre' ensures this runs before reactRouter() (which
+// itself is a pre-plugin and resolves workspace symlinks before rollup's
+// string-based external list runs). We intercept both the bare package name
+// and any already-resolved absolute/relative path that includes the package.
 const SERVER_EXTERNALS = ["@witylogix/db", "@sentry/node", "@prisma/client"];
 const serverExternalsPlugin = {
   name: "force-server-externals",
-  resolveId(id: string) {
-    if (
-      SERVER_EXTERNALS.includes(id) ||
-      id.includes("/packages/db/") ||
-      id.startsWith("@sentry/")
-    ) {
+  enforce: "pre" as const,
+  resolveId(id: string, importer?: string) {
+    // Bare package name (earliest interception point)
+    if (SERVER_EXTERNALS.includes(id) || id.startsWith("@sentry/")) {
       return { id, external: true };
+    }
+    // Already-resolved file path that belongs to @witylogix/db
+    // (matches both /absolute/packages/db/ and ../../packages/db/)
+    if (id.includes("packages/db/")) {
+      return { id: "@witylogix/db", external: true };
+    }
+    // Sub-import from inside the db package (e.g. './generated/prisma')
+    if (importer && importer.includes("packages/db/")) {
+      return { id: "@witylogix/db", external: true };
     }
   },
 };
 
 export default defineConfig({
-  plugins: [reactRouter(), tsconfigPaths(), serverExternalsPlugin],
+  plugins: [serverExternalsPlugin, reactRouter(), tsconfigPaths()],
   server: {
     port: Number(process.env.PORT) || 3000,
     hmr: {
