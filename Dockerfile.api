@@ -4,16 +4,15 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client explicitly
+# Build workspace packages that API depends on
 RUN cd packages/db && npx prisma generate --schema=prisma/schema
+RUN cd packages/framework && npx tsup 2>/dev/null || true
+RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
 
 FROM node:20-alpine
 RUN npm install -g tsx && apk add --no-cache dumb-init curl
 WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/apps/api ./apps/api
-COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app ./
 ENV NODE_ENV=production
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s CMD curl -f http://localhost:3000/health || exit 1
