@@ -21,20 +21,27 @@ export default defineConfig({
   build: {
     sourcemap: true,
     rollupOptions: {
-      // Externalize server-side modules that must not be bundled:
-      // - @witylogix/db: workspace package with native Prisma binaries
-      // - @sentry/node: optional runtime dep (try-catch guarded in code)
-      external: ["@witylogix/db", "@sentry/node"],
+      // Externalize server-side modules that must not be bundled.
+      // Use a function so it matches both the bare package name AND the
+      // resolved absolute file path (pnpm workspace symlinks are followed
+      // before rollup's string-based external check runs).
+      external: (id: string) =>
+        id === "@witylogix/db" ||
+        id.includes("/packages/db/") ||
+        id === "@sentry/node" ||
+        id.startsWith("@sentry/"),
     },
   },
   ssr: {
-    // Also externalize for SSR build — build.rollupOptions.external does not
-    // apply to the SSR bundle. Without this Vite follows the workspace symlink
-    // into packages/db/dist/index.js and fails to statically analyse the CJS
-    // Prisma-generated client.
+    // Externalize for SSR build as well. Vite also needs preserveSymlinks so
+    // workspace symlinks don't resolve to absolute paths before the check.
     external: ["@witylogix/db", "@prisma/client", "@sentry/node"],
   },
   resolve: {
+    // Prevent pnpm workspace symlinks from being followed before the external
+    // check runs — keeps @witylogix/db as a bare package name so the external
+    // list matches it correctly.
+    preserveSymlinks: true,
     alias: {
       "~": new URL("./app", import.meta.url).pathname,
     },
