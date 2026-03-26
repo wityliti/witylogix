@@ -35,11 +35,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy built app and production deps
+# Copy built app and all node_modules (workspace root + app-level)
 COPY --from=builder /app/apps/shopify-app/build ./build
 COPY --from=builder /app/apps/shopify-app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/shopify-app/node_modules ./app_modules
+COPY --from=builder /app/apps/shopify-app/node_modules ./node_modules_app
+
+# Merge app-level bins into node_modules so npx can find react-router-serve
+RUN cp -rn ./node_modules_app/.bin/* ./node_modules/.bin/ 2>/dev/null || true && \
+    cp -rn ./node_modules_app/* ./node_modules/ 2>/dev/null || true && \
+    rm -rf ./node_modules_app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
