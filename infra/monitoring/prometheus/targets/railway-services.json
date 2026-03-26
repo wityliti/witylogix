@@ -1,0 +1,22 @@
+[
+  {
+    "targets": ["https://api.railway.app/health"],
+    "labels": { "service": "api", "environment": "production" }
+  },
+  {
+    "targets": ["https://dashboard.railway.app/"],
+    "labels": { "service": "dashboard", "environment": "production" }
+  },
+  {
+    "targets": ["https://customer-portal.railway.app/"],
+    "labels": { "service": "customer-portal", "environment": "production" }
+  },
+  {
+    "targets": ["https://shopify-app.railway.app/health"],
+    "labels": { "service": "shopify-app", "environment": "production" }
+  },
+  {
+    "targets": ["https://tracking-page.railway.app/"],
+    "labels": { "service": "tracking-page", "environment": "production" }
+  }
+]

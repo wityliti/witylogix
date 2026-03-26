@@ -1,7 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "../../Dockerfile"
-dockerTarget = "dashboard"
+dockerfilePath = "../../Dockerfile.dashboard"
 
 [deploy]
 healthcheckPath = "/"

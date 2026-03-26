@@ -18,6 +18,26 @@ BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m' # No Color
 
+# ── Platform & CI Detection ────────────────────────────────────
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')"
+case "$PLATFORM" in
+  darwin) PLATFORM="macos" ;;
+  linux)  PLATFORM="linux" ;;
+  *)      PLATFORM="unknown" ;;
+esac
+
+IS_CI=false
+if [[ "${CI:-}" == "true" || "${GITHUB_ACTIONS:-}" == "true" || \
+      "${CIRCLECI:-}" == "true" || "${TRAVIS:-}" == "true" ]]; then
+  IS_CI=true
+fi
+
+# Disable colors in CI
+if $IS_CI; then
+  RED=''; GREEN=''; YELLOW=''; BLUE=''; CYAN=''
+  MAGENTA=''; BOLD=''; DIM=''; NC=''
+fi
+
 # ── Paths ─────────────────────────────────────────────────────
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
@@ -40,8 +60,12 @@ error()   { echo -e "  ${RED}✗${NC}  $1"; }
 
 check_port() {
   local port=$1
-  if lsof -i :"$port" -sTCP:LISTEN &>/dev/null; then
+  if lsof -i :"$port" -sTCP:LISTEN &>/dev/null 2>&1; then
     return 0  # Port in use
+  fi
+  # Fallback: ss (Linux when lsof unavailable)
+  if ss -tlnp 2>/dev/null | grep -q ":${port} "; then
+    return 0
   fi
   # Fallback: try connecting
   if curl -s --max-time 1 "http://localhost:$port" -o /dev/null 2>/dev/null; then
@@ -54,6 +78,10 @@ kill_port() {
   local port=$1
   local pids
   pids=$(lsof -ti :"$port" 2>/dev/null || true)
+  if [ -z "$pids" ]; then
+    # Fallback to fuser (Linux when lsof unavailable)
+    pids=$(fuser "${port}/tcp" 2>/dev/null || true)
+  fi
   if [ -n "$pids" ]; then
     echo "$pids" | xargs kill -9 2>/dev/null || true
     sleep 1
@@ -156,6 +184,76 @@ ensure_tsx() {
   fi
   if [ "$TSX_LOADER" = "npx:tsx" ]; then
     error "tsx not found. Run: pnpm install"
+    return 1
+  fi
+}
+
+# ── Dependency Check ──────────────────────────────────────────
+check_deps() {
+  local ok=true
+  echo ""
+  info "Checking dependencies (platform: ${PLATFORM}, ci: ${IS_CI})..."
+  echo ""
+
+  # Node.js >= 20
+  if command -v node &>/dev/null; then
+    local node_ver node_major
+    node_ver=$(node --version | sed 's/v//')
+    node_major=$(echo "$node_ver" | cut -d. -f1)
+    if [ "$node_major" -ge 20 ]; then
+      success "Node.js v${node_ver} ✓"
+    else
+      error "Node.js v${node_ver} too old — requires >= 20. Install from https://nodejs.org/"
+      ok=false
+    fi
+  else
+    error "Node.js not found. Install from https://nodejs.org/"
+    ok=false
+  fi
+
+  # pnpm >= 9
+  if command -v pnpm &>/dev/null; then
+    local pnpm_ver pnpm_major
+    pnpm_ver=$(pnpm --version)
+    pnpm_major=$(echo "$pnpm_ver" | cut -d. -f1)
+    if [ "$pnpm_major" -ge 9 ]; then
+      success "pnpm v${pnpm_ver} ✓"
+    else
+      error "pnpm v${pnpm_ver} too old — requires >= 9. Run: npm install -g pnpm"
+      ok=false
+    fi
+  else
+    error "pnpm not found. Run: npm install -g pnpm"
+    ok=false
+  fi
+
+  # Docker (optional but warn)
+  if command -v docker &>/dev/null; then
+    success "Docker ✓"
+  else
+    warn "Docker not found (some features unavailable)."
+    if [ "$PLATFORM" = "macos" ]; then
+      warn "  Install: https://www.docker.com/products/docker-desktop/"
+    else
+      warn "  Install: https://docs.docker.com/engine/install/"
+    fi
+  fi
+
+  # Docker Compose (optional but warn)
+  if docker compose version &>/dev/null 2>&1; then
+    success "Docker Compose ✓"
+  elif command -v docker-compose &>/dev/null; then
+    success "Docker Compose (standalone) ✓"
+  else
+    warn "Docker Compose not found."
+  fi
+
+  echo ""
+  if $ok; then
+    success "All required dependencies satisfied."
+    return 0
+  else
+    error "Missing required dependencies — install them and retry."
     return 1
   fi
 }
@@ -274,6 +372,12 @@ start_driver_app() {
 
 # ── Combo Launchers ───────────────────────────────────────────
 start_core() {
+  if $IS_CI; then
+    error "Interactive 'start' is not available in CI environments."
+    error "Use './cli.sh check-deps' for pre-flight dependency checks instead."
+    exit 1
+  fi
+  check_deps || exit 1
   echo ""
   echo -e "  ${BOLD}Starting core services (API + Dashboard)...${NC}"
   echo ""
@@ -292,6 +396,12 @@ start_core() {
 }
 
 start_all_web() {
+  if $IS_CI; then
+    error "Interactive 'start' is not available in CI environments."
+    error "Use './cli.sh check-deps' for pre-flight dependency checks instead."
+    exit 1
+  fi
+  check_deps || exit 1
   echo ""
   echo -e "  ${BOLD}Starting all web apps...${NC}"
   echo ""
@@ -387,12 +497,21 @@ test_menu() {
   case $test_choice in
     1)
       info "Running Playwright E2E tests..."
-      cd "$ROOT_DIR/apps/dashboard" && npx playwright test --reporter=list
+      if $IS_CI; then
+        cd "$ROOT_DIR/apps/dashboard" && npx playwright test --reporter=list
+      else
+        cd "$ROOT_DIR/apps/dashboard" && npx playwright test --reporter=list
+      fi
       cd "$ROOT_DIR"
       ;;
     2)
-      info "Running Playwright E2E tests (headed)..."
-      cd "$ROOT_DIR/apps/dashboard" && npx playwright test --headed
+      if $IS_CI; then
+        info "Running Playwright E2E tests (headless — CI mode)..."
+        cd "$ROOT_DIR/apps/dashboard" && npx playwright test --reporter=list
+      else
+        info "Running Playwright E2E tests (headed)..."
+        cd "$ROOT_DIR/apps/dashboard" && npx playwright test --headed
+      fi
       cd "$ROOT_DIR"
       ;;
     3)
@@ -548,16 +667,31 @@ if [ $# -gt 0 ]; then
         *) error "Unknown db command: $1. Options: generate, push, seed, studio" ;;
       esac
       ;;
+    check-deps)
+      check_deps
+      ;;
+    dev)
+      if $IS_CI; then
+        error "Interactive 'dev' is not available in CI environments."
+        error "Use './cli.sh check-deps' for pre-flight dependency checks instead."
+        exit 1
+      fi
+      start_core
+      ;;
     help|-h|--help)
       header
       echo -e "  ${BOLD}Usage:${NC}"
       echo -e "    ${CYAN}./cli.sh${NC}                    Interactive menu"
       echo -e "    ${CYAN}./cli.sh start${NC} [app]        Start services (core|all|api|dashboard|portal|docs|tracking)"
+      echo -e "    ${CYAN}./cli.sh dev${NC}                Alias for 'start core' (not available in CI)"
+      echo -e "    ${CYAN}./cli.sh check-deps${NC}         Validate Node.js, pnpm, Docker dependencies"
       echo -e "    ${CYAN}./cli.sh stop${NC}               Stop all services"
       echo -e "    ${CYAN}./cli.sh status${NC}             Show service status"
       echo -e "    ${CYAN}./cli.sh logs${NC} [app]         View logs (api|dashboard|portal)"
       echo -e "    ${CYAN}./cli.sh test${NC} [type]        Run tests (e2e|unit)"
       echo -e "    ${CYAN}./cli.sh db${NC} [cmd]           Database ops (generate|push|seed|studio)"
+      echo ""
+      echo -e "  ${DIM}platform: ${PLATFORM}, ci: ${IS_CI}${NC}"
       echo ""
       ;;
     *)
@@ -571,4 +705,8 @@ if [ $# -gt 0 ]; then
 fi
 
 # ── Launch Interactive Menu ───────────────────────────────────
+if $IS_CI; then
+  error "Interactive menu is not available in CI. Use './cli.sh help' for available commands."
+  exit 1
+fi
 main_menu
