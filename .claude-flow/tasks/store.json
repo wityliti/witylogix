@@ -186,6 +186,57 @@
       "createdAt": "2026-03-26T12:21:48.452Z",
       "startedAt": "2026-03-26T12:22:16.186Z",
       "completedAt": null
+    },
+    "task-1774529335531-pobnak": {
+      "taskId": "task-1774529335531-pobnak",
+      "type": "feature",
+      "description": "Update docs contributing/index.mdx to match actual monorepo: correct project structure (dashboard, customer-portal, shopify-app, docs, tracking-page, driver-app), update Node 20/pnpm 9 prereqs, fix package names (db, core, framework, workflows, types, validators), update code style to match CLAUDE.md rules (500 line limit, immutable patterns, TDD London School)",
+      "priority": "high",
+      "status": "completed",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "docs",
+        "contributing",
+        "oss"
+      ],
+      "createdAt": "2026-03-26T12:48:55.532Z",
+      "startedAt": "2026-03-26T12:49:07.197Z",
+      "completedAt": null
+    },
+    "task-1774529338660-74jcez": {
+      "taskId": "task-1774529338660-74jcez",
+      "type": "feature",
+      "description": "Rewrite docs architecture/overview.mdx with actual tech stack: Next.js 15, React 19, Fastify 5, Prisma, PostgreSQL, Redis, BullMQ, Tailwind CSS. Include real monorepo app/package layout, data flow diagram (ASCII), multi-tenancy via RLS, event-driven architecture, BYOK provider pattern for routing/notifications.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "docs",
+        "architecture",
+        "oss"
+      ],
+      "createdAt": "2026-03-26T12:48:58.660Z",
+      "startedAt": "2026-03-26T12:49:07.659Z",
+      "completedAt": null
+    },
+    "task-1774529341461-tn301x": {
+      "taskId": "task-1774529341461-tn301x",
+      "type": "feature",
+      "description": "Fix GitHub URLs across all docs pages from github.com/witylogix/witylogix-platform to github.com/wityliti/witylogix. Also add a new docs/legal/license.mdx page explaining AGPL-3.0 implications: what it means for self-hosters, commercial use, modification requirements, and the commercial licensing option.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "docs",
+        "legal",
+        "oss"
+      ],
+      "createdAt": "2026-03-26T12:49:01.461Z",
+      "startedAt": "2026-03-26T12:49:08.083Z",
+      "completedAt": null
     }
   },
   "version": "3.0.0"

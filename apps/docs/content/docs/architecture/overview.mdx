@@ -1,73 +1,202 @@
 ---
 title: Architecture Overview
-description: Understand the Witylogix platform architecture
+description: Understand the Witylogix platform architecture, tech stack, and design decisions.
 ---
+
+import { Callout } from 'fumadocs-ui/components/callout';
 
 # Architecture Overview
 
-The Witylogix platform is built on a modern, scalable microservices architecture designed for high availability and performance.
+Witylogix is an open-source logistics platform built for last-mile delivery, fleet management, and order fulfillment. The platform is designed as a modular monorepo so that teams can deploy the full stack or adopt individual services incrementally.
 
-## System Components
+## Tech Stack
 
-### API Gateway
-- Routes all incoming requests to appropriate services
-- Handles authentication and rate limiting
-- Provides API versioning
+| Layer | Technology | Version |
+| --- | --- | --- |
+| Frontend | Next.js, React, Tailwind CSS | 15, 19, 3.4 |
+| Backend | Fastify, Node.js | 5, 20 |
+| Database | PostgreSQL with PostGIS, Prisma ORM | 16 |
+| Cache / Queue | Redis, BullMQ | 7 |
+| Mobile | React Native (Expo) | latest |
+| Auth | JWT with refresh tokens | -- |
+| Validation | Zod schemas | -- |
+| Testing | Vitest, Playwright | -- |
+| CI/CD | GitHub Actions, Docker | -- |
+| Docs | Fumadocs (Next.js-based) | -- |
 
-### Shipment Service
-- Core service for managing shipments
-- Handles creation, updates, and queries
-- Manages shipment lifecycle and status
+## Monorepo Structure
 
-### Tracking Service
-- Real-time shipment location tracking
-- GPS and delivery updates
-- Historical tracking data
+```
+witylogix-platform/
+├── apps/
+│   ├── api/                # Fastify REST API (core backend)
+│   ├── dashboard/          # Operations dashboard (Next.js)
+│   ├── customer-portal/    # Customer-facing portal (Next.js)
+│   ├── shopify-app/        # Shopify embedded app integration
+│   ├── driver-app/         # Driver mobile app (React Native / Expo)
+│   ├── tracking-page/      # Public shipment tracking page (Next.js)
+│   └── docs/               # Documentation site (Fumadocs)
+│
+├── packages/
+│   ├── db/                 # Prisma schema, migrations, seed data
+│   ├── core/               # Shared business logic and domain models
+│   ├── framework/          # Base utilities, middleware, error handling
+│   ├── workflows/          # BullMQ job definitions and processors
+│   ├── types/              # Shared TypeScript type definitions
+│   └── validators/         # Zod schemas for input validation
+│
+├── extensions/             # Optional plugins and third-party integrations
+│
+└── infra/                  # Docker Compose, Terraform, Railway configs
+```
 
-### Notification Service
-- Webhook delivery
-- Email notifications
-- SMS alerts (optional)
-
-### Analytics Service
-- Aggregates usage metrics
-- Provides insights and reporting
-- Tracks performance KPIs
-
-## Database Architecture
-
-- **Primary** - PostgreSQL for transactional data
-- **Cache** - Redis for caching and real-time updates
-- **Search** - Elasticsearch for advanced queries
+<Callout type="info">
+  Every package under `packages/` is published as an internal workspace dependency. Apps import them directly without a separate build step thanks to TypeScript project references.
+</Callout>
 
 ## Data Flow
 
 ```
-User Request
-    ↓
-API Gateway (auth, rate limiting)
-    ↓
-Service Layer (business logic)
-    ↓
-Database (PostgreSQL)
-    ↓
-Cache (Redis)
-    ↓
-Response
+┌──────────────────┐
+│ Shopify / E-comm │
+│    Storefront    │
+└────────┬─────────┘
+         │  webhook / REST
+         ▼
+┌──────────────────┐     ┌───────────────────┐
+│   API Gateway    │────▶│  Auth Middleware   │
+│   (Fastify)      │     │  (JWT + RBAC)     │
+└────────┬─────────┘     └───────────────────┘
+         │
+         ▼
+┌──────────────────┐
+│  Order Service   │
+│  (core logic)    │
+└──┬───────┬───┬───┘
+   │       │   │
+   ▼       │   ▼
+┌──────┐   │  ┌───────────────┐
+│  DB  │   │  │  Notification │
+│(PG)  │   │  │   Service     │
+└──────┘   │  │ (Email/SMS/   │
+           │  │  Push/Webhook)│
+           │  └───────────────┘
+           ▼
+   ┌───────────────┐     ┌────────────────────┐
+   │ Routing Engine │     │  WebSocket Server  │
+   │ (Mapbox/OSRM) │     │  (Socket.io)       │
+   └───────────────┘     └────────┬───────────┘
+                                  │  real-time
+                                  ▼
+                          ┌───────────────┐
+                          │ Tracking Page │
+                          │ / Driver App  │
+                          └───────────────┘
 ```
 
-## Scalability
+1. An order arrives via Shopify webhook or the REST API.
+2. The API gateway authenticates the request and routes it to the Order Service.
+3. The Order Service persists the order, enqueues background jobs, and emits domain events.
+4. The Routing Engine calculates optimal delivery routes.
+5. The Notification Service dispatches confirmations across configured channels.
+6. WebSocket connections push live tracking updates to the tracking page and driver app.
 
-The platform scales horizontally:
-- Services deployed on Kubernetes
-- Auto-scaling based on load
-- Load balanced across regions
-- Global CDN for API responses
+## Multi-Tenancy
 
-## Deployment
+Witylogix supports multiple organizations on a single deployment through a shared-infrastructure, isolated-data model.
 
-- Production: Multiple availability zones
-- Staging: Isolated environment
-- Development: Local development environment
+- **Row-Level Security (RLS)** in PostgreSQL enforces data isolation at the database layer. Every table that holds tenant data includes an `organization_id` column, and RLS policies restrict queries to the current tenant context.
+- **Organization-scoped data isolation** means no tenant can read or write another tenant's records, even if application-level bugs occur.
+- **Tenant context via JWT claims** -- the `organization_id` is embedded in the access token and injected into every database session so RLS policies apply transparently.
+- **Shared infrastructure, isolated data** keeps operational costs low while maintaining strict separation guarantees.
 
-All deployments use Infrastructure as Code (Terraform).
+<Callout type="warn">
+  RLS policies must be applied to every new migration that introduces tenant-scoped tables. The CI pipeline includes a lint step that flags tables missing an `organization_id` column.
+</Callout>
+
+## Provider Architecture (BYOK)
+
+The platform abstracts all external service integrations behind a provider interface. Merchants can bring their own API keys (BYOK) so they are never locked into a single vendor.
+
+### Routing Providers
+
+| Provider | Type | Notes |
+| --- | --- | --- |
+| Mapbox | Default | Directions, geocoding, isochrones |
+| OSRM | Self-hosted | Open-source, no API key required |
+| Google Maps | Cloud | Directions, Distance Matrix |
+| HERE | Cloud | Routing, geocoding |
+| GraphHopper | Cloud / self-hosted | Optimization API |
+| TomTom | Cloud | Routing, traffic |
+
+### Notification Providers
+
+| Channel | Providers |
+| --- | --- |
+| Email | SendGrid, Mailgun, AWS SES |
+| SMS | Twilio, Vonage |
+| WhatsApp | Twilio, Meta Business API |
+| Push | Firebase Cloud Messaging |
+
+### Storage Providers
+
+| Provider | Notes |
+| --- | --- |
+| AWS S3 | Default for production |
+| Local filesystem | Development and self-hosted |
+
+<Callout type="info">
+  Provider credentials are stored per-organization. A single deployment can serve tenants using different routing or notification vendors simultaneously.
+</Callout>
+
+## Event-Driven Architecture
+
+Asynchronous processing is central to the platform's reliability and scalability.
+
+- **BullMQ** handles all background job processing -- route calculations, notification dispatch, webhook delivery, and report generation. Jobs are persisted in Redis and retried automatically on failure.
+- **Event sourcing** records every order state transition as an immutable event. The current order state is derived by replaying events, which provides a complete audit trail and enables time-travel debugging.
+- **Webhook delivery** notifies external systems (Shopify, ERPs, custom integrations) of state changes. Failed deliveries are retried with exponential backoff.
+- **Real-time updates via WebSocket (Socket.io)** push live location and status changes to the tracking page, customer portal, and driver app without polling.
+
+```
+Order Created ──▶ event stored ──▶ BullMQ job enqueued
+                                        │
+                    ┌───────────────────┬┴──────────────────┐
+                    ▼                   ▼                   ▼
+             Route Calculation   Send Notification    Deliver Webhook
+```
+
+## Security Model
+
+Security is enforced at multiple layers throughout the stack.
+
+- **Authentication**: JWT access tokens (short-lived) paired with refresh tokens (long-lived, rotated on use). Tokens are signed with RS256 and validated on every request.
+- **Role-Based Access Control (RBAC)**: Permissions are assigned to roles (admin, dispatcher, driver, customer). Route-level guards enforce authorization before any handler executes.
+- **Input validation**: Every API endpoint validates request bodies, query parameters, and path parameters with Zod schemas. Invalid input is rejected before reaching business logic.
+- **CORS**: Strict origin allowlists per environment. Credentials are only accepted from known origins.
+- **Rate limiting**: Configurable per-route rate limits prevent abuse. BullMQ-backed distributed rate limiting ensures consistency across multiple API instances.
+- **Helmet headers**: Standard security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) are applied to all responses.
+
+## Design Principles
+
+The codebase follows a consistent set of architectural principles across all packages and apps.
+
+### Domain-Driven Design
+
+Bounded contexts define clear boundaries between subdomains (orders, routing, notifications, billing). Each context owns its data, types, and business rules. Cross-context communication happens through events, not direct imports.
+
+### Immutable Data Patterns
+
+State is never mutated in place. Functions return new objects rather than modifying existing ones. This eliminates hidden side effects and simplifies debugging, especially in concurrent job processing.
+
+### Repository Pattern
+
+Data access is encapsulated behind repository interfaces. Business logic depends on the interface, not the storage implementation. This makes it straightforward to swap data sources or mock repositories in tests.
+
+### Event Sourcing
+
+Order state changes are captured as a sequence of immutable events rather than direct updates to a mutable record. The current state is a projection of the event stream. This provides a full audit log and enables rebuilding state at any point in time.
+
+### Feature Flags
+
+New functionality is deployed behind feature flags for progressive rollout. Flags are scoped per-organization, enabling controlled beta testing with specific tenants before a general release.
