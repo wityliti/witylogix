@@ -73,6 +73,6 @@ embedded = false
 # ─── App Store Listing (URLs) ──────────────────────────────
 # These point to the docs site hosted publicly
 [app_settings]
-privacy_url = "https://docs.witylogix.io/docs/legal/privacy-policy"
-terms_url = "https://docs.witylogix.io/docs/legal/terms-of-service"
-gdpr_url = "https://docs.witylogix.io/docs/legal/gdpr"
+privacy_url = "https://docs.witylogix.com/docs/legal/privacy-policy"
+terms_url = "https://docs.witylogix.com/docs/legal/terms-of-service"
+gdpr_url = "https://docs.witylogix.com/docs/legal/gdpr"
