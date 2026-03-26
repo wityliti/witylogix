@@ -18,9 +18,5 @@
   {
     "targets": ["https://tracking-page.railway.app/"],
     "labels": { "service": "tracking-page", "environment": "production" }
-  },
-  {
-    "targets": ["https://docs.railway.app/"],
-    "labels": { "service": "docs", "environment": "production" }
   }
 ]

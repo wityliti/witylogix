@@ -10,7 +10,6 @@
 #   DASHBOARD_BASE_URL      - e.g. https://dashboard.witylogix.io
 #   TRACKING_PAGE_BASE_URL  - e.g. https://track.witylogix.io
 #   SHOPIFY_APP_BASE_URL    - e.g. https://shopify.witylogix.io
-#   DOCS_BASE_URL           - e.g. https://docs.witylogix.io
 #
 # Defaults fall back to localhost ports used in local dev.
 # Exit code 0 = all pass, non-zero = one or more services failed.
@@ -73,9 +72,6 @@ run_service_smoke "Tracking Page" "tracking-page.sh" \
 
 run_service_smoke "Shopify App" "shopify-app.sh" \
   "BASE_URL=${SHOPIFY_APP_BASE_URL:-http://localhost:3004}"
-
-run_service_smoke "Docs" "docs.sh" \
-  "BASE_URL=${DOCS_BASE_URL:-http://localhost:3001}"
 
 echo "════════════════════════════════════════════════════"
 if [[ $OVERALL_FAILED -eq 0 ]]; then

@@ -1,0 +1,192 @@
+{
+  "tasks": {
+    "task-1774523765485-cuge1d": {
+      "taskId": "task-1774523765485-cuge1d",
+      "type": "bugfix",
+      "description": "Fix shopify-app build failure: @shopify/shopify-app-react-router subpath import error. The import was changed to ./server but build still fails on Railway. Investigate and fix remaining build issues.",
+      "priority": "critical",
+      "status": "in_progress",
+      "progress": 80,
+      "assignedTo": [],
+      "tags": [
+        "shopify-app",
+        "railway",
+        "build-fix"
+      ],
+      "createdAt": "2026-03-26T11:16:05.486Z",
+      "startedAt": "2026-03-26T11:16:25.866Z",
+      "completedAt": null
+    },
+    "task-1774523767530-w4o7fv": {
+      "taskId": "task-1774523767530-w4o7fv",
+      "type": "feature",
+      "description": "Production hardening for API (Witylogix service): verify health endpoint works, validate DATABASE_URL and REDIS_URL connections, ensure proper error handling and graceful shutdown, check env vars are set correctly.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "api",
+        "production",
+        "health-check"
+      ],
+      "createdAt": "2026-03-26T11:16:07.530Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774523769594-q1lxj9": {
+      "taskId": "task-1774523769594-q1lxj9",
+      "type": "feature",
+      "description": "Verify all Next.js services (dashboard, customer-portal, docs) are production-ready: check NEXT_PUBLIC_API_URL is set, verify pages load correctly, ensure standalone output is working with correct static assets.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "nextjs",
+        "production",
+        "verification"
+      ],
+      "createdAt": "2026-03-26T11:16:09.594Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774523770508-vo3zog": {
+      "taskId": "task-1774523770508-vo3zog",
+      "type": "feature",
+      "description": "Set up cross-service environment variables on Railway: NEXT_PUBLIC_API_URL on dashboard/customer-portal/docs pointing to Witylogix API domain, verify all services can communicate.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "railway",
+        "env-vars",
+        "cross-service"
+      ],
+      "createdAt": "2026-03-26T11:16:10.508Z",
+      "startedAt": "2026-03-26T11:16:26.093Z",
+      "completedAt": null
+    },
+    "task-1774525186748-6gxqkz": {
+      "taskId": "task-1774525186748-6gxqkz",
+      "type": "feature",
+      "description": "Create CONTRIBUTING.md — guidelines for bug reports, feature requests, PRs, code style, testing requirements, and development setup. Match Fleetbase quality.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "governance"
+      ],
+      "createdAt": "2026-03-26T11:39:46.748Z",
+      "startedAt": "2026-03-26T11:40:09.168Z",
+      "completedAt": null
+    },
+    "task-1774525187611-chnbdq": {
+      "taskId": "task-1774525187611-chnbdq",
+      "type": "feature",
+      "description": "Create CODE_OF_CONDUCT.md — Contributor Covenant v2.1, community standards, enforcement guidelines.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "governance"
+      ],
+      "createdAt": "2026-03-26T11:39:47.611Z",
+      "startedAt": "2026-03-26T11:40:10.071Z",
+      "completedAt": null
+    },
+    "task-1774525188947-5ytma9": {
+      "taskId": "task-1774525188947-5ytma9",
+      "type": "feature",
+      "description": "Create SECURITY.md — vulnerability disclosure policy, reporting process, supported versions, PGP key info, response timeline.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "security"
+      ],
+      "createdAt": "2026-03-26T11:39:48.947Z",
+      "startedAt": "2026-03-26T11:40:10.597Z",
+      "completedAt": null
+    },
+    "task-1774525191921-r14z7b": {
+      "taskId": "task-1774525191921-r14z7b",
+      "type": "feature",
+      "description": "Audit and enhance README.md — ensure it has: hero banner/logo, badges (license, build, coverage, discord), feature overview, architecture diagram, quick start, deployment guide, API reference link, roadmap, community links, screenshots.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "readme"
+      ],
+      "createdAt": "2026-03-26T11:39:51.921Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774525194114-asbtcz": {
+      "taskId": "task-1774525194114-asbtcz",
+      "type": "feature",
+      "description": "Verify and enhance .github templates — check issue templates (bug report, feature request), PR template, CI/CD workflows (build, test, lint, deploy), dependabot config, CODEOWNERS.",
+      "priority": "normal",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "github",
+        "ci-cd"
+      ],
+      "createdAt": "2026-03-26T11:39:54.114Z",
+      "startedAt": "2026-03-26T11:40:10.694Z",
+      "completedAt": null
+    },
+    "task-1774527707147-4haj2w": {
+      "taskId": "task-1774527707147-4haj2w",
+      "type": "feature",
+      "description": "Enhance customer portal order cards with: better visual hierarchy, refined status badges with icon+color+label, progress indicator for active deliveries, subtle hover scale animation (0.98->1.0), improved typography spacing, item preview thumbnails, delivery progress bar for out-for-delivery status.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "customer-portal",
+        "order-card"
+      ],
+      "createdAt": "2026-03-26T12:21:47.147Z",
+      "startedAt": "2026-03-26T12:22:15.632Z",
+      "completedAt": null
+    },
+    "task-1774527708451-cmdzef": {
+      "taskId": "task-1774527708451-cmdzef",
+      "type": "feature",
+      "description": "Enhance customer portal dashboard page with: summary stats cards (total orders, active deliveries, pending, delivered), quick actions section, recent activity timeline, improved layout with better content hierarchy.",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "ui",
+        "customer-portal",
+        "dashboard"
+      ],
+      "createdAt": "2026-03-26T12:21:48.452Z",
+      "startedAt": "2026-03-26T12:22:16.186Z",
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}

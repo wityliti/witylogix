@@ -12,7 +12,7 @@ groups:
         annotations:
           summary: "Railway service down: {{ $labels.instance }}"
           description: "Health check for {{ $labels.instance }} has been failing for >2 minutes"
-          runbook: "/docs/runbooks/railway-on-call.md"
+          runbook: "/docs/runbooks/incident-response.md"
 
       # Service slow — HTTP probe takes >5s
       - alert: RailwayServiceSlow
@@ -24,7 +24,7 @@ groups:
         annotations:
           summary: "Railway service slow: {{ $labels.instance }}"
           description: "Health check for {{ $labels.instance }} is taking {{ $value }}s (threshold: 5s)"
-          runbook: "/docs/runbooks/railway-on-call.md"
+          runbook: "/docs/runbooks/incident-response.md"
 
       # SSL certificate expiring within 14 days
       - alert: RailwaySSLCertExpiringSoon
@@ -36,7 +36,7 @@ groups:
         annotations:
           summary: "SSL cert expiring soon: {{ $labels.instance }}"
           description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
-          runbook: "/docs/runbooks/railway-on-call.md"
+          runbook: "/docs/runbooks/incident-response.md"
 
       # Error rate across all Railway services (>1% triggers warning)
       - alert: RailwayHighErrorRate
@@ -49,4 +49,4 @@ groups:
         annotations:
           summary: "High error rate on {{ $labels.service }}"
           description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 1%)"
-          runbook: "/docs/runbooks/railway-on-call.md"
+          runbook: "/docs/runbooks/incident-response.md"
