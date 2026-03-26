@@ -373,20 +373,32 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         activeRoutes: number;
       }> = [];
 
+      // Batch fetch all shipments for all drivers in one query, then group in JS
+      const driverIds = drivers.map((d: any) => d.id);
+      const allDriverShipments = await (request as any).tenantDb.shipment.findMany({
+        where: {
+          driverId: { in: driverIds },
+          createdAt: { gte: from, lte: to },
+        },
+        select: {
+          id: true,
+          driverId: true,
+          status: true,
+          deliveryDate: true,
+          actualDelivery: true,
+          pickedUpAt: true,
+        },
+      });
+
+      const shipmentsByDriver: Record<string, any[]> = {};
+      for (const s of allDriverShipments) {
+        if (s.driverId) {
+          (shipmentsByDriver[s.driverId] ??= []).push(s);
+        }
+      }
+
       for (const driver of drivers) {
-        const shipments = await (request as any).tenantDb.shipment.findMany({
-          where: {
-            driverId: driver.id,
-            createdAt: { gte: from, lte: to },
-          },
-          select: {
-            id: true,
-            status: true,
-            deliveryDate: true,
-            actualDelivery: true,
-            pickedUpAt: true,
-          },
-        });
+        const shipments = shipmentsByDriver[driver.id] ?? [];
 
         const totalDeliveries = shipments.filter((s: any) => s.status === "DELIVERED").length;
         const deliveredShipments = shipments.filter((s: any) => s.status === "DELIVERED");
@@ -470,20 +482,32 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         revenue: number;
       }> = [];
 
+      // Batch fetch all shipments for all zones in one query, then group in JS
+      const zoneIds = zones.map((z: any) => z.id);
+      const allZoneShipments = await (request as any).tenantDb.shipment.findMany({
+        where: {
+          locationId: { in: zoneIds },
+          createdAt: { gte: from, lte: to },
+        },
+        select: {
+          id: true,
+          locationId: true,
+          status: true,
+          deliveryDate: true,
+          actualDelivery: true,
+          shippingCost: true,
+        },
+      });
+
+      const shipmentsByZone: Record<string, any[]> = {};
+      for (const s of allZoneShipments) {
+        if (s.locationId) {
+          (shipmentsByZone[s.locationId] ??= []).push(s);
+        }
+      }
+
       for (const zone of zones) {
-        const shipments = await (request as any).tenantDb.shipment.findMany({
-          where: {
-            location: { id: zone.id },
-            createdAt: { gte: from, lte: to },
-          },
-          select: {
-            id: true,
-            status: true,
-            deliveryDate: true,
-            actualDelivery: true,
-            shippingCost: true,
-          },
-        });
+        const shipments = shipmentsByZone[zone.id] ?? [];
 
         const deliveryCount = shipments.length;
         const deliveredShipments = shipments.filter((s: any) => s.status === "DELIVERED");
@@ -508,7 +532,7 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           avgDeliveryTime = Math.round((totalHours / deliveredShipments.length) * 100) / 100;
         }
 
-        const revenue = shipments.reduce((sum: number, s: any) => sum + (s.shippingCost || 0), 0);
+        const revenue = shipments.reduce((sum: number, s: any) => sum + (Number(s.shippingCost) || 0), 0);
 
         if (deliveryCount > 0) {
           zoneMetrics.push({
@@ -688,19 +712,31 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           where: { isActive: true },
         });
 
+        // Batch all driver shipments in one query
+        const exportDriverIds = drivers.map((d: any) => d.id);
+        const allExportDriverShipments = await (request as any).tenantDb.shipment.findMany({
+          where: {
+            driverId: { in: exportDriverIds },
+            createdAt: { gte: from, lte: to },
+          },
+          select: {
+            driverId: true,
+            status: true,
+            deliveryDate: true,
+            actualDelivery: true,
+            pickedUpAt: true,
+          },
+        });
+
+        const exportShipmentsByDriver: Record<string, any[]> = {};
+        for (const s of allExportDriverShipments) {
+          if (s.driverId) {
+            (exportShipmentsByDriver[s.driverId] ??= []).push(s);
+          }
+        }
+
         for (const driver of drivers) {
-          const shipments = await (request as any).tenantDb.shipment.findMany({
-            where: {
-              driverId: driver.id,
-              createdAt: { gte: from, lte: to },
-            },
-            select: {
-              status: true,
-              deliveryDate: true,
-              actualDelivery: true,
-              pickedUpAt: true,
-            },
-          });
+          const shipments = exportShipmentsByDriver[driver.id] ?? [];
 
           const totalDeliveries = shipments.filter((s: any) => s.status === "DELIVERED").length;
           const deliveredShipments = shipments.filter((s: any) => s.status === "DELIVERED");
