@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord Community
+    url: https://discord.gg/witylogix
+    about: Ask questions, share ideas, and connect with the community
+  - name: GitHub Discussions
+    url: https://github.com/wityliti/witylogix/discussions
+    about: General questions, ideas, and show-and-tell
+  - name: Security Vulnerabilities
+    url: https://github.com/wityliti/witylogix/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately (do NOT open a public issue)

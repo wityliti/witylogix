@@ -22,8 +22,8 @@
       "type": "feature",
       "description": "Production hardening for API (Witylogix service): verify health endpoint works, validate DATABASE_URL and REDIS_URL connections, ensure proper error handling and graceful shutdown, check env vars are set correctly.",
       "priority": "high",
-      "status": "pending",
-      "progress": 0,
+      "status": "completed",
+      "progress": 100,
       "assignedTo": [],
       "tags": [
         "api",
@@ -39,8 +39,8 @@
       "type": "feature",
       "description": "Verify all Next.js services (dashboard, customer-portal, docs) are production-ready: check NEXT_PUBLIC_API_URL is set, verify pages load correctly, ensure standalone output is working with correct static assets.",
       "priority": "high",
-      "status": "pending",
-      "progress": 0,
+      "status": "completed",
+      "progress": 100,
       "assignedTo": [],
       "tags": [
         "nextjs",
@@ -66,6 +66,91 @@
       ],
       "createdAt": "2026-03-26T11:16:10.508Z",
       "startedAt": "2026-03-26T11:16:26.093Z",
+      "completedAt": null
+    },
+    "task-1774525186748-6gxqkz": {
+      "taskId": "task-1774525186748-6gxqkz",
+      "type": "feature",
+      "description": "Create CONTRIBUTING.md — guidelines for bug reports, feature requests, PRs, code style, testing requirements, and development setup. Match Fleetbase quality.",
+      "priority": "high",
+      "status": "in_progress",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "governance"
+      ],
+      "createdAt": "2026-03-26T11:39:46.748Z",
+      "startedAt": "2026-03-26T11:40:09.168Z",
+      "completedAt": null
+    },
+    "task-1774525187611-chnbdq": {
+      "taskId": "task-1774525187611-chnbdq",
+      "type": "feature",
+      "description": "Create CODE_OF_CONDUCT.md — Contributor Covenant v2.1, community standards, enforcement guidelines.",
+      "priority": "high",
+      "status": "in_progress",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "governance"
+      ],
+      "createdAt": "2026-03-26T11:39:47.611Z",
+      "startedAt": "2026-03-26T11:40:10.071Z",
+      "completedAt": null
+    },
+    "task-1774525188947-5ytma9": {
+      "taskId": "task-1774525188947-5ytma9",
+      "type": "feature",
+      "description": "Create SECURITY.md — vulnerability disclosure policy, reporting process, supported versions, PGP key info, response timeline.",
+      "priority": "high",
+      "status": "in_progress",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "security"
+      ],
+      "createdAt": "2026-03-26T11:39:48.947Z",
+      "startedAt": "2026-03-26T11:40:10.597Z",
+      "completedAt": null
+    },
+    "task-1774525191921-r14z7b": {
+      "taskId": "task-1774525191921-r14z7b",
+      "type": "feature",
+      "description": "Audit and enhance README.md — ensure it has: hero banner/logo, badges (license, build, coverage, discord), feature overview, architecture diagram, quick start, deployment guide, API reference link, roadmap, community links, screenshots.",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "docs",
+        "readme"
+      ],
+      "createdAt": "2026-03-26T11:39:51.921Z",
+      "startedAt": null,
+      "completedAt": null
+    },
+    "task-1774525194114-asbtcz": {
+      "taskId": "task-1774525194114-asbtcz",
+      "type": "feature",
+      "description": "Verify and enhance .github templates — check issue templates (bug report, feature request), PR template, CI/CD workflows (build, test, lint, deploy), dependabot config, CODEOWNERS.",
+      "priority": "normal",
+      "status": "in_progress",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [
+        "oss",
+        "github",
+        "ci-cd"
+      ],
+      "createdAt": "2026-03-26T11:39:54.114Z",
+      "startedAt": "2026-03-26T11:40:10.694Z",
       "completedAt": null
     }
   },
