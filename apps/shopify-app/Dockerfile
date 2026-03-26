@@ -55,10 +55,6 @@ COPY --from=builder /standalone/package.json ./
 # Build output is separate from pnpm deploy output
 COPY --from=builder /app/apps/shopify-app/build ./build
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -q --spider http://localhost:3000/health || exit 1
-
 EXPOSE 3000
 
 CMD ["node", "node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
