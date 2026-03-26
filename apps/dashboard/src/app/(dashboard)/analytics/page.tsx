@@ -189,7 +189,7 @@ function WeeklyChart({ data }: { data: typeof DEMO_WEEKLY }) {
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d'>('7d');
 
-  const { data, loading } = useApiQuery<any>('/api/v4/analytics/overview');
+  const { data, loading } = useApiQuery<any>(`/api/v4/analytics/overview?range=${timeRange}`);
 
   // Use API data if available, otherwise demo
   const metrics = data?.metrics ?? DEMO_METRICS;

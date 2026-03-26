@@ -26,6 +26,7 @@ const dateRangeSchema = z.object({
 
 const overviewQuerySchema = dateRangeSchema.extend({
   zoneId: z.string().uuid().optional(),
+  range: z.enum(["today", "7d", "30d"]).optional(),
 });
 
 const trendsQuerySchema = dateRangeSchema.extend({
@@ -91,82 +92,184 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/overview", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const query = overviewQuerySchema.parse(request.query);
-      const { dateFrom, dateTo, zoneId } = query;
-      const { from, to } = getDateRange(dateFrom, dateTo);
+      const { dateFrom, dateTo, range } = query;
+      const shopId = (request as any).shopId as string;
+      const db = (request as any).tenantDb;
 
-      const where: any = {
+      // Resolve date range — prefer explicit dateFrom/dateTo, then `range` shorthand
+      let from: Date;
+      let to: Date = new Date();
+      if (dateFrom || dateTo) {
+        ({ from, to } = getDateRange(dateFrom, dateTo));
+      } else if (range === "today") {
+        from = new Date();
+        from.setHours(0, 0, 0, 0);
+      } else if (range === "30d") {
+        from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      } else {
+        // default: 7d
+        from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      }
+
+      const orderWhere: any = {
+        shopId,
         createdAt: { gte: from, lte: to },
       };
 
-      if (zoneId) {
-        where.location = { id: zoneId };
-      }
+      // ── Fetch orders (Shopify data) ──────────────────────────
+      const [orders, activeDriversCount] = await Promise.all([
+        db.order.findMany({
+          where: orderWhere,
+          select: {
+            id: true,
+            status: true,
+            totalPrice: true,
+            deliveryDate: true,
+            actualDelivery: true,
+            createdAt: true,
+            city: true,
+            driverId: true,
+            driver: { select: { id: true, name: true } },
+          },
+        }),
+        db.driver.count({
+          where: {
+            shopId,
+            isActive: true,
+            status: { in: ["AVAILABLE", "ON_ROUTE"] },
+          },
+        }),
+      ]);
 
-      // Get shipment metrics
-      const shipments = await (request as any).tenantDb.shipment.findMany({
-        where,
-        select: {
-          id: true,
-          status: true,
-          deliveryDate: true,
-          actualDelivery: true,
-          shippingCost: true,
-        },
-        orderBy: { createdAt: "asc" },
-      });
+      // ── KPI metrics ──────────────────────────────────────────
+      const totalOrders = orders.length;
+      const deliveredOrders = orders.filter((o: any) => o.status === "DELIVERED");
+      const failedOrders = orders.filter((o: any) => o.status === "FAILED" || o.status === "CANCELLED");
+      const totalDeliveries = deliveredOrders.length;
+      const failedDeliveries = failedOrders.length;
 
-      // Get payment data for revenue
-      const payments = await (request as any).tenantDb.paymentTransaction.findMany({
-        where: {
-          createdAt: { gte: from, lte: to },
-          ...(zoneId && { shipment: { location: { id: zoneId } } }),
-        },
-        select: { amount: true, status: true },
-      });
-
-      // Calculate metrics
-      const totalDeliveries = shipments.length;
-      const deliveredShipments = shipments.filter((s: any) => s.status === "DELIVERED");
-      const onTimeDeliveries = deliveredShipments.filter(
-        (s: any) => s.actualDelivery && s.deliveryDate && s.actualDelivery <= s.deliveryDate,
+      const onTimeDeliveries = deliveredOrders.filter(
+        (o: any) => o.actualDelivery && o.deliveryDate && o.actualDelivery <= o.deliveryDate,
       ).length;
+      const onTimeRate = totalDeliveries > 0
+        ? Math.round((onTimeDeliveries / totalDeliveries) * 10000) / 100
+        : 0;
 
-      // Average delivery time (in hours)
+      // Avg delivery time in minutes
       let avgDeliveryTime = 0;
-      if (deliveredShipments.length > 0) {
-        const totalTime = deliveredShipments.reduce((sum: number, s: any) => {
-          if (s.deliveryDate && s.actualDelivery) {
-            const diffMs = s.actualDelivery.getTime() - s.deliveryDate.getTime();
-            return sum + Math.max(0, diffMs / (1000 * 60 * 60));
-          }
-          return sum;
+      const timedDeliveries = deliveredOrders.filter(
+        (o: any) => o.actualDelivery && o.deliveryDate,
+      );
+      if (timedDeliveries.length > 0) {
+        const totalMins = timedDeliveries.reduce((sum: number, o: any) => {
+          const diffMs = (o.actualDelivery as Date).getTime() - (o.deliveryDate as Date).getTime();
+          return sum + Math.max(0, diffMs / (1000 * 60));
         }, 0);
-        avgDeliveryTime = Math.round((totalTime / deliveredShipments.length) * 100) / 100;
+        avgDeliveryTime = Math.round(totalMins / timedDeliveries.length);
       }
 
-      // Revenue (completed payments) - amount is in BigInt (cents), convert to number
-      const completedPayments = payments.filter((p: any) => p.status === "completed");
-      const revenue = completedPayments.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
+      // Revenue: sum of totalPrice on delivered orders
+      const revenue = deliveredOrders.reduce((sum: number, o: any) => {
+        return sum + (o.totalPrice ? parseFloat(o.totalPrice.toString()) : 0);
+      }, 0);
 
-      // Cost per delivery
-      const totalShippingCost = shipments.reduce((sum: number, s: any) => sum + (s.shippingCost || 0), 0);
-      const costPerDelivery = totalDeliveries > 0 ? Math.round((totalShippingCost / totalDeliveries) * 100) / 100 : 0;
+      const metrics = {
+        totalOrders,
+        totalDeliveries,
+        activeDrivers: activeDriversCount,
+        avgDeliveryTime,
+        onTimeRate,
+        customerSatisfaction: 4.5, // placeholder — no ratings model yet
+        revenue: Math.round(revenue * 100) / 100,
+        failedDeliveries,
+      };
 
-      // Customer satisfaction (default placeholder - would come from reviews/ratings)
-      const customerSatisfaction = 4.5; // placeholder
+      // ── Hourly breakdown (group by hour of createdAt) ────────
+      const hourlyMap: Record<number, { orders: number; deliveries: number }> = {};
+      for (let h = 0; h < 24; h++) {
+        hourlyMap[h] = { orders: 0, deliveries: 0 };
+      }
+      for (const o of orders) {
+        const h = (o.createdAt as Date).getHours();
+        hourlyMap[h].orders += 1;
+        if (o.status === "DELIVERED") hourlyMap[h].deliveries += 1;
+      }
+      const hourly = Array.from({ length: 24 }, (_, h) => ({
+        hour: h,
+        orders: hourlyMap[h].orders,
+        deliveries: hourlyMap[h].deliveries,
+      }));
 
-      // On-time rate
-      const onTimeRate =
-        totalDeliveries > 0 ? Math.round((onTimeDeliveries / totalDeliveries) * 10000) / 100 : 0;
+      // ── Weekly breakdown (group by day-of-week) ──────────────
+      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const weeklyMap: Record<number, { orders: number; deliveries: number; revenue: number }> = {};
+      for (let d = 0; d < 7; d++) {
+        weeklyMap[d] = { orders: 0, deliveries: 0, revenue: 0 };
+      }
+      for (const o of orders) {
+        const d = (o.createdAt as Date).getDay();
+        weeklyMap[d].orders += 1;
+        if (o.status === "DELIVERED") {
+          weeklyMap[d].deliveries += 1;
+          weeklyMap[d].revenue += o.totalPrice ? parseFloat(o.totalPrice.toString()) : 0;
+        }
+      }
+      const weekly = DAYS.map((day, d) => ({
+        day,
+        orders: weeklyMap[d].orders,
+        deliveries: weeklyMap[d].deliveries,
+        revenue: Math.round(weeklyMap[d].revenue * 100) / 100,
+      }));
+
+      // ── Top zones (group by city) ────────────────────────────
+      const cityMap: Record<string, number> = {};
+      for (const o of orders) {
+        const city = (o.city as string | null) ?? "Unknown";
+        cityMap[city] = (cityMap[city] ?? 0) + 1;
+      }
+      const sortedCities = Object.entries(cityMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const topZones = sortedCities.map(([name, count]) => ({
+        name,
+        orders: count,
+        pct: totalOrders > 0 ? Math.round((count / totalOrders) * 1000) / 10 : 0,
+        trend: 0, // trend requires prior-period comparison — not yet implemented
+      }));
+
+      // ── Top drivers (group delivered orders by driverId) ─────
+      const driverMap: Record<string, { name: string; total: number; onTime: number }> = {};
+      for (const o of deliveredOrders) {
+        if (!o.driverId) continue;
+        if (!driverMap[o.driverId]) {
+          driverMap[o.driverId] = {
+            name: (o.driver as any)?.name ?? "Unknown",
+            total: 0,
+            onTime: 0,
+          };
+        }
+        driverMap[o.driverId].total += 1;
+        if (o.actualDelivery && o.deliveryDate && (o.actualDelivery as Date) <= (o.deliveryDate as Date)) {
+          driverMap[o.driverId].onTime += 1;
+        }
+      }
+      const topDrivers = Object.values(driverMap)
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5)
+        .map((d) => ({
+          name: d.name,
+          deliveries: d.total,
+          onTime: d.total > 0 ? Math.round((d.onTime / d.total) * 1000) / 10 : 0,
+          rating: 4.5, // placeholder — no rating model yet
+        }));
 
       return {
         data: {
-          totalDeliveries,
-          onTimeRate,
-          avgDeliveryTime,
-          customerSatisfaction,
-          revenue: Math.round(revenue * 100) / 100,
-          costPerDelivery,
+          metrics,
+          hourly,
+          weekly,
+          topZones,
+          topDrivers,
           dateRange: { from: from.toISOString(), to: to.toISOString() },
         },
       };

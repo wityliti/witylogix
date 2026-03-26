@@ -1,7 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "../../Dockerfile"
-dockerTarget = "tracking-page"
+dockerfilePath = "../../Dockerfile.tracking-page"
 
 [deploy]
 healthcheckPath = "/"
@@ -10,4 +9,4 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [service]
-internalPort = 4173
+internalPort = 3000

@@ -1,0 +1,52 @@
+groups:
+  - name: railway_uptime
+    interval: 30s
+    rules:
+      # Service down — HTTP probe fails for 2 consecutive minutes
+      - alert: RailwayServiceDown
+        expr: |
+          probe_success{job="railway-blackbox"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Railway service down: {{ $labels.instance }}"
+          description: "Health check for {{ $labels.instance }} has been failing for >2 minutes"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Service slow — HTTP probe takes >5s
+      - alert: RailwayServiceSlow
+        expr: |
+          probe_duration_seconds{job="railway-blackbox"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Railway service slow: {{ $labels.instance }}"
+          description: "Health check for {{ $labels.instance }} is taking {{ $value }}s (threshold: 5s)"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # SSL certificate expiring within 14 days
+      - alert: RailwaySSLCertExpiringSoon
+        expr: |
+          probe_ssl_earliest_cert_expiry{job="railway-blackbox"} - time() < 14 * 24 * 3600
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL cert expiring soon: {{ $labels.instance }}"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+          runbook: "/docs/runbooks/incident-response.md"
+
+      # Error rate across all Railway services (>1% triggers warning)
+      - alert: RailwayHighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5..", service!="api"}[5m])) by (service, environment) /
+          sum(rate(http_requests_total{service!="api"}[5m])) by (service, environment) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "{{ $labels.service }} in {{ $labels.environment }} has error rate {{ $value | humanizePercentage }} (threshold: 1%)"
+          runbook: "/docs/runbooks/incident-response.md"
