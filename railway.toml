@@ -1,5 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.shopify-app"
+
 [deploy]
-startCommand = "node app_modules/@react-router/serve/bin.js ./build/server/index.js"
+startCommand = "node node_modules/@react-router/serve/bin.js ./build/server/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
