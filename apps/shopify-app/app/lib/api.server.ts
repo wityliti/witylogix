@@ -21,8 +21,6 @@ export function getApiBaseUrl(): string {
   return (process.env.API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
 }
 
-const API_BASE = getApiBaseUrl();
-
 // ─── Types ─────────────────────────────────────────────────
 
 export interface ApiError {
@@ -61,7 +59,7 @@ export function createApiClient(sessionToken: string) {
       params?: Record<string, string | number | boolean | undefined>;
     },
   ): Promise<T> {
-    const url = new URL(path, API_BASE);
+    const url = new URL(path, getApiBaseUrl());
 
     // Append query params, filtering out undefined values
     if (options?.params) {

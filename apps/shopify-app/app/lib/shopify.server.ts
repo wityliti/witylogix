@@ -5,13 +5,9 @@
  * and provides the `authenticate` object used by route loaders/actions.
  *
  * Architecture:
- *   Shopify App Bridge → session token (JWT) → verified here
- *   → exchanged for a Witylogix API JWT via POST /api/v4/auth/shopify-exchange
- *   → cached in server session for subsequent requests
- *
- * The Shopify session token proves the request is from an authenticated
- * merchant inside the Shopify Admin. We verify it using the Shopify API secret,
- * then call our own API to get a Witylogix JWT that carries shopId, role, etc.
+ *   Shopify App Bridge → session token (JWT) → verified by `authenticate.admin`
+ *   Loaders call the Witylogix API with `Authorization: Bearer <session token>`;
+ *   the API verifies that JWT with `SHOPIFY_API_SECRET` and resolves the shop tenant.
  */
 
 import "@shopify/shopify-app-react-router/adapters/node";
