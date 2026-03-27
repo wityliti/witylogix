@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useFetcher, useNavigate } from "react-router";
 import { useState } from "react";
 import { Page, Card, Layout, Text, Banner, Button, Form, FormLayout, TextField } from "@shopify/polaris";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 interface OnboardingStep {
@@ -37,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return { error: "Not authenticated" };
   }
 
-  const api = createApiClient(session.accessToken);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     const response = await api.get<{ data: OnboardingData }>(
@@ -68,7 +68,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return { error: "Not authenticated" };
   }
 
-  const api = createApiClient(session.accessToken);
+  const api = createApiClientFromRequest(request, session);
   const formData = await request.formData();
 
   const action = formData.get("_action");

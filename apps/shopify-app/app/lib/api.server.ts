@@ -45,6 +45,24 @@ export interface SingleResponse<T> {
 
 // ─── Client Factory ────────────────────────────────────────
 
+/**
+ * Extract the App Bridge JWT from an incoming request's Authorization header.
+ * Falls back to the Shopify OAuth access token when the header is absent
+ * (e.g. during an initial document request that App Bridge hasn't intercepted yet).
+ *
+ * The Witylogix API verifies App Bridge JWTs with SHOPIFY_API_SECRET.
+ * `session.accessToken` is an opaque OAuth token that cannot be verified this way,
+ * so always prefer the header value when present.
+ */
+export function createApiClientFromRequest(
+  request: Request,
+  session: { accessToken?: string | null },
+) {
+  const header = request.headers.get('authorization') ?? ''
+  const token = header.startsWith('Bearer ') ? header.slice(7) : (session.accessToken ?? '')
+  return createApiClient(token)
+}
+
 export function createApiClient(sessionToken: string) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

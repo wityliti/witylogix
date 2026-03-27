@@ -32,7 +32,7 @@ import {
   Divider,
   Box,
 } from "@shopify/polaris";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -86,7 +86,7 @@ interface ZonePageData {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   // Mock data for zone detail page
   const mockZone: Zone = {

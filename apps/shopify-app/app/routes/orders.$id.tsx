@@ -36,7 +36,7 @@ import {
 } from "@shopify/polaris";
 import { OrderStatusBadge } from "~/components/OrderStatusBadge";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -104,7 +104,7 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   const [orderRes, timelineRes, driversRes] = await Promise.allSettled([
     api.get<SingleResponse<OrderDetail>>(`/api/v4/orders/${params.id}`),
@@ -130,7 +130,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
   const formData = await request.formData();
   const intent = formData.get("intent");
 

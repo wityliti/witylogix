@@ -45,7 +45,7 @@ import {
   Divider,
   DescriptionList,
 } from "@shopify/polaris";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -145,7 +145,7 @@ const HEALTH_LABELS: Record<string, string> = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   const [marketplaceRes, installedRes] = await Promise.allSettled([
     api.get<SingleResponse<MarketplaceApp[]>>("/api/v4/integrations/marketplace"),
@@ -169,7 +169,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
 

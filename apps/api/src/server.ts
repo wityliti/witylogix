@@ -113,17 +113,26 @@ export async function buildServer(): Promise<FastifyInstance> {
     },
   });
 
-  // 5. Global rate limiter — enforced before authentication
-  await app.register(rateLimit, {
+  // 5. Global rate limiter — enforced before authentication.
+  // In development use the built-in in-memory store to avoid blocking HTTP
+  // requests when Railway Redis resets connections (ECONNRESET).
+  // In production, Redis-backed rate limiting is used for distributed counting.
+  const rateLimitOpts: any = {
     global: true,
     max: isDev() ? 1000 : config.RATE_LIMIT_MAX_REQUESTS,
     timeWindow: "1 minute",
-    redis: getRedis(),
-    keyGenerator: (request) => {
-      // Rate-limit per tenant if authenticated, else by IP
+    keyGenerator: (request: any) => {
       return (request as any).auth?.shopId || request.ip;
     },
-  });
+  };
+  if (!isDev()) {
+    try {
+      rateLimitOpts.redis = getRedis();
+    } catch {
+      app.log.warn("[RateLimit] Redis unavailable, falling back to in-memory store");
+    }
+  }
+  await app.register(rateLimit, rateLimitOpts);
 
   // 6. Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);

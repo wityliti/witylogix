@@ -28,7 +28,7 @@ import {
   Divider,
   EmptyState as PolarisEmptyState,
 } from "@shopify/polaris";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -57,7 +57,7 @@ interface CalendarPageData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     const response = await api.get<{ rules: CalendarRule[] }>(

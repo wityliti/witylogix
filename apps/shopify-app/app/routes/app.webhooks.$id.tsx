@@ -42,7 +42,7 @@ import {
 } from "@shopify/polaris-icons";
 import { WebhookEventPicker } from "~/components/WebhookEventPicker";
 import { authenticate } from "~/lib/shopify.server";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -85,7 +85,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     const [webhookRes, deliveriesRes] = await Promise.allSettled([
@@ -126,7 +126,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   }
 
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   if (request.method === "POST") {
     const formData = await request.formData();
