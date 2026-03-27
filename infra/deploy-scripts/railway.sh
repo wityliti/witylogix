@@ -18,6 +18,8 @@
 #   status      Show deployment status
 #   redeploy    Redeploy a service without uploading new code
 #   vars        List or set environment variables
+#   sync-shopify-env  Push SHOPIFY_* from local .env → Railway "Witylogix API";
+#                     push API_BASE_URL → shopify-app (from local or default prod URL)
 #   open        Open project in Railway dashboard
 #   domain      Generate public domain for a service
 #   services    List all deployable services
@@ -355,6 +357,46 @@ cmd_vars() {
   esac
 }
 
+# Railway service name for apps/api (not the CLI alias "api")
+RAILWAY_API_SERVICE_NAME="Witylogix API"
+
+# Load root .env then apps/shopify-app/.env so the latter overrides for Shopify keys.
+cmd_sync_shopify_env() {
+  check_railway_cli
+  ensure_linked
+  cd "$ROOT_DIR"
+
+  local root_env="$ROOT_DIR/.env"
+  local shopify_env="$ROOT_DIR/apps/shopify-app/.env"
+  set -a
+  # shellcheck disable=SC1090
+  [[ -f "$root_env" ]] && source "$root_env"
+  # shellcheck disable=SC1090
+  [[ -f "$shopify_env" ]] && source "$shopify_env"
+  set +a
+
+  if [[ -z "${SHOPIFY_API_KEY:-}" || -z "${SHOPIFY_API_SECRET:-}" ]]; then
+    log_error "SHOPIFY_API_KEY and SHOPIFY_API_SECRET must be set in apps/shopify-app/.env (and/or root .env)."
+    exit 1
+  fi
+
+  local api_base="${API_BASE_URL:-https://api.witylogix.com}"
+  api_base="${api_base%/}"
+
+  log_info "Setting SHOPIFY_* on Railway \"$RAILWAY_API_SERVICE_NAME\" ($ENVIRONMENT, --skip-deploys)…"
+  log_cmd "railway variable set SHOPIFY_API_KEY=… --service \"$RAILWAY_API_SERVICE_NAME\""
+  railway variable set "SHOPIFY_API_KEY=$SHOPIFY_API_KEY" \
+    --service "$RAILWAY_API_SERVICE_NAME" --environment "$ENVIRONMENT" --skip-deploys
+  railway variable set "SHOPIFY_API_SECRET=$SHOPIFY_API_SECRET" \
+    --service "$RAILWAY_API_SERVICE_NAME" --environment "$ENVIRONMENT" --skip-deploys
+
+  log_info "Setting API_BASE_URL on Railway shopify-app ($ENVIRONMENT, --skip-deploys)…"
+  railway variable set "API_BASE_URL=$api_base" \
+    --service shopify-app --environment "$ENVIRONMENT" --skip-deploys
+
+  log_info "Done. Redeploy \"$RAILWAY_API_SERVICE_NAME\" and shopify-app when you want new values live."
+}
+
 cmd_open() {
   check_railway_cli
   ensure_linked
@@ -389,12 +431,13 @@ show_help() {
   echo "  status      Show status (all services if no -s flag)"
   echo "  redeploy    Redeploy a service"
   echo "  vars        List variables (vars set KEY=val to set)"
+  echo "  sync-shopify-env  Push SHOPIFY_* + API_BASE_URL from local .env to Railway"
   echo "  open        Open project in Railway dashboard"
   echo "  domain      Generate public domain for a service"
   echo ""
   echo "Options:"
   echo "  -s, --service NAME      Target service (api, dashboard, customer-portal, docs, shopify-app, tracking-page)"
-  echo "  -e, --environment ENV   Target environment (default: production)"
+  echo "  -e, --environment ENV   Target environment (default: production; may be before or after command)"
   echo "  -d, --detach            Deploy in background"
   echo "  -c, --ci                CI mode: build logs only"
   echo "  -y, --yes               Non-interactive: accept all prompts"
@@ -423,7 +466,7 @@ while [[ $# -gt 0 ]]; do
     -c|--ci)          CI_MODE=true; shift ;;
     -y|--yes)         YES_MODE=true; shift ;;
     -h|--help)        show_help; exit 0 ;;
-    setup|init|link|deploy|deploy-all|logs|status|redeploy|vars|open|domain|services)
+    setup|init|link|deploy|deploy-all|logs|status|redeploy|vars|sync-shopify-env|open|domain|services)
       break ;;
     -*)  log_error "Unknown option: $1"; show_help; exit 1 ;;
     *)   break ;;
@@ -432,6 +475,18 @@ done
 
 COMMAND="${1:-deploy}"
 shift || true
+
+# Options may appear after the command (e.g. sync-shopify-env -e staging).
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -s|--service)     SERVICE_NAME="$2"; shift 2 ;;
+    -e|--environment) ENVIRONMENT="$2"; shift 2 ;;
+    -d|--detach)      DETACH=true; shift ;;
+    -c|--ci)          CI_MODE=true; shift ;;
+    -y|--yes)         YES_MODE=true; shift ;;
+    *)                break ;;
+  esac
+done
 
 case $COMMAND in
   setup)      cmd_setup ;;
@@ -443,8 +498,9 @@ case $COMMAND in
   logs)       cmd_logs ;;
   status)     cmd_status ;;
   redeploy)   cmd_redeploy ;;
-  vars)       cmd_vars "$@" ;;
-  open)       cmd_open ;;
+  vars)               cmd_vars "$@" ;;
+  sync-shopify-env)   cmd_sync_shopify_env ;;
+  open)               cmd_open ;;
   domain)     cmd_domain ;;
   *)          log_error "Unknown command: $COMMAND"; show_help; exit 1 ;;
 esac

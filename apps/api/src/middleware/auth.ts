@@ -11,7 +11,6 @@
 
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { createHmac, timingSafeEqual } from "crypto";
-import jwt from "@fastify/jwt";
 import { prisma } from "@witylogix/db";
 import { UnauthorizedError, ForbiddenError } from "../lib/errors.js";
 import { getConfig } from "../lib/config.js";
@@ -19,6 +18,103 @@ import type { AuthContext } from "../types/fastify.js";
 
 // Export AuthContext for external use
 export type { AuthContext };
+
+function base64UrlToBuffer(segment: string): Buffer {
+  const pad = segment.length % 4 === 0 ? "" : "=".repeat(4 - (segment.length % 4));
+  return Buffer.from(segment.replace(/-/g, "+").replace(/_/g, "/") + pad, "base64");
+}
+
+/**
+ * Shopify embedded admin sends an App Bridge session token (JWT, HS256, secret = SHOPIFY_API_SECRET).
+ * The Shopify app forwards it as Bearer when calling this API. Dashboard/driver JWTs use JWT_SECRET instead.
+ */
+async function tryAuthFromShopifySessionToken(token: string): Promise<AuthContext | null> {
+  const config = getConfig();
+  if (!config.SHOPIFY_API_SECRET || config.SHOPIFY_API_SECRET.length < 8) {
+    return null;
+  }
+
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [headerB64, payloadB64, sigB64] = parts;
+  let header: { alg?: string };
+  try {
+    header = JSON.parse(base64UrlToBuffer(headerB64).toString("utf8")) as { alg?: string };
+  } catch {
+    return null;
+  }
+  if (header.alg !== "HS256") {
+    return null;
+  }
+
+  const expectedSig = createHmac("sha256", config.SHOPIFY_API_SECRET)
+    .update(`${headerB64}.${payloadB64}`)
+    .digest();
+  let sigBuf: Buffer;
+  try {
+    sigBuf = base64UrlToBuffer(sigB64);
+  } catch {
+    return null;
+  }
+  if (sigBuf.length !== expectedSig.length || !timingSafeEqual(sigBuf, expectedSig)) {
+    return null;
+  }
+
+  let payload: { dest?: string; aud?: string; exp?: number; nbf?: number; sub?: string };
+  try {
+    payload = JSON.parse(base64UrlToBuffer(payloadB64).toString("utf8")) as typeof payload;
+  } catch {
+    return null;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof payload.exp === "number" && payload.exp < now - 10) {
+    return null;
+  }
+  if (typeof payload.nbf === "number" && payload.nbf > now + 10) {
+    return null;
+  }
+
+  if (config.SHOPIFY_API_KEY && payload.aud && payload.aud !== config.SHOPIFY_API_KEY) {
+    return null;
+  }
+
+  const dest = payload.dest;
+  if (!dest || typeof dest !== "string") {
+    return null;
+  }
+
+  let shopDomain: string;
+  try {
+    shopDomain = new URL(dest).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+
+  if (!shopDomain.endsWith(".myshopify.com")) {
+    return null;
+  }
+
+  const shop = await prisma.shop.findUnique({
+    where: { shopifyDomain: shopDomain },
+    select: { id: true, orgId: true, isActive: true },
+  });
+
+  if (!shop || !shop.isActive) {
+    return null;
+  }
+
+  return {
+    shopId: shop.id,
+    orgId: shop.orgId || undefined,
+    userId: typeof payload.sub === "string" ? payload.sub : undefined,
+    role: "SUPER_ADMIN",
+    shopDomain,
+  };
+}
 
 // ─── JWT Auth (Dashboard + Driver) ──────────────────────────
 
@@ -56,10 +152,18 @@ export async function requireAuth(
       orgRole: payload.orgRole as AuthContext["orgRole"],
       shopDomain: payload.shopDomain,
     };
-  } catch (err) {
-    // Return 401 for any token verification failure (expired, invalid signature, etc.)
-    throw new UnauthorizedError("Invalid or expired token");
+    return;
+  } catch {
+    // Not a Witylogix JWT — try Shopify embedded session token
   }
+
+  const shopifyAuth = await tryAuthFromShopifySessionToken(token);
+  if (shopifyAuth) {
+    request.auth = shopifyAuth;
+    return;
+  }
+
+  throw new UnauthorizedError("Invalid or expired token");
 }
 
 // ─── Role-Based Access ──────────────────────────────────────
