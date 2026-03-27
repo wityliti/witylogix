@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useApiQuery } from '@/hooks/use-api';
+import { useApiQuery, useApiMutation } from '@/hooks/use-api';
 import {
   Code,
   Eye,
@@ -38,6 +38,29 @@ export default function WidgetConfigPage() {
   const [borderRadius, setBorderRadius] = useState("8");
   const [shadowEnabled, setShadowEnabled] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>('PATCH', '/api/v4/shops/me');
+
+  const handleSave = async () => {
+    try {
+      await saveMutation.execute({
+        settings: {
+          widgetConfig: {
+            cartSelectorEnabled, shippingCalcEnabled,
+            position: widgetPosition, fontFamily, language,
+            width: widgetWidth, height: widgetHeight,
+            primaryColor, backgroundColor, textColor,
+            borderRadius, shadowEnabled,
+          },
+        },
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch {
+      // error displayed via saveMutation.error
+    }
+  };
 
   const embedCode = `<script src="https://witylogix.com/widget/latest.js"></script>
 <div id="witylogix-widget"></div>
@@ -411,7 +434,7 @@ export default function WidgetConfigPage() {
                     2. Paste before closing &lt;/body&gt; tag
                   </p>
                   <p className="text-white text-xs font-medium mb-1">
-                    3. Replace 'your-api-key-here' with your API key
+                    3. Replace &apos;your-api-key-here&apos; with your API key
                   </p>
                   <p className="text-white text-xs font-medium">
                     4. Test on your website
@@ -426,12 +449,16 @@ export default function WidgetConfigPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex gap-3 justify-end">
-          <Button variant="secondary">
+        <div className="flex gap-3 justify-end items-center">
+          {saveMutation.error && (
+            <span className="text-xs text-red-400">{saveMutation.error.message}</span>
+          )}
+          {saveSuccess && <span className="text-xs text-green-400">Saved!</span>}
+          <Button variant="secondary" onClick={() => window.location.reload()}>
             Discard
           </Button>
-          <Button variant="primary">
-            Save Configuration
+          <Button variant="primary" onClick={handleSave} disabled={saveMutation.loading}>
+            {saveMutation.loading ? "Saving…" : "Save Configuration"}
           </Button>
         </div>
       </div>
