@@ -1,8 +1,8 @@
 # Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
-# Cache bust: force rebuild (2026-03-27-v4)
-RUN echo "cache-bust-2026-03-27-v4"
+# Cache bust: force rebuild (2026-03-27-v5)
+RUN echo "cache-bust-2026-03-27-v5"
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
@@ -36,8 +36,10 @@ RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 
 # Copy the prisma CLI (fully dereferenced, no symlinks) to a known path so the
 # runner stage can run `prisma migrate deploy` at startup.
-# `prisma` is hoisted via public-hoist-pattern so it's at node_modules/prisma/.
-RUN cp -rL /app/node_modules/prisma /prisma-cli && \
+# `prisma` is a devDep of @witylogix/db — resolve the real package dir via the
+# .bin symlink (build/index.js is the bin entry, so dirname twice → package root).
+RUN PRISMA_PKG_DIR=$(dirname $(dirname $(realpath /app/packages/db/node_modules/.bin/prisma))) && \
+    cp -rL "$PRISMA_PKG_DIR" /prisma-cli && \
     ls /prisma-cli/build/index.js
 
 # --- Prisma client for production ---
