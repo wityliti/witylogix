@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   test: {
@@ -13,6 +14,12 @@ export default defineConfig({
           lines: 85,
         },
       },
+    },
+  },
+  resolve: {
+    alias: {
+      // Resolve ~ path alias used in apps/shopify-app
+      '~': fileURLToPath(new URL('./apps/shopify-app/app', import.meta.url)),
     },
   },
 });
