@@ -3,7 +3,7 @@ builder = "dockerfile"
 dockerfilePath = "../../Dockerfile.shopify-app"
 
 [deploy]
-startCommand = "node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"
+startCommand = "/app/node_modules/.bin/prisma migrate deploy --schema ./prisma/schema && node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
