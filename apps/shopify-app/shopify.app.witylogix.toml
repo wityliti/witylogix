@@ -2,7 +2,7 @@
 
 client_id = "797a3289c481d36f18c0d70fe1bbc261"
 name = "witylogix"
-application_url = "https://localhost:3001"
+application_url = "https://localhost:9293"
 embedded = true
 
 [build]
@@ -17,7 +17,7 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "https://localhost:3001/auth/callback" ]
+redirect_urls = [ "https://localhost:9293/auth/callback" ]
 
 [pos]
 embedded = false
