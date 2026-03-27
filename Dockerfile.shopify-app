@@ -34,14 +34,19 @@ RUN pnpm build
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 
-# pnpm deploy --prod creates fresh node_modules that lack the generated .prisma/client/ files.
-# shopify-app imports PrismaClient directly from @prisma/client (not the custom output path),
-# so we regenerate without the custom output to populate .prisma/client/ in standalone.
-# Schema must live inside /standalone/ so Prisma resolves /standalone/package.json as the
-# project root and writes output to /standalone/node_modules/.prisma/client/ (default path).
+# pnpm deploy --prod with pnpm's virtual store layout (used by pnpm 9.x) creates
+# node_modules/@prisma/client as a HOISTED real directory (via public-hoist-pattern in .npmrc)
+# BUT Prisma's default generate targets the pnpm virtual store, not the hoisted directory.
+# At runtime, require('@prisma/client') resolves the hoisted copy first — which has no engine.
+#
+# Fix: explicitly generate the Prisma client INTO the hoisted @prisma/client directory so the
+# engine binary is present where Node.js will actually resolve the package at runtime.
 WORKDIR /standalone
 RUN cp -r /app/packages/db/prisma ./prisma_default && \
     sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
+    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/@prisma/client\""; next } 1' \
+        ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
+    mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
     /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
     rm -rf ./prisma_default
 
@@ -58,6 +63,4 @@ COPY --from=builder /app/apps/shopify-app/build ./build
 
 EXPOSE 3000
 
-# Diagnostic wrapper: print key startup info then exec the server.
-# This also busts the Docker layer cache so the runner is rebuilt fresh.
-CMD ["sh", "-c", "echo '=== shopify-app starting ===' && echo PORT=$PORT && echo '--- checking @react-router/serve ---' && ls node_modules/@react-router/serve/bin.js 2>&1 || echo 'MISSING bin.js' && echo '--- checking .prisma ---' && ls node_modules/.prisma/client/ 2>&1 | head -3 || echo 'no .prisma/client' && echo '--- node_modules top level ---' && ls node_modules/ | head -10 && echo '--- starting server ---' && exec node node_modules/@react-router/serve/bin.js ./build/server/index.js"]
+CMD ["node", "node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
