@@ -85,14 +85,25 @@ export default defineConfig({
       protocol: "ws",
     },
   },
-  // @prisma/client is server-only; Vite must not pre-bundle it for the client
-  // (it resolves to index-browser.js → missing .prisma/client/index-browser).
+  // @prisma/client is server-only; Vite must not pre-bundle it for the client.
+  // - `exclude` prevents it from being a top-level optimizeDeps entry.
+  // - `esbuildOptions.external` prevents esbuild from bundling it even when it
+  //   appears as a transitive dep of another optimized package (e.g. the Prisma
+  //   session-storage package). Without this, esbuild would try to process
+  //   @prisma/client/index-browser.js which requires '.prisma/client/index-browser'
+  //   — a pnpm package-name require that esbuild misreads as a relative path.
   optimizeDeps: {
     exclude: [
       "@prisma/client",
       "@witylogix/db",
       "@shopify/shopify-app-session-storage-prisma",
     ],
+    esbuildOptions: {
+      external: [
+        "@prisma/client",
+        "@shopify/shopify-app-session-storage-prisma",
+      ],
+    },
   },
   build: {
     sourcemap: true,
