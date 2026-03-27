@@ -1,8 +1,8 @@
 # Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
-# Cache bust: force rebuild (2026-03-27-v5)
-RUN echo "cache-bust-2026-03-27-v5"
+# Cache bust: force rebuild (2026-03-27-v6)
+RUN echo "cache-bust-2026-03-27-v6"
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
@@ -33,14 +33,6 @@ RUN pnpm build
 
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
-
-# Copy the prisma CLI (fully dereferenced, no symlinks) to a known path so the
-# runner stage can run `prisma migrate deploy` at startup.
-# `prisma` is a devDep of @witylogix/db — resolve the real package dir via the
-# .bin symlink (build/index.js is the bin entry, so dirname twice → package root).
-RUN PRISMA_PKG_DIR=$(dirname $(dirname $(realpath /app/packages/db/node_modules/.bin/prisma))) && \
-    cp -rL "$PRISMA_PKG_DIR" /prisma-cli && \
-    ls /prisma-cli/build/index.js
 
 # --- Prisma client for production ---
 #
@@ -82,8 +74,9 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 COPY --from=builder /app/apps/shopify-app/build ./build
 
-# Copy Prisma CLI (dereferenced) and schema/migrations for startup migrations
-COPY --from=builder /prisma-cli /usr/local/lib/prisma-cli
+# Copy prisma schema/migrations so `prisma migrate deploy` can run at startup.
+# The prisma CLI binary is available via node_modules/.bin/prisma (hoisted by
+# public-hoist-pattern in .npmrc during pnpm deploy --prod).
 COPY --from=builder /app/packages/db/prisma ./prisma
 
 # Railway's internal runner maps `node_modules` → `app_modules` in start commands.
@@ -94,4 +87,5 @@ EXPOSE 3000
 
 # Run Prisma migrations then start the server.
 # DATABASE_URL is injected at runtime by Railway.
-CMD ["sh", "-c", "node /usr/local/lib/prisma-cli/build/index.js migrate deploy --schema ./prisma/schema && node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"]
+# node_modules/.bin/prisma is a hoisted pnpm shim that invokes the CLI.
+CMD ["sh", "-c", "/app/node_modules/.bin/prisma migrate deploy --schema ./prisma/schema && node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"]
