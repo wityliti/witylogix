@@ -37,12 +37,23 @@ const serverExternalsPlugin = {
 };
 
 export default defineConfig({
-  plugins: [serverExternalsPlugin, reactRouter(), tsconfigPaths()],
+  plugins: [
+    serverExternalsPlugin,
+    reactRouter(),
+    tsconfigPaths({ ignoreConfigErrors: true }),
+  ],
   server: {
+    // Shopify CLI injects PORT so the HTTPS proxy can reach this dev server.
     port: Number(process.env.PORT) || 3000,
+    strictPort: true,
     hmr: {
       protocol: "ws",
     },
+  },
+  // @prisma/client is server-only; Vite must not pre-bundle it for the client
+  // (it resolves to index-browser.js → missing .prisma/client/index-browser).
+  optimizeDeps: {
+    exclude: ["@prisma/client", "@witylogix/db"],
   },
   build: {
     sourcemap: true,
