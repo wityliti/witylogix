@@ -45,7 +45,7 @@ import {
   Divider,
   DescriptionList,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -78,14 +78,18 @@ interface MarketplaceApp {
 }
 
 interface InstalledIntegration {
-  id: string;
-  appSlug: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  subcategory?: string | null;
+  logoUrl?: string | null;
   isEnabled: boolean;
   healthStatus: string;
   lastSyncAt: string | null;
   lastHealthCheckAt: string | null;
   installedAt: string;
-  credentialsMasked: Record<string, string>;
+  credentials: Record<string, string>;
   config: Record<string, unknown>;
 }
 
@@ -148,18 +152,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const api = createApiClientFromRequest(request, session);
 
   const [marketplaceRes, installedRes] = await Promise.allSettled([
-    api.get<SingleResponse<MarketplaceApp[]>>("/api/v4/integrations/marketplace"),
-    api.get<SingleResponse<InstalledIntegration[]>>("/api/v4/integrations"),
+    api.get<{ apps: MarketplaceApp[] }>("/api/v4/integrations/marketplace"),
+    api.get<{ integrations: InstalledIntegration[] }>("/api/v4/integrations"),
   ]);
 
   const marketplace =
     marketplaceRes.status === "fulfilled"
-      ? marketplaceRes.value.data
+      ? (marketplaceRes.value.apps ?? [])
       : [];
 
   const installed =
     installedRes.status === "fulfilled"
-      ? installedRes.value.data
+      ? (installedRes.value.integrations ?? [])
       : [];
 
   return { marketplace, installed };
@@ -285,7 +289,7 @@ export default function Integrations() {
 
   // Build a Set of installed slugs for quick lookup
   const installedSlugs = useMemo(
-    () => new Set(installed.map((i) => i.appSlug)),
+    () => new Set(installed.map((i) => i.slug)),
     [installed],
   );
 
@@ -398,7 +402,7 @@ export default function Integrations() {
                 {filteredApps.map((app) => {
                   const isInstalled = installedSlugs.has(app.slug);
                   const isExpanded = expandedSlug === app.slug;
-                  const installedData = installed.find((i) => i.appSlug === app.slug);
+                  const installedData = installed.find((i) => i.slug === app.slug);
 
                   return (
                     <Card key={app.slug}>
@@ -519,16 +523,16 @@ export default function Integrations() {
               </Card>
             ) : (
               installed.map((integration) => {
-                const app = getAppMeta(integration.appSlug);
-                const isExpanded = expandedSlug === integration.appSlug;
+                const app = getAppMeta(integration.slug);
+                const isExpanded = expandedSlug === integration.slug;
 
                 return (
-                  <Card key={integration.id}>
+                  <Card key={integration.slug}>
                     <BlockStack gap="300">
                       <InlineStack align="space-between" blockAlign="center">
                         <InlineStack gap="200" blockAlign="center">
                           <Text as="h3" variant="headingSm" fontWeight="bold">
-                            {app?.name ?? integration.appSlug}
+                            {app?.name ?? integration.slug}
                           </Text>
                           <Badge tone="info">
                             {app?.category.replace("_", " ") ?? "Unknown"}
@@ -557,14 +561,14 @@ export default function Integrations() {
                       <Button
                         variant="plain"
                         onClick={() => {
-                          setExpandedSlug(isExpanded ? null : integration.appSlug);
+                          setExpandedSlug(isExpanded ? null : integration.slug);
                           setConfirmUninstall(null);
                         }}
                       >
                         {isExpanded ? "Collapse" : "Manage"}
                       </Button>
 
-                      <Collapsible open={isExpanded} id={`installed-${integration.appSlug}`}>
+                      <Collapsible open={isExpanded} id={`installed-${integration.slug}`}>
                         {app && (
                           <>
                             <Divider />
@@ -705,14 +709,14 @@ function InstalledPanel({
       <DescriptionList items={infoItems} />
 
       {/* Masked credentials */}
-      {Object.keys(integration.credentialsMasked).length > 0 && (
+      {Object.keys(integration.credentials ?? {}).length > 0 && (
         <>
           <Divider />
           <Text as="h4" variant="headingSm">
             Current Credentials
           </Text>
           <DescriptionList
-            items={Object.entries(integration.credentialsMasked).map(([key, masked]) => ({
+            items={Object.entries(integration.credentials).map(([key, masked]) => ({
               term: key,
               description: masked,
             }))}
