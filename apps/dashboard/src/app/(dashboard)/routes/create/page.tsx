@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useApiMutation } from '@/hooks/use-api';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
 
 interface Stop {
   id: string;
@@ -24,57 +24,29 @@ interface RouteFormData {
   optimizationMode: "shortest_distance" | "time_windows" | "priority_first";
 }
 
-const mockDrivers = [
-  { id: "D001", name: "John Martinez" },
-  { id: "D002", name: "Sarah Chen" },
-  { id: "D003", name: "Marcus Johnson" },
-  { id: "D004", name: "Elena Rodriguez" },
-];
+interface ApiDriver {
+  id: string;
+  name: string;
+  status?: string;
+}
 
-const mockVehicles = [
-  { id: "V001", name: "Van-01", capacity: "1000kg" },
-  { id: "V002", name: "Truck-02", capacity: "5000kg" },
-  { id: "V003", name: "Van-03", capacity: "1200kg" },
-];
+interface ApiVehicle {
+  id: string;
+  licensePlate: string;
+  make: string;
+  model: string;
+  year: number;
+  type?: string;
+}
 
-const mockOrders = [
-  {
-    id: "ORD-2024-001",
-    address: "123 Main St, Downtown",
-    timeWindow: { start: "09:00", end: "11:00" },
-    priority: "high" as const,
-  },
-  {
-    id: "ORD-2024-002",
-    address: "456 Oak Ave, Midtown",
-    timeWindow: { start: "10:00", end: "12:00" },
-    priority: "medium" as const,
-  },
-  {
-    id: "ORD-2024-003",
-    address: "789 Elm Rd, North District",
-    timeWindow: { start: "11:00", end: "13:00" },
-    priority: "low" as const,
-  },
-  {
-    id: "ORD-2024-004",
-    address: "321 Pine St, Uptown",
-    timeWindow: { start: "13:00", end: "15:00" },
-    priority: "medium" as const,
-  },
-  {
-    id: "ORD-2024-005",
-    address: "654 Maple Dr, East Side",
-    timeWindow: { start: "14:00", end: "16:00" },
-    priority: "low" as const,
-  },
-  {
-    id: "ORD-2024-006",
-    address: "987 Cedar Ln, West Side",
-    timeWindow: { start: "09:30", end: "11:30" },
-    priority: "high" as const,
-  },
-];
+interface ApiOrder {
+  id: string;
+  orderNumber?: string;
+  deliveryAddress?: string;
+  shippingAddress?: { line1?: string; city?: string };
+  priority?: string;
+  status?: string;
+}
 
 export default function CreateRoutePage() {
   const [step, setStep] = useState(1);
@@ -90,20 +62,35 @@ export default function CreateRoutePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
 
-  const filteredOrders = mockOrders.filter(
+  const { items: drivers } = useApiList<ApiDriver>('/api/v4/drivers');
+  const { items: vehicles } = useApiList<ApiVehicle>('/api/v4/fleet/vehicles');
+  const { items: orders } = useApiList<ApiOrder>('/api/v4/orders', { limit: 50 });
+  const createRoute = useApiMutation<{ id: string }>('POST', '/api/v4/routes');
+
+  const getOrderAddress = (order: ApiOrder): string => {
+    if (order.deliveryAddress) return order.deliveryAddress;
+    if (order.shippingAddress) {
+      return [order.shippingAddress.line1, order.shippingAddress.city].filter(Boolean).join(', ');
+    }
+    return order.id;
+  };
+
+  const getOrderLabel = (order: ApiOrder): string => order.orderNumber ?? order.id;
+
+  const filteredOrders = orders.filter(
     (order) =>
       !formData.stops.some((stop) => stop.orderId === order.id) &&
-      (order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.address.toLowerCase().includes(searchTerm.toLowerCase()))
+      (getOrderLabel(order).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getOrderAddress(order).toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleAddStop = (order: (typeof mockOrders)[0]) => {
+  const handleAddStop = (order: ApiOrder) => {
     const newStop: Stop = {
       id: `stop_${Date.now()}`,
       orderId: order.id,
-      address: order.address,
-      timeWindow: order.timeWindow,
-      priority: order.priority,
+      address: getOrderAddress(order),
+      timeWindow: { start: "09:00", end: "17:00" },
+      priority: (order.priority as "low" | "medium" | "high") ?? "medium",
     };
     setFormData((prev) => ({
       ...prev,
@@ -170,6 +157,18 @@ export default function CreateRoutePage() {
       : step === 2
         ? formData.stops.length > 0
         : true;
+
+  const handleDispatch = async () => {
+    await createRoute.execute({
+      name: formData.name,
+      date: formData.date,
+      driverId: formData.driverId || undefined,
+      orderIds: formData.stops.map((s) => s.orderId),
+    });
+  };
+
+  const selectedDriver = drivers.find((d) => d.id === formData.driverId);
+  const selectedVehicle = vehicles.find((v) => v.id === formData.vehicleId);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
@@ -246,7 +245,7 @@ export default function CreateRoutePage() {
                     className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   >
                     <option value="">Select a driver</option>
-                    {mockDrivers.map((driver) => (
+                    {drivers.map((driver) => (
                       <option key={driver.id} value={driver.id}>
                         {driver.name}
                       </option>
@@ -262,9 +261,9 @@ export default function CreateRoutePage() {
                     className="w-full px-3 py-2.5 rounded-md bg-[#0a0a0f] border border-[#1e1e2e] text-white text-sm box-border"
                   >
                     <option value="">Select a vehicle</option>
-                    {mockVehicles.map((vehicle) => (
+                    {vehicles.map((vehicle) => (
                       <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.name} ({vehicle.capacity})
+                        {vehicle.year} {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
                       </option>
                     ))}
                   </select>
@@ -299,15 +298,12 @@ export default function CreateRoutePage() {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-white font-semibold text-sm">
-                            {order.id}
+                            {getOrderLabel(order)}
                           </span>
-                          <Badge>{order.priority.toUpperCase()}</Badge>
+                          {order.priority && <Badge>{order.priority.toUpperCase()}</Badge>}
                         </div>
                         <p className="text-gray-400 text-xs mb-2">
-                          {order.address}
-                        </p>
-                        <p className="text-gray-400 text-xs mb-3">
-                          {order.timeWindow.start} - {order.timeWindow.end}
+                          {getOrderAddress(order)}
                         </p>
                         <Button
                           onClick={() => handleAddStop(order)}
@@ -399,13 +395,6 @@ export default function CreateRoutePage() {
                   viewBox="0 0 800 400"
                   className="absolute top-0 left-0"
                 >
-                  <defs>
-                    <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.1" />
-                    </linearGradient>
-                  </defs>
-
                   {formData.stops.length > 1 && (
                     <polyline
                       points={formData.stops
@@ -516,14 +505,14 @@ export default function CreateRoutePage() {
                     key={option.id}
                     className={cn(
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
-                      formData.optimizationMode === (option.id as any)
+                      formData.optimizationMode === (option.id as RouteFormData['optimizationMode'])
                         ? "bg-blue-500 text-white border-blue-500"
                         : "bg-[#12121a] text-white border-[#1e1e2e]"
                     )}
                     onClick={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        optimizationMode: option.id as any,
+                        optimizationMode: option.id as RouteFormData['optimizationMode'],
                       }))
                     }
                   >
@@ -540,10 +529,10 @@ export default function CreateRoutePage() {
                     <strong>Route:</strong> {formData.name}
                   </p>
                   <p>
-                    <strong>Driver:</strong> {mockDrivers.find((d) => d.id === formData.driverId)?.name || "Not assigned"}
+                    <strong>Driver:</strong> {selectedDriver?.name ?? "Not assigned"}
                   </p>
                   <p>
-                    <strong>Vehicle:</strong> {mockVehicles.find((v) => v.id === formData.vehicleId)?.name || "Not assigned"}
+                    <strong>Vehicle:</strong> {selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : "Not assigned"}
                   </p>
                   <p>
                     <strong>Date:</strong> {formData.date || "Not set"}
@@ -555,6 +544,12 @@ export default function CreateRoutePage() {
                     <strong>Est. Distance:</strong> {estimatedDistance.toFixed(1)}km
                   </p>
                 </div>
+                {createRoute.error && (
+                  <p className="text-red-400 text-sm mt-2">{createRoute.error.message}</p>
+                )}
+                {createRoute.success && (
+                  <p className="text-green-400 text-sm mt-2">Route created successfully!</p>
+                )}
               </div>
             </div>
           )}
@@ -573,7 +568,9 @@ export default function CreateRoutePage() {
           {step === 4 ? (
             <>
               <Button variant="secondary">Save as Draft</Button>
-              <Button variant="primary">Dispatch Route</Button>
+              <Button variant="primary" onClick={handleDispatch} disabled={createRoute.loading}>
+                {createRoute.loading ? 'Dispatching...' : 'Dispatch Route'}
+              </Button>
             </>
           ) : (
             <>

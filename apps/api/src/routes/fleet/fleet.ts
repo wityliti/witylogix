@@ -176,7 +176,7 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
       return {
         data: mockVehicles,
-        pagination: {
+        meta: {
           page,
           limit,
           total: mockVehicles.length,
@@ -496,6 +496,115 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       }
     },
   );
+
+  // ── GET FLEET-WIDE MAINTENANCE EVENTS ──────────────────────
+
+  fastify.get('/maintenance', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
+      const { page, limit } = query;
+
+      const mockMaintenance = [
+        { id: 'mnt-1', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'oil-change', scheduledDate: new Date(Date.now() - 5 * 86400000).toISOString(), status: 'overdue', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Overdue by 5 days' },
+        { id: 'mnt-2', vehicleId: 'veh-2', vehiclePlate: 'AB002', type: 'tire-rotation', scheduledDate: new Date(Date.now() + 7 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 180, actualCost: null, vendor: 'Tire Pro', notes: '' },
+        { id: 'mnt-3', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'inspection', scheduledDate: new Date(Date.now() - 30 * 86400000).toISOString(), status: 'completed', estimatedCost: 120, actualCost: 115, vendor: 'City Inspection', notes: 'Passed annual inspection' },
+        { id: 'mnt-4', vehicleId: 'veh-2', vehiclePlate: 'AB002', type: 'oil-change', scheduledDate: new Date(Date.now() + 14 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: '' },
+        { id: 'mnt-5', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'repair', scheduledDate: new Date(Date.now() - 1 * 86400000).toISOString(), status: 'in-progress', estimatedCost: 800, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Brake pad replacement' },
+      ];
+
+      const paginated = mockMaintenance.slice((page - 1) * limit, page * limit);
+      return {
+        data: paginated,
+        meta: { page, limit, total: mockMaintenance.length, totalPages: Math.ceil(mockMaintenance.length / limit) },
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
+
+  // ── GET FUEL TRANSACTIONS ────────────────────────────────────
+
+  fastify.get('/fuel-transactions', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
+      const { page, limit } = query;
+
+      const stations = ['Shell', 'Chevron', 'BP', 'ExxonMobil'];
+      const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
+        id: `fuel-${i + 1}`,
+        vehicleId: i % 2 === 0 ? 'veh-1' : 'veh-2',
+        vehiclePlate: i % 2 === 0 ? 'AB001' : 'AB002',
+        driverId: `drv-${(i % 4) + 1}`,
+        driverName: ['Carlos Martinez', 'Sofia Lindberg', 'Ahmed Khalil', 'Jessica Chen'][i % 4],
+        date: new Date(Date.now() - i * 2 * 86400000).toISOString(),
+        station: stations[i % stations.length],
+        gallons: parseFloat((40 + Math.sin(i) * 15).toFixed(1)),
+        amount: parseFloat((150 + i * 12).toFixed(2)),
+        price: parseFloat((3.45 + Math.sin(i) * 0.3).toFixed(3)),
+        mpg: parseFloat((12 + Math.sin(i) * 3).toFixed(1)),
+        flagged: i % 9 === 0,
+      }));
+
+      const paginated = mockTransactions.slice((page - 1) * limit, page * limit);
+      return {
+        data: paginated,
+        meta: { page, limit, total: mockTransactions.length, totalPages: Math.ceil(mockTransactions.length / limit) },
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
+
+  // ── GET FUEL CARDS ───────────────────────────────────────────
+
+  fastify.get('/fuel-cards', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
+      const { page, limit } = query;
+
+      const mockCards = [
+        { id: 'card-1', cardNumber: '****-****-****-1234', provider: 'FleetCard', status: 'active', dailyLimit: 500, monthlyLimit: 5000, assignedVehicles: ['veh-1'], expiryDate: '2026-12-31' },
+        { id: 'card-2', cardNumber: '****-****-****-5678', provider: 'WEX', status: 'active', dailyLimit: 300, monthlyLimit: 3000, assignedVehicles: ['veh-2'], expiryDate: '2027-06-30' },
+        { id: 'card-3', cardNumber: '****-****-****-9012', provider: 'FleetCard', status: 'blocked', dailyLimit: 400, monthlyLimit: 4000, assignedVehicles: [], expiryDate: '2026-09-30' },
+      ];
+
+      const paginated = mockCards.slice((page - 1) * limit, page * limit);
+      return {
+        data: paginated,
+        meta: { page, limit, total: mockCards.length, totalPages: Math.ceil(mockCards.length / limit) },
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
+
+  // ── GET FLEET ACTIVITY FEED ──────────────────────────────────
+
+  fastify.get('/activity', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
+      const { page, limit } = query;
+
+      const mockActivity = [
+        { id: 'act-1', type: 'maintenance', vehicleId: 'veh-1', title: 'Oil change completed', description: 'Routine oil change for AB001', timestamp: new Date(Date.now() - 2 * 3600000).toISOString(), icon: '🔧' },
+        { id: 'act-2', type: 'fuel', vehicleId: 'veh-2', title: 'Fuel refill', description: 'AB002 refueled at Shell station', timestamp: new Date(Date.now() - 4 * 3600000).toISOString(), icon: '⛽' },
+        { id: 'act-3', type: 'assignment', vehicleId: 'veh-1', title: 'Driver assigned', description: 'Carlos Martinez assigned to AB001', timestamp: new Date(Date.now() - 6 * 3600000).toISOString(), icon: '👤' },
+        { id: 'act-4', type: 'alert', vehicleId: 'veh-2', title: 'Low fuel alert', description: 'AB002 fuel level below 15%', timestamp: new Date(Date.now() - 8 * 3600000).toISOString(), icon: '⚠️' },
+      ];
+
+      const paginated = mockActivity.slice((page - 1) * limit, page * limit);
+      return {
+        data: paginated,
+        meta: { page, limit, total: mockActivity.length, totalPages: Math.ceil(mockActivity.length / limit) },
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
 }
 
 export default fleetRoutes;

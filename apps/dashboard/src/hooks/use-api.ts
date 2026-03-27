@@ -241,10 +241,13 @@ export function useApiList<T>(
     try {
       setLoading(true);
       setError(null);
-      const result = await api.get<PaginatedResponse<T>>(url, { signal });
+      const result = await api.get<PaginatedResponse<T> & { pagination?: PaginationMeta }>(url, { signal });
       if (isMountedRef.current && !signal.aborted) {
         setItems(result.data);
-        setPagination(result.meta);
+        const paginationData = result.meta ?? result.pagination;
+        if (paginationData) {
+          setPagination(paginationData);
+        }
       }
     } catch (err) {
       if (isMountedRef.current && !signal.aborted) {

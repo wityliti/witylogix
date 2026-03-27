@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs } from '@/components/ui/tabs';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import {
   MapPin,
   Package,
@@ -15,62 +16,87 @@ import {
   ZoomOut,
   Filter,
 } from 'lucide-react';
+import { useApiList } from '@/hooks/use-api';
 
-type ViewTab = 'orders' | 'shipments' | 'routes' | 'drivers';
-type StatusFilter = 'all' | 'pending' | 'in-transit' | 'delivered' | 'failed' | 'active' | 'completed' | 'on-duty' | 'on-break' | 'off-duty';
+type ViewTab = 'orders' | 'routes' | 'drivers';
+type StatusFilter = string;
 
-// Mock data
-const mockOrders = [
-  { id: "ORD-001", customer: "John Smith", address: "123 Main St", lat: 40.7128, lng: -74.006, status: "pending" },
-  { id: "ORD-002", customer: "Jane Doe", address: "456 Oak Ave", lat: 40.7489, lng: -73.9680, status: "in-transit" },
-  { id: "ORD-003", customer: "Bob Wilson", address: "789 Pine Rd", lat: 40.7614, lng: -73.9776, status: "delivered" },
-];
+interface MapOrder {
+  id: string;
+  orderNumber?: string;
+  status: string;
+  deliveryAddress?: string;
+  shippingAddress?: { lat?: number; lng?: number; line1?: string; city?: string };
+  lat?: number;
+  lng?: number;
+}
 
-const mockShipments = [
-  { id: "SHP-001", carrier: "FedEx", eta: "2:30 PM", lat: 40.7200, lng: -73.9950, status: "pending" },
-  { id: "SHP-002", carrier: "UPS", eta: "1:15 PM", lat: 40.7400, lng: -73.9500, status: "in-transit" },
-];
+interface MapRoute {
+  id: string;
+  name?: string;
+  status: string;
+  driver?: { name: string };
+  _count?: { stops: number };
+  lat?: number;
+  lng?: number;
+}
 
-const mockRoutes = [
-  { id: "RT-001", name: "Downtown Route", driver: "Alex Johnson", stops: 12, lat: 40.7300, lng: -73.9850, status: "active" },
-  { id: "RT-002", name: "Uptown Route", driver: "Maria Garcia", stops: 8, lat: 40.7700, lng: -73.9600, status: "completed" },
-];
+interface MapDriver {
+  id: string;
+  name: string;
+  status: string;
+  currentLocation?: { lat?: number; lng?: number };
+  lat?: number;
+  lng?: number;
+}
 
-const mockDrivers = [
-  { id: "DRV-001", name: "John Doe", destination: "Central Station", speed: 25, lat: 40.7450, lng: -73.9950, status: "on-duty" },
-  { id: "DRV-002", name: "Jane Smith", destination: "Grand Central", speed: 0, lat: 40.7525, lng: -73.9772, status: "on-break" },
-  { id: "DRV-003", name: "Bob Wilson", destination: "Home", speed: 0, lat: 40.6895, lng: -74.0450, status: "off-duty" },
-];
+// NYC bounding box defaults for map canvas
+const MAP_BOUNDS = { minLat: 40.6895, maxLat: 40.7700, minLng: -74.0450, maxLng: -73.9500 };
 
-const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: Record<string, unknown>) => {
+// Deterministic pseudo-random lat/lng from an id string (used when API has no coords)
+function pseudoLatLng(id: string, idx: number) {
+  const seed = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + idx * 17;
+  const lat = MAP_BOUNDS.minLat + ((seed * 31337) % 10000) / 10000 * (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat);
+  const lng = MAP_BOUNDS.minLng + ((seed * 98765) % 10000) / 10000 * (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng);
+  return { lat, lng };
+}
+
+const MapCanvas = ({
+  items,
+  selectedId,
+  onItemClick,
+  zoom,
+  mapType,
+}: {
+  items: Array<{ id: string; status: string; lat: number; lng: number }>;
+  selectedId: string | null;
+  onItemClick: (id: string) => void;
+  zoom: number;
+  mapType: ViewTab;
+}) => {
   const canvasSize = 600;
-  const minLat = 40.6895;
-  const maxLat = 40.7700;
-  const minLng = -74.0450;
-  const maxLng = -73.9500;
 
   const normalizeCoords = (lat: number, lng: number) => {
-    const x = ((lng - minLng) / (maxLng - minLng)) * (canvasSize * (zoom / 100));
-    const y = ((maxLat - lat) / (maxLat - minLat)) * (canvasSize * (zoom / 100));
+    const x = ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * (canvasSize * (zoom / 100));
+    const y = ((MAP_BOUNDS.maxLat - lat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * (canvasSize * (zoom / 100));
     return { x: x + (canvasSize - canvasSize * (zoom / 100)) / 2, y: y + (canvasSize - canvasSize * (zoom / 100)) / 2 };
   };
 
-  const getMarkerColor = (status: string, mapType: ViewTab) => {
+  const getMarkerColor = (status: string) => {
+    const s = status.toLowerCase();
     if (mapType === 'orders') {
-      if (status === 'pending') return '#f59e0b';
-      if (status === 'in-transit') return '#3b82f6';
-      if (status === 'delivered') return '#10b981';
-      if (status === 'failed') return '#ef4444';
-    } else if (mapType === 'shipments') {
-      if (status === 'pending') return '#f59e0b';
-      if (status === 'in-transit') return '#3b82f6';
+      if (s === 'pending') return '#f59e0b';
+      if (s.includes('transit') || s === 'in_progress') return '#3b82f6';
+      if (s === 'delivered' || s === 'completed') return '#10b981';
+      if (s === 'failed' || s === 'cancelled') return '#ef4444';
     } else if (mapType === 'routes') {
-      if (status === 'active') return '#6C63FF';
-      if (status === 'completed') return '#10b981';
+      if (s === 'active' || s === 'in_progress' || s === 'assigned') return '#6C63FF';
+      if (s === 'completed') return '#10b981';
     } else if (mapType === 'drivers') {
-      if (status === 'on-duty') return '#3b82f6';
-      if (status === 'on-break') return '#f59e0b';
-      if (status === 'off-duty') return '#94a3b8';
+      if (s === 'available') return '#3b82f6';
+      if (s === 'on_route') return '#6C63FF';
+      if (s === 'on_break') return '#f59e0b';
+      if (s === 'offline') return '#94a3b8';
     }
     return '#6C63FF';
   };
@@ -89,9 +115,9 @@ const MapCanvas = ({ items, selectedId, onItemClick, zoom, mapType }: Record<str
         </g>
       ))}
 
-      {items.map((item: Record<string, unknown>) => {
+      {items.map((item) => {
         const { x, y } = normalizeCoords(item.lat, item.lng);
-        const color = getMarkerColor(item.status, mapType);
+        const color = getMarkerColor(item.status);
         const isSelected = item.id === selectedId;
 
         return (
@@ -114,51 +140,77 @@ export default function MapView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
 
+  const { items: rawOrders, loading: ordersLoading } = useApiList<MapOrder>('/api/v4/orders', { limit: 50 });
+  const { items: rawRoutes, loading: routesLoading } = useApiList<MapRoute>('/api/v4/routes', { limit: 50 });
+  const { items: rawDrivers, loading: driversLoading } = useApiList<MapDriver>('/api/v4/drivers', { limit: 50 });
+
+  const orders = rawOrders.map((o, i) => ({
+    ...o,
+    lat: o.lat ?? o.shippingAddress?.lat ?? pseudoLatLng(o.id, i).lat,
+    lng: o.lng ?? o.shippingAddress?.lng ?? pseudoLatLng(o.id, i).lng,
+    label: o.orderNumber ?? o.id,
+    address: o.deliveryAddress ?? [o.shippingAddress?.line1, o.shippingAddress?.city].filter(Boolean).join(', ') ?? '',
+  }));
+
+  const routes = rawRoutes.map((r, i) => ({
+    ...r,
+    lat: r.lat ?? pseudoLatLng(r.id, i).lat,
+    lng: r.lng ?? pseudoLatLng(r.id, i).lng,
+    label: r.name ?? r.id,
+    stops: r._count?.stops ?? 0,
+    driverName: r.driver?.name ?? '',
+  }));
+
+  const drivers = rawDrivers.map((d, i) => ({
+    ...d,
+    lat: d.lat ?? d.currentLocation?.lat ?? pseudoLatLng(d.id, i).lat,
+    lng: d.lng ?? d.currentLocation?.lng ?? pseudoLatLng(d.id, i).lng,
+  }));
+
+  const loading = activeTab === 'orders' ? ordersLoading : activeTab === 'routes' ? routesLoading : driversLoading;
+
   const getItems = () => {
-    switch (activeTab) {
-      case 'orders':
-        return statusFilter === 'all' ? mockOrders : mockOrders.filter((o) => o.status === statusFilter);
-      case 'shipments':
-        return statusFilter === 'all' ? mockShipments : mockShipments.filter((s) => s.status === statusFilter);
-      case 'routes':
-        return statusFilter === 'all' ? mockRoutes : mockRoutes.filter((r) => r.status === statusFilter);
-      case 'drivers':
-        return statusFilter === 'all' ? mockDrivers : mockDrivers.filter((d) => d.status === statusFilter);
-      default:
-        return [];
+    const filter = statusFilter.toLowerCase();
+    if (activeTab === 'orders') {
+      return filter === 'all' ? orders : orders.filter((o) => o.status.toLowerCase().includes(filter));
     }
+    if (activeTab === 'routes') {
+      return filter === 'all' ? routes : routes.filter((r) => r.status.toLowerCase() === filter);
+    }
+    if (activeTab === 'drivers') {
+      return filter === 'all' ? drivers : drivers.filter((d) => d.status.toLowerCase() === filter);
+    }
+    return [];
   };
 
   const getStatusOptions = () => {
     if (activeTab === 'orders') return ['all', 'pending', 'in-transit', 'delivered', 'failed'];
-    if (activeTab === 'shipments') return ['all', 'pending', 'in-transit'];
     if (activeTab === 'routes') return ['all', 'active', 'completed'];
-    if (activeTab === 'drivers') return ['all', 'on-duty', 'on-break', 'off-duty'];
+    if (activeTab === 'drivers') return ['all', 'available', 'on_route', 'on_break', 'offline'];
     return ['all'];
   };
 
-  const selectedItem = getItems().find((item) => item.id === selectedId) as any;
   const items = getItems();
+  const selectedItem = items.find((item) => item.id === selectedId) as (typeof items)[0] & Record<string, unknown> | undefined;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Map View</h1>
-        <p className="text-gray-400">Real-time location tracking for orders, shipments, routes, and drivers</p>
+        <p className="text-gray-400">Real-time location tracking for orders, routes, and drivers</p>
       </div>
 
       {/* Tab Selector */}
       <div className="max-w-7xl mx-auto mb-6">
         <Tabs
           tabs={[
-            { id: 'orders', label: `Orders (${mockOrders.length})`, icon: <Package size={16} /> },
-            { id: 'shipments', label: `Shipments (${mockShipments.length})`, icon: <Truck size={16} /> },
-            { id: 'routes', label: `Routes (${mockRoutes.length})`, icon: <MapPin size={16} /> },
-            { id: 'drivers', label: `Drivers (${mockDrivers.length})`, icon: <Users size={16} /> },
+            { id: 'orders', label: `Orders (${orders.length})`, icon: <Package size={16} /> },
+            { id: 'routes', label: `Routes (${routes.length})`, icon: <MapPin size={16} /> },
+            { id: 'drivers', label: `Drivers (${drivers.length})`, icon: <Users size={16} /> },
           ]}
           activeTab={activeTab}
-          onChange={(value) => { setActiveTab(value as ViewTab); setSelectedId(null); }}
+          onChange={(value) => { setActiveTab(value as ViewTab); setSelectedId(null); setStatusFilter('all'); }}
           variant="segment"
         />
       </div>
@@ -171,7 +223,6 @@ export default function MapView() {
               <div>
                 <h2 className="text-lg font-semibold text-white mb-2">
                   {activeTab === 'orders' && 'Orders Map'}
-                  {activeTab === 'shipments' && 'Shipments Map'}
                   {activeTab === 'routes' && 'Routes Map'}
                   {activeTab === 'drivers' && 'Drivers Map'}
                 </h2>
@@ -201,9 +252,13 @@ export default function MapView() {
             </div>
 
             {/* Map Canvas */}
-            <div className="flex justify-center mb-4">
-              <MapCanvas items={items} selectedId={selectedId} onItemClick={setSelectedId} zoom={zoom} mapType={activeTab} />
-            </div>
+            {loading ? (
+              <div className="flex justify-center mb-4"><LoadingSkeleton /></div>
+            ) : (
+              <div className="flex justify-center mb-4">
+                <MapCanvas items={items} selectedId={selectedId} onItemClick={setSelectedId} zoom={zoom} mapType={activeTab} />
+              </div>
+            )}
 
             {/* Legend */}
             <div className="border-t border-[#1e1e2e] pt-4">
@@ -229,18 +284,6 @@ export default function MapView() {
                     </div>
                   </>
                 )}
-                {activeTab === 'shipments' && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-amber-500" />
-                      <span className="text-xs text-gray-400">Pending</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-blue-500" />
-                      <span className="text-xs text-gray-400">In Transit</span>
-                    </div>
-                  </>
-                )}
                 {activeTab === 'routes' && (
                   <>
                     <div className="flex items-center gap-2">
@@ -257,7 +300,11 @@ export default function MapView() {
                   <>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-blue-500" />
-                      <span className="text-xs text-gray-400">On Duty</span>
+                      <span className="text-xs text-gray-400">Available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                      <span className="text-xs text-gray-400">On Route</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-amber-500" />
@@ -265,7 +312,7 @@ export default function MapView() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-gray-500" />
-                      <span className="text-xs text-gray-400">Off Duty</span>
+                      <span className="text-xs text-gray-400">Offline</span>
                     </div>
                   </>
                 )}
@@ -287,7 +334,7 @@ export default function MapView() {
                 {getStatusOptions().map((status) => (
                   <button
                     key={status}
-                    onClick={() => setStatusFilter(status as StatusFilter)}
+                    onClick={() => setStatusFilter(status)}
                     className={cn(
                       'px-3 py-2 rounded text-xs font-medium cursor-pointer transition-all capitalize',
                       statusFilter === status
@@ -295,7 +342,7 @@ export default function MapView() {
                         : 'border border-[#1e1e2e] bg-transparent text-gray-400 font-normal'
                     )}
                   >
-                    {status === 'all' ? 'All Items' : status.replace('-', ' ')}
+                    {status === 'all' ? 'All Items' : status.replace(/-/g, ' ').replace(/_/g, ' ')}
                   </button>
                 ))}
               </div>
@@ -307,35 +354,37 @@ export default function MapView() {
             <CardContent className="p-4 flex-1 overflow-y-auto max-h-96">
               <p className="text-xs font-semibold text-white mb-3 uppercase">Items ({items.length})</p>
               <div className="flex flex-col gap-2">
-                {items.map((item: Record<string, unknown>) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedId(item.id)}
-                    className={cn(
-                      'p-3 rounded text-left transition-all border',
-                      selectedId === item.id
-                        ? 'border-blue-500 bg-[#1a1a2e]'
-                        : 'border-[#1e1e2e] bg-transparent'
-                    )}
-                  >
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs font-semibold text-white">{item.id}</span>
-                      <Badge variant="default">{item.status.replace('-', ' ')}</Badge>
-                    </div>
-                    {activeTab === 'orders' && (
-                      <p className="text-xs text-gray-400">{item.address}</p>
-                    )}
-                    {activeTab === 'shipments' && (
-                      <p className="text-xs text-gray-400">ETA: {item.eta}</p>
-                    )}
-                    {activeTab === 'routes' && (
-                      <p className="text-xs text-gray-400">{item.stops} stops</p>
-                    )}
-                    {activeTab === 'drivers' && (
-                      <p className="text-xs text-gray-400">{item.speed} km/h</p>
-                    )}
-                  </button>
-                ))}
+                {items.map((item) => {
+                  const anyItem = item as Record<string, unknown>;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setSelectedId(item.id)}
+                      className={cn(
+                        'p-3 rounded text-left transition-all border',
+                        selectedId === item.id
+                          ? 'border-blue-500 bg-[#1a1a2e]'
+                          : 'border-[#1e1e2e] bg-transparent'
+                      )}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-semibold text-white">
+                          {(anyItem.label as string) ?? item.id}
+                        </span>
+                        <Badge variant="default">{item.status.replace(/_/g, ' ')}</Badge>
+                      </div>
+                      {activeTab === 'orders' && (
+                        <p className="text-xs text-gray-400">{anyItem.address as string}</p>
+                      )}
+                      {activeTab === 'routes' && (
+                        <p className="text-xs text-gray-400">{anyItem.stops as number} stops</p>
+                      )}
+                      {activeTab === 'drivers' && (
+                        <p className="text-xs text-gray-400">{anyItem.name as string}</p>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -345,43 +394,19 @@ export default function MapView() {
             <Card className="bg-[#12121a] border border-blue-500/30">
               <CardContent className="p-4">
                 <p className="text-xs font-semibold text-blue-500 mb-3 uppercase">Details</p>
+                <div className="mb-3">
+                  <p className="text-xs text-gray-400 mb-1">ID</p>
+                  <p className="text-xs text-white">{selectedItem.id}</p>
+                </div>
                 {activeTab === 'orders' && (
                   <>
                     <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">ID</p>
-                      <p className="text-xs text-white">{selectedItem.id}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Customer</p>
-                      <p className="text-xs text-white">{selectedItem.customer}</p>
+                      <p className="text-xs text-gray-400 mb-1">Order</p>
+                      <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).label as string}</p>
                     </div>
                     <div className="mb-3">
                       <p className="text-xs text-gray-400 mb-1">Address</p>
-                      <p className="text-xs text-white">{selectedItem.address}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Coordinates</p>
-                      <p className="text-xs text-white">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
-                    </div>
-                  </>
-                )}
-                {activeTab === 'shipments' && (
-                  <>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">ID</p>
-                      <p className="text-xs text-white">{selectedItem.id}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Carrier</p>
-                      <p className="text-xs text-white">{selectedItem.carrier}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">ETA</p>
-                      <p className="text-xs text-white">{selectedItem.eta}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Location</p>
-                      <p className="text-xs text-white">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
+                      <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).address as string}</p>
                     </div>
                   </>
                 )}
@@ -389,42 +414,34 @@ export default function MapView() {
                   <>
                     <div className="mb-3">
                       <p className="text-xs text-gray-400 mb-1">Route</p>
-                      <p className="text-xs text-white">{selectedItem.name}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Driver</p>
-                      <p className="text-xs text-white">{selectedItem.driver}</p>
+                      <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).label as string}</p>
                     </div>
                     <div className="mb-3">
                       <p className="text-xs text-gray-400 mb-1">Stops</p>
-                      <p className="text-xs text-white">{selectedItem.stops}</p>
+                      <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).stops as number}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Current Location</p>
-                      <p className="text-xs text-white">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
-                    </div>
+                    {(selectedItem as Record<string, unknown>).driverName && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-400 mb-1">Driver</p>
+                        <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).driverName as string}</p>
+                      </div>
+                    )}
                   </>
                 )}
                 {activeTab === 'drivers' && (
-                  <>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Name</p>
-                      <p className="text-xs text-white">{selectedItem.name}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Destination</p>
-                      <p className="text-xs text-white">{selectedItem.destination}</p>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Speed</p>
-                      <p className="text-xs text-white">{selectedItem.speed} km/h</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Location</p>
-                      <p className="text-xs text-white">{selectedItem.lat.toFixed(4)}, {selectedItem.lng.toFixed(4)}</p>
-                    </div>
-                  </>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-400 mb-1">Name</p>
+                    <p className="text-xs text-white">{(selectedItem as Record<string, unknown>).name as string}</p>
+                  </div>
                 )}
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Status</p>
+                  <p className="text-xs text-white capitalize">{selectedItem.status.replace(/_/g, ' ')}</p>
+                </div>
+                <div className="mt-3">
+                  <p className="text-xs text-gray-400 mb-1">Location</p>
+                  <p className="text-xs text-white">{(selectedItem.lat as number).toFixed(4)}, {(selectedItem.lng as number).toFixed(4)}</p>
+                </div>
               </CardContent>
             </Card>
           )}
