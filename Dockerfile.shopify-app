@@ -1,6 +1,8 @@
 # Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
+# Cache bust: force rebuild (2026-03-27-v2)
+RUN echo "cache-bust-2026-03-27-v2"
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
