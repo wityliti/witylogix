@@ -20,8 +20,11 @@ import {
 // Prisma session storage stores Shopify OAuth sessions in our database.
 // @prisma/client is patched (via patches/@prisma__client.patch) so that
 // .prisma/client/default.js delegates to packages/db/src/generated/prisma.
+// Vite's SSR runner loads @prisma/client as CJS and only exposes module.exports
+// via the default import — destructure PrismaClient from that default.
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
-import { PrismaClient } from "@prisma/client";
+import _prismaClientPkg from "@prisma/client";
+const { PrismaClient } = _prismaClientPkg as typeof import("@prisma/client");
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY!,
@@ -37,9 +40,6 @@ const shopify = shopifyApp({
     // Session storage is global (not tenant-scoped).
     new PrismaClient({ datasourceUrl: process.env.DATABASE_URL }),
   ),
-  future: {
-    unstable_newEmbeddedAuthStrategy: true,
-  },
 });
 
 /**
