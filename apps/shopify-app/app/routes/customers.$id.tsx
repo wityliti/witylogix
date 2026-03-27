@@ -49,7 +49,7 @@ interface Address {
 
 interface CustomerOrder {
   id: string;
-  shopifyOrderNumber: string | null;
+  externalOrderNumber: string | null;
   createdAt: string;
   status: string;
   totalAmount: number;
@@ -138,7 +138,7 @@ export default function CustomerDetail() {
       <IndexTable.Cell>
         <Link to={`/orders/${order.id}`}>
           <Text as="span" variant="bodyMd" fontWeight="semibold">
-            {order.shopifyOrderNumber || order.id}
+            {order.externalOrderNumber || order.id}
           </Text>
         </Link>
       </IndexTable.Cell>

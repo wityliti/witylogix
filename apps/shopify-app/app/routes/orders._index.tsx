@@ -38,7 +38,7 @@ import { authenticate } from "~/lib/shopify.server";
 
 interface Order {
   id: string;
-  shopifyOrderNumber: string | null;
+  externalOrderNumber: string | null;
   customerName: string | null;
   customerEmail: string | null;
   addressLine1: string | null;
@@ -163,8 +163,8 @@ export default function OrdersList() {
     >
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
-          {order.shopifyOrderNumber
-            ? `#${order.shopifyOrderNumber}`
+          {order.externalOrderNumber
+            ? `#${order.externalOrderNumber}`
             : order.id.slice(0, 8)}
         </Text>
       </IndexTable.Cell>

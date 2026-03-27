@@ -119,7 +119,7 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          order: { select: { id: true, shopifyOrderNumber: true } },
+          order: { select: { id: true, externalOrderNumber: true } },
           driver: { select: { id: true, name: true, phone: true } },
           location: { select: { id: true, name: true, city: true } },
           timeSlot: { select: { id: true, name: true, startTime: true, endTime: true } },
@@ -147,7 +147,7 @@ async function shipmentsRoutes(fastify: FastifyInstance): Promise<void> {
     const shipment = await request.tenantDb.shipment.findUnique({
       where: { id },
       include: {
-        order: { select: { id: true, shopifyOrderNumber: true, customerName: true } },
+        order: { select: { id: true, externalOrderNumber: true, customerName: true } },
         driver: { select: { id: true, name: true, phone: true, vehicleType: true } },
         location: { select: { id: true, name: true, city: true } },
         timeSlot: true,
