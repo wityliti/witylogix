@@ -374,8 +374,8 @@ async function triggerCreateDeliveryOrderWorkflow(
       {
         shopId,
         userId,
-        shopifyOrderId: String(payload.id),
-        shopifyOrderNumber: String(payload.order_number || ""),
+        externalOrderId: String(payload.id),
+        externalOrderNumber: String(payload.order_number || ""),
         customerName,
         customerEmail,
         customerPhone,
@@ -391,7 +391,7 @@ async function triggerCreateDeliveryOrderWorkflow(
         totalWeight,
         tags: ["shopify", "webhook"],
         metadata: {
-          shopifyOrderId: payload.id,
+          externalOrderId: payload.id,
           webhookId: logEntry.id,
           triggeredAt: new Date().toISOString(),
         },
@@ -493,7 +493,7 @@ async function triggerCompleteDeliveryWorkflow(
         completedAt: new Date().toISOString(),
         tags: ["shopify", "webhook", "fulfillment"],
         metadata: {
-          shopifyOrderId: payload.id,
+          externalOrderId: payload.id,
           fulfillmentId: payload.id,
           webhookId: logEntry.id,
           triggeredAt: new Date().toISOString(),

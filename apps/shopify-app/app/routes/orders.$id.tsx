@@ -43,8 +43,8 @@ import { authenticate } from "~/lib/shopify.server";
 
 interface OrderDetail {
   id: string;
-  shopifyOrderId: string;
-  shopifyOrderNumber: string | null;
+  externalOrderId: string;
+  externalOrderNumber: string | null;
   status: string;
   customerName: string | null;
   customerEmail: string | null;
@@ -178,8 +178,8 @@ export default function OrderDetailPage() {
   const isSubmitting = navigation.state === "submitting";
   const nextStatuses = STATUS_TRANSITIONS[order.status] ?? [];
 
-  const orderTitle = order.shopifyOrderNumber
-    ? `Order #${order.shopifyOrderNumber}`
+  const orderTitle = order.externalOrderNumber
+    ? `Order #${order.externalOrderNumber}`
     : `Order ${order.id.slice(0, 8)}`;
 
   const statusOptions = nextStatuses.map((s) => ({

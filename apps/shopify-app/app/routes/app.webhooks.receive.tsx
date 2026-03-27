@@ -637,7 +637,7 @@ async function updateOrderStatusInDatabase(params: {
     try {
       await prisma.order.updateMany({
         where: {
-          shopifyOrderId: params.orderId,
+          externalOrderId: params.orderId,
           shopId: params.shopId,
         },
         data: {

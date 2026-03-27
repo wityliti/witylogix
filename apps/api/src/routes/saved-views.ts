@@ -70,7 +70,7 @@ const listViewsQuery = paginationSchema.extend({
 const TABLE_COLUMNS: Record<string, Array<{ name: string; type: string }>> = {
   orders: [
     { name: "id", type: "string" },
-    { name: "shopifyOrderNumber", type: "string" },
+    { name: "externalOrderNumber", type: "string" },
     { name: "customerName", type: "string" },
     { name: "customerEmail", type: "string" },
     { name: "status", type: "enum" },

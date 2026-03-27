@@ -35,7 +35,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
         deliveryDate: true,
         estimatedArrival: true,
         actualDelivery: true,
-        shopifyOrderNumber: true,
+        externalOrderNumber: true,
         timeSlot: {
           select: { name: true, startTime: true, endTime: true },
         },
@@ -101,7 +101,7 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
 
     return {
       data: {
-        orderNumber: order.shopifyOrderNumber,
+        orderNumber: order.externalOrderNumber,
         status: order.status,
         customerName: order.customerName,
         deliveryAddress: {
