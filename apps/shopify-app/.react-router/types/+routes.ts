@@ -158,6 +158,9 @@ type Pages = {
       "id": string;
     };
   };
+  "/auth/login": {
+    params: {};
+  };
   "/onboarding": {
     params: {};
   };
@@ -201,7 +204,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/shipping-profiles" | "/api/webhooks/workflow" | "/auth-providers" | "/notifications" | "/integrations" | "/auth/session-token" | "/collections" | "/time-slots" | "/analytics" | "/auth/exit-iframe" | "/billing/invoices" | "/campaigns" | "/customers" | "/inventory" | "/locations" | "/shipments" | "/templates" | "/activity" | "/calendar" | "/payments" | "/settings" | "/billing" | "/drivers" | "/support" | "/auth/callback" | "/campaigns/:id" | "/customers/:id" | "/inventory/:id" | "/orders" | "/routes" | "/shipments/:id" | "/templates/:id" | "/app/webhooks" | "/app/webhooks/receive" | "/app/webhooks/:id" | "/audit" | "/payments/:id" | "/users" | "/zones" | "/auth" | "/drivers/:id" | "/support/:id" | "/onboarding" | "/orders/:id" | "/pos" | "/routes/:id" | "/api/proxy" | "/uninstall" | "/zones/:id" | "/install" | "/pos/:id" | "/health";
+    page: "/" | "/shipping-profiles" | "/api/webhooks/workflow" | "/auth-providers" | "/notifications" | "/integrations" | "/auth/session-token" | "/collections" | "/time-slots" | "/analytics" | "/auth/exit-iframe" | "/billing/invoices" | "/campaigns" | "/customers" | "/inventory" | "/locations" | "/shipments" | "/templates" | "/activity" | "/calendar" | "/payments" | "/settings" | "/billing" | "/drivers" | "/support" | "/auth/callback" | "/campaigns/:id" | "/customers/:id" | "/inventory/:id" | "/orders" | "/routes" | "/shipments/:id" | "/templates/:id" | "/app/webhooks" | "/app/webhooks/receive" | "/app/webhooks/:id" | "/audit" | "/payments/:id" | "/users" | "/zones" | "/auth" | "/drivers/:id" | "/support/:id" | "/auth/login" | "/onboarding" | "/orders/:id" | "/pos" | "/routes/:id" | "/api/proxy" | "/uninstall" | "/zones/:id" | "/install" | "/pos/:id" | "/health";
   };
   "routes/shipping-profiles._index.tsx": {
     id: "routes/shipping-profiles._index";
@@ -371,6 +374,10 @@ type RouteFiles = {
     id: "routes/support.$id";
     page: "/support/:id";
   };
+  "routes/auth.login.tsx": {
+    id: "routes/auth.login";
+    page: "/auth/login";
+  };
   "routes/onboarding.tsx": {
     id: "routes/onboarding";
     page: "/onboarding";
@@ -461,6 +468,7 @@ type RouteModules = {
   "routes/auth._index": typeof import("./app/routes/auth._index.tsx");
   "routes/drivers.$id": typeof import("./app/routes/drivers.$id.tsx");
   "routes/support.$id": typeof import("./app/routes/support.$id.tsx");
+  "routes/auth.login": typeof import("./app/routes/auth.login.tsx");
   "routes/onboarding": typeof import("./app/routes/onboarding.tsx");
   "routes/orders.$id": typeof import("./app/routes/orders.$id.tsx");
   "routes/pos._index": typeof import("./app/routes/pos._index.tsx");

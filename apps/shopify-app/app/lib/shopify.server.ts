@@ -18,8 +18,8 @@ import {
 } from "@shopify/shopify-app-react-router/server";
 
 // Prisma session storage stores Shopify OAuth sessions in our database.
-// @prisma/client resolves via the .prisma/client stub in the pnpm store that
-// re-exports from packages/db/src/generated/prisma (the custom prisma output).
+// @prisma/client is patched (via patches/@prisma__client.patch) so that
+// .prisma/client/default.js delegates to packages/db/src/generated/prisma.
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { PrismaClient } from "@prisma/client";
 

@@ -33,8 +33,6 @@ import {
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { AppProvider as ShopifyAppBridgeProvider } from "@shopify/shopify-app-react-router/react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { getApiBaseUrl } from "~/lib/api.server";
-import { authenticate } from "~/lib/shopify.server";
 import {
   AppProvider,
   Frame,
@@ -73,9 +71,13 @@ function skipRootShopifyAdminAuth(pathname: string): boolean {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  // Dynamic imports keep `shopify.server` (Prisma session storage) out of the client dep scan;
+  // static imports from root would pull `@prisma/client` into Vite client pre-bundle and fail.
   if (!skipRootShopifyAdminAuth(new URL(request.url).pathname)) {
+    const { authenticate } = await import("~/lib/shopify.server");
     await authenticate.admin(request);
   }
+  const { getApiBaseUrl } = await import("~/lib/api.server");
   return {
     apiKey: process.env.SHOPIFY_API_KEY ?? "",
     /** Same origin loaders use for `createApiClient` — exposed for Socket.io on the client. */

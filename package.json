@@ -51,5 +51,10 @@
     "node-fetch": "^3.3.2",
     "pdfkit": "^0.18.0",
     "uuid": "^13.0.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@prisma/client": "patches/@prisma__client.patch"
+    }
   }
 }
