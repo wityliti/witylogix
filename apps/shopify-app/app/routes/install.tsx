@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { Page, Card, Layout, Text, Button, Banner } from "@shopify/polaris";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 interface InstallPageData {
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const { session } = await authenticate.admin(request);
     if (session && session.accessToken) {
-      const api = createApiClient(session.accessToken);
+      const api = createApiClientFromRequest(request, session);
       const response = await api.get<{
         data: {
           isInstalled: boolean;

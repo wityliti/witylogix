@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useActionData, useFetcher } from "react-router";
 import { useState } from "react";
 import { Page, Card, Layout, Text, Banner, Button, Modal, TextContainer } from "@shopify/polaris";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 interface UninstallResult {
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return { error: "Not authenticated" };
   }
 
-  const api = createApiClient(session.accessToken);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     const shopInfo = await api.get<{ data: { id: string; name: string } }>(
@@ -47,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return { status: "error", message: "Not authenticated" };
   }
 
-  const api = createApiClient(session.accessToken);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     const uninstallResult = await api.post<UninstallResult>(

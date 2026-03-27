@@ -98,12 +98,16 @@ export default defineConfig({
       "@witylogix/db",
       "@shopify/shopify-app-session-storage-prisma",
     ],
+    // `external` is intentionally excluded from Vite's esbuildOptions type
+    // but is supported at runtime to prevent esbuild from bundling Prisma
+    // transitive deps during dependency pre-optimisation.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     esbuildOptions: {
       external: [
         "@prisma/client",
         "@shopify/shopify-app-session-storage-prisma",
       ],
-    },
+    } as any,
   },
   build: {
     sourcemap: true,

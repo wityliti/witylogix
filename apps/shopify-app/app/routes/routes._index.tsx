@@ -16,7 +16,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
 import { useState, useCallback } from "react";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -76,7 +76,7 @@ const STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") ?? "1");
@@ -98,7 +98,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
   const formData = await request.formData();
   const intent = formData.get("intent");
 

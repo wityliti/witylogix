@@ -33,7 +33,7 @@ import {
 } from "@shopify/polaris";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { authenticate } from "~/lib/shopify.server";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -74,7 +74,7 @@ interface WebhookPageData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     // Fetch webhook endpoints, triggers, and delivery logs in parallel
@@ -118,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   if (request.method === "POST") {
     const formData = await request.formData();

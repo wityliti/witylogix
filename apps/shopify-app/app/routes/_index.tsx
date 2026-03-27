@@ -28,7 +28,7 @@ import {
 } from "@shopify/polaris";
 import { KPICard } from "~/components/KPICard";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -62,7 +62,7 @@ interface DashboardData {
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   // Fetch dashboard stats and recent activity in parallel
   const [statsResponse, activityResponse] = await Promise.allSettled([
