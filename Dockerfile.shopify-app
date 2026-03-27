@@ -35,10 +35,13 @@ RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 # pnpm deploy --prod creates fresh node_modules that lack the generated .prisma/client/ files.
 # shopify-app imports PrismaClient directly from @prisma/client (not the custom output path),
 # so we regenerate without the custom output to populate .prisma/client/ in standalone.
-RUN cp -r /app/packages/db/prisma /tmp/prisma_default && \
-    sed -i '/^\s*output\s*=/d' /tmp/prisma_default/schema/00-config.prisma
+# Schema must live inside /standalone/ so Prisma resolves /standalone/package.json as the
+# project root and writes output to /standalone/node_modules/.prisma/client/ (default path).
 WORKDIR /standalone
-RUN /app/packages/db/node_modules/.bin/prisma generate --schema /tmp/prisma_default/schema
+RUN cp -r /app/packages/db/prisma ./prisma_default && \
+    sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
+    /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
+    rm -rf ./prisma_default
 
 FROM node:22-alpine AS runner
 
