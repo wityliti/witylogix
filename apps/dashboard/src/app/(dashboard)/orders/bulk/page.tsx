@@ -1,84 +1,69 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useMemo, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-
-interface ApiOrder {
-  id: string;
-  shopifyOrderNumber: string;
-  customerName: string;
-  totalPrice: number;
-  status: string;
-  createdAt: string;
-}
-
-interface ApiRoute {
-  id: string;
-  name: string;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customer: string;
-  total: number;
-  status: string;
-  date: string;
-}
+import { useOrders } from '@/hooks/use-orders';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 
 interface BulkOperationResult {
   success: number;
   failed: number;
-  details: { orderId: string; message: string }[];
+  details: { orderId: string; status: 'success' | 'error'; message: string }[];
 }
 
-function mapApiOrder(o: ApiOrder): Order {
-  return {
-    id: o.id,
-    orderNumber: o.shopifyOrderNumber || o.id.slice(0, 8),
-    customer: o.customerName || 'Unknown',
-    total: o.totalPrice || 0,
-    status: (o.status || 'pending').toLowerCase(),
-    date: o.createdAt ? o.createdAt.slice(0, 10) : '',
-  };
-}
+const STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'confirmed', label: 'Confirmed' },
+  { value: 'in_transit', label: 'In Transit' },
+  { value: 'delivered', label: 'Delivered' },
+  { value: 'cancelled', label: 'Cancelled' },
+];
+
+const STATUS_VARIANT: Record<string, 'warning' | 'info' | 'primary' | 'success' | 'danger' | 'default'> = {
+  pending: 'warning',
+  confirmed: 'info',
+  in_transit: 'primary',
+  delivered: 'success',
+  cancelled: 'danger',
+};
 
 export default function BulkOperationsPage() {
-  const { items: apiOrders, loading: ordersLoading, error: ordersError, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 100 });
-  const { items: apiRoutes, loading: routesLoading } = useApiList<ApiRoute>('/api/v4/routes', { limit: 50 });
-
-  const orders = apiOrders.map(mapApiOrder);
-
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState('');
-  const [newStatus, setNewStatus] = useState('ready_to_ship');
-  const [selectedRoute, setSelectedRoute] = useState('');
+  const [newStatus, setNewStatus] = useState('confirmed');
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showProgress, setShowProgress] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [processing, setProcessing] = useState(false);
   const [operationResults, setOperationResults] = useState<BulkOperationResult | null>(null);
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
+  const { items: orders, loading, error, refetch } = useOrders({
+    search: searchTerm || undefined,
+    status: filterStatus as any || undefined,
+    limit: 100,
   });
 
+  const filteredOrders = useMemo(() => {
+    if (!searchTerm && !filterStatus) return orders;
+    return orders.filter(order => {
+      const matchesSearch = !searchTerm ||
+        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = !filterStatus || order.status === filterStatus;
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, searchTerm, filterStatus]);
+
   const toggleOrderSelection = (orderId: string) => {
-    const newSelected = new Set(selectedOrders);
-    if (newSelected.has(orderId)) {
-      newSelected.delete(orderId);
+    const next = new Set(selectedOrders);
+    if (next.has(orderId)) {
+      next.delete(orderId);
     } else {
-      newSelected.add(orderId);
+      next.add(orderId);
     }
-    setSelectedOrders(newSelected);
+    setSelectedOrders(next);
   };
 
   const toggleSelectAll = () => {
@@ -91,80 +76,93 @@ export default function BulkOperationsPage() {
 
   const handleBulkAction = () => {
     if (!bulkAction || selectedOrders.size === 0) return;
+    if (bulkAction === 'export_csv') {
+      exportCSV();
+      return;
+    }
     setShowConfirmation(true);
+  };
+
+  const exportCSV = () => {
+    const selected = filteredOrders.filter(o => selectedOrders.has(o.id));
+    const rows = [
+      ['Order ID', 'Customer', 'Status', 'Total', 'Created'],
+      ...selected.map(o => [
+        o.id,
+        o.customerName,
+        o.status,
+        o.totalAmount.toString(),
+        new Date(o.createdAt).toLocaleDateString(),
+      ]),
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders-export-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    resetOperations();
   };
 
   const confirmAction = async () => {
     setShowConfirmation(false);
-    setShowProgress(true);
-    setProgress(0);
+    setProcessing(true);
 
-    const ids = Array.from(selectedOrders);
+    const orderIds = Array.from(selectedOrders);
+    const details: BulkOperationResult['details'] = [];
     let success = 0;
-    const details: { orderId: string; message: string }[] = [];
+    let failed = 0;
 
-    for (let i = 0; i < ids.length; i++) {
-      const orderId = ids[i];
-      const order = orders.find(o => o.id === orderId);
+    const statusPayload = bulkAction === 'cancel' ? 'cancelled' : newStatus;
+
+    for (const orderId of orderIds) {
       try {
-        if (bulkAction === 'update_status') {
-          await api.patch(`/api/v4/orders/${orderId}/status`, { status: newStatus.toUpperCase() });
-        } else if (bulkAction === 'cancel') {
-          await api.delete(`/api/v4/orders/${orderId}`);
+        const res = await fetch(`/api/v4/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: statusPayload }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.message || res.statusText);
         }
+        details.push({ orderId, status: 'success', message: 'Updated successfully' });
         success++;
-        details.push({ orderId: order?.orderNumber || orderId, message: 'Successfully processed' });
-      } catch {
-        details.push({ orderId: order?.orderNumber || orderId, message: 'Failed to process' });
+      } catch (err) {
+        details.push({
+          orderId,
+          status: 'error',
+          message: err instanceof Error ? err.message : 'Failed',
+        });
+        failed++;
       }
-      setProgress(Math.round(((i + 1) / ids.length) * 100));
     }
 
-    await refetch();
-    setOperationResults({ success, failed: ids.length - success, details });
-    setShowProgress(false);
+    setOperationResults({ success, failed, details });
+    setProcessing(false);
+    refetch();
   };
 
   const resetOperations = () => {
     setBulkAction('');
     setSelectedOrders(new Set());
     setOperationResults(null);
-    setProgress(0);
   };
 
-  const statusColors: Record<string, string> = {
-    'pending': '#8888a0',
-    'confirmed': '#6C63FF',
-    'ready_to_ship': '#ffa500',
-    'shipped': '#4CAF50',
-    'delivered': '#4CAF50',
-    'cancelled': '#ff4444'
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      'pending': 'Pending',
-      'confirmed': 'Confirmed',
-      'ready_to_ship': 'Ready to Ship',
-      'shipped': 'Shipped',
-      'delivered': 'Delivered',
-      'cancelled': 'Cancelled'
-    };
-    return labels[status] || status;
-  };
-
-  if (ordersLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
-        <p className="text-gray-400">Loading orders...</p>
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
+        <TableSkeleton rows={10} />
       </div>
     );
   }
 
-  if (ordersError) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
-        <p className="text-red-400">Error loading orders: {ordersError.message}</p>
+      <div className="min-h-screen bg-[#0a0a0f] p-6">
+        <ErrorState message="Failed to load orders" onRetry={refetch} />
       </div>
     );
   }
@@ -181,7 +179,7 @@ export default function BulkOperationsPage() {
         <p className="text-base font-semibold mb-4 text-white">Search & Filter Orders</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">Search Order Number or Customer</label>
+            <label className="text-sm font-medium text-gray-300">Search Order ID or Customer</label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -197,21 +195,16 @@ export default function BulkOperationsPage() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="ready_to_ship">Ready to Ship</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
+              <option value="">All Status</option>
+              {STATUS_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-300">&nbsp;</label>
             <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilterStatus('all');
-              }}
+              onClick={() => { setSearchTerm(''); setFilterStatus(''); }}
               className="px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
             >
               Reset Filters
@@ -220,15 +213,13 @@ export default function BulkOperationsPage() {
         </div>
       </div>
 
-      {/* Selection and Bulk Actions */}
+      {/* Selection bar */}
       {filteredOrders.length > 0 && (
         <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-4 mb-6 flex items-center justify-between">
           <p className="text-sm text-gray-400 flex-1">
-            {selectedOrders.size > 0 ? (
-              `${selectedOrders.size} order${selectedOrders.size !== 1 ? 's' : ''} selected`
-            ) : (
-              'Select orders to perform bulk actions'
-            )}
+            {selectedOrders.size > 0
+              ? `${selectedOrders.size} order${selectedOrders.size !== 1 ? 's' : ''} selected`
+              : 'Select orders to perform bulk actions'}
           </p>
           <button
             onClick={toggleSelectAll}
@@ -254,7 +245,7 @@ export default function BulkOperationsPage() {
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Order Number</th>
+                <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Order ID</th>
                 <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Customer</th>
                 <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Total</th>
                 <th className="bg-[#0a0a0f] border-b border-[#1e1e2e] p-3 text-left text-xs font-semibold text-gray-400">Status</th>
@@ -272,28 +263,25 @@ export default function BulkOperationsPage() {
                       onChange={() => toggleOrderSelection(order.id)}
                     />
                   </td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">
-                    <strong>{order.orderNumber}</strong>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300 font-mono">
+                    #{order.id.slice(0, 8)}
                   </td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.customer}</td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{order.total.toLocaleString()}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.customerName}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{order.totalAmount.toLocaleString()}</td>
                   <td className="border-b border-[#1e1e2e] p-3 text-sm">
-                    <span
-                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                      style={{ color: statusColors[order.status] || '#8888a0', background: `${statusColors[order.status] || '#8888a0'}22` }}
-                    >
-                      {getStatusLabel(order.status)}
-                    </span>
+                    <Badge variant={STATUS_VARIANT[order.status] ?? 'default'}>
+                      {order.status.replace(/_/g, ' ')}
+                    </Badge>
                   </td>
-                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.date}</td>
+                  <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <div className="p-6 text-center text-gray-400">
-            No orders found
-          </div>
+          <div className="p-6 text-center text-gray-400">No orders found</div>
         )}
       </div>
 
@@ -311,8 +299,8 @@ export default function BulkOperationsPage() {
               >
                 <option value="">-- Select Action --</option>
                 <option value="update_status">Update Status</option>
-                <option value="assign_route">Assign to Route</option>
                 <option value="cancel">Cancel Orders</option>
+                <option value="export_csv">Export to CSV</option>
               </select>
             </div>
 
@@ -324,26 +312,8 @@ export default function BulkOperationsPage() {
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                 >
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="ready_to_ship">Ready to Ship</option>
-                  <option value="shipped">Shipped</option>
-                </select>
-              </div>
-            )}
-
-            {bulkAction === 'assign_route' && (
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-300">Select Route</label>
-                <select
-                  className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
-                  value={selectedRoute}
-                  onChange={(e) => setSelectedRoute(e.target.value)}
-                  disabled={routesLoading}
-                >
-                  <option value="">-- Select Route --</option>
-                  {apiRoutes.map(route => (
-                    <option key={route.id} value={route.id}>{route.name}</option>
+                  {STATUS_OPTIONS.filter(o => o.value !== 'cancelled').map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </div>
@@ -353,15 +323,15 @@ export default function BulkOperationsPage() {
               <label className="text-sm font-medium text-gray-300">&nbsp;</label>
               <button
                 onClick={handleBulkAction}
-                disabled={!bulkAction || (bulkAction === 'assign_route' && !selectedRoute)}
+                disabled={!bulkAction || processing}
                 className={cn(
-                  "px-4 py-2.5 rounded font-semibold text-sm transition-all",
-                  !bulkAction || (bulkAction === 'assign_route' && !selectedRoute)
-                    ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
-                    : "bg-blue-500 text-white cursor-pointer hover:bg-blue-600"
+                  'px-4 py-2.5 rounded font-semibold text-sm transition-all',
+                  !bulkAction || processing
+                    ? 'bg-blue-500 text-white opacity-50 cursor-not-allowed'
+                    : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600'
                 )}
               >
-                Execute Action
+                {processing ? 'Processing...' : 'Execute Action'}
               </button>
             </div>
           </div>
@@ -373,26 +343,10 @@ export default function BulkOperationsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
-            <div className="text-sm text-gray-300 mb-5 leading-relaxed">
-              <div className="mb-2.5">
-                Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : bulkAction === 'cancel' ? 'Cancel Orders' : 'Execute'}</strong>
-              </div>
-              <div className="mb-2.5">
-                Orders selected: <strong>{selectedOrders.size}</strong>
-              </div>
-              {bulkAction === 'update_status' && (
-                <div>
-                  New status: <strong>{getStatusLabel(newStatus)}</strong>
-                </div>
-              )}
-              {bulkAction === 'assign_route' && (
-                <div>
-                  Route: <strong>{apiRoutes.find(r => r.id === selectedRoute)?.name}</strong>
-                </div>
-              )}
-              <div className="mt-4 text-gray-400">
-                This action will affect all selected orders. Do you want to continue?
-              </div>
+            <div className="text-sm text-gray-300 mb-5 leading-relaxed space-y-2">
+              <div>Action: <strong>{bulkAction === 'update_status' ? `Update Status → ${newStatus}` : 'Cancel Orders'}</strong></div>
+              <div>Orders selected: <strong>{selectedOrders.size}</strong></div>
+              <div className="mt-4 text-gray-500">This will affect all selected orders. Continue?</div>
             </div>
             <div className="flex gap-2.5 justify-end">
               <button
@@ -412,56 +366,29 @@ export default function BulkOperationsPage() {
         </div>
       )}
 
-      {/* Progress Modal */}
-      {showProgress && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
-            <h2 className="text-lg font-bold mb-4">Processing Orders...</h2>
-            <div className="w-full h-2 bg-[#0a0a0f] rounded overflow-hidden">
-              <div className="h-full bg-blue-500 transition-all" style={{ width: `${progress}%` }} />
-            </div>
-            <p className="mt-4 text-center text-sm text-gray-400">
-              {progress}% Complete
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Results Modal */}
       {operationResults && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-11/12 text-white">
             <h2 className="text-lg font-bold mb-4">Operation Complete</h2>
-            <div className="text-sm text-gray-300 mb-5">
-              <div className="mb-2.5 text-emerald-500">
-                <strong>{operationResults.success} order{operationResults.success !== 1 ? 's' : ''} processed successfully</strong>
+            <div className="text-sm text-gray-300 mb-5 space-y-1">
+              <div className="text-emerald-500 font-semibold">
+                {operationResults.success} order{operationResults.success !== 1 ? 's' : ''} updated successfully
               </div>
               {operationResults.failed > 0 && (
-                <div className="text-red-500">
-                  <strong>{operationResults.failed} order{operationResults.failed !== 1 ? 's' : ''} failed</strong>
+                <div className="text-red-500 font-semibold">
+                  {operationResults.failed} order{operationResults.failed !== 1 ? 's' : ''} failed
                 </div>
               )}
             </div>
-
-            {operationResults.details.length > 0 && (
-              <div className="mt-4">
-                {operationResults.details.map((detail, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "bg-[#0a0a0f] border rounded p-3 mb-2",
-                      detail.message.includes('Successfully')
-                        ? "border-l-4 border-l-emerald-500"
-                        : "border-l-4 border-l-red-500"
-                    )}
-                  >
-                    <p className="font-semibold text-sm text-gray-300">{detail.orderId}</p>
-                    <p className="text-xs text-gray-400 mt-1">{detail.message}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
+            <div className="mt-4 max-h-48 overflow-y-auto space-y-2">
+              {operationResults.details.filter(d => d.status === 'error').map((detail, idx) => (
+                <div key={idx} className="bg-[#0a0a0f] border-l-4 border-l-red-500 rounded p-3">
+                  <p className="font-semibold text-sm text-gray-300 font-mono">#{detail.orderId.slice(0, 8)}</p>
+                  <p className="text-xs text-gray-400 mt-1">{detail.message}</p>
+                </div>
+              ))}
+            </div>
             <div className="flex gap-2.5 justify-end mt-5">
               <button
                 onClick={resetOperations}
