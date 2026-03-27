@@ -30,6 +30,5 @@
       "@utils/*": ["./utils/*"]
     }
   },
-  "include": ["**/*.ts"],
-  "references": [{ "path": "./tsconfig.app.json" }]
+  "include": ["**/*.ts"]
 }
