@@ -66,14 +66,6 @@ const STATUS_VARIANT: Record<string, 'success' | 'primary' | 'info' | 'warning' 
   confirmed: 'info',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  delivered: '#10b981',
-  in_transit: '#3b82f6',
-  assigned: '#6366f1',
-  pending: '#f59e0b',
-  confirmed: '#6366f1',
-};
-
 const ALL_STATUSES = ['pending', 'confirmed', 'assigned', 'in_transit', 'delivered'];
 
 function formatTimeWindow(timeSlot?: ApiTimeSlot | null, deliveryDate?: string | null): string {

@@ -13,7 +13,21 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
 import { useState } from "react";
-import { EmptyState } from "~/components/EmptyState";
+import {
+  Page,
+  Card,
+  IndexTable,
+  Text,
+  Badge,
+  Button,
+  InlineStack,
+  BlockStack,
+  EmptyState as PolarisEmptyState,
+  Modal,
+  Pagination,
+  TextField,
+  FormLayout,
+} from "@shopify/polaris";
 import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -85,6 +99,17 @@ export async function action({ request }: ActionFunctionArgs) {
   return null;
 }
 
+// ─── Helpers ───────────────────────────────────────────────
+
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function ZonesList() {
@@ -100,246 +125,215 @@ export default function ZonesList() {
     setSearchParams(next);
   }
 
+  const resourceName = {
+    singular: "zone",
+    plural: "zones",
+  };
+
+  const rowMarkup = zones.map((zone, index) => (
+    <IndexTable.Row id={zone.id} key={zone.id} position={index}>
+      <IndexTable.Cell>
+        <Link
+          to={`/zones/${zone.id}`}
+          style={{ textDecoration: "none" }}
+        >
+          <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
+            {zone.name}
+          </Text>
+        </Link>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {formatCurrency(zone.baseRate)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {formatCurrency(zone.perKmRate)} / km
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {formatCurrency(zone.minOrder)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {zone.freeAbove ? (
+          <Text as="span" variant="bodyMd">
+            {formatCurrency(zone.freeAbove)}
+          </Text>
+        ) : (
+          <Text as="span" variant="bodyMd" tone="subdued">
+            —
+          </Text>
+        )}
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" alignment="center">
+          {zone.priority}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" alignment="center">
+          {zone.orderCount}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={zone.isActive ? "success" : undefined}>
+          {zone.isActive ? "Active" : "Inactive"}
+        </Badge>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div>
-          <h1 style={headingStyle}>Delivery Zones</h1>
-          <p style={subtextStyle}>{meta.total} total zones</p>
-        </div>
-        <button onClick={() => setShowCreateModal(true)} style={primaryBtnStyle} type="button">
-          Create Zone
-        </button>
-      </div>
+    <Page
+      title="Delivery Zones"
+      subtitle={`${meta.total} total zones`}
+      primaryAction={{
+        content: "Create Zone",
+        onAction: () => setShowCreateModal(true),
+      }}
+    >
+      <BlockStack gap="400">
+        {zones.length === 0 ? (
+          <Card>
+            <PolarisEmptyState
+              heading="No delivery zones found"
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+              action={{
+                content: "Create Zone",
+                onAction: () => setShowCreateModal(true),
+              }}
+            >
+              <p>Create a delivery zone to define service areas and pricing.</p>
+            </PolarisEmptyState>
+          </Card>
+        ) : (
+          <>
+            <Card padding="0">
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={zones.length}
+                headings={[
+                  { title: "Zone Name" },
+                  { title: "Base Rate" },
+                  { title: "Per Km Rate" },
+                  { title: "Min Order" },
+                  { title: "Free Above" },
+                  { title: "Priority", alignment: "center" },
+                  { title: "Order Count", alignment: "center" },
+                  { title: "Status" },
+                ]}
+                selectable={false}
+              >
+                {rowMarkup}
+              </IndexTable>
+            </Card>
 
-      {/* Content */}
-      {zones.length === 0 ? (
-        <EmptyState
-          title="No delivery zones found"
-          description="Create a delivery zone to define service areas and pricing."
-          actionLabel="Create Zone"
-          onAction={() => setShowCreateModal(true)}
-        />
-      ) : (
-        <>
-          <div style={tableContainerStyle}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Zone Name</th>
-                  <th style={thStyle}>Base Rate</th>
-                  <th style={thStyle}>Per Km Rate</th>
-                  <th style={thStyle}>Min Order</th>
-                  <th style={thStyle}>Free Above</th>
-                  <th style={thStyle}>Priority</th>
-                  <th style={thStyle}>Order Count</th>
-                  <th style={thStyle}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {zones.map((zone) => (
-                  <tr key={zone.id} style={trStyle}>
-                    <td style={tdStyle}>
-                      <Link to={`/zones/${zone.id}`} style={linkStyle}>
-                        {zone.name}
-                      </Link>
-                    </td>
-                    <td style={tdStyle}>
-                      {formatCurrency(zone.baseRate)}
-                    </td>
-                    <td style={tdStyle}>
-                      {formatCurrency(zone.perKmRate)} / km
-                    </td>
-                    <td style={tdStyle}>
-                      {formatCurrency(zone.minOrder)}
-                    </td>
-                    <td style={tdStyle}>
-                      {zone.freeAbove ? formatCurrency(zone.freeAbove) : <span style={cellSubStyle}>—</span>}
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: "center" }}>
-                      {zone.priority}
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: "center" }}>
-                      {zone.orderCount}
-                    </td>
-                    <td style={tdStyle}>
-                      <ZoneStatusBadge isActive={zone.isActive} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            {meta.totalPages > 1 && (
+              <InlineStack align="center">
+                <Pagination
+                  hasPrevious={currentPage > 1}
+                  hasNext={currentPage < meta.totalPages}
+                  onPrevious={() => goToPage(currentPage - 1)}
+                  onNext={() => goToPage(currentPage + 1)}
+                  label={`Page ${currentPage} of ${meta.totalPages}`}
+                />
+              </InlineStack>
+            )}
+          </>
+        )}
+      </BlockStack>
 
-          {/* Pagination */}
-          <div style={paginationStyle}>
-            <span style={subtextStyle}>
-              Page {currentPage} of {meta.totalPages}
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1} style={pageBtnStyle} type="button">
-                Previous
-              </button>
-              <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage >= meta.totalPages} style={pageBtnStyle} type="button">
-                Next
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Create Zone Modal */}
       {showCreateModal && (
         <ZoneCreateModal onClose={() => setShowCreateModal(false)} />
       )}
-    </div>
+    </Page>
   );
 }
 
 // ─── Sub-components ────────────────────────────────────────
 
-function ZoneStatusBadge({ isActive }: { isActive: boolean }) {
-  const colors = isActive
-    ? { bg: "#ccf1e2", text: "#005c35" }
-    : { bg: "#f1f2f3", text: "#6d7175" };
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 10px",
-        fontSize: 12,
-        fontWeight: 600,
-        borderRadius: 20,
-        backgroundColor: colors.bg,
-        color: colors.text,
-      }}
-    >
-      {isActive ? "Active" : "Inactive"}
-    </span>
-  );
-}
-
 function ZoneCreateModal({ onClose }: { onClose: () => void }) {
   return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Create New Zone</h2>
-          <button onClick={onClose} style={closeBtnStyle} type="button">&times;</button>
-        </div>
+    <Modal
+      open={true}
+      onClose={onClose}
+      title="Create New Zone"
+      primaryAction={{
+        content: "Create Zone",
+        submit: true,
+      }}
+      secondaryActions={[
+        {
+          content: "Cancel",
+          onAction: onClose,
+        },
+      ]}
+    >
+      <Modal.Section>
         <Form method="post" onSubmit={onClose}>
           <input type="hidden" name="intent" value="create" />
-
-          <div style={formFieldStyle}>
-            <label style={formLabelStyle}>Zone Name *</label>
-            <input name="name" required style={formInputStyle} placeholder="e.g., Downtown Zone" />
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div style={formFieldStyle}>
-              <label style={formLabelStyle}>Base Rate *</label>
-              <input
+          <FormLayout>
+            <TextField
+              label="Zone Name"
+              name="name"
+              requiredIndicator
+              autoComplete="off"
+              placeholder="e.g., Downtown Zone"
+            />
+            <FormLayout.Group>
+              <TextField
+                label="Base Rate"
                 name="baseRate"
                 type="number"
-                step="0.01"
-                required
-                style={formInputStyle}
+                requiredIndicator
+                autoComplete="off"
                 placeholder="0.00"
               />
-            </div>
-            <div style={formFieldStyle}>
-              <label style={formLabelStyle}>Per Km Rate *</label>
-              <input
+              <TextField
+                label="Per Km Rate"
                 name="perKmRate"
                 type="number"
-                step="0.01"
-                required
-                style={formInputStyle}
+                requiredIndicator
+                autoComplete="off"
                 placeholder="0.00"
               />
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div style={formFieldStyle}>
-              <label style={formLabelStyle}>Min Order *</label>
-              <input
+            </FormLayout.Group>
+            <FormLayout.Group>
+              <TextField
+                label="Min Order"
                 name="minOrder"
                 type="number"
-                step="0.01"
-                required
-                style={formInputStyle}
+                requiredIndicator
+                autoComplete="off"
                 placeholder="0.00"
               />
-            </div>
-            <div style={formFieldStyle}>
-              <label style={formLabelStyle}>Free Above</label>
-              <input
+              <TextField
+                label="Free Above"
                 name="freeAbove"
                 type="number"
-                step="0.01"
-                style={formInputStyle}
+                autoComplete="off"
                 placeholder="Leave blank for no free threshold"
               />
-            </div>
-          </div>
-
-          <div style={formFieldStyle}>
-            <label style={formLabelStyle}>Priority (higher = more priority)</label>
-            <input
+            </FormLayout.Group>
+            <TextField
+              label="Priority (higher = more priority)"
               name="priority"
               type="number"
-              defaultValue={1}
-              min={1}
-              style={formInputStyle}
+              value="1"
+              autoComplete="off"
             />
-          </div>
-
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
-            <button type="button" onClick={onClose} style={secondaryBtnStyle}>Cancel</button>
-            <button type="submit" style={primaryBtnStyle}>Create Zone</button>
-          </div>
+            <InlineStack align="end" gap="200">
+              <Button onClick={onClose}>Cancel</Button>
+              <Button variant="primary" submit>
+                Create Zone
+              </Button>
+            </InlineStack>
+          </FormLayout>
         </Form>
-      </div>
-    </div>
+      </Modal.Section>
+    </Modal>
   );
 }
-
-// ─── Helpers ───────────────────────────────────────────────
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)", margin: "4px 0 0" };
-
-const tableContainerStyle: React.CSSProperties = { backgroundColor: "white", borderRadius: 12, border: "1px solid var(--p-color-border-subdued, #e1e3e5)", overflow: "hidden" };
-const thStyle: React.CSSProperties = { textAlign: "left", padding: "12px 16px", fontSize: 12, fontWeight: 600, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)", backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)" };
-const trStyle: React.CSSProperties = { borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)" };
-const tdStyle: React.CSSProperties = { padding: "12px 16px", verticalAlign: "top" };
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", fontWeight: 600, textDecoration: "none" };
-const cellSubStyle: React.CSSProperties = { fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)" };
-
-const paginationStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0" };
-const pageBtnStyle: React.CSSProperties = { padding: "6px 14px", fontSize: 13, fontWeight: 500, border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 6, backgroundColor: "white", cursor: "pointer" };
-
-const primaryBtnStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "white", backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)", border: "none", borderRadius: 8, cursor: "pointer" };
-const secondaryBtnStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "var(--p-color-text, #303030)", backgroundColor: "white", border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, cursor: "pointer" };
-
-const overlayStyle: React.CSSProperties = { position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 };
-const modalStyle: React.CSSProperties = { width: 500, maxHeight: "90vh", overflow: "auto", backgroundColor: "white", borderRadius: 16, padding: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" };
-const closeBtnStyle: React.CSSProperties = { fontSize: 24, lineHeight: 1, color: "var(--p-color-text-subdued, #6d7175)", background: "none", border: "none", cursor: "pointer" };
-
-const formFieldStyle: React.CSSProperties = { marginBottom: 12 };
-const formLabelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 500, color: "var(--p-color-text, #202223)", marginBottom: 4 };
-const formInputStyle: React.CSSProperties = { width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, boxSizing: "border-box" as const };

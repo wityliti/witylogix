@@ -17,6 +17,21 @@ import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import { createApiClient, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
+import {
+  Page,
+  Layout,
+  Card,
+  DescriptionList,
+  Badge,
+  Button,
+  BlockStack,
+  InlineStack,
+  Text,
+  Box,
+  ProgressBar,
+  Divider,
+} from "@shopify/polaris";
+import type { BadgeProps } from "@shopify/polaris";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -61,6 +76,20 @@ interface RoutePageData {
   stops: Stop[];
   timeline: RouteEvent[];
 }
+
+const STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
+  PLANNED: "attention",
+  ACTIVE: "info",
+  COMPLETED: "success",
+  FAILED: "critical",
+};
+
+const STOP_STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
+  COMPLETED: "success",
+  PENDING: "attention",
+  SKIPPED: undefined,
+  FAILED: "critical",
+};
 
 // ─── Loader ────────────────────────────────────────────────
 
@@ -118,7 +147,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       status: "COMPLETED",
       deliveryType: "Delivery",
       lat: 40.7489,
-      lng: -73.9680,
+      lng: -73.968,
     },
     {
       id: "s4",
@@ -140,7 +169,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       status: "PENDING",
       deliveryType: "Delivery",
       lat: 40.7549,
-      lng: -73.9840,
+      lng: -73.984,
     },
     {
       id: "s6",
@@ -200,381 +229,249 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export default function RouteDetailPage() {
   const { route, stops, timeline } = useLoaderData<RoutePageData>();
   const pendingStops = stops.filter((s) => s.status === "PENDING").length;
-
-  const statusColors: Record<string, string> = {
-    PLANNED: "#f5a623",
-    ACTIVE: "#005bd3",
-    COMPLETED: "#2d7d2d",
-    FAILED: "#d72c0d",
-  };
+  const progressPercent = Math.round(
+    (route.completedStops / route.totalStops) * 100,
+  );
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/routes" style={backLinkStyle}>
-            &larr;
-          </Link>
-          <div>
-            <h1 style={headingStyle}>{route.name}</h1>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-              <span style={{ ...badgeStyle, backgroundColor: statusColors[route.status] }}>
-                {route.status}
-              </span>
-              <span style={subtextStyle}>
-                {new Date(route.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <Page
+      backAction={{ content: "Routes", url: "/routes" }}
+      title={route.name}
+      titleMetadata={
+        <Badge tone={STATUS_BADGE_TONE[route.status]}>
+          {route.status}
+        </Badge>
+      }
+      subtitle={new Date(route.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}
+    >
+      <BlockStack gap="400">
+        {/* Stats Row */}
+        <InlineStack gap="400" wrap>
+          <StatBox label="Total Stops" value={String(route.totalStops)} />
+          <StatBox
+            label="Completed"
+            value={`${route.completedStops}/${route.totalStops}`}
+          />
+          <StatBox label="Distance" value={`${route.totalDistance} km`} />
+          <StatBox
+            label="Est. Duration"
+            value={`${Math.floor(route.estimatedDuration / 60)}h ${route.estimatedDuration % 60}m`}
+          />
+        </InlineStack>
 
-      {/* Stats Row */}
-      <div style={statsRowStyle}>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>Total Stops</div>
-          <div style={statValueStyle}>{route.totalStops}</div>
-        </div>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>Completed</div>
-          <div style={statValueStyle}>{route.completedStops}/{route.totalStops}</div>
-        </div>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>Distance</div>
-          <div style={statValueStyle}>{route.totalDistance} km</div>
-        </div>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>Est. Duration</div>
-          <div style={statValueStyle}>{Math.floor(route.estimatedDuration / 60)}h {route.estimatedDuration % 60}m</div>
-        </div>
-      </div>
+        <Layout>
+          {/* Left Column */}
+          <Layout.Section>
+            <BlockStack gap="400">
+              {route.driver && (
+                <Card>
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingSm">
+                      Assigned Driver
+                    </Text>
+                    <DescriptionList
+                      items={[
+                        {
+                          term: "Name",
+                          description: (
+                            <Link to={`/drivers/${route.driver.id}`}>
+                              <Text as="span" tone="magic" fontWeight="semibold">
+                                {route.driver.name}
+                              </Text>
+                            </Link>
+                          ),
+                        },
+                        { term: "Phone", description: route.driver.phone },
+                      ]}
+                    />
+                  </BlockStack>
+                </Card>
+              )}
 
-      {/* Two-column layout */}
-      <div style={columnsStyle}>
-        {/* Left Column */}
-        <div style={leftColStyle}>
-          {/* Driver Card */}
-          {route.driver && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Assigned Driver</h3>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    backgroundColor: statusColors[route.status],
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: 600,
-                    fontSize: 14,
-                  }}
-                >
-                  {route.driver.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <Link to={`/drivers/${route.driver.id}`} style={linkStyle}>
-                    {route.driver.name}
-                  </Link>
-                  <div style={subtextStyle}>{route.driver.phone}</div>
-                </div>
-              </div>
-            </div>
-          )}
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Vehicle
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {route.vehicle}
+                  </Text>
+                </BlockStack>
+              </Card>
 
-          {/* Vehicle Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Vehicle</h3>
-            <div style={valueStyle}>{route.vehicle}</div>
-          </div>
+              {stops.length > 0 && (
+                <Card>
+                  <BlockStack gap="400">
+                    <Text as="h3" variant="headingSm">
+                      Route Stops ({stops.length})
+                    </Text>
+                    {stops.map((stop) => (
+                      <Card key={stop.id}>
+                        <BlockStack gap="100">
+                          <InlineStack align="space-between">
+                            <Text
+                              as="span"
+                              variant="bodySm"
+                              fontWeight="semibold"
+                              tone="subdued"
+                            >
+                              Stop {stop.stopNumber}
+                            </Text>
+                            <Badge
+                              tone={STOP_STATUS_BADGE_TONE[stop.status]}
+                              size="small"
+                            >
+                              {stop.status}
+                            </Badge>
+                          </InlineStack>
+                          <Text as="span" variant="bodyMd" fontWeight="medium">
+                            {stop.customerName}
+                          </Text>
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            {stop.address}
+                          </Text>
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            {stop.timeWindow}
+                          </Text>
+                        </BlockStack>
+                      </Card>
+                    ))}
+                  </BlockStack>
+                </Card>
+              )}
+            </BlockStack>
+          </Layout.Section>
 
-          {/* Stops List Card */}
-          {stops.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Route Stops ({stops.length})</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {stops.map((stop) => (
-                  <div key={stop.id} style={stopCardStyle}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--p-color-text-subdued, #6d7175)" }}>
-                          Stop {stop.stopNumber}
-                        </div>
-                        <div style={{ fontSize: 13, fontWeight: 500, marginTop: 4 }}>
-                          {stop.customerName}
-                        </div>
-                        <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
-                          {stop.address}
-                        </div>
-                        <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
-                          {stop.timeWindow}
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          ...smallBadgeStyle,
-                          backgroundColor:
-                            stop.status === "COMPLETED"
-                              ? "#2d7d2d"
-                              : stop.status === "PENDING"
-                              ? "#f5a623"
-                              : stop.status === "SKIPPED"
-                              ? "#6d7175"
-                              : "#d72c0d",
-                        }}
-                      >
-                        {stop.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          {/* Right Column */}
+          <Layout.Section variant="oneThird">
+            <BlockStack gap="400">
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Actions
+                  </Text>
+                  <Button variant="primary" fullWidth>
+                    Optimize Route
+                  </Button>
+                  <Button fullWidth>Reassign Driver</Button>
+                  <Button fullWidth>Export Route</Button>
+                </BlockStack>
+              </Card>
 
-        {/* Right Column */}
-        <div style={rightColStyle}>
-          {/* Actions Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Actions</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <button style={primaryButtonStyle}>
-                Optimize Route
-              </button>
-              <button style={secondaryButtonStyle}>
-                Reassign Driver
-              </button>
-              <button style={secondaryButtonStyle}>
-                Export Route
-              </button>
-            </div>
-          </div>
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Route Visualization
+                  </Text>
+                  <Box
+                    background="bg-surface-secondary"
+                    padding="800"
+                    borderRadius="200"
+                  >
+                    <BlockStack gap="200" inlineAlign="center">
+                      <Text as="p" variant="bodyMd" tone="subdued">
+                        Map: {route.totalStops} stops route for {route.date}
+                      </Text>
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        {pendingStops} stops remaining
+                      </Text>
+                    </BlockStack>
+                  </Box>
+                </BlockStack>
+              </Card>
 
-          {/* Map Placeholder Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Route Visualization</h3>
-            <div style={mapPlaceholderStyle}>
-              <div style={{ color: "var(--p-color-text-subdued, #6d7175)", fontSize: 14 }}>
-                Map: {route.totalStops} stops route for {route.date}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 8 }}>
-                {pendingStops} stops remaining
-              </div>
-            </div>
-          </div>
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Summary
+                  </Text>
+                  <BlockStack gap="200">
+                    <InlineStack align="space-between">
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Progress
+                      </Text>
+                      <Text as="span" variant="bodyMd" fontWeight="semibold">
+                        {progressPercent}%
+                      </Text>
+                    </InlineStack>
+                    <ProgressBar progress={progressPercent} size="small" />
+                  </BlockStack>
+                  <Divider />
+                  <BlockStack gap="200">
+                    <InlineStack align="space-between">
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Completed
+                      </Text>
+                      <Text as="span" variant="bodyMd" tone="success">
+                        {route.completedStops}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack align="space-between">
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Remaining
+                      </Text>
+                      <Text as="span" variant="bodyMd" tone="caution">
+                        {pendingStops}
+                      </Text>
+                    </InlineStack>
+                  </BlockStack>
+                </BlockStack>
+              </Card>
 
-          {/* Route Summary Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Summary</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                <span style={labelStyle}>Progress</span>
-                <span style={valueStyle}>
-                  {Math.round((route.completedStops / route.totalStops) * 100)}%
-                </span>
-              </div>
-              <div
-                style={{
-                  width: "100%",
-                  height: 8,
-                  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-                  borderRadius: 4,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${(route.completedStops / route.totalStops) * 100}%`,
-                    backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                  <span style={labelStyle}>Completed</span>
-                  <span style={{ ...valueStyle, color: "#2d7d2d" }}>{route.completedStops}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                  <span style={labelStyle}>Remaining</span>
-                  <span style={{ ...valueStyle, color: "#f5a623" }}>{pendingStops}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline Card */}
-          {timeline.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Timeline</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {timeline.map((event, idx) => (
-                  <div key={event.id} style={{ display: "flex", gap: 8 }}>
-                    <div style={{ position: "relative" }}>
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-                          borderRadius: "50%",
-                          marginTop: 5,
-                        }}
-                      />
-                      {idx < timeline.length - 1 && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: 3,
-                            top: 16,
-                            width: 2,
-                            height: 40,
-                            backgroundColor: "var(--p-color-border-subdued, #e1e3e5)",
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, color: "var(--p-color-text, #202223)" }}>
-                        {event.message}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
-                        {new Date(event.timestamp).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+              {timeline.length > 0 && (
+                <Card>
+                  <BlockStack gap="300">
+                    <Text as="h3" variant="headingSm">
+                      Timeline
+                    </Text>
+                    {timeline.map((event) => (
+                      <BlockStack key={event.id} gap="050">
+                        <Text as="span" variant="bodyMd">
+                          {event.message}
+                        </Text>
+                        <Text as="span" variant="bodySm" tone="subdued">
+                          {new Date(event.timestamp).toLocaleTimeString(
+                            "en-US",
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}
+                        </Text>
+                      </BlockStack>
+                    ))}
+                  </BlockStack>
+                </Card>
+              )}
+            </BlockStack>
+          </Layout.Section>
+        </Layout>
+      </BlockStack>
+    </Page>
   );
 }
 
-// ─── Styles ────────────────────────────────────────────────
+// ─── Sub-components ────────────────────────────────────────
 
-const headerStyle: React.CSSProperties = { padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, color: "var(--p-color-text, #202223)", margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)" };
-const backLinkStyle: React.CSSProperties = { fontSize: 20, color: "var(--p-color-text-subdued, #6d7175)", textDecoration: "none", padding: 4 };
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 12px",
-  fontSize: 12,
-  fontWeight: 500,
-  color: "white",
-  borderRadius: 12,
-};
-
-const smallBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "2px 8px",
-  fontSize: 11,
-  fontWeight: 500,
-  color: "white",
-  borderRadius: 6,
-};
-
-const statsRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, 1fr)",
-  gap: 12,
-  marginBottom: 20,
-};
-
-const statBoxStyle: React.CSSProperties = {
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 8,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  textAlign: "center",
-};
-
-const statLabelStyle: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 500,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-};
-
-const statValueStyle: React.CSSProperties = {
-  fontSize: 18,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  marginTop: 4,
-};
-
-const columnsStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" };
-const leftColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-const rightColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-
-const cardStyle: React.CSSProperties = {
-  padding: 20,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};
-
-const cardTitleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, margin: "0 0 12px", color: "var(--p-color-text, #202223)" };
-
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" };
-const valueStyle: React.CSSProperties = { fontSize: 14, color: "var(--p-color-text, #202223)" };
-
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500 };
-
-const stopCardStyle: React.CSSProperties = {
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  fontSize: 13,
-};
-
-const mapPlaceholderStyle: React.CSSProperties = {
-  width: "100%",
-  height: 200,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  border: "1px dashed var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-  textAlign: "center" as const,
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  cursor: "pointer",
-};
+function StatBox({ label, value }: { label: string; value: string }) {
+  return (
+    <Box
+      background="bg-surface"
+      padding="300"
+      borderRadius="200"
+      borderWidth="025"
+      borderColor="border"
+      minWidth="140px"
+    >
+      <BlockStack gap="100" inlineAlign="center">
+        <Text as="span" variant="bodySm" tone="subdued">
+          {label}
+        </Text>
+        <Text as="span" variant="headingMd" fontWeight="bold">
+          {value}
+        </Text>
+      </BlockStack>
+    </Box>
+  );
+}

@@ -15,7 +15,20 @@
  */
 
 import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link } from "react-router";
+import { useLoaderData, useSearchParams, useNavigate } from "react-router";
+import {
+  Page,
+  Card,
+  Text,
+  IndexTable,
+  TextField,
+  Select,
+  Pagination,
+  InlineStack,
+  BlockStack,
+  Box,
+  Link as PolarisLink,
+} from "@shopify/polaris";
 import { OrderStatusBadge } from "~/components/OrderStatusBadge";
 import { EmptyState } from "~/components/EmptyState";
 import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
@@ -96,6 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function OrdersList() {
   const { orders, meta } = useLoaderData<OrdersPageData>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const currentPage = meta.page;
   const currentSearch = searchParams.get("search") ?? "";
@@ -118,274 +132,189 @@ export default function OrdersList() {
     setSearchParams(next);
   }
 
+  const statusOptions = [
+    { label: "All statuses", value: "" },
+    ...ORDER_STATUSES.map((s) => ({
+      label: s.replace(/_/g, " "),
+      value: s,
+    })),
+  ];
+
+  const resourceName = {
+    singular: "order",
+    plural: "orders",
+  };
+
+  const headings = [
+    { title: "Order" },
+    { title: "Customer" },
+    { title: "Address" },
+    { title: "Status" },
+    { title: "Driver" },
+    { title: "Date" },
+  ];
+
+  const rowMarkup = orders.map((order, index) => (
+    <IndexTable.Row
+      id={order.id}
+      key={order.id}
+      position={index}
+      onClick={() => navigate(`/orders/${order.id}`)}
+    >
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
+          {order.shopifyOrderNumber
+            ? `#${order.shopifyOrderNumber}`
+            : order.id.slice(0, 8)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <BlockStack gap="050">
+          <Text as="span" variant="bodyMd" fontWeight="medium">
+            {order.customerName ?? "\u2014"}
+          </Text>
+          <Text as="span" variant="bodySm" tone="subdued">
+            {order.customerEmail ?? ""}
+          </Text>
+        </BlockStack>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <BlockStack gap="050">
+          <Text as="span" variant="bodyMd">
+            {order.addressLine1 ?? "\u2014"}
+          </Text>
+          <Text as="span" variant="bodySm" tone="subdued">
+            {order.city ?? ""}
+          </Text>
+        </BlockStack>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <OrderStatusBadge status={order.status} />
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {order.driverName ? (
+          <Text as="span" variant="bodyMd">
+            {order.driverName}
+          </Text>
+        ) : (
+          <Text as="span" variant="bodyMd" tone="subdued">
+            Unassigned
+          </Text>
+        )}
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {order.deliveryDate
+            ? new Date(order.deliveryDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
+            : new Date(order.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+        </Text>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Page Header */}
-      <div style={pageHeaderStyle}>
-        <div>
-          <h1 style={headingStyle}>Orders</h1>
-          <p style={subtextStyle}>{meta.total} total orders</p>
-        </div>
-      </div>
+    <Page
+      title="Orders"
+      subtitle={`${meta.total} total orders`}
+    >
+      <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="400">
+            {/* Filters Bar */}
+            <InlineStack gap="300" wrap>
+              <Box minWidth="200px" width="100%" maxWidth="400px">
+                <TextField
+                  label="Search"
+                  labelHidden
+                  placeholder="Search orders..."
+                  value={currentSearch}
+                  onChange={(value) => updateFilter("search", value)}
+                  autoComplete="off"
+                  clearButton
+                  onClearButtonClick={() => updateFilter("search", "")}
+                />
+              </Box>
+              <Box minWidth="160px">
+                <Select
+                  label="Status"
+                  labelHidden
+                  options={statusOptions}
+                  value={currentStatus}
+                  onChange={(value) => updateFilter("status", value)}
+                />
+              </Box>
+              <Box minWidth="160px">
+                <TextField
+                  label="From date"
+                  labelHidden
+                  type="date"
+                  value={searchParams.get("dateFrom") ?? ""}
+                  onChange={(value) => updateFilter("dateFrom", value)}
+                  autoComplete="off"
+                />
+              </Box>
+              <Box minWidth="160px">
+                <TextField
+                  label="To date"
+                  labelHidden
+                  type="date"
+                  value={searchParams.get("dateTo") ?? ""}
+                  onChange={(value) => updateFilter("dateTo", value)}
+                  autoComplete="off"
+                />
+              </Box>
+            </InlineStack>
 
-      {/* Filters Bar */}
-      <div style={filtersBarStyle}>
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search orders..."
-          value={currentSearch}
-          onChange={(e) => updateFilter("search", e.target.value)}
-          style={searchInputStyle}
-        />
+            {/* Orders Table */}
+            {orders.length === 0 ? (
+              <EmptyState
+                title="No orders found"
+                description={
+                  currentSearch || currentStatus
+                    ? "Try adjusting your filters to find what you're looking for."
+                    : "Orders will appear here when they're created from Shopify or the API."
+                }
+                actionLabel={currentSearch || currentStatus ? "Clear filters" : undefined}
+                onAction={
+                  currentSearch || currentStatus
+                    ? () => setSearchParams(new URLSearchParams())
+                    : undefined
+                }
+              />
+            ) : (
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={orders.length}
+                headings={headings}
+                selectable={false}
+              >
+                {rowMarkup}
+              </IndexTable>
+            )}
+          </BlockStack>
+        </Card>
 
-        {/* Status Filter */}
-        <select
-          value={currentStatus}
-          onChange={(e) => updateFilter("status", e.target.value)}
-          style={selectStyle}
-        >
-          <option value="">All statuses</option>
-          {ORDER_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-
-        {/* Date filters */}
-        <input
-          type="date"
-          value={searchParams.get("dateFrom") ?? ""}
-          onChange={(e) => updateFilter("dateFrom", e.target.value)}
-          style={selectStyle}
-          placeholder="From date"
-        />
-        <input
-          type="date"
-          value={searchParams.get("dateTo") ?? ""}
-          onChange={(e) => updateFilter("dateTo", e.target.value)}
-          style={selectStyle}
-          placeholder="To date"
-        />
-      </div>
-
-      {/* Orders Table */}
-      {orders.length === 0 ? (
-        <EmptyState
-          title="No orders found"
-          description={
-            currentSearch || currentStatus
-              ? "Try adjusting your filters to find what you're looking for."
-              : "Orders will appear here when they're created from Shopify or the API."
-          }
-          actionLabel={currentSearch || currentStatus ? "Clear filters" : undefined}
-          onAction={
-            currentSearch || currentStatus
-              ? () => setSearchParams(new URLSearchParams())
-              : undefined
-          }
-        />
-      ) : (
-        <>
-          <div style={tableContainerStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Order</th>
-                  <th style={thStyle}>Customer</th>
-                  <th style={thStyle}>Address</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Driver</th>
-                  <th style={thStyle}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} style={trStyle}>
-                    <td style={tdStyle}>
-                      <Link to={`/orders/${order.id}`} style={orderLinkStyle}>
-                        {order.shopifyOrderNumber
-                          ? `#${order.shopifyOrderNumber}`
-                          : order.id.slice(0, 8)}
-                      </Link>
-                    </td>
-                    <td style={tdStyle}>
-                      <div style={{ fontWeight: 500 }}>
-                        {order.customerName ?? "—"}
-                      </div>
-                      <div style={cellSubtext}>
-                        {order.customerEmail ?? ""}
-                      </div>
-                    </td>
-                    <td style={tdStyle}>
-                      <div>{order.addressLine1 ?? "—"}</div>
-                      <div style={cellSubtext}>{order.city ?? ""}</div>
-                    </td>
-                    <td style={tdStyle}>
-                      <OrderStatusBadge status={order.status} />
-                    </td>
-                    <td style={tdStyle}>
-                      {order.driverName ?? (
-                        <span style={cellSubtext}>Unassigned</span>
-                      )}
-                    </td>
-                    <td style={tdStyle}>
-                      {order.deliveryDate
-                        ? new Date(order.deliveryDate).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric" },
-                          )
-                        : new Date(order.createdAt).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric" },
-                          )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div style={paginationStyle}>
-            <span style={subtextStyle}>
+        {/* Pagination */}
+        {orders.length > 0 && (
+          <InlineStack align="space-between" blockAlign="center">
+            <Text as="span" variant="bodySm" tone="subdued">
               Page {currentPage} of {meta.totalPages} ({meta.total} orders)
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage <= 1}
-                style={paginationButtonStyle}
-                type="button"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage >= meta.totalPages}
-                style={paginationButtonStyle}
-                type="button"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+            </Text>
+            <Pagination
+              hasPrevious={currentPage > 1}
+              hasNext={currentPage < meta.totalPages}
+              onPrevious={() => goToPage(currentPage - 1)}
+              onNext={() => goToPage(currentPage + 1)}
+            />
+          </InlineStack>
+        )}
+      </BlockStack>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const pageHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "24px 0 16px",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "4px 0 0",
-};
-
-const filtersBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 12,
-  marginBottom: 16,
-  flexWrap: "wrap",
-};
-
-const searchInputStyle: React.CSSProperties = {
-  flex: "1 1 200px",
-  padding: "8px 12px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  outline: "none",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-};
-
-const selectStyle: React.CSSProperties = {
-  padding: "8px 12px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  outline: "none",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  cursor: "pointer",
-};
-
-const tableContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  overflow: "hidden",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 14,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "top",
-};
-
-const orderLinkStyle: React.CSSProperties = {
-  color: "var(--p-color-text-primary, #005bd3)",
-  fontWeight: 600,
-  textDecoration: "none",
-};
-
-const cellSubtext: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  marginTop: 2,
-};
-
-const paginationStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "16px 0",
-};
-
-const paginationButtonStyle: React.CSSProperties = {
-  padding: "6px 14px",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  cursor: "pointer",
-};
