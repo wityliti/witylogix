@@ -19,182 +19,68 @@ import {
   AlertTriangle,
   CheckCircle,
   TrendingDown,
-  Filter,
-  Plus,
-  Edit2,
-  Trash2,
   ArrowUpRight,
   ArrowDownLeft,
+  Plus,
 } from "lucide-react";
 
-interface Product {
+interface InventoryItem {
   id: string;
   sku: string;
   name: string;
-  warehouse: string;
+  locationId: string;
   quantity: number;
   reorderPoint: number;
-  status: "in-stock" | "low" | "out-of-stock";
-}
-
-interface StockMovement {
-  id: string;
-  sku: string;
-  type: "in" | "out";
-  quantity: number;
-  reason: string;
-  date: string;
+  status: "in-stock" | "low-stock" | "out-of-stock";
+  recentMovements?: Array<{
+    itemId: string;
+    type: "RECEIVE" | "SHIP" | "ADJUST" | "TRANSFER";
+    quantity: number;
+    reference: string | null;
+    createdAt: string;
+  }>;
 }
 
 export default function InventoryPage() {
+  const { items, loading, error, refetch } = useApiList<InventoryItem>('/api/v4/inventory');
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      sku: "SKU-001",
-      name: "Wireless Headphones",
-      warehouse: "Main",
-      quantity: 120,
-      reorderPoint: 30,
-      status: "in-stock",
-    },
-    {
-      id: "2",
-      sku: "SKU-002",
-      name: "USB-C Cable",
-      warehouse: "Main",
-      quantity: 15,
-      reorderPoint: 50,
-      status: "low",
-    },
-    {
-      id: "3",
-      sku: "SKU-003",
-      name: "Phone Case",
-      warehouse: "Secondary",
-      quantity: 0,
-      reorderPoint: 20,
-      status: "out-of-stock",
-    },
-    {
-      id: "4",
-      sku: "SKU-004",
-      name: "Screen Protector",
-      warehouse: "Main",
-      quantity: 250,
-      reorderPoint: 50,
-      status: "in-stock",
-    },
-    {
-      id: "5",
-      sku: "SKU-005",
-      name: "Power Bank",
-      warehouse: "Secondary",
-      quantity: 8,
-      reorderPoint: 15,
-      status: "low",
-    },
-    {
-      id: "6",
-      sku: "SKU-006",
-      name: "Charging Stand",
-      warehouse: "Main",
-      quantity: 45,
-      reorderPoint: 20,
-      status: "in-stock",
-    },
-  ]);
-
-  const [movements, setMovements] = useState<StockMovement[]>([
-    {
-      id: "MOV-001",
-      sku: "SKU-001",
-      type: "in",
-      quantity: 50,
-      reason: "Supplier delivery",
-      date: "2026-03-05",
-    },
-    {
-      id: "MOV-002",
-      sku: "SKU-002",
-      type: "out",
-      quantity: 5,
-      reason: "Customer order #12345",
-      date: "2026-03-05",
-    },
-    {
-      id: "MOV-003",
-      sku: "SKU-004",
-      type: "in",
-      quantity: 100,
-      reason: "Stock adjustment",
-      date: "2026-03-04",
-    },
-    {
-      id: "MOV-004",
-      sku: "SKU-005",
-      type: "out",
-      quantity: 2,
-      reason: "Customer order #12346",
-      date: "2026-03-04",
-    },
-  ]);
-
-  const lowStockAlerts = products.filter((p) => p.status === "low" || p.status === "out-of-stock");
-  const warehouses = [...new Set(products.map((p) => p.warehouse)), "all"];
-
-  const filteredProducts = products.filter((p) => {
-    const warehouseMatch = selectedWarehouse === "all" || p.warehouse === selectedWarehouse;
-    const statusMatch = selectedStatus === "all" || p.status === selectedStatus;
-  const { items: data, loading, error, refetch, pagination } = useApiList<InventoryItem>('/api/v4/inventory');
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
+  const warehouses = [...new Set(items.map((p) => p.locationId).filter(Boolean))];
+
+  const filteredItems = items.filter((p) => {
+    const warehouseMatch = selectedWarehouse === "all" || p.locationId === selectedWarehouse;
+    const statusMatch = selectedStatus === "all" || p.status === selectedStatus;
     return warehouseMatch && statusMatch;
   });
 
+  const lowStockAlerts = items.filter((p) => p.status === "low-stock" || p.status === "out-of-stock");
+  const outOfStockCount = items.filter((p) => p.status === "out-of-stock").length;
+  const lowStockCount = items.filter((p) => p.status === "low-stock").length;
+  const totalQuantity = items.reduce((sum, p) => sum + p.quantity, 0);
+
+  const movements = items.flatMap((item) =>
+    (item.recentMovements ?? []).map((m) => ({
+      id: `${item.id}-${m.createdAt}`,
+      sku: item.sku,
+      type: m.type === "SHIP" ? ("out" as const) : ("in" as const),
+      quantity: m.quantity,
+      reason: m.reference ?? m.type,
+      date: new Date(m.createdAt).toLocaleDateString(),
+    }))
+  ).slice(0, 20);
+
   const getStatusBadge = (status: string) => {
-    const styles = {
+    const styles: Record<string, { backgroundColor: string; color: string }> = {
       "in-stock": { backgroundColor: "#22c55e", color: "#fff" },
-      low: { backgroundColor: "#eab308", color: "#000" },
+      "low-stock": { backgroundColor: "#eab308", color: "#000" },
       "out-of-stock": { backgroundColor: "#ef4444", color: "#fff" },
     };
-    return styles[status as keyof typeof styles] || styles["in-stock"];
+    return styles[status] ?? styles["in-stock"];
   };
-
-  const handleAdjustQuantity = (productId: string, newQuantity: number) => {
-    setProducts(
-      products.map((p) => {
-        if (p.id === productId) {
-          let status: "in-stock" | "low" | "out-of-stock" = "in-stock";
-          if (newQuantity === 0) status = "out-of-stock";
-          else if (newQuantity <= p.reorderPoint) status = "low";
-          return { ...p, quantity: newQuantity, status };
-        }
-        return p;
-      })
-    );
-  };
-
-  const handleTransfer = (productId: string, fromWarehouse: string, toWarehouse: string, qty: number) => {
-    setProducts(
-      products.map((p) => {
-        if (p.id === productId && p.warehouse === fromWarehouse) {
-          return { ...p, quantity: Math.max(0, p.quantity - qty) };
-        }
-        if (p.sku.includes(products.find((pr) => pr.id === productId)?.sku.split("-")[1] || "") && p.warehouse === toWarehouse) {
-          return { ...p, quantity: p.quantity + qty };
-        }
-        return p;
-      })
-    );
-  };
-
-  const totalInventoryValue = products.reduce((sum, p) => sum + p.quantity, 0);
-  const outOfStockCount = products.filter((p) => p.status === "out-of-stock").length;
-  const lowStockCount = products.filter((p) => p.status === "low").length;
 
   return (
     <div className={cn("min-h-screen bg-[#0a0a0f] p-6")}>
@@ -220,9 +106,9 @@ export default function InventoryPage() {
           <Card className={cn("bg-[#12121a] border border-[#1e1e2e]")}>
             <CardContent className={cn("p-5 flex items-center justify-between")}>
               <div>
-                <p className={cn("text-gray-400 text-xs font-medium")}>Total Items</p>
+                <p className={cn("text-gray-400 text-xs font-medium")}>Total Quantity</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>
-                  {totalInventoryValue}
+                  {totalQuantity}
                 </p>
               </div>
               <Package size={32} className={cn("text-blue-500 opacity-70")} />
@@ -258,7 +144,7 @@ export default function InventoryPage() {
               <div>
                 <p className={cn("text-gray-400 text-xs font-medium")}>Total SKUs</p>
                 <p className={cn("text-white text-2xl font-bold mt-1")}>
-                  {products.length}
+                  {items.length}
                 </p>
               </div>
               <CheckCircle size={32} className="text-emerald-500 opacity-70" />
@@ -278,10 +164,9 @@ export default function InventoryPage() {
                     onChange={(e) => setSelectedWarehouse(e.target.value)}
                     className={cn("px-2.5 py-1.5 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-xs cursor-pointer")}
                   >
+                    <option value="all">All Locations</option>
                     {warehouses.map((w) => (
-                      <option key={w} value={w}>
-                        {w === "all" ? "All Warehouses" : w}
-                      </option>
+                      <option key={w} value={w}>{w}</option>
                     ))}
                   </select>
 
@@ -292,7 +177,7 @@ export default function InventoryPage() {
                   >
                     <option value="all">All Status</option>
                     <option value="in-stock">In Stock</option>
-                    <option value="low">Low Stock</option>
+                    <option value="low-stock">Low Stock</option>
                     <option value="out-of-stock">Out of Stock</option>
                   </select>
                 </div>
@@ -303,70 +188,37 @@ export default function InventoryPage() {
                 <table className={cn("w-full border-collapse")}>
                   <thead>
                     <tr className={cn("border-b-2 border-[#1e1e2e]")}>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                        SKU
-                      </th>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                        Product Name
-                      </th>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                        Warehouse
-                      </th>
-                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>
-                        Quantity
-                      </th>
-                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>
-                        Reorder Point
-                      </th>
-                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                        Status
-                      </th>
-                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>
-                        Actions
-                      </th>
+                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
+                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Product Name</th>
+                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Location</th>
+                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Quantity</th>
+                      <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Reorder Point</th>
+                      <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className={cn("border-b border-[#1e1e2e]")}>
-                        <td className={cn("p-3 text-white text-xs font-medium font-mono")}>
-                          {product.sku}
-                        </td>
-                        <td className={cn("p-3 text-white text-sm")}>
-                          {product.name}
-                        </td>
-                        <td className={cn("p-3 text-gray-400 text-xs")}>
-                          {product.warehouse}
-                        </td>
-                        <td className={cn("p-3 text-white text-sm text-center font-semibold")}>
-                          {product.quantity}
-                        </td>
-                        <td className={cn("p-3 text-gray-400 text-xs text-center")}>
-                          {product.reorderPoint}
-                        </td>
-                        <td className={cn("p-3")}>
-                          <Badge style={getStatusBadge(product.status)} className="px-2 py-1 text-xs font-semibold">
-                            {product.status.replace("-", " ").toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className={cn("p-3 text-center")}>
-                          <div className={cn("flex gap-1.5 justify-center")}>
-                            <button
-                              onClick={() => handleAdjustQuantity(product.id, product.quantity + 10)}
-                              className={cn("px-2 py-1 bg-transparent border border-wl-primary rounded text-wl-primary cursor-pointer text-xs font-medium")}
-                            >
-                              +
-                            </button>
-                            <button
-                              onClick={() => handleAdjustQuantity(product.id, Math.max(0, product.quantity - 10))}
-                              className={cn("px-2 py-1 bg-transparent border border-wl-primary rounded text-wl-primary cursor-pointer text-xs font-medium")}
-                            >
-                              -
-                            </button>
-                          </div>
+                    {filteredItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className={cn("p-6 text-center text-gray-400 text-sm")}>
+                          No inventory items found
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredItems.map((item) => (
+                        <tr key={item.id} className={cn("border-b border-[#1e1e2e]")}>
+                          <td className={cn("p-3 text-white text-xs font-medium font-mono")}>{item.sku}</td>
+                          <td className={cn("p-3 text-white text-sm")}>{item.name}</td>
+                          <td className={cn("p-3 text-gray-400 text-xs")}>{item.locationId}</td>
+                          <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{item.quantity}</td>
+                          <td className={cn("p-3 text-gray-400 text-xs text-center")}>{item.reorderPoint}</td>
+                          <td className={cn("p-3")}>
+                            <Badge style={getStatusBadge(item.status)} className="px-2 py-1 text-xs font-semibold">
+                              {item.status.replace(/-/g, " ").toUpperCase()}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -384,20 +236,13 @@ export default function InventoryPage() {
                   All items well stocked
                 </p>
               ) : (
-                lowStockAlerts.map((product) => (
-                  <div
-                    key={product.id}
-                    className={cn("p-3 bg-[#1a1a2e] rounded border border-[#1e1e2e]")}
-                  >
+                lowStockAlerts.map((item) => (
+                  <div key={item.id} className={cn("p-3 bg-[#1a1a2e] rounded border border-[#1e1e2e]")}>
                     <div className={cn("flex items-start gap-2 mb-1.5")}>
                       <AlertTriangle size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className={cn("text-white text-xs font-medium")}>
-                          {product.name}
-                        </p>
-                        <p className={cn("text-gray-400 text-xs")}>
-                          {product.quantity} / {product.reorderPoint}
-                        </p>
+                        <p className={cn("text-white text-xs font-medium")}>{item.name}</p>
+                        <p className={cn("text-gray-400 text-xs")}>{item.quantity} / {item.reorderPoint}</p>
                       </div>
                     </div>
                     <Button variant="primary" size="sm" className={cn("w-full")}>
@@ -421,61 +266,45 @@ export default function InventoryPage() {
               <table className={cn("w-full border-collapse")}>
                 <thead>
                   <tr className={cn("border-b-2 border-[#1e1e2e]")}>
-                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                      ID
-                    </th>
-                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                      SKU
-                    </th>
-                    <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>
-                      Type
-                    </th>
-                    <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>
-                      Quantity
-                    </th>
-                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                      Reason
-                    </th>
-                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>
-                      Date
-                    </th>
+                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>SKU</th>
+                    <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Type</th>
+                    <th className={cn("p-3 text-center text-gray-400 text-xs font-semibold")}>Quantity</th>
+                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Reference</th>
+                    <th className={cn("p-3 text-left text-gray-400 text-xs font-semibold")}>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {movements.map((movement) => (
-                    <tr key={movement.id} className={cn("border-b border-[#1e1e2e]")}>
-                      <td className={cn("p-3 text-white text-xs font-medium font-mono")}>
-                        {movement.id}
-                      </td>
-                      <td className={cn("p-3 text-white text-xs font-medium font-mono")}>
-                        {movement.sku}
-                      </td>
-                      <td className={cn("p-3 text-center")}>
-                        <div className={cn("flex items-center justify-center gap-1")}>
-                          {movement.type === "in" ? (
-                            <>
-                              <ArrowDownLeft size={14} className="text-emerald-500" />
-                              <span className="text-emerald-500 text-xs font-semibold">IN</span>
-                            </>
-                          ) : (
-                            <>
-                              <ArrowUpRight size={14} className="text-red-500" />
-                              <span className="text-red-500 text-xs font-semibold">OUT</span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td className={cn("p-3 text-white text-sm text-center font-semibold")}>
-                        {movement.quantity}
-                      </td>
-                      <td className={cn("p-3 text-gray-400 text-xs")}>
-                        {movement.reason}
-                      </td>
-                      <td className={cn("p-3 text-gray-400 text-xs")}>
-                        {movement.date}
+                  {movements.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className={cn("p-6 text-center text-gray-400 text-sm")}>
+                        No recent movements
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    movements.map((movement) => (
+                      <tr key={movement.id} className={cn("border-b border-[#1e1e2e]")}>
+                        <td className={cn("p-3 text-white text-xs font-medium font-mono")}>{movement.sku}</td>
+                        <td className={cn("p-3 text-center")}>
+                          <div className={cn("flex items-center justify-center gap-1")}>
+                            {movement.type === "in" ? (
+                              <>
+                                <ArrowDownLeft size={14} className="text-emerald-500" />
+                                <span className="text-emerald-500 text-xs font-semibold">IN</span>
+                              </>
+                            ) : (
+                              <>
+                                <ArrowUpRight size={14} className="text-red-500" />
+                                <span className="text-red-500 text-xs font-semibold">OUT</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                        <td className={cn("p-3 text-white text-sm text-center font-semibold")}>{movement.quantity}</td>
+                        <td className={cn("p-3 text-gray-400 text-xs")}>{movement.reason}</td>
+                        <td className={cn("p-3 text-gray-400 text-xs")}>{movement.date}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

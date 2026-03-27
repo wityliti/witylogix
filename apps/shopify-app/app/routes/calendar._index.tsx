@@ -14,7 +14,20 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams } from "react-router";
-import { EmptyState } from "~/components/EmptyState";
+import {
+  Page,
+  Card,
+  Text,
+  Badge,
+  Button,
+  ButtonGroup,
+  InlineStack,
+  BlockStack,
+  InlineGrid,
+  Box,
+  Divider,
+  EmptyState as PolarisEmptyState,
+} from "@shopify/polaris";
 import { createApiClient } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -139,6 +152,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
+// ─── Helpers ───────────────────────────────────────────────
+
+const RULE_TYPE_BADGE_TONE: Record<string, "critical" | "info" | "warning" | "success"> = {
+  BLACKOUT: "critical",
+  CAPACITY: "info",
+  HOLIDAY: "warning",
+  SPECIAL: "success",
+};
+
+function getRuleTypeLabel(type: string): string {
+  return type.charAt(0) + type.slice(1).toLowerCase();
+}
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function Calendar() {
@@ -172,453 +198,230 @@ export default function Calendar() {
     return blackoutDates.includes(dateStr);
   };
 
-  const getRuleTypeBadgeStyle = (
-    type: string,
-  ): React.CSSProperties => {
-    const styles: Record<string, React.CSSProperties> = {
-      BLACKOUT: {
-        backgroundColor: "var(--p-color-critical, #d02c2c)",
-        color: "white",
-      },
-      CAPACITY: {
-        backgroundColor: "var(--p-color-action, #0971f1)",
-        color: "white",
-      },
-      HOLIDAY: {
-        backgroundColor: "var(--p-color-warning, #f59e0b)",
-        color: "white",
-      },
-      SPECIAL: {
-        backgroundColor: "var(--p-color-success, #16a34a)",
-        color: "white",
-      },
-    };
-    return styles[type] || styles.BLACKOUT;
-  };
-
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Page Header */}
-      <div style={pageHeaderStyle}>
-        <div>
-          <h1 style={headingStyle}>Calendar & Availability</h1>
-          <p style={subtextStyle}>Manage blackout dates and delivery rules</p>
-        </div>
-        <a href="/calendar/new" style={addRuleButtonStyle}>
-          + Add Rule
-        </a>
-      </div>
+    <Page
+      title="Calendar & Availability"
+      subtitle="Manage blackout dates and delivery rules"
+      primaryAction={{ content: "Add Rule", url: "/calendar/new" }}
+    >
+      <BlockStack gap="600">
+        {/* Calendar Section */}
+        <Card>
+          <BlockStack gap="400">
+            {/* Month Navigation */}
+            <InlineStack align="space-between" blockAlign="center">
+              <Button size="slim">
+                Prev
+              </Button>
+              <Text as="h2" variant="headingMd" fontWeight="semibold">
+                {monthName} {currentYear}
+              </Text>
+              <Button size="slim">
+                Next
+              </Button>
+            </InlineStack>
 
-      {/* Calendar Section */}
-      <div style={calendarContainerStyle}>
-        {/* Month Navigation */}
-        <div style={monthNavigationStyle}>
-          <button style={navButtonStyle} type="button">
-            ← Prev
-          </button>
-          <h2 style={monthTitleStyle}>
-            {monthName} {currentYear}
-          </h2>
-          <button style={navButtonStyle} type="button">
-            Next →
-          </button>
-        </div>
-
-        {/* Calendar Grid */}
-        <div style={calendarGridStyle}>
-          {/* Weekday headers */}
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div key={day} style={weekdayHeaderStyle}>
-              {day}
-            </div>
-          ))}
-
-          {/* Calendar days */}
-          {daysArray.map((day, idx) => (
-            <div
-              key={idx}
-              style={{
-                ...calendarDayStyle,
-                ...(day === null ? { visibility: "hidden" } : {}),
-                ...(isBlackoutDate(day)
-                  ? blackoutDayStyle
-                  : {}),
-              }}
+            {/* Calendar Grid */}
+            <Box
+              background="bg-surface-secondary"
+              padding="050"
+              borderRadius="200"
             >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar Legend */}
-        <div style={legendStyle}>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div
                 style={{
-                  width: 16,
-                  height: 16,
-                  backgroundColor: "var(--p-color-critical, #d02c2c)",
-                  borderRadius: 4,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  gap: 2,
                 }}
-              />
-              <span style={legendLabelStyle}>Blackout</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 16,
-                  height: 16,
-                  backgroundColor: "var(--p-color-action, #0971f1)",
-                  borderRadius: 4,
-                }}
-              />
-              <span style={legendLabelStyle}>Capacity</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 16,
-                  height: 16,
-                  backgroundColor: "var(--p-color-warning, #f59e0b)",
-                  borderRadius: 4,
-                }}
-              />
-              <span style={legendLabelStyle}>Holiday</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 16,
-                  height: 16,
-                  backgroundColor: "var(--p-color-success, #16a34a)",
-                  borderRadius: 4,
-                }}
-              />
-              <span style={legendLabelStyle}>Special</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rules Section */}
-      <div style={rulesContainerStyle}>
-        <h2 style={sectionHeadingStyle}>Calendar Rules</h2>
-
-        {rules.length === 0 ? (
-          <EmptyState
-            title="No calendar rules"
-            description="Create rules to manage blackout dates, capacity limits, holidays, and special delivery windows."
-            actionLabel="Add First Rule"
-            actionUrl="/calendar/new"
-          />
-        ) : (
-          <div style={rulesListStyle}>
-            {rules.map((rule) => (
-              <div key={rule.id} style={ruleItemStyle}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
-                  <div
-                    style={{
-                      ...ruleBadgeStyle,
-                      ...getRuleTypeBadgeStyle(rule.type),
-                    }}
+              >
+                {/* Weekday headers */}
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                  <Box
+                    key={day}
+                    background="bg-surface"
+                    padding="300"
                   >
-                    {rule.type.charAt(0) + rule.type.slice(1).toLowerCase()}
-                  </div>
+                    <Text as="p" variant="bodySm" fontWeight="semibold" tone="subdued" alignment="center">
+                      {day}
+                    </Text>
+                  </Box>
+                ))}
 
-                  <div style={{ flex: 1 }}>
-                    <h3 style={ruleNameStyle}>{rule.name}</h3>
-                    {rule.description && (
-                      <p style={ruleDescriptionStyle}>{rule.description}</p>
+                {/* Calendar days */}
+                {daysArray.map((day, idx) => (
+                  <Box
+                    key={idx}
+                    background={isBlackoutDate(day) ? "bg-surface-critical" : "bg-surface"}
+                    padding="300"
+                    minHeight="60px"
+                  >
+                    {day !== null && (
+                      <Text
+                        as="p"
+                        variant="bodyMd"
+                        fontWeight={isBlackoutDate(day) ? "bold" : "medium"}
+                        tone={isBlackoutDate(day) ? "critical" : undefined}
+                        alignment="center"
+                      >
+                        {day}
+                      </Text>
                     )}
-
-                    <div style={ruleMetaStyle}>
-                      <span style={ruleMetaItemStyle}>
-                        📅{" "}
-                        {new Date(rule.startDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                        {rule.startDate !== rule.endDate && (
-                          <>
-                            {" "}
-                            to{" "}
-                            {new Date(rule.endDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </>
-                        )}
-                      </span>
-
-                      {rule.recurrence && rule.recurrence !== "ONCE" && (
-                        <span style={ruleMetaItemStyle}>
-                          🔄 {rule.recurrence.toLowerCase()}
-                        </span>
-                      )}
-
-                      {rule.affectedZones.length > 0 && (
-                        <span style={ruleMetaItemStyle}>
-                          📍 {rule.affectedZones.length} zone
-                          {rule.affectedZones.length > 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
-
-                    {rule.affectedZones.length > 0 && (
-                      <div style={affectedZonesStyle}>
-                        {rule.affectedZones.map((zone) => (
-                          <span key={zone.zoneId} style={zoneTagStyle}>
-                            {zone.zoneName}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div style={ruleActionsStyle}>
-                  <button
-                    style={ruleActionButtonStyle}
-                    title="Edit rule"
-                    type="button"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    style={ruleActionButtonStyle}
-                    title="Delete rule"
-                    type="button"
-                  >
-                    🗑️
-                  </button>
-                </div>
+                  </Box>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+            </Box>
+
+            {/* Legend */}
+            <Divider />
+            <InlineStack gap="400" wrap>
+              <InlineStack gap="200" blockAlign="center">
+                <Box
+                  background="bg-fill-critical"
+                  borderRadius="050"
+                  minHeight="16px"
+                  minWidth="16px"
+                />
+                <Text as="span" variant="bodySm">Blackout</Text>
+              </InlineStack>
+              <InlineStack gap="200" blockAlign="center">
+                <Box
+                  background="bg-fill-info"
+                  borderRadius="050"
+                  minHeight="16px"
+                  minWidth="16px"
+                />
+                <Text as="span" variant="bodySm">Capacity</Text>
+              </InlineStack>
+              <InlineStack gap="200" blockAlign="center">
+                <Box
+                  background="bg-fill-warning"
+                  borderRadius="050"
+                  minHeight="16px"
+                  minWidth="16px"
+                />
+                <Text as="span" variant="bodySm">Holiday</Text>
+              </InlineStack>
+              <InlineStack gap="200" blockAlign="center">
+                <Box
+                  background="bg-fill-success"
+                  borderRadius="050"
+                  minHeight="16px"
+                  minWidth="16px"
+                />
+                <Text as="span" variant="bodySm">Special</Text>
+              </InlineStack>
+            </InlineStack>
+          </BlockStack>
+        </Card>
+
+        {/* Rules Section */}
+        <Card>
+          <BlockStack gap="400">
+            <Text as="h2" variant="headingMd" fontWeight="semibold">
+              Calendar Rules
+            </Text>
+
+            {rules.length === 0 ? (
+              <PolarisEmptyState
+                heading="No calendar rules"
+                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                action={{ content: "Add First Rule", url: "/calendar/new" }}
+              >
+                <p>
+                  Create rules to manage blackout dates, capacity limits, holidays,
+                  and special delivery windows.
+                </p>
+              </PolarisEmptyState>
+            ) : (
+              <BlockStack gap="300">
+                {rules.map((rule) => (
+                  <Box
+                    key={rule.id}
+                    background="bg-surface-secondary"
+                    padding="400"
+                    borderRadius="200"
+                    borderWidth="025"
+                    borderColor="border-secondary"
+                  >
+                    <InlineStack align="space-between" blockAlign="start" wrap={false} gap="400">
+                      <InlineStack gap="300" blockAlign="start" wrap={false}>
+                        <Badge tone={RULE_TYPE_BADGE_TONE[rule.type]}>
+                          {getRuleTypeLabel(rule.type)}
+                        </Badge>
+
+                        <BlockStack gap="200">
+                          <Text as="h3" variant="bodyMd" fontWeight="semibold">
+                            {rule.name}
+                          </Text>
+                          {rule.description && (
+                            <Text as="p" variant="bodySm" tone="subdued">
+                              {rule.description}
+                            </Text>
+                          )}
+
+                          <InlineStack gap="400" wrap>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              {new Date(rule.startDate).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                              {rule.startDate !== rule.endDate && (
+                                <>
+                                  {" to "}
+                                  {new Date(rule.endDate).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </>
+                              )}
+                            </Text>
+
+                            {rule.recurrence && rule.recurrence !== "ONCE" && (
+                              <Text as="span" variant="bodySm" tone="subdued">
+                                Repeats {rule.recurrence.toLowerCase()}
+                              </Text>
+                            )}
+
+                            {rule.affectedZones.length > 0 && (
+                              <Text as="span" variant="bodySm" tone="subdued">
+                                {rule.affectedZones.length} zone
+                                {rule.affectedZones.length > 1 ? "s" : ""}
+                              </Text>
+                            )}
+                          </InlineStack>
+
+                          {rule.affectedZones.length > 0 && (
+                            <InlineStack gap="100" wrap>
+                              {rule.affectedZones.map((zone) => (
+                                <Badge key={zone.zoneId} tone="info">
+                                  {zone.zoneName}
+                                </Badge>
+                              ))}
+                            </InlineStack>
+                          )}
+                        </BlockStack>
+                      </InlineStack>
+
+                      <ButtonGroup>
+                        <Button size="slim" accessibilityLabel="Edit rule">
+                          Edit
+                        </Button>
+                        <Button
+                          size="slim"
+                          tone="critical"
+                          accessibilityLabel="Delete rule"
+                        >
+                          Delete
+                        </Button>
+                      </ButtonGroup>
+                    </InlineStack>
+                  </Box>
+                ))}
+              </BlockStack>
+            )}
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const pageHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "24px 0 16px",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "4px 0 0",
-};
-
-const addRuleButtonStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-block",
-};
-
-const calendarContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-  marginBottom: 32,
-};
-
-const monthNavigationStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 20,
-};
-
-const monthTitleStyle: React.CSSProperties = {
-  fontSize: 18,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const navButtonStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--p-color-text, #202223)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  cursor: "pointer",
-};
-
-const calendarGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(7, 1fr)",
-  gap: 2,
-  marginBottom: 20,
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  padding: 2,
-  borderRadius: 8,
-};
-
-const weekdayHeaderStyle: React.CSSProperties = {
-  padding: 12,
-  textAlign: "center",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-};
-
-const calendarDayStyle: React.CSSProperties = {
-  padding: 12,
-  textAlign: "center",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #202223)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  minHeight: 60,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "default",
-};
-
-const blackoutDayStyle: React.CSSProperties = {
-  backgroundColor: "#fecaca",
-  color: "#7f1d1d",
-  fontWeight: 700,
-};
-
-const legendStyle: React.CSSProperties = {
-  paddingTop: 16,
-  borderTop: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  fontSize: 13,
-};
-
-const legendLabelStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text, #202223)",
-};
-
-const rulesContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-};
-
-const sectionHeadingStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 16px",
-};
-
-const rulesListStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-
-const ruleItemStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  padding: 16,
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 8,
-};
-
-const ruleBadgeStyle: React.CSSProperties = {
-  padding: "4px 8px",
-  fontSize: 11,
-  fontWeight: 600,
-  borderRadius: 4,
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  whiteSpace: "nowrap",
-  minWidth: 70,
-  textAlign: "center",
-};
-
-const ruleNameStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 4px",
-};
-
-const ruleDescriptionStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "0 0 8px",
-};
-
-const ruleMetaStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 16,
-  flexWrap: "wrap",
-  marginBottom: 8,
-};
-
-const ruleMetaItemStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const affectedZonesStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 6,
-  flexWrap: "wrap",
-};
-
-const zoneTagStyle: React.CSSProperties = {
-  padding: "4px 8px",
-  fontSize: 11,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 4,
-  color: "var(--p-color-text, #202223)",
-};
-
-const ruleActionsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
-};
-
-const ruleActionButtonStyle: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  padding: 0,
-  fontSize: 14,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 4,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};

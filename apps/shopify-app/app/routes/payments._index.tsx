@@ -15,8 +15,22 @@
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Form } from "react-router";
-import { useState } from "react";
-import { EmptyState } from "~/components/EmptyState";
+import {
+  Page,
+  Card,
+  IndexTable,
+  Badge,
+  Pagination,
+  Select,
+  TextField,
+  Text,
+  BlockStack,
+  InlineStack,
+  InlineGrid,
+  EmptyState,
+  Box,
+  Button,
+} from "@shopify/polaris";
 import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -129,33 +143,9 @@ export default function PaymentsIndex() {
   const currentEndDate = searchParams.get("endDate") || "";
   const currentPage = parseInt(searchParams.get("page") || "1");
 
-  const handleStatusChange = (status: string) => {
+  const handleFilterChange = (key: string, value: string) => {
     setSearchParams((prev) => {
-      prev.set("status", status);
-      prev.set("page", "1");
-      return prev;
-    });
-  };
-
-  const handleTypeChange = (type: string) => {
-    setSearchParams((prev) => {
-      prev.set("type", type);
-      prev.set("page", "1");
-      return prev;
-    });
-  };
-
-  const handleStartDateChange = (date: string) => {
-    setSearchParams((prev) => {
-      prev.set("startDate", date);
-      prev.set("page", "1");
-      return prev;
-    });
-  };
-
-  const handleEndDateChange = (date: string) => {
-    setSearchParams((prev) => {
-      prev.set("endDate", date);
+      prev.set(key, value);
       prev.set("page", "1");
       return prev;
     });
@@ -168,35 +158,33 @@ export default function PaymentsIndex() {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): "success" | "info" | "warning" | "critical" | undefined => {
     switch (status) {
       case "COMPLETED":
-        return "var(--p-color-bg-fill-success, #22c55e)";
+        return "success";
       case "PROCESSING":
-        return "var(--p-color-bg-fill-info, #3b82f6)";
+        return "info";
       case "PENDING":
-        return "var(--p-color-bg-fill-warning, #f59e0b)";
+        return "warning";
       case "FAILED":
-        return "var(--p-color-bg-fill-critical, #ef4444)";
-      case "REFUNDED":
-        return "#8c9196";
+        return "critical";
       default:
-        return "#8c9196";
+        return undefined;
     }
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeTone = (type: string): "info" | "success" | "critical" | "warning" | undefined => {
     switch (type) {
       case "CHARGE":
-        return "#3b82f6";
+        return "info";
       case "COD_COLLECTION":
-        return "#10b981";
+        return "success";
       case "REFUND":
-        return "#ef4444";
+        return "critical";
       case "ADJUSTMENT":
-        return "#f59e0b";
+        return "warning";
       default:
-        return "#8c9196";
+        return undefined;
     }
   };
 
@@ -204,370 +192,225 @@ export default function PaymentsIndex() {
     return id.length > 12 ? id.substring(0, 12) + "..." : id;
   };
 
+  const statusOptions = [
+    { label: "All Statuses", value: "all" },
+    { label: "Pending", value: "PENDING" },
+    { label: "Processing", value: "PROCESSING" },
+    { label: "Completed", value: "COMPLETED" },
+    { label: "Failed", value: "FAILED" },
+    { label: "Refunded", value: "REFUNDED" },
+  ];
+
+  const typeOptions = [
+    { label: "All Types", value: "all" },
+    { label: "Charge", value: "CHARGE" },
+    { label: "COD Collection", value: "COD_COLLECTION" },
+    { label: "Refund", value: "REFUND" },
+    { label: "Adjustment", value: "ADJUSTMENT" },
+  ];
+
   if (payments.length === 0 && currentStatus === "all") {
     return (
-      <EmptyState
-        title="No payments yet"
-        description="Payment transactions will appear here once you start processing orders."
-      />
+      <Page title="Payments">
+        <Card>
+          <EmptyState
+            heading="No payments yet"
+            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+          >
+            <p>Payment transactions will appear here once you start processing orders.</p>
+          </EmptyState>
+        </Card>
+      </Page>
     );
   }
 
+  const resourceName = {
+    singular: "payment",
+    plural: "payments",
+  };
+
+  const rowMarkup = payments.map((payment, index) => (
+    <IndexTable.Row id={payment.id} key={payment.id} position={index}>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" fontWeight="medium" tone="subdued">
+          {truncateId(payment.id)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={getTypeTone(payment.type)}>
+          {payment.type === "COD_COLLECTION" ? "COD" : payment.type}
+        </Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {payment.method}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {payment.currency} {payment.amount.toFixed(2)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={getStatusTone(payment.status)}>{payment.status}</Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {payment.providerTransactionId
+            ? truncateId(payment.providerTransactionId)
+            : "\u2014"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {new Date(payment.createdAt).toLocaleDateString()}
+        </Text>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div>
-          <h1 style={pageHeadingStyle}>Payments</h1>
-          <p style={pageSubheadingStyle}>
-            Manage payment transactions and view transaction details
-          </p>
-        </div>
+    <Page
+      title="Payments"
+      subtitle="Manage payment transactions and view transaction details"
+      primaryAction={
         <Form method="post">
           <input type="hidden" name="intent" value="export-csv" />
-          <button type="submit" style={primaryButtonStyle}>
+          <Button submit variant="primary">
             Export CSV
-          </button>
+          </Button>
         </Form>
-      </div>
+      }
+    >
+      <BlockStack gap="400">
+        {/* Summary Cards */}
+        <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Total Revenue
+              </Text>
+              <Text as="p" variant="headingLg" fontWeight="bold">
+                ${summary.totalRevenue.toFixed(2)}
+              </Text>
+            </BlockStack>
+          </Card>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Pending Amount
+              </Text>
+              <Text as="p" variant="headingLg" fontWeight="bold">
+                ${summary.pendingAmount.toFixed(2)}
+              </Text>
+            </BlockStack>
+          </Card>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Refunded Amount
+              </Text>
+              <Text as="p" variant="headingLg" fontWeight="bold">
+                ${summary.refundedAmount.toFixed(2)}
+              </Text>
+            </BlockStack>
+          </Card>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Failed Payments
+              </Text>
+              <Text as="p" variant="headingLg" fontWeight="bold">
+                {summary.failedCount}
+              </Text>
+            </BlockStack>
+          </Card>
+        </InlineGrid>
 
-      {/* Summary Cards */}
-      <div style={summaryGridStyle}>
-        <div style={summaryCardStyle}>
-          <div style={summaryLabelStyle}>Total Revenue</div>
-          <div style={summaryValueStyle}>${summary.totalRevenue.toFixed(2)}</div>
-        </div>
-        <div style={summaryCardStyle}>
-          <div style={summaryLabelStyle}>Pending Amount</div>
-          <div style={summaryValueStyle}>${summary.pendingAmount.toFixed(2)}</div>
-        </div>
-        <div style={summaryCardStyle}>
-          <div style={summaryLabelStyle}>Refunded Amount</div>
-          <div style={summaryValueStyle}>${summary.refundedAmount.toFixed(2)}</div>
-        </div>
-        <div style={summaryCardStyle}>
-          <div style={summaryLabelStyle}>Failed Payments</div>
-          <div style={summaryValueStyle}>{summary.failedCount}</div>
-        </div>
-      </div>
+        {/* Filters */}
+        <Card>
+          <InlineStack gap="300" wrap>
+            <Select
+              label="Status"
+              labelHidden
+              options={statusOptions}
+              value={currentStatus}
+              onChange={(value) => handleFilterChange("status", value)}
+            />
+            <Select
+              label="Type"
+              labelHidden
+              options={typeOptions}
+              value={currentType}
+              onChange={(value) => handleFilterChange("type", value)}
+            />
+            <TextField
+              label="Start Date"
+              labelHidden
+              type="date"
+              value={currentStartDate}
+              onChange={(value) => handleFilterChange("startDate", value)}
+              autoComplete="off"
+            />
+            <TextField
+              label="End Date"
+              labelHidden
+              type="date"
+              value={currentEndDate}
+              onChange={(value) => handleFilterChange("endDate", value)}
+              autoComplete="off"
+            />
+          </InlineStack>
+        </Card>
 
-      {/* Filters */}
-      <div style={filterBarStyle}>
-        <select
-          value={currentStatus}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          style={filterSelectStyle}
-        >
-          <option value="all">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="PROCESSING">Processing</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="FAILED">Failed</option>
-          <option value="REFUNDED">Refunded</option>
-        </select>
-
-        <select
-          value={currentType}
-          onChange={(e) => handleTypeChange(e.target.value)}
-          style={filterSelectStyle}
-        >
-          <option value="all">All Types</option>
-          <option value="CHARGE">Charge</option>
-          <option value="COD_COLLECTION">COD Collection</option>
-          <option value="REFUND">Refund</option>
-          <option value="ADJUSTMENT">Adjustment</option>
-        </select>
-
-        <input
-          type="date"
-          value={currentStartDate}
-          onChange={(e) => handleStartDateChange(e.target.value)}
-          style={filterSelectStyle}
-          placeholder="Start Date"
-        />
-
-        <input
-          type="date"
-          value={currentEndDate}
-          onChange={(e) => handleEndDateChange(e.target.value)}
-          style={filterSelectStyle}
-          placeholder="End Date"
-        />
-      </div>
-
-      {/* Table */}
-      {payments.length > 0 ? (
-        <div style={tableContainerStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr style={trStyle}>
-                <th style={thStyle}>Transaction ID</th>
-                <th style={thStyle}>Type</th>
-                <th style={thStyle}>Method</th>
-                <th style={thStyle}>Amount</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Provider ID</th>
-                <th style={thStyle}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment) => (
-                <tr key={payment.id} style={trStyle}>
-                  <td style={tdStyle}>
-                    <code style={idCodeStyle}>{truncateId(payment.id)}</code>
-                  </td>
-                  <td style={tdStyle}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "4px 12px",
-                        backgroundColor: getTypeColor(payment.type),
-                        color: "white",
-                        borderRadius: 4,
-                        fontSize: 12,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {payment.type === "COD_COLLECTION"
-                        ? "COD"
-                        : payment.type}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>{payment.method}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ fontWeight: 600 }}>
-                      {payment.currency} {payment.amount.toFixed(2)}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "4px 12px",
-                        backgroundColor: getStatusColor(payment.status),
-                        color: "white",
-                        borderRadius: 4,
-                        fontSize: 12,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {payment.status}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>
-                      {payment.providerTransactionId
-                        ? truncateId(payment.providerTransactionId)
-                        : "—"}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>
-                      {new Date(payment.createdAt).toLocaleDateString()}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <EmptyState
-          title="No payments found"
-          description="Try adjusting your filters to find payments."
-        />
-      )}
-
-      {/* Pagination */}
-      {meta.totalPages > 1 && (
-        <div style={paginationStyle}>
-          <span style={paginationInfoStyle}>
-            Page {currentPage} of {meta.totalPages} ({meta.total} total)
-          </span>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              style={{
-                ...paginationButtonStyle,
-                opacity: currentPage === 1 ? 0.5 : 1,
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              }}
+        {/* Table */}
+        {payments.length > 0 ? (
+          <Card padding="0">
+            <IndexTable
+              resourceName={resourceName}
+              itemCount={payments.length}
+              headings={[
+                { title: "Transaction ID" },
+                { title: "Type" },
+                { title: "Method" },
+                { title: "Amount" },
+                { title: "Status" },
+                { title: "Provider ID" },
+                { title: "Date" },
+              ]}
+              selectable={false}
             >
-              Previous
-            </button>
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === meta.totalPages}
-              style={{
-                ...paginationButtonStyle,
-                opacity: currentPage === meta.totalPages ? 0.5 : 1,
-                cursor: currentPage === meta.totalPages ? "not-allowed" : "pointer",
-              }}
+              {rowMarkup}
+            </IndexTable>
+          </Card>
+        ) : (
+          <Card>
+            <EmptyState
+              heading="No payments found"
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
             >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+              <p>Try adjusting your filters to find payments.</p>
+            </EmptyState>
+          </Card>
+        )}
+
+        {/* Pagination */}
+        {meta.totalPages > 1 && (
+          <Box paddingBlockStart="400" paddingBlockEnd="400">
+            <InlineStack align="center" blockAlign="center" gap="400">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Page {currentPage} of {meta.totalPages} ({meta.total} total)
+              </Text>
+              <Pagination
+                hasPrevious={currentPage > 1}
+                onPrevious={() => goToPage(currentPage - 1)}
+                hasNext={currentPage < meta.totalPages}
+                onNext={() => goToPage(currentPage + 1)}
+              />
+            </InlineStack>
+          </Box>
+        )}
+      </BlockStack>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const containerStyle: React.CSSProperties = {
-  padding: "32px",
-  backgroundColor: "var(--p-color-bg, #ffffff)",
-};
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: "32px",
-};
-
-const pageHeadingStyle: React.CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const pageSubheadingStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "8px 0 0",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  cursor: "pointer",
-};
-
-const summaryGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: "16px",
-  marginBottom: "24px",
-};
-
-const summaryCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "16px",
-};
-
-const summaryLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  marginBottom: 8,
-};
-
-const summaryValueStyle: React.CSSProperties = {
-  fontSize: 24,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-};
-
-const filterBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "16px",
-  marginBottom: "20px",
-  flexWrap: "wrap",
-};
-
-const filterSelectStyle: React.CSSProperties = {
-  padding: "10px 14px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  color: "var(--p-color-text, #202223)",
-  minWidth: 140,
-};
-
-const tableContainerStyle: React.CSSProperties = {
-  overflowX: "auto",
-  marginBottom: "20px",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 13,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "top",
-};
-
-const idCodeStyle: React.CSSProperties = {
-  fontSize: 12,
-  fontFamily: "monospace",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  padding: "2px 6px",
-  borderRadius: 3,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const cellSubtext: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  marginTop: 2,
-};
-
-const paginationStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "16px 0",
-};
-
-const paginationInfoStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const paginationButtonStyle: React.CSSProperties = {
-  padding: "6px 14px",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  cursor: "pointer",
-};

@@ -14,6 +14,22 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams } from "react-router";
+import {
+  Page,
+  Layout,
+  Card,
+  ButtonGroup,
+  Button,
+  Text,
+  BlockStack,
+  InlineStack,
+  InlineGrid,
+  Badge,
+  IndexTable,
+  Box,
+  ProgressBar,
+  Divider,
+} from "@shopify/polaris";
 import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -141,438 +157,230 @@ export default function Analytics() {
 
   const maxTrendValue = Math.max(...overview.trend.map((t) => t.count), 100);
 
+  const statusBadgeTone = (status: string) => {
+    const tones: Record<string, "success" | "info" | "critical" | "warning" | undefined> = {
+      DELIVERED: "success",
+      OUT_FOR_DELIVERY: "info",
+      FAILED: "critical",
+      PENDING: "warning",
+    };
+    return tones[status];
+  };
+
+  const performanceRows = overview.performanceBreakdown.map((item, index) => (
+    <IndexTable.Row id={item.status} key={item.status} position={index}>
+      <IndexTable.Cell>
+        <Badge tone={statusBadgeTone(item.status)}>{item.status}</Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {item.count}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {item.percentage}%
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Box minWidth="200px">
+          <ProgressBar progress={item.percentage} tone={statusBadgeTone(item.status) === "critical" ? "critical" : "primary"} size="small" />
+        </Box>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Page Header */}
-      <div style={pageHeaderStyle}>
-        <div>
-          <h1 style={headingStyle}>Analytics</h1>
-          <p style={subtextStyle}>Delivery metrics and performance overview</p>
-        </div>
-        <button style={exportButtonStyle} type="button">
-          📊 Export Report
-        </button>
-      </div>
-
-      {/* Date Range Tabs */}
-      <div style={tabsContainerStyle}>
-        {["7", "30", "90"].map((days) => (
-          <button
-            key={days}
-            onClick={() => setDateRange(days)}
-            style={{
-              ...tabStyle,
-              ...(currentDays === days ? activeTabStyle : {}),
-            }}
-            type="button"
-          >
-            Last {days}d
-          </button>
-        ))}
-      </div>
-
-      {/* KPI Cards */}
-      <div style={kpiGridStyle}>
-        <div style={kpiCardStyle}>
-          <div style={kpiLabelStyle}>Total Deliveries</div>
-          <div style={kpiValueStyle}>{overview.totalDeliveries}</div>
-          <div style={kpiSubtextStyle}>
-            {Math.round(overview.totalDeliveries / parseInt(currentDays))} per day
-          </div>
-        </div>
-
-        <div style={kpiCardStyle}>
-          <div style={kpiLabelStyle}>On-Time Rate</div>
-          <div style={kpiValueStyle}>{overview.onTimeRate}%</div>
-          <div
-            style={{
-              ...kpiSubtextStyle,
-              color:
-                overview.onTimeRate >= 95
-                  ? "var(--p-color-success, #16a34a)"
-                  : "var(--p-color-warning, #f59e0b)",
-            }}
-          >
-            {overview.onTimeRate >= 95 ? "✓ Excellent" : "△ Good"}
-          </div>
-        </div>
-
-        <div style={kpiCardStyle}>
-          <div style={kpiLabelStyle}>Avg Delivery Time</div>
-          <div style={kpiValueStyle}>{overview.averageDeliveryTime} min</div>
-          <div style={kpiSubtextStyle}>Per order</div>
-        </div>
-
-        <div style={kpiCardStyle}>
-          <div style={kpiLabelStyle}>Total Revenue</div>
-          <div style={kpiValueStyle}>${(overview.totalRevenue / 1000).toFixed(1)}k</div>
-          <div style={kpiSubtextStyle}>
-            ${Math.round(overview.totalRevenue / parseInt(currentDays))} per day
-          </div>
-        </div>
-      </div>
-
-      {/* Trend Chart */}
-      <div style={chartContainerStyle}>
-        <h2 style={sectionHeadingStyle}>Delivery Trend</h2>
-        <div style={chartAreaStyle}>
-          <div style={chartYAxisStyle}>
-            <div>{Math.round(maxTrendValue)}</div>
-            <div>{Math.round(maxTrendValue / 2)}</div>
-            <div>0</div>
-          </div>
-
-          <div style={chartBarsStyle}>
-            {overview.trend.map((point, idx) => (
-              <div key={idx} style={chartBarWrapperStyle}>
-                <div
-                  style={{
-                    ...chartBarStyle,
-                    height: `${(point.count / maxTrendValue) * 200}px`,
-                    backgroundColor:
-                      point.count > maxTrendValue * 0.75
-                        ? "var(--p-color-success, #16a34a)"
-                        : "var(--p-color-action, #0971f1)",
-                  }}
-                  title={`${point.date}: ${point.count} deliveries`}
-                />
-                <div style={chartLabelStyle}>{point.date}</div>
-              </div>
+    <Page
+      title="Analytics"
+      subtitle="Delivery metrics and performance overview"
+      primaryAction={{
+        content: "Export Report",
+        onAction: () => {},
+      }}
+    >
+      <BlockStack gap="400">
+        {/* Date Range Selector */}
+        <Card>
+          <ButtonGroup variant="segmented">
+            {["7", "30", "90"].map((days) => (
+              <Button
+                key={days}
+                pressed={currentDays === days}
+                onClick={() => setDateRange(days)}
+              >
+                Last {days}d
+              </Button>
             ))}
-          </div>
-        </div>
-      </div>
+          </ButtonGroup>
+        </Card>
 
-      {/* Performance Breakdown */}
-      <div style={performanceContainerStyle}>
-        <h2 style={sectionHeadingStyle}>Performance Breakdown</h2>
-        <div style={breakdownTableStyle}>
-          {overview.performanceBreakdown.map((item) => {
-            const badgeColor = {
-              DELIVERED: "var(--p-color-success, #16a34a)",
-              OUT_FOR_DELIVERY: "var(--p-color-action, #0971f1)",
-              FAILED: "var(--p-color-critical, #d02c2c)",
-              PENDING: "var(--p-color-warning, #f59e0b)",
-            }[item.status] || "var(--p-color-text-subdued, #6d7175)";
+        {/* KPI Cards */}
+        <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Total Deliveries
+              </Text>
+              <Text as="p" variant="headingXl" fontWeight="bold">
+                {overview.totalDeliveries}
+              </Text>
+              <Text as="span" variant="bodySm" tone="subdued">
+                {Math.round(overview.totalDeliveries / parseInt(currentDays))} per day
+              </Text>
+            </BlockStack>
+          </Card>
 
-            return (
-              <div key={item.status} style={breakdownRowStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      backgroundColor: badgeColor,
-                    }}
-                  />
-                  <span style={breakdownLabelStyle}>{item.status}</span>
-                </div>
-                <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-                  <div style={breakdownCountStyle}>{item.count}</div>
-                  <div style={breakdownPercentageStyle}>{item.percentage}%</div>
-                  <div style={breakdownBarStyle}>
-                    <div
-                      style={{
-                        height: "100%",
-                        backgroundColor: badgeColor,
-                        borderRadius: 4,
-                        width: `${item.percentage * 2.5}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                On-Time Rate
+              </Text>
+              <Text as="p" variant="headingXl" fontWeight="bold">
+                {overview.onTimeRate}%
+              </Text>
+              <Badge tone={overview.onTimeRate >= 95 ? "success" : "warning"}>
+                {overview.onTimeRate >= 95 ? "Excellent" : "Good"}
+              </Badge>
+            </BlockStack>
+          </Card>
 
-      {/* Zone Performance Cards */}
-      <div style={zoneContainerStyle}>
-        <h2 style={sectionHeadingStyle}>Zone Performance</h2>
-        <div style={zoneGridStyle}>
-          {overview.zonePerformance.map((zone) => (
-            <div key={zone.zoneId} style={zoneCardStyle}>
-              <h3 style={zoneNameStyle}>{zone.zoneName}</h3>
-              <div style={zoneMetricRowStyle}>
-                <span style={zoneMetricLabelStyle}>Deliveries</span>
-                <span style={zoneMetricValueStyle}>{zone.deliveries}</span>
-              </div>
-              <div style={zoneMetricRowStyle}>
-                <span style={zoneMetricLabelStyle}>On-Time</span>
-                <span
-                  style={{
-                    ...zoneMetricValueStyle,
-                    color:
-                      zone.onTimeRate >= 95
-                        ? "var(--p-color-success, #16a34a)"
-                        : "var(--p-color-warning, #f59e0b)",
-                  }}
-                >
-                  {zone.onTimeRate}%
-                </span>
-              </div>
-              <div style={zoneMetricRowStyle}>
-                <span style={zoneMetricLabelStyle}>Avg Time</span>
-                <span style={zoneMetricValueStyle}>{zone.averageTime} min</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Avg Delivery Time
+              </Text>
+              <Text as="p" variant="headingXl" fontWeight="bold">
+                {overview.averageDeliveryTime} min
+              </Text>
+              <Text as="span" variant="bodySm" tone="subdued">
+                Per order
+              </Text>
+            </BlockStack>
+          </Card>
+
+          <Card>
+            <BlockStack gap="200">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Total Revenue
+              </Text>
+              <Text as="p" variant="headingXl" fontWeight="bold">
+                ${(overview.totalRevenue / 1000).toFixed(1)}k
+              </Text>
+              <Text as="span" variant="bodySm" tone="subdued">
+                ${Math.round(overview.totalRevenue / parseInt(currentDays))} per day
+              </Text>
+            </BlockStack>
+          </Card>
+        </InlineGrid>
+
+        {/* Delivery Trend Chart */}
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Delivery Trend
+                </Text>
+                <InlineStack gap="100" align="end" blockAlign="end" wrap={false}>
+                  {overview.trend.map((point, idx) => (
+                    <Box key={idx} minWidth="2px">
+                      <BlockStack gap="100" inlineAlign="center">
+                        <Box
+                          minHeight={`${Math.max((point.count / maxTrendValue) * 200, 2)}px`}
+                          background={
+                            point.count > maxTrendValue * 0.75
+                              ? "bg-fill-success"
+                              : "bg-fill-info"
+                          }
+                          borderRadiusStartStart="100"
+                          borderRadiusStartEnd="100"
+                          minWidth="100%"
+                        />
+                      </BlockStack>
+                    </Box>
+                  ))}
+                </InlineStack>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
+
+        {/* Performance Breakdown */}
+        <Layout>
+          <Layout.Section>
+            <Card padding="0">
+              <Box padding="400" paddingBlockEnd="0">
+                <Text as="h2" variant="headingMd">
+                  Performance Breakdown
+                </Text>
+              </Box>
+              <IndexTable
+                resourceName={{ singular: "status", plural: "statuses" }}
+                itemCount={overview.performanceBreakdown.length}
+                headings={[
+                  { title: "Status" },
+                  { title: "Count" },
+                  { title: "Percentage" },
+                  { title: "Distribution" },
+                ]}
+                selectable={false}
+              >
+                {performanceRows}
+              </IndexTable>
+            </Card>
+          </Layout.Section>
+        </Layout>
+
+        {/* Zone Performance */}
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Zone Performance
+                </Text>
+                <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+                  {overview.zonePerformance.map((zone) => (
+                    <Card key={zone.zoneId}>
+                      <BlockStack gap="300">
+                        <Text as="h3" variant="headingSm" fontWeight="semibold">
+                          {zone.zoneName}
+                        </Text>
+                        <Divider />
+                        <InlineStack align="space-between">
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            Deliveries
+                          </Text>
+                          <Text as="span" variant="bodyMd" fontWeight="semibold">
+                            {zone.deliveries}
+                          </Text>
+                        </InlineStack>
+                        <InlineStack align="space-between">
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            On-Time
+                          </Text>
+                          <Badge tone={zone.onTimeRate >= 95 ? "success" : "warning"}>
+                            {zone.onTimeRate}%
+                          </Badge>
+                        </InlineStack>
+                        <InlineStack align="space-between">
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            Avg Time
+                          </Text>
+                          <Text as="span" variant="bodyMd" fontWeight="semibold">
+                            {zone.averageTime} min
+                          </Text>
+                        </InlineStack>
+                      </BlockStack>
+                    </Card>
+                  ))}
+                </InlineGrid>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </BlockStack>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const pageHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "24px 0 16px",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "4px 0 0",
-};
-
-const exportButtonStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer",
-};
-
-const tabsContainerStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 12,
-  marginBottom: 24,
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tabStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  backgroundColor: "transparent",
-  border: "none",
-  cursor: "pointer",
-  borderBottom: "3px solid transparent",
-  marginBottom: -1,
-};
-
-const activeTabStyle: React.CSSProperties = {
-  color: "var(--p-color-text, #202223)",
-  borderBottomColor: "var(--p-color-bg-fill-brand, #005bd3)",
-};
-
-const kpiGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: 16,
-  marginBottom: 32,
-};
-
-const kpiCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-};
-
-const kpiLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  marginBottom: 8,
-};
-
-const kpiValueStyle: React.CSSProperties = {
-  fontSize: 32,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  marginBottom: 4,
-};
-
-const kpiSubtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const chartContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-  marginBottom: 32,
-};
-
-const sectionHeadingStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 16px",
-};
-
-const chartAreaStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 16,
-  minHeight: 250,
-};
-
-const chartYAxisStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  alignItems: "flex-end",
-  width: 50,
-  fontSize: 11,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const chartBarsStyle: React.CSSProperties = {
-  flex: 1,
-  display: "flex",
-  alignItems: "flex-end",
-  gap: 6,
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  paddingBottom: 8,
-};
-
-const chartBarWrapperStyle: React.CSSProperties = {
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: 6,
-};
-
-const chartBarStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 2,
-  borderRadius: "4px 4px 0 0",
-  transition: "opacity 0.2s",
-  cursor: "pointer",
-};
-
-const chartLabelStyle: React.CSSProperties = {
-  fontSize: 10,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textAlign: "center",
-  width: "100%",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-};
-
-const performanceContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-  marginBottom: 32,
-};
-
-const breakdownTableStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 0,
-};
-
-const breakdownRowStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "12px 0",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const breakdownLabelStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #202223)",
-};
-
-const breakdownCountStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  minWidth: 60,
-  textAlign: "right",
-};
-
-const breakdownPercentageStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  minWidth: 50,
-  textAlign: "right",
-};
-
-const breakdownBarStyle: React.CSSProperties = {
-  width: 200,
-  height: 8,
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  borderRadius: 4,
-};
-
-const zoneContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 12,
-  padding: 20,
-};
-
-const zoneGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: 16,
-};
-
-const zoneCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: 8,
-  padding: 16,
-};
-
-const zoneNameStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 12px",
-};
-
-const zoneMetricRowStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  fontSize: 13,
-  marginBottom: 8,
-};
-
-const zoneMetricLabelStyle: React.CSSProperties = {
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const zoneMetricValueStyle: React.CSSProperties = {
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-};

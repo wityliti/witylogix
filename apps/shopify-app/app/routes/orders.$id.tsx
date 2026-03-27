@@ -16,7 +16,24 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, Form, Link, useNavigation, redirect } from "react-router";
+import { useLoaderData, Form, useNavigation, redirect } from "react-router";
+import {
+  Page,
+  Layout,
+  Card,
+  Text,
+  Badge,
+  Button,
+  BlockStack,
+  InlineStack,
+  DescriptionList,
+  Box,
+  Divider,
+  Select,
+  TextField,
+  IndexTable,
+  Link as PolarisLink,
+} from "@shopify/polaris";
 import { OrderStatusBadge } from "~/components/OrderStatusBadge";
 import { StatusTimeline } from "~/components/StatusTimeline";
 import { createApiClient, type SingleResponse } from "~/lib/api.server";
@@ -141,6 +158,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
   return redirect(`/orders/${params.id}`);
 }
 
+// ─── Helpers ──────────────────────────────────────────────
+
+function formatAddress(order: OrderDetail): string {
+  const parts = [
+    order.addressLine1,
+    order.addressLine2,
+    [order.city, order.province, order.postalCode].filter(Boolean).join(", "),
+    order.country,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function OrderDetailPage() {
@@ -149,347 +178,332 @@ export default function OrderDetailPage() {
   const isSubmitting = navigation.state === "submitting";
   const nextStatuses = STATUS_TRANSITIONS[order.status] ?? [];
 
+  const orderTitle = order.shopifyOrderNumber
+    ? `Order #${order.shopifyOrderNumber}`
+    : `Order ${order.id.slice(0, 8)}`;
+
+  const statusOptions = nextStatuses.map((s) => ({
+    label: s.replace(/_/g, " "),
+    value: s,
+  }));
+
+  const driverOptions = [
+    { label: "Select a driver...", value: "" },
+    ...availableDrivers.map((d) => ({
+      label: `${d.name} (${d.activeOrders} active)`,
+      value: d.id,
+    })),
+  ];
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/orders" style={backLinkStyle}>
-            &larr;
-          </Link>
-          <div>
-            <h1 style={headingStyle}>
-              Order {order.shopifyOrderNumber ? `#${order.shopifyOrderNumber}` : order.id.slice(0, 8)}
-            </h1>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-              <OrderStatusBadge status={order.status} />
-              <span style={subtextStyle}>
-                Created {new Date(order.createdAt).toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Two-column layout */}
-      <div style={columnsStyle}>
-        {/* Left Column */}
-        <div style={leftColStyle}>
-          {/* Customer Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Customer</h3>
-            <div style={fieldRowStyle}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Name</span>
-                <span style={valueStyle}>{order.customerName ?? "—"}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Email</span>
-                <span style={valueStyle}>{order.customerEmail ?? "—"}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Phone</span>
-                <span style={valueStyle}>{order.customerPhone ?? "—"}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Delivery Address Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Delivery Address</h3>
-            <div style={addressBlockStyle}>
-              {order.addressLine1 && <div>{order.addressLine1}</div>}
-              {order.addressLine2 && <div>{order.addressLine2}</div>}
-              <div>
-                {[order.city, order.province, order.postalCode].filter(Boolean).join(", ")}
-              </div>
-              {order.country && <div>{order.country}</div>}
-            </div>
-            {order.latitude && order.longitude && (
-              <div style={{ ...subtextStyle, marginTop: 8 }}>
-                GPS: {order.latitude.toFixed(6)}, {order.longitude.toFixed(6)}
-              </div>
-            )}
-          </div>
-
-          {/* Delivery Details Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Delivery Details</h3>
-            <div style={fieldRowStyle}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Delivery Date</span>
-                <span style={valueStyle}>
-                  {order.deliveryDate
-                    ? new Date(order.deliveryDate).toLocaleDateString("en-US", {
-                        weekday: "short", month: "short", day: "numeric",
-                      })
-                    : "Not scheduled"}
-                </span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Time Slot</span>
-                <span style={valueStyle}>{order.timeSlot?.label ?? "Any time"}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Zone</span>
-                <span style={valueStyle}>{order.zone?.name ?? "Unzoned"}</span>
-              </div>
-            </div>
-            <div style={{ ...fieldRowStyle, marginTop: 12 }}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Items</span>
-                <span style={valueStyle}>{order.itemCount}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Total</span>
-                <span style={valueStyle}>
-                  {order.totalPrice != null ? `$${order.totalPrice.toFixed(2)}` : "—"}
-                </span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Weight</span>
-                <span style={valueStyle}>
-                  {order.totalWeight != null ? `${order.totalWeight}g` : "—"}
-                </span>
-              </div>
-            </div>
-            {order.notes && (
-              <div style={{ marginTop: 12 }}>
-                <span style={labelStyle}>Notes</span>
-                <p style={{ margin: "4px 0 0", fontSize: 14 }}>{order.notes}</p>
-              </div>
-            )}
-            {order.tags.length > 0 && (
-              <div style={{ marginTop: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {order.tags.map((tag) => (
-                  <span key={tag} style={tagStyle}>{tag}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Line Items */}
-          {order.lineItems.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Line Items</h3>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-                <thead>
-                  <tr>
-                    <th style={itemThStyle}>Item</th>
-                    <th style={{ ...itemThStyle, textAlign: "center" }}>Qty</th>
-                    <th style={{ ...itemThStyle, textAlign: "right" }}>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.lineItems.map((item, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)" }}>
-                      <td style={itemTdStyle}>{String(item.name ?? item.sku ?? `Item ${i + 1}`)}</td>
-                      <td style={{ ...itemTdStyle, textAlign: "center" }}>{String(item.quantity ?? 1)}</td>
-                      <td style={{ ...itemTdStyle, textAlign: "right" }}>
-                        {item.price != null ? `$${Number(item.price).toFixed(2)}` : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Proof of Delivery */}
-          {order.proofOfDelivery && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Proof of Delivery</h3>
-              {order.proofOfDelivery.signatureUrl && (
-                <div style={{ marginBottom: 12 }}>
-                  <span style={labelStyle}>Signature</span>
-                  <img
-                    src={order.proofOfDelivery.signatureUrl}
-                    alt="Customer signature"
-                    style={{ maxWidth: 300, border: "1px solid var(--p-color-border-subdued, #e1e3e5)", borderRadius: 8, marginTop: 4 }}
-                  />
-                </div>
-              )}
-              {order.proofOfDelivery.photos.length > 0 && (
-                <div>
-                  <span style={labelStyle}>Photos</span>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-                    {order.proofOfDelivery.photos.map((url, i) => (
-                      <img
-                        key={i}
-                        src={url}
-                        alt={`Delivery photo ${i + 1}`}
-                        style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 8, border: "1px solid var(--p-color-border-subdued, #e1e3e5)" }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {order.proofOfDelivery.notes && (
-                <div style={{ marginTop: 12 }}>
-                  <span style={labelStyle}>Delivery Notes</span>
-                  <p style={{ margin: "4px 0 0", fontSize: 14 }}>{order.proofOfDelivery.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column */}
-        <div style={rightColStyle}>
-          {/* Actions Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Actions</h3>
-
-            {/* Status Update */}
-            {nextStatuses.length > 0 && (
-              <Form method="post" style={{ marginBottom: 16 }}>
-                <input type="hidden" name="intent" value="update-status" />
-                <div style={{ marginBottom: 8 }}>
-                  <label style={labelStyle}>Update Status</label>
-                  <select name="status" style={selectStyle}>
-                    {nextStatuses.map((s) => (
-                      <option key={s} value={s}>
-                        {s.replace(/_/g, " ")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <input
-                  type="text"
-                  name="notes"
-                  placeholder="Add a note (optional)"
-                  style={{ ...inputStyle, marginBottom: 8 }}
+    <Page
+      backAction={{ url: "/orders" }}
+      title={orderTitle}
+      titleMetadata={<OrderStatusBadge status={order.status} />}
+      subtitle={`Created ${new Date(order.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`}
+    >
+      <Layout>
+        {/* ── Left Column: Order Information ── */}
+        <Layout.Section>
+          <BlockStack gap="400">
+            {/* Customer Card */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Customer
+                </Text>
+                <DescriptionList
+                  items={[
+                    { term: "Name", description: order.customerName ?? "\u2014" },
+                    { term: "Email", description: order.customerEmail ?? "\u2014" },
+                    { term: "Phone", description: order.customerPhone ?? "\u2014" },
+                  ]}
                 />
-                <button type="submit" disabled={isSubmitting} style={primaryButtonStyle}>
-                  {isSubmitting ? "Updating..." : "Update Status"}
-                </button>
-              </Form>
+              </BlockStack>
+            </Card>
+
+            {/* Delivery Address Card */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Delivery Address
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  {formatAddress(order) || "\u2014"}
+                </Text>
+                {order.latitude != null && order.longitude != null && (
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    GPS: {order.latitude.toFixed(6)}, {order.longitude.toFixed(6)}
+                  </Text>
+                )}
+              </BlockStack>
+            </Card>
+
+            {/* Delivery Details Card */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Delivery Details
+                </Text>
+                <DescriptionList
+                  items={[
+                    {
+                      term: "Delivery Date",
+                      description: order.deliveryDate
+                        ? new Date(order.deliveryDate).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "Not scheduled",
+                    },
+                    { term: "Time Slot", description: order.timeSlot?.label ?? "Any time" },
+                    { term: "Zone", description: order.zone?.name ?? "Unzoned" },
+                    { term: "Items", description: String(order.itemCount) },
+                    {
+                      term: "Total",
+                      description:
+                        order.totalPrice != null ? `$${order.totalPrice.toFixed(2)}` : "\u2014",
+                    },
+                    {
+                      term: "Weight",
+                      description:
+                        order.totalWeight != null ? `${order.totalWeight}g` : "\u2014",
+                    },
+                  ]}
+                />
+                {order.notes && (
+                  <BlockStack gap="100">
+                    <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                      Notes
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      {order.notes}
+                    </Text>
+                  </BlockStack>
+                )}
+                {order.tags.length > 0 && (
+                  <InlineStack gap="200" wrap>
+                    {order.tags.map((tag) => (
+                      <Badge key={tag}>{tag}</Badge>
+                    ))}
+                  </InlineStack>
+                )}
+              </BlockStack>
+            </Card>
+
+            {/* Line Items Card */}
+            {order.lineItems.length > 0 && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Line Items
+                  </Text>
+                  <IndexTable
+                    resourceName={{ singular: "item", plural: "items" }}
+                    itemCount={order.lineItems.length}
+                    headings={[
+                      { title: "Item" },
+                      { title: "Qty", alignment: "center" },
+                      { title: "Price", alignment: "end" },
+                    ]}
+                    selectable={false}
+                  >
+                    {order.lineItems.map((item, i) => (
+                      <IndexTable.Row id={String(i)} key={i} position={i}>
+                        <IndexTable.Cell>
+                          <Text as="span" variant="bodyMd">
+                            {String(item.name ?? item.sku ?? `Item ${i + 1}`)}
+                          </Text>
+                        </IndexTable.Cell>
+                        <IndexTable.Cell>
+                          <Text as="span" variant="bodyMd" alignment="center">
+                            {String(item.quantity ?? 1)}
+                          </Text>
+                        </IndexTable.Cell>
+                        <IndexTable.Cell>
+                          <Text as="span" variant="bodyMd" alignment="end">
+                            {item.price != null ? `$${Number(item.price).toFixed(2)}` : "\u2014"}
+                          </Text>
+                        </IndexTable.Cell>
+                      </IndexTable.Row>
+                    ))}
+                  </IndexTable>
+                </BlockStack>
+              </Card>
             )}
 
-            {/* Driver Assignment */}
-            <Form method="post">
-              <input type="hidden" name="intent" value="assign-driver" />
-              <div style={{ marginBottom: 8 }}>
-                <label style={labelStyle}>
-                  {order.driver ? "Reassign Driver" : "Assign Driver"}
-                </label>
-                <select name="driverId" style={selectStyle} defaultValue={order.driver?.id ?? ""}>
-                  <option value="" disabled>Select a driver...</option>
-                  {availableDrivers.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.activeOrders} active)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" disabled={isSubmitting} style={secondaryButtonStyle}>
-                {isSubmitting ? "Assigning..." : order.driver ? "Reassign" : "Assign Driver"}
-              </button>
-            </Form>
-
-            {/* Cancel */}
-            {STATUS_TRANSITIONS[order.status]?.includes("CANCELLED") && (
-              <Form method="post" style={{ marginTop: 16, borderTop: "1px solid var(--p-color-border-subdued, #e1e3e5)", paddingTop: 16 }}>
-                <input type="hidden" name="intent" value="cancel" />
-                <button type="submit" disabled={isSubmitting} style={dangerButtonStyle}>
-                  Cancel Order
-                </button>
-              </Form>
+            {/* Proof of Delivery Card */}
+            {order.proofOfDelivery && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Proof of Delivery
+                  </Text>
+                  {order.proofOfDelivery.signatureUrl && (
+                    <BlockStack gap="100">
+                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                        Signature
+                      </Text>
+                      <img
+                        src={order.proofOfDelivery.signatureUrl}
+                        alt="Customer signature"
+                        style={{ maxWidth: 300 }}
+                      />
+                    </BlockStack>
+                  )}
+                  {order.proofOfDelivery.photos.length > 0 && (
+                    <BlockStack gap="100">
+                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                        Photos
+                      </Text>
+                      <InlineStack gap="200" wrap>
+                        {order.proofOfDelivery.photos.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`Delivery photo ${i + 1}`}
+                            style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 8 }}
+                          />
+                        ))}
+                      </InlineStack>
+                    </BlockStack>
+                  )}
+                  {order.proofOfDelivery.notes && (
+                    <BlockStack gap="100">
+                      <Text as="span" variant="bodySm" tone="subdued" fontWeight="medium">
+                        Delivery Notes
+                      </Text>
+                      <Text as="p" variant="bodyMd">
+                        {order.proofOfDelivery.notes}
+                      </Text>
+                    </BlockStack>
+                  )}
+                </BlockStack>
+              </Card>
             )}
-          </div>
+          </BlockStack>
+        </Layout.Section>
 
-          {/* Current Driver Card */}
-          {order.driver && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Assigned Driver</h3>
-              <div style={{ fontSize: 14 }}>
-                <Link to={`/drivers/${order.driver.id}`} style={{ color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500 }}>
-                  {order.driver.name}
-                </Link>
-                <div style={subtextStyle}>{order.driver.phone}</div>
-              </div>
-            </div>
-          )}
+        {/* ── Right Column: Actions, Driver, Route, Timeline ── */}
+        <Layout.Section variant="oneThird">
+          <BlockStack gap="400">
+            {/* Actions Card */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Actions
+                </Text>
 
-          {/* Route Card */}
-          {order.route && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Route</h3>
-              <Link to={`/routes/${order.route.id}`} style={{ color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500, fontSize: 14 }}>
-                {order.route.name}
-              </Link>
-            </div>
-          )}
+                {/* Status Update */}
+                {nextStatuses.length > 0 && (
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="update-status" />
+                    <BlockStack gap="300">
+                      <Select
+                        label="Update Status"
+                        options={statusOptions}
+                        name="status"
+                        value={nextStatuses[0]}
+                      />
+                      <TextField
+                        label="Note"
+                        labelHidden
+                        name="notes"
+                        placeholder="Add a note (optional)"
+                        autoComplete="off"
+                      />
+                      <Button submit variant="primary" loading={isSubmitting}>
+                        Update Status
+                      </Button>
+                    </BlockStack>
+                  </Form>
+                )}
 
-          {/* Timeline */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Timeline</h3>
-            <StatusTimeline events={timeline} />
-          </div>
-        </div>
-      </div>
-    </div>
+                {nextStatuses.length > 0 && <Divider />}
+
+                {/* Driver Assignment */}
+                <Form method="post">
+                  <input type="hidden" name="intent" value="assign-driver" />
+                  <BlockStack gap="300">
+                    <Select
+                      label={order.driver ? "Reassign Driver" : "Assign Driver"}
+                      options={driverOptions}
+                      name="driverId"
+                      value={order.driver?.id ?? ""}
+                    />
+                    <Button submit loading={isSubmitting}>
+                      {order.driver ? "Reassign" : "Assign Driver"}
+                    </Button>
+                  </BlockStack>
+                </Form>
+
+                {/* Cancel */}
+                {STATUS_TRANSITIONS[order.status]?.includes("CANCELLED") && (
+                  <>
+                    <Divider />
+                    <Form method="post">
+                      <input type="hidden" name="intent" value="cancel" />
+                      <Button submit tone="critical" loading={isSubmitting}>
+                        Cancel Order
+                      </Button>
+                    </Form>
+                  </>
+                )}
+              </BlockStack>
+            </Card>
+
+            {/* Current Driver Card */}
+            {order.driver && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Assigned Driver
+                  </Text>
+                  <BlockStack gap="100">
+                    <PolarisLink url={`/drivers/${order.driver.id}`} removeUnderline>
+                      {order.driver.name}
+                    </PolarisLink>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      {order.driver.phone}
+                    </Text>
+                  </BlockStack>
+                </BlockStack>
+              </Card>
+            )}
+
+            {/* Route Card */}
+            {order.route && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Route
+                  </Text>
+                  <PolarisLink url={`/routes/${order.route.id}`} removeUnderline>
+                    {order.route.name}
+                  </PolarisLink>
+                </BlockStack>
+              </Card>
+            )}
+
+            {/* Timeline Card */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Timeline
+                </Text>
+                <StatusTimeline events={timeline} />
+              </BlockStack>
+            </Card>
+          </BlockStack>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = { padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, color: "var(--p-color-text, #202223)", margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)" };
-const backLinkStyle: React.CSSProperties = { fontSize: 20, color: "var(--p-color-text-subdued, #6d7175)", textDecoration: "none", padding: 4 };
-
-const columnsStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" };
-const leftColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-const rightColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-
-const cardStyle: React.CSSProperties = {
-  padding: 20, backgroundColor: "var(--p-color-bg-surface, white)", borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)", boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};
-const cardTitleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, margin: "0 0 12px", color: "var(--p-color-text, #202223)" };
-
-const fieldRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 };
-const fieldStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 2 };
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" };
-const valueStyle: React.CSSProperties = { fontSize: 14, color: "var(--p-color-text, #202223)" };
-const addressBlockStyle: React.CSSProperties = { fontSize: 14, lineHeight: 1.6, color: "var(--p-color-text, #202223)" };
-
-const tagStyle: React.CSSProperties = {
-  display: "inline-block", padding: "2px 8px", fontSize: 11, fontWeight: 500,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)", borderRadius: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const itemThStyle: React.CSSProperties = {
-  textAlign: "left", padding: "8px 0", fontSize: 12, fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)", borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-const itemTdStyle: React.CSSProperties = { padding: "8px 0", verticalAlign: "top" };
-
-const selectStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, backgroundColor: "white",
-};
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, boxSizing: "border-box",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "white", backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none", borderRadius: 8, cursor: "pointer",
-};
-const secondaryButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "var(--p-color-text, #303030)", backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, cursor: "pointer",
-};
-const dangerButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "var(--p-color-text-critical, #d72c0d)", backgroundColor: "white",
-  border: "1px solid var(--p-color-border-critical, #d72c0d)", borderRadius: 8, cursor: "pointer",
-};
