@@ -6,14 +6,31 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/tabs';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { useDrivers, Driver } from '@/hooks/use-drivers';
-import { Star, MessageCircle, Eye, Plus, Phone, MapPin } from 'lucide-react';
+import { useApiList } from '@/hooks/use-api';
+import { MessageCircle, Eye, Plus, Phone, Truck } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    DRIVERS PAGE — Professional driver management
    Refined minimalist dark aesthetic with clear data hierarchy
    ═══════════════════════════════════════════════════════════ */
+
+interface ApiDriver {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  vehicleType: string;
+  vehiclePlate: string;
+  maxCapacity: number;
+  status: string;
+  isActive: boolean;
+  lastLocationAt: string | null;
+  createdAt: string;
+  _count: { orders: number };
+}
 
 type DriverStatus = 'available' | 'en_route' | 'delivering' | 'offline';
 
@@ -26,124 +43,14 @@ const statusConfig: Record<DriverStatus, { badge: 'success' | 'warning' | 'info'
 
 const normalizeStatus = (status: string): DriverStatus => {
   const s = status.toUpperCase();
-  if (s === 'ON_DELIVERY') return 'delivering';
-  if (s === 'ACTIVE' || s === 'ONLINE') return 'available';
-  if (s === 'ON_BREAK') return 'offline';
+  if (s === 'ON_DELIVERY' || s === 'ON_ROUTE') return 'delivering';
+  if (s === 'AVAILABLE' || s === 'ACTIVE' || s === 'ONLINE') return 'available';
+  if (s === 'ON_BREAK' || s === 'OFFLINE') return 'offline';
   if (s.includes('DELIVERY')) return 'delivering';
   return 'offline';
 };
 
-// Mock drivers array - for development fallback when API is unavailable
-const DRIVERS: Driver[] = [
-  {
-    id: "drv-1",
-    name: "Carlos Martinez",
-    email: "carlos@witylogix.io",
-    phone: "+1 555-0101",
-    status: "ON_DELIVERY",
-    vehicleType: "VAN",
-    vehiclePlate: "WTY-4501",
-    maxCapacity: 20,
-    activeOrders: 4,
-    completedToday: 7,
-    avgRating: 4.8,
-    totalDeliveries: 847,
-    onTimePercentage: 94,
-    currentLocation: "Downtown Core",
-    lastActive: "now",
-    hireDate: "2021-03-15",
-    licenseNumber: "DL-2847-CA",
-    documents: [],
-    zones: ["Downtown Core", "Midtown East"],
-    recentDeliveries: ["ORD-2847", "ORD-2846", "ORD-2845"],
-  },
-  {
-    id: "drv-2",
-    name: "Sofia Lindberg",
-    email: "sofia@witylogix.io",
-    phone: "+1 555-0102",
-    status: "ACTIVE",
-    vehicleType: "CAR",
-    vehiclePlate: "WTY-2201",
-    maxCapacity: 10,
-    activeOrders: 0,
-    completedToday: 5,
-    avgRating: 4.9,
-    totalDeliveries: 923,
-    onTimePercentage: 97,
-    currentLocation: "Midtown East",
-    lastActive: "now",
-    hireDate: "2020-07-22",
-    licenseNumber: "DL-3921-ON",
-    documents: [],
-    zones: ["Midtown East", "West Side"],
-    recentDeliveries: ["ORD-2844", "ORD-2843", "ORD-2842"],
-  },
-  {
-    id: "drv-3",
-    name: "Ahmed Khalil",
-    email: "ahmed@witylogix.io",
-    phone: "+1 555-0103",
-    status: "ON_DELIVERY",
-    vehicleType: "MOTORCYCLE",
-    vehiclePlate: "WTY-1101",
-    maxCapacity: 5,
-    activeOrders: 2,
-    completedToday: 12,
-    avgRating: 4.7,
-    totalDeliveries: 612,
-    onTimePercentage: 91,
-    currentLocation: "South District",
-    lastActive: "now",
-    hireDate: "2022-01-10",
-    licenseNumber: "DL-5043-TX",
-    documents: [],
-    zones: ["South District", "Downtown Core"],
-    recentDeliveries: ["ORD-2841", "ORD-2840", "ORD-2839"],
-  },
-  {
-    id: "drv-4",
-    name: "Jessica Chen",
-    email: "jchen@witylogix.io",
-    phone: "+1 555-0104",
-    status: "ACTIVE",
-    vehicleType: "TRUCK",
-    vehiclePlate: "WTY-3301",
-    maxCapacity: 50,
-    activeOrders: 0,
-    completedToday: 3,
-    avgRating: 4.6,
-    totalDeliveries: 745,
-    onTimePercentage: 88,
-    currentLocation: "Hub Central",
-    lastActive: "now",
-    hireDate: "2021-09-05",
-    licenseNumber: "DL-6834-NY",
-    documents: [],
-    zones: ["Hub Central", "North Zone"],
-    recentDeliveries: ["ORD-2838", "ORD-2837", "ORD-2836"],
-  },
-];
-
-const StarRating = ({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) => {
-  const stars = Math.round(rating);
-  const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
-  return (
-    <div className="flex items-center gap-1">
-      {[...Array(5)].map((_, i) => (
-        <Star
-          key={i}
-          className={cn(
-            iconSize,
-            i < stars ? 'fill-wl-warning-400 text-wl-warning-400' : 'text-wl-border-subtle'
-          )}
-        />
-      ))}
-    </div>
-  );
-};
-
-const DriverCard = ({ driver }: { driver: Driver }) => {
+const DriverCard = ({ driver }: { driver: ApiDriver }) => {
   const status = normalizeStatus(driver.status);
   const config = statusConfig[status];
   const initials = driver.name
@@ -180,30 +87,21 @@ const DriverCard = ({ driver }: { driver: Driver }) => {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-white/[0.05]">
           <div>
-            <div className="text-xs text-gray-400 mb-1">Deliveries</div>
-            <div className="text-sm font-semibold text-white">{driver.completedToday}</div>
+            <div className="text-xs text-gray-400 mb-1">Active Orders</div>
+            <div className="text-sm font-semibold text-white">{driver._count.orders}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">Rating</div>
-            <StarRating rating={driver.avgRating} size="sm" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 mb-1">On-Time</div>
-            <div className="text-sm font-semibold text-white">{driver.onTimePercentage}%</div>
-          </div>
-        </div>
-
-        {/* Current delivery info */}
-        {driver.activeOrders > 0 && (
-          <div className="mb-4 pb-4 border-b border-white/[0.05]">
-            <div className="text-xs text-gray-400 mb-2">Active Orders</div>
-            <div className="flex items-center gap-2 text-xs">
-              <MapPin className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-gray-300">{driver.currentLocation}</span>
-              <span className="text-gray-400">· {driver.activeOrders} orders</span>
+            <div className="text-xs text-gray-400 mb-1">Vehicle</div>
+            <div className={cn('text-xs font-medium text-white flex items-center gap-1')}>
+              <Truck className="w-3 h-3 text-blue-400" />
+              {driver.vehicleType || '—'}
             </div>
           </div>
-        )}
+          <div>
+            <div className="text-xs text-gray-400 mb-1">Plate</div>
+            <div className="text-sm font-semibold text-white">{driver.vehiclePlate || '—'}</div>
+          </div>
+        </div>
 
         {/* Action buttons */}
         <div className="flex gap-2">
@@ -225,7 +123,7 @@ const DriverCard = ({ driver }: { driver: Driver }) => {
 };
 
 export default function DriversPage() {
-  const { items: driversData = DRIVERS } = useDrivers();
+  const { items: driversData, loading, error, refetch } = useApiList<ApiDriver>('/api/v4/drivers');
   const [activeTab, setActiveTab] = useState('all');
 
   const driverTabs = [
@@ -240,6 +138,9 @@ export default function DriversPage() {
     if (activeTab === 'all') return driversData;
     return driversData.filter((d) => normalizeStatus(d.status) === activeTab);
   }, [driversData, activeTab]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <>
@@ -271,6 +172,9 @@ export default function DriversPage() {
         {filteredDrivers.map((driver) => (
           <DriverCard key={driver.id} driver={driver} />
         ))}
+        {filteredDrivers.length === 0 && (
+          <div className="col-span-3 text-center py-12 text-gray-400">No drivers found</div>
+        )}
       </div>
     </>
   );

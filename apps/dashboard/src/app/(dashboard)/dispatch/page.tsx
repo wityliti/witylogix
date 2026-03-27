@@ -15,29 +15,35 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useApiList } from '@/hooks/use-api';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
 import { ErrorState } from '@/components/ui/error-state';
 
 interface UnassignedOrder {
   id: string;
-  orderNumber: string;
+  shopifyOrderNumber?: string;
   customerName: string;
-  address: string;
-  priority: 'high' | 'medium' | 'low';
+  addressLine1?: string;
+  status: string;
   createdAt: string;
-  deliveryWindow: { start: string; end: string };
-  itemCount: number;
+  timeSlot?: { startTime?: string; endTime?: string };
 }
 
-interface Driver {
+interface ApiDriver {
   id: string;
   name: string;
-  status: 'available' | 'busy' | 'offline';
-  location: string;
-  activeDeliveries: number;
-  vehicleType: 'car' | 'van' | 'truck';
-  rating?: number;
+  status: string;
+  vehicleType?: string;
+  lastLocationAt?: string | null;
+  _count?: { orders: number };
 }
+
+// Normalize API driver status to display status
+const normalizeDriverStatus = (status: string): 'available' | 'busy' | 'offline' => {
+  const s = status?.toUpperCase() || '';
+  if (s === 'AVAILABLE') return 'available';
+  if (s === 'ON_ROUTE' || s === 'ON_BREAK') return 'busy';
+  return 'offline';
+};
 
 type FilterType = 'all' | 'urgent' | 'standard' | 'scheduled';
 type SortType = 'time' | 'priority';
@@ -51,8 +57,11 @@ export default function DispatchPage() {
   const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const { items: orders, loading: ordersLoading, error: ordersError, refetch: refetchOrders } = useApiList<UnassignedOrder>('/api/v4/dispatch/orders');
-  const { items: drivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useApiList<Driver>('/api/v4/dispatch/drivers');
+  const { items: orders, loading: ordersLoading, error: ordersError, refetch: refetchOrders } = useApiList<UnassignedOrder>('/api/v4/orders?status=PENDING');
+  const { items: inTransitOrders } = useApiList<{ id: string }>('/api/v4/orders?status=IN_PROGRESS');
+  const { items: rawDrivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useApiList<ApiDriver>('/api/v4/drivers');
+  const drivers = rawDrivers.map((d) => ({ ...d, status: normalizeDriverStatus(d.status) }));
+  const { execute: assignDriverToOrder } = useApiMutation<{ success: boolean }>('POST', '/api/v4/dispatch/assign');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -62,44 +71,35 @@ export default function DispatchPage() {
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       if (filterType === 'all') return true;
-      if (filterType === 'urgent') return order.priority === 'high';
-      if (filterType === 'standard') return order.priority === 'medium';
-      if (filterType === 'scheduled') return order.priority === 'low';
+      // Without priority field, show all for filter modes
       return true;
     });
   }, [filterType, orders]);
 
   const sortedOrders = useMemo(() => {
     const sorted = [...filteredOrders];
-    if (sortType === 'priority') {
-      const priorityMap = { high: 0, medium: 1, low: 2 };
-      sorted.sort((a, b) => priorityMap[a.priority] - priorityMap[b.priority]);
-    } else if (sortType === 'time') {
+    if (sortType === 'time') {
       sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
     return sorted;
   }, [filteredOrders, sortType]);
 
   const stats = useMemo(() => {
-    const inTransit = Math.floor(Math.random() * 20) + 8;
-    const completedToday = Math.floor(Math.random() * 45) + 25;
-    const avgDeliveryTime = Math.floor(Math.random() * 15) + 28;
-    const onTimePercent = Math.floor(Math.random() * 8) + 92;
     return {
       unassigned: orders.length,
-      inTransit,
-      completedToday,
-      avgDeliveryTime,
-      onTimePercent,
+      inTransit: inTransitOrders.length,
+      completedToday: 0,
+      avgDeliveryTime: 0,
+      onTimePercent: 0,
     };
-  }, [orders.length]);
+  }, [orders.length, inTransitOrders.length]);
 
   const driverStats = useMemo(() => {
     const available = drivers.filter((d) => d.status === 'available').length;
     const busy = drivers.filter((d) => d.status === 'busy').length;
     const offline = drivers.filter((d) => d.status === 'offline').length;
-    return { available, busy, offline, total: drivers.length };
-  }, [drivers]);
+    return { available, busy, offline, total: rawDrivers.length };
+  }, [drivers, rawDrivers.length]);
 
   const formatTimeElapsed = (dateStr: string): string => {
     const date = new Date(dateStr);
@@ -109,29 +109,32 @@ export default function DispatchPage() {
     return `${Math.floor(elapsed / 3600)}h`;
   };
 
-  const calculateSLAStatus = (createdAt: string, priority: string): { text: string; variant: 'danger' | 'warning' | 'success' } => {
+  const calculateSLAStatus = (createdAt: string): { text: string; variant: 'danger' | 'warning' | 'success' } => {
     const elapsed = Math.floor((currentTime.getTime() - new Date(createdAt).getTime()) / 60000);
-    const thresholds = { high: 15, medium: 30, low: 60 };
-    const threshold = thresholds[priority as keyof typeof thresholds] || 60;
-
-    if (elapsed > threshold * 0.9) return { text: `${threshold - elapsed}m`, variant: 'danger' };
-    if (elapsed > threshold * 0.7) return { text: `${threshold - elapsed}m`, variant: 'warning' };
-    return { text: `${threshold - elapsed}m`, variant: 'success' };
+    const threshold = 60;
+    if (elapsed > threshold * 0.9) return { text: `${Math.max(0, threshold - elapsed)}m`, variant: 'danger' };
+    if (elapsed > threshold * 0.7) return { text: `${Math.max(0, threshold - elapsed)}m`, variant: 'warning' };
+    return { text: `${Math.max(0, threshold - elapsed)}m`, variant: 'success' };
   };
 
   const handleAssignDriver = useCallback(
-    (orderId: string, driverId: string) => {
+    async (orderId: string, driverId: string) => {
       setAssigningOrderId(orderId);
-      setTimeout(() => {
-        // TODO: API call to assign driver
+      try {
+        await assignDriverToOrder({ orderId, driverId });
+        refetchOrders();
+      } catch {
+        // assignment failed silently — order stays in queue
+      } finally {
         setAssigningOrderId(null);
         setSelectedOrderId(null);
-      }, 300);
+      }
     },
-    []
+    [assignDriverToOrder, refetchOrders]
   );
 
   const availableDrivers = drivers.filter((d) => d.status === 'available');
+  const availableDriversRaw = rawDrivers.filter((d) => normalizeDriverStatus(d.status) === 'available');
 
   if (ordersError || driversError) {
     return (
@@ -257,7 +260,7 @@ export default function DispatchPage() {
             ) : (
               <div className="p-4 space-y-2">
                 {sortedOrders.map((order) => {
-                  const slaStatus = calculateSLAStatus(order.createdAt, order.priority);
+                  const slaStatus = calculateSLAStatus(order.createdAt);
                   return (
                     <div
                       key={order.id}
@@ -268,21 +271,14 @@ export default function DispatchPage() {
                       )}
                       onClick={() => setSelectedOrderId(order.id)}
                     >
-                      {/* Order Number & Priority */}
+                      {/* Order Number & SLA */}
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-white">{order.orderNumber}</span>
-                          <Badge
-                            variant={
-                              order.priority === "high"
-                                ? "danger"
-                                : order.priority === "medium"
-                                  ? "warning"
-                                  : "default"
-                            }
-                            className="text-xs"
-                          >
-                            {order.priority}
+                          <span className="text-sm font-bold text-white">
+                            {order.shopifyOrderNumber || order.id.slice(0, 8)}
+                          </span>
+                          <Badge variant="warning" className="text-xs">
+                            Pending
                           </Badge>
                         </div>
                         <Badge variant={slaStatus.variant} className="text-xs font-mono">
@@ -295,18 +291,22 @@ export default function DispatchPage() {
                         <p className="text-xs text-zinc-400">{order.customerName}</p>
                         <div className="flex gap-2 mt-1 text-xs">
                           <MapPin className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
-                          <span className="text-zinc-300 line-clamp-2">{order.address}</span>
+                          <span className="text-zinc-300 line-clamp-2">{order.addressLine1 || '—'}</span>
                         </div>
                       </div>
 
                       {/* Delivery Window */}
-                      <div className="mb-3 text-xs text-zinc-400 border-t border-zinc-700 pt-2">
-                        <span className="font-medium text-zinc-300">Deliver:</span> {order.deliveryWindow.start} - {order.deliveryWindow.end}
-                      </div>
+                      {order.timeSlot && (
+                        <div className="mb-3 text-xs text-zinc-400 border-t border-zinc-700 pt-2">
+                          <span className="font-medium text-zinc-300">Window:</span>{' '}
+                          {order.timeSlot.startTime ? new Date(order.timeSlot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                          {' '}-{' '}
+                          {order.timeSlot.endTime ? new Date(order.timeSlot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                        </div>
+                      )}
 
-                      {/* Items & Time */}
+                      {/* Time */}
                       <div className="flex justify-between text-xs text-zinc-500 mb-3">
-                        <span>📦 {order.itemCount} item{order.itemCount !== 1 ? 's' : ''}</span>
                         <span>⏱️ {formatTimeElapsed(order.createdAt)} ago</span>
                       </div>
 
@@ -451,25 +451,27 @@ export default function DispatchPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {drivers.map((driver) => (
+                {rawDrivers.map((rawDriver) => {
+                  const driverStatus = normalizeDriverStatus(rawDriver.status);
+                  return (
                   <div
-                    key={driver.id}
-                    onClick={() => setSelectedDriverId(driver.id)}
+                    key={rawDriver.id}
+                    onClick={() => setSelectedDriverId(rawDriver.id)}
                     className={cn(
                       "p-3 rounded-lg border transition-all duration-200 cursor-pointer",
                       "bg-zinc-800 border-zinc-700 hover:border-zinc-600",
-                      selectedDriverId === driver.id && "border-blue-500 ring-1 ring-blue-500/20 bg-zinc-750"
+                      selectedDriverId === rawDriver.id && "border-blue-500 ring-1 ring-blue-500/20 bg-zinc-750"
                     )}
                   >
                     {/* Name & Status */}
                     <div className="flex items-start justify-between mb-2">
-                      <div className="font-semibold text-sm text-white">{driver.name}</div>
+                      <div className="font-semibold text-sm text-white">{rawDriver.name}</div>
                       <div
                         className={cn(
                           "w-2.5 h-2.5 rounded-full",
-                          driver.status === 'available' && 'bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse',
-                          driver.status === 'busy' && 'bg-amber-500 shadow-lg shadow-amber-500/30',
-                          driver.status === 'offline' && 'bg-gray-500 opacity-50'
+                          driverStatus === 'available' && 'bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse',
+                          driverStatus === 'busy' && 'bg-amber-500 shadow-lg shadow-amber-500/30',
+                          driverStatus === 'offline' && 'bg-gray-500 opacity-50'
                         )}
                       />
                     </div>
@@ -477,37 +479,33 @@ export default function DispatchPage() {
                     {/* Status Badge */}
                     <Badge
                       variant={
-                        driver.status === "available"
+                        driverStatus === "available"
                           ? "success"
-                          : driver.status === "busy"
+                          : driverStatus === "busy"
                             ? "warning"
                             : "default"
                       }
                       className="text-xs mb-2"
                       dot
                     >
-                      {driver.status}
+                      {driverStatus}
                     </Badge>
 
                     {/* Load */}
                     <div className="text-xs text-zinc-400 mb-2">
-                      <span className="font-medium text-zinc-300">Load:</span> {driver.activeDeliveries}/5
+                      <span className="font-medium text-zinc-300">Orders:</span> {rawDriver._count?.orders ?? 0}
                     </div>
 
-                    {/* Rating */}
-                    {driver.rating && (
-                      <div className="text-xs text-zinc-400 mb-2">
-                        <span className="text-yellow-500">★ {driver.rating.toFixed(1)}</span>
+                    {/* Vehicle */}
+                    {rawDriver.vehicleType && (
+                      <div className="text-xs text-zinc-400 flex gap-1 truncate">
+                        <Truck className="w-3 h-3 flex-shrink-0" />
+                        <span className="line-clamp-1">{rawDriver.vehicleType}</span>
                       </div>
                     )}
-
-                    {/* Location */}
-                    <div className="text-xs text-zinc-400 flex gap-1 truncate">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="line-clamp-1">{driver.location}</span>
-                    </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

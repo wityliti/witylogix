@@ -25,66 +25,6 @@ interface RouteItem {
   createdAt: string;
 }
 
-const SAMPLE_ROUTES: RouteItem[] = [
-  {
-    id: 'route-001',
-    name: 'Downtown AM Delivery',
-    stopsCount: 12,
-    totalDistance: 28.5,
-    totalDuration: 145,
-    assignedDriver: 'Carlos Martinez',
-    status: 'active',
-    lastUsed: '2 hours ago',
-    isTemplate: false,
-    createdAt: '2026-03-10',
-  },
-  {
-    id: 'route-002',
-    name: 'Midtown Express',
-    stopsCount: 8,
-    totalDistance: 15.2,
-    totalDuration: 92,
-    assignedDriver: 'Sofia Lindberg',
-    status: 'scheduled',
-    lastUsed: '1 day ago',
-    isTemplate: false,
-    createdAt: '2026-03-09',
-  },
-  {
-    id: 'template-001',
-    name: 'Weekend Delivery Template',
-    stopsCount: 20,
-    totalDistance: 45.0,
-    totalDuration: 210,
-    status: 'draft',
-    lastUsed: '3 days ago',
-    isTemplate: true,
-    createdAt: '2026-02-28',
-  },
-  {
-    id: 'route-003',
-    name: 'Harbor Area Route',
-    stopsCount: 6,
-    totalDistance: 12.3,
-    totalDuration: 78,
-    assignedDriver: 'Ahmed Khalil',
-    status: 'completed',
-    lastUsed: '5 days ago',
-    isTemplate: false,
-    createdAt: '2026-03-05',
-  },
-  {
-    id: 'route-004',
-    name: 'West Side Distribution',
-    stopsCount: 15,
-    totalDistance: 38.7,
-    totalDuration: 180,
-    status: 'draft',
-    lastUsed: 'Never',
-    isTemplate: false,
-    createdAt: '2026-03-14',
-  },
-];
 
 const statusVariant = (
   s: string
@@ -116,9 +56,6 @@ export default function RoutesPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'templates' | 'completed'>('all');
   const [search, setSearch] = useState('');
 
-  if (loading && routes.length === 0) return <LoadingSkeleton />;
-  if (error && routes.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
-
   // Filter routes
   const filtered = useMemo(() => {
     let result = routes;
@@ -141,18 +78,21 @@ export default function RoutesPage() {
     }
 
     return result;
-  }, [filter, search]);
+  }, [filter, search, routes]);
 
-  // Calculate stats
+  // Calculate stats from real API data
   const stats = useMemo(() => {
-    const total = SAMPLE_ROUTES.length;
-    const active = SAMPLE_ROUTES.filter(
+    const total = routes.length;
+    const active = routes.filter(
       (r) => r.status === 'active' || r.status === 'scheduled'
     ).length;
-    const templates = SAMPLE_ROUTES.filter((r) => r.isTemplate).length;
-    const completed = SAMPLE_ROUTES.filter((r) => r.status === 'completed').length;
+    const templates = routes.filter((r) => r.isTemplate).length;
+    const completed = routes.filter((r) => r.status === 'completed').length;
     return { total, active, templates, completed };
-  }, []);
+  }, [routes]);
+
+  if (loading && routes.length === 0) return <LoadingSkeleton />;
+  if (error && routes.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);

@@ -3,30 +3,27 @@
 import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
-import { Truck, Plus, Eye, Edit2 } from 'lucide-react';
+import Link from 'next/link';
+import { Truck, Plus, Eye } from 'lucide-react';
 import { useApiList } from '@/hooks/use-api';
 
 const getStatusColor = (status: string): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
   const map: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary'> = {
-    active: 'success',
-    maintenance: 'warning',
-    retired: 'danger',
-    idle: 'info',
+    ACTIVE: 'success',
+    MAINTENANCE: 'warning',
+    OFFLINE: 'danger',
+    IDLE: 'info',
   };
   return map[status] || 'default';
 };
 
 const formatMileage = (mileage: number): string => {
   return new Intl.NumberFormat('en-US').format(mileage);
-};
-
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
 interface Vehicle {
@@ -36,10 +33,10 @@ interface Vehicle {
   model: string;
   vin: string;
   licensePlate: string;
-  mileage: number;
+  odometer: number;
+  fuelLevel: number;
   status: string;
-  healthScore: number;
-  assignedDriver?: string;
+  driverId?: string;
 }
 
 export default function VehiclesPage() {
@@ -53,17 +50,11 @@ export default function VehiclesPage() {
   const paginatedVehicles = vehicles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(vehicles.length / pageSize);
 
-  const getHealthColor = (score: number): 'default' | 'success' | 'warning' | 'danger' | 'info' | 'primary' => {
-    if (score >= 90) return 'success';
-    if (score >= 75) return 'warning';
-    return 'danger';
-  };
-
   return (
     <>
       <Header
         title="Vehicle Inventory"
-        subtitle={`${vehicles.length} vehicles • ${vehicles.filter((v) => v.status === 'active').length} active`}
+        subtitle={`${vehicles.length} vehicles • ${vehicles.filter((v) => v.status === 'ACTIVE').length} active`}
         actions={
           <Button variant="primary" size="md">
             <Plus className="w-4 h-4 mr-2" />
@@ -81,9 +72,9 @@ export default function VehiclesPage() {
                 <tr className="border-b border-[#1e1e2e] bg-[#1a1a2e]">
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">Vehicle</th>
                   <th className="p-3 px-4 text-left font-semibold text-gray-400">VIN</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Mileage</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Odometer</th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Fuel</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Driver</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Health</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
                   <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
                 </tr>
@@ -104,23 +95,18 @@ export default function VehiclesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-3 px-4 text-gray-500 text-xs font-mono">{vehicle.vin.slice(-8)}</td>
-                    <td className="p-3 px-4 text-center text-white font-medium">{formatMileage(vehicle.mileage)}</td>
-                    <td className="p-3 px-4 text-center text-gray-400 text-xs">{vehicle.assignedDriver || '—'}</td>
-                    <td className="p-3 px-4 text-center">
-                      <Badge variant={getHealthColor(vehicle.healthScore)}>{vehicle.healthScore}</Badge>
-                    </td>
+                    <td className="p-3 px-4 text-gray-500 text-xs font-mono">{vehicle.vin ? vehicle.vin.slice(-8) : '—'}</td>
+                    <td className="p-3 px-4 text-center text-white font-medium">{formatMileage(vehicle.odometer)} km</td>
+                    <td className="p-3 px-4 text-center text-white font-medium">{vehicle.fuelLevel}%</td>
+                    <td className="p-3 px-4 text-center text-gray-400 text-xs">{vehicle.driverId ? 'Assigned' : '—'}</td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={getStatusColor(vehicle.status)}>{vehicle.status}</Badge>
                     </td>
                     <td className="p-3 px-4 text-center">
                       <div className="flex gap-1 justify-center">
-                        <button className="p-1.5 hover:bg-[#1a1a2e] rounded-md transition-colors" title="View Details">
+                        <Link href={`/fleet/vehicles/${vehicle.id}`} className="p-1.5 hover:bg-[#1a1a2e] rounded-md transition-colors" title="View Details">
                           <Eye className="w-4 h-4 text-gray-400" />
-                        </button>
-                        <button className="p-1.5 hover:bg-[#1a1a2e] rounded-md transition-colors" title="Edit">
-                          <Edit2 className="w-4 h-4 text-gray-400" />
-                        </button>
+                        </Link>
                       </div>
                     </td>
                   </tr>

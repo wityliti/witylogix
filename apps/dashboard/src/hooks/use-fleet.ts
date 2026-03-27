@@ -105,7 +105,7 @@ export function useVehicles(filters?: FleetFilters): UseApiListResult<Vehicle> {
 }
 
 export function useVehicleDetail(id: string | null): UseApiQueryResult<Vehicle> {
-  return useApiQuery<Vehicle>(id ? `/api/v4/fleet/vehicles/${id}` : null);
+  return useApiQuery<Vehicle>(id ? `/api/v4/fleet/${id}` : null);
 }
 
 export function useMaintenanceEvents(filters?: ApiFilters): UseApiListResult<MaintenanceEvent> {
