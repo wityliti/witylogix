@@ -2,15 +2,18 @@
  * Root layout — App shell for the Shopify embedded admin app.
  *
  * Provides:
+ *   - App Bridge (`@shopify/shopify-app-react-router/react` AppProvider) so React
+ *     Router data requests include `Authorization: Bearer <session token>` on
+ *     client navigations. Without this, loaders see no token / no shop+host in the
+ *     URL and auth fails (often surfaced as 404 in the error boundary).
  *   - Polaris AppProvider with i18n translations + linkComponent (client-side nav)
  *   - Polaris Frame with Navigation sidebar
  *   - Polaris Loading bar during route transitions
- *   - Error boundary with Polaris Banner + Page
+ *   - Error boundary (Shopify HTML responses + Polaris fallback)
  *
  * Embedded apps must not use full document navigations for in-app links: Polaris
- * Navigation defaults to <a href>. That drops ?embedded=…&host=… and breaks auth,
- * which surfaces as 404 from loaders. linkComponent wires Navigation (and other
- * Polaris links) to React Router <Link> for SPA transitions.
+ * Navigation defaults to <a href>. That drops ?embedded=…&host=… and breaks auth.
+ * linkComponent wires Navigation (and other Polaris links) to React Router <Link>.
  */
 
 import { forwardRef, type ComponentPropsWithoutRef } from "react";
@@ -25,7 +28,12 @@ import {
   useRouteError,
   isRouteErrorResponse,
   useLocation,
+  useLoaderData,
 } from "react-router";
+import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import { AppProvider as ShopifyAppBridgeProvider } from "@shopify/shopify-app-react-router/react";
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import { authenticate } from "~/lib/shopify.server";
 import {
   AppProvider,
   Frame,
@@ -54,6 +62,23 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 export function links() {
   return [{ rel: "stylesheet", href: polarisStyles }];
 }
+
+/** OAuth + webhooks/proxy/health handle their own auth; do not run admin auth in root. */
+function skipRootShopifyAdminAuth(pathname: string): boolean {
+  if (pathname.startsWith("/auth")) return true;
+  if (pathname.startsWith("/api/")) return true;
+  if (pathname === "/health") return true;
+  return false;
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (!skipRootShopifyAdminAuth(new URL(request.url).pathname)) {
+    await authenticate.admin(request);
+  }
+  return { apiKey: process.env.SHOPIFY_API_KEY ?? "" };
+}
+
+export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 /** Polaris `linkComponent`: maps `url` → React Router `to` for in-app navigation. */
 type PolarisRouterLinkProps = Omit<
@@ -215,6 +240,7 @@ function AppNavigation({ currentPath }: { currentPath: string }) {
 export default function App() {
   const navigation = useNavigation();
   const location = useLocation();
+  const { apiKey } = useLoaderData<typeof loader>();
   const isLoading = navigation.state === "loading";
 
   return (
@@ -226,12 +252,14 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <AppProvider i18n={enTranslations} linkComponent={PolarisRouterLink}>
-          <Frame navigation={<AppNavigation currentPath={location.pathname} />}>
-            {isLoading && <Loading />}
-            <Outlet />
-          </Frame>
-        </AppProvider>
+        <ShopifyAppBridgeProvider embedded apiKey={apiKey}>
+          <AppProvider i18n={enTranslations} linkComponent={PolarisRouterLink}>
+            <Frame navigation={<AppNavigation currentPath={location.pathname} />}>
+              {isLoading && <Loading />}
+              <Outlet />
+            </Frame>
+          </AppProvider>
+        </ShopifyAppBridgeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -241,8 +269,32 @@ export default function App() {
 
 // ─── Error Boundary ────────────────────────────────────────
 
+function isShopifyThrownResponse(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const name = (error as { constructor?: { name?: string } }).constructor?.name;
+  return name === "ErrorResponse" || name === "ErrorResponseImpl";
+}
+
 export function ErrorBoundary() {
   const error = useRouteError();
+
+  if (isShopifyThrownResponse(error)) {
+    return (
+      <html lang="en">
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Shopify</title>
+          <Meta />
+          <Links />
+        </head>
+        <body>
+          {boundary.error(error)}
+          <Scripts />
+        </body>
+      </html>
+    );
+  }
 
   let title = "Something went wrong";
   let message = "An unexpected error occurred. Please try again.";

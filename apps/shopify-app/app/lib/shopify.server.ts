@@ -60,6 +60,9 @@ const shopify = shopifyApp({
  */
 export const authenticate = shopify.authenticate;
 
+/** CSP + App Bridge preloads for embedded iframes (used by `entry.server.tsx`). */
+export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
+
 /**
  * Shopify session management utilities.
  */
