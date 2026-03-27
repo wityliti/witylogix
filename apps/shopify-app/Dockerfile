@@ -45,14 +45,19 @@ RUN pnpm build
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 
-# pnpm deploy --prod creates fresh node_modules that lack the generated .prisma/client/ files.
-# shopify-app imports PrismaClient directly from @prisma/client (not the custom output path),
-# so we regenerate without the custom output to populate .prisma/client/ in standalone.
-# Schema must live inside /standalone/ so Prisma resolves /standalone/package.json as project
-# root and writes output to /standalone/node_modules/.prisma/client/ (default path).
+# pnpm deploy --prod with pnpm 9.x creates node_modules/@prisma/client as a hoisted real
+# directory (via public-hoist-pattern in .npmrc). However, Prisma's default generate targets
+# the pnpm virtual store, not the hoisted directory. At runtime, require('@prisma/client')
+# resolves the hoisted copy first — which has no engine binary → silent crash → HTTP 503.
+#
+# Fix: explicitly set output = "../../node_modules/@prisma/client" so Prisma writes the
+# engine directly into the hoisted directory that Node.js will actually resolve at runtime.
 WORKDIR /standalone
 RUN cp -r /app/packages/db/prisma ./prisma_default && \
     sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
+    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/@prisma/client\""; next } 1' \
+        ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
+    mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
     /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
     rm -rf ./prisma_default
 
