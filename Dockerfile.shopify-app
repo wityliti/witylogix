@@ -56,4 +56,6 @@ COPY --from=builder /app/apps/shopify-app/build ./build
 
 EXPOSE 3000
 
-CMD ["node", "node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
+# Diagnostic wrapper: print key startup info then exec the server.
+# This also busts the Docker layer cache so the runner is rebuilt fresh.
+CMD ["sh", "-c", "echo '=== shopify-app starting ===' && echo PORT=$PORT && echo '--- checking @react-router/serve ---' && ls node_modules/@react-router/serve/bin.js 2>&1 || echo 'MISSING bin.js' && echo '--- checking .prisma ---' && ls node_modules/.prisma/client/ 2>&1 | head -3 || echo 'no .prisma/client' && echo '--- node_modules top level ---' && ls node_modules/ | head -10 && echo '--- starting server ---' && exec node node_modules/@react-router/serve/bin.js ./build/server/index.js"]
