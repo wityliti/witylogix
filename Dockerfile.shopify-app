@@ -34,6 +34,12 @@ RUN pnpm build
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 
+# Copy the prisma CLI (fully dereferenced, no symlinks) to a known path so the
+# runner stage can run `prisma migrate deploy` at startup.
+# `prisma` is hoisted via public-hoist-pattern so it's at node_modules/prisma/.
+RUN cp -rL /app/node_modules/prisma /prisma-cli && \
+    ls /prisma-cli/build/index.js
+
 # --- Prisma client for production ---
 #
 # Problem: pnpm deploy --prod creates a virtual store under node_modules/.pnpm/.
@@ -74,10 +80,16 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 COPY --from=builder /app/apps/shopify-app/build ./build
 
+# Copy Prisma CLI (dereferenced) and schema/migrations for startup migrations
+COPY --from=builder /prisma-cli /usr/local/lib/prisma-cli
+COPY --from=builder /app/packages/db/prisma ./prisma
+
 # Railway's internal runner maps `node_modules` → `app_modules` in start commands.
 # Create a symlink so both paths resolve to the same directory.
 RUN ln -s /app/node_modules /app/app_modules
 
 EXPOSE 3000
 
-CMD ["node", "/app/node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
+# Run Prisma migrations then start the server.
+# DATABASE_URL is injected at runtime by Railway.
+CMD ["sh", "-c", "node /usr/local/lib/prisma-cli/build/index.js migrate deploy --schema ./prisma/schema && node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"]
