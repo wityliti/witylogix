@@ -5,56 +5,73 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Truck, Package } from 'lucide-react';
+import { Truck, Package, RefreshCw } from 'lucide-react';
+import { useApiList } from '@/hooks/use-api';
 
-interface Delivery {
+interface Shipment {
   id: string;
-  orderId: string;
-  customer: string;
-  status: 'pending' | 'in-transit' | 'completed' | 'failed' | 'returned';
-  location: string;
-  estimatedDelivery: string;
-  actualDelivery?: string;
-  distance: number;
-  driver?: string;
+  shipmentNumber: string;
+  status: string;
+  deliveryDate?: string;
+  deliveryAddress?: string;
+  driverId?: string;
+  orderId?: string;
+  order?: { customerName?: string; shopifyOrderNumber?: string };
+  createdAt: string;
 }
 
-const mockDeliveries: Delivery[] = [
-  { id: "1", orderId: "ORD-001", customer: "John Smith", status: "completed", location: "123 Main St", estimatedDelivery: "2024-03-21", distance: 5.2, driver: "Alex" },
-  { id: "2", orderId: "ORD-002", customer: "Jane Doe", status: "in-transit", location: "456 Oak Ave", estimatedDelivery: "2024-03-21", distance: 3.8, driver: "Maria" },
-  { id: "3", orderId: "ORD-003", customer: "Bob Wilson", status: "pending", location: "789 Pine Rd", estimatedDelivery: "2024-03-21", distance: 6.1 },
-  { id: "4", orderId: "ORD-004", customer: "Alice Johnson", status: "completed", location: "321 Elm St", estimatedDelivery: "2024-03-20", distance: 4.5, driver: "John" },
-  { id: "5", orderId: "ORD-005", customer: "Charlie Brown", status: "failed", location: "654 Maple Dr", estimatedDelivery: "2024-03-19", distance: 7.2, driver: "David" },
-];
+const STATUS_FILTER_MAP: Record<string, string | undefined> = {
+  all: undefined,
+  pending: 'PENDING',
+  'in-transit': 'IN_TRANSIT',
+  delivered: 'DELIVERED',
+  failed: 'FAILED',
+};
+
+const API_TO_DISPLAY: Record<string, string> = {
+  PENDING: 'pending',
+  PROCESSING: 'pending',
+  READY_FOR_PICKUP: 'pending',
+  PICKED_UP: 'in-transit',
+  IN_TRANSIT: 'in-transit',
+  OUT_FOR_DELIVERY: 'in-transit',
+  ARRIVED: 'in-transit',
+  DELIVERED: 'delivered',
+  FAILED: 'failed',
+  RETURNED: 'failed',
+  CANCELLED: 'failed',
+};
 
 export default function DeliveryPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [deliveries] = useState<Delivery[]>(mockDeliveries);
+
+  const apiStatus = STATUS_FILTER_MAP[statusFilter];
+  const { items: shipments, loading, error, refetch } = useApiList<Shipment>(
+    '/api/v4/shipments',
+    { limit: 50, ...(apiStatus ? { status: apiStatus } : {}) },
+  );
+
+  const displayStatus = (s: string) => API_TO_DISPLAY[s] ?? s.toLowerCase();
 
   const filtered = statusFilter === 'all'
-    ? deliveries
-    : deliveries.filter((d) => d.status === statusFilter);
+    ? shipments
+    : shipments.filter((s) => displayStatus(s.status) === statusFilter);
 
   const stats = {
-    pending: deliveries.filter((d) => d.status === 'pending').length,
-    inTransit: deliveries.filter((d) => d.status === 'in-transit').length,
-    completed: deliveries.filter((d) => d.status === 'completed').length,
-    failed: deliveries.filter((d) => d.status === 'failed').length,
+    pending: shipments.filter((s) => ['pending'].includes(displayStatus(s.status))).length,
+    inTransit: shipments.filter((s) => displayStatus(s.status) === 'in-transit').length,
+    completed: shipments.filter((s) => displayStatus(s.status) === 'delivered').length,
+    failed: shipments.filter((s) => displayStatus(s.status) === 'failed').length,
   };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'in-transit':
-        return 'primary';
-      case 'pending':
-        return 'warning';
-      case 'failed':
-      case 'returned':
-        return 'danger';
-      default:
-        return 'default';
+  const getStatusVariant = (status: string): 'success' | 'primary' | 'warning' | 'danger' | 'default' => {
+    const display = displayStatus(status);
+    switch (display) {
+      case 'delivered': return 'success';
+      case 'in-transit': return 'primary';
+      case 'pending': return 'warning';
+      case 'failed': return 'danger';
+      default: return 'default';
     }
   };
 
@@ -68,18 +85,23 @@ export default function DeliveryPage() {
                 <h1 className="text-2xl font-bold text-white">Deliveries</h1>
                 <p className="text-sm text-gray-400 mt-1">Track delivery operations</p>
               </div>
-              <Button variant="primary" size="md">
-                <Package className="w-4 h-4" />
-                New Delivery
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+                  <RefreshCw className={cn('w-4 h-4', loading && 'animate-spin')} />
+                </Button>
+                <Button variant="primary" size="md">
+                  <Package className="w-4 h-4" />
+                  New Delivery
+                </Button>
+              </div>
             </div>
 
             <div className="flex gap-2 flex-wrap">
               {[
-                { label: 'All', value: 'all', count: deliveries.length },
+                { label: 'All', value: 'all', count: shipments.length },
                 { label: 'Pending', value: 'pending', count: stats.pending },
                 { label: 'In Transit', value: 'in-transit', count: stats.inTransit },
-                { label: 'Completed', value: 'completed', count: stats.completed },
+                { label: 'Delivered', value: 'delivered', count: stats.completed },
                 { label: 'Failed', value: 'failed', count: stats.failed },
               ].map((tab) => (
                 <button
@@ -102,38 +124,61 @@ export default function DeliveryPage() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-7xl mx-auto space-y-4">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i} className="p-4 bg-[#12121a] border border-[#1e1e2e] animate-pulse h-20">{" "}</Card>
+              ))}
+            </div>
+          ) : error ? (
+            <Card className="p-12 bg-[#12121a] border border-[#1e1e2e] text-center">
+              <p className="text-red-400">Failed to load deliveries. Please try again.</p>
+              <Button variant="secondary" size="sm" className="mt-4" onClick={refetch}>
+                Retry
+              </Button>
+            </Card>
+          ) : filtered.length === 0 ? (
             <Card className="p-12 bg-[#12121a] border border-[#1e1e2e] text-center">
               <Truck className="w-12 h-12 text-gray-500 mx-auto mb-4" />
               <p className="text-gray-400">No deliveries found</p>
             </Card>
           ) : (
             <div className="space-y-3">
-              {filtered.map((delivery) => (
+              {filtered.map((shipment) => (
                 <Card
-                  key={delivery.id}
+                  key={shipment.id}
                   className="p-4 bg-[#12121a] border border-[#1e1e2e] hover:border-[#2e2e3e] cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-white">{delivery.customer}</h3>
-                        <Badge variant={getStatusVariant(delivery.status) as any}>
-                          {delivery.status.replace('-', ' ')}
+                        <h3 className="font-semibold text-white">
+                          {shipment.order?.customerName ?? 'Unknown Customer'}
+                        </h3>
+                        <Badge variant={getStatusVariant(shipment.status)}>
+                          {displayStatus(shipment.status).replace('-', ' ')}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-400 mb-2">Order #{delivery.orderId}</p>
+                      <p className="text-sm text-gray-400 mb-2">
+                        {shipment.shipmentNumber}
+                        {shipment.order?.shopifyOrderNumber && ` · Order #${shipment.order.shopifyOrderNumber}`}
+                      </p>
                       <div className="flex gap-4 text-sm text-gray-500">
-                        <span>{delivery.location}</span>
-                        <span>{delivery.distance} mi</span>
-                        {delivery.driver && <span>Driver: {delivery.driver}</span>}
+                        {shipment.deliveryAddress && <span>{shipment.deliveryAddress}</span>}
+                        {shipment.driverId && <span>Driver assigned</span>}
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-white">
-                        {new Date(delivery.estimatedDelivery).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs text-gray-500">Est. Delivery</p>
+                      {shipment.deliveryDate ? (
+                        <>
+                          <p className="text-sm font-medium text-white">
+                            {new Date(shipment.deliveryDate).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-gray-500">Est. Delivery</p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-gray-500">No date set</p>
+                      )}
                     </div>
                   </div>
                 </Card>
