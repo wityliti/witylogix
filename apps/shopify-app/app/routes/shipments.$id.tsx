@@ -253,7 +253,7 @@ export default function ShipmentDetailPage() {
       ? [
           {
             term: "GPS",
-            description: `${shipment.originAddress.latitude.toFixed(6)}, ${shipment.originAddress.longitude.toFixed(6)}`,
+            description: `${Number(shipment.originAddress.latitude).toFixed(6)}, ${Number(shipment.originAddress.longitude).toFixed(6)}`,
           },
         ]
       : []),
@@ -272,7 +272,7 @@ export default function ShipmentDetailPage() {
       ? [
           {
             term: "GPS",
-            description: `${shipment.destinationAddress.latitude.toFixed(6)}, ${shipment.destinationAddress.longitude.toFixed(6)}`,
+            description: `${Number(shipment.destinationAddress.latitude).toFixed(6)}, ${Number(shipment.destinationAddress.longitude).toFixed(6)}`,
           },
         ]
       : []),

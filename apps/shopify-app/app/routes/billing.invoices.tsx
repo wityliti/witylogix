@@ -137,7 +137,7 @@ export default function BillingInvoices() {
                   Total Paid
                 </Text>
                 <Text as="p" variant="headingLg">
-                  ${totalPaid.toFixed(2)}
+                  ${Number(totalPaid).toFixed(2)}
                 </Text>
               </BlockStack>
             </Card>
@@ -149,7 +149,7 @@ export default function BillingInvoices() {
                   Outstanding
                 </Text>
                 <Text as="p" variant="headingLg">
-                  ${outstanding.toFixed(2)}
+                  ${Number(outstanding).toFixed(2)}
                 </Text>
                 {outstanding > 0 && (
                   <Badge tone="critical">Action Required</Badge>
@@ -211,7 +211,7 @@ export default function BillingInvoices() {
                       </IndexTable.Cell>
                       <IndexTable.Cell>
                         <Text as="p" variant="bodySm">
-                          ${invoice.amount.toFixed(2)}
+                          ${Number(invoice.amount).toFixed(2)}
                         </Text>
                       </IndexTable.Cell>
                       <IndexTable.Cell>

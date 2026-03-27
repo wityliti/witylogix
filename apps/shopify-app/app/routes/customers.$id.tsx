@@ -157,7 +157,7 @@ export default function CustomerDetail() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold">
-          ${order.totalAmount.toFixed(2)}
+          ${Number(order.totalAmount).toFixed(2)}
         </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
@@ -206,7 +206,7 @@ export default function CustomerDetail() {
             <Card>
               <BlockStack gap="100" inlineAlign="center">
                 <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
-                  ${customer.totalSpent.toFixed(2)}
+                  ${Number(customer.totalSpent).toFixed(2)}
                 </Text>
                 <Text as="span" variant="bodySm" tone="subdued" alignment="center">
                   Total Spent
@@ -216,7 +216,7 @@ export default function CustomerDetail() {
             <Card>
               <BlockStack gap="100" inlineAlign="center">
                 <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
-                  ${averageOrderValue.toFixed(2)}
+                  ${Number(averageOrderValue).toFixed(2)}
                 </Text>
                 <Text as="span" variant="bodySm" tone="subdued" alignment="center">
                   Average Order Value
