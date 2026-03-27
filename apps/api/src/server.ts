@@ -214,6 +214,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
   await safeRegister(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
   await safeRegister(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
+  await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/vehicles" });
+  await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
+  await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
   await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
   await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
@@ -238,6 +241,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/route-optimization.js"), { prefix: "/api/v4/route-optimization" });
   await safeRegister(import("./routes/live-tracking.js"), { prefix: "/api/v4/tracking/live" });
   await safeRegister(import("./routes/proof-of-delivery.js"), { prefix: "/api/v4/pod/v2" });
+  await safeRegister(import("./routes/supply-chain.js"), { prefix: "/api/v4/supply-chain" });
+  await safeRegister(import("./routes/inventory.js"), { prefix: "/api/v4/inventory" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

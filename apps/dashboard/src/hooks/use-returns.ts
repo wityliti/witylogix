@@ -27,20 +27,27 @@ export interface Return {
   orderId: string;
   customerId: string;
   customerName: string;
-  status: ReturnStatus;
+  customerEmail?: string;
+  status: ReturnStatus | string;
   reason: string;
   description?: string;
   items: ReturnItem[];
-  totalRefundAmount: number;
-  refundStatus: 'pending' | 'processed' | 'failed';
+  totalRefundAmount?: number;
+  refundAmount?: number;
+  refundStatus?: 'pending' | 'processed' | 'failed';
   refundDate?: string;
   createdAt: string;
-  updatedAt: string;
-  initiatedAt: string;
+  updatedAt?: string;
+  initiatedAt?: string;
+  requestedAt?: string;
   approvedAt?: string;
+  receivedAt?: string;
+  refundedAt?: string;
   rejectedAt?: string;
   rejectionReason?: string;
   pickupDate?: string;
+  notes?: string | null;
+  timeline?: unknown[];
 }
 
 /**
@@ -48,13 +55,14 @@ export interface Return {
  */
 export interface ReturnItem {
   id: string;
-  orderItemId: string;
-  productId: string;
-  productName: string;
+  orderItemId?: string;
+  productId?: string;
+  productName?: string;
+  name?: string;
   quantity: number;
-  unitPrice: number;
-  condition: 'unopened' | 'like_new' | 'good' | 'fair' | 'damaged';
-  refundAmount: number;
+  unitPrice?: number;
+  condition: string;
+  refundAmount?: number;
 }
 
 /**

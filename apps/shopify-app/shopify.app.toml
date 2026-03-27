@@ -4,8 +4,8 @@
 # ═══════════════════════════════════════════════════════════
 
 name = "Witylogix"
-client_id = "${SHOPIFY_API_KEY}"
-application_url = "${SHOPIFY_APP_URL}"
+client_id = "797a3289c481d36f18c0d70fe1bbc261"
+application_url = "https://store.witylogix.com"
 embedded = true
 
 # ─── Access Scopes ─────────────────────────────────────────
@@ -15,14 +15,14 @@ scopes = "read_products,write_products,read_orders,write_orders,read_fulfillment
 # ─── OAuth ─────────────────────────────────────────────────
 [auth]
 redirect_urls = [
-  "${SHOPIFY_APP_URL}/auth/callback",
+  "https://store.witylogix.com/auth/callback",
 ]
 
 # ─── App Proxy ─────────────────────────────────────────────
 # Allows storefront pages to make authenticated requests to your app.
 # Merchants access via: https://their-shop.myshopify.com/apps/witylogix/...
 [app_proxy]
-url = "${SHOPIFY_APP_URL}/api/proxy"
+url = "https://store.witylogix.com/api/proxy"
 subpath = "witylogix"
 prefix = "apps"
 
@@ -73,6 +73,6 @@ embedded = false
 # ─── App Store Listing (URLs) ──────────────────────────────
 # These point to the docs site hosted publicly
 [app_settings]
-privacy_url = "https://docs.witylogix.io/docs/legal/privacy-policy"
-terms_url = "https://docs.witylogix.io/docs/legal/terms-of-service"
-gdpr_url = "https://docs.witylogix.io/docs/legal/gdpr"
+privacy_url = "https://docs.witylogix.com/docs/legal/privacy-policy"
+terms_url = "https://docs.witylogix.com/docs/legal/terms-of-service"
+gdpr_url = "https://docs.witylogix.com/docs/legal/gdpr"

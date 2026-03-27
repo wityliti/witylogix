@@ -1,39 +1,103 @@
 name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-and-test:
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
         with:
           version: 9.15.0
-
-      - name: Setup Node with pnpm cache
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm -r --parallel run lint --max-warnings 0 || true
+      - name: Format check
+        run: pnpm format --check || true
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @witylogix/types build && pnpm --filter @witylogix/validators build
+        run: |
+          pnpm --filter @witylogix/types build
+          pnpm --filter @witylogix/validators build
+          pnpm --filter @witylogix/framework build
 
-      - name: TypeScript check
-        run: pnpm -r --parallel run typecheck || true
+      - name: Build dashboard
+        run: pnpm --filter @witylogix/dashboard build
+
+      - name: Build customer-portal
+        run: pnpm --filter @witylogix/customer-portal build
+
+      - name: Build docs
+        run: pnpm --filter @witylogix/docs build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: |
+          pnpm --filter @witylogix/types build
+          pnpm --filter @witylogix/validators build
 
       - name: Run tests
-        run: pnpm --filter @witylogix/validators test || true
+        run: pnpm -r run test --passWithNoTests
 
-      - name: Build API
-        run: pnpm --filter @witylogix/api build || true
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high || true
+
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified

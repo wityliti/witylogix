@@ -3,9 +3,23 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+
+interface ApiOrder {
+  id: string;
+  shopifyOrderNumber: string;
+  customerName: string;
+  totalPrice: number;
+  status: string;
+  createdAt: string;
+}
+
+interface ApiRoute {
+  id: string;
+  name: string;
+}
 
 interface Order {
   id: string;
@@ -22,17 +36,22 @@ interface BulkOperationResult {
   details: { orderId: string; message: string }[];
 }
 
+function mapApiOrder(o: ApiOrder): Order {
+  return {
+    id: o.id,
+    orderNumber: o.shopifyOrderNumber || o.id.slice(0, 8),
+    customer: o.customerName || 'Unknown',
+    total: o.totalPrice || 0,
+    status: (o.status || 'pending').toLowerCase(),
+    date: o.createdAt ? o.createdAt.slice(0, 10) : '',
+  };
+}
+
 export default function BulkOperationsPage() {
-  const [orders, setOrders] = useState<Order[]>([
-    { id: '1', orderNumber: '#WL-10042', customer: 'Rajesh Kumar', total: 8953, status: 'ready_to_ship', date: '2026-03-04' },
-    { id: '2', orderNumber: '#WL-10041', customer: 'Priya Singh', total: 5432, status: 'confirmed', date: '2026-03-03' },
-    { id: '3', orderNumber: '#WL-10040', customer: 'Amit Patel', total: 12500, status: 'pending', date: '2026-03-02' },
-    { id: '4', orderNumber: '#WL-10039', customer: 'Sneha Reddy', total: 3200, status: 'ready_to_ship', date: '2026-03-01' },
-    { id: '5', orderNumber: '#WL-10038', customer: 'Vikram Kumar', total: 7800, status: 'pending', date: '2026-02-28' },
-    { id: '6', orderNumber: '#WL-10037', customer: 'Ananya Gupta', total: 4500, status: 'confirmed', date: '2026-02-27' },
-    { id: '7', orderNumber: '#WL-10036', customer: 'Karan Singh', total: 9999, status: 'ready_to_ship', date: '2026-02-26' },
-    { id: '8', orderNumber: '#WL-10035', customer: 'Neha Sharma', total: 6700, status: 'confirmed', date: '2026-02-25' }
-  ]);
+  const { items: apiOrders, loading: ordersLoading, error: ordersError, refetch } = useApiList<ApiOrder>('/api/v4/orders', { limit: 100 });
+  const { items: apiRoutes, loading: routesLoading } = useApiList<ApiRoute>('/api/v4/routes', { limit: 50 });
+
+  const orders = apiOrders.map(mapApiOrder);
 
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,13 +63,6 @@ export default function BulkOperationsPage() {
   const [showProgress, setShowProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const [operationResults, setOperationResults] = useState<BulkOperationResult | null>(null);
-
-  const mockRoutes = [
-    { id: '1', name: 'Bangalore East - Route A' },
-    { id: '2', name: 'Bangalore West - Route B' },
-    { id: '3', name: 'Bangalore North - Route C' },
-    { id: '4', name: 'Bangalore South - Route D' }
-  ];
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,30 +94,35 @@ export default function BulkOperationsPage() {
     setShowConfirmation(true);
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     setShowConfirmation(false);
     setShowProgress(true);
     setProgress(0);
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setOperationResults({
-            success: selectedOrders.size - 1,
-            failed: 1,
-            details: [
-              { orderId: '#WL-10042', message: 'Successfully processed' },
-              { orderId: '#WL-10041', message: 'Successfully processed' },
-              { orderId: '#WL-10040', message: 'Failed: Order locked by another user' }
-            ]
-          });
-          setShowProgress(false);
-          return 100;
+    const ids = Array.from(selectedOrders);
+    let success = 0;
+    const details: { orderId: string; message: string }[] = [];
+
+    for (let i = 0; i < ids.length; i++) {
+      const orderId = ids[i];
+      const order = orders.find(o => o.id === orderId);
+      try {
+        if (bulkAction === 'update_status') {
+          await api.patch(`/api/v4/orders/${orderId}/status`, { status: newStatus.toUpperCase() });
+        } else if (bulkAction === 'cancel') {
+          await api.delete(`/api/v4/orders/${orderId}`);
         }
-        return prev + 15;
-      });
-    }, 300);
+        success++;
+        details.push({ orderId: order?.orderNumber || orderId, message: 'Successfully processed' });
+      } catch {
+        details.push({ orderId: order?.orderNumber || orderId, message: 'Failed to process' });
+      }
+      setProgress(Math.round(((i + 1) / ids.length) * 100));
+    }
+
+    await refetch();
+    setOperationResults({ success, failed: ids.length - success, details });
+    setShowProgress(false);
   };
 
   const resetOperations = () => {
@@ -135,6 +152,22 @@ export default function BulkOperationsPage() {
     };
     return labels[status] || status;
   };
+
+  if (ordersLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
+        <p className="text-gray-400">Loading orders...</p>
+      </div>
+    );
+  }
+
+  if (ordersError) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
+        <p className="text-red-400">Error loading orders: {ordersError.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
@@ -245,10 +278,12 @@ export default function BulkOperationsPage() {
                   <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.customer}</td>
                   <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">₹{order.total.toLocaleString()}</td>
                   <td className="border-b border-[#1e1e2e] p-3 text-sm">
-                    <Badge
-                      label={getStatusLabel(order.status)}
-                      color={statusColors[order.status]}
-                    />
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                      style={{ color: statusColors[order.status] || '#8888a0', background: `${statusColors[order.status] || '#8888a0'}22` }}
+                    >
+                      {getStatusLabel(order.status)}
+                    </span>
                   </td>
                   <td className="border-b border-[#1e1e2e] p-3 text-sm text-gray-300">{order.date}</td>
                 </tr>
@@ -277,8 +312,6 @@ export default function BulkOperationsPage() {
                 <option value="">-- Select Action --</option>
                 <option value="update_status">Update Status</option>
                 <option value="assign_route">Assign to Route</option>
-                <option value="print_labels">Print Labels</option>
-                <option value="export_csv">Export to CSV</option>
                 <option value="cancel">Cancel Orders</option>
               </select>
             </div>
@@ -306,9 +339,10 @@ export default function BulkOperationsPage() {
                   className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                   value={selectedRoute}
                   onChange={(e) => setSelectedRoute(e.target.value)}
+                  disabled={routesLoading}
                 >
                   <option value="">-- Select Route --</option>
-                  {mockRoutes.map(route => (
+                  {apiRoutes.map(route => (
                     <option key={route.id} value={route.id}>{route.name}</option>
                   ))}
                 </select>
@@ -341,7 +375,7 @@ export default function BulkOperationsPage() {
             <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
             <div className="text-sm text-gray-300 mb-5 leading-relaxed">
               <div className="mb-2.5">
-                Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : 'Execute'}</strong>
+                Action: <strong>{bulkAction === 'update_status' ? 'Update Status' : bulkAction === 'assign_route' ? 'Assign to Route' : bulkAction === 'cancel' ? 'Cancel Orders' : 'Execute'}</strong>
               </div>
               <div className="mb-2.5">
                 Orders selected: <strong>{selectedOrders.size}</strong>
@@ -353,10 +387,10 @@ export default function BulkOperationsPage() {
               )}
               {bulkAction === 'assign_route' && (
                 <div>
-                  Route: <strong>{mockRoutes.find(r => r.id === selectedRoute)?.name}</strong>
+                  Route: <strong>{apiRoutes.find(r => r.id === selectedRoute)?.name}</strong>
                 </div>
               )}
-              <div className="mt-4 text-wl-muted">
+              <div className="mt-4 text-gray-400">
                 This action will affect all selected orders. Do you want to continue?
               </div>
             </div>

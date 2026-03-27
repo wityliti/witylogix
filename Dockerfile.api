@@ -6,16 +6,16 @@ RUN pnpm install --frozen-lockfile
 
 # Build workspace packages that API depends on
 RUN cd packages/db && npx prisma generate --schema=prisma/schema
-RUN cd packages/framework && npx tsup 2>/dev/null || true
+RUN cd packages/db && npx tsc || true
+RUN cp -r packages/db/src/generated packages/db/dist/generated 2>/dev/null || true
+RUN cd packages/types && npx tsc || true
 RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
+RUN cd packages/framework && npx tsup 2>/dev/null || true
 
 FROM node:20-alpine
-RUN npm install -g tsx && apk add --no-cache dumb-init curl postgresql-client redis
+RUN npm install -g tsx && apk add --no-cache dumb-init curl
 WORKDIR /app
 COPY --from=builder /app ./
-RUN chmod +x infra/docker/entrypoint.sh
 ENV NODE_ENV=production
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s CMD curl -f http://localhost:3000/health || exit 1
-ENTRYPOINT ["/bin/sh", "/app/infra/docker/entrypoint.sh"]
-CMD ["tsx", "apps/api/src/server.ts"]
+CMD ["dumb-init", "tsx", "apps/api/src/server.ts"]

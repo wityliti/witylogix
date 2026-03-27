@@ -1,0 +1,2 @@
+[start]
+cmd = "node app_modules/@react-router/serve/bin.js ./build/server/index.js"

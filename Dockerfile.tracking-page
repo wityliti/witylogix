@@ -12,4 +12,4 @@ COPY --from=builder /app/apps/tracking-page/dist ./dist
 ENV NODE_ENV=production
 EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]

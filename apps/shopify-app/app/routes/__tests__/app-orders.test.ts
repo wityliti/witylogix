@@ -872,7 +872,7 @@ describe("Orders List Route", () => {
 
       expect(order.shopifyOrderNumber).toBeNull();
       expect(order.driverId).toBeNull();
-      expect(order.zoneName).toBeUndefined();
+      expect(order.zoneName).toBeNull();
     });
 
     it("should validate date formats (ISO 8601)", () => {

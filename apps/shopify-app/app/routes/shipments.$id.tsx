@@ -20,6 +20,22 @@ import { ShipmentStatusBadge } from "~/components/ShipmentStatusBadge";
 import { StatusTimeline } from "~/components/StatusTimeline";
 import { createApiClient, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
+import {
+  Page,
+  Layout,
+  Card,
+  DescriptionList,
+  Button,
+  BlockStack,
+  InlineStack,
+  Text,
+  Select,
+  TextField,
+  Box,
+  Divider,
+  Thumbnail,
+  Banner,
+} from "@shopify/polaris";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -157,6 +173,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
   return redirect(`/shipments/${params.id}`);
 }
 
+// ─── Helpers ──────────────────────────────────────────────
+
+function formatAddress(addr: ShipmentDetail["originAddress"]): string {
+  const parts = [
+    addr.line1,
+    addr.line2,
+    [addr.city, addr.province, addr.postalCode].filter(Boolean).join(", "),
+    addr.country,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function ShipmentDetailPage() {
@@ -165,352 +193,329 @@ export default function ShipmentDetailPage() {
   const isSubmitting = navigation.state === "submitting";
   const nextStatuses = STATUS_TRANSITIONS[shipment.status] ?? [];
 
+  const statusOptions = nextStatuses.map((s) => ({
+    label: s.replace(/_/g, " "),
+    value: s,
+  }));
+
+  const driverOptions = [
+    { label: "Select a driver...", value: "" },
+    ...availableDrivers.map((d) => ({
+      label: `${d.name} (${d.activeShipments} active)`,
+      value: d.id,
+    })),
+  ];
+
+  const shipmentDetailsItems = [
+    { term: "Carrier", description: shipment.carrier ?? "\u2014" },
+    {
+      term: "Delivery Method",
+      description: shipment.deliveryMethod
+        ? shipment.deliveryMethod.replace(/_/g, " ")
+        : "\u2014",
+    },
+    {
+      term: "ETA",
+      description: shipment.eta
+        ? new Date(shipment.eta).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        : "Not available",
+    },
+    {
+      term: "Weight",
+      description: shipment.weight != null ? `${shipment.weight}g` : "\u2014",
+    },
+    ...(shipment.dimensions
+      ? [
+          {
+            term: "Dimensions",
+            description: `${shipment.dimensions.length} x ${shipment.dimensions.width} x ${shipment.dimensions.height} cm`,
+          },
+        ]
+      : []),
+  ];
+
+  const originItems = [
+    { term: "Name", description: shipment.originAddress.name },
+    { term: "Address", description: formatAddress(shipment.originAddress) },
+    ...(shipment.originAddress.phone
+      ? [{ term: "Phone", description: shipment.originAddress.phone }]
+      : []),
+    ...(shipment.originAddress.email
+      ? [{ term: "Email", description: shipment.originAddress.email }]
+      : []),
+    ...(shipment.originAddress.latitude && shipment.originAddress.longitude
+      ? [
+          {
+            term: "GPS",
+            description: `${shipment.originAddress.latitude.toFixed(6)}, ${shipment.originAddress.longitude.toFixed(6)}`,
+          },
+        ]
+      : []),
+  ];
+
+  const destinationItems = [
+    { term: "Name", description: shipment.destinationAddress.name },
+    { term: "Address", description: formatAddress(shipment.destinationAddress) },
+    ...(shipment.destinationAddress.phone
+      ? [{ term: "Phone", description: shipment.destinationAddress.phone }]
+      : []),
+    ...(shipment.destinationAddress.email
+      ? [{ term: "Email", description: shipment.destinationAddress.email }]
+      : []),
+    ...(shipment.destinationAddress.latitude && shipment.destinationAddress.longitude
+      ? [
+          {
+            term: "GPS",
+            description: `${shipment.destinationAddress.latitude.toFixed(6)}, ${shipment.destinationAddress.longitude.toFixed(6)}`,
+          },
+        ]
+      : []),
+  ];
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/shipments" style={backLinkStyle}>
-            &larr;
-          </Link>
-          <div>
-            <h1 style={headingStyle}>
-              {shipment.trackingNumber}
-            </h1>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-              <ShipmentStatusBadge status={shipment.status} />
-              <span style={subtextStyle}>
-                Created {new Date(shipment.createdAt).toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Two-column layout */}
-      <div style={columnsStyle}>
+    <Page
+      backAction={{ content: "Shipments", url: "/shipments" }}
+      title={shipment.trackingNumber}
+      titleMetadata={<ShipmentStatusBadge status={shipment.status} />}
+      subtitle={`Created ${new Date(shipment.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`}
+    >
+      <Layout>
         {/* Left Column */}
-        <div style={leftColStyle}>
-          {/* Shipment Details Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Shipment Details</h3>
-            <div style={fieldRowStyle}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Carrier</span>
-                <span style={valueStyle}>{shipment.carrier ?? "—"}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Delivery Method</span>
-                <span style={valueStyle}>{shipment.deliveryMethod ? shipment.deliveryMethod.replace(/_/g, " ") : "—"}</span>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>ETA</span>
-                <span style={valueStyle}>
-                  {shipment.eta
-                    ? new Date(shipment.eta).toLocaleDateString("en-US", {
-                        weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-                      })
-                    : "Not available"}
-                </span>
-              </div>
-            </div>
-            <div style={{ ...fieldRowStyle, marginTop: 12 }}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Weight</span>
-                <span style={valueStyle}>
-                  {shipment.weight != null ? `${shipment.weight}g` : "—"}
-                </span>
-              </div>
-              {shipment.dimensions && (
-                <>
-                  <div style={fieldStyle}>
-                    <span style={labelStyle}>Dimensions</span>
-                    <span style={valueStyle}>
-                      {shipment.dimensions.length} × {shipment.dimensions.width} × {shipment.dimensions.height} cm
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+        <Layout.Section>
+          <BlockStack gap="400">
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Shipment Details
+                </Text>
+                <DescriptionList items={shipmentDetailsItems} />
+              </BlockStack>
+            </Card>
 
-          {/* Origin Address Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Origin Address</h3>
-            <div style={addressBlockStyle}>
-              <div style={{ fontWeight: 500 }}>{shipment.originAddress.name}</div>
-              {shipment.originAddress.line1 && <div>{shipment.originAddress.line1}</div>}
-              {shipment.originAddress.line2 && <div>{shipment.originAddress.line2}</div>}
-              <div>
-                {[shipment.originAddress.city, shipment.originAddress.province, shipment.originAddress.postalCode]
-                  .filter(Boolean)
-                  .join(", ")}
-              </div>
-              {shipment.originAddress.country && <div>{shipment.originAddress.country}</div>}
-              {shipment.originAddress.phone && (
-                <div style={subtextStyle}>{shipment.originAddress.phone}</div>
-              )}
-              {shipment.originAddress.email && (
-                <div style={subtextStyle}>{shipment.originAddress.email}</div>
-              )}
-            </div>
-            {shipment.originAddress.latitude && shipment.originAddress.longitude && (
-              <div style={{ ...subtextStyle, marginTop: 8 }}>
-                GPS: {shipment.originAddress.latitude.toFixed(6)}, {shipment.originAddress.longitude.toFixed(6)}
-              </div>
-            )}
-          </div>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Origin Address
+                </Text>
+                <DescriptionList items={originItems} />
+              </BlockStack>
+            </Card>
 
-          {/* Destination Address Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Destination Address</h3>
-            <div style={addressBlockStyle}>
-              <div style={{ fontWeight: 500 }}>{shipment.destinationAddress.name}</div>
-              {shipment.destinationAddress.line1 && <div>{shipment.destinationAddress.line1}</div>}
-              {shipment.destinationAddress.line2 && <div>{shipment.destinationAddress.line2}</div>}
-              <div>
-                {[shipment.destinationAddress.city, shipment.destinationAddress.province, shipment.destinationAddress.postalCode]
-                  .filter(Boolean)
-                  .join(", ")}
-              </div>
-              {shipment.destinationAddress.country && <div>{shipment.destinationAddress.country}</div>}
-              {shipment.destinationAddress.phone && (
-                <div style={subtextStyle}>{shipment.destinationAddress.phone}</div>
-              )}
-              {shipment.destinationAddress.email && (
-                <div style={subtextStyle}>{shipment.destinationAddress.email}</div>
-              )}
-            </div>
-            {shipment.destinationAddress.latitude && shipment.destinationAddress.longitude && (
-              <div style={{ ...subtextStyle, marginTop: 8 }}>
-                GPS: {shipment.destinationAddress.latitude.toFixed(6)}, {shipment.destinationAddress.longitude.toFixed(6)}
-              </div>
-            )}
-          </div>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Destination Address
+                </Text>
+                <DescriptionList items={destinationItems} />
+              </BlockStack>
+            </Card>
 
-          {/* Customer Info Card */}
-          {shipment.customerName && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Customer Info</h3>
-              <div style={fieldRowStyle}>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Name</span>
-                  <span style={valueStyle}>{shipment.customerName}</span>
-                </div>
-                {shipment.customerEmail && (
-                  <div style={fieldStyle}>
-                    <span style={labelStyle}>Email</span>
-                    <span style={valueStyle}>{shipment.customerEmail}</span>
-                  </div>
-                )}
-                {shipment.customerPhone && (
-                  <div style={fieldStyle}>
-                    <span style={labelStyle}>Phone</span>
-                    <span style={valueStyle}>{shipment.customerPhone}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Driver Info Card */}
-          {shipment.driver && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Driver Info</h3>
-              <div style={fieldRowStyle}>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Name</span>
-                  <span style={valueStyle}>
-                    <Link to={`/drivers/${shipment.driver.id}`} style={linkStyle}>
-                      {shipment.driver.name}
-                    </Link>
-                  </span>
-                </div>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Phone</span>
-                  <span style={valueStyle}>{shipment.driver.phone}</span>
-                </div>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Vehicle</span>
-                  <span style={valueStyle}>
-                    {shipment.driver.vehicleType}
-                    {shipment.driver.vehiclePlate && ` (${shipment.driver.vehiclePlate})`}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Delivery Proof Card */}
-          {shipment.deliveryProof && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Proof of Delivery</h3>
-              {shipment.deliveryProof.signatureUrl && (
-                <div style={{ marginBottom: 12 }}>
-                  <span style={labelStyle}>Signature</span>
-                  <img
-                    src={shipment.deliveryProof.signatureUrl}
-                    alt="Signature"
-                    style={{ maxWidth: 300, border: "1px solid var(--p-color-border-subdued, #e1e3e5)", borderRadius: 8, marginTop: 4 }}
+            {shipment.customerName && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Customer Info
+                  </Text>
+                  <DescriptionList
+                    items={[
+                      { term: "Name", description: shipment.customerName },
+                      ...(shipment.customerEmail
+                        ? [{ term: "Email", description: shipment.customerEmail }]
+                        : []),
+                      ...(shipment.customerPhone
+                        ? [{ term: "Phone", description: shipment.customerPhone }]
+                        : []),
+                    ]}
                   />
-                </div>
-              )}
-              {shipment.deliveryProof.photos.length > 0 && (
-                <div style={{ marginBottom: 12 }}>
-                  <span style={labelStyle}>Photos</span>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-                    {shipment.deliveryProof.photos.map((url, i) => (
+                </BlockStack>
+              </Card>
+            )}
+
+            {shipment.driver && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Driver Info
+                  </Text>
+                  <DescriptionList
+                    items={[
+                      {
+                        term: "Name",
+                        description: (
+                          <Link to={`/drivers/${shipment.driver.id}`}>
+                            <Text as="span" tone="magic" fontWeight="semibold">
+                              {shipment.driver.name}
+                            </Text>
+                          </Link>
+                        ),
+                      },
+                      { term: "Phone", description: shipment.driver.phone },
+                      {
+                        term: "Vehicle",
+                        description: `${shipment.driver.vehicleType}${
+                          shipment.driver.vehiclePlate
+                            ? ` (${shipment.driver.vehiclePlate})`
+                            : ""
+                        }`,
+                      },
+                    ]}
+                  />
+                </BlockStack>
+              </Card>
+            )}
+
+            {shipment.deliveryProof && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Proof of Delivery
+                  </Text>
+                  {shipment.deliveryProof.signatureUrl && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="medium">
+                        Signature
+                      </Text>
                       <img
-                        key={i}
-                        src={url}
-                        alt={`Delivery photo ${i + 1}`}
-                        style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 8, border: "1px solid var(--p-color-border-subdued, #e1e3e5)" }}
+                        src={shipment.deliveryProof.signatureUrl}
+                        alt="Signature"
+                        style={{ maxWidth: 300, borderRadius: 8 }}
                       />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {shipment.deliveryProof.notes && (
-                <div>
-                  <span style={labelStyle}>Delivery Notes</span>
-                  <p style={{ margin: "4px 0 0", fontSize: 14 }}>{shipment.deliveryProof.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                    </BlockStack>
+                  )}
+                  {shipment.deliveryProof.photos.length > 0 && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="medium">
+                        Photos
+                      </Text>
+                      <InlineStack gap="200" wrap>
+                        {shipment.deliveryProof.photos.map((url, i) => (
+                          <Thumbnail
+                            key={i}
+                            source={url}
+                            alt={`Delivery photo ${i + 1}`}
+                            size="large"
+                          />
+                        ))}
+                      </InlineStack>
+                    </BlockStack>
+                  )}
+                  {shipment.deliveryProof.notes && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="medium">
+                        Delivery Notes
+                      </Text>
+                      <Text as="p" variant="bodyMd">
+                        {shipment.deliveryProof.notes}
+                      </Text>
+                    </BlockStack>
+                  )}
+                </BlockStack>
+              </Card>
+            )}
+          </BlockStack>
+        </Layout.Section>
 
         {/* Right Column */}
-        <div style={rightColStyle}>
-          {/* Actions Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Actions</h3>
+        <Layout.Section variant="oneThird">
+          <BlockStack gap="400">
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Actions
+                </Text>
 
-            {/* Status Update */}
-            {nextStatuses.length > 0 && (
-              <Form method="post" style={{ marginBottom: 16 }}>
-                <input type="hidden" name="intent" value="update-status" />
-                <div style={{ marginBottom: 8 }}>
-                  <label style={labelStyle}>Update Status</label>
-                  <select name="status" style={selectStyle}>
-                    {nextStatuses.map((s) => (
-                      <option key={s} value={s}>
-                        {s.replace(/_/g, " ")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <input
-                  type="text"
-                  name="notes"
-                  placeholder="Add a note (optional)"
-                  style={{ ...inputStyle, marginBottom: 8 }}
-                />
-                <button type="submit" disabled={isSubmitting} style={primaryButtonStyle}>
-                  {isSubmitting ? "Updating..." : "Update Status"}
-                </button>
-              </Form>
-            )}
+                {nextStatuses.length > 0 && (
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="update-status" />
+                    <BlockStack gap="300">
+                      <Select
+                        label="Update Status"
+                        options={statusOptions}
+                        name="status"
+                        value={nextStatuses[0]}
+                        onChange={() => {}}
+                      />
+                      <TextField
+                        label="Notes"
+                        labelHidden
+                        name="notes"
+                        placeholder="Add a note (optional)"
+                        autoComplete="off"
+                      />
+                      <Button submit variant="primary" loading={isSubmitting}>
+                        Update Status
+                      </Button>
+                    </BlockStack>
+                  </Form>
+                )}
 
-            {/* Driver Assignment */}
-            <Form method="post" style={{ marginBottom: 16 }}>
-              <input type="hidden" name="intent" value="assign-driver" />
-              <div style={{ marginBottom: 8 }}>
-                <label style={labelStyle}>
-                  {shipment.driver ? "Reassign Driver" : "Assign Driver"}
-                </label>
-                <select name="driverId" style={selectStyle} defaultValue={shipment.driver?.id ?? ""}>
-                  <option value="" disabled>Select a driver...</option>
-                  {availableDrivers.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.activeShipments} active)
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" disabled={isSubmitting} style={secondaryButtonStyle}>
-                {isSubmitting ? "Assigning..." : shipment.driver ? "Reassign" : "Assign Driver"}
-              </button>
-            </Form>
+                <Divider />
 
-            {/* Print Label */}
-            <Form method="post" style={{ marginBottom: 16 }}>
-              <input type="hidden" name="intent" value="print-label" />
-              <button type="submit" disabled={isSubmitting} style={secondaryButtonStyle}>
-                {isSubmitting ? "Printing..." : "Print Label"}
-              </button>
-            </Form>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="assign-driver" />
+                  <BlockStack gap="300">
+                    <Select
+                      label={shipment.driver ? "Reassign Driver" : "Assign Driver"}
+                      options={driverOptions}
+                      name="driverId"
+                      value={shipment.driver?.id ?? ""}
+                      onChange={() => {}}
+                    />
+                    <Button submit loading={isSubmitting}>
+                      {shipment.driver ? "Reassign" : "Assign Driver"}
+                    </Button>
+                  </BlockStack>
+                </Form>
 
-            {/* Cancel */}
-            {STATUS_TRANSITIONS[shipment.status]?.includes("CANCELLED") && (
-              <Form method="post" style={{ marginTop: 16, borderTop: "1px solid var(--p-color-border-subdued, #e1e3e5)", paddingTop: 16 }}>
-                <input type="hidden" name="intent" value="cancel" />
-                <button type="submit" disabled={isSubmitting} style={dangerButtonStyle}>
-                  Cancel Shipment
-                </button>
-              </Form>
-            )}
-          </div>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="print-label" />
+                  <Button submit fullWidth loading={isSubmitting}>
+                    Print Label
+                  </Button>
+                </Form>
 
-          {/* Timeline */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Status Timeline</h3>
-            <StatusTimeline events={timeline} />
-          </div>
-        </div>
-      </div>
-    </div>
+                {STATUS_TRANSITIONS[shipment.status]?.includes("CANCELLED") && (
+                  <>
+                    <Divider />
+                    <Form method="post">
+                      <input type="hidden" name="intent" value="cancel" />
+                      <Button
+                        submit
+                        fullWidth
+                        tone="critical"
+                        loading={isSubmitting}
+                      >
+                        Cancel Shipment
+                      </Button>
+                    </Form>
+                  </>
+                )}
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Status Timeline
+                </Text>
+                <StatusTimeline events={timeline} />
+              </BlockStack>
+            </Card>
+          </BlockStack>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = { padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, color: "var(--p-color-text, #202223)", margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)" };
-const backLinkStyle: React.CSSProperties = { fontSize: 20, color: "var(--p-color-text-subdued, #6d7175)", textDecoration: "none", padding: 4 };
-
-const columnsStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" };
-const leftColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-const rightColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-
-const cardStyle: React.CSSProperties = {
-  padding: 20, backgroundColor: "var(--p-color-bg-surface, white)", borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)", boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};
-const cardTitleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, margin: "0 0 12px", color: "var(--p-color-text, #202223)" };
-
-const fieldRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 };
-const fieldStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 2 };
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" };
-const valueStyle: React.CSSProperties = { fontSize: 14, color: "var(--p-color-text, #202223)" };
-const addressBlockStyle: React.CSSProperties = { fontSize: 14, lineHeight: 1.6, color: "var(--p-color-text, #202223)" };
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500 };
-
-const selectStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, backgroundColor: "white",
-};
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, boxSizing: "border-box",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "white", backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none", borderRadius: 8, cursor: "pointer",
-};
-const secondaryButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "var(--p-color-text, #303030)", backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, cursor: "pointer",
-  marginBottom: 0,
-};
-const dangerButtonStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 16px", fontSize: 14, fontWeight: 500,
-  color: "var(--p-color-text-critical, #d72c0d)", backgroundColor: "white",
-  border: "1px solid var(--p-color-border-critical, #d72c0d)", borderRadius: 8, cursor: "pointer",
-};

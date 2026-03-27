@@ -5,11 +5,10 @@
  *   - Tabbed layout: General, Branding, Notifications, API Keys, Billing
  *   - General tab: company name, timezone picker, currency, weight unit, distance unit
  *   - Branding tab: logo URL input, primary/secondary color pickers, tracking page preview
- *   - Notifications tab: event type × channel grid (email, SMS, push, webhook toggles)
+ *   - Notifications tab: event type x channel grid (email, SMS, push, webhook toggles)
  *   - API Keys tab: list keys (masked), create key form, revoke button
  *   - Billing tab: current plan display, usage meters, invoice history
  *   - Save button per section
- *   - All using Polaris var styling
  *
  * All data is loaded server-side via React Router v7 loader.
  * Form submission via POST with intent field.
@@ -17,7 +16,27 @@
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, Form, useActionData } from "react-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import {
+  Page,
+  Card,
+  Tabs,
+  FormLayout,
+  TextField,
+  Select,
+  Checkbox,
+  Button,
+  Text,
+  BlockStack,
+  InlineStack,
+  InlineGrid,
+  IndexTable,
+  Badge,
+  Banner,
+  Box,
+  ProgressBar,
+  Divider,
+} from "@shopify/polaris";
 import { createApiClient } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -139,7 +158,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         {
           id: "key_1",
           name: "Production API Key",
-          maskedKey: "witylogix_live_••••••••••••••••",
+          maskedKey: "witylogix_live_\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
           createdAt: "2026-01-15",
           lastUsedAt: "2026-03-06",
         },
@@ -237,143 +256,131 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Settings() {
   const data = useLoaderData<SettingsPageData>();
   const actionData = useActionData();
-  const [activeTab, setActiveTab] = useState("general");
+  const [selectedTab, setSelectedTab] = useState(0);
   const [newApiKeyName, setNewApiKeyName] = useState("");
 
+  const handleTabChange = useCallback(
+    (selectedTabIndex: number) => setSelectedTab(selectedTabIndex),
+    [],
+  );
+
+  const tabs = [
+    { id: "general", content: "General" },
+    { id: "branding", content: "Branding" },
+    { id: "notifications", content: "Notifications" },
+    { id: "api-keys", content: "API Keys" },
+    { id: "billing", content: "Billing" },
+  ];
+
   return (
-    <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <h1 style={pageHeadingStyle}>Settings</h1>
-        <p style={pageSubheadingStyle}>
-          Manage your shop settings, branding, notifications, and billing
-        </p>
-      </div>
+    <Page
+      title="Settings"
+      subtitle="Manage your shop settings, branding, notifications, and billing"
+    >
+      <BlockStack gap="400">
+        {/* Action Feedback */}
+        {actionData?.success && (
+          <Banner tone="success">{actionData.message}</Banner>
+        )}
+        {actionData?.error && (
+          <Banner tone="critical">{actionData.error}</Banner>
+        )}
 
-      {/* Action Feedback */}
-      {actionData?.success && (
-        <div style={successBannerStyle}>{actionData.message}</div>
-      )}
-      {actionData?.error && (
-        <div style={errorBannerStyle}>{actionData.error}</div>
-      )}
-
-      {/* Tabs */}
-      <div style={tabsContainerStyle}>
-        <div style={tabListStyle}>
-          {[
-            { id: "general", label: "General" },
-            { id: "branding", label: "Branding" },
-            { id: "notifications", label: "Notifications" },
-            { id: "api-keys", label: "API Keys" },
-            { id: "billing", label: "Billing" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                ...tabStyle,
-                borderBottomColor:
-                  activeTab === tab.id
-                    ? "var(--p-color-text-primary, #005bd3)"
-                    : "transparent",
-                color:
-                  activeTab === tab.id
-                    ? "var(--p-color-text-primary, #005bd3)"
-                    : "var(--p-color-text-subdued, #6d7175)",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div style={tabContentStyle}>
-          {activeTab === "general" && (
-            <GeneralTab data={data.general} />
-          )}
-          {activeTab === "branding" && (
-            <BrandingTab data={data.branding} />
-          )}
-          {activeTab === "notifications" && (
-            <NotificationsTab data={data.notifications} />
-          )}
-          {activeTab === "api-keys" && (
-            <APIKeysTab data={data.apiKeys} newKeyName={newApiKeyName} setNewKeyName={setNewApiKeyName} />
-          )}
-          {activeTab === "billing" && (
-            <BillingTab data={data.billing} />
-          )}
-        </div>
-      </div>
-    </div>
+        <Card padding="0">
+          <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
+            <Box padding="400">
+              {selectedTab === 0 && <GeneralTab data={data.general} />}
+              {selectedTab === 1 && <BrandingTab data={data.branding} />}
+              {selectedTab === 2 && <NotificationsTab data={data.notifications} />}
+              {selectedTab === 3 && (
+                <APIKeysTab
+                  data={data.apiKeys}
+                  newKeyName={newApiKeyName}
+                  setNewKeyName={setNewApiKeyName}
+                />
+              )}
+              {selectedTab === 4 && <BillingTab data={data.billing} />}
+            </Box>
+          </Tabs>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }
 
 // ─── General Tab ───────────────────────────────────────────
 
 function GeneralTab({ data }: { data: GeneralSettings }) {
+  const timezoneOptions = [
+    { label: "UTC", value: "UTC" },
+    { label: "Eastern Time (EST)", value: "EST" },
+    { label: "Central Time (CST)", value: "CST" },
+    { label: "Mountain Time (MST)", value: "MST" },
+    { label: "Pacific Time (PST)", value: "PST" },
+    { label: "Indian Standard Time (IST)", value: "IST" },
+    { label: "Greenwich Mean Time (GMT)", value: "GMT" },
+  ];
+
+  const currencyOptions = [
+    { label: "USD (US Dollar)", value: "USD" },
+    { label: "EUR (Euro)", value: "EUR" },
+    { label: "GBP (British Pound)", value: "GBP" },
+    { label: "CAD (Canadian Dollar)", value: "CAD" },
+    { label: "AUD (Australian Dollar)", value: "AUD" },
+    { label: "INR (Indian Rupee)", value: "INR" },
+    { label: "JPY (Japanese Yen)", value: "JPY" },
+  ];
+
+  const weightOptions = [
+    { label: "Kilograms (kg)", value: "kg" },
+    { label: "Pounds (lbs)", value: "lbs" },
+  ];
+
+  const distanceOptions = [
+    { label: "Kilometers (km)", value: "km" },
+    { label: "Miles (mi)", value: "miles" },
+  ];
+
   return (
-    <Form method="post" style={formStyle}>
+    <Form method="post">
       <input type="hidden" name="intent" value="save-general" />
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Company Name</label>
-        <input
-          type="text"
+      <FormLayout>
+        <TextField
+          label="Company Name"
           name="companyName"
+          type="text"
           defaultValue={data.companyName}
-          style={inputStyle}
           placeholder="Your company name"
+          autoComplete="organization"
         />
-      </div>
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Timezone</label>
-        <select name="timezone" defaultValue={data.timezone} style={inputStyle}>
-          <option value="UTC">UTC</option>
-          <option value="EST">Eastern Time (EST)</option>
-          <option value="CST">Central Time (CST)</option>
-          <option value="MST">Mountain Time (MST)</option>
-          <option value="PST">Pacific Time (PST)</option>
-          <option value="IST">Indian Standard Time (IST)</option>
-          <option value="GMT">Greenwich Mean Time (GMT)</option>
-        </select>
-      </div>
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Default Currency</label>
-        <select name="currency" defaultValue={data.currency} style={inputStyle}>
-          <option value="USD">USD (US Dollar)</option>
-          <option value="EUR">EUR (Euro)</option>
-          <option value="GBP">GBP (British Pound)</option>
-          <option value="CAD">CAD (Canadian Dollar)</option>
-          <option value="AUD">AUD (Australian Dollar)</option>
-          <option value="INR">INR (Indian Rupee)</option>
-          <option value="JPY">JPY (Japanese Yen)</option>
-        </select>
-      </div>
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Weight Unit</label>
-        <select name="weightUnit" defaultValue={data.weightUnit} style={inputStyle}>
-          <option value="kg">Kilograms (kg)</option>
-          <option value="lbs">Pounds (lbs)</option>
-        </select>
-      </div>
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Distance Unit</label>
-        <select name="distanceUnit" defaultValue={data.distanceUnit} style={inputStyle}>
-          <option value="km">Kilometers (km)</option>
-          <option value="miles">Miles (mi)</option>
-        </select>
-      </div>
-
-      <button type="submit" style={primaryButtonStyle}>
-        Save General Settings
-      </button>
+        <Select
+          label="Timezone"
+          name="timezone"
+          options={timezoneOptions}
+          value={data.timezone}
+        />
+        <Select
+          label="Default Currency"
+          name="currency"
+          options={currencyOptions}
+          value={data.currency}
+        />
+        <Select
+          label="Weight Unit"
+          name="weightUnit"
+          options={weightOptions}
+          value={data.weightUnit}
+        />
+        <Select
+          label="Distance Unit"
+          name="distanceUnit"
+          options={distanceOptions}
+          value={data.distanceUnit}
+        />
+        <Button submit variant="primary">
+          Save General Settings
+        </Button>
+      </FormLayout>
     </Form>
   );
 }
@@ -382,80 +389,60 @@ function GeneralTab({ data }: { data: GeneralSettings }) {
 
 function BrandingTab({ data }: { data: BrandingSettings }) {
   return (
-    <Form method="post" style={formStyle}>
+    <Form method="post">
       <input type="hidden" name="intent" value="save-branding" />
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Logo URL</label>
-        <input
-          type="url"
+      <FormLayout>
+        <TextField
+          label="Logo URL"
           name="logoUrl"
+          type="url"
           defaultValue={data.logoUrl}
-          style={inputStyle}
           placeholder="https://example.com/logo.png"
+          autoComplete="off"
         />
         {data.logoUrl && (
-          <div style={logoPreviewStyle}>
-            <img src={data.logoUrl} alt="Logo" style={logoImageStyle} />
-          </div>
+          <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+            <img
+              src={data.logoUrl}
+              alt="Logo"
+              style={{ maxWidth: "100%", maxHeight: 100, objectFit: "contain" }}
+            />
+          </Box>
         )}
-      </div>
-
-      <div style={colorGridStyle}>
-        <div style={formGroupStyle}>
-          <label style={labelStyle}>Primary Color</label>
-          <div style={colorPickerWrapperStyle}>
-            <input
-              type="color"
-              name="primaryColor"
-              defaultValue={data.primaryColor}
-              style={colorInputStyle}
-            />
-            <span style={colorValueStyle}>{data.primaryColor}</span>
-          </div>
-        </div>
-
-        <div style={formGroupStyle}>
-          <label style={labelStyle}>Secondary Color</label>
-          <div style={colorPickerWrapperStyle}>
-            <input
-              type="color"
-              name="secondaryColor"
-              defaultValue={data.secondaryColor}
-              style={colorInputStyle}
-            />
-            <span style={colorValueStyle}>{data.secondaryColor}</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={formGroupStyle}>
-        <label style={labelStyle}>Tracking Page Preview</label>
-        <div
-          style={{
-            ...previewBoxStyle,
-            backgroundColor: data.primaryColor,
-          }}
+        <InlineGrid columns={2} gap="400">
+          <TextField
+            label="Primary Color"
+            name="primaryColor"
+            type="color"
+            defaultValue={data.primaryColor}
+            autoComplete="off"
+          />
+          <TextField
+            label="Secondary Color"
+            name="secondaryColor"
+            type="color"
+            defaultValue={data.secondaryColor}
+            autoComplete="off"
+          />
+        </InlineGrid>
+        <Box
+          padding="400"
+          borderRadius="200"
+          background="bg-fill-info"
         >
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: "white",
-              marginBottom: 8,
-            }}
-          >
-            Tracking Page Preview
-          </div>
-          <div style={{ fontSize: 13, color: "white", opacity: 0.9 }}>
-            Your tracking page will use your brand colors
-          </div>
-        </div>
-      </div>
-
-      <button type="submit" style={primaryButtonStyle}>
-        Save Branding Settings
-      </button>
+          <BlockStack gap="200">
+            <Text as="p" variant="headingSm" tone="text-inverse">
+              Tracking Page Preview
+            </Text>
+            <Text as="p" variant="bodySm" tone="text-inverse">
+              Your tracking page will use your brand colors
+            </Text>
+          </BlockStack>
+        </Box>
+        <Button submit variant="primary">
+          Save Branding Settings
+        </Button>
+      </FormLayout>
     </Form>
   );
 }
@@ -464,35 +451,32 @@ function BrandingTab({ data }: { data: BrandingSettings }) {
 
 function NotificationsTab({ data }: { data: NotificationSettings }) {
   return (
-    <Form method="post" style={formStyle}>
+    <Form method="post">
       <input type="hidden" name="intent" value="save-notifications" />
-
-      <div style={notificationGridStyle}>
-        {data.events.map((event) => (
-          <div key={event.name} style={notificationCardStyle}>
-            <h3 style={notificationEventStyle}>{event.name}</h3>
-            <div style={channelListStyle}>
-              {event.channels.map((channel) => (
-                <label key={channel.name} style={checkboxLabelStyle}>
-                  <input
-                    type="checkbox"
+      <BlockStack gap="400">
+        <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+          {data.events.map((event) => (
+            <Card key={event.name}>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm" fontWeight="semibold">
+                  {event.name}
+                </Text>
+                {event.channels.map((channel) => (
+                  <Checkbox
+                    key={channel.name}
+                    label={channel.name.charAt(0).toUpperCase() + channel.name.slice(1)}
                     name={`notification_${event.name}_${channel.name}`}
-                    defaultChecked={channel.enabled}
-                    style={checkboxStyle}
+                    checked={channel.enabled}
                   />
-                  <span style={channelNameStyle}>
-                    {channel.name.charAt(0).toUpperCase() + channel.name.slice(1)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button type="submit" style={primaryButtonStyle}>
-        Save Notification Settings
-      </button>
+                ))}
+              </BlockStack>
+            </Card>
+          ))}
+        </InlineGrid>
+        <Button submit variant="primary">
+          Save Notification Settings
+        </Button>
+      </BlockStack>
     </Form>
   );
 }
@@ -508,95 +492,108 @@ function APIKeysTab({
   newKeyName: string;
   setNewKeyName: (name: string) => void;
 }) {
+  const keyRows = data.map((key, index) => (
+    <IndexTable.Row id={key.id} key={key.id} position={index}>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {key.name}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {key.maskedKey}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">
+          {new Date(key.createdAt).toLocaleDateString()}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">
+          {key.lastUsedAt
+            ? new Date(key.lastUsedAt).toLocaleDateString()
+            : "Never"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Form method="post">
+          <input type="hidden" name="intent" value="revoke-api-key" />
+          <input type="hidden" name="keyId" value={key.id} />
+          <Button
+            submit
+            tone="critical"
+            size="slim"
+            onClick={(e: React.MouseEvent) => {
+              if (!confirm("Are you sure you want to revoke this key?")) {
+                e.preventDefault();
+              }
+            }}
+          >
+            Revoke
+          </Button>
+        </Form>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div>
+    <BlockStack gap="400">
       {/* Create New Key */}
-      <Form method="post" style={{ ...formStyle, marginBottom: 24 }}>
-        <input type="hidden" name="intent" value="create-api-key" />
-
-        <h3 style={cardHeadingStyle}>Create New API Key</h3>
-        <div style={formGroupStyle}>
-          <label style={labelStyle}>Key Name</label>
-          <input
-            type="text"
-            name="apiKeyName"
-            value={newKeyName}
-            onChange={(e) => setNewKeyName(e.target.value)}
-            style={inputStyle}
-            placeholder="e.g., Mobile App, Third-party Integration"
-          />
-        </div>
-
-        <button type="submit" style={primaryButtonStyle}>
-          Create API Key
-        </button>
-      </Form>
+      <Card>
+        <Form method="post">
+          <input type="hidden" name="intent" value="create-api-key" />
+          <FormLayout>
+            <Text as="h3" variant="headingSm">
+              Create New API Key
+            </Text>
+            <TextField
+              label="Key Name"
+              name="apiKeyName"
+              type="text"
+              value={newKeyName}
+              onChange={setNewKeyName}
+              placeholder="e.g., Mobile App, Third-party Integration"
+              autoComplete="off"
+            />
+            <Button submit variant="primary">
+              Create API Key
+            </Button>
+          </FormLayout>
+        </Form>
+      </Card>
 
       {/* List Keys */}
-      <div>
-        <h3 style={cardHeadingStyle}>Active API Keys</h3>
+      <Card padding="0">
+        <Box padding="400" paddingBlockEnd="0">
+          <Text as="h3" variant="headingSm">
+            Active API Keys
+          </Text>
+        </Box>
         {data.length > 0 ? (
-          <div style={tableContainerStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr style={trStyle}>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Key</th>
-                  <th style={thStyle}>Created</th>
-                  <th style={thStyle}>Last Used</th>
-                  <th style={thStyle}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((key) => (
-                  <tr key={key.id} style={trStyle}>
-                    <td style={tdStyle}>{key.name}</td>
-                    <td style={tdStyle}>
-                      <code style={maskedKeyStyle}>{key.maskedKey}</code>
-                    </td>
-                    <td style={tdStyle}>
-                      {new Date(key.createdAt).toLocaleDateString()}
-                    </td>
-                    <td style={tdStyle}>
-                      {key.lastUsedAt
-                        ? new Date(key.lastUsedAt).toLocaleDateString()
-                        : "Never"}
-                    </td>
-                    <td style={tdStyle}>
-                      <Form method="post" style={{ display: "inline" }}>
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="revoke-api-key"
-                        />
-                        <input type="hidden" name="keyId" value={key.id} />
-                        <button
-                          type="submit"
-                          style={deleteButtonStyle}
-                          onClick={(e) => {
-                            if (
-                              !confirm(
-                                "Are you sure you want to revoke this key?"
-                              )
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                        >
-                          Revoke
-                        </button>
-                      </Form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <IndexTable
+            resourceName={{ singular: "API key", plural: "API keys" }}
+            itemCount={data.length}
+            headings={[
+              { title: "Name" },
+              { title: "Key" },
+              { title: "Created" },
+              { title: "Last Used" },
+              { title: "" },
+            ]}
+            selectable={false}
+          >
+            {keyRows}
+          </IndexTable>
         ) : (
-          <p style={emptyTextStyle}>No API keys yet. Create one to get started.</p>
+          <Box padding="400">
+            <Text as="p" variant="bodySm" tone="subdued">
+              No API keys yet. Create one to get started.
+            </Text>
+          </Box>
         )}
-      </div>
-    </div>
+      </Card>
+    </BlockStack>
   );
 }
 
@@ -605,426 +602,112 @@ function APIKeysTab({
 function BillingTab({ data }: { data: BillingInfo }) {
   const usagePercent = (data.monthlyUsage / data.monthlyLimit) * 100;
 
+  const invoiceRows = data.invoices.map((invoice, index) => (
+    <IndexTable.Row id={invoice.id} key={invoice.id} position={index}>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">{invoice.id}</Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">
+          {new Date(invoice.date).toLocaleDateString()}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          ${invoice.amount.toFixed(2)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge
+          tone={
+            invoice.status === "paid"
+              ? "success"
+              : invoice.status === "pending"
+              ? "warning"
+              : "critical"
+          }
+        >
+          {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+        </Badge>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div>
+    <BlockStack gap="400">
       {/* Current Plan */}
-      <div style={planCardStyle}>
-        <h3 style={cardHeadingStyle}>{data.plan} Plan</h3>
-        <p style={planDescStyle}>
-          You are currently on the <strong>{data.plan}</strong> plan with{" "}
-          <strong>{data.monthlyUsage.toLocaleString()}</strong> API calls used this
-          month.
-        </p>
+      <Card>
+        <BlockStack gap="400">
+          <Text as="h3" variant="headingMd">
+            {data.plan} Plan
+          </Text>
+          <Text as="p" variant="bodyMd">
+            You are currently on the <strong>{data.plan}</strong> plan with{" "}
+            <strong>{data.monthlyUsage.toLocaleString()}</strong> API calls used this
+            month.
+          </Text>
 
-        <div style={usageCardStyle}>
-          <div style={usageHeaderStyle}>
-            <span>Monthly Usage</span>
-            <span style={usagePercentStyle}>
-              {Math.round(usagePercent)}% of {data.monthlyLimit.toLocaleString()}
-            </span>
-          </div>
-          <div style={progressBarStyle}>
-            <div
-              style={{
-                ...progressFillStyle,
-                width: `${Math.min(usagePercent, 100)}%`,
-              }}
-            />
-          </div>
-          <div style={usageDetailsStyle}>
-            <div>
-              {data.monthlyUsage.toLocaleString()} calls used
-            </div>
-            <div>
-              {(data.monthlyLimit - data.monthlyUsage).toLocaleString()} calls remaining
-            </div>
-          </div>
-        </div>
+          <Card>
+            <BlockStack gap="300">
+              <InlineStack align="space-between">
+                <Text as="span" variant="bodySm" fontWeight="medium">
+                  Monthly Usage
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {Math.round(usagePercent)}% of {data.monthlyLimit.toLocaleString()}
+                </Text>
+              </InlineStack>
+              <ProgressBar
+                progress={Math.min(usagePercent, 100)}
+                tone={usagePercent > 80 ? "critical" : "primary"}
+              />
+              <InlineStack align="space-between">
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {data.monthlyUsage.toLocaleString()} calls used
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {(data.monthlyLimit - data.monthlyUsage).toLocaleString()} calls remaining
+                </Text>
+              </InlineStack>
+            </BlockStack>
+          </Card>
 
-        <div style={nextBillingStyle}>
-          Next billing date:{" "}
-          <strong>{new Date(data.nextBillingDate).toLocaleDateString()}</strong>
-        </div>
-      </div>
+          <Text as="p" variant="bodySm">
+            Next billing date:{" "}
+            <strong>{new Date(data.nextBillingDate).toLocaleDateString()}</strong>
+          </Text>
+        </BlockStack>
+      </Card>
 
       {/* Invoices */}
-      <div style={{ marginTop: 24 }}>
-        <h3 style={cardHeadingStyle}>Invoice History</h3>
+      <Card padding="0">
+        <Box padding="400" paddingBlockEnd="0">
+          <Text as="h3" variant="headingSm">
+            Invoice History
+          </Text>
+        </Box>
         {data.invoices.length > 0 ? (
-          <div style={tableContainerStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr style={trStyle}>
-                  <th style={thStyle}>Invoice ID</th>
-                  <th style={thStyle}>Date</th>
-                  <th style={thStyle}>Amount</th>
-                  <th style={thStyle}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.invoices.map((invoice) => (
-                  <tr key={invoice.id} style={trStyle}>
-                    <td style={tdStyle}>{invoice.id}</td>
-                    <td style={tdStyle}>
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </td>
-                    <td style={tdStyle}>${invoice.amount.toFixed(2)}</td>
-                    <td style={tdStyle}>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "4px 12px",
-                          backgroundColor:
-                            invoice.status === "paid"
-                              ? "var(--p-color-bg-fill-success, #22c55e)"
-                              : invoice.status === "pending"
-                              ? "var(--p-color-bg-fill-warning, #f59e0b)"
-                              : "var(--p-color-bg-fill-critical, #ef4444)",
-                          color: "white",
-                          borderRadius: 4,
-                          fontSize: 12,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {invoice.status.charAt(0).toUpperCase() +
-                          invoice.status.slice(1)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <IndexTable
+            resourceName={{ singular: "invoice", plural: "invoices" }}
+            itemCount={data.invoices.length}
+            headings={[
+              { title: "Invoice ID" },
+              { title: "Date" },
+              { title: "Amount" },
+              { title: "Status" },
+            ]}
+            selectable={false}
+          >
+            {invoiceRows}
+          </IndexTable>
         ) : (
-          <p style={emptyTextStyle}>No invoices yet.</p>
+          <Box padding="400">
+            <Text as="p" variant="bodySm" tone="subdued">
+              No invoices yet.
+            </Text>
+          </Box>
         )}
-      </div>
-    </div>
+      </Card>
+    </BlockStack>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const containerStyle: React.CSSProperties = {
-  padding: "32px",
-  backgroundColor: "var(--p-color-bg, #ffffff)",
-};
-
-const headerStyle: React.CSSProperties = {
-  marginBottom: "32px",
-};
-
-const pageHeadingStyle: React.CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const pageSubheadingStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "8px 0 0",
-};
-
-const successBannerStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  backgroundColor: "var(--p-color-bg-fill-success, #22c55e)",
-  color: "white",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  marginBottom: "24px",
-};
-
-const errorBannerStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  backgroundColor: "var(--p-color-bg-fill-critical, #ef4444)",
-  color: "white",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  marginBottom: "24px",
-};
-
-const tabsContainerStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  overflow: "hidden",
-};
-
-const tabListStyle: React.CSSProperties = {
-  display: "flex",
-  borderBottom: "1px solid var(--p-color-border, #c9cccf)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const tabStyle: React.CSSProperties = {
-  flex: 1,
-  padding: "16px 24px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  backgroundColor: "transparent",
-  border: "none",
-  borderBottom: "3px solid transparent",
-  cursor: "pointer",
-  transition: "all 0.2s",
-};
-
-const tabContentStyle: React.CSSProperties = {
-  padding: "32px",
-};
-
-const formStyle: React.CSSProperties = {
-  maxWidth: 600,
-};
-
-const formGroupStyle: React.CSSProperties = {
-  marginBottom: "24px",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  marginBottom: 8,
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 14px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  color: "var(--p-color-text, #202223)",
-  boxSizing: "border-box",
-};
-
-const colorGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "24px",
-};
-
-const colorPickerWrapperStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-};
-
-const colorInputStyle: React.CSSProperties = {
-  width: 50,
-  height: 40,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  cursor: "pointer",
-};
-
-const colorValueStyle: React.CSSProperties = {
-  fontSize: 13,
-  fontFamily: "monospace",
-  color: "var(--p-color-text, #202223)",
-};
-
-const logoPreviewStyle: React.CSSProperties = {
-  marginTop: 12,
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-};
-
-const logoImageStyle: React.CSSProperties = {
-  maxWidth: "100%",
-  maxHeight: 100,
-  objectFit: "contain",
-};
-
-const previewBoxStyle: React.CSSProperties = {
-  padding: "24px",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  marginTop: 12,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  cursor: "pointer",
-};
-
-const deleteButtonStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  fontSize: 12,
-  fontWeight: 500,
-  color: "var(--p-color-bg-fill-critical, #ef4444)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-bg-fill-critical, #ef4444)",
-  borderRadius: 4,
-  cursor: "pointer",
-};
-
-const notificationGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "16px",
-  marginBottom: "24px",
-};
-
-const notificationCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "16px",
-};
-
-const notificationEventStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 12px",
-};
-
-const channelListStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "8px",
-};
-
-const checkboxLabelStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  cursor: "pointer",
-};
-
-const checkboxStyle: React.CSSProperties = {
-  width: 18,
-  height: 18,
-  cursor: "pointer",
-};
-
-const channelNameStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text, #202223)",
-};
-
-const cardHeadingStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 16px",
-};
-
-const tableContainerStyle: React.CSSProperties = {
-  overflowX: "auto",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 13,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "top",
-};
-
-const maskedKeyStyle: React.CSSProperties = {
-  fontSize: 12,
-  fontFamily: "monospace",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  padding: "4px 8px",
-  borderRadius: 4,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const emptyTextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  fontStyle: "italic",
-};
-
-const planCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "24px",
-  marginBottom: "24px",
-};
-
-const planDescStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 16px",
-};
-
-const usageCardStyle: React.CSSProperties = {
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "16px",
-  marginBottom: "16px",
-};
-
-const usageHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "8px",
-  fontSize: 13,
-  fontWeight: 500,
-};
-
-const usagePercentStyle: React.CSSProperties = {
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const progressBarStyle: React.CSSProperties = {
-  width: "100%",
-  height: "8px",
-  backgroundColor: "var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "4px",
-  overflow: "hidden",
-  marginBottom: "8px",
-};
-
-const progressFillStyle: React.CSSProperties = {
-  height: "100%",
-  backgroundColor: "var(--p-color-bg-fill-success, #22c55e)",
-  transition: "width 0.3s",
-};
-
-const usageDetailsStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "12px",
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const nextBillingStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text, #202223)",
-};
