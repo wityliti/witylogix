@@ -88,6 +88,7 @@ function getInitials(name: string): string {
 
 const ContactCardContent = memo(
   ({
+    id,
     name,
     email,
     phone,
@@ -249,7 +250,7 @@ const ContactCardContent = memo(
             {isExpanded && (
               <div className="mt-4 space-y-4 border-t border-wl-border-subtle pt-4">
                 {/* Recent Activities */}
-                {recentActivities?.length > 0 && (
+                {recentActivities && recentActivities.length > 0 && (
                   <div>
                     <h4 className="text-xs font-semibold text-wl-text-primary mb-2">
                       Recent Activities
@@ -284,7 +285,7 @@ const ContactCardContent = memo(
                 )}
 
                 {/* Associated Deals */}
-                {associatedDeals?.length > 0 && (
+                {associatedDeals && associatedDeals.length > 0 && (
                   <div>
                     <h4 className="text-xs font-semibold text-wl-text-primary mb-2">
                       Associated Deals

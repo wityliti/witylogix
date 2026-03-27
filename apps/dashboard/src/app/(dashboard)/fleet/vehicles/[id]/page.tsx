@@ -40,7 +40,7 @@ export default function VehicleDetailPage() {
   const vehicleId = params.id as string;
   const [activeTab, setActiveTab] = useState<'overview' | 'diagnostics' | 'behavior' | 'maintenance'>('overview');
 
-  const { data: vehicle, loading, error, refetch } = useApiQuery<VehicleDetail>(`/api/v4/drivers/${vehicleId}`);
+  const { data: vehicle, loading, error, refetch } = useApiQuery<VehicleDetail>(`/api/v4/fleet/vehicles/${vehicleId}`);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

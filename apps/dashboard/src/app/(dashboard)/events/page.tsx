@@ -51,14 +51,12 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
 }
 
 export default function EventsPage() {
-  const { items: data, loading, error, refetch } = useApiList("/api/v4/events");
+  const { items: data, loading, error, refetch } = useApiList<ActivityLog>("/api/v4/activity-logs");
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<FilterState>({});
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const [events, setEvents] = useState<ActivityLog[]>([]);
-  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
-  const [filters, setFilters] = useState<FilterState>({});
 
   const toggleEventSelection = (eventId: string) => {
     const newSelected = new Set(selectedEvents);
@@ -71,10 +69,10 @@ export default function EventsPage() {
   };
 
   const selectAll = () => {
-    if (selectedEvents.size === events.length) {
+    if (selectedEvents.size === data.length) {
       setSelectedEvents(new Set());
     } else {
-      setSelectedEvents(new Set(events.map((e) => e.id)));
+      setSelectedEvents(new Set(data.map((e) => e.id)));
     }
   };
 
@@ -83,7 +81,7 @@ export default function EventsPage() {
     if (value === undefined || value === "") {
       delete newFilters[key];
     } else {
-      newFilters[key] = value;
+      (newFilters as Record<string, unknown>)[key] = value;
     }
     setFilters(newFilters);
   };
@@ -98,7 +96,7 @@ export default function EventsPage() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Events" value={data.length} color="primary" />
         <StatCard label="Last 24h" value={Math.floor(data.length * 0.3)} color="info" />
-        <StatCard label="Event Types" value={new Set(data.map((e: Record<string, unknown>) => e.action)).size} color="success" />
+        <StatCard label="Event Types" value={new Set(data.map((e) => e.action)).size} color="success" />
         <StatCard label="Pending" value="2" color="warning" />
       </div>
 
@@ -224,7 +222,7 @@ export default function EventsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-3">
-            {data.map((event: Record<string, unknown>) => (
+            {data.map((event) => (
               <div key={event.id} className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -240,7 +238,7 @@ export default function EventsPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="text-sm font-semibold text-white mb-1">{event.action}</h4>
-                      <p className="text-xs text-gray-400 mb-2">{event.entityType} • {new Date(event.timestamp).toLocaleTimeString()}</p>
+                      <p className="text-xs text-gray-400 mb-2">{event.entityType} &bull; {new Date(event.timestamp).toLocaleTimeString()}</p>
                     </div>
                     <Badge variant="info" className="text-xs">{event.actorType}</Badge>
                   </div>

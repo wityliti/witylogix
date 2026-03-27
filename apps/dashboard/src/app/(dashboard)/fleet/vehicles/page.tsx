@@ -44,7 +44,7 @@ interface Vehicle {
 
 export default function VehiclesPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: vehicles, loading, error, refetch } = useApiList<Vehicle>('/api/v4/drivers?include=vehicles');
+  const { items: vehicles, loading, error, refetch } = useApiList<Vehicle>('/api/v4/fleet/vehicles');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

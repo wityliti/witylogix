@@ -3,181 +3,27 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/header';
 import { StatCard } from '@/components/ui/stat-card';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCustomers, Customer } from '@/hooks/use-customers';
+import { useCustomers } from '@/hooks/use-customers';
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOMERS PAGE — Customer management with Shopify sync
    ═══════════════════════════════════════════════════════════ */
 
-const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: "cust-001",
-    shopifyId: "gid://shopify/Customer/123456789",
-    name: "Sarah Chen",
-    email: "sarah.chen@email.com",
-    phone: "+1 (555) 234-5601",
-    ordersCount: 15,
-    totalSpent: 3240.50,
-    lastOrderDate: "2026-03-05",
-    status: "active",
-    syncedAt: "2026-03-06T08:30:00Z",
-    segment: "vip",
-  },
-  {
-    id: "cust-002",
-    shopifyId: "gid://shopify/Customer/987654321",
-    name: "Michael Torres",
-    email: "m.torres@email.com",
-    phone: "+1 (555) 345-6712",
-    ordersCount: 12,
-    totalSpent: 2890.75,
-    lastOrderDate: "2026-03-04",
-    status: "active",
-    syncedAt: "2026-03-06T08:15:00Z",
-    segment: "vip",
-  },
-  {
-    id: "cust-003",
-    shopifyId: "gid://shopify/Customer/456789123",
-    name: "Emma Rodriguez",
-    email: "emma.r@email.com",
-    phone: "+1 (555) 456-7823",
-    ordersCount: 8,
-    totalSpent: 1950.00,
-    lastOrderDate: "2026-03-03",
-    status: "active",
-    syncedAt: "2026-03-06T08:45:00Z",
-    segment: "regular",
-  },
-  {
-    id: "cust-004",
-    shopifyId: "gid://shopify/Customer/789123456",
-    name: "James Liu",
-    email: "james.liu@email.com",
-    phone: "+1 (555) 567-8934",
-    ordersCount: 5,
-    totalSpent: 1240.25,
-    lastOrderDate: "2026-02-28",
-    status: "active",
-    syncedAt: "2026-03-06T07:20:00Z",
-    segment: "regular",
-  },
-  {
-    id: "cust-005",
-    shopifyId: "gid://shopify/Customer/321654987",
-    name: "Olivia Martinez",
-    email: "o.martinez@email.com",
-    phone: "+1 (555) 678-9045",
-    ordersCount: 3,
-    totalSpent: 680.50,
-    lastOrderDate: "2026-02-15",
-    status: "active",
-    syncedAt: "2026-03-06T08:00:00Z",
-    segment: "new",
-  },
-  {
-    id: "cust-006",
-    shopifyId: "gid://shopify/Customer/654987321",
-    name: "David Kim",
-    email: "d.kim@email.com",
-    phone: "+1 (555) 789-0156",
-    ordersCount: 2,
-    totalSpent: 425.75,
-    lastOrderDate: "2026-02-20",
-    status: "active",
-    syncedAt: "2026-03-06T08:30:00Z",
-    segment: "new",
-  },
-  {
-    id: "cust-007",
-    shopifyId: "gid://shopify/Customer/147258369",
-    name: "Jessica Williams",
-    email: "j.williams@email.com",
-    phone: "+1 (555) 890-1267",
-    ordersCount: 0,
-    totalSpent: 0,
-    lastOrderDate: "",
-    status: "inactive",
-    syncedAt: "2026-03-05T14:10:00Z",
-    segment: "inactive",
-  },
-  {
-    id: "cust-008",
-    shopifyId: "gid://shopify/Customer/258369147",
-    name: "Robert Anderson",
-    email: "r.anderson@email.com",
-    phone: "+1 (555) 901-2378",
-    ordersCount: 0,
-    totalSpent: 0,
-    lastOrderDate: "",
-    status: "inactive",
-    syncedAt: "2026-03-04T11:45:00Z",
-    segment: "inactive",
-  },
-  {
-    id: "cust-009",
-    shopifyId: "gid://shopify/Customer/369147258",
-    name: "Lisa Zhang",
-    email: "lisa.zhang@email.com",
-    phone: "+1 (555) 012-3489",
-    ordersCount: 11,
-    totalSpent: 2750.00,
-    lastOrderDate: "2026-03-05",
-    status: "active",
-    syncedAt: "2026-03-06T08:25:00Z",
-    segment: "vip",
-  },
-  {
-    id: "cust-010",
-    shopifyId: "gid://shopify/Customer/159753852",
-    name: "Carlos Nunez",
-    email: "c.nunez@email.com",
-    phone: "+1 (555) 123-4590",
-    ordersCount: 6,
-    totalSpent: 1580.00,
-    lastOrderDate: "2026-02-28",
-    status: "active",
-    syncedAt: "2026-03-06T07:55:00Z",
-    segment: "regular",
-  },
-];
-
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 };
 
-const formatDate = (dateStr: string): string => {
-  if (!dateStr) return "—";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-const formatDateTime = (isoStr: string): string => {
-  const date = new Date(isoStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-const getSegmentColor = (segment: string): "primary" | "success" | "warning" | "info" | "default" => {
+const getTierColor = (tier: string): "primary" | "success" | "warning" | "info" | "default" => {
   const map: Record<string, "primary" | "success" | "warning" | "info" | "default"> = {
-    vip: "primary",
-    regular: "success",
-    new: "info",
-    inactive: "default",
+    enterprise: "primary",
+    premium: "success",
+    standard: "info",
   };
-  return map[segment] ?? "default";
+  return map[tier] ?? "default";
 };
 
 export default function CustomersPage() {
@@ -194,7 +40,7 @@ export default function CustomersPage() {
     limit: pageSize,
   });
 
-  // Filter customer client-side
+  // Filter customers client-side
   const filtered = useMemo(() => {
     let result = customers;
 
@@ -202,7 +48,7 @@ export default function CustomersPage() {
       result = result.filter((c) => c.status === statusFilter);
     }
 
-    result.sort((a, b) => {
+    result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'totalSpent':
           return b.totalSpent - a.totalSpent;
@@ -409,7 +255,7 @@ export default function CustomersPage() {
                         {formatCurrency(customer.totalSpent)}
                       </td>
                       <td className="p-3 px-4 text-left">
-                        <Badge variant={getSegmentColor(customer.tier)}>{customer.tier}</Badge>
+                        <Badge variant={getTierColor(customer.tier)}>{customer.tier}</Badge>
                       </td>
                       <td className="p-3 px-4 text-center">
                         <Badge variant={customer.status === 'active' ? 'success' : 'default'}>

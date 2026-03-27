@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { LoadingSkeleton, ErrorState } from '@/components/ui/skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorState } from '@/components/ui/error-state';
 import { useOrderStats } from '@/hooks/use-orders';
 import { useDrivers } from '@/hooks/use-drivers';
 

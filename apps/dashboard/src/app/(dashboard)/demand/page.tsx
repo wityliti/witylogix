@@ -62,7 +62,7 @@ export default function DemandPage() {
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'nextweek' | 'custom'>('week');
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
 
-  const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics?type=demand');
+  const { data, loading, error } = useApiQuery<DemandData>('/api/v4/analytics/demand');
 
   const zones = data?.zones || [];
   const anomalies = data?.anomalies || [];
@@ -246,7 +246,7 @@ export default function DemandPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error.message} />;
   }
 
   const volumeDeviation = metrics

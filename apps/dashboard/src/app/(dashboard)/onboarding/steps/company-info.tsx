@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Upload, X } from "lucide-react";
-import type { OnboardingData, CompanySize } from "../types";
+import type { OnboardingData } from "../types";
+import { CompanySize } from "../types";
 
 interface CompanyInfoProps {
   data: OnboardingData;
@@ -12,11 +13,11 @@ interface CompanyInfoProps {
 }
 
 const companySizes: { value: CompanySize; label: string }[] = [
-  { value: "1-10", label: "1-10" },
-  { value: "11-50", label: "11-50" },
-  { value: "51-200", label: "51-200" },
-  { value: "201-1000", label: "201-1k" },
-  { value: "1000+", label: "1000+" },
+  { value: CompanySize.SMALL, label: "1-10" },
+  { value: CompanySize.SMALL_MEDIUM, label: "11-50" },
+  { value: CompanySize.MEDIUM, label: "51-200" },
+  { value: CompanySize.MEDIUM_LARGE, label: "201-1k" },
+  { value: CompanySize.LARGE, label: "1000+" },
 ];
 
 export function CompanyInfo({ data, onUpdate }: CompanyInfoProps) {
