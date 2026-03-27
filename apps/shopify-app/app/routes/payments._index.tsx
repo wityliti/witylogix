@@ -248,7 +248,7 @@ export default function PaymentsIndex() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold">
-          {payment.currency} {payment.amount.toFixed(2)}
+          {payment.currency} {Number(payment.amount).toFixed(2)}
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
@@ -291,7 +291,7 @@ export default function PaymentsIndex() {
                 Total Revenue
               </Text>
               <Text as="p" variant="headingLg" fontWeight="bold">
-                ${summary.totalRevenue.toFixed(2)}
+                ${Number(summary.totalRevenue).toFixed(2)}
               </Text>
             </BlockStack>
           </Card>
@@ -301,7 +301,7 @@ export default function PaymentsIndex() {
                 Pending Amount
               </Text>
               <Text as="p" variant="headingLg" fontWeight="bold">
-                ${summary.pendingAmount.toFixed(2)}
+                ${Number(summary.pendingAmount).toFixed(2)}
               </Text>
             </BlockStack>
           </Card>
@@ -311,7 +311,7 @@ export default function PaymentsIndex() {
                 Refunded Amount
               </Text>
               <Text as="p" variant="headingLg" fontWeight="bold">
-                ${summary.refundedAmount.toFixed(2)}
+                ${Number(summary.refundedAmount).toFixed(2)}
               </Text>
             </BlockStack>
           </Card>

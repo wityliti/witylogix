@@ -362,7 +362,7 @@ export default function DriverDetailPage() {
                 <InlineStack gap="400" wrap>
                   <MetricBox
                     label="Rating"
-                    value={driver.performance.rating.toFixed(1)}
+                    value={Number(driver.performance.rating).toFixed(1)}
                   />
                   <MetricBox
                     label="On-Time"

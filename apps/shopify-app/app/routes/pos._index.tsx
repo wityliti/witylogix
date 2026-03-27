@@ -368,7 +368,7 @@ export default function POSIndex() {
         </Badge>
       </IndexTable.Cell>
         <IndexTable.Cell>{order.itemsCount}</IndexTable.Cell>
-        <IndexTable.Cell>${order.total.toFixed(2)}</IndexTable.Cell>
+        <IndexTable.Cell>${Number(order.total).toFixed(2)}</IndexTable.Cell>
         <IndexTable.Cell>
         <Badge tone={getStatusTone(order.status)}>
           {order.status}

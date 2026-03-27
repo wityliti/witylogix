@@ -614,7 +614,7 @@ function BillingTab({ data }: { data: BillingInfo }) {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold">
-          ${invoice.amount.toFixed(2)}
+          ${Number(invoice.amount).toFixed(2)}
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>

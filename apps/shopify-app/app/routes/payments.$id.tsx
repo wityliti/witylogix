@@ -184,7 +184,7 @@ export default function PaymentDetail() {
       ),
     },
     { term: "Method", description: payment.method },
-    { term: "Amount", description: `${payment.currency} ${payment.amount.toFixed(2)}` },
+    { term: "Amount", description: `${payment.currency} ${Number(payment.amount).toFixed(2)}` },
     {
       term: "Status",
       description: (

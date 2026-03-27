@@ -239,7 +239,7 @@ export default function OrderDetailPage() {
                 </Text>
                 {order.latitude != null && order.longitude != null && (
                   <Text as="p" variant="bodySm" tone="subdued">
-                    GPS: {order.latitude.toFixed(6)}, {order.longitude.toFixed(6)}
+                    GPS: {Number(order.latitude).toFixed(6)}, {Number(order.longitude).toFixed(6)}
                   </Text>
                 )}
               </BlockStack>
@@ -269,7 +269,7 @@ export default function OrderDetailPage() {
                     {
                       term: "Total",
                       description:
-                        order.totalPrice != null ? `$${order.totalPrice.toFixed(2)}` : "\u2014",
+                        order.totalPrice != null ? `$${Number(order.totalPrice).toFixed(2)}` : "\u2014",
                     },
                     {
                       term: "Weight",

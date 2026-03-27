@@ -490,7 +490,7 @@ function StepDeliveryZones({
                     </p>
                     <p style={{ margin: 0, color: "var(--p-color-text-subdued)", fontSize: "14px" }}>
                       {zone.geofence.radius}
-                      {zone.geofence.unit} • ${zone.deliveryFee.toFixed(2)}
+                      {zone.geofence.unit} • ${Number(zone.deliveryFee).toFixed(2)}
                     </p>
                   </div>
                   <Button

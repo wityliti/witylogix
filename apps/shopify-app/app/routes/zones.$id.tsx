@@ -228,19 +228,19 @@ export default function ZoneDetailPage() {
                   items={[
                     {
                       term: "North",
-                      description: zone.boundaryNorth.toFixed(4),
+                      description: Number(zone.boundaryNorth).toFixed(4),
                     },
                     {
                       term: "South",
-                      description: zone.boundarySouth.toFixed(4),
+                      description: Number(zone.boundarySouth).toFixed(4),
                     },
                     {
                       term: "East",
-                      description: zone.boundaryEast.toFixed(4),
+                      description: Number(zone.boundaryEast).toFixed(4),
                     },
                     {
                       term: "West",
-                      description: zone.boundaryWest.toFixed(4),
+                      description: Number(zone.boundaryWest).toFixed(4),
                     },
                   ]}
                 />

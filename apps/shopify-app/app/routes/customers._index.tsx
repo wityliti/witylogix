@@ -266,7 +266,7 @@ export default function CustomersIndex() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" variant="bodyMd" fontWeight="semibold">
-          ${customer.totalSpent.toFixed(2)}
+          ${Number(customer.totalSpent).toFixed(2)}
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
