@@ -103,7 +103,13 @@ export function createApiClient(sessionToken: string) {
       throw new ApiRequestError(error);
     }
 
-    return response.json() as Promise<T>;
+    const json = await response.json() as any;
+    // The API uses `pagination` for list endpoints; normalise to `meta`
+    // so all callers can use the PaginatedResponse<T> shape consistently.
+    if (json && typeof json === 'object' && 'pagination' in json && !('meta' in json)) {
+      json.meta = json.pagination;
+    }
+    return json as T;
   }
 
   return {
