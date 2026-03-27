@@ -34,35 +34,27 @@ const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-interface Driver {
+interface MaintenanceRecord {
   id: string;
-  name: string;
+  type: string;
+  vehicleId: string;
+  vehicleName: string;
+  scheduledDate: string;
+  status: string;
+  estimatedCost: number;
+  actualCost: number | null;
+  vendor: string;
 }
 
 export default function MaintenancePage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/fleet/vehicles');
+  const { items: allMaintenance, loading, error, refetch } = useApiList<MaintenanceRecord>('/api/v4/fleet/maintenance');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const pageSize = 10;
-  const allMaintenance = drivers.flatMap((d) =>
-    Array(3).fill(null).map((_, i) => ({
-      id: `${d.id}-${i}`,
-      type: ['oil-change', 'tire-rotation', 'inspection'][i],
-      vehicleId: d.id,
-      vehicleName: d.name,
-      scheduledDate: new Date(Date.now() + (i - 1) * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      status: i === 0 ? 'overdue' : i === 1 ? 'scheduled' : 'completed',
-      estimatedCost: 200 + Math.random() * 300,
-      actualCost: null,
-      vendor: 'Local Repair Shop',
-    })),
-  );
-
-  const filteredMaintenance = allMaintenance.sort((a, b) => {
+  const filteredMaintenance = [...allMaintenance].sort((a, b) => {
     if (a.status === 'overdue' && b.status !== 'overdue') return -1;
     if (a.status !== 'overdue' && b.status === 'overdue') return 1;
     return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();

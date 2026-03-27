@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { Gauge, Clock, CheckSquare } from "lucide-react";
 
@@ -48,7 +47,7 @@ export default function ELDLayout({
   return (
     <div className="flex flex-col gap-6 min-h-screen bg-[var(--wl-bg-primary)]">
       {/* Header */}
-      <Header />
+      <Header title="Electronic Logging Device" />
 
       {/* Tab navigation */}
       <div className="px-6 pt-6">

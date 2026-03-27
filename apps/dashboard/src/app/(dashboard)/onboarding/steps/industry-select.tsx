@@ -13,7 +13,8 @@ import {
   Package,
   Leaf,
 } from "lucide-react";
-import type { OnboardingData, Industry } from "../types";
+import type { OnboardingData } from "../types";
+import { Industry } from "../types";
 
 interface IndustrySelectProps {
   data: OnboardingData;

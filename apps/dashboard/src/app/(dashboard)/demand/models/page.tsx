@@ -43,7 +43,7 @@ export default function ModelsPage() {
   const [expandedModel, setExpandedModel] = useState<string | null>(null);
 
   const { items: models, loading, error } = useApiList<ModelMetric>(
-    '/api/v4/analytics?type=demand-models'
+    '/api/v4/analytics/demand-models'
   );
 
   const stats = useMemo(() => {
@@ -62,7 +62,7 @@ export default function ModelsPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error.message} />;
   }
 
   const getTrendColor = (trend: string) => {

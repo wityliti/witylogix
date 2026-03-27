@@ -108,7 +108,7 @@ function TeamCollaborationPage() {
       "textarea[placeholder*='Type a message']"
     ) as HTMLTextAreaElement;
     const content = messageInput?.value || "";
-    const attachments: Record<string, unknown>[] = [];
+    const attachments: NonNullable<Parameters<typeof collaboration.sendMessage>[1]> = [];
 
     if (!content.trim()) return;
 
@@ -248,7 +248,7 @@ function TeamCollaborationPage() {
           <div className="flex-1 flex flex-col">
             <MessageList
               messages={collaboration.messages}
-              currentUserId={collaboration.userId || ""}
+              currentUserId="current-user"
               isLoadingOlder={collaboration.isLoadingMessages}
               onLoadOlder={collaboration.loadOlderMessages}
               onReply={handleOpenThread}
@@ -308,7 +308,7 @@ function TeamCollaborationPage() {
             <ThreadPanel
               threadId={selectedThreadId}
               messages={collaboration.threadMessages}
-              currentUserId={collaboration.userId || ""}
+              currentUserId="current-user"
               onClose={() => {
                 setShowThreadPanel(false);
                 collaboration.closeThread();

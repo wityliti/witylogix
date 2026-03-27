@@ -117,7 +117,7 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── LIST VEHICLES ──────────────────────────────────────────
 
-  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
+  const listFleetVehicles = async (request: FastifyRequest, _reply: FastifyReply) => {
     try {
       const query = vehicleListQuerySchema.parse(request.query);
       const { page, limit, status, search, provider, isActive } = query;
@@ -189,54 +189,27 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       }
       throw error;
     }
-  });
+  };
 
-  // ── GET SINGLE VEHICLE ────────────────────────────────────
+  fastify.get('/', listFleetVehicles);
+  fastify.get('/vehicles', listFleetVehicles);
 
-  fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  // ── GET FLEET HEALTH SCORE (before /:id so "health" is not captured as id) ──
 
+  fastify.get('/health', async (_request: FastifyRequest, _reply: FastifyReply) => {
     try {
-      // INTEGRATION: Fetch from FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const vehicle = await fleetService.getVehicle(id);
-      // if (!vehicle) throw new NotFoundError('Vehicle', id);
-
-      const mockVehicle = {
-        id,
-        fleetId: request.shopId,
-        make: 'Volvo',
-        model: 'FH16',
-        year: 2023,
-        vin: 'YV1TS56D982F8032',
-        licensePlate: 'AB001',
-        engineType: 'DIESEL',
-        primaryProvider: 'SAMSARA',
-        status: 'ACTIVE',
-        odometer: 5000,
-        engineHours: 200,
-        fuelLevel: 75,
-        battery: 95,
-        capacity: 25000,
-        driverId: 'driver-101',
-        isActive: true,
-        lastPosition: {
-          latitude: 37.7749,
-          longitude: -122.4194,
-          heading: 180,
-          speed: 65,
-          accuracy: 5,
-          timestamp: new Date(),
-        },
-        lastSyncAt: new Date(),
-        nextMaintenanceDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      const mockHealthScore = {
+        overallScore: 82,
+        fuelEfficiency: 78,
+        driverSafety: 85,
+        maintenanceStatus: 81,
+        utilizationRate: 71,
+        trend: 'IMPROVING',
+        lastUpdated: new Date(),
       };
 
-      return { data: mockVehicle };
+      return { data: mockHealthScore };
     } catch (error) {
-      if (error instanceof NotFoundError) throw error;
       throw error;
     }
   });
@@ -400,30 +373,6 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
     },
   );
 
-  // ── GET FLEET HEALTH SCORE ────────────────────────────────
-
-  fastify.get('/health', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      // INTEGRATION: Fetch from FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const healthScore = await fleetService.calculateFleetHealth();
-
-      const mockHealthScore = {
-        overallScore: 82,
-        fuelEfficiency: 78,
-        driverSafety: 85,
-        maintenanceStatus: 81,
-        utilizationRate: 71,
-        trend: 'IMPROVING',
-        lastUpdated: new Date(),
-      };
-
-      return { data: mockHealthScore };
-    } catch (error) {
-      throw error;
-    }
-  });
-
   // ── GET VEHICLE MAINTENANCE ALERTS ────────────────────────
 
   fastify.get(
@@ -505,11 +454,11 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       const { page, limit } = query;
 
       const mockMaintenance = [
-        { id: 'mnt-1', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'oil-change', scheduledDate: new Date(Date.now() - 5 * 86400000).toISOString(), status: 'overdue', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Overdue by 5 days' },
-        { id: 'mnt-2', vehicleId: 'veh-2', vehiclePlate: 'AB002', type: 'tire-rotation', scheduledDate: new Date(Date.now() + 7 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 180, actualCost: null, vendor: 'Tire Pro', notes: '' },
-        { id: 'mnt-3', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'inspection', scheduledDate: new Date(Date.now() - 30 * 86400000).toISOString(), status: 'completed', estimatedCost: 120, actualCost: 115, vendor: 'City Inspection', notes: 'Passed annual inspection' },
-        { id: 'mnt-4', vehicleId: 'veh-2', vehiclePlate: 'AB002', type: 'oil-change', scheduledDate: new Date(Date.now() + 14 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: '' },
-        { id: 'mnt-5', vehicleId: 'veh-1', vehiclePlate: 'AB001', type: 'repair', scheduledDate: new Date(Date.now() - 1 * 86400000).toISOString(), status: 'in-progress', estimatedCost: 800, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Brake pad replacement' },
+        { id: 'mnt-1', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'oil-change', scheduledDate: new Date(Date.now() - 5 * 86400000).toISOString(), status: 'overdue', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Overdue by 5 days' },
+        { id: 'mnt-2', vehicleId: 'veh-2', vehiclePlate: 'AB002', vehicleName: 'Scania G490 (AB002)', type: 'tire-rotation', scheduledDate: new Date(Date.now() + 7 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 180, actualCost: null, vendor: 'Tire Pro', notes: '' },
+        { id: 'mnt-3', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'inspection', scheduledDate: new Date(Date.now() - 30 * 86400000).toISOString(), status: 'completed', estimatedCost: 120, actualCost: 115, vendor: 'City Inspection', notes: 'Passed annual inspection' },
+        { id: 'mnt-4', vehicleId: 'veh-2', vehiclePlate: 'AB002', vehicleName: 'Scania G490 (AB002)', type: 'oil-change', scheduledDate: new Date(Date.now() + 14 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: '' },
+        { id: 'mnt-5', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'repair', scheduledDate: new Date(Date.now() - 1 * 86400000).toISOString(), status: 'in-progress', estimatedCost: 800, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Brake pad replacement' },
       ];
 
       const paginated = mockMaintenance.slice((page - 1) * limit, page * limit);
@@ -550,6 +499,38 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       return {
         data: paginated,
         meta: { page, limit, total: mockTransactions.length, totalPages: Math.ceil(mockTransactions.length / limit) },
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
+
+  // ── GET FUEL (dashboard alias; same mock data shape as fuel page) ──
+
+  fastify.get('/fuel', async (request: FastifyRequest, _reply: FastifyReply) => {
+    try {
+      const stations = ['Shell', 'Chevron', 'BP', 'ExxonMobil'];
+      const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
+        id: `fuel-${i + 1}`,
+        vehicleId: i % 2 === 0 ? 'veh-1' : 'veh-2',
+        date: new Date(Date.now() - i * 2 * 86400000).toISOString(),
+        station: stations[i % stations.length],
+        gallons: parseFloat((40 + Math.sin(i) * 15).toFixed(1)),
+        amount: parseFloat((150 + i * 12).toFixed(2)),
+        price: parseFloat((3.45 + Math.sin(i) * 0.3).toFixed(3)),
+        mpg: parseFloat((12 + Math.sin(i) * 3).toFixed(1)),
+        flagged: i % 9 === 0,
+      }));
+
+      return {
+        data: mockTransactions,
+        meta: {
+          page: 1,
+          limit: mockTransactions.length,
+          total: mockTransactions.length,
+          totalPages: 1,
+        },
       };
     } catch (error) {
       if (error instanceof z.ZodError) throw new ValidationError(error.errors);
@@ -602,6 +583,51 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       };
     } catch (error) {
       if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      throw error;
+    }
+  });
+
+  // ── GET SINGLE VEHICLE (after static single-segment routes) ──
+
+  fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    try {
+      const mockVehicle = {
+        id,
+        fleetId: request.shopId,
+        make: 'Volvo',
+        model: 'FH16',
+        year: 2023,
+        vin: 'YV1TS56D982F8032',
+        licensePlate: 'AB001',
+        engineType: 'DIESEL',
+        primaryProvider: 'SAMSARA',
+        status: 'ACTIVE',
+        odometer: 5000,
+        engineHours: 200,
+        fuelLevel: 75,
+        battery: 95,
+        capacity: 25000,
+        driverId: 'driver-101',
+        isActive: true,
+        lastPosition: {
+          latitude: 37.7749,
+          longitude: -122.4194,
+          heading: 180,
+          speed: 65,
+          accuracy: 5,
+          timestamp: new Date(),
+        },
+        lastSyncAt: new Date(),
+        nextMaintenanceDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      return { data: mockVehicle };
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
       throw error;
     }
   });

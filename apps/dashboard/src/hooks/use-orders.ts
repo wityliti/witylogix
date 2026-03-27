@@ -104,7 +104,7 @@ export function useOrders(
 export function useOrder(
   id: string | null,
 ): UseApiQueryResult<Order> {
-  return useApiQuery<Order>(id ? `/orders/${id}` : null);
+  return useApiQuery<Order>(id ? `/api/v4/orders/${id}` : null);
 }
 
 /**
@@ -123,7 +123,7 @@ export function useCreateOrder(): UseApiMutationResult<Order> {
 export function useUpdateOrderStatus(
   id: string,
 ): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('PATCH', `/orders/${id}/status`);
+  return useApiMutation<Order>('PATCH', `/api/v4/orders/${id}/status`);
 }
 
 /**

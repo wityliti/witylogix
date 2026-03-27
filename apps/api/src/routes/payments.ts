@@ -504,4 +504,91 @@ export default async function paymentRoutes(
       }
     }
   );
+
+  // GET /reconciliation — Reconciliation view: match payments against invoices
+  fastify.get(
+    "/reconciliation",
+    async (request: any, reply: FastifyReply) => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const [payments, invoices] = await Promise.all([
+        request.tenantDb.payment.findMany({
+          where: {
+            shopId: request.shopId,
+            createdAt: { gte: thirtyDaysAgo },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 100,
+          select: {
+            id: true,
+            createdAt: true,
+            amount: true,
+            status: true,
+            method: true,
+            reference: true,
+          },
+        }),
+        (request.tenantDb as any).invoice?.findMany
+          ? (request.tenantDb as any).invoice.findMany({
+              where: {
+                tenantId: request.tenantId,
+                issuedAt: { gte: thirtyDaysAgo },
+              },
+              orderBy: { issuedAt: "desc" },
+              take: 100,
+              select: {
+                id: true,
+                issuedAt: true,
+                total: true,
+                status: true,
+                invoiceNumber: true,
+              },
+            })
+          : Promise.resolve([]),
+      ]);
+
+      // Simple matching: mark payments as matched if amount appears in an invoice
+      const invoiceAmounts = new Set(invoices.map((inv: any) => String(Math.round(parseFloat(inv.total)))));
+
+      const bankTransactions = payments.map((p: any) => {
+        const amtStr = String(Math.round(parseFloat(p.amount)));
+        const matched = invoiceAmounts.has(amtStr);
+        return {
+          id: p.id,
+          date: p.createdAt,
+          description: `${p.method} payment${p.reference ? ` (${p.reference})` : ""}`,
+          amount: parseFloat(p.amount),
+          status: matched ? "matched" : "unmatched",
+          confidence: matched ? 0.9 : 0,
+        };
+      });
+
+      const paymentAmounts = new Set(payments.map((p: any) => String(Math.round(parseFloat(p.amount)))));
+      const internalRecords = invoices.map((inv: any) => {
+        const amtStr = String(Math.round(parseFloat(inv.total)));
+        const matched = paymentAmounts.has(amtStr);
+        return {
+          id: inv.id,
+          date: inv.issuedAt,
+          description: inv.invoiceNumber || `Invoice ${inv.id.slice(0, 8)}`,
+          amount: parseFloat(inv.total),
+          status: matched ? "matched" : "unmatched",
+        };
+      });
+
+      const unmatchedCount = bankTransactions.filter((t: any) => t.status === "unmatched").length;
+      const discrepancyTotal = bankTransactions
+        .filter((t: any) => t.status === "unmatched")
+        .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+      return reply.send({
+        data: {
+          bankTransactions,
+          internalRecords,
+          unmatchedCount,
+          discrepancyTotal,
+        },
+      });
+    },
+  );
 }
