@@ -1,8 +1,8 @@
 # Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
-# Cache bust: force rebuild (2026-03-27-v3)
-RUN echo "cache-bust-2026-03-27-v2"
+# Cache bust: force rebuild (2026-03-27-v4)
+RUN echo "cache-bust-2026-03-27-v4"
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
@@ -34,13 +34,19 @@ RUN pnpm build
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 
-# pnpm deploy --prod with pnpm's virtual store layout (used by pnpm 9.x) creates
-# node_modules/@prisma/client as a HOISTED real directory (via public-hoist-pattern in .npmrc)
-# BUT Prisma's default generate targets the pnpm virtual store, not the hoisted directory.
-# At runtime, require('@prisma/client') resolves the hoisted copy first — which has no engine.
+# --- Prisma client for production ---
 #
-# Fix: explicitly generate the Prisma client INTO the hoisted @prisma/client directory so the
-# engine binary is present where Node.js will actually resolve the package at runtime.
+# Problem: pnpm deploy --prod creates a virtual store under node_modules/.pnpm/.
+# @prisma/client is hoisted (per .npmrc public-hoist-pattern) as a SYMLINK to
+# .pnpm/@prisma+client@.../node_modules/@prisma/client/.
+# Node.js follows symlinks when resolving, so require('@prisma/client') starts
+# resolution from the REAL path inside .pnpm/. When @prisma/client/default.js does
+# require('.prisma/client'), Node.js looks for .prisma/client ADJACENT to the real
+# pnpm store path — e.g. .pnpm/@prisma+client@.../node_modules/.prisma/client — NOT
+# at the flat node_modules/.prisma/client we generate to.
+#
+# Fix: generate to the flat location first (for any non-symlink consumers), then
+# copy the generated client into every .prisma/client directory inside the pnpm store.
 WORKDIR /standalone
 RUN cp -r /app/packages/db/prisma ./prisma_default && \
     sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
@@ -48,6 +54,13 @@ RUN cp -r /app/packages/db/prisma ./prisma_default && \
         ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
     mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
     /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
+    echo "Copying generated Prisma client into pnpm store .prisma/client stubs..." && \
+    find ./node_modules/.pnpm -maxdepth 7 -type d -name ".prisma" 2>/dev/null | while read prisma_dir; do \
+      if [ -d "$prisma_dir/client" ]; then \
+        echo "  -> $prisma_dir/client"; \
+        cp -rf ./node_modules/.prisma/client/. "$prisma_dir/client/"; \
+      fi; \
+    done && \
     rm -rf ./prisma_default
 
 FROM node:22-alpine AS runner
