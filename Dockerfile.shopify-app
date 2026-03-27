@@ -1,7 +1,7 @@
 # Shopify App Dockerfile
 FROM node:22-alpine AS builder
 
-# Cache bust: force rebuild (2026-03-27-v2)
+# Cache bust: force rebuild (2026-03-27-v3)
 RUN echo "cache-bust-2026-03-27-v2"
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
@@ -61,8 +61,10 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 COPY --from=builder /app/apps/shopify-app/build ./build
 
+# Railway's internal runner maps `node_modules` → `app_modules` in start commands.
+# Create a symlink so both paths resolve to the same directory.
+RUN ln -s /app/node_modules /app/app_modules
+
 EXPOSE 3000
 
-# Diagnostic wrapper: print key startup info then exec the server.
-# This also busts the Docker layer cache so the runner is rebuilt fresh.
-CMD ["sh", "-c", "echo '=== shopify-app starting ===' && echo PORT=$PORT && echo '--- checking @react-router/serve ---' && ls node_modules/@react-router/serve/bin.js 2>&1 || echo 'MISSING bin.js' && echo '--- checking .prisma ---' && ls node_modules/.prisma/client/ 2>&1 | head -3 || echo 'no .prisma/client' && echo '--- node_modules top level ---' && ls node_modules/ | head -10 && echo '--- starting server ---' && exec node node_modules/@react-router/serve/bin.js ./build/server/index.js"]
+CMD ["node", "/app/node_modules/@react-router/serve/bin.js", "./build/server/index.js"]
