@@ -1,9 +1,9 @@
-[build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile.shopify-app"
+# Root railway.toml — shared defaults only.
+# Each service uses RAILWAY_DOCKERFILE_PATH env var (set per-service in Railway dashboard)
+# to specify its own Dockerfile. Do NOT add [build] dockerfilePath here as it overrides
+# all services in the monorepo.
 
 [deploy]
-startCommand = "node node_modules/@react-router/serve/bin.js ./build/server/index.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
