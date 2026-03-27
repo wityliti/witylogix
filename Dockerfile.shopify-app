@@ -44,7 +44,7 @@ RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
 WORKDIR /standalone
 RUN cp -r /app/packages/db/prisma ./prisma_default && \
     sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
-    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/@prisma/client\""; next } 1' \
+    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/.prisma/client\""; next } 1' \
         ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
     mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
     /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
