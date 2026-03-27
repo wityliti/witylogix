@@ -33,6 +33,7 @@ import {
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { AppProvider as ShopifyAppBridgeProvider } from "@shopify/shopify-app-react-router/react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { getApiBaseUrl } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   AppProvider,
@@ -75,7 +76,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!skipRootShopifyAdminAuth(new URL(request.url).pathname)) {
     await authenticate.admin(request);
   }
-  return { apiKey: process.env.SHOPIFY_API_KEY ?? "" };
+  return {
+    apiKey: process.env.SHOPIFY_API_KEY ?? "",
+    /** Same origin loaders use for `createApiClient` — exposed for Socket.io on the client. */
+    publicApiBaseUrl: getApiBaseUrl(),
+  };
 }
 
 export const headers: HeadersFunction = (args) => boundary.headers(args);
@@ -240,7 +245,7 @@ function AppNavigation({ currentPath }: { currentPath: string }) {
 export default function App() {
   const navigation = useNavigation();
   const location = useLocation();
-  const { apiKey } = useLoaderData<typeof loader>();
+  const { apiKey, publicApiBaseUrl } = useLoaderData<typeof loader>();
   const isLoading = navigation.state === "loading";
 
   return (
@@ -252,6 +257,12 @@ export default function App() {
         <Links />
       </head>
       <body>
+        <script
+          // Runs before client bundles so useSocket reads the correct API origin.
+          dangerouslySetInnerHTML={{
+            __html: `window.__SOCKET_URL=${JSON.stringify(publicApiBaseUrl)};`,
+          }}
+        />
         <ShopifyAppBridgeProvider embedded apiKey={apiKey}>
           <AppProvider i18n={enTranslations} linkComponent={PolarisRouterLink}>
             <Frame navigation={<AppNavigation currentPath={location.pathname} />}>
