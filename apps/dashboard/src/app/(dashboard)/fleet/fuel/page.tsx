@@ -28,7 +28,7 @@ interface Driver {
 
 export default function FuelPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/drivers?include=fuel');
+  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/fleet/vehicles');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

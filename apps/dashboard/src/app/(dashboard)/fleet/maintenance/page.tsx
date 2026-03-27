@@ -42,7 +42,7 @@ interface Driver {
 export default function MaintenancePage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/drivers?include=maintenance');
+  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/fleet/vehicles');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
