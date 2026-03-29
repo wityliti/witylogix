@@ -180,6 +180,17 @@ export interface OptimizedStop extends Stop {
 
   /** Sequence number in route (0-based) */
   sequenceNumber: number;
+
+  /**
+   * Time window violation details, present when arrival is outside the window.
+   * "early": driver arrives before window opens (waited at stop).
+   * "late": driver arrives after window closes (hard constraint violation).
+   */
+  timeWindowViolation?: {
+    type: "early" | "late";
+    /** Magnitude of violation in minutes */
+    minutesOff: number;
+  };
 }
 
 /**
