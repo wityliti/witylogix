@@ -124,6 +124,24 @@ export interface SystemHealthEvent {
   };
 }
 
+export interface RouteUpdatedEvent {
+  routeId: string;
+  shopId: string;
+  driverId: string | null;
+  /** Stop that was hot-added */
+  addedStopId: string;
+  /** New ordered stop sequence after re-optimisation */
+  updatedSequence: Array<{
+    stopId: string;
+    orderId: string | null;
+    sequence: number;
+    estimatedArrival: string; // ISO 8601
+  }>;
+  /** Traffic factor applied during re-optimisation */
+  trafficFactor: number;
+  updatedAt: string; // ISO 8601
+}
+
 export interface ServerToClientEvents {
   "shipment:created": (data: ShipmentEvent) => void;
   "shipment:status_changed": (data: ShipmentStatusEvent) => void;
@@ -136,6 +154,7 @@ export interface ServerToClientEvents {
   "payment:received": (data: PaymentEvent) => void;
   "activity:new": (data: ActivityEvent) => void;
   "system:health": (data: SystemHealthEvent) => void;
+  "route:updated": (data: RouteUpdatedEvent) => void;
 }
 
 export interface ClientToServerEvents {
