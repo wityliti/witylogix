@@ -111,7 +111,7 @@ export const createCourierProfile = (provider: "onfleet" | "stuart" | "uber_dire
   id: `courier_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   provider,
   externalId: `ext_${Math.random().toString(36).substr(2, 9)}`,
-  name: "John's Delivery",
+  name: "John's Courier Services",
   rating: 4.8,
   acceptanceRate: 0.95,
   cancellationRate: 0.02,
@@ -145,7 +145,7 @@ export interface WebhookEvent {
 
 // Onfleet webhook fixtures
 export const createOnfleetTaskCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
-  id: `evt_onfleet_${Date.now()}`,
+  id: `evt_onfleet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "task.completed",
   timestamp: Math.floor(Date.now() / 1000),
   data: {
@@ -171,7 +171,7 @@ export const createOnfleetTaskCompletedEvent = (overrides?: Partial<WebhookEvent
 
 // Stuart webhook fixtures
 export const createStuartDeliveryCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
-  id: `evt_stuart_${Date.now()}`,
+  id: `evt_stuart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "delivery.completed",
   timestamp: Math.floor(Date.now() / 1000),
   data: {
@@ -193,7 +193,7 @@ export const createStuartDeliveryCompletedEvent = (overrides?: Partial<WebhookEv
 
 // Uber Direct webhook fixtures
 export const createUberDirectDeliveryCompletedEvent = (overrides?: Partial<WebhookEvent>): WebhookEvent => ({
-  id: `evt_uber_${Date.now()}`,
+  id: `evt_uber_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   type: "delivery.completed",
   timestamp: Math.floor(Date.now() / 1000),
   data: {

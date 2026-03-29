@@ -174,7 +174,7 @@ class FuelAnalyticsEngine {
     const locationLats = transactions.map((t) => t.location?.latitude || 0);
     const locationLons = transactions.map((t) => t.location?.longitude || 0);
 
-    if (locationLats.length > 2) {
+    if (locationLats.length >= 2) {
       const avgLat = locationLats.reduce((a, b) => a + b, 0) / locationLats.length;
       const avgLon = locationLons.reduce((a, b) => a + b, 0) / locationLons.length;
 
@@ -198,9 +198,12 @@ class FuelAnalyticsEngine {
 
     // Check for capacity overflow
     const maxTransaction = transactions.reduce((max, t) => (t.gallons > max.gallons ? t : max));
-    const avgGallons = transactions.reduce((sum, t) => sum + t.gallons, 0) / transactions.length;
+    const otherTransactions = transactions.filter((t) => t !== maxTransaction);
+    const baselineAvgGallons = otherTransactions.length > 0
+      ? otherTransactions.reduce((sum, t) => sum + t.gallons, 0) / otherTransactions.length
+      : maxTransaction.gallons;
 
-    if (maxTransaction.gallons > avgGallons * 2) {
+    if (maxTransaction.gallons > baselineAvgGallons * 2) {
       alerts.push({
         type: 'capacity_overflow',
         severity: 'critical',
@@ -232,15 +235,18 @@ class FuelAnalyticsEngine {
 
     // Check for price spike
     const prices = transactions.map((t) => t.pricePerGallon);
-    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
     const lastPrice = prices[prices.length - 1];
+    const prevPrices = prices.slice(0, -1);
+    const avgPrevPrice = prevPrices.length > 0
+      ? prevPrices.reduce((a, b) => a + b, 0) / prevPrices.length
+      : lastPrice;
 
-    if (lastPrice > avgPrice * 1.15) {
+    if (lastPrice > avgPrevPrice * 1.15) {
       // > 15% above average
       alerts.push({
         type: 'price_spike',
         severity: 'warning',
-        message: 'Fuel price spike: $' + lastPrice.toFixed(2) + '/gal vs $' + avgPrice.toFixed(2) + ' average',
+        message: 'Fuel price spike: $' + lastPrice.toFixed(2) + '/gal vs $' + avgPrevPrice.toFixed(2) + ' average',
       });
     }
 
