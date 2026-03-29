@@ -20,6 +20,7 @@ export default function FinanceLayout({ children }: FinanceLayoutProps) {
     { href: '/finance', label: 'Dashboard' },
     { href: '/finance/invoices', label: 'Invoices' },
     { href: '/finance/reconciliation', label: 'Reconciliation' },
+    { href: '/finance/cod', label: 'COD' },
   ];
 
   const isActive = (href: string) => {
