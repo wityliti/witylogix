@@ -79,10 +79,21 @@ class CourierAdapterProvider implements ICourierProvider {
   }
 }
 
+// Per-tenant SmartRouter cache — avoid a full DB query + adapter instantiation on every
+// routing request. Cached for 30 seconds; invalidated automatically on expiry.
+const _routerCache = new Map<string, { router: SmartRouter; expiresAt: number }>();
+const ROUTER_CACHE_TTL_MS = 30_000;
+
 /**
  * Build a SmartRouter for a given tenant by registering all enabled courier partners.
+ * Results are cached per-tenant for ROUTER_CACHE_TTL_MS milliseconds.
  */
 async function buildTenantSmartRouter(tenantId: string): Promise<SmartRouter> {
+  const cached = _routerCache.get(tenantId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.router;
+  }
+
   const router = new SmartRouter();
 
   const partners = await prisma.courierPartner.findMany({
@@ -115,6 +126,7 @@ async function buildTenantSmartRouter(tenantId: string): Promise<SmartRouter> {
     }
   }
 
+  _routerCache.set(tenantId, { router, expiresAt: Date.now() + ROUTER_CACHE_TTL_MS });
   return router;
 }
 

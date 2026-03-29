@@ -492,6 +492,9 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       try {
         const body = acknowledgeEventSchema.parse(request.body);
 
+        // TODO(WIT-86): No FleetEvent model exists yet — acknowledgements are not persisted.
+        // Acknowledged state is lost on restart. A follow-up ticket should add a
+        // `FleetEvent` model and write the acknowledged flag + actor here.
         return {
           data: {
             vehicleId: id,
@@ -517,20 +520,17 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
       const { page, limit } = query;
 
-      // Collect all vehicles with fault codes as maintenance items
-      const vehicles = await (prisma as any).fleetVehicle.findMany({
+      // Fetch all vehicles with diagnostic data, then expand fault codes into
+      // individual maintenance items and paginate the resulting item list.
+      // Previously the query paginated by vehicle which gave incorrect item counts
+      // when multiple fault codes existed per vehicle.
+      const allVehicles = await (prisma as any).fleetVehicle.findMany({
         where: { tenantId, status: { not: 'DELETED' } },
         select: { id: true, name: true, licensePlate: true, make: true, model: true, lastDiagnosticData: true, lastDiagnosticAt: true },
         orderBy: { lastDiagnosticAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
       });
 
-      const total = await (prisma as any).fleetVehicle.count({
-        where: { tenantId, status: { not: 'DELETED' } },
-      });
-
-      const maintenanceItems = vehicles.flatMap((v: any) => {
+      const allItems = allVehicles.flatMap((v: any) => {
         const diag = v.lastDiagnosticData as any;
         if (!diag?.faultCodes || !Array.isArray(diag.faultCodes)) return [];
         return diag.faultCodes.map((fc: any) => ({
@@ -546,6 +546,9 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
           detectedAt: v.lastDiagnosticAt,
         }));
       });
+
+      const total = allItems.length;
+      const maintenanceItems = allItems.slice((page - 1) * limit, page * limit);
 
       return {
         data: maintenanceItems,
