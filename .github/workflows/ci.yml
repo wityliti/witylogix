@@ -72,13 +72,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Build shared packages
-        run: |
-          pnpm --filter @witylogix/types build
-          pnpm --filter @witylogix/validators build
-
       - name: Run tests
-        run: pnpm -r run test --passWithNoTests
+        run: pnpm test:run
 
   security:
     name: Security Audit
