@@ -1,127 +1,108 @@
-/**
- * OfflineIndicator - Shows connection status and pending queue
- */
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
+/**
+ * Renders:
+ *   • Amber banner  — offline, saving locally
+ *   • Blue banner   — syncing X events
+ *   • Green toast   — all data synced (auto-dismisses after 3 s)
+ */
 const OfflineIndicator: React.FC = () => {
-  const { isOnline, pendingCount, syncInProgress, syncNow } = useOfflineSync();
-  const [isVisible, setIsVisible] = useState(!isOnline);
+  const { isOnline, syncStatus, pendingCount } = useOfflineSync();
+  const [showSyncedToast, setShowSyncedToast] = useState(false);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+  const prevSyncStatus = useRef(syncStatus);
 
+  // Show green toast when sync transitions to 'done'
   useEffect(() => {
-    setIsVisible(!isOnline || pendingCount > 0);
-  }, [isOnline, pendingCount]);
+    if (prevSyncStatus.current === 'syncing' && syncStatus === 'done' && pendingCount === 0) {
+      setShowSyncedToast(true);
+      Animated.sequence([
+        Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.delay(2600),
+        Animated.timing(toastOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]).start(() => setShowSyncedToast(false));
+    }
+    prevSyncStatus.current = syncStatus;
+  }, [syncStatus, pendingCount, toastOpacity]);
 
-  if (!isVisible) {
+  const isSyncing = syncStatus === 'syncing' && pendingCount > 0;
+  const isOffline = !isOnline;
+
+  if (!isOffline && !isSyncing && !showSyncedToast) {
     return null;
   }
 
-  const statusColor = isOnline ? '#4CAF50' : '#FF9800';
-  const statusText = isOnline ? 'Online' : 'Offline';
-  const icon = isOnline ? '✓' : '⚠';
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: statusColor,
-        color: 'white',
-        padding: '12px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        zIndex: 1000,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        animation: 'slideDown 0.3s ease-out',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          flex: 1,
-        }}
-      >
-        <span
-          style={{
-            fontSize: '20px',
-            fontWeight: 'bold',
-            animation: isOnline ? 'none' : 'pulse 1.5s infinite',
-          }}
-        >
-          {icon}
-        </span>
-        <div>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: '600',
-            }}
-          >
-            {statusText}
-          </div>
-          {pendingCount > 0 && (
-            <div
-              style={{
-                fontSize: '12px',
-                opacity: 0.9,
-              }}
-            >
-              {pendingCount} pending operation{pendingCount !== 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {isOnline && pendingCount > 0 && (
-        <button
-          onClick={syncNow}
-          disabled={syncInProgress}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.3)',
-            color: 'white',
-            border: 'none',
-            padding: '6px 12px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: syncInProgress ? 'not-allowed' : 'pointer',
-            opacity: syncInProgress ? 0.6 : 1,
-            transition: 'opacity 0.2s',
-          }}
-        >
-          {syncInProgress ? 'Syncing...' : 'Sync Now'}
-        </button>
+    <>
+      {isOffline && (
+        <View style={styles.amberBanner}>
+          <Text style={styles.bannerText}>
+            You are offline — deliveries are being saved locally
+          </Text>
+        </View>
       )}
 
-      <style>{`
-        @keyframes slideDown {
-          from {
-            transform: translateY(-100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
+      {!isOffline && isSyncing && (
+        <View style={styles.blueBanner}>
+          <Text style={styles.bannerText}>
+            Syncing {pendingCount} event{pendingCount !== 1 ? 's' : ''}
+          </Text>
+        </View>
+      )}
 
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-      `}</style>
-    </div>
+      {showSyncedToast && (
+        <Animated.View style={[styles.greenToast, { opacity: toastOpacity }]}>
+          <Text style={styles.toastText}>All data synced</Text>
+        </Animated.View>
+      )}
+    </>
   );
 };
+
+const styles = StyleSheet.create({
+  amberBanner: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  blueBanner: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  bannerText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  greenToast: {
+    position: 'absolute',
+    bottom: 80,
+    alignSelf: 'center',
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  toastText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
 
 export default OfflineIndicator;

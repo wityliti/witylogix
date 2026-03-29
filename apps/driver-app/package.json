@@ -22,6 +22,7 @@
     "expo-crypto": "^14.0.0",
     "expo-image-picker": "^16.0.0",
     "expo-location": "^18.0.0",
+    "expo-network": "^7.0.0",
     "expo-secure-store": "^14.0.0",
     "expo-sqlite": "^14.0.0",
     "react": "^18.3.0",

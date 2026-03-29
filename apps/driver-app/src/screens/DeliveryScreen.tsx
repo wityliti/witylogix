@@ -15,6 +15,14 @@ import { useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useCameraPermissions } from 'expo-camera';
 import { api } from '../services/api';
+import {
+  captureStatusTransition,
+  capturePodSignature,
+  StatusTransitionType,
+} from '../services/offline-event-service';
+import { syncManager } from '../services/sync-manager';
+import { connectivityMonitor } from '../services/connectivity-monitor';
+import OfflineIndicator from '../components/OfflineIndicator';
 
 interface CustomerPreferences {
   deliveryMethod?: 'door' | 'signature' | 'neighbor';
@@ -39,6 +47,12 @@ interface Delivery {
   status: string;
   preferences?: CustomerPreferences;
 }
+
+const STATUS_MAP: Record<string, StatusTransitionType> = {
+  arrived: 'in_transit',
+  delivered: 'delivered',
+  failed: 'failed_delivery',
+};
 
 const DeliveryScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -93,26 +107,31 @@ const DeliveryScreen: React.FC = () => {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
+    if (!delivery) return;
     try {
       setIsSubmitting(true);
-      const formData = new FormData();
-      formData.append('status', newStatus);
-      if (notes) {
-        formData.append('notes', notes);
-      }
-      if (proofImage) {
-        formData.append('proofImage', {
-          uri: proofImage,
-          type: 'image/jpeg',
-          name: 'proof.jpg',
-        } as any);
+
+      const offlineStatus = STATUS_MAP[newStatus] ?? (newStatus as StatusTransitionType);
+
+      // Always write to offline queue first (works regardless of connectivity)
+      await captureStatusTransition(delivery.id, offlineStatus, { notes: notes || undefined });
+
+      // If a POD image is captured, record it as a pod_signature event
+      if (proofImage && (newStatus === 'delivered' || newStatus === 'arrived')) {
+        await capturePodSignature(delivery.id, proofImage, { notes: notes || undefined });
       }
 
-      await api.patch(`/api/v4/deliveries/${deliveryId}`, formData);
-      Alert.alert('Success', `Delivery marked as ${newStatus}`);
-      fetchDelivery();
+      // Optimistically update UI
+      setDelivery((prev) => prev ? { ...prev, status: newStatus } : prev);
+
+      // Attempt immediate sync if online
+      if (connectivityMonitor.isCurrentlyOnline()) {
+        syncManager.flush().catch(() => {});
+      }
+
+      Alert.alert('Saved', `Delivery status saved${connectivityMonitor.isCurrentlyOnline() ? '' : ' offline — will sync when connected'}`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update delivery');
+      Alert.alert('Error', 'Failed to save delivery status');
     } finally {
       setIsSubmitting(false);
     }
@@ -121,6 +140,7 @@ const DeliveryScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
+        <OfflineIndicator />
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color="#005bd3" />
         </View>
@@ -131,6 +151,7 @@ const DeliveryScreen: React.FC = () => {
   if (!delivery) {
     return (
       <SafeAreaView style={styles.container}>
+        <OfflineIndicator />
         <View style={styles.centerContent}>
           <Text style={styles.errorText}>Delivery not found</Text>
         </View>
@@ -140,6 +161,7 @@ const DeliveryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <OfflineIndicator />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.customerName}>{delivery.customerName}</Text>
