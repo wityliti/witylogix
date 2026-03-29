@@ -42,7 +42,7 @@ class WorkflowIntegration {
 
   async triggerWorkflow(workflowType: string, input: any, tenantId: string): Promise<string> {
     const config = this.getConfig(tenantId);
-    if (!config || config.mode === 'disabled') return '';
+    if (!config || config.mode === 'disabled' || config.mode === 'manual') return '';
 
     const execution: WorkflowExecution = {
       id: `wf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
