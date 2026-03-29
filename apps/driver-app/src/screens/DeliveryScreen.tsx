@@ -16,12 +16,28 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Camera from 'expo-camera';
 import { api } from '../services/api';
 
+interface CustomerPreferences {
+  deliveryMethod?: 'door' | 'signature' | 'neighbor';
+  safePlace?: string;
+  instructions?: string;
+  rescheduleDate?: string;
+  rescheduleTimeWindow?: string;
+  redirectAddress?: {
+    line1: string;
+    city: string;
+    postalCode: string;
+  };
+  phoneNumber?: string;
+  updatedAt?: string;
+}
+
 interface Delivery {
   id: string;
   customerName: string;
   address: string;
   phone: string;
   status: string;
+  preferences?: CustomerPreferences;
 }
 
 const DeliveryScreen: React.FC = () => {
@@ -142,6 +158,67 @@ const DeliveryScreen: React.FC = () => {
             <Text style={styles.statusValue}>{delivery.status}</Text>
           </View>
         </View>
+
+        {/* Customer delivery preferences */}
+        {delivery.preferences && (
+          <View style={[styles.section, styles.preferencesCard]}>
+            <Text style={styles.sectionTitle}>Customer Instructions</Text>
+            {delivery.preferences.deliveryMethod && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Method</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.deliveryMethod === 'door' && 'Leave at Door'}
+                  {delivery.preferences.deliveryMethod === 'signature' && 'Require Signature'}
+                  {delivery.preferences.deliveryMethod === 'neighbor' && 'Leave with Neighbour'}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.safePlace && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Safe Place</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.safePlace}</Text>
+              </View>
+            )}
+            {!!delivery.preferences.instructions && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Instructions</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.instructions}</Text>
+              </View>
+            )}
+            {delivery.preferences.redirectAddress && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Redirect To</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.redirectAddress.line1},{' '}
+                  {delivery.preferences.redirectAddress.city}{' '}
+                  {delivery.preferences.redirectAddress.postalCode}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.rescheduleDate && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Reschedule</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.rescheduleDate}
+                  {delivery.preferences.rescheduleTimeWindow &&
+                    delivery.preferences.rescheduleTimeWindow !== 'anytime' &&
+                    ` (${delivery.preferences.rescheduleTimeWindow})`}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.phoneNumber && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Contact</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.phoneNumber}</Text>
+              </View>
+            )}
+            {delivery.preferences.updatedAt && (
+              <Text style={styles.prefUpdated}>
+                Updated {new Date(delivery.preferences.updatedAt).toLocaleTimeString()}
+              </Text>
+            )}
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Proof of Delivery</Text>
@@ -427,6 +504,35 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: '#666',
+  },
+  preferencesCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#005bd3',
+    backgroundColor: '#f0f7ff',
+  },
+  prefRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  prefLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005bd3',
+    width: 90,
+    marginTop: 1,
+  },
+  prefValue: {
+    fontSize: 13,
+    color: '#202223',
+    flex: 1,
+    lineHeight: 18,
+  },
+  prefUpdated: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 
