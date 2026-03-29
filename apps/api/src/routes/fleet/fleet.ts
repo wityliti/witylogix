@@ -15,6 +15,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import fp from 'fastify-plugin';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
@@ -633,4 +634,4 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
   });
 }
 
-export default fleetRoutes;
+export default fp(fleetRoutes);
