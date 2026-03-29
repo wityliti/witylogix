@@ -18,41 +18,111 @@ import { z } from "zod";
 import { requireAuth } from "../../middleware/auth.js";
 import { tenantContext } from "../../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
+import {
+  SmartRouter,
+  SLAEnforcer,
+  PartnerPerformance,
+  CostOptimizer,
+  OnfleetClient,
+  StuartClient,
+  UberDirectClient,
+  type DeliveryRequest,
+  type SLAConfig,
+  type ICourierProvider,
+  type CourierAvailability,
+} from "@witylogix/core/integrations/couriers";
+import type { CourierQuote, PackageSpec, LocationInfo } from "@witylogix/core/integrations/couriers";
 
-// Service classes - stub implementations for type compatibility
-class PartnerPerformance {
-  calculatePerformanceScore(metrics: any) {
-    return { score: 0, tier: "standard" };
+// ─── Courier Provider Bridge ────────────────────────────────────
+// Adapts CourierAdapter (Onfleet, Stuart, UberDirect) to ICourierProvider
+
+class CourierAdapterProvider implements ICourierProvider {
+  private adapter: OnfleetClient | StuartClient | UberDirectClient;
+  private providerName: string;
+
+  constructor(adapter: OnfleetClient | StuartClient | UberDirectClient, name: string) {
+    this.adapter = adapter;
+    this.providerName = name;
+  }
+
+  async getAvailability(): Promise<CourierAvailability> {
+    const healthy = await this.adapter.healthCheck();
+    return {
+      provider: this.providerName,
+      available: healthy,
+      loadPercentage: 0,
+      activeDeliveries: 0,
+      maxCapacity: 100,
+      serviceAreas: [],
+      apiStatus: healthy ? "healthy" : "offline",
+      lastUpdated: new Date(),
+    };
+  }
+
+  async getQuote(delivery: DeliveryRequest): Promise<CourierQuote> {
+    return this.adapter.getQuote({
+      pickup: delivery.pickup,
+      dropoff: delivery.dropoff,
+      package: delivery.package,
+      scheduledFor: delivery.scheduledFor,
+      options: delivery.serviceLevel ? { serviceLevel: delivery.serviceLevel } : undefined,
+    });
+  }
+
+  async canServiceArea(_pickup: LocationInfo, _dropoff: LocationInfo): Promise<boolean> {
+    return this.adapter.healthCheck();
+  }
+
+  canHandlePackage(pkg: PackageSpec): boolean {
+    if (pkg.weight && pkg.weight > 30) return false;
+    return true;
   }
 }
 
-class SmartRouter {
-  async routeDelivery(request: any, options: any) {
-    return { recommended: null, options: [] };
+/**
+ * Build a SmartRouter for a given tenant by registering all enabled courier partners.
+ */
+async function buildTenantSmartRouter(tenantId: string): Promise<SmartRouter> {
+  const router = new SmartRouter();
+
+  const partners = await prisma.courierPartner.findMany({
+    where: { tenantId, isEnabled: true },
+    select: { id: true, provider: true, credentials: true, config: true },
+  });
+
+  for (const partner of partners) {
+    const creds = partner.credentials as Record<string, unknown>;
+    const cfg = partner.config as Record<string, unknown>;
+    const courierConfig = { ...creds, ...cfg };
+
+    try {
+      const providerKey = partner.provider.toLowerCase().replace(/[_-]/g, "");
+      let adapter: OnfleetClient | StuartClient | UberDirectClient | null = null;
+
+      if (providerKey === "onfleet") {
+        adapter = new OnfleetClient(courierConfig);
+      } else if (providerKey === "stuart") {
+        adapter = new StuartClient(courierConfig);
+      } else if (providerKey === "uberdirect" || providerKey === "uber") {
+        adapter = new UberDirectClient(courierConfig);
+      }
+
+      if (adapter) {
+        router.registerProvider(partner.provider, new CourierAdapterProvider(adapter, partner.provider));
+      }
+    } catch {
+      // Skip misconfigured partners
+    }
   }
-  async routeBatch(deliveries: any[], options: any) {
-    return { results: [], optimizedAssignment: [], costOptimization: {}, splitAssignments: [] };
-  }
+
+  return router;
 }
 
-class CostOptimizer {
-  compareCosts(request: any, options: any) {
-    return null;
-  }
-  optimizeBatchCost(deliveries: any[], results: any) {
-    return {};
-  }
-}
+// ─── Singleton service instances ──────────────────────────────
 
-class SLAEnforcer {
-  checkCompliance(partnerId: string, metrics: any) {
-    return { compliant: true, violations: [] };
-  }
-}
-
-type PerformanceMetrics = any;
-type SLAConfig = any;
-type DeliveryRequest = any;
+const partnerPerformance = new PartnerPerformance();
+const costOptimizer = new CostOptimizer();
+const slaEnforcer = new SLAEnforcer();
 
 // ─── Validation Schemas ────────────────────────────────────────
 
@@ -90,13 +160,6 @@ const deliveryRequestSchema = z.object({
   instructions: z.string().optional(),
 });
 
-const routeOptionsSchema = z.object({
-  providers: z.array(z.string()).optional(),
-  prioritizeSpeed: z.boolean().optional(),
-  prioritizeCost: z.boolean().optional(),
-  maxOptions: z.number().optional(),
-});
-
 const slaConfigSchema = z.object({
   partnerId: z.string(),
   name: z.string(),
@@ -119,13 +182,6 @@ const slaConfigSchema = z.object({
     suspensionThreshold: z.number(),
   }),
 });
-
-// ─── Service Instances ──────────────────────────────────────
-
-const performance = new PartnerPerformance();
-const smartRouter = new SmartRouter();
-const costOptimizer = new CostOptimizer();
-const slaEnforcer = new SLAEnforcer();
 
 // ─── API Route Handlers ─────────────────────────────────────
 
@@ -153,20 +209,8 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         const body = deliveryRequestSchema.parse(request.body as any);
         const options = request.query as Record<string, unknown>;
 
-        // Get available couriers for tenant
-        const partners = await prisma.courierPartner.findMany({
-          where: {
-            tenantId,
-            isEnabled: true,
-          },
-          select: { id: true, provider: true },
-        });
+        const smartRouter = await buildTenantSmartRouter(tenantId);
 
-        if (partners.length === 0) {
-          return reply.status(400).send({ error: "No courier partners configured" });
-        }
-
-        // Route delivery
         const result = await smartRouter.routeDelivery(body as DeliveryRequest, {
           providers: options.providers as string[] | undefined,
           prioritizeSpeed: options.prioritizeSpeed === "true",
@@ -174,14 +218,20 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           maxOptions: options.maxOptions ? parseInt(options.maxOptions as string) : undefined,
         });
 
-        // Get cost comparison for recommended option
-        const costComparison = null;
+        let costComparison = null;
+        if (result.options.length > 0) {
+          try {
+            costComparison = costOptimizer.compareCosts(body as DeliveryRequest, result.options);
+          } catch {
+            // Not enough viable options for comparison
+          }
+        }
 
         return reply.send({
           routingResult: result,
           costAnalysis: costComparison,
-          recommendedProvider: (result as any).recommended?.provider,
-          recommendedCost: (result as any).recommended?.quote?.price,
+          recommendedProvider: result.recommended?.provider ?? null,
+          recommendedCost: result.recommended?.quote?.price ?? null,
         });
       } catch (error) {
         fastify.log.error(error);
@@ -216,21 +266,25 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(400).send({ error: "Invalid deliveries array" });
         }
 
-        // Validate deliveries
         const validDeliveries = deliveries.map((d) => deliveryRequestSchema.parse(d));
 
-        // Batch route
+        const smartRouter = await buildTenantSmartRouter(tenantId);
+
         const result = await smartRouter.routeBatch(validDeliveries as DeliveryRequest[], {
           optimizeForCost: options?.optimizeForCost === "true",
           optimizeForTime: options?.optimizeForTime === "true",
           allowSplitDeliveries: options?.allowSplitDeliveries === "true",
         });
 
-        // Calculate batch cost optimization
-        const batchCostOptimization = costOptimizer.optimizeBatchCost(
-          validDeliveries as DeliveryRequest[],
-          result.results,
-        );
+        let batchCostOptimization = null;
+        try {
+          batchCostOptimization = costOptimizer.optimizeBatchCost(
+            validDeliveries as DeliveryRequest[],
+            result.results as any,
+          );
+        } catch {
+          // Not enough data for batch optimization
+        }
 
         return reply.send({
           routingResults: Object.fromEntries(result.results),
@@ -273,27 +327,25 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
 
         const performances = [];
         for (const partner of partners) {
-          // Get recent metrics from deliveries (using any available delivery model)
-          const deliveries = await (prisma as any).delivery?.findMany?.({
+          const deliveries = await (prisma as any).courierDelivery?.findMany?.({
             where: {
               partnerId: partner.id,
-              createdAt: {
-                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-              },
+              createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
             },
             select: { status: true, quote: true },
           });
 
-          if (deliveries.length > 0) {
-            // Calculate metrics from deliveries
+          if (deliveries && deliveries.length > 0) {
             const onTimeDeliveries = deliveries.filter((d: any) => d.status === "DELIVERED").length;
             const damagedDeliveries = deliveries.filter((d: any) => d.status === "FAILED").length;
 
-            const metrics: PerformanceMetrics = {
+            const metrics = {
               onTimeRate: (onTimeDeliveries / deliveries.length) * 100,
               damageRate: (damagedDeliveries / deliveries.length) * 100,
               customerRating: 4.0,
-              costPerDelivery: deliveries.reduce((sum: number, d: any) => sum + (d.quote?.price || 0), 0) / deliveries.length,
+              costPerDelivery:
+                deliveries.reduce((sum: number, d: any) => sum + ((d.quote as any)?.price || 0), 0) /
+                deliveries.length,
               pickupSpeed: 15,
               communicationScore: 85,
               totalDeliveries: deliveries.length,
@@ -301,12 +353,12 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
               damagedDeliveries,
               ratingsCount: 0,
               ratingsSum: 0,
-              period: "7d",
+              period: "7d" as const,
               startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
               endDate: new Date(),
             };
 
-            const score = performance.calculatePerformanceScore(metrics);
+            const score = partnerPerformance.calculatePerformanceScore(metrics);
             performances.push({
               partnerId: partner.id,
               provider: partner.provider,
@@ -357,19 +409,16 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: "Partner not found" });
         }
 
-        // Get metrics for different periods
         const getPeriodMetrics = async (days: number) => {
-          const deliveries = await (prisma as any).delivery?.findMany?.({
+          const deliveries = await (prisma as any).courierDelivery?.findMany?.({
             where: {
               partnerId,
-              createdAt: {
-                gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
-              },
+              createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
             },
             select: { status: true, quote: true },
           });
 
-          if (deliveries.length === 0) return null;
+          if (!deliveries || deliveries.length === 0) return null;
 
           const onTimeDeliveries = deliveries.filter((d: any) => d.status === "DELIVERED").length;
           const damagedDeliveries = deliveries.filter((d: any) => d.status === "FAILED").length;
@@ -378,7 +427,8 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
             onTimeRate: (onTimeDeliveries / deliveries.length) * 100,
             damageRate: (damagedDeliveries / deliveries.length) * 100,
             customerRating: 4.0,
-            costPerDelivery: deliveries.reduce((sum: number, d: any) => sum + (d.quote?.price || 0), 0) / deliveries.length,
+            costPerDelivery:
+              deliveries.reduce((sum: number, d: any) => sum + ((d.quote as any)?.price || 0), 0) / deliveries.length,
             pickupSpeed: 15,
             communicationScore: 85,
             totalDeliveries: deliveries.length,
@@ -386,10 +436,10 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
             damagedDeliveries,
             ratingsCount: 0,
             ratingsSum: 0,
-            period: days === 7 ? "7d" : days === 30 ? "30d" : "90d",
+            period: (days === 7 ? "7d" : days === 30 ? "30d" : "90d") as "7d" | "30d" | "90d",
             startDate: new Date(Date.now() - days * 24 * 60 * 60 * 1000),
             endDate: new Date(),
-          } as PerformanceMetrics;
+          };
         };
 
         const metrics7d = await getPeriodMetrics(7);
@@ -400,15 +450,10 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: "Insufficient performance data" });
         }
 
-        // Return the performance data
         return reply.send({
           partnerId,
           partner: partner.name,
-          metrics: {
-            metrics7d,
-            metrics30d,
-            metrics90d,
-          },
+          metrics: { metrics7d, metrics30d, metrics90d },
         });
       } catch (error) {
         fastify.log.error(error);
@@ -444,13 +489,22 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           dropoff: { latitude: parseFloat(dropoff_lat), longitude: parseFloat(dropoff_lng) },
         };
 
-        // Route delivery to get options
+        const smartRouter = await buildTenantSmartRouter(tenantId);
         const result = await smartRouter.routeDelivery(delivery, {});
 
-        // Return cost comparison
+        let costComparison = null;
+        if (result.options.length > 0) {
+          try {
+            costComparison = costOptimizer.compareCosts(delivery, result.options);
+          } catch {
+            // Not enough viable options
+          }
+        }
+
         return reply.send({
           delivery,
           options: result.options,
+          costComparison,
         });
       } catch (error) {
         fastify.log.error(error);
@@ -480,12 +534,31 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         }
 
         const period = ((request.query as any)?.period as string) || "30d";
+        const days = period === "7d" ? 7 : period === "90d" ? 90 : 30;
 
-        // Return cost report
+        const deliveries =
+          (await (prisma as any).courierDelivery?.findMany?.({
+            where: {
+              tenantId,
+              createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
+            },
+            select: { quote: true, status: true },
+          })) ?? [];
+
+        const totalCost = deliveries.reduce(
+          (sum: number, d: any) => sum + ((d.quote as any)?.price || 0),
+          0,
+        );
+        const delivered = deliveries.filter((d: any) => d.status === "DELIVERED").length;
+
         return reply.send({
           period,
+          totalCost: Math.round(totalCost * 100) / 100,
+          totalDeliveries: deliveries.length,
+          successfulDeliveries: delivered,
+          avgCostPerDelivery:
+            deliveries.length > 0 ? Math.round((totalCost / deliveries.length) * 100) / 100 : 0,
           roi: 0,
-          totalCost: 0,
           totalSavings: 0,
         });
       } catch (error) {
@@ -533,7 +606,7 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
           status: "active",
         };
 
-        // Define SLA (stub method)
+        slaEnforcer.defineSLA(config);
 
         return reply.status(201).send({ success: true, sla: config });
       } catch (error) {
@@ -566,13 +639,20 @@ export async function smartRoutingRoutes(fastify: FastifyInstance) {
         const { partnerId } = request.params as { partnerId: string };
         const periodDays = parseInt(((request.query as any)?.period_days as string) || "30");
 
-        // Return compliance report
-        return reply.send({
-          partnerId,
-          compliant: true,
-          violations: [],
-          periodDays,
-        });
+        const sla = slaEnforcer.getSLA(partnerId);
+        if (!sla) {
+          return reply.send({
+            partnerId,
+            compliant: true,
+            violations: [],
+            periodDays,
+            message: "No SLA configured for this partner",
+          });
+        }
+
+        const report = slaEnforcer.getComplianceReport(partnerId, periodDays);
+
+        return reply.send(report);
       } catch (error) {
         fastify.log.error(error);
         return reply.status(500).send({ error: "Compliance report generation failed" });
