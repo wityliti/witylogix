@@ -1,0 +1,215 @@
+// ─── WAREHOUSE OPERATIONS ──────────────────────────────────────────────────────
+// Pick strategy engine, pick-list generation, putaway rules, and inbound PO
+// receiving (dock-to-bin workflow). All models are scoped to a Location (warehouse).
+
+// ─── WAREHOUSE CONFIG ──────────────────────────────────────────────────────────
+// Per-warehouse configuration for pick strategies and layout.
+
+model WarehouseConfig {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  locationId String @unique @map("location_id") @db.Uuid
+  shopId     String @map("shop_id") @db.Uuid
+
+  // Active pick strategy: zone_pick | batch_pick | wave_pick
+  pickStrategy PickStrategy @default(BATCH_PICK) @map("pick_strategy")
+
+  // Wave pick: time-band windows in minutes from midnight (e.g. [480, 720, 960] = 8am/12pm/4pm)
+  waveWindows Int[] @default([]) @map("wave_windows")
+
+  // Batch pick: max orders per batch
+  batchSize Int @default(10) @map("batch_size")
+
+  // Zone layout: JSON array of zone definitions
+  // [{ "code": "A", "name": "Aisle A", "binPrefix": "A-" }, ...]
+  zoneLayout Json @default("[]") @map("zone_layout")
+
+  // Putaway defaults: temp zones, weight thresholds
+  putawayDefaults Json @default("{}") @map("putaway_defaults")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([shopId])
+  @@map("warehouse_configs")
+}
+
+enum PickStrategy {
+  ZONE_PICK
+  BATCH_PICK
+  WAVE_PICK
+}
+
+// ─── PICK LIST ─────────────────────────────────────────────────────────────────
+// A generated pick job grouping one or more orders for warehouse operators.
+
+model PickList {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String       @map("shop_id") @db.Uuid
+  locationId String       @map("location_id") @db.Uuid
+  strategy   PickStrategy @map("strategy")
+  status     PickStatus   @default(OPEN) @map("status")
+
+  // Order IDs included in this pick list
+  orderIds String[] @map("order_ids")
+
+  // Wave / batch metadata
+  waveWindow  String? @map("wave_window") // e.g. "08:00-12:00"
+  batchNumber Int?    @map("batch_number")
+  zone        String? // e.g. "A" for zone pick
+
+  // Assigned picker (driver/user ID string)
+  assignedTo String? @map("assigned_to")
+
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  items PickListItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([shopId, status])
+  @@index([locationId, status])
+  @@index([shopId, createdAt])
+  @@map("pick_lists")
+}
+
+enum PickStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+// ─── PICK LIST ITEM ────────────────────────────────────────────────────────────
+// One product/variant line within a pick list, mapped to a bin location.
+
+model PickListItem {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pickListId String @map("pick_list_id") @db.Uuid
+  orderId    String @map("order_id")
+  productId  String @map("product_id")
+  variantId  String? @map("variant_id")
+
+  sku          String?
+  productTitle String? @map("product_title")
+  quantity     Int
+
+  // Bin/zone assignment from putaway rules
+  binLocation String? @map("bin_location")
+  zone        String?
+
+  picked     Boolean   @default(false)
+  pickedAt   DateTime? @map("picked_at")
+  pickedById String?   @map("picked_by_id")
+
+  pickList PickList @relation(fields: [pickListId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([pickListId])
+  @@index([orderId])
+  @@map("pick_list_items")
+}
+
+// ─── PUTAWAY RULE ─────────────────────────────────────────────────────────────
+// Rules that define where inbound stock should be binned, evaluated in priority order.
+
+model PutawayRule {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String @map("shop_id") @db.Uuid
+  locationId String @map("location_id") @db.Uuid
+
+  name        String
+  description String?
+  priority    Int    @default(0) // Lower = higher priority; evaluated in ascending order
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Match criteria (all supplied criteria must match for the rule to fire)
+  // productType: match by product type string
+  // velocityClass: "A" | "B" | "C" (derived from order frequency)
+  // temperatureZone: "ambient" | "chilled" | "frozen"
+  // maxWeightKg: apply rule only if item weight ≤ this value
+  // skuPrefix: match SKUs starting with this string
+  matchCriteria Json @map("match_criteria")
+  // { productType?: string, velocityClass?: string, temperatureZone?: string, maxWeightKg?: number, skuPrefix?: string }
+
+  // Target bin / zone
+  targetZone      String? @map("target_zone")    // e.g. "A"
+  targetBinPrefix String? @map("target_bin_prefix") // e.g. "A-01"
+  targetBin       String? @map("target_bin")       // exact bin, e.g. "A-01-03"
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([shopId, locationId, isActive, priority])
+  @@map("putaway_rules")
+}
+
+// ─── PURCHASE ORDER ────────────────────────────────────────────────────────────
+// Inbound PO from a supplier destined for a warehouse location.
+
+model PurchaseOrder {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String          @map("shop_id") @db.Uuid
+  locationId  String          @map("location_id") @db.Uuid
+  poNumber    String          @map("po_number")
+  supplierName String?        @map("supplier_name")
+  status      PurchaseOrderStatus @default(DRAFT) @map("status")
+
+  expectedAt  DateTime? @map("expected_at")
+  receivedAt  DateTime? @map("received_at")
+
+  notes String?
+
+  items PurchaseOrderItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([shopId, poNumber])
+  @@index([shopId, status])
+  @@index([locationId, status])
+  @@map("purchase_orders")
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  SENT
+  CONFIRMED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+// ─── PURCHASE ORDER ITEM ───────────────────────────────────────────────────────
+// Line item on a PO with expected vs actually-received quantities.
+
+model PurchaseOrderItem {
+  id              String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseOrderId String @map("purchase_order_id") @db.Uuid
+  productId       String @map("product_id")
+  variantId       String? @map("variant_id")
+
+  sku              String?
+  productTitle     String? @map("product_title")
+  quantityOrdered  Int     @map("quantity_ordered")
+  quantityReceived Int     @default(0) @map("quantity_received")
+
+  // Putaway suggestion applied at receiving time
+  suggestedBin String? @map("suggested_bin")
+  actualBin    String? @map("actual_bin")
+
+  unitCost    Decimal? @db.Decimal(12, 4) @map("unit_cost")
+  currencyCode String  @default("USD") @map("currency_code")
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_items")
+}
