@@ -18,6 +18,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
+import { prisma } from '@witylogix/db';
 import { NotFoundError, ValidationError } from '../../lib/errors.js';
 
 // ─── VALIDATION SCHEMAS ──────────────────────────────────────────
@@ -26,12 +27,14 @@ const registerVehicleSchema = z.object({
   make: z.string().min(1).max(100),
   model: z.string().min(1).max(100),
   year: z.number().int().min(1900).max(new Date().getFullYear() + 1),
-  vin: z.string().length(17),
-  licensePlate: z.string().min(1).max(20),
-  engineType: z.enum(['GASOLINE', 'DIESEL', 'EV', 'HYBRID']),
-  capacity: z.number().positive(),
+  vin: z.string().length(17).optional(),
+  licensePlate: z.string().min(1).max(20).optional(),
+  engineType: z.enum(['GASOLINE', 'DIESEL', 'EV', 'HYBRID']).optional(),
+  capacity: z.number().positive().optional(),
   primaryProvider: z.enum(['SAMSARA', 'GEOTAB', 'VERIZON', 'MOTIVE']),
   driverId: z.string().optional(),
+  name: z.string().min(1).max(200).optional(),
+  externalVehicleId: z.string().min(1),
 });
 
 const updateVehicleSchema = z.object({
@@ -40,12 +43,14 @@ const updateVehicleSchema = z.object({
   capacity: z.number().positive().optional(),
   isActive: z.boolean().optional(),
   nextMaintenanceDate: z.string().datetime().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'DELETED']).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 const vehicleListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
-  status: z.enum(['ACTIVE', 'IDLE', 'OFFLINE', 'MAINTENANCE']).optional(),
+  status: z.enum(['ACTIVE', 'IDLE', 'OFFLINE', 'MAINTENANCE', 'INACTIVE']).optional(),
   search: z.string().optional(),
   provider: z.enum(['SAMSARA', 'GEOTAB', 'VERIZON', 'MOTIVE']).optional(),
   isActive: z.enum(['true', 'false']).optional(),
@@ -60,6 +65,76 @@ const acknowledgeEventSchema = z.object({
   eventId: z.string(),
 });
 
+// ─── HELPERS ────────────────────────────────────────────────────
+
+/**
+ * Compute a fleet health score from vehicle data.
+ * Uses last_diagnostic_data and last_position staleness from FleetVehicle records.
+ */
+async function computeFleetHealthScore(tenantId: string) {
+  const vehicles = await (prisma as any).fleetVehicle.findMany({
+    where: { tenantId, status: { not: 'DELETED' } },
+    select: {
+      id: true,
+      status: true,
+      lastPosition: true,
+      lastDiagnosticAt: true,
+      lastDiagnosticData: true,
+    },
+  });
+
+  if (vehicles.length === 0) {
+    return {
+      overallScore: 100,
+      fuelEfficiency: 100,
+      driverSafety: 100,
+      maintenanceStatus: 100,
+      utilizationRate: 0,
+      trend: 'STABLE',
+      lastUpdated: new Date(),
+    };
+  }
+
+  const now = Date.now();
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+
+  let activeCount = 0;
+  let vehiclesWithFaults = 0;
+  let recentlySeenCount = 0;
+
+  for (const v of vehicles) {
+    if (v.status === 'ACTIVE') activeCount++;
+
+    const diag = v.lastDiagnosticData as any;
+    if (diag?.faultCodes && Array.isArray(diag.faultCodes) && diag.faultCodes.length > 0) {
+      vehiclesWithFaults++;
+    }
+
+    if (v.lastPosition) {
+      const pos = v.lastPosition as any;
+      if (pos?.timestamp && now - new Date(pos.timestamp).getTime() < ONE_HOUR_MS) {
+        recentlySeenCount++;
+      }
+    }
+  }
+
+  const total = vehicles.length;
+  const connectivityPct = Math.round((recentlySeenCount / total) * 100);
+  const faultRate = Math.round((vehiclesWithFaults / total) * 100);
+  const utilizationRate = Math.round((activeCount / total) * 100);
+  const overallScore = Math.max(0, Math.round(connectivityPct - faultRate * 0.5));
+
+  return {
+    overallScore,
+    fuelEfficiency: Math.max(0, 100 - faultRate),
+    driverSafety: 100,
+    maintenanceStatus: Math.max(0, 100 - faultRate * 2),
+    utilizationRate,
+    trend: overallScore >= 80 ? 'IMPROVING' : overallScore >= 60 ? 'STABLE' : 'DECLINING',
+    lastUpdated: new Date(),
+  };
+}
+
 // ─── ROUTE PLUGIN ───────────────────────────────────────────────
 
 async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
@@ -70,45 +145,46 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/overview', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // INTEGRATION: Instantiate FleetService with provider adapters
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const overview = await fleetService.getFleetOverview();
+      const tenantId = (request as any).tenantId as string;
 
-      const mockOverview = {
-        fleetId: request.shopId,
-        totalVehicles: 28,
-        activeVehicles: 20,
-        idleVehicles: 5,
-        offlineVehicles: 2,
-        maintenanceVehicles: 1,
-        healthScore: {
-          overallScore: 82,
-          fuelEfficiency: 78,
-          driverSafety: 85,
-          maintenanceStatus: 81,
-          utilizationRate: 71,
-          trend: 'IMPROVING',
-          lastUpdated: new Date(),
+      const [vehicles, healthScore] = await Promise.all([
+        (prisma as any).fleetVehicle.findMany({
+          where: { tenantId, status: { not: 'DELETED' } },
+          select: { id: true, status: true, lastDiagnosticData: true },
+        }),
+        computeFleetHealthScore(tenantId),
+      ]);
+
+      const statusCounts = { ACTIVE: 0, IDLE: 0, OFFLINE: 0, INACTIVE: 0 };
+      let criticalAlertCount = 0;
+
+      for (const v of vehicles) {
+        const s = (v.status as string).toUpperCase();
+        if (s in statusCounts) (statusCounts as any)[s]++;
+
+        const diag = v.lastDiagnosticData as any;
+        if (diag?.faultCodes && Array.isArray(diag.faultCodes)) {
+          const critical = diag.faultCodes.filter((f: any) => f.severity === 'CRITICAL' || f.severity === 'ERROR');
+          criticalAlertCount += critical.length;
+        }
+      }
+
+      return {
+        data: {
+          fleetId: tenantId,
+          totalVehicles: vehicles.length,
+          activeVehicles: statusCounts.ACTIVE,
+          idleVehicles: statusCounts.IDLE,
+          offlineVehicles: statusCounts.OFFLINE + statusCounts.INACTIVE,
+          maintenanceVehicles: 0,
+          healthScore,
+          topAlerts: [],
+          recentEvents: [],
+          averageFuelEconomy: null,
+          totalIdleHours: null,
+          criticalAlertCount,
         },
-        topAlerts: [
-          {
-            id: 'alert-1',
-            vehicleId: 'veh-1',
-            title: 'FAULT_CODE_DETECTED',
-            description: 'Engine malfunction indicator active',
-            severity: 'CRITICAL',
-            category: 'MAINTENANCE',
-            timestamp: new Date(),
-            resolved: false,
-          },
-        ],
-        recentEvents: [],
-        averageFuelEconomy: 7.8,
-        totalIdleHours: 240,
-        criticalAlertCount: 1,
       };
-
-      return { data: mockOverview };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch fleet overview: ${errorMessage}`);
@@ -119,73 +195,51 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   const listFleetVehicles = async (request: FastifyRequest, _reply: FastifyReply) => {
     try {
+      const tenantId = (request as any).tenantId as string;
       const query = vehicleListQuerySchema.parse(request.query);
-      const { page, limit, status, search, provider, isActive } = query;
+      const { page, limit, status, search, provider } = query;
 
-      // INTEGRATION: Fetch from FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const result = await fleetService.getFleetVehicles({
-      //   page,
-      //   limit,
-      //   status: status as any,
-      //   search,
-      //   provider,
-      //   isActive: isActive === 'true',
-      // });
+      const where: Record<string, any> = {
+        tenantId,
+        status: status ? status : { not: 'DELETED' },
+      };
 
-      const mockVehicles = [
-        {
-          id: 'veh-1',
-          fleetId: request.shopId,
-          make: 'Volvo',
-          model: 'FH16',
-          year: 2023,
-          vin: 'YV1TS56D982F8032',
-          licensePlate: 'AB001',
-          engineType: 'DIESEL',
-          status: 'ACTIVE',
-          odometer: 5000,
-          engineHours: 200,
-          fuelLevel: 75,
-          capacity: 25000,
-          isActive: true,
-          lastSyncAt: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'veh-2',
-          fleetId: request.shopId,
-          make: 'Scania',
-          model: 'G490',
-          year: 2022,
-          vin: 'XSC1234567890ABCD',
-          licensePlate: 'AB002',
-          engineType: 'DIESEL',
-          status: 'IDLE',
-          odometer: 12000,
-          engineHours: 450,
-          fuelLevel: 45,
-          capacity: 25000,
-          isActive: true,
-          lastSyncAt: new Date(Date.now() - 30 * 60 * 1000),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
+      if (provider) {
+        where.telematicsProvider = provider.toLowerCase();
+      }
+
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { make: { contains: search, mode: 'insensitive' } },
+          { model: { contains: search, mode: 'insensitive' } },
+          { licensePlate: { contains: search, mode: 'insensitive' } },
+          { vin: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [vehicles, total] = await Promise.all([
+        (prisma as any).fleetVehicle.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        (prisma as any).fleetVehicle.count({ where }),
+      ]);
 
       return {
-        data: mockVehicles,
+        data: vehicles,
         meta: {
           page,
           limit,
-          total: mockVehicles.length,
-          totalPages: 1,
+          total,
+          totalPages: Math.ceil(total / limit),
         },
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError(error.errors);
+        throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       }
       throw error;
     }
@@ -196,19 +250,11 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET FLEET HEALTH SCORE (before /:id so "health" is not captured as id) ──
 
-  fastify.get('/health', async (_request: FastifyRequest, _reply: FastifyReply) => {
+  fastify.get('/health', async (request: FastifyRequest, _reply: FastifyReply) => {
     try {
-      const mockHealthScore = {
-        overallScore: 82,
-        fuelEfficiency: 78,
-        driverSafety: 85,
-        maintenanceStatus: 81,
-        utilizationRate: 71,
-        trend: 'IMPROVING',
-        lastUpdated: new Date(),
-      };
-
-      return { data: mockHealthScore };
+      const tenantId = (request as any).tenantId as string;
+      const healthScore = await computeFleetHealthScore(tenantId);
+      return { data: healthScore };
     } catch (error) {
       throw error;
     }
@@ -220,31 +266,47 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
     await requireRole('SUPER_ADMIN', 'ADMIN')(request, reply);
 
     try {
+      const tenantId = (request as any).tenantId as string;
       const body = registerVehicleSchema.parse(request.body);
 
-      // INTEGRATION: Register via FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const vehicle = await fleetService.registerVehicle(body);
+      // Verify telematics connection exists
+      const connection = await (prisma as any).telematicsConnection.findUnique({
+        where: {
+          tenantId_provider: {
+            tenantId,
+            provider: body.primaryProvider.toLowerCase(),
+          },
+        },
+        select: { id: true, status: true },
+      });
 
-      const mockVehicle = {
-        id: `veh-${Date.now()}`,
-        fleetId: request.shopId,
-        ...body,
-        status: 'OFFLINE',
-        odometer: 0,
-        engineHours: 0,
-        fuelLevel: 0,
-        battery: 100,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      if (!connection) {
+        return reply.status(400).send({
+          error: `No telematics connection configured for provider ${body.primaryProvider}. Set up the integration first.`,
+        });
+      }
+
+      const vehicle = await (prisma as any).fleetVehicle.create({
+        data: {
+          tenantId,
+          telematicsProvider: body.primaryProvider.toLowerCase(),
+          externalVehicleId: body.externalVehicleId,
+          name: body.name || `${body.make} ${body.model}`,
+          vin: body.vin,
+          licensePlate: body.licensePlate,
+          make: body.make,
+          model: body.model,
+          year: body.year,
+          status: 'ACTIVE',
+          metadata: {},
+        },
+      });
 
       reply.status(201);
-      return { data: mockVehicle };
+      return { data: vehicle };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError(error.errors);
+        throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       }
       throw error;
     }
@@ -254,33 +316,34 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const tenantId = (request as any).tenantId as string;
 
     try {
       const body = updateVehicleSchema.parse(request.body);
 
-      // INTEGRATION: Update via FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const vehicle = await fleetService.updateVehicle(id, body);
+      const existing = await (prisma as any).fleetVehicle.findFirst({
+        where: { id, tenantId },
+        select: { id: true },
+      });
 
-      const mockVehicle = {
-        id,
-        fleetId: request.shopId,
-        make: 'Volvo',
-        model: 'FH16',
-        year: 2023,
-        vin: 'YV1TS56D982F8032',
-        licensePlate: 'AB001',
-        engineType: 'DIESEL',
-        status: 'ACTIVE',
-        ...body,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      if (!existing) {
+        throw new NotFoundError(`Vehicle ${id} not found`);
+      }
 
-      return { data: mockVehicle };
+      const updateData: Record<string, any> = {};
+      if (body.status) updateData.status = body.status;
+      if (body.tags) updateData.tags = body.tags;
+      if (body.primaryProvider) updateData.telematicsProvider = body.primaryProvider.toLowerCase();
+
+      const vehicle = await (prisma as any).fleetVehicle.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return { data: vehicle };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError(error.errors);
+        throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       }
       throw error;
     }
@@ -290,30 +353,38 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/:id/diagnostics', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const tenantId = (request as any).tenantId as string;
 
     try {
-      // INTEGRATION: Fetch from FleetService
-      // const fleetService = await createFleetService(request.shopId, adapters);
-      // const diagnostics = await fleetService.getVehicleDiagnostics(id);
+      const vehicle = await (prisma as any).fleetVehicle.findFirst({
+        where: { id, tenantId },
+        select: {
+          id: true,
+          lastDiagnosticAt: true,
+          lastDiagnosticData: true,
+        },
+      });
 
-      const mockDiagnostics = {
-        vehicleId: id,
-        faultCodes: [
-          {
-            code: 'P0101',
-            description: 'Mass Air Flow Sensor Range/Performance',
-            system: 'ENGINE',
-            severity: 'WARNING',
-          },
-        ],
-        severity: 'WARNING',
-        description: 'Engine diagnostic issues detected',
-        affectedSystems: ['ENGINE'],
-        recommendedAction: 'Check air intake and MAF sensor',
-        firstSeenAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      if (!vehicle) {
+        throw new NotFoundError(`Vehicle ${id} not found`);
+      }
+
+      // Also fetch recent diagnostic telemetry logs
+      const logs = await (prisma as any).vehicleTelemetryLog.findMany({
+        where: { vehicleId: id, tenantId, type: 'diagnostic' },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: { id: true, type: true, data: true, createdAt: true },
+      });
+
+      return {
+        data: {
+          vehicleId: id,
+          lastDiagnosticAt: vehicle.lastDiagnosticAt,
+          diagnosticData: vehicle.lastDiagnosticData,
+          recentLogs: logs,
+        },
       };
-
-      return { data: mockDiagnostics };
     } catch (error) {
       throw error;
     }
@@ -325,48 +396,42 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
     '/:id/behavior',
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      const query = dateRangeSchema.parse(request.query);
+      const tenantId = (request as any).tenantId as string;
 
       try {
-        // INTEGRATION: Fetch from FleetService
-        // const fleetService = await createFleetService(request.shopId, adapters);
-        // const behaviors = await fleetService.getDriverBehavior(id, {
-        //   start: new Date(query.startDate),
-        //   end: new Date(query.endDate),
-        // });
+        const vehicle = await (prisma as any).fleetVehicle.findFirst({
+          where: { id, tenantId },
+          select: { id: true },
+        });
 
-        const mockBehaviors = [
-          {
-            id: 'beh-1',
-            vehicleId: id,
-            driverId: 'driver-101',
-            eventType: 'SPEEDING',
-            severity: 2,
-            location: { latitude: 37.7749, longitude: -122.4194 },
-            speed: 85,
-            description: 'Speed 85 km/h in 50 km/h zone',
-            timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-            createdAt: new Date(),
-          },
-          {
-            id: 'beh-2',
-            vehicleId: id,
-            driverId: 'driver-101',
-            eventType: 'HARSH_BRAKE',
-            severity: 3,
-            location: { latitude: 37.7749, longitude: -122.4194 },
-            speed: 60,
-            description: 'Harsh braking detected',
-            durationMs: 850,
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            createdAt: new Date(),
-          },
-        ];
+        if (!vehicle) {
+          throw new NotFoundError(`Vehicle ${id} not found`);
+        }
 
-        return { data: mockBehaviors };
+        // Parse optional date range
+        let dateFilter: Record<string, any> = {};
+        try {
+          const query = dateRangeSchema.parse(request.query);
+          dateFilter = {
+            timestamp: {
+              gte: new Date(query.startDate),
+              lte: new Date(query.endDate),
+            },
+          };
+        } catch {
+          // No date range provided
+        }
+
+        const behaviors = await (prisma as any).driverBehaviorEvent.findMany({
+          where: { vehicleId: id, tenantId, ...dateFilter },
+          orderBy: { timestamp: 'desc' },
+          take: 50,
+        });
+
+        return { data: behaviors };
       } catch (error) {
         if (error instanceof z.ZodError) {
-          throw new ValidationError(error.errors);
+          throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
         }
         throw error;
       }
@@ -379,37 +444,38 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
     '/:id/maintenance',
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
+      const tenantId = (request as any).tenantId as string;
 
       try {
-        // INTEGRATION: Fetch from FleetService
-        // const fleetService = await createFleetService(request.shopId, adapters);
-        // const alerts = await fleetService.getVehicleMaintenanceAlerts(id);
+        const vehicle = await (prisma as any).fleetVehicle.findFirst({
+          where: { id, tenantId },
+          select: { id: true, lastDiagnosticData: true },
+        });
 
-        const mockAlerts = [
-          {
-            id: 'maint-1',
-            vehicleId: id,
-            alertType: 'OIL_CHANGE',
-            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            severity: 'WARNING',
-            estimatedCost: 150,
-            isCompleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 'maint-2',
-            vehicleId: id,
-            alertType: 'TIRE_INSPECTION',
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            severity: 'INFO',
-            isCompleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ];
+        if (!vehicle) {
+          throw new NotFoundError(`Vehicle ${id} not found`);
+        }
 
-        return { data: mockAlerts };
+        // Extract maintenance alerts from diagnostic data
+        const diag = vehicle.lastDiagnosticData as any;
+        const alerts = [];
+
+        if (diag?.faultCodes && Array.isArray(diag.faultCodes)) {
+          for (const fc of diag.faultCodes) {
+            alerts.push({
+              id: `fault-${fc.code || Math.random()}`,
+              vehicleId: id,
+              alertType: 'FAULT_CODE',
+              code: fc.code,
+              description: fc.description || fc.code,
+              severity: fc.severity || 'WARNING',
+              isCompleted: false,
+              createdAt: vehicle.lastDiagnosticData ? new Date() : new Date(),
+            });
+          }
+        }
+
+        return { data: alerts };
       } catch (error) {
         throw error;
       }
@@ -426,12 +492,12 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       try {
         const body = acknowledgeEventSchema.parse(request.body);
 
-        // INTEGRATION: Update event in database
-        // const fleetService = await createFleetService(request.shopId, adapters);
-        // const event = await acknowledgeFleetEvent(body.eventId, request.user.id);
-
+        // TODO(WIT-86): No FleetEvent model exists yet — acknowledgements are not persisted.
+        // Acknowledged state is lost on restart. A follow-up ticket should add a
+        // `FleetEvent` model and write the acknowledged flag + actor here.
         return {
           data: {
+            vehicleId: id,
             eventId: body.eventId,
             acknowledged: true,
             acknowledgedAt: new Date(),
@@ -439,7 +505,7 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
-          throw new ValidationError(error.errors);
+          throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
         }
         throw error;
       }
@@ -450,24 +516,46 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/maintenance', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const tenantId = (request as any).tenantId as string;
       const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
       const { page, limit } = query;
 
-      const mockMaintenance = [
-        { id: 'mnt-1', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'oil-change', scheduledDate: new Date(Date.now() - 5 * 86400000).toISOString(), status: 'overdue', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Overdue by 5 days' },
-        { id: 'mnt-2', vehicleId: 'veh-2', vehiclePlate: 'AB002', vehicleName: 'Scania G490 (AB002)', type: 'tire-rotation', scheduledDate: new Date(Date.now() + 7 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 180, actualCost: null, vendor: 'Tire Pro', notes: '' },
-        { id: 'mnt-3', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'inspection', scheduledDate: new Date(Date.now() - 30 * 86400000).toISOString(), status: 'completed', estimatedCost: 120, actualCost: 115, vendor: 'City Inspection', notes: 'Passed annual inspection' },
-        { id: 'mnt-4', vehicleId: 'veh-2', vehiclePlate: 'AB002', vehicleName: 'Scania G490 (AB002)', type: 'oil-change', scheduledDate: new Date(Date.now() + 14 * 86400000).toISOString(), status: 'scheduled', estimatedCost: 250, actualCost: null, vendor: 'Fleet Auto Service', notes: '' },
-        { id: 'mnt-5', vehicleId: 'veh-1', vehiclePlate: 'AB001', vehicleName: 'Volvo FH16 (AB001)', type: 'repair', scheduledDate: new Date(Date.now() - 1 * 86400000).toISOString(), status: 'in-progress', estimatedCost: 800, actualCost: null, vendor: 'Fleet Auto Service', notes: 'Brake pad replacement' },
-      ];
+      // Fetch all vehicles with diagnostic data, then expand fault codes into
+      // individual maintenance items and paginate the resulting item list.
+      // Previously the query paginated by vehicle which gave incorrect item counts
+      // when multiple fault codes existed per vehicle.
+      const allVehicles = await (prisma as any).fleetVehicle.findMany({
+        where: { tenantId, status: { not: 'DELETED' } },
+        select: { id: true, name: true, licensePlate: true, make: true, model: true, lastDiagnosticData: true, lastDiagnosticAt: true },
+        orderBy: { lastDiagnosticAt: 'desc' },
+      });
 
-      const paginated = mockMaintenance.slice((page - 1) * limit, page * limit);
+      const allItems = allVehicles.flatMap((v: any) => {
+        const diag = v.lastDiagnosticData as any;
+        if (!diag?.faultCodes || !Array.isArray(diag.faultCodes)) return [];
+        return diag.faultCodes.map((fc: any) => ({
+          id: `fault-${v.id}-${fc.code}`,
+          vehicleId: v.id,
+          vehiclePlate: v.licensePlate,
+          vehicleName: `${v.make || ''} ${v.model || ''} (${v.licensePlate || v.name})`.trim(),
+          type: 'fault-code',
+          code: fc.code,
+          description: fc.description || fc.code,
+          severity: fc.severity || 'WARNING',
+          status: 'open',
+          detectedAt: v.lastDiagnosticAt,
+        }));
+      });
+
+      const total = allItems.length;
+      const maintenanceItems = allItems.slice((page - 1) * limit, page * limit);
+
       return {
-        data: paginated,
-        meta: { page, limit, total: mockMaintenance.length, totalPages: Math.ceil(mockMaintenance.length / limit) },
+        data: maintenanceItems,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     } catch (error) {
-      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       throw error;
     }
   });
@@ -476,64 +564,70 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/fuel-transactions', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const tenantId = (request as any).tenantId as string;
       const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
       const { page, limit } = query;
 
-      const stations = ['Shell', 'Chevron', 'BP', 'ExxonMobil'];
-      const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
-        id: `fuel-${i + 1}`,
-        vehicleId: i % 2 === 0 ? 'veh-1' : 'veh-2',
-        vehiclePlate: i % 2 === 0 ? 'AB001' : 'AB002',
-        driverId: `drv-${(i % 4) + 1}`,
-        driverName: ['Carlos Martinez', 'Sofia Lindberg', 'Ahmed Khalil', 'Jessica Chen'][i % 4],
-        date: new Date(Date.now() - i * 2 * 86400000).toISOString(),
-        station: stations[i % stations.length],
-        gallons: parseFloat((40 + Math.sin(i) * 15).toFixed(1)),
-        amount: parseFloat((150 + i * 12).toFixed(2)),
-        price: parseFloat((3.45 + Math.sin(i) * 0.3).toFixed(3)),
-        mpg: parseFloat((12 + Math.sin(i) * 3).toFixed(1)),
-        flagged: i % 9 === 0,
+      const logs = await (prisma as any).vehicleTelemetryLog.findMany({
+        where: { tenantId, type: 'fuel' },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: { id: true, vehicleId: true, data: true, createdAt: true },
+      });
+
+      const total = await (prisma as any).vehicleTelemetryLog.count({
+        where: { tenantId, type: 'fuel' },
+      });
+
+      const transactions = logs.map((log: any) => ({
+        id: log.id,
+        vehicleId: log.vehicleId,
+        date: log.createdAt,
+        ...(log.data as object),
       }));
 
-      const paginated = mockTransactions.slice((page - 1) * limit, page * limit);
       return {
-        data: paginated,
-        meta: { page, limit, total: mockTransactions.length, totalPages: Math.ceil(mockTransactions.length / limit) },
+        data: transactions,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     } catch (error) {
-      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       throw error;
     }
   });
 
-  // ── GET FUEL (dashboard alias; same mock data shape as fuel page) ──
+  // ── GET FUEL (dashboard alias) ──────────────────────────────
 
   fastify.get('/fuel', async (request: FastifyRequest, _reply: FastifyReply) => {
     try {
-      const stations = ['Shell', 'Chevron', 'BP', 'ExxonMobil'];
-      const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
-        id: `fuel-${i + 1}`,
-        vehicleId: i % 2 === 0 ? 'veh-1' : 'veh-2',
-        date: new Date(Date.now() - i * 2 * 86400000).toISOString(),
-        station: stations[i % stations.length],
-        gallons: parseFloat((40 + Math.sin(i) * 15).toFixed(1)),
-        amount: parseFloat((150 + i * 12).toFixed(2)),
-        price: parseFloat((3.45 + Math.sin(i) * 0.3).toFixed(3)),
-        mpg: parseFloat((12 + Math.sin(i) * 3).toFixed(1)),
-        flagged: i % 9 === 0,
+      const tenantId = (request as any).tenantId as string;
+
+      const logs = await (prisma as any).vehicleTelemetryLog.findMany({
+        where: { tenantId, type: 'fuel' },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: { id: true, vehicleId: true, data: true, createdAt: true },
+      });
+
+      const transactions = logs.map((log: any) => ({
+        id: log.id,
+        vehicleId: log.vehicleId,
+        date: log.createdAt,
+        ...(log.data as object),
       }));
 
       return {
-        data: mockTransactions,
+        data: transactions,
         meta: {
           page: 1,
-          limit: mockTransactions.length,
-          total: mockTransactions.length,
+          limit: transactions.length,
+          total: transactions.length,
           totalPages: 1,
         },
       };
     } catch (error) {
-      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       throw error;
     }
   });
@@ -545,19 +639,13 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
       const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
       const { page, limit } = query;
 
-      const mockCards = [
-        { id: 'card-1', cardNumber: '****-****-****-1234', provider: 'FleetCard', status: 'active', dailyLimit: 500, monthlyLimit: 5000, assignedVehicles: ['veh-1'], expiryDate: '2026-12-31' },
-        { id: 'card-2', cardNumber: '****-****-****-5678', provider: 'WEX', status: 'active', dailyLimit: 300, monthlyLimit: 3000, assignedVehicles: ['veh-2'], expiryDate: '2027-06-30' },
-        { id: 'card-3', cardNumber: '****-****-****-9012', provider: 'FleetCard', status: 'blocked', dailyLimit: 400, monthlyLimit: 4000, assignedVehicles: [], expiryDate: '2026-09-30' },
-      ];
-
-      const paginated = mockCards.slice((page - 1) * limit, page * limit);
+      // Fuel card data is not yet in the schema — return empty with pagination
       return {
-        data: paginated,
-        meta: { page, limit, total: mockCards.length, totalPages: Math.ceil(mockCards.length / limit) },
+        data: [],
+        meta: { page, limit, total: 0, totalPages: 0 },
       };
     } catch (error) {
-      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       throw error;
     }
   });
@@ -566,23 +654,34 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/activity', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const tenantId = (request as any).tenantId as string;
       const query = vehicleListQuerySchema.pick({ page: true, limit: true }).parse(request.query);
       const { page, limit } = query;
 
-      const mockActivity = [
-        { id: 'act-1', type: 'maintenance', vehicleId: 'veh-1', title: 'Oil change completed', description: 'Routine oil change for AB001', timestamp: new Date(Date.now() - 2 * 3600000).toISOString(), icon: '🔧' },
-        { id: 'act-2', type: 'fuel', vehicleId: 'veh-2', title: 'Fuel refill', description: 'AB002 refueled at Shell station', timestamp: new Date(Date.now() - 4 * 3600000).toISOString(), icon: '⛽' },
-        { id: 'act-3', type: 'assignment', vehicleId: 'veh-1', title: 'Driver assigned', description: 'Carlos Martinez assigned to AB001', timestamp: new Date(Date.now() - 6 * 3600000).toISOString(), icon: '👤' },
-        { id: 'act-4', type: 'alert', vehicleId: 'veh-2', title: 'Low fuel alert', description: 'AB002 fuel level below 15%', timestamp: new Date(Date.now() - 8 * 3600000).toISOString(), icon: '⚠️' },
-      ];
+      const logs = await (prisma as any).vehicleTelemetryLog.findMany({
+        where: { tenantId },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: { id: true, vehicleId: true, type: true, data: true, createdAt: true },
+      });
 
-      const paginated = mockActivity.slice((page - 1) * limit, page * limit);
+      const total = await (prisma as any).vehicleTelemetryLog.count({ where: { tenantId } });
+
+      const activity = logs.map((log: any) => ({
+        id: log.id,
+        type: log.type,
+        vehicleId: log.vehicleId,
+        timestamp: log.createdAt,
+        data: log.data,
+      }));
+
       return {
-        data: paginated,
-        meta: { page, limit, total: mockActivity.length, totalPages: Math.ceil(mockActivity.length / limit) },
+        data: activity,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
       };
     } catch (error) {
-      if (error instanceof z.ZodError) throw new ValidationError(error.errors);
+      if (error instanceof z.ZodError) throw new ValidationError(error.errors[0]?.message ?? 'Validation failed', error.errors);
       throw error;
     }
   });
@@ -591,41 +690,18 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const tenantId = (request as any).tenantId as string;
 
     try {
-      const mockVehicle = {
-        id,
-        fleetId: request.shopId,
-        make: 'Volvo',
-        model: 'FH16',
-        year: 2023,
-        vin: 'YV1TS56D982F8032',
-        licensePlate: 'AB001',
-        engineType: 'DIESEL',
-        primaryProvider: 'SAMSARA',
-        status: 'ACTIVE',
-        odometer: 5000,
-        engineHours: 200,
-        fuelLevel: 75,
-        battery: 95,
-        capacity: 25000,
-        driverId: 'driver-101',
-        isActive: true,
-        lastPosition: {
-          latitude: 37.7749,
-          longitude: -122.4194,
-          heading: 180,
-          speed: 65,
-          accuracy: 5,
-          timestamp: new Date(),
-        },
-        lastSyncAt: new Date(),
-        nextMaintenanceDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const vehicle = await (prisma as any).fleetVehicle.findFirst({
+        where: { id, tenantId },
+      });
 
-      return { data: mockVehicle };
+      if (!vehicle) {
+        throw new NotFoundError(`Vehicle ${id} not found`);
+      }
+
+      return { data: vehicle };
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       throw error;

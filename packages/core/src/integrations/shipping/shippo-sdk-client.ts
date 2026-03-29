@@ -10,7 +10,7 @@
  * - Carrier account management
  *
  * Authentication: Bearer token (ShippoToken {api_key})
- * Base URL: https://api.goshippo.com/v1
+ * Base URL: https://api.goshippo.com
  * Rate Limit: 100 requests/minute
  * Pagination: Cursor-based
  * Webhook Events: tracking_update, transaction_created, transaction_updated, batch_created
@@ -263,7 +263,7 @@ export interface ShippoPaginatedResult<T> {
  * ```typescript
  * const shippo = new ShippoSDKClient({
  *   apiToken: 'shippo_test_...',
- *   baseUrl: 'https://api.goshippo.com/v1',
+ *   baseUrl: 'https://api.goshippo.com',
  *   timeout: 30000
  * });
  *
@@ -294,7 +294,7 @@ export class ShippoSDKClient {
       throw new Error("Shippo API token is required");
     }
     this.apiToken = config.apiToken;
-    this.baseUrl = config.baseUrl || "https://api.goshippo.com/v1";
+    this.baseUrl = config.baseUrl || "https://api.goshippo.com";
     this.timeout = config.timeout || 30000;
   }
 
