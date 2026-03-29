@@ -127,10 +127,7 @@ describe("Event-Webhook Pipeline Integration", () => {
 
       // Simulate event emitted and bridge processes it
       eventBridge.handleEvent = async (event) => {
-        const matching = mockPrisma.webhookEndpoint.findMany.call(
-          this,
-          endpoints
-        );
+        const matching = await mockPrisma.webhookEndpoint.findMany();
         for (const endpoint of matching) {
           await mockHttpClient.post(endpoint.url, event);
         }

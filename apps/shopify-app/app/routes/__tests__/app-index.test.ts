@@ -22,10 +22,11 @@ vi.mock("~/lib/shopify.server", () => ({
 
 vi.mock("~/lib/api.server", () => ({
   createApiClient: vi.fn(),
+  createApiClientFromRequest: vi.fn(),
 }));
 
 import { authenticate } from "~/lib/shopify.server";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClient, createApiClientFromRequest } from "~/lib/api.server";
 
 // Import the loader being tested
 import { loader } from "../_index";
@@ -121,7 +122,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -145,7 +146,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -156,7 +157,7 @@ describe("Dashboard Route Loader", () => {
         params: {},
       } as LoaderFunctionArgs);
 
-      expect(createApiClient).toHaveBeenCalledWith(testToken);
+      expect(createApiClientFromRequest).toHaveBeenCalled();
     });
 
     it("should throw error if session is invalid or missing", async () => {
@@ -182,7 +183,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -208,7 +209,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -231,7 +232,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       // First call (stats) fails, second call (activity) succeeds
       mockApiClient.get
@@ -263,7 +264,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const testStats: DashboardStats = {
         ordersToday: 156,
@@ -305,7 +306,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -328,7 +329,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -352,7 +353,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       // First call (stats) succeeds, second call (activity) fails
       mockApiClient.get
@@ -375,7 +376,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const activityWithMissingActor: ActivityEvent[] = [
         {
@@ -410,7 +411,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const orderedActivity: ActivityEvent[] = [
         {
@@ -457,7 +458,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -480,7 +481,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockRejectedValueOnce(new Error("Stats API Error"))
@@ -512,7 +513,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockRejectedValueOnce(new Error("API Error 1"))
@@ -536,7 +537,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -563,7 +564,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -588,7 +589,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const statsWithZeros: DashboardStats = {
         ordersToday: 0,
@@ -623,7 +624,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const largeStats: DashboardStats = {
         ordersToday: 99999,
@@ -660,7 +661,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -684,7 +685,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockRejectedValueOnce(new Error("Stats failed"))
@@ -709,7 +710,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -732,7 +733,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -755,7 +756,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       mockApiClient.get
         .mockResolvedValueOnce({ data: mockStatsData })
@@ -782,7 +783,7 @@ describe("Dashboard Route Loader", () => {
       const mockApiClient = {
         get: vi.fn(),
       };
-      (createApiClient as any).mockReturnValue(mockApiClient);
+      (createApiClientFromRequest as any).mockReturnValue(mockApiClient);
 
       const activityWithISO: ActivityEvent[] = [
         {

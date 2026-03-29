@@ -128,7 +128,7 @@ describe('Realtime Workflows', () => {
       realtime.subscribeToTenant('tenant_1', 'client_3');
 
       const subscribers = realtime.getTenantSubscribers('tenant_1');
-      expect(subscribers).toHaveSize(3);
+      expect(subscribers).toHaveLength(3);
       expect(subscribers).toContain('client_1');
       expect(subscribers).toContain('client_2');
       expect(subscribers).toContain('client_3');
