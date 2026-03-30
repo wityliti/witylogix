@@ -61,6 +61,7 @@ model Shop {
   authProviders           AuthProvider[]
   authMeterEvents         AuthMeterEvent[]
   wooCommerceConnections  WooCommerceConnection[]
+  deliveryEvents          DeliveryEvent[]
 
   @@index([orgId])
   @@map("shops")
