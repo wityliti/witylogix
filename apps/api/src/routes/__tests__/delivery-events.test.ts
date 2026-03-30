@@ -18,11 +18,16 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Valid UUIDs required by batchDeliveryEventsSchema (deliveryId: z.string().uuid())
+const DEFAULT_DELIVERY_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const DELIVERY_ID_1 = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
+const DELIVERY_ID_2 = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
+
 function makeEvent(overrides: Record<string, unknown> = {}) {
   return {
     id: `evt-${Math.random().toString(36).slice(2)}`,
     eventType: 'picked_up',
-    deliveryId: 'shipment-uuid-1',
+    deliveryId: DEFAULT_DELIVERY_ID,
     payload: {},
     deviceCapturedAt: new Date().toISOString(),
     deviceTimezone: 'America/New_York',
@@ -34,7 +39,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
 
 function makeMockShipment(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'shipment-uuid-1',
+    id: DEFAULT_DELIVERY_ID,
     shopId: 'shop-123',
     status: 'READY_FOR_PICKUP',
     ...overrides,
@@ -287,13 +292,13 @@ describe('POST /api/v4/deliveries/events/batch', () => {
   // ── Multi-delivery batch ──────────────────────────────────
 
   it('processes two independent deliveries in the same batch', async () => {
-    const e1 = makeEvent({ id: 'e1', eventType: 'picked_up', deliveryId: 'ship-1' });
-    const e2 = makeEvent({ id: 'e2', eventType: 'picked_up', deliveryId: 'ship-2' });
+    const e1 = makeEvent({ id: 'e1', eventType: 'picked_up', deliveryId: DELIVERY_ID_1 });
+    const e2 = makeEvent({ id: 'e2', eventType: 'picked_up', deliveryId: DELIVERY_ID_2 });
     mockRequest.body = { events: [e1, e2] };
 
     mockDb.shipment.findMany.mockResolvedValue([
-      { id: 'ship-1', shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
-      { id: 'ship-2', shopId: 'shop-123', status: 'PENDING' },
+      { id: DELIVERY_ID_1, shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
+      { id: DELIVERY_ID_2, shopId: 'shop-123', status: 'PENDING' },
     ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
     mockDb.deliveryEvent.create.mockResolvedValue({});
@@ -308,14 +313,14 @@ describe('POST /api/v4/deliveries/events/batch', () => {
   // ── Out-of-order batch sorting ────────────────────────────
 
   it('processes events sorted by deviceCapturedAt even if submitted out of order', async () => {
-    const later = makeEvent({ id: 'e-later', eventType: 'in_transit', deliveryId: 'ship-1', deviceCapturedAt: new Date(2000).toISOString() });
-    const earlier = makeEvent({ id: 'e-earlier', eventType: 'picked_up', deliveryId: 'ship-1', deviceCapturedAt: new Date(1000).toISOString() });
+    const later = makeEvent({ id: 'e-later', eventType: 'in_transit', deliveryId: DELIVERY_ID_1, deviceCapturedAt: new Date(2000).toISOString() });
+    const earlier = makeEvent({ id: 'e-earlier', eventType: 'picked_up', deliveryId: DELIVERY_ID_1, deviceCapturedAt: new Date(1000).toISOString() });
 
     // Submitted out of order
     mockRequest.body = { events: [later, earlier] };
 
     mockDb.shipment.findMany.mockResolvedValue([
-      { id: 'ship-1', shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
+      { id: DELIVERY_ID_1, shopId: 'shop-123', status: 'READY_FOR_PICKUP' },
     ]);
     mockDb.deliveryEvent.findMany.mockResolvedValue([]);
     mockDb.deliveryEvent.create.mockResolvedValue({});
