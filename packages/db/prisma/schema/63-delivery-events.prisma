@@ -1,0 +1,24 @@
+// ─── DELIVERY EVENTS (Driver offline sync) ───────────────
+// Stores lifecycle events submitted by the driver app.
+// `id` is client-generated UUID and acts as the idempotency key.
+// Part of WIT-127 / WIT-94 Driver App Offline Mode.
+
+model DeliveryEvent {
+  id               String   @id // client UUID — idempotency key
+  shopId           String   @map("shop_id") @db.Uuid
+  shipmentId       String   @map("shipment_id") @db.Uuid
+  eventType        String   @map("event_type")
+  payload          Json     @default("{}")
+  deviceCapturedAt DateTime @map("device_captured_at") @db.Timestamptz
+  deviceTimezone   String   @map("device_timezone")
+  serverReceivedAt DateTime @default(now()) @map("server_received_at") @db.Timestamptz
+  gpsLat           Float?   @map("gps_lat")
+  gpsLng           Float?   @map("gps_lng")
+
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, shipmentId, deviceCapturedAt(sort: Desc)], name: "delivery_events_shop_shipment_idx")
+  @@index([shipmentId, eventType], name: "delivery_events_shipment_type_idx")
+  @@map("delivery_events")
+}

@@ -226,6 +226,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/vehicles" });
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
   await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
   await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });

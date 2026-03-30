@@ -78,6 +78,7 @@ model Shipment {
   codcollections      CODCollection[]
   deliveryTimeSlot    DeliveryTimeSlot?    @relation(fields: [deliveryTimeSlotId], references: [id])
   deliveryTimeSlotId  String?              @db.Uuid
+  deliveryEvents      DeliveryEvent[]
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])
