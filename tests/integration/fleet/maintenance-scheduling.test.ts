@@ -144,8 +144,12 @@ class MaintenanceScheduler {
       );
     }
 
-    // Return whichever comes first
-    return dates.length > 0 ? new Date(Math.min(...dates.map((d) => d.getTime()))) : new Date();
+    // Return whichever comes first; if overdue, project from now
+    const result = dates.length > 0 ? new Date(Math.min(...dates.map((d) => d.getTime()))) : new Date();
+    if (result <= new Date() && template.intervalMonths) {
+      return new Date(Date.now() + template.intervalMonths * 30 * 24 * 60 * 60 * 1000);
+    }
+    return result;
   }
 
   // ─────────────────────────────────────────────────────────────────

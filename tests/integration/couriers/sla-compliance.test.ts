@@ -176,12 +176,12 @@ class SLAService {
   triggerEscalation(report: ComplianceReport, courierId: string): EscalationAction | null {
     let action: "warning" | "suspension" | "termination" | null = null;
 
-    if (report.complianceRate < 85) {
-      action = "warning";
+    if (report.complianceRate < 50) {
+      action = "termination";
     } else if (report.complianceRate < 70) {
       action = "suspension";
-    } else if (report.complianceRate < 50) {
-      action = "termination";
+    } else if (report.complianceRate < 85) {
+      action = "warning";
     }
 
     if (!action) {
