@@ -57,6 +57,10 @@ model Shipment {
   carrier            String? // external carrier name
   carrierTrackingUrl String? @map("carrier_tracking_url")
 
+  // Failed delivery tracking (WIT-141)
+  attemptCount      Int     @default(0) @map("attempt_count")
+  lastFailureReason String? @map("last_failure_reason")
+
   // Metadata
   tags          String[] @default([])
   notes         String?
@@ -79,6 +83,7 @@ model Shipment {
   deliveryTimeSlot    DeliveryTimeSlot?    @relation(fields: [deliveryTimeSlotId], references: [id])
   deliveryTimeSlotId  String?              @db.Uuid
   deliveryEvents      DeliveryEvent[]
+  deliveryAttempts    DeliveryAttempt[]
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])
@@ -119,7 +124,8 @@ enum ShipmentStatus {
   OUT_FOR_DELIVERY // Last-mile delivery in progress
   ARRIVED // Driver at delivery location
   DELIVERED // Successfully delivered + POD captured
-  FAILED // Delivery attempt failed
+  FAILED // Delivery attempt failed — permanent (no more retries)
+  FAILED_ATTEMPT // Attempt failed; retries remaining (WIT-141)
   RETURNED // Returned to origin
   CANCELLED // Cancelled before delivery
 }

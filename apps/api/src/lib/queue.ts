@@ -33,6 +33,8 @@ let _optimizationQueue: Queue | null = null;
 let _webhookQueue: Queue | null = null;
 let _maintenanceQueue: Queue | null = null;
 let _integrationQueue: Queue | null = null;
+let _failedDeliveryQueue: Queue | null = null;
+let _failedDeliveryQueue: Queue | null = null;
 
 export function getNotificationQueue(): Queue {
   if (!_notificationQueue) {
@@ -108,6 +110,21 @@ export function getMaintenanceQueue(): Queue {
   return _maintenanceQueue;
 }
 
+export function getFailedDeliveryQueue(): Queue {
+  if (!_failedDeliveryQueue) {
+    _failedDeliveryQueue = new Queue("failed-deliveries", {
+      connection: getQueueConnection(),
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: { age: 86400 },
+        removeOnFail: { age: 604800 },
+      },
+    });
+  }
+  return _failedDeliveryQueue;
+}
+
 // ─── Job Types ──────────────────────────────────────────────
 
 export interface NotificationJobData {
@@ -150,6 +167,12 @@ export interface IntegrationJobData {
   payload?: Record<string, unknown>;
 }
 
+export interface FailedDeliveryJobData {
+  shopId: string;
+  shipmentId: string;
+  attemptCount: number;
+}
+
 // ─── Graceful Shutdown ──────────────────────────────────────
 
 const activeWorkers: Worker[] = [];
@@ -171,5 +194,6 @@ export async function shutdownQueues(): Promise<void> {
     _webhookQueue?.close(),
     _integrationQueue?.close(),
     _maintenanceQueue?.close(),
+    _failedDeliveryQueue?.close(),
   ]);
 }
