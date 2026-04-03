@@ -51,14 +51,15 @@ model Order {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  driver              Driver?              @relation(fields: [driverId], references: [id])
-  timeSlot            TimeSlot?            @relation(fields: [timeSlotId], references: [id])
-  proofOfDelivery     ProofOfDelivery?
-  notificationLogs    NotificationLog[]
-  shipments           Shipment[]
-  paymentTransactions PaymentTransaction[]
-  codcollections      CODCollection[]
+  shop                        Shop                        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver                      Driver?                     @relation(fields: [driverId], references: [id])
+  timeSlot                    TimeSlot?                   @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery             ProofOfDelivery?
+  notificationLogs            NotificationLog[]
+  shipments                   Shipment[]
+  paymentTransactions         PaymentTransaction[]
+  codcollections              CODCollection[]
+  customerDeliveryPreferences CustomerDeliveryPreferences?
 
   @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])
