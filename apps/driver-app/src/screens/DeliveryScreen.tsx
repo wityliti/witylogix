@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import * as Camera from 'expo-camera';
+import { useCameraPermissions } from 'expo-camera';
 import { api } from '../services/api';
 
 interface Delivery {
@@ -31,6 +31,7 @@ const DeliveryScreen: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, requestCameraPermission] = useCameraPermissions();
 
   const { deliveryId } = route.params || {};
 
@@ -55,20 +56,20 @@ const DeliveryScreen: React.FC = () => {
 
   const handleTakePhoto = async () => {
     try {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
+      const result = await requestCameraPermission();
+      if (!result.granted) {
         Alert.alert('Permission Denied', 'Camera permission is required');
         return;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
+      const pickerResult = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setProofImage(result.assets[0].uri);
+      if (!pickerResult.canceled && pickerResult.assets[0]) {
+        setProofImage(pickerResult.assets[0].uri);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to take photo');
