@@ -31,6 +31,7 @@ import { shutdownQueues } from "./lib/queue.js";
 const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
 const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
+const startGeofenceWorker = async () => { try { const m = await import("./workers/geofence-worker.js"); return m.startGeofenceWorker(); } catch { console.warn("[Worker] Geofence worker unavailable"); } };
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -489,7 +490,25 @@ async function start(): Promise<void> {
   startNotificationWorker();
   startOptimizationWorker();
   startIntegrationWorker();
-  app.log.info("BullMQ workers started (notification, optimization, integration)");
+
+  // Geofence checker — repeatable job every 30s (WIT-140)
+  startGeofenceWorker().then(async () => {
+    try {
+      const { getGeofenceQueue } = await import("./lib/queue.js");
+      const intervalMs = parseInt(process.env.GEOFENCE_CHECK_INTERVAL_MS ?? "30000", 10);
+      const geofenceQueue = getGeofenceQueue();
+      await geofenceQueue.add(
+        "geofence-check",
+        { triggeredAt: new Date().toISOString() },
+        { repeat: { every: intervalMs }, jobId: "geofence-check-repeatable" },
+      );
+      app.log.info(`[geofence-worker] Repeatable job scheduled every ${intervalMs}ms`);
+    } catch (err: any) {
+      app.log.warn(`[geofence-worker] Failed to schedule repeatable job: ${err.message}`);
+    }
+  });
+
+  app.log.info("BullMQ workers started (notification, optimization, integration, geofence)");
 
   // ─── Listen ───────────────────────────────────────────────
 

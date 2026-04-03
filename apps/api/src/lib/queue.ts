@@ -10,6 +10,8 @@
  *   optimization   — route optimization (CPU-intensive, separate concurrency)
  *   webhooks       — outbound webhook delivery with retries
  *   maintenance    — scheduled cleanup, cache warming, analytics
+ *   geofence       — geofence proximity checks (repeatable, every 30s)
+ *   failed-delivery — auto-return creation after max attempts exhausted (WIT-141)
  */
 
 import { Queue, Worker, type ConnectionOptions, type Job } from "bullmq";
@@ -33,6 +35,8 @@ let _optimizationQueue: Queue | null = null;
 let _webhookQueue: Queue | null = null;
 let _maintenanceQueue: Queue | null = null;
 let _integrationQueue: Queue | null = null;
+let _geofenceQueue: Queue | null = null;
+let _failedDeliveryQueue: Queue | null = null;
 
 export function getNotificationQueue(): Queue {
   if (!_notificationQueue) {
@@ -108,6 +112,20 @@ export function getMaintenanceQueue(): Queue {
   return _maintenanceQueue;
 }
 
+export function getGeofenceQueue(): Queue {
+  if (!_geofenceQueue) {
+    _geofenceQueue = new Queue("geofence", {
+      connection: getQueueConnection(),
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: { age: 3600 },
+        removeOnFail: { age: 86400 },
+      },
+    });
+  }
+  return _geofenceQueue;
+}
+
 // ─── Job Types ──────────────────────────────────────────────
 
 export interface NotificationJobData {
@@ -150,6 +168,32 @@ export interface IntegrationJobData {
   payload?: Record<string, unknown>;
 }
 
+export interface GeofenceJobData {
+  triggeredAt: string;
+}
+
+export function getFailedDeliveryQueue(): Queue {
+  if (!_failedDeliveryQueue) {
+    _failedDeliveryQueue = new Queue("failed-delivery", {
+      connection: getQueueConnection(),
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: { age: 86400 },
+        removeOnFail: { age: 604800 },
+      },
+    });
+  }
+  return _failedDeliveryQueue;
+}
+
+export interface FailedDeliveryJobData {
+  shipmentId: string;
+  shopId: string;
+  failureReason: string;
+  attemptCount: number;
+}
+
 // ─── Graceful Shutdown ──────────────────────────────────────
 
 const activeWorkers: Worker[] = [];
@@ -171,5 +215,7 @@ export async function shutdownQueues(): Promise<void> {
     _webhookQueue?.close(),
     _integrationQueue?.close(),
     _maintenanceQueue?.close(),
+    _geofenceQueue?.close(),
+    _failedDeliveryQueue?.close(),
   ]);
 }

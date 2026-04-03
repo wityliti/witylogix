@@ -57,6 +57,13 @@ model Shipment {
   carrier            String? // external carrier name
   carrierTrackingUrl String? @map("carrier_tracking_url")
 
+  // Failed delivery retry (WIT-141)
+  attemptCount      Int     @default(0) @map("attempt_count")
+  lastFailureReason String? @map("last_failure_reason")
+
+  // Geofencing (WIT-140)
+  geofenceTriggeredAt DateTime? @map("geofence_triggered_at") @db.Timestamptz
+
   // Metadata
   tags          String[] @default([])
   notes         String?
@@ -79,6 +86,7 @@ model Shipment {
   deliveryTimeSlot    DeliveryTimeSlot?    @relation(fields: [deliveryTimeSlotId], references: [id])
   deliveryTimeSlotId  String?              @db.Uuid
   deliveryEvents      DeliveryEvent[]
+  deliveryAttempts    DeliveryAttempt[]
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])
@@ -119,8 +127,9 @@ enum ShipmentStatus {
   OUT_FOR_DELIVERY // Last-mile delivery in progress
   ARRIVED // Driver at delivery location
   DELIVERED // Successfully delivered + POD captured
-  FAILED // Delivery attempt failed
-  RETURNED // Returned to origin
+  FAILED_ATTEMPT // Attempt failed; retries remaining (WIT-141)
+  FAILED // All attempts exhausted — permanent failure
+  RETURNED // Returned to origin (auto-return or manual)
   CANCELLED // Cancelled before delivery
 }
 

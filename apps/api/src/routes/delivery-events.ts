@@ -7,29 +7,37 @@
  * Enforces a server-side state machine, deduplicates by event id,
  * and stores events for SLA auditing.
  *
- * Part of WIT-127 / WIT-94 Driver App Offline Mode Phase 1 MVP.
+ * WIT-127: Initial batch ingest + state machine.
+ * WIT-141: failed_delivery extended with structured retry logic, DeliveryAttempt
+ *          creation, and auto-return BullMQ job after max attempts exhausted.
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { batchDeliveryEventsSchema } from '@witylogix/validators';
+import { batchDeliveryEventsSchema, failedDeliveryPayloadSchema } from '@witylogix/validators';
 import { requireAuth } from '../middleware/auth.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { getFailedDeliveryQueue } from '../lib/queue.js';
 import type { DeliveryEventResult } from '@witylogix/types';
 
 // ── State Machine ─────────────────────────────────────────────────────────────
 
-/** Prisma ShipmentStatus values used for delivery lifecycle */
+/**
+ * Terminal statuses — no further transitions allowed.
+ * FAILED_ATTEMPT is NOT terminal; it can receive picked_up for retry.
+ */
 const TERMINAL_STATUSES = new Set(['DELIVERED', 'FAILED']);
 
 /**
  * Valid forward transitions.
- * null key = any non-terminal status may accept picked_up (first event after assignment).
+ * FAILED_ATTEMPT accepts picked_up so the driver can re-attempt delivery.
  */
 const VALID_TRANSITIONS: Record<string, Set<string>> = {
   PICKED_UP: new Set(['IN_TRANSIT']),
   IN_TRANSIT: new Set(['OUT_FOR_DELIVERY']),
-  OUT_FOR_DELIVERY: new Set(['DELIVERED', 'FAILED']),
-  // Allow re-submission of same state (idempotent re-delivery of events)
+  OUT_FOR_DELIVERY: new Set(['ARRIVED', 'DELIVERED', 'FAILED', 'FAILED_ATTEMPT']),
+  ARRIVED: new Set(['DELIVERED', 'FAILED', 'FAILED_ATTEMPT']), // WIT-140: geofence auto-event
+  FAILED_ATTEMPT: new Set(['PICKED_UP']), // retry: driver re-picks up
+  // Terminal — no further transitions
   DELIVERED: new Set(),
   FAILED: new Set(),
   // Pre-pickup statuses that can accept picked_up
@@ -39,13 +47,14 @@ const VALID_TRANSITIONS: Record<string, Set<string>> = {
   ASSIGNED: new Set(['PICKED_UP']),
 };
 
-/** Map client eventType → Prisma ShipmentStatus */
+/** Map client eventType → Prisma ShipmentStatus (static mapping for non-failed events) */
 const EVENT_TYPE_TO_STATUS: Record<string, string> = {
   picked_up: 'PICKED_UP',
   in_transit: 'IN_TRANSIT',
   out_for_delivery: 'OUT_FOR_DELIVERY',
+  arrived: 'ARRIVED', // WIT-140: geofence auto-event
   delivered: 'DELIVERED',
-  failed_delivery: 'FAILED',
+  // failed_delivery is resolved dynamically based on attempt count (see handler below)
 };
 
 /** Map Prisma ShipmentStatus → client-facing string */
@@ -58,10 +67,13 @@ const STATUS_TO_CLIENT: Record<string, string> = {
   OUT_FOR_DELIVERY: 'out_for_delivery',
   ARRIVED: 'arrived',
   DELIVERED: 'delivered',
+  FAILED_ATTEMPT: 'failed_attempt',
   FAILED: 'failed_delivery',
   RETURNED: 'returned',
   CANCELLED: 'cancelled',
 };
+
+const DEFAULT_MAX_ATTEMPTS = 3;
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
@@ -74,6 +86,10 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
    *
    * Body: { events: DeliveryEventInput[] }
    * Returns: { results: DeliveryEventResult[] }
+   *
+   * For failed_delivery events the payload must contain:
+   *   { failureReason: 'nobody_home' | 'address_not_found' | 'refused' | 'access_denied' | 'other',
+   *     note?: string, photoUrl?: string }
    */
   fastify.post('/events/batch', async (request: FastifyRequest, reply: FastifyReply) => {
     const parsed = batchDeliveryEventsSchema.safeParse(request.body);
@@ -93,11 +109,11 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
     // Collect all unique deliveryIds so we can fetch them in one query
     const deliveryIds = [...new Set(sorted.map((e) => e.deliveryId))];
 
-    // Load current shipment state for all referenced deliveries in one round-trip
-    const shipments: Array<{ id: string; status: string; shopId: string }> =
+    // Load current shipment state — include attemptCount and driverId for WIT-141
+    const shipments: Array<{ id: string; status: string; shopId: string; attemptCount: number; driverId: string | null }> =
       await db.shipment.findMany({
         where: { id: { in: deliveryIds }, shopId },
-        select: { id: true, status: true, shopId: true },
+        select: { id: true, status: true, shopId: true, attemptCount: true, driverId: true },
       });
 
     const shipmentMap = new Map(shipments.map((s) => [s.id, s]));
@@ -110,16 +126,26 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
     });
     const existingIds = new Set(existing.map((e) => e.id));
 
-    // In-memory running state so we can apply multiple events per delivery
-    // within the same batch without re-querying
-    const runningState = new Map<string, string>(
-      shipments.map((s) => [s.id, s.status]),
-    );
+    // Fetch shop's maxDeliveryAttempts once if batch contains any failed_delivery events
+    let maxDeliveryAttempts = DEFAULT_MAX_ATTEMPTS;
+    if (sorted.some((e) => e.eventType === 'failed_delivery')) {
+      const shop = await db.shop.findUnique({
+        where: { id: shopId },
+        select: { maxDeliveryAttempts: true },
+      });
+      if (shop?.maxDeliveryAttempts != null) {
+        maxDeliveryAttempts = shop.maxDeliveryAttempts;
+      }
+    }
+
+    // In-memory running state per delivery (avoids re-querying within the same batch)
+    const runningState = new Map<string, string>(shipments.map((s) => [s.id, s.status]));
+    const runningAttemptCount = new Map<string, number>(shipments.map((s) => [s.id, s.attemptCount]));
 
     const results: DeliveryEventResult[] = [];
 
     for (const event of sorted) {
-      // Already processed — return accepted without re-processing
+      // Already processed — idempotent accept
       if (existingIds.has(event.id)) {
         results.push({ id: event.id, status: 'accepted' });
         continue;
@@ -136,7 +162,6 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const currentStatus = runningState.get(event.deliveryId)!;
-      const targetStatus = EVENT_TYPE_TO_STATUS[event.eventType];
 
       // Terminal state check
       if (TERMINAL_STATUSES.has(currentStatus)) {
@@ -149,7 +174,98 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
         continue;
       }
 
-      // State machine transition check
+      // ── failed_delivery: retry / auto-return logic (WIT-141) ─────────────────
+      if (event.eventType === 'failed_delivery') {
+        // Validate structured payload
+        const payloadParsed = failedDeliveryPayloadSchema.safeParse(event.payload);
+        if (!payloadParsed.success) {
+          results.push({
+            id: event.id,
+            status: 'error',
+            message: `failed_delivery requires payload.failureReason: nobody_home | address_not_found | refused | access_denied | other`,
+          });
+          continue;
+        }
+
+        // Source must be OUT_FOR_DELIVERY or FAILED_ATTEMPT (retry that fails again)
+        if (currentStatus !== 'OUT_FOR_DELIVERY' && currentStatus !== 'FAILED_ATTEMPT') {
+          results.push({
+            id: event.id,
+            status: 'conflict',
+            currentDeliveryStatus: STATUS_TO_CLIENT[currentStatus] ?? currentStatus.toLowerCase(),
+            message: `Invalid transition from ${STATUS_TO_CLIENT[currentStatus] ?? currentStatus} via failed_delivery`,
+          });
+          continue;
+        }
+
+        const { failureReason, note, photoUrl } = payloadParsed.data;
+        const currentAttemptCount = runningAttemptCount.get(event.deliveryId) ?? 0;
+        const newAttemptCount = currentAttemptCount + 1;
+        const retriesExhausted = newAttemptCount >= maxDeliveryAttempts;
+        const newStatus = retriesExhausted ? 'FAILED' : 'FAILED_ATTEMPT';
+
+        // Persist atomically: DeliveryEvent + DeliveryAttempt + Shipment update
+        await db.$transaction([
+          db.deliveryEvent.create({
+            data: {
+              id: event.id,
+              shopId,
+              shipmentId: event.deliveryId,
+              eventType: event.eventType,
+              payload: event.payload ?? {},
+              deviceCapturedAt: new Date(event.deviceCapturedAt),
+              deviceTimezone: event.deviceTimezone,
+              gpsLat: event.gpsLat ?? null,
+              gpsLng: event.gpsLng ?? null,
+            },
+          }),
+          db.deliveryAttempt.create({
+            data: {
+              shipmentId: event.deliveryId,
+              shopId,
+              attemptNumber: newAttemptCount,
+              failureReason,
+              failedAt: new Date(event.deviceCapturedAt),
+              photoUrl: photoUrl ?? null,
+              driverId: shipment.driverId ?? null,
+              notes: note ?? null,
+            },
+          }),
+          db.shipment.update({
+            where: { id: event.deliveryId },
+            data: {
+              status: newStatus,
+              attemptCount: newAttemptCount,
+              lastFailureReason: failureReason,
+            },
+          }),
+        ]);
+
+        // Enqueue auto-return job when all retries exhausted
+        if (retriesExhausted) {
+          try {
+            await getFailedDeliveryQueue().add('auto-return', {
+              shipmentId: event.deliveryId,
+              shopId,
+              failureReason,
+              attemptCount: newAttemptCount,
+            });
+          } catch (err) {
+            // Non-fatal — dashboard allows manual return trigger as fallback
+            fastify.log.error(
+              `[WIT-141] Failed to enqueue auto-return for shipment ${event.deliveryId}: ${(err as Error).message}`,
+            );
+          }
+        }
+
+        runningState.set(event.deliveryId, newStatus);
+        runningAttemptCount.set(event.deliveryId, newAttemptCount);
+        results.push({ id: event.id, status: 'accepted' });
+        continue;
+      }
+
+      // ── Standard event: state machine transition ───────────────────────────────
+      const targetStatus = EVENT_TYPE_TO_STATUS[event.eventType];
       const allowed = VALID_TRANSITIONS[currentStatus];
       if (!allowed || !allowed.has(targetStatus)) {
         results.push({
@@ -161,7 +277,6 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
         continue;
       }
 
-      // Persist event and advance shipment status atomically
       await db.$transaction([
         db.deliveryEvent.create({
           data: {
@@ -186,9 +301,7 @@ async function deliveryEventsRoutes(fastify: FastifyInstance): Promise<void> {
         }),
       ]);
 
-      // Advance in-memory state for subsequent events in same batch
       runningState.set(event.deliveryId, targetStatus);
-
       results.push({ id: event.id, status: 'accepted' });
     }
 
