@@ -34,7 +34,6 @@ let _webhookQueue: Queue | null = null;
 let _maintenanceQueue: Queue | null = null;
 let _integrationQueue: Queue | null = null;
 let _failedDeliveryQueue: Queue | null = null;
-let _failedDeliveryQueue: Queue | null = null;
 
 export function getNotificationQueue(): Queue {
   if (!_notificationQueue) {
