@@ -64,6 +64,7 @@ model Shop {
   wooCommerceConnections  WooCommerceConnection[]
   deliveryEvents          DeliveryEvent[]
   deliveryAttempts        DeliveryAttempt[]
+  customerDeliveryPreferences CustomerDeliveryPreferences[]
 
   @@index([orgId])
   @@map("shops")

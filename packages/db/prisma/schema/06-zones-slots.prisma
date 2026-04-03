@@ -46,10 +46,11 @@ model TimeSlot {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  deliveryZone DeliveryZone? @relation(fields: [deliveryZoneId], references: [id])
-  orders       Order[]
-  shipments    Shipment[]
+  shop                        Shop                        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  deliveryZone                DeliveryZone?               @relation(fields: [deliveryZoneId], references: [id])
+  orders                      Order[]
+  shipments                   Shipment[]
+  customerDeliveryPreferences CustomerDeliveryPreferences[]
 
   @@index([shopId, isActive])
   @@map("time_slots")
