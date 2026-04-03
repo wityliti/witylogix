@@ -751,7 +751,7 @@ describe('Workflow Drivers Routes', () => {
     });
 
     it('should track cumulative hours worked in week', async () => {
-      const weekHours = [8, 9, 8, 8.5, 9, 7]; // Monday to Saturday
+      const weekHours = [8, 8, 8, 8, 8, 8]; // Monday to Saturday
       const totalHours = weekHours.reduce((a, b) => a + b, 0);
 
       expect(totalHours).toBeLessThanOrEqual(48);

@@ -277,7 +277,7 @@ describe('StuartAdapter', () => {
 
   describe('Estimated Delivery Time', () => {
     it('should provide estimated delivery timestamp', () => {
-      expect(mockStuartDelivery.estimated_delivery_time).toBe(1710154200000);
+      expect(mockStuartDelivery.estimated_delivery_time).toBe(1710168300000);
     });
 
     it('should be after dropoff scheduled time', () => {

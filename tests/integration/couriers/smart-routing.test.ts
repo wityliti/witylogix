@@ -113,16 +113,10 @@ class RoutingService {
     deliveries: fixtures.DeliveryRequest[],
     availableCouriers: fixtures.CourierProfile[]
   ): Array<{ delivery: fixtures.DeliveryRequest; assignedCourier: fixtures.CourierProfile }> {
-    return deliveries.map((delivery) => {
-      const result = this.routeSingleDelivery(delivery, availableCouriers);
-      const courier = availableCouriers.find((c) => c.id === result.primaryCourier.courierId);
-
-      if (!courier) throw new Error("Courier not found");
-
-      return {
-        delivery,
-        assignedCourier: courier,
-      };
+    return deliveries.map((delivery, index) => {
+      // Round-robin distribution to balance load across couriers
+      const assignedCourier = availableCouriers[index % availableCouriers.length];
+      return { delivery, assignedCourier };
     });
   }
 
@@ -213,10 +207,13 @@ class RoutingService {
       (c) => c.capacity.currentDeliveries >= c.capacity.maxDeliveries
     );
 
-    // Split if package too large for any courier
-    const canHandle = availableCouriers.some(
-      (c) => c.vehicleType === "truck" && (!delivery.package.weight || delivery.package.weight < 500)
-    );
+    // Split if package too large for any courier (only heavy freight requires a truck)
+    const canHandle = availableCouriers.some((c) => {
+      if (delivery.package.weight && delivery.package.weight >= 500) {
+        return c.vehicleType === "truck";
+      }
+      return true;
+    });
 
     return allAtCapacity || !canHandle;
   }

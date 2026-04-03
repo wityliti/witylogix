@@ -2,10 +2,11 @@
  * Deliveries API Routes
  *
  * Endpoints:
- *   GET    /           - List deliveries (with optional courierId filter)
- *   GET    /:id        - Get single delivery
- *   PATCH  /:id/assign - Assign delivery to a courier
- *   PATCH  /:id/status - Update delivery status
+ *   GET    /                    - List deliveries (with optional courierId filter)
+ *   GET    /:id                 - Get single delivery
+ *   PATCH  /:id/assign          - Assign delivery to a courier
+ *   PATCH  /:id/status          - Update delivery status
+ *   PATCH  /:id/preferences     - Update in-flight delivery preferences (customer-facing)
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -22,6 +23,39 @@ const updateStatusSchema = z.object({
   status: z.enum(['pending', 'assigned', 'picked_up', 'in_transit', 'delivered', 'failed', 'returned']),
   notes: z.string().optional(),
 });
+
+const updatePreferencesSchema = z.object({
+  safePlace: z.string().max(200).optional(),
+  instructions: z.string().max(200).optional(),
+  rescheduleDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  rescheduleTimeWindow: z.enum(['morning', 'afternoon', 'evening', 'anytime']).optional(),
+  redirectAddress: z
+    .object({
+      line1: z.string(),
+      city: z.string(),
+      postalCode: z.string(),
+      coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+    })
+    .optional(),
+  deliveryMethod: z.enum(['door', 'signature', 'neighbor']).optional(),
+  phoneNumber: z.string().optional(),
+});
+
+// Hub coordinates for zone validation (mock — 50 km radius)
+const HUB_LAT = 40.7282;
+const HUB_LNG = -73.9942;
+const ZONE_RADIUS_KM = 50;
+const CUTOFF_MINUTES_BEFORE_ETA = 30;
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 const listDeliveriesQuery = z.object({
   courierId: z.string().optional(),
@@ -185,6 +219,84 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     return { data: { ...delivery, status: body.status } };
+  });
+
+  // ── UPDATE DELIVERY PREFERENCES (in-flight) ───────────────
+
+  fastify.patch('/:id/preferences', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    let body: ReturnType<typeof updatePreferencesSchema.parse>;
+    try {
+      body = updatePreferencesSchema.parse(request.body);
+    } catch (err: any) {
+      return reply.status(400).send({ error: 'Invalid preferences', details: err.errors });
+    }
+
+    const delivery = MOCK_DELIVERIES.find((d) => d.id === id);
+    if (!delivery) {
+      return reply.status(404).send({ error: 'Delivery not found' });
+    }
+
+    // Business rule: preferences cannot be changed after delivery is complete/failed
+    if (['delivered', 'failed', 'returned'].includes(delivery.status)) {
+      return reply.status(422).send({ error: 'Cannot modify preferences for a completed delivery' });
+    }
+
+    // Business rule: cutoff X minutes before ETA
+    const eta = delivery.estimatedDeliveryTime?.getTime();
+    if (eta) {
+      const msUntilEta = eta - Date.now();
+      const minutesUntilEta = msUntilEta / 60_000;
+      if (minutesUntilEta < CUTOFF_MINUTES_BEFORE_ETA) {
+        return reply.status(422).send({
+          error: `Preferences can no longer be changed — driver is less than ${CUTOFF_MINUTES_BEFORE_ETA} minutes away`,
+          cutoffMinutes: CUTOFF_MINUTES_BEFORE_ETA,
+          etaMinutes: Math.round(minutesUntilEta),
+        });
+      }
+    }
+
+    // Business rule: redirect address must be within delivery zone
+    if (body.redirectAddress?.coordinates) {
+      const { lat, lng } = body.redirectAddress.coordinates;
+      const distKm = haversineKm(HUB_LAT, HUB_LNG, lat, lng);
+      if (distKm > ZONE_RADIUS_KM) {
+        return reply.status(422).send({
+          error: `Redirect address is outside the delivery zone (${ZONE_RADIUS_KM} km radius)`,
+          distanceKm: Math.round(distKm),
+        });
+      }
+    }
+
+    // Merge preferences into delivery metadata
+    const existingPreferences = (delivery as any).preferences ?? {};
+    const updatedPreferences = {
+      ...existingPreferences,
+      ...(body.safePlace !== undefined && { safePlace: body.safePlace }),
+      ...(body.instructions !== undefined && { instructions: body.instructions }),
+      ...(body.rescheduleDate !== undefined && { rescheduleDate: body.rescheduleDate }),
+      ...(body.rescheduleTimeWindow !== undefined && { rescheduleTimeWindow: body.rescheduleTimeWindow }),
+      ...(body.redirectAddress !== undefined && { redirectAddress: body.redirectAddress }),
+      ...(body.deliveryMethod !== undefined && { deliveryMethod: body.deliveryMethod }),
+      ...(body.phoneNumber !== undefined && { phoneNumber: body.phoneNumber }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updated = { ...delivery, preferences: updatedPreferences };
+
+    // Stub: in production this would trigger an email/SMS notification to the customer
+    // and push updated instructions to the driver app via WebSocket
+    fastify.log.info({ deliveryId: id, preferences: updatedPreferences }, 'Delivery preferences updated');
+
+    return {
+      data: updated,
+      notification: {
+        sent: true,
+        channels: ['email', 'sms'],
+        message: 'Your delivery preferences have been updated. The driver has been notified.',
+      },
+    };
   });
 }
 

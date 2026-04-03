@@ -13,12 +13,24 @@ import {
   ForbiddenError,
 } from "../../lib/errors.js";
 
+vi.mock("@witylogix/db", () => ({
+  prisma: {},
+  forTenant: vi.fn(() => ({})),
+  forOrg: vi.fn(() => ({})),
+  forTenantInOrg: vi.fn(() => ({})),
+}));
+
+import { prisma } from "@witylogix/db";
+
 describe("Admin Routes", () => {
   let fastify: FastifyInstance;
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
+  let db: any;
 
   beforeEach(() => {
+    db = prisma as any;
+
     fastify = {
       addHook: vi.fn(),
       get: vi.fn(),
