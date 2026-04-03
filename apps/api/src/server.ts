@@ -31,6 +31,7 @@ import { shutdownQueues } from "./lib/queue.js";
 const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
 const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
+const startFailedDeliveryWorker = async () => { try { const m = await import("./workers/failed-delivery-worker.js"); return m.startFailedDeliveryWorker(); } catch { console.warn("[Worker] Failed-delivery worker unavailable"); } };
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -227,6 +228,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/failed-deliveries.js"), { prefix: "/api/v4/failed-deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
   await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
   await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
@@ -489,7 +491,8 @@ async function start(): Promise<void> {
   startNotificationWorker();
   startOptimizationWorker();
   startIntegrationWorker();
-  app.log.info("BullMQ workers started (notification, optimization, integration)");
+  startFailedDeliveryWorker();
+  app.log.info("BullMQ workers started (notification, optimization, integration, failed-delivery)");
 
   // ─── Listen ───────────────────────────────────────────────
 
