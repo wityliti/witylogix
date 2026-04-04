@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mail, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
