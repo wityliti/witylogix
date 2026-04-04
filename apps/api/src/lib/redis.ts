@@ -10,6 +10,10 @@
 
 import Redis from "ioredis";
 
+// ─── Constants ──────────────────────────────────────────────
+
+export const IMPERSONATION_SESSION_PREFIX = "impersonation:";
+
 // ─── Singleton Connection ───────────────────────────────────
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
