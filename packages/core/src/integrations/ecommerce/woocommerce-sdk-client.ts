@@ -230,14 +230,14 @@ export class WooCommerceClient {
       "GET",
       `/orders?${params}`,
       null,
-    );
+    ) as { body: WooCommerceOrderResponse[]; headers: Headers };
 
     return {
       orders: response.body.map((order: WooCommerceOrderResponse) =>
         this.mapWooCommerceOrderToECommerce(order),
       ),
-      total: response.headers["x-wp-total"] || response.body.length,
-      totalPages: response.headers["x-wp-totalpages"] || 1,
+      total: Number(response.headers.get("x-wp-total")) || response.body.length,
+      totalPages: Number(response.headers.get("x-wp-totalpages")) || 1,
     };
   }
 
@@ -245,8 +245,8 @@ export class WooCommerceClient {
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request("GET", `/orders/${orderId}`, null);
-    return this.mapWooCommerceOrderToECommerce(response);
+    const response = await this.request("GET", `/orders/${orderId}`, null) as { body: WooCommerceOrderResponse; headers: Headers };
+    return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
   /**
@@ -261,8 +261,8 @@ export class WooCommerceClient {
     customer_note?: string;
     status?: string;
   }): Promise<ECommerceOrder> {
-    const response = await this.request("POST", "/orders", data);
-    return this.mapWooCommerceOrderToECommerce(response);
+    const response = await this.request("POST", "/orders", data) as { body: WooCommerceOrderResponse; headers: Headers };
+    return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
   /**
@@ -272,8 +272,8 @@ export class WooCommerceClient {
     orderId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceOrder> {
-    const response = await this.request("PUT", `/orders/${orderId}`, data);
-    return this.mapWooCommerceOrderToECommerce(response);
+    const response = await this.request("PUT", `/orders/${orderId}`, data) as { body: WooCommerceOrderResponse; headers: Headers };
+    return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
   /**
@@ -291,8 +291,8 @@ export class WooCommerceClient {
         note,
         customer_note: customerNote,
       },
-    );
-    return response;
+    ) as { body: { id: number; note: string }; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -304,8 +304,8 @@ export class WooCommerceClient {
       page: String(options?.page || 1),
     });
 
-    const response = await this.request("GET", `/products/categories?${params}`, null);
-    return response;
+    const response = await this.request("GET", `/products/categories?${params}`, null) as { body: Array<{ id: number; name: string }>; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -337,14 +337,14 @@ export class WooCommerceClient {
       "GET",
       `/products?${params}`,
       null,
-    );
+    ) as { body: WooCommerceProductResponse[]; headers: Headers };
 
     return {
       products: response.body.map((product: WooCommerceProductResponse) =>
         this.mapWooCommerceProductToECommerce(product),
       ),
-      total: response.headers["x-wp-total"] || response.body.length,
-      totalPages: response.headers["x-wp-totalpages"] || 1,
+      total: Number(response.headers.get("x-wp-total")) || response.body.length,
+      totalPages: Number(response.headers.get("x-wp-totalpages")) || 1,
     };
   }
 
@@ -352,8 +352,8 @@ export class WooCommerceClient {
    * Get product by ID
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request("GET", `/products/${productId}`, null);
-    return this.mapWooCommerceProductToECommerce(response);
+    const response = await this.request("GET", `/products/${productId}`, null) as { body: WooCommerceProductResponse; headers: Headers };
+    return this.mapWooCommerceProductToECommerce(response.body);
   }
 
   /**
@@ -369,8 +369,8 @@ export class WooCommerceClient {
     stock_quantity?: number;
     categories?: Array<{ id: number }>;
   }): Promise<ECommerceProduct> {
-    const response = await this.request("POST", "/products", data);
-    return this.mapWooCommerceProductToECommerce(response);
+    const response = await this.request("POST", "/products", data) as { body: WooCommerceProductResponse; headers: Headers };
+    return this.mapWooCommerceProductToECommerce(response.body);
   }
 
   /**
@@ -384,8 +384,8 @@ export class WooCommerceClient {
       "PUT",
       `/products/${productId}`,
       data,
-    );
-    return this.mapWooCommerceProductToECommerce(response);
+    ) as { body: WooCommerceProductResponse; headers: Headers };
+    return this.mapWooCommerceProductToECommerce(response.body);
   }
 
   /**
@@ -413,8 +413,8 @@ export class WooCommerceClient {
       "POST",
       `/products/${productId}/variations`,
       data,
-    );
-    return response;
+    ) as { body: WooCommerceVariation; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -429,8 +429,8 @@ export class WooCommerceClient {
       "PUT",
       `/products/${productId}/variations/${variationId}`,
       data,
-    );
-    return response;
+    ) as { body: WooCommerceVariation; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -449,8 +449,8 @@ export class WooCommerceClient {
       "GET",
       `/products/${productId}/variations?${params}`,
       null,
-    );
-    return response;
+    ) as { body: WooCommerceVariation[]; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -473,14 +473,14 @@ export class WooCommerceClient {
       "GET",
       `/customers?${params}`,
       null,
-    );
+    ) as { body: WooCommerceCustomerResponse[]; headers: Headers };
 
     return {
       customers: response.body.map((customer: WooCommerceCustomerResponse) =>
         this.mapWooCommerceCustomerToECommerce(customer),
       ),
-      total: response.headers["x-wp-total"] || response.body.length,
-      totalPages: response.headers["x-wp-totalpages"] || 1,
+      total: Number(response.headers.get("x-wp-total")) || response.body.length,
+      totalPages: Number(response.headers.get("x-wp-totalpages")) || 1,
     };
   }
 
@@ -488,8 +488,8 @@ export class WooCommerceClient {
    * Get customer by ID
    */
   async getCustomerById(customerId: string): Promise<ECommerceCustomer> {
-    const response = await this.request("GET", `/customers/${customerId}`, null);
-    return this.mapWooCommerceCustomerToECommerce(response);
+    const response = await this.request("GET", `/customers/${customerId}`, null) as { body: WooCommerceCustomerResponse; headers: Headers };
+    return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
   /**
@@ -504,8 +504,8 @@ export class WooCommerceClient {
     billing?: Record<string, string>;
     shipping?: Record<string, string>;
   }): Promise<ECommerceCustomer> {
-    const response = await this.request("POST", "/customers", data);
-    return this.mapWooCommerceCustomerToECommerce(response);
+    const response = await this.request("POST", "/customers", data) as { body: WooCommerceCustomerResponse; headers: Headers };
+    return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
   /**
@@ -519,8 +519,8 @@ export class WooCommerceClient {
       "PUT",
       `/customers/${customerId}`,
       data,
-    );
-    return this.mapWooCommerceCustomerToECommerce(response);
+    ) as { body: WooCommerceCustomerResponse; headers: Headers };
+    return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
   /**
@@ -538,13 +538,13 @@ export class WooCommerceClient {
       "PUT",
       `/products/${request.variantId}`,
       data,
-    );
+    ) as { body: { stock_quantity: number; manage_stock: boolean; backorders_allowed: boolean }; headers: Headers };
 
     return {
       variantId: request.variantId,
-      quantity: response.stock_quantity,
-      trackQuantity: response.manage_stock,
-      allowNegativeStock: !response.backorders_allowed === false,
+      quantity: response.body.stock_quantity,
+      trackQuantity: response.body.manage_stock,
+      allowNegativeStock: !response.body.backorders_allowed === false,
       updatedAt: new Date(),
     };
   }
@@ -557,9 +557,9 @@ export class WooCommerceClient {
       "GET",
       `/reports/low_stock?limit=${threshold}`,
       null,
-    );
+    ) as { body: Array<{ product_id: number; name: string; stock: number }>; headers: Headers };
 
-    return response.map((item: { product_id: number; name: string; stock: number }) => ({
+    return response.body.map((item: { product_id: number; name: string; stock: number }) => ({
       id: String(item.product_id),
       title: item.name,
       variants: [
@@ -586,8 +586,8 @@ export class WooCommerceClient {
    * List shipping zones
    */
   async listShippingZones(): Promise<Array<{ id: number; name: string }>> {
-    const response = await this.request("GET", "/shipping/zones", null);
-    return response;
+    const response = await this.request("GET", "/shipping/zones", null) as { body: Array<{ id: number; name: string }>; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -598,8 +598,8 @@ export class WooCommerceClient {
       "GET",
       `/shipping/zones/${zoneId}/methods`,
       null,
-    );
-    return response;
+    ) as { body: Array<{ id: number; title: string; method_id: string }>; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -610,8 +610,8 @@ export class WooCommerceClient {
       "GET",
       "/products/shipping_classes",
       null,
-    );
-    return response;
+    ) as { body: Array<{ id: number; name: string; description: string }>; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -624,16 +624,16 @@ export class WooCommerceClient {
     const response = await this.request("POST", "/webhooks", {
       topic,
       delivery_url: deliveryUrl,
-    });
-    return response;
+    }) as { body: WooCommerceWebhook; headers: Headers };
+    return response.body;
   }
 
   /**
    * List webhooks
    */
   async listWebhooks(): Promise<WooCommerceWebhook[]> {
-    const response = await this.request("GET", "/webhooks", null);
-    return response;
+    const response = await this.request("GET", "/webhooks", null) as { body: WooCommerceWebhook[]; headers: Headers };
+    return response.body;
   }
 
   /**
@@ -657,9 +657,9 @@ export class WooCommerceClient {
 
     const response = await this.request("POST", "/batch", {
       requests,
-    });
+    }) as { body: BatchResponseItem[]; headers: Headers };
 
-    return response;
+    return response.body;
   }
 
   /**
@@ -730,7 +730,7 @@ export class WooCommerceClient {
       );
     }
 
-    return data;
+    return { body: data, headers: response.headers };
   }
 
   /**
