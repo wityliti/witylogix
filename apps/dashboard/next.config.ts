@@ -13,8 +13,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Proxy API calls to the Fastify backend in development
+  // Proxy API calls to the Fastify backend in development only.
+  // In production, NEXT_PUBLIC_API_URL must be set to the Railway API service URL
+  // (e.g. https://api-production.up.railway.app). It must be provided as a build arg,
+  // not just a runtime env var, because Next.js bakes NEXT_PUBLIC_* at build time.
   async rewrites() {
+    if (process.env.NODE_ENV === "production") return [];
     return [
       {
         source: "/api/:path*",

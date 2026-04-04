@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + "/api/v4";
+  const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/api/v4";
 
   // Initialize auth state from cookie and localStorage
   useEffect(() => {
