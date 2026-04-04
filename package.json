@@ -53,5 +53,10 @@
     "pdfkit": "^0.18.0",
     "uuid": "^13.0.0"
   },
-  "pnpm": {}
+  "pnpm": {
+    "overrides": {
+      "path-to-regexp": ">=0.1.13",
+      "effect": ">=3.20.0"
+    }
+  }
 }
