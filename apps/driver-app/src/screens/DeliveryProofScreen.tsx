@@ -9,7 +9,6 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { api } from '../services/api';
@@ -22,7 +21,7 @@ interface DeliveryProof {
 }
 
 export const DeliveryProofScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { shipmentId } = route.params as { shipmentId: string };
 
@@ -32,6 +31,7 @@ export const DeliveryProofScreen = () => {
   });
   const [photoTaken, setPhotoTaken] = useState(false);
   const [signatureCaptured, setSignatureCaptured] = useState(false);
+  const [qrScanned, setQrScanned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleCapturePhoto = () => {
@@ -58,6 +58,15 @@ export const DeliveryProofScreen = () => {
       },
       { text: 'Cancel', onPress: () => {}, style: 'cancel' },
     ]);
+  };
+
+  const handleScanQrCode = () => {
+    navigation.navigate('BarcodeScanner', {
+      mode: 'pod',
+      shipmentId,
+    });
+    // Mark as scanned optimistically — the scanner screen posts the event itself
+    setQrScanned(true);
   };
 
   const handleSubmitProof = async () => {
@@ -196,6 +205,30 @@ export const DeliveryProofScreen = () => {
           )}
         </View>
 
+        {/* QR Code Scan Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>⬛</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>QR Code Scan</Text>
+              <Text style={styles.sectionOptional}>Optional — alternative POD</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.captureButton,
+              qrScanned && styles.captureButtonSuccess,
+            ]}
+            onPress={handleScanQrCode}
+            disabled={submitting}
+          >
+            <Text style={styles.captureButtonIcon}>{qrScanned ? '✓' : '⬛'}</Text>
+            <Text style={styles.captureButtonText}>
+              {qrScanned ? 'QR Code Scanned' : 'Scan Delivery QR Code'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Recipient Name */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -293,6 +326,20 @@ export const DeliveryProofScreen = () => {
               proof.recipientName.trim() && styles.validationTextSuccess,
             ]}>
               Recipient Name
+            </Text>
+          </View>
+          <View style={styles.validationItem}>
+            <Text style={[
+              styles.validationIcon,
+              qrScanned ? styles.validationIconSuccess : styles.validationIconPending,
+            ]}>
+              {qrScanned ? '✓' : '○'}
+            </Text>
+            <Text style={[
+              styles.validationText,
+              qrScanned && styles.validationTextSuccess,
+            ]}>
+              QR Scan (optional)
             </Text>
           </View>
         </View>
