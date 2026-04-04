@@ -65,6 +65,11 @@ model Shop {
   deliveryEvents          DeliveryEvent[]
   deliveryAttempts        DeliveryAttempt[]
   customerDeliveryPreferences CustomerDeliveryPreferences[]
+  temperatureLogs             TemperatureLog[]
+  coldChainThresholds         ColdChainThreshold[]
+  coldChainAlerts             ColdChainAlert[]
+  deliveryOTPs                DeliveryOTP[]
+  deliveryAuditLogs           DeliveryAuditLog[]
 
   @@index([orgId])
   @@map("shops")
