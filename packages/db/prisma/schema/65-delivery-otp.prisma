@@ -1,0 +1,38 @@
+// ─── DELIVERY OTP ────────────────────────────────────────────
+// OTP confirmation for high-value and regulated parcel delivery (WIT-92).
+
+model DeliveryOTP {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId        String    @map("order_id") @db.Uuid
+  code           String    @map("code")
+  channel        String    @map("channel") // "sms" | "whatsapp"
+  recipientPhone String    @map("recipient_phone")
+  verified       Boolean   @default(false) @map("verified")
+  verifiedAt     DateTime? @map("verified_at")
+  expiresAt      DateTime  @map("expires_at")
+  attempts       Int       @default(0) @map("attempts")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("delivery_otp")
+}
+
+// ─── DELIVERY AUDIT LOG ──────────────────────────────────────
+// Audit trail for privileged delivery actions (e.g. supervisor OTP override).
+
+model DeliveryAuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  action    String   @map("action")
+  actorId   String   @map("actor_id")
+  actorRole String   @map("actor_role")
+  metadata  Json     @default("{}") @map("metadata")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("delivery_audit_log")
+}
