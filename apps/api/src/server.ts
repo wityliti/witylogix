@@ -107,10 +107,17 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(sensible);
 
   // JWT signing & verification
+  // verify.algorithms: restrict to HS256 to prevent algorithm confusion (CVE-2026-34950)
+  // verify.cache: disabled to prevent cache-key collision identity leaks (CVE-2026-35039)
   await app.register(jwt, {
     secret: config.JWT_SECRET,
     sign: {
       expiresIn: config.JWT_EXPIRES_IN,
+      algorithm: "HS256",
+    },
+    verify: {
+      algorithms: ["HS256"],
+      cache: false,
     },
   });
 
