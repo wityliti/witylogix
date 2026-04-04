@@ -53,5 +53,9 @@
     "pdfkit": "^0.18.0",
     "uuid": "^13.0.0"
   },
-  "pnpm": {}
+  "pnpm": {
+    "overrides": {
+      "@xmldom/xmldom": ">=0.8.12"
+    }
+  }
 }
