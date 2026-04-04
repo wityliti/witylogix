@@ -5,7 +5,7 @@ import {
   NotFoundError,
   ValidationError,
 } from "../lib/errors.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 
 /**
@@ -224,7 +224,7 @@ export default async function settingsRoutes(
 
   // ── GET /api-keys — List API keys (masked) ────────────
 
-  fastify.get("/api-keys", async (request: any, reply: FastifyReply) => {
+  fastify.get("/api-keys", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
     const shop = await request.tenantDb.shop.findUnique({
       where: { id: request.shopId },
       select: { settings: true },
@@ -254,7 +254,7 @@ export default async function settingsRoutes(
 
   // ── POST /api-keys — Create new API key ───────────────
 
-  fastify.post("/api-keys", async (request: any, reply: FastifyReply) => {
+  fastify.post("/api-keys", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
     try {
       const body = ApiKeyCreateSchema.parse(request.body);
 
@@ -321,6 +321,7 @@ export default async function settingsRoutes(
 
   fastify.delete<{ Params: { id: string } }>(
     "/api-keys/:id",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
     async (request: any, reply: FastifyReply) => {
       const { id } = request.params;
 
@@ -354,7 +355,7 @@ export default async function settingsRoutes(
 
   // ── GET /team — List team members ─────────────────────
 
-  fastify.get("/team", async (request: any, reply: FastifyReply) => {
+  fastify.get("/team", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
     const users = await request.tenantDb.user.findMany({
       where: { shopId: request.shopId },
       select: {
@@ -375,7 +376,7 @@ export default async function settingsRoutes(
 
   // ── POST /team/invite — Send team invitation ──────────
 
-  fastify.post("/team/invite", async (request: any, reply: FastifyReply) => {
+  fastify.post("/team/invite", { preHandler: requireRole("ADMIN", "SUPER_ADMIN") }, async (request: any, reply: FastifyReply) => {
     try {
       const body = TeamInviteSchema.parse(request.body);
 
@@ -438,6 +439,7 @@ export default async function settingsRoutes(
 
   fastify.delete<{ Params: { userId: string } }>(
     "/team/:userId",
+    { preHandler: requireRole("ADMIN", "SUPER_ADMIN") },
     async (request: any, reply: FastifyReply) => {
       const { userId } = request.params;
 
@@ -450,15 +452,35 @@ export default async function settingsRoutes(
       }
 
       // Don't allow removing yourself
-      if (userId === (request as any).userId) {
+      if (userId === (request as any).auth?.userId) {
         return reply.code(400).send({
           success: false,
           error: "Cannot remove yourself from the team",
         });
       }
 
-      await request.tenantDb.user.delete({
+      // Guard: prevent removing the last ADMIN or SUPER_ADMIN
+      if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+        const adminCount = await request.tenantDb.user.count({
+          where: {
+            shopId: request.shopId,
+            role: { in: ["ADMIN", "SUPER_ADMIN"] },
+            isActive: true,
+          },
+        });
+
+        if (adminCount <= 1) {
+          return reply.code(400).send({
+            success: false,
+            error: "Cannot remove the last admin. Promote another user first.",
+          });
+        }
+      }
+
+      // Soft-delete: deactivate rather than destroy to preserve audit trail
+      await request.tenantDb.user.update({
         where: { id: userId },
+        data: { isActive: false },
       });
 
       return reply.code(200).send({
