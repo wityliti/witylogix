@@ -107,10 +107,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(sensible);
 
   // JWT signing & verification
+  // Security: restrict to HS256 only to prevent algorithm confusion attacks
+  // (CVE-2026-34950 defense-in-depth — no RSA/EC keys used in this deployment).
   await app.register(jwt, {
     secret: config.JWT_SECRET,
     sign: {
+      algorithm: "HS256",
       expiresIn: config.JWT_EXPIRES_IN,
+    },
+    verify: {
+      algorithms: ["HS256"],
     },
   });
 
