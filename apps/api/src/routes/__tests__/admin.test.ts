@@ -72,6 +72,12 @@ describe("Admin Routes", () => {
       status: vi.fn().mockReturnThis(),
       send: vi.fn().mockReturnThis(),
     };
+
+    // Reset Redis mock defaults
+    mockRedisInstance.set.mockResolvedValue("OK");
+    mockRedisInstance.exists.mockResolvedValue(1);
+    mockRedisInstance.get.mockResolvedValue(null);
+    mockRedisInstance.del.mockResolvedValue(1);
   });
 
   afterEach(() => {
