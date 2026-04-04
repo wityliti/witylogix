@@ -38,3 +38,12 @@ export type { OnTracConfig } from "./ontrac-adapter.js";
 // ─── Rate Engine ────────────────────────────────────────────────
 
 export { CarrierRateEngine } from "./carrier-rate-engine.js";
+
+// ─── Carrier Registry ───────────────────────────────────────────
+
+export {
+  CarrierRegistry,
+  carrierRegistry,
+  bootstrapCarriersFromEnv,
+} from "./carrier-registry.js";
+export type { CarrierRegistryEntry } from "./carrier-registry.js";

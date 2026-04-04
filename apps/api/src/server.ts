@@ -488,6 +488,15 @@ async function start(): Promise<void> {
   startIntegrationWorker();
   app.log.info("BullMQ workers started (notification, optimization, integration)");
 
+  // ─── Bootstrap Carrier Adapters ───────────────────────────
+  try {
+    const { bootstrapCarriersFromEnv } = await import("@witylogix/core/integrations/shipping");
+    await bootstrapCarriersFromEnv();
+    app.log.info("Carrier adapters bootstrapped from env");
+  } catch (err) {
+    app.log.warn(err, "Carrier adapter bootstrap skipped (non-fatal)");
+  }
+
   // ─── Listen ───────────────────────────────────────────────
 
   try {
