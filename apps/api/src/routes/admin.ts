@@ -20,9 +20,11 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
+import { getRedis, IMPERSONATION_SESSION_PREFIX } from "../lib/redis.js";
 import {
   NotFoundError,
   ValidationError,
@@ -577,10 +579,12 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post(
     "/impersonate/:userId",
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { userId } = request.params as { userId: string };
       const body = impersonateSchema.parse(request.body);
       const { duration } = body;
+      const effectiveDuration = Math.min(duration, 3600); // Max 1 hour
 
       const user = await (prisma.user as any).findUnique({
         where: { id: userId },
@@ -591,7 +595,9 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("User", userId);
       }
 
-      // Generate impersonation token
+      const jti = randomUUID();
+
+      // Generate impersonation token with JTI for server-side revocation
       const impersonationToken = await (request as any).jwtSign(
         {
           sub: user.id,
@@ -600,17 +606,34 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
           type: "user",
           impersonatedBy: (request as any).auth.userId,
           shopDomain: (user as any).shop?.shopifyDomain,
+          jti,
         },
         {
-          expiresIn: Math.min(duration, 3600), // Max 1 hour
+          expiresIn: effectiveDuration,
         },
+      );
+
+      // Track active session in Redis — key deleted on revoke or TTL expiry
+      const redis = getRedis();
+      await redis.set(
+        `${IMPERSONATION_SESSION_PREFIX}${jti}`,
+        JSON.stringify({
+          adminId: (request as any).auth.userId,
+          impersonatedUserId: userId,
+          shopId: user.shopId,
+          startedAt: new Date().toISOString(),
+        }),
+        "EX",
+        effectiveDuration,
       );
 
       fastify.log.info(
         {
           adminId: (request as any).auth.userId,
           impersonatedUserId: userId,
-          duration,
+          duration: effectiveDuration,
+          jti,
+          event: "impersonation.start",
         },
         "Impersonation session started",
       );
@@ -618,6 +641,7 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       return {
         data: {
           token: impersonationToken,
+          jti,
           user: {
             id: user.id,
             email: user.email,
@@ -625,9 +649,45 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
             role: user.role,
             shopId: user.shopId,
           },
-          expiresIn: duration,
+          expiresIn: effectiveDuration,
         },
       };
+    },
+  );
+
+  // ── POST /impersonate/:userId/revoke (End impersonation early) ──
+
+  fastify.post(
+    "/impersonate/:userId/revoke",
+    { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { userId } = request.params as { userId: string };
+      const { jti } = (request.body as any) || {};
+
+      if (!jti || typeof jti !== "string") {
+        return reply.code(400).send({ success: false, error: "jti is required" });
+      }
+
+      const redis = getRedis();
+      const sessionRaw = await redis.get(`${IMPERSONATION_SESSION_PREFIX}${jti}`);
+
+      if (!sessionRaw) {
+        return reply.code(404).send({ success: false, error: "Impersonation session not found or already expired" });
+      }
+
+      await redis.del(`${IMPERSONATION_SESSION_PREFIX}${jti}`);
+
+      fastify.log.info(
+        {
+          adminId: (request as any).auth.userId,
+          impersonatedUserId: userId,
+          jti,
+          event: "impersonation.revoke",
+        },
+        "Impersonation session revoked",
+      );
+
+      return reply.code(200).send({ success: true, message: "Impersonation session revoked" });
     },
   );
 }

@@ -20,7 +20,29 @@ vi.mock("@witylogix/db", () => ({
   forTenantInOrg: vi.fn(() => ({})),
 }));
 
+const { mockRedisInstance } = vi.hoisted(() => ({
+  mockRedisInstance: {
+    set: vi.fn().mockResolvedValue("OK"),
+    exists: vi.fn().mockResolvedValue(1),
+    get: vi.fn().mockResolvedValue(null),
+    del: vi.fn().mockResolvedValue(1),
+  },
+}));
+
+vi.mock("../../lib/redis.js", () => ({
+  IMPERSONATION_SESSION_PREFIX: "impersonation:",
+  getRedis: vi.fn(() => mockRedisInstance),
+}));
+
 import { prisma } from "@witylogix/db";
+
+/** Helper: extract the handler from a fastify.post/get/put mock call.
+ *  Handles both (path, handler) and (path, opts, handler) forms. */
+function getRouteHandler(mockFn: any, path: string): ((...args: any[]) => any) | undefined {
+  const call = mockFn.mock.calls.find((c: any[]) => c[0] === path);
+  if (!call) return undefined;
+  return typeof call[1] === "function" ? call[1] : call[2];
+}
 
 describe("Admin Routes", () => {
   let fastify: FastifyInstance;
@@ -973,9 +995,7 @@ describe("Admin Routes", () => {
       };
 
       await adminRoutes(fastify);
-      const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
-      )?.[1];
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId");
 
       db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
@@ -983,9 +1003,10 @@ describe("Admin Routes", () => {
 
       (mockRequest as any).jwtSign = vi.fn().mockResolvedValue("token-jwt-value");
 
-      const result = await handler(mockRequest, mockReply);
+      const result = await handler!(mockRequest, mockReply);
 
       expect(result.data).toHaveProperty("token");
+      expect(result.data).toHaveProperty("jti");
       expect(result.data).toHaveProperty("user");
       expect(result.data).toHaveProperty("expiresIn");
     });
@@ -1004,9 +1025,7 @@ describe("Admin Routes", () => {
       };
 
       await adminRoutes(fastify);
-      const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
-      )?.[1];
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId");
 
       db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
@@ -1014,7 +1033,7 @@ describe("Admin Routes", () => {
 
       (mockRequest as any).jwtSign = vi.fn().mockResolvedValue("token");
 
-      await handler(mockRequest, mockReply);
+      await handler!(mockRequest, mockReply);
 
       expect((mockRequest as any).jwtSign).toHaveBeenCalledWith(
         expect.any(Object),
@@ -1027,15 +1046,13 @@ describe("Admin Routes", () => {
       mockRequest.body = { duration: 3600 };
 
       await adminRoutes(fastify);
-      const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
-      )?.[1];
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId");
 
       db.user = {
         findUnique: vi.fn().mockResolvedValue(null),
       };
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+      await expect(handler!(mockRequest, mockReply)).rejects.toThrow(
         NotFoundError
       );
     });
@@ -1055,9 +1072,7 @@ describe("Admin Routes", () => {
       };
 
       await adminRoutes(fastify);
-      const handler = (fastify.post as any).mock.calls.find(
-        (call) => call[0] === "/impersonate/:userId"
-      )?.[1];
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId");
 
       db.user = {
         findUnique: vi.fn().mockResolvedValue(user),
@@ -1065,14 +1080,139 @@ describe("Admin Routes", () => {
 
       (mockRequest as any).jwtSign = vi.fn().mockResolvedValue("token");
 
-      await handler(mockRequest, mockReply);
+      await handler!(mockRequest, mockReply);
 
       expect(fastify.log.info).toHaveBeenCalledWith(
         expect.objectContaining({
           adminId: "admin-123",
           impersonatedUserId: "user-1",
+          event: "impersonation.start",
         }),
         "Impersonation session started"
+      );
+    });
+
+    it("should store session in Redis with TTL", async () => {
+      mockRequest.params = { userId: "user-1" };
+      mockRequest.body = { duration: 1800 };
+      (mockRequest as any).auth = { userId: "admin-123" };
+
+      const user = {
+        id: "user-1",
+        email: "user1@example.com",
+        name: "User One",
+        role: "ADMIN",
+        shopId: "shop-1",
+        shop: { id: "shop-1", shopifyDomain: "store1.myshopify.com" },
+      };
+
+      await adminRoutes(fastify);
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId");
+
+      db.user = { findUnique: vi.fn().mockResolvedValue(user) };
+      (mockRequest as any).jwtSign = vi.fn().mockResolvedValue("token");
+
+      await handler!(mockRequest, mockReply);
+
+      expect(mockRedisInstance.set).toHaveBeenCalledWith(
+        expect.stringMatching(/^impersonation:/),
+        expect.stringContaining("admin-123"),
+        "EX",
+        1800
+      );
+    });
+  });
+
+  describe("POST /impersonate/:userId/revoke", () => {
+    it("should revoke an active impersonation session", async () => {
+      mockRequest.params = { userId: "user-1" };
+      mockRequest.body = { jti: "test-jti-value" };
+      (mockRequest as any).auth = { userId: "admin-123" };
+
+      mockReply = {
+        code: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
+      };
+
+      await adminRoutes(fastify);
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId/revoke");
+
+      mockRedisInstance.get.mockResolvedValue(JSON.stringify({ adminId: "admin-123", impersonatedUserId: "user-1" }));
+
+      await handler!(mockRequest, mockReply);
+
+      expect(mockRedisInstance.del).toHaveBeenCalledWith("impersonation:test-jti-value");
+      expect(mockReply.code).toHaveBeenCalledWith(200);
+      expect(mockReply.send).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it("should return 400 when jti is missing", async () => {
+      mockRequest.params = { userId: "user-1" };
+      mockRequest.body = {};
+
+      mockReply = {
+        code: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
+      };
+
+      await adminRoutes(fastify);
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId/revoke");
+
+      await handler!(mockRequest, mockReply);
+
+      expect(mockReply.code).toHaveBeenCalledWith(400);
+      expect(mockReply.send).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false })
+      );
+    });
+
+    it("should return 404 when session does not exist in Redis", async () => {
+      mockRequest.params = { userId: "user-1" };
+      mockRequest.body = { jti: "expired-jti" };
+
+      mockReply = {
+        code: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
+      };
+
+      await adminRoutes(fastify);
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId/revoke");
+
+      mockRedisInstance.get.mockResolvedValue(null);
+
+      await handler!(mockRequest, mockReply);
+
+      expect(mockReply.code).toHaveBeenCalledWith(404);
+      expect(mockReply.send).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false })
+      );
+    });
+
+    it("should log the revocation event", async () => {
+      mockRequest.params = { userId: "user-1" };
+      mockRequest.body = { jti: "test-jti-value" };
+      (mockRequest as any).auth = { userId: "admin-123" };
+
+      mockReply = {
+        code: vi.fn().mockReturnThis(),
+        send: vi.fn().mockReturnThis(),
+      };
+
+      await adminRoutes(fastify);
+      const handler = getRouteHandler(fastify.post, "/impersonate/:userId/revoke");
+
+      mockRedisInstance.get.mockResolvedValue(JSON.stringify({ adminId: "admin-123", impersonatedUserId: "user-1" }));
+
+      await handler!(mockRequest, mockReply);
+
+      expect(fastify.log.info).toHaveBeenCalledWith(
+        expect.objectContaining({
+          adminId: "admin-123",
+          impersonatedUserId: "user-1",
+          jti: "test-jti-value",
+          event: "impersonation.revoke",
+        }),
+        "Impersonation session revoked"
       );
     });
   });
@@ -1093,7 +1233,8 @@ describe("Admin Routes", () => {
       expect(fastify.get).toHaveBeenCalledWith("/customers", expect.any(Function));
       expect(fastify.get).toHaveBeenCalledWith("/customers/:id", expect.any(Function));
       expect(fastify.get).toHaveBeenCalledWith("/dashboard", expect.any(Function));
-      expect(fastify.post).toHaveBeenCalledWith("/impersonate/:userId", expect.any(Function));
+      expect(fastify.post).toHaveBeenCalledWith("/impersonate/:userId", expect.anything(), expect.any(Function));
+      expect(fastify.post).toHaveBeenCalledWith("/impersonate/:userId/revoke", expect.anything(), expect.any(Function));
     });
 
     it("should add requireAuth hook to all routes", async () => {
