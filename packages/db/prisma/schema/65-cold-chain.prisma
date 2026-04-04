@@ -1,0 +1,131 @@
+// ─── COLD-CHAIN TEMPERATURE MONITORING ──────────────────────
+// IoT sensor integration for cold-chain shipments.
+// Required for FSMA (food safety), GDP (pharma), and healthcare
+// cold-chain compliance.
+//
+// Related: WIT-91
+
+// ─── TEMPERATURE LOG ─────────────────────────────────────────
+// Time-series sensor readings linked to a shipment.
+// A reading is sourced either from a dedicated IoT sensor or
+// from the telematics layer of a reefer vehicle.
+
+model TemperatureLog {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId     String  @map("shop_id") @db.Uuid
+  shipmentId String  @map("shipment_id") @db.Uuid
+  vehicleId  String? @map("vehicle_id") @db.Uuid // optional reefer vehicle link
+
+  // Reading details
+  temperature Decimal @db.Decimal(6, 2) // e.g. -18.50
+  unit        TempUnit @default(CELSIUS)
+  sensorId    String?  @map("sensor_id") // device/sensor identifier from IoT gateway
+
+  // Where was the truck/package at this moment
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+
+  // Breach flag — set true when this reading exceeded the active threshold
+  breached Boolean @default(false)
+
+  recordedAt DateTime @map("recorded_at") // timestamp from sensor (not server clock)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  shop     Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment Shipment     @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  vehicle  FleetVehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  alerts   ColdChainAlert[]
+
+  @@index([shipmentId, recordedAt(sort: Desc)])
+  @@index([shopId, recordedAt(sort: Desc)])
+  @@index([vehicleId, recordedAt(sort: Desc)])
+  @@index([breached, recordedAt(sort: Desc)])
+  @@map("temperature_logs")
+}
+
+// ─── COLD-CHAIN THRESHOLD ─────────────────────────────────────
+// Configurable min/max temperature rules per shop and shipment type.
+// Alert contacts receive notifications when a threshold is breached.
+
+model ColdChainThreshold {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId String @map("shop_id") @db.Uuid
+
+  // Human-readable label, e.g. "Frozen Foods", "Insulin Transport"
+  name         String
+  shipmentType String? @map("shipment_type") // null = applies to all cold-chain shipments
+
+  // Temperature range (inclusive)
+  minTemp Decimal  @map("min_temp") @db.Decimal(6, 2)
+  maxTemp Decimal  @map("max_temp") @db.Decimal(6, 2)
+  unit    TempUnit @default(CELSIUS)
+
+  // How many consecutive minutes before alerting (avoids transient spikes)
+  gracePeriodMinutes Int @default(2) @map("grace_period_minutes")
+
+  // Alert routing — list of emails/phone numbers to notify
+  alertContacts Json @default("[]") @map("alert_contacts") // [{ type: "email"|"sms", value: string }]
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop   Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  alerts ColdChainAlert[]
+
+  @@index([shopId, isActive])
+  @@index([shopId, shipmentType])
+  @@map("cold_chain_thresholds")
+}
+
+// ─── COLD-CHAIN ALERT ─────────────────────────────────────────
+// Created when a temperature reading breaches a threshold.
+// Tracks severity and acknowledgement for audit/SLA purposes.
+
+model ColdChainAlert {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String @map("shop_id") @db.Uuid
+  shipmentId  String @map("shipment_id") @db.Uuid
+  thresholdId String @map("threshold_id") @db.Uuid
+  logId       String @map("log_id") @db.Uuid // the reading that triggered this alert
+
+  // What was recorded vs what was expected
+  actualTemp Decimal  @map("actual_temp") @db.Decimal(6, 2)
+  minTemp    Decimal  @map("min_temp") @db.Decimal(6, 2)
+  maxTemp    Decimal  @map("max_temp") @db.Decimal(6, 2)
+  unit       TempUnit @default(CELSIUS)
+
+  severity AlertSeverity @default(WARNING)
+
+  // Acknowledgement
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt DateTime? @map("acknowledged_at")
+  notes          String?
+
+  triggeredAt DateTime @default(now()) @map("triggered_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  shop      Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipment  Shipment           @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  threshold ColdChainThreshold @relation(fields: [thresholdId], references: [id])
+  log       TemperatureLog     @relation(fields: [logId], references: [id])
+
+  @@index([shipmentId, triggeredAt(sort: Desc)])
+  @@index([shopId, acknowledged])
+  @@index([shopId, severity, triggeredAt(sort: Desc)])
+  @@map("cold_chain_alerts")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────
+
+enum TempUnit {
+  CELSIUS
+  FAHRENHEIT
+}
+
+enum AlertSeverity {
+  WARNING  // reading outside range, within grace period
+  CRITICAL // sustained breach past grace period
+}
