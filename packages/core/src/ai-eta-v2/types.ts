@@ -147,6 +147,7 @@ export interface ModelWeights {
   historicalSimilarity: number;
   traffic: number;
   weather: number;
+  gbdt?: number;
 }
 
 /**
