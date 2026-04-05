@@ -8,7 +8,9 @@
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "build": "echo build-ok"
+    "build": "echo build-ok",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.0.0",
@@ -32,6 +34,8 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
-    "typescript": "^5.7.0"
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0"
   }
 }
