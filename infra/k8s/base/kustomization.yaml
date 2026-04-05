@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - secrets-template.yaml
+  - api/configmap.yaml
+  - api/deployment.yaml
+  - api/service.yaml
+  - api/hpa.yaml
+  - dashboard/deployment.yaml
+  - dashboard/service.yaml
+  - customer-portal/deployment.yaml
+  - customer-portal/service.yaml
+  - tracking-page/deployment.yaml
+  - tracking-page/service.yaml
+  - shopify-app/deployment.yaml
+  - shopify-app/service.yaml
+  - ingress.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize

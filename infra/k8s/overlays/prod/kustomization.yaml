@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: witylogix-prod
+
+resources:
+  - ../../base
+
+namePrefix: ""
+nameSuffix: ""
+
+labels:
+  - pairs:
+      environment: prod
+
+images:
+  - name: ghcr.io/wityliti/witylogix/api
+    newTag: latest
+  - name: ghcr.io/wityliti/witylogix/dashboard
+    newTag: latest
+  - name: ghcr.io/wityliti/witylogix/customer-portal
+    newTag: latest
+  - name: ghcr.io/wityliti/witylogix/tracking-page
+    newTag: latest
+  - name: ghcr.io/wityliti/witylogix/shopify-app
+    newTag: latest
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: witylogix-prod
+    target:
+      kind: Namespace
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: api
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: dashboard
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: customer-portal
