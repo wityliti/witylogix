@@ -274,7 +274,7 @@ describe('POST /api/v4/deliveries/events/batch', () => {
   // ── Unknown delivery ──────────────────────────────────────
 
   it('returns error for unknown deliveryId', async () => {
-    const event = makeEvent({ deliveryId: 'unknown-uuid' });
+    const event = makeEvent({ deliveryId: 'd4e5f6a7-b8c9-0123-defa-234567890123' }); // valid UUID not in DB
     mockRequest.body = { events: [event] };
 
     mockDb.shipment.findMany.mockResolvedValue([]); // nothing found
