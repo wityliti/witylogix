@@ -94,7 +94,7 @@ describe('event types', () => {
   it('accepts FAILED_DELIVERY with a reason code', () => {
     const q = makeQueue();
     const reasons: FailedDeliveryReason[] = [
-      'NOT_HOME', 'WRONG_ADDRESS', 'REFUSED', 'DAMAGED', 'ACCESS_DENIED', 'BUSINESS_CLOSED',
+      'not_home', 'wrong_address', 'refused', 'damaged', 'access_denied', 'business_closed',
     ];
     for (const reason of reasons) {
       const id = q.append({ type: 'FAILED_DELIVERY', deliveryId: 'd1', payload: { reason }, driverGPS: null });
