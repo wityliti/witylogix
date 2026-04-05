@@ -403,10 +403,12 @@ export type BatchDeliveryEvents = z.infer<typeof batchDeliveryEventsSchema>;
 
 export const failedDeliveryPayloadSchema = z.object({
   failureReason: z.enum([
-    'nobody_home',
-    'address_not_found',
+    'not_home',
+    'wrong_address',
     'refused',
+    'damaged',
     'access_denied',
+    'business_closed',
     'other',
   ]),
   note: z.string().max(500).optional(),

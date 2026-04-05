@@ -23,12 +23,12 @@ export type DeliveryEventType =
   | 'RTS_WORKFLOW';
 
 export type FailedDeliveryReason =
-  | 'NOT_HOME'
-  | 'WRONG_ADDRESS'
-  | 'REFUSED'
-  | 'DAMAGED'
-  | 'ACCESS_DENIED'
-  | 'BUSINESS_CLOSED';
+  | 'not_home'
+  | 'wrong_address'
+  | 'refused'
+  | 'damaged'
+  | 'access_denied'
+  | 'business_closed';
 
 export type EventStatus = 'pending' | 'synced' | 'conflict' | 'error';
 
