@@ -18,6 +18,8 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import crypto from "crypto";
 import { WooCommerceAdapter } from "@witylogix/core/platforms/adapters";
+import type { WooCommerceOrder } from "@witylogix/core/platforms/adapters";
+import { persistWCOrder } from "@witylogix/core/woocommerce/normalize";
 
 /**
  * WooCommerce webhook topics that we handle
@@ -330,6 +332,24 @@ async function handleOrderWebhook(
   try {
     // Validate payload structure
     const validatedPayload = WooCommerceOrderSchema.parse(payload);
+
+    // Persist order + shipment for created/updated events
+    if (action !== "deleted") {
+      const db = (fastify as any).db;
+      if (!db) {
+        fastify.log.warn("DB not initialized, cannot persist WC order");
+      } else {
+        const result = await persistWCOrder(
+          payload as unknown as WooCommerceOrder,
+          shopId,
+          db,
+        );
+        fastify.log.info(
+          { shopId, orderId: result.orderId, shipmentId: result.shipmentId, created: result.created },
+          "WC order persisted",
+        );
+      }
+    }
 
     // Map WooCommerce order to normalized format
     const adapter = new WooCommerceAdapter();

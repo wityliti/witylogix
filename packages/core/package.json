@@ -86,7 +86,8 @@
     "./slots": "./src/slots/index.ts",
     "./webhooks": "./src/webhooks/index.ts",
     "./shipping-profiles": "./src/shipping-profiles/index.ts",
-    "./invoicing": "./src/invoicing/index.ts"
+    "./invoicing": "./src/invoicing/index.ts",
+    "./woocommerce/normalize": "./src/woocommerce/normalize.ts"
   },
   "scripts": {
     "build": "echo build-ok",
