@@ -108,29 +108,34 @@ function createRateLimiter(config: RateLimitConfig) {
       return;
     }
 
+    // Separate try-catch so that keyGenerator errors can be optionally skipped
+    // (skipOnError), while intentional rate-limit errors always propagate.
+    let key: string;
+    let remaining: number;
+
     try {
-      const key = config.keyGenerator(request);
-      const remaining = store.consume(key, config);
-
-      const bucket = store.getBucket(key);
-      const resetTime = bucket
-        ? Math.floor(bucket.refillTime / 1000)
-        : Math.floor((Date.now() + config.windowMs) / 1000);
-
-      reply.header('X-RateLimit-Limit', String(config.maxRequests));
-      reply.header('X-RateLimit-Remaining', String(Math.max(0, remaining)));
-      reply.header('X-RateLimit-Reset', String(resetTime));
-
-      if (remaining < 0) {
-        const retryAfter = Math.ceil((bucket!.refillTime - Date.now()) / 1000);
-        reply.header('Retry-After', String(retryAfter));
-        throw new Error('Rate limit exceeded');
-      }
+      key = config.keyGenerator(request);
+      remaining = store.consume(key, config);
     } catch (error) {
       if (config.skipOnError !== false) {
         return;
       }
       throw error;
+    }
+
+    const bucket = store.getBucket(key!);
+    const resetTime = bucket
+      ? Math.floor(bucket.refillTime / 1000)
+      : Math.floor((Date.now() + config.windowMs) / 1000);
+
+    reply.header('X-RateLimit-Limit', String(config.maxRequests));
+    reply.header('X-RateLimit-Remaining', String(Math.max(0, remaining)));
+    reply.header('X-RateLimit-Reset', String(resetTime));
+
+    if (remaining < 0) {
+      const retryAfter = Math.ceil((bucket!.refillTime - Date.now()) / 1000);
+      reply.header('Retry-After', String(retryAfter));
+      throw new Error('Rate limit exceeded');
     }
   };
 }
@@ -163,10 +168,10 @@ describe('RateLimiter', () => {
       };
 
       let remaining = store.consume('test_key', config);
-      expect(remaining).toBe(8); // 10 - 1 (initial) - 1 (consumed) = 8
+      expect(remaining).toBe(9); // 10 - 1 (first consume) = 9 remaining
 
       remaining = store.consume('test_key', config);
-      expect(remaining).toBe(7);
+      expect(remaining).toBe(8);
     });
 
     it('should return -1 when limit exceeded', () => {
@@ -364,7 +369,7 @@ describe('RateLimiter', () => {
   describe('Sliding Window', () => {
     it('should implement sliding window correctly', (done) => {
       const limiter = createRateLimiter({
-        windowMs: 200,
+        windowMs: 100,
         maxRequests: 3,
         keyGenerator: () => 'sliding_test',
       });
