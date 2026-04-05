@@ -1,0 +1,90 @@
+// ─── COLD CHAIN MONITORING (WIT-91) ─────────────────────────────────────────
+// Temperature-sensitive shipment tracking. Logs sensor readings, enforces
+// per-shop thresholds, and raises alerts on breach.
+
+// ─── TEMPERATURE LOG ─────────────────────────────────────────────────────────
+// Individual sensor readings pushed by the driver app or IoT gateway.
+// Scoped to a shipment; optionally linked to the fleet vehicle carrying it.
+
+model TemperatureLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId  String   @map("shipment_id") @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
+  vehicleId   String?  @map("vehicle_id") @db.Uuid // FleetVehicle.id; nullable for non-fleet couriers
+  temperature Decimal  @db.Decimal(6, 2)            // reading value
+  unit        TempUnit @default(CELSIUS)
+  source      String   @default("driver_app")        // driver_app | iot_gateway | manual
+  gpsLat      Float?   @map("gps_lat")
+  gpsLng      Float?   @map("gps_lng")
+  recordedAt  DateTime @map("recorded_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  shipment Shipment      @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shop     Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  vehicle  FleetVehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId, recordedAt(sort: Desc)])
+  @@index([shopId, recordedAt(sort: Desc)])
+  @@index([vehicleId, recordedAt(sort: Desc)])
+  @@map("temperature_logs")
+}
+
+// ─── COLD CHAIN THRESHOLD (per-shop config) ─────────────────────────────────
+// Defines acceptable temperature range for a shop's cold shipments.
+// A single active threshold per shop is the norm; multiple can exist for
+// product categories (stored in `category` discriminator).
+
+model ColdChainThreshold {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId    String   @map("shop_id") @db.Uuid
+  category  String   @default("default") // product category or "default"
+  minTemp   Decimal  @map("min_temp") @db.Decimal(6, 2)
+  maxTemp   Decimal  @map("max_temp") @db.Decimal(6, 2)
+  unit      TempUnit @default(CELSIUS)
+  alertOnBreach Boolean @default(true) @map("alert_on_breach")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, category])
+  @@index([shopId])
+  @@map("cold_chain_thresholds")
+}
+
+// ─── COLD CHAIN ALERT ────────────────────────────────────────────────────────
+// Raised when a TemperatureLog reading breaches the shop threshold.
+// `resolvedAt` is set when the temperature returns to range or a human
+// manually resolves the alert.
+
+model ColdChainAlert {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId  String           @map("shipment_id") @db.Uuid
+  shopId      String           @map("shop_id") @db.Uuid
+  temperature Decimal          @db.Decimal(6, 2) // the breaching reading
+  minTemp     Decimal          @map("min_temp") @db.Decimal(6, 2) // threshold snapshot
+  maxTemp     Decimal          @map("max_temp") @db.Decimal(6, 2)
+  unit        TempUnit         @default(CELSIUS)
+  breachType  TempBreachType
+  resolvedAt  DateTime?        @map("resolved_at") @db.Timestamptz
+  resolvedBy  String?          @map("resolved_by") @db.Uuid // userId
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, createdAt(sort: Desc)])
+  @@index([shopId, resolvedAt])
+  @@map("cold_chain_alerts")
+}
+
+enum TempUnit {
+  CELSIUS
+  FAHRENHEIT
+}
+
+enum TempBreachType {
+  TOO_LOW
+  TOO_HIGH
+}

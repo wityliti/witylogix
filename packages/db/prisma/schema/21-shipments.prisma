@@ -57,6 +57,9 @@ model Shipment {
   carrier            String? // external carrier name
   carrierTrackingUrl String? @map("carrier_tracking_url")
 
+  // Cold-chain flag (WIT-91)
+  isColdChain Boolean @default(false) @map("is_cold_chain")
+
   // Failed delivery tracking (WIT-141)
   attemptCount      Int     @default(0) @map("attempt_count")
   lastFailureReason String? @map("last_failure_reason")
@@ -84,6 +87,8 @@ model Shipment {
   deliveryTimeSlotId  String?              @db.Uuid
   deliveryEvents      DeliveryEvent[]
   deliveryAttempts    DeliveryAttempt[]
+  temperatureLogs     TemperatureLog[]
+  coldChainAlerts     ColdChainAlert[]
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])

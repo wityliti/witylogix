@@ -234,6 +234,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/vehicles" });
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/failed-deliveries.js"), { prefix: "/api/v4/failed-deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
@@ -265,6 +266,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/warehouse.js"), { prefix: "/api/v4/warehouse" });
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
   await safeRegister(import("./routes/cod.js"), { prefix: "/api/v4/cod" });
+  await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 

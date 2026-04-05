@@ -118,6 +118,7 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
           status: true,
           deliveryStartedAt: true,
           estimatedDeliveryDate: true,
+          requireOTPConfirmation: true,
         },
       });
 
@@ -133,6 +134,27 @@ async function workflowDeliveryRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!order.deliveryStartedAt) {
         throw new ConflictError("Delivery has not been started");
+      }
+
+      // OTP gate — block completion if the order requires OTP confirmation (WIT-92)
+      if (order.requireOTPConfirmation) {
+        const otp = await tenantDb.deliveryOTP.findFirst({
+          where: { orderId: body.orderId },
+          orderBy: { createdAt: "desc" },
+          select: { verified: true },
+        });
+
+        if (!otp || !otp.verified) {
+          reply.status(403);
+          return {
+            data: null,
+            error: {
+              code: "OTP_REQUIRED",
+              message:
+                "OTP confirmation is required before completing this delivery. Use POST /otp/verify.",
+            },
+          };
+        }
       }
 
       // Validate POD data
