@@ -16,6 +16,7 @@ model Shop {
   currency           String    @default("USD")
   planTier           PlanTier  @default(FREE) @map("plan_tier") // overridden by org plan if linked
   settings           Json      @default("{}") // shop-specific overrides
+  maxDeliveryAttempts Int      @default(3) @map("max_delivery_attempts") // WIT-141: 1–5
   isActive           Boolean   @default(true) @map("is_active")
   installedAt        DateTime  @default(now()) @map("installed_at")
   uninstalledAt      DateTime? @map("uninstalled_at")
@@ -62,6 +63,13 @@ model Shop {
   authMeterEvents         AuthMeterEvent[]
   wooCommerceConnections  WooCommerceConnection[]
   deliveryEvents          DeliveryEvent[]
+  deliveryAttempts        DeliveryAttempt[]
+  customerDeliveryPreferences CustomerDeliveryPreferences[]
+  temperatureLogs             TemperatureLog[]
+  coldChainThresholds         ColdChainThreshold[]
+  coldChainAlerts             ColdChainAlert[]
+  deliveryOTPs                DeliveryOTP[]
+  deliveryAuditLogs           DeliveryAuditLog[]
 
   @@index([orgId])
   @@map("shops")

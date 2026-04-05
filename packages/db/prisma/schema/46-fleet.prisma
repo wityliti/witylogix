@@ -31,8 +31,9 @@ model FleetVehicle {
   // Relations
   organization   Organization          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   connection     TelematicsConnection  @relation(fields: [telematicsProvider, tenantId], references: [provider, tenantId], onDelete: Cascade)
-  telemetryLogs  VehicleTelemetryLog[]
-  behaviorEvents DriverBehaviorEvent[]
+  telemetryLogs   VehicleTelemetryLog[]
+  behaviorEvents  DriverBehaviorEvent[]
+  temperatureLogs TemperatureLog[]
 
   @@unique([tenantId, externalVehicleId, telematicsProvider])
   @@index([tenantId, status])

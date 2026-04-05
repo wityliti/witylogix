@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { api } from '../services/api';
+import { useOfflineSync } from '../hooks/useOfflineSync';
+import OfflineIndicator from '../components/OfflineIndicator';
 
 interface DeliveryStats {
   ordersRemaining: number;
@@ -35,6 +37,7 @@ const HomeScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation<any>();
+  const { pendingCount } = useOfflineSync();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -84,6 +87,7 @@ const HomeScreen: React.FC = () => {
   if (isLoading && !stats) {
     return (
       <SafeAreaView style={styles.container}>
+        <OfflineIndicator />
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color="#3b82f6" />
         </View>
@@ -93,6 +97,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <OfflineIndicator />
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -105,7 +110,14 @@ const HomeScreen: React.FC = () => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Today's Deliveries</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerTitle}>Today's Deliveries</Text>
+            {pendingCount > 0 && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>{pendingCount}</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.headerSubtitle}>Dashboard</Text>
         </View>
 
@@ -241,11 +253,31 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
     color: '#e2e8f0',
     marginBottom: 4,
+  },
+  pendingBadge: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  pendingBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   headerSubtitle: {
     fontSize: 14,

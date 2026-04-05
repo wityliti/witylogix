@@ -15,14 +15,17 @@
  *   GET    /customers               List customers across stores
  *   GET    /customers/:id           Get customer detail
  *   GET    /dashboard               Platform metrics
- *   POST   /impersonate/:userId     Start impersonation session
+ *   POST   /impersonate/:userId     Start impersonation session (rate-limited, Redis-tracked)
+ *   POST   /impersonate/:userId/revoke  Revoke active impersonation session by JTI
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
+import { z, ZodError } from "zod";
+import { randomUUID } from "crypto";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
+import { getRedis } from "../lib/redis.js";
 import {
   NotFoundError,
   ValidationError,
@@ -63,7 +66,7 @@ const impersonateSchema = z.object({
 
 async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
-  
+
   // Skip tenantContext for admin routes since we're accessing all tenants
   // fastify.addHook("preHandler", tenantContext);
 
@@ -76,7 +79,15 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   // ── GET /stores (List all stores) ──────────────────────────────
 
   fastify.get("/stores", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listStoresQuery.parse(request.query);
+    let query: z.infer<typeof listStoresQuery>;
+    try {
+      query = listStoresQuery.parse(request.query);
+    } catch (err) {
+      if (err instanceof ZodError) {
+        throw new ValidationError(err.errors[0]?.message || "Invalid query parameters");
+      }
+      throw err;
+    }
     const { page, limit, status, search } = query;
 
     const where: any = {};
@@ -322,7 +333,15 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     "/users/:id/role",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      const body = changeUserRoleSchema.parse(request.body);
+      let body: z.infer<typeof changeUserRoleSchema>;
+      try {
+        body = changeUserRoleSchema.parse(request.body);
+      } catch (err) {
+        if (err instanceof ZodError) {
+          throw new ValidationError(err.errors[0]?.message || "Invalid role");
+        }
+        throw err;
+      }
       const { role } = body;
 
       const user = await prisma.user.findUnique({ where: { id } });
@@ -574,13 +593,25 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // ── POST /impersonate/:userId (Start impersonation) ────────────
+  // Rate-limited to 10 requests/minute per admin to prevent token flooding.
+  // Session is tracked in Redis so it can be revoked before expiry.
 
   fastify.post(
     "/impersonate/:userId",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 minute",
+          keyGenerator: (request: any) => `impersonate:${(request as any).auth?.userId || request.ip}`,
+        },
+      },
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { userId } = request.params as { userId: string };
       const body = impersonateSchema.parse(request.body);
       const { duration } = body;
+      const effectiveDuration = Math.min(duration, 3600); // Max 1 hour
 
       const user = await (prisma.user as any).findUnique({
         where: { id: userId },
@@ -591,26 +622,45 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError("User", userId);
       }
 
-      // Generate impersonation token
+      const jti = randomUUID();
+      const adminId = (request as any).auth.userId;
+
+      // Generate impersonation token with JTI for revocation tracking
       const impersonationToken = await (request as any).jwtSign(
         {
           sub: user.id,
           shopId: user.shopId,
           role: user.role,
           type: "user",
-          impersonatedBy: (request as any).auth.userId,
+          impersonatedBy: adminId,
           shopDomain: (user as any).shop?.shopifyDomain,
+          jti,
         },
         {
-          expiresIn: Math.min(duration, 3600), // Max 1 hour
+          expiresIn: effectiveDuration,
         },
+      );
+
+      // Store session in Redis — enables server-side revocation before token expiry
+      const redis = getRedis();
+      await redis.set(
+        `impersonation:${jti}`,
+        JSON.stringify({
+          adminId,
+          userId: user.id,
+          shopId: user.shopId,
+          createdAt: new Date().toISOString(),
+        }),
+        "EX",
+        effectiveDuration,
       );
 
       fastify.log.info(
         {
-          adminId: (request as any).auth.userId,
+          adminId,
           impersonatedUserId: userId,
-          duration,
+          duration: effectiveDuration,
+          jti,
         },
         "Impersonation session started",
       );
@@ -618,6 +668,7 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
       return {
         data: {
           token: impersonationToken,
+          jti,
           user: {
             id: user.id,
             email: user.email,
@@ -625,9 +676,59 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
             role: user.role,
             shopId: user.shopId,
           },
-          expiresIn: duration,
+          expiresIn: effectiveDuration,
         },
       };
+    },
+  );
+
+  // ── POST /impersonate/:userId/revoke (Revoke active impersonation) ──
+  // Invalidates a specific impersonation session by JTI before its natural expiry.
+
+  fastify.post(
+    "/impersonate/:userId/revoke",
+    {
+      config: {
+        rateLimit: {
+          max: 20,
+          timeWindow: "1 minute",
+          keyGenerator: (request: any) => `impersonate-revoke:${(request as any).auth?.userId || request.ip}`,
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { userId } = request.params as { userId: string };
+      const { jti } = (request.body as any) || {};
+
+      if (!jti || typeof jti !== "string") {
+        throw new ValidationError("jti is required");
+      }
+
+      const redis = getRedis();
+      const sessionRaw = await redis.get(`impersonation:${jti}`);
+
+      if (!sessionRaw) {
+        // Already expired or never existed — treat as success (idempotent)
+        fastify.log.info({ adminId: (request as any).auth.userId, jti }, "Impersonation revoke: session not found (already expired)");
+        return { data: { revoked: false, reason: "session_not_found" } };
+      }
+
+      const session = JSON.parse(sessionRaw);
+
+      // Only the admin who created the session (or any SUPER_ADMIN) may revoke it
+      const requestingAdminId = (request as any).auth.userId;
+      if (session.adminId !== requestingAdminId) {
+        throw new ForbiddenError("You can only revoke your own impersonation sessions");
+      }
+
+      await redis.del(`impersonation:${jti}`);
+
+      fastify.log.info(
+        { adminId: requestingAdminId, impersonatedUserId: userId, jti },
+        "Impersonation session revoked",
+      );
+
+      return { data: { revoked: true } };
     },
   );
 }

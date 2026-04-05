@@ -40,6 +40,7 @@ export type CarrierType =
   | "UPS"
   | "USPS"
   | "DHL"
+  | "ONTRAC"
   | "SHIPSTATION"
   | "EASYPOST";
 

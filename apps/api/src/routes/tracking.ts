@@ -5,12 +5,16 @@
  * Powers the customer tracking page with delivery status + driver location.
  *
  * Routes:
- *   GET /token/:trackingToken  Get delivery status by tracking token
+ *   GET  /token/:trackingToken                Get delivery status by tracking token
+ *   GET  /token/:trackingToken/preferences    Get customer delivery preferences
+ *   PATCH /token/:trackingToken/preferences   Update customer delivery preferences
+ *   GET  /token/:trackingToken/slots          List available reschedule time slots
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
 import { prisma } from "@witylogix/db";
-import { NotFoundError } from "../lib/errors.js";
+import { NotFoundError, ValidationError } from "../lib/errors.js";
 
 // ─── Route Plugin ───────────────────────────────────────────
 
@@ -130,9 +134,157 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       },
     };
   });
+
+  // ── GET CUSTOMER DELIVERY PREFERENCES ────────────────────
+
+  fastify.get(
+    "/token/:trackingToken/preferences",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { trackingToken } = request.params as { trackingToken: string };
+      const order = await resolveOrderByToken(trackingToken);
+
+      const prefs = await prisma.customerDeliveryPreferences.findUnique({
+        where: { orderId: order.id },
+      });
+
+      return { data: prefs ?? null };
+    }
+  );
+
+  // ── PATCH CUSTOMER DELIVERY PREFERENCES ──────────────────
+
+  const patchPrefsSchema = z.object({
+    instructions: z.string().max(500).optional(),
+    dropoffNote: z.string().max(500).optional(),
+    dropoffLat: z.number().min(-90).max(90).optional(),
+    dropoffLng: z.number().min(-180).max(180).optional(),
+    contactPref: z.enum(["call", "sms", "whatsapp"]).optional(),
+    rescheduledTo: z.string().datetime().optional(),
+    timeSlotId: z.string().uuid().optional(),
+  });
+
+  fastify.patch(
+    "/token/:trackingToken/preferences",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { trackingToken } = request.params as { trackingToken: string };
+
+      const parsed = patchPrefsSchema.safeParse(request.body);
+      if (!parsed.success) {
+        throw new ValidationError(
+          parsed.error.errors.map((e) => e.message).join("; ")
+        );
+      }
+
+      const order = await resolveOrderByToken(trackingToken);
+
+      // Lock-out: instructions cannot change after driver has arrived
+      if (["ARRIVED", "DELIVERED"].includes(order.status)) {
+        throw new ValidationError(
+          "Delivery preferences cannot be updated after the driver has arrived"
+        );
+      }
+
+      // Reschedule lock-out: cannot reschedule once driver is en route
+      if (
+        parsed.data.rescheduledTo &&
+        ["OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED"].includes(order.status)
+      ) {
+        throw new ValidationError(
+          "Reschedule is not available once the driver is on the way"
+        );
+      }
+
+      // Validate timeSlotId belongs to the same shop and is active
+      if (parsed.data.timeSlotId) {
+        const slot = await prisma.timeSlot.findFirst({
+          where: {
+            id: parsed.data.timeSlotId,
+            shopId: order.shopId,
+            isActive: true,
+          },
+        });
+        if (!slot) {
+          throw new ValidationError("Selected time slot is not available");
+        }
+      }
+
+      const data = {
+        shopId: order.shopId,
+        ...(parsed.data.instructions !== undefined && {
+          instructions: parsed.data.instructions,
+        }),
+        ...(parsed.data.dropoffNote !== undefined && {
+          dropoffNote: parsed.data.dropoffNote,
+        }),
+        ...(parsed.data.dropoffLat !== undefined && {
+          dropoffLat: parsed.data.dropoffLat,
+        }),
+        ...(parsed.data.dropoffLng !== undefined && {
+          dropoffLng: parsed.data.dropoffLng,
+        }),
+        ...(parsed.data.contactPref !== undefined && {
+          contactPref: parsed.data.contactPref,
+        }),
+        ...(parsed.data.rescheduledTo !== undefined && {
+          rescheduledTo: new Date(parsed.data.rescheduledTo),
+        }),
+        ...(parsed.data.timeSlotId !== undefined && {
+          timeSlotId: parsed.data.timeSlotId,
+        }),
+      };
+
+      const prefs = await prisma.customerDeliveryPreferences.upsert({
+        where: { orderId: order.id },
+        create: { orderId: order.id, ...data },
+        update: data,
+      });
+
+      return { data: prefs };
+    }
+  );
+
+  // ── GET AVAILABLE RESCHEDULE SLOTS ────────────────────────
+
+  fastify.get(
+    "/token/:trackingToken/slots",
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { trackingToken } = request.params as { trackingToken: string };
+      const order = await resolveOrderByToken(trackingToken);
+
+      if (["OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED"].includes(order.status)) {
+        return { data: [], locked: true };
+      }
+
+      const slots = await prisma.timeSlot.findMany({
+        where: { shopId: order.shopId, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          startTime: true,
+          endTime: true,
+          daysOfWeek: true,
+          maxCapacity: true,
+        },
+        orderBy: [{ startTime: "asc" }],
+      });
+
+      return { data: slots, locked: false };
+    }
+  );
 }
 
 // ─── Helpers ────────────────────────────────────────────────
+
+async function resolveOrderByToken(trackingToken: string) {
+  const order = await prisma.order.findUnique({
+    where: { trackingToken },
+    select: { id: true, shopId: true, status: true },
+  });
+  if (!order) {
+    throw new NotFoundError("Tracking", trackingToken);
+  }
+  return order;
+}
 
 const STATUS_ORDER = [
   "PENDING",

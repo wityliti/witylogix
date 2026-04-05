@@ -1,0 +1,23 @@
+// ─── DELIVERY ATTEMPTS (WIT-141) ─────────────────────────────
+// Records each failed delivery attempt for retry tracking and audit.
+// Created atomically with the failed_delivery event in the batch endpoint.
+
+model DeliveryAttempt {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId    String   @map("shipment_id") @db.Uuid
+  shopId        String   @map("shop_id") @db.Uuid
+  attemptNumber Int      @map("attempt_number")
+  failureReason String   @map("failure_reason") // e.g. nobody_home, address_not_found
+  failedAt      DateTime @default(now()) @map("failed_at") @db.Timestamptz
+  photoUrl      String?  @map("photo_url")
+  driverId      String?  @map("driver_id") @db.Uuid
+  notes         String?  @db.VarChar(500)
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, attemptNumber])
+  @@index([shopId, shipmentId])
+  @@index([shopId, failureReason])
+  @@map("delivery_attempts")
+}

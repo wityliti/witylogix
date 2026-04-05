@@ -1,0 +1,44 @@
+// ─── DELIVERY OTP (WIT-92) ────────────────────────────────────────────────
+// One-time password flow for high-value or signature-required deliveries.
+// The driver sends an OTP to the customer; the customer reads it back.
+// `verified` must be true before the delivery-complete workflow step can run.
+
+model DeliveryOTP {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId    String    @map("order_id") @db.Uuid
+  shopId     String    @map("shop_id") @db.Uuid
+  code       String    @db.VarChar(8)   // 6-digit numeric OTP (stored hashed)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  verified   Boolean   @default(false)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz
+  attempts   Int       @default(0)      // failed verify attempts; lock after 5
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt(sort: Desc)])
+  @@index([shopId])
+  @@map("delivery_otps")
+}
+
+// ─── DELIVERY AUDIT LOG (WIT-92) ─────────────────────────────────────────
+// Append-only audit trail for OTP sends, verify attempts, and completion gate
+// decisions. Used for compliance and dispute resolution.
+
+model DeliveryAuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  shopId    String   @map("shop_id") @db.Uuid
+  action    String   // otp_sent | otp_verified | otp_failed | delivery_blocked | delivery_completed
+  actorId   String?  @map("actor_id") @db.Uuid // userId of driver or system actor
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt(sort: Desc)])
+  @@index([shopId, action])
+  @@map("delivery_audit_logs")
+}

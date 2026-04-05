@@ -32,6 +32,7 @@ const startNotificationWorker = async () => { try { const m = await import("./wo
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
 const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
 const startGeofenceWorker = async () => { try { const m = await import("./workers/geofence-worker.js"); return m.startGeofenceWorker(); } catch { console.warn("[Worker] Geofence worker unavailable"); } };
+const startFailedDeliveryWorker = async () => { try { const m = await import("./workers/failed-delivery-worker.js"); return m.startFailedDeliveryWorker(); } catch { console.warn("[Worker] Failed-delivery worker unavailable"); } };
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -107,10 +108,17 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(sensible);
 
   // JWT signing & verification
+  // verify.algorithms: restrict to HS256 to prevent algorithm confusion (CVE-2026-34950)
+  // verify.cache: disabled to prevent cache-key collision identity leaks (CVE-2026-35039)
   await app.register(jwt, {
     secret: config.JWT_SECRET,
     sign: {
       expiresIn: config.JWT_EXPIRES_IN,
+      algorithm: "HS256",
+    },
+    verify: {
+      algorithms: ["HS256"],
+      cache: false,
     },
   });
 
@@ -227,7 +235,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/vehicles" });
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/failed-deliveries.js"), { prefix: "/api/v4/failed-deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
   await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
   await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
@@ -257,6 +267,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/warehouse.js"), { prefix: "/api/v4/warehouse" });
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
   await safeRegister(import("./routes/cod.js"), { prefix: "/api/v4/cod" });
+  await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 
@@ -508,7 +519,17 @@ async function start(): Promise<void> {
     }
   });
 
-  app.log.info("BullMQ workers started (notification, optimization, integration, geofence)");
+  startFailedDeliveryWorker();
+  app.log.info("BullMQ workers started (notification, optimization, integration, geofence, failed-delivery)");
+
+  // ─── Bootstrap Carrier Adapters ───────────────────────────
+  try {
+    const { bootstrapCarriersFromEnv } = await import("@witylogix/core/integrations/shipping");
+    await bootstrapCarriersFromEnv();
+    app.log.info("Carrier adapters bootstrapped from env");
+  } catch (err) {
+    app.log.warn(err, "Carrier adapter bootstrap skipped (non-fatal)");
+  }
 
   // ─── Listen ───────────────────────────────────────────────
 

@@ -126,6 +126,21 @@ export function getGeofenceQueue(): Queue {
   return _geofenceQueue;
 }
 
+export function getFailedDeliveryQueue(): Queue {
+  if (!_failedDeliveryQueue) {
+    _failedDeliveryQueue = new Queue("failed-deliveries", {
+      connection: getQueueConnection(),
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: { age: 86400 },
+        removeOnFail: { age: 604800 },
+      },
+    });
+  }
+  return _failedDeliveryQueue;
+}
+
 // ─── Job Types ──────────────────────────────────────────────
 
 export interface NotificationJobData {
@@ -172,24 +187,9 @@ export interface GeofenceJobData {
   triggeredAt: string;
 }
 
-export function getFailedDeliveryQueue(): Queue {
-  if (!_failedDeliveryQueue) {
-    _failedDeliveryQueue = new Queue("failed-delivery", {
-      connection: getQueueConnection(),
-      defaultJobOptions: {
-        attempts: 3,
-        backoff: { type: "exponential", delay: 5000 },
-        removeOnComplete: { age: 86400 },
-        removeOnFail: { age: 604800 },
-      },
-    });
-  }
-  return _failedDeliveryQueue;
-}
-
 export interface FailedDeliveryJobData {
-  shipmentId: string;
   shopId: string;
+  shipmentId: string;
   failureReason: string;
   attemptCount: number;
 }

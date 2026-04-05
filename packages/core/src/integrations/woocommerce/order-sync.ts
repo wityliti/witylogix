@@ -220,7 +220,7 @@ export class OrderSyncService {
       errors.push("Order ID is required");
     }
 
-    if (!wcOrder.billing.email && !wcOrder.billing.phone) {
+    if (!wcOrder.billing || (!wcOrder.billing.email && !wcOrder.billing.phone)) {
       errors.push("Email or phone is required");
     }
 

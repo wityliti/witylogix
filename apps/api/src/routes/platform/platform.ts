@@ -16,6 +16,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { prisma } from "@witylogix/db";
+import { requireAuth, requireRole } from "../../middleware/auth";
 
 // ─── CONSTANTS ─────────────────────────────────────────────
 
@@ -503,6 +504,8 @@ export async function platformRoutes(app: FastifyInstance) {
   // Alerts
   app.get("/platform/alerts", alertsHandler);
 
-  // Acknowledge alert
-  app.post("/platform/alerts/:alertId/acknowledge", acknowledgeAlertHandler);
+  // Acknowledge alert — requires authenticated SUPER_ADMIN session
+  app.post("/platform/alerts/:alertId/acknowledge", {
+    preHandler: [requireAuth, requireRole("SUPER_ADMIN")],
+  }, acknowledgeAlertHandler);
 }

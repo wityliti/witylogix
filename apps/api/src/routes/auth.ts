@@ -28,6 +28,8 @@ import { UnauthorizedError, NotFoundError, ValidationError } from "../lib/errors
 import { getConfig } from "../lib/config.js";
 import { getRedis } from "../lib/redis.js";
 import { getNotificationQueue } from "../lib/queue.js";
+import { requireAuth } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
 
 // Password hashing with bcrypt
 // Note: Ensure 'bcrypt' is installed as dependency
@@ -495,20 +497,18 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.get(
     "/me",
+    { preHandler: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      // Import auth middleware to verify token
-      const { requireAuth } = await import("../middleware/auth.js");
-      await requireAuth(request, reply);
-
-      // At this point, request.auth is populated by requireAuth middleware
       const auth = (request as any).auth;
       if (!auth?.userId && !auth?.driverId) {
         throw new UnauthorizedError("Invalid authentication context");
       }
 
+      const db = (request as any).tenantDb;
+
       if (auth.driverId) {
         // Return driver profile
-        const driver = await prisma.driver.findUnique({
+        const driver = await db.driver.findUnique({
           where: { id: auth.driverId },
           select: {
             id: true,
@@ -527,7 +527,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
             id: driver.id,
             name: driver.name,
             phone: driver.phone,
-            role: auth.role, // From JWT token
+            role: auth.role,
             type: "driver" as const,
             shopId: auth.shopId,
           },
@@ -535,7 +535,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Return user profile
-      const user = await prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: auth.userId },
         select: {
           id: true,
