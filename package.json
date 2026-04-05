@@ -44,7 +44,8 @@
     "@types/node": "^22.0.0",
     "prettier": "^3.4.0",
     "turbo": "^2.3.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
   },
   "dependencies": {
     "@fastify/multipart": "^9.0.0",
