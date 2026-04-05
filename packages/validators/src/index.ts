@@ -369,7 +369,22 @@ export type UpdateDriverLocation = z.infer<typeof updateDriverLocationSchema>;
 export type CreateDeliveryZone = z.infer<typeof createDeliveryZoneSchema>;
 export type OptimizeRoute = z.infer<typeof optimizeRouteSchema>;
 
-// ─── Delivery Events Batch (WIT-127) ────────────────────────
+// ─── Delivery Events Batch (WIT-127) + Failed Delivery (WIT-141) ───────────
+
+// Structured payload for failed_delivery events (WIT-141)
+export const failedDeliveryPayloadSchema = z.object({
+  failureReason: z.enum([
+    "nobody_home",
+    "address_not_found",
+    "refused",
+    "access_denied",
+    "other",
+  ]),
+  note: z.string().max(500).optional(),
+  photoUrl: z.string().url().optional(),
+});
+
+export type FailedDeliveryPayload = z.infer<typeof failedDeliveryPayloadSchema>;
 
 export const deliveryEventInputSchema = z.object({
   id: z.string().min(1).max(128),
@@ -377,6 +392,7 @@ export const deliveryEventInputSchema = z.object({
     "picked_up",
     "in_transit",
     "out_for_delivery",
+    "arrived",
     "delivered",
     "failed_delivery",
   ]),

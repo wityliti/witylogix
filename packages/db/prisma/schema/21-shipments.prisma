@@ -64,6 +64,10 @@ model Shipment {
   attemptCount      Int     @default(0) @map("attempt_count")
   lastFailureReason String? @map("last_failure_reason")
 
+  // Geofencing (WIT-140)
+  geofenceTriggeredAt DateTime? @map("geofence_triggered_at") @db.Timestamptz
+
+
   // Metadata
   tags          String[] @default([])
   notes         String?
@@ -129,9 +133,9 @@ enum ShipmentStatus {
   OUT_FOR_DELIVERY // Last-mile delivery in progress
   ARRIVED // Driver at delivery location
   DELIVERED // Successfully delivered + POD captured
-  FAILED // Delivery attempt failed — permanent (no more retries)
+  FAILED // All attempts exhausted — permanent failure
   FAILED_ATTEMPT // Attempt failed; retries remaining (WIT-141)
-  RETURNED // Returned to origin
+  RETURNED // Returned to origin (auto-return or manual)
   CANCELLED // Cancelled before delivery
 }
 

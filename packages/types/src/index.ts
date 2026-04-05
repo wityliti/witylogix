@@ -167,6 +167,7 @@ export type DeliveryEventType =
   | "picked_up"
   | "in_transit"
   | "out_for_delivery"
+  | "arrived"
   | "delivered"
   | "failed_delivery";
 

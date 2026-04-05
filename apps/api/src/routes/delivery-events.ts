@@ -33,7 +33,8 @@ const TERMINAL_STATUSES = new Set(['DELIVERED', 'FAILED']);
 const VALID_TRANSITIONS: Record<string, Set<string>> = {
   PICKED_UP: new Set(['IN_TRANSIT']),
   IN_TRANSIT: new Set(['OUT_FOR_DELIVERY']),
-  OUT_FOR_DELIVERY: new Set(['DELIVERED', 'FAILED', 'FAILED_ATTEMPT']),
+  OUT_FOR_DELIVERY: new Set(['ARRIVED', 'DELIVERED', 'FAILED', 'FAILED_ATTEMPT']),
+  ARRIVED: new Set(['DELIVERED', 'FAILED', 'FAILED_ATTEMPT']), // WIT-140: geofence auto-event
   FAILED_ATTEMPT: new Set(['OUT_FOR_DELIVERY', 'FAILED', 'FAILED_ATTEMPT']),
   // Allow re-submission of same state (idempotent re-delivery of events)
   DELIVERED: new Set(),
@@ -50,6 +51,7 @@ const EVENT_TYPE_TO_STATUS: Record<string, string> = {
   picked_up: 'PICKED_UP',
   in_transit: 'IN_TRANSIT',
   out_for_delivery: 'OUT_FOR_DELIVERY',
+  arrived: 'ARRIVED', // WIT-140: geofence auto-event
   delivered: 'DELIVERED',
   // failed_delivery is handled separately — status depends on attempt count
 };
