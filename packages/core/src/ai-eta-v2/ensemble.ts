@@ -1,12 +1,13 @@
 /**
  * Multi-Model Ensemble for ETA Prediction
  *
- * Combines all 5 models with dynamic weighting:
+ * Combines all 6 models with dynamic weighting:
  * - Time-of-day model
  * - Distance decay model
- * - Historical similarity model
+ * - Historical similarity (KNN) model
  * - Traffic-aware model
  * - Weather impact model
+ * - GBDT (Gradient Boosted Decision Trees) model
  *
  * Features:
  * - Learned weights that adapt to zone/time
@@ -30,6 +31,7 @@ import { DistanceDecayModel } from './models/distance-decay-model.js';
 import { HistoricalDeliveryModel } from './models/historical-delivery-model.js';
 import { TrafficModel } from './models/traffic-model.js';
 import { WeatherModel } from './models/weather-model.js';
+import { GBDTModel } from './models/gbdt-model.js';
 
 export class EnsemblePredictor {
   private timeOfDayModel: TimeOfDayModel;
@@ -37,6 +39,7 @@ export class EnsemblePredictor {
   private historicalModel: HistoricalDeliveryModel;
   private trafficModel: TrafficModel;
   private weatherModel: WeatherModel;
+  private gbdtModel: GBDTModel;
 
   private modelWeights: ModelWeights;
   private calibrations: Map<string, CalibrationResult>;
@@ -51,14 +54,16 @@ export class EnsemblePredictor {
     this.historicalModel = new HistoricalDeliveryModel();
     this.trafficModel = new TrafficModel();
     this.weatherModel = new WeatherModel();
+    this.gbdtModel = new GBDTModel();
 
-    // Initialize with equal weights
+    // Initialize with weights: GBDT gets higher weight when trained
     this.modelWeights = {
-      timeOfDay: 0.2,
-      distanceDecay: 0.2,
-      historicalSimilarity: 0.25,
-      traffic: 0.2,
-      weather: 0.15,
+      timeOfDay: 0.15,
+      distanceDecay: 0.15,
+      historicalSimilarity: 0.20,
+      traffic: 0.15,
+      weather: 0.10,
+      gbdt: 0.25,
     };
 
     this.calibrations = new Map();
@@ -79,6 +84,14 @@ export class EnsemblePredictor {
     this.historicalModel.fit(historicalDeliveries);
     this.trafficModel.fit(historicalDeliveries);
     this.weatherModel.fit(historicalDeliveries);
+    this.gbdtModel.fit(historicalDeliveries);
+
+    // After training, boost GBDT weight if it trained successfully
+    if (this.gbdtModel.trained) {
+      this.modelWeights.gbdt = 0.30;
+      // Proportionally reduce others
+      this.normalizeWeights();
+    }
   }
 
   /**
@@ -138,6 +151,9 @@ export class EnsemblePredictor {
 
     const weatherPred = this.weatherModel.predict(features);
     predictions.push(weatherPred);
+
+    const gbdtPred = this.gbdtModel.predict(features);
+    predictions.push(gbdtPred);
 
     // Get weights for this context
     const weights = this.getWeightsForContext(features.zone_type, features.hour);
@@ -241,8 +257,10 @@ export class EnsemblePredictor {
         return weights.traffic;
       case 'weather-impact':
         return weights.weather;
+      case 'gbdt':
+        return (weights as any).gbdt ?? 0.25;
       default:
-        return 0.2;
+        return 0.15;
     }
   }
 
@@ -349,12 +367,14 @@ export class EnsemblePredictor {
    * Normalize weights to sum to 1.0
    */
   private normalizeWeights(): void {
+    const gbdt = this.modelWeights.gbdt ?? 0;
     const total =
       this.modelWeights.timeOfDay +
       this.modelWeights.distanceDecay +
       this.modelWeights.historicalSimilarity +
       this.modelWeights.traffic +
-      this.modelWeights.weather;
+      this.modelWeights.weather +
+      gbdt;
 
     if (total > 0) {
       this.modelWeights.timeOfDay /= total;
@@ -362,6 +382,7 @@ export class EnsemblePredictor {
       this.modelWeights.historicalSimilarity /= total;
       this.modelWeights.traffic /= total;
       this.modelWeights.weather /= total;
+      this.modelWeights.gbdt = gbdt / total;
     }
   }
 
@@ -490,6 +511,7 @@ export class EnsemblePredictor {
       { model: this.historicalModel, weight: this.modelWeights.historicalSimilarity },
       { model: this.trafficModel, weight: this.modelWeights.traffic },
       { model: this.weatherModel, weight: this.modelWeights.weather },
+      { model: this.gbdtModel, weight: this.modelWeights.gbdt ?? 0.25 },
     ];
 
     for (const { model, weight } of models) {

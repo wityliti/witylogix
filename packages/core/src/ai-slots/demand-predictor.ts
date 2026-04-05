@@ -1,14 +1,11 @@
 /**
  * Demand Predictor Module
  *
- * Predicts delivery demand for zones using historical patterns,
- * seasonal factors, and simple regression analysis.
- *
- * Models:
- * - Historical average: Base demand level
- * - Seasonal factor: Holiday/event multipliers
- * - Trend analysis: Increasing/decreasing patterns
- * - Day-of-week patterns: Weekly seasonality
+ * Predicts delivery demand for zones using:
+ * - Holt-Winters triple exponential smoothing for weekly patterns
+ * - Historical average baseline
+ * - Seasonal factor multipliers (holiday, weekend)
+ * - Linear trend analysis
  */
 
 import type {
@@ -16,6 +13,7 @@ import type {
   DemandPattern,
   HistoricalDeliveryData,
 } from './types.js';
+import { HoltWintersModel, DEFAULT_HOURLY_PROFILE } from './holt-winters.js';
 
 /**
  * Simple linear regression for trend analysis
@@ -43,6 +41,11 @@ export class DemandPredictor {
   private patternCache = new Map<string, DemandPattern>();
 
   /**
+   * Holt-Winters models per zone — weekly demand smoothing
+   */
+  private zoneHoltWinters = new Map<string, HoltWintersModel>();
+
+  /**
    * Seasonal factor defaults for common patterns
    */
   private readonly SEASONAL_DEFAULTS = {
@@ -65,6 +68,7 @@ export class DemandPredictor {
   constructor(historicalData?: HistoricalDeliveryData[]) {
     if (historicalData) {
       this.historicalData = historicalData;
+      this.fitHoltWintersModels();
     }
   }
 
@@ -73,35 +77,105 @@ export class DemandPredictor {
    */
   addHistoricalData(data: HistoricalDeliveryData[]): void {
     this.historicalData.push(...data);
-    // Clear pattern cache when new data is added
     this.patternCache.clear();
+    this.fitHoltWintersModels();
   }
 
   /**
-   * Predict demand for a specific zone, date, and hour
+   * Fit Holt-Winters models per zone from aggregated daily counts.
+   */
+  private fitHoltWintersModels(): void {
+    // Group orders by zone and date
+    const zoneDailyCounts = new Map<string, Map<string, number>>();
+
+    for (const d of this.historicalData) {
+      if (!d.success) continue;
+      const dateKey = d.slotStartTime.toISOString().slice(0, 10);
+      if (!zoneDailyCounts.has(d.zoneId)) {
+        zoneDailyCounts.set(d.zoneId, new Map());
+      }
+      const days = zoneDailyCounts.get(d.zoneId)!;
+      days.set(dateKey, (days.get(dateKey) ?? 0) + 1);
+    }
+
+    for (const [zoneId, dailyMap] of zoneDailyCounts) {
+      const sorted = [...dailyMap.entries()].sort(([a], [b]) => a.localeCompare(b));
+      const series = sorted.map(([, count]) => count);
+
+      const hw = new HoltWintersModel();
+      hw.fit(series);
+      this.zoneHoltWinters.set(zoneId, hw);
+    }
+  }
+
+  /**
+   * Forecast zone demand for the next N days using Holt-Winters.
+   * Returns hourly demand arrays per day.
+   */
+  forecastWeeklyDemand(
+    zoneId: string,
+    daysAhead: number = 7,
+  ): { day: number; hourlyForecast: number[] }[] {
+    const hw = this.zoneHoltWinters.get(zoneId) ?? new HoltWintersModel();
+
+    if (!hw.trained) {
+      // Fallback: use historical averages
+      const pattern = this.getHistoricalPattern(zoneId, 1);
+      return Array.from({ length: daysAhead }, (_, i) => ({
+        day: i + 1,
+        hourlyForecast: pattern.hourlyAverages,
+      }));
+    }
+
+    const dailyFc = hw.forecast(daysAhead).forecast;
+
+    return dailyFc.map((total, i) => ({
+      day: i + 1,
+      hourlyForecast: DEFAULT_HOURLY_PROFILE.map((frac) => total * frac),
+    }));
+  }
+
+  /**
+   * Get the Holt-Winters model for a zone (for inspection/testing)
+   */
+  getHoltWintersModel(zoneId: string): HoltWintersModel | undefined {
+    return this.zoneHoltWinters.get(zoneId);
+  }
+
+  /**
+   * Predict demand for a specific zone, date, and hour.
+   * Blends Holt-Winters weekly forecast with historical averages.
    */
   predictDemand(
     zoneId: string,
     date: Date,
     hour: number,
   ): DemandForecast {
-    // Get historical pattern for this zone and day of week
     const dayOfWeek = date.getDay();
     const pattern = this.getHistoricalPattern(zoneId, dayOfWeek);
 
     // Base historical average for this hour
     const historicalAverage = pattern.hourlyAverages[hour] || 0;
 
-    // Calculate seasonal factor
+    // Seasonal factor
     const seasonalFactor = this.calculateSeasonalFactor(date);
 
-    // Apply trend analysis
+    // Trend factor from linear regression
     const trendFactor = this.calculateTrendFactor(zoneId, dayOfWeek);
 
-    // Combine all factors
-    const predictedOrders = Math.round(
-      historicalAverage * seasonalFactor * trendFactor,
-    );
+    // Holt-Winters: get 1-day ahead forecast (next day's total demand)
+    const hw = this.zoneHoltWinters.get(zoneId);
+    let hwAdjustedOrders = historicalAverage * seasonalFactor * trendFactor;
+
+    if (hw?.trained) {
+      const hwForecast = hw.forecast(1);
+      const hwDayTotal = hwForecast.forecast[0] ?? 0;
+      const hwHourlyOrders = hwDayTotal * (DEFAULT_HOURLY_PROFILE[hour] ?? 1 / 24);
+      // Blend 60% Holt-Winters + 40% historical regression
+      hwAdjustedOrders = 0.6 * hwHourlyOrders + 0.4 * hwAdjustedOrders;
+    }
+
+    const predictedOrders = Math.max(0, Math.round(hwAdjustedOrders));
 
     // Determine trend direction
     const trend =

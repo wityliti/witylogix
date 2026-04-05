@@ -1,0 +1,72 @@
+// ─── ETA PREDICTION LOGS ────────────────────────────────────────────────────
+// Stores ML ETA predictions for accuracy tracking and model retraining
+
+model EtaLog {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId              String?   @map("shipment_id") @db.Uuid
+  orderId                 String?   @map("order_id")
+  tenantId                String    @map("tenant_id") @db.Uuid
+
+  /// Feature inputs used for prediction
+  distanceKm              Float     @map("distance_km")
+  zoneType                String    @map("zone_type")           // urban-core|urban|suburban|rural|highway
+  hour                    Int       @map("hour")
+  dayOfWeek               Int       @map("day_of_week")
+  isHoliday               Boolean   @default(false) @map("is_holiday")
+  vehicleType             String    @map("vehicle_type")
+  numStops                Int       @default(0) @map("num_stops")
+  trafficMultiplier       Float     @default(1.0) @map("traffic_multiplier")
+  weatherIntensity        Float     @default(0.0) @map("weather_intensity")
+
+  /// Prediction outputs
+  predictedMinutes        Float     @map("predicted_minutes")
+  confidenceScore         Float     @map("confidence_score")  // 0-1
+  lowerBoundMinutes       Float     @map("lower_bound_minutes")
+  upperBoundMinutes       Float     @map("upper_bound_minutes")
+  dominantModel           String    @map("dominant_model")    // gbdt|ensemble|etc.
+
+  /// Actuals (filled in when delivery completes)
+  actualMinutes           Float?    @map("actual_minutes")
+  absoluteErrorMinutes    Float?    @map("absolute_error_minutes")
+  wasWithinBounds         Boolean?  @map("was_within_bounds")
+
+  /// Metadata
+  modelVersion            String    @default("v2") @map("model_version")
+  metadata                Json      @default("{}")
+
+  createdAt               DateTime  @default(now()) @map("created_at")
+  resolvedAt              DateTime? @map("resolved_at")
+
+  @@index([tenantId, createdAt])
+  @@index([shipmentId])
+  @@index([dominantModel, createdAt])
+  @@map("eta_logs")
+}
+
+// ─── SLOT DEMAND FORECASTS ───────────────────────────────────────────────────
+// Persisted Holt-Winters forecasts for slot demand planning
+
+model SlotDemandForecast {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  zoneId            String   @map("zone_id") @db.Uuid
+  forecastDate      DateTime @map("forecast_date") @db.Date
+  generatedAt       DateTime @default(now()) @map("generated_at")
+
+  /// Forecasted order counts per hour (24 values as JSON array)
+  hourlyForecast    Json     @map("hourly_forecast")
+  dailyTotal        Float    @map("daily_total")
+  confidenceLow     Float    @map("confidence_low")
+  confidenceHigh    Float    @map("confidence_high")
+  modelRmse         Float    @default(0) @map("model_rmse")
+
+  /// Actuals (filled post-day for model evaluation)
+  actualDailyTotal  Float?   @map("actual_daily_total")
+
+  metadata          Json     @default("{}")
+
+  @@unique([tenantId, zoneId, forecastDate])
+  @@index([tenantId, forecastDate])
+  @@index([zoneId, forecastDate])
+  @@map("slot_demand_forecasts")
+}
