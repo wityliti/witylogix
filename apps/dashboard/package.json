@@ -14,6 +14,7 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@witylogix/core": "workspace:*",
     "@sentry/nextjs": "^8.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
