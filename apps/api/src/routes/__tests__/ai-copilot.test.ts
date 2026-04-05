@@ -43,7 +43,7 @@ describe("AI Co-pilot Route", () => {
 
     mockReply = {
       status: vi.fn().mockReturnThis(),
-      send: vi.fn().mockImplementation((data) => data),
+      send: vi.fn().mockImplementation((data: unknown) => data),
     };
   });
 
