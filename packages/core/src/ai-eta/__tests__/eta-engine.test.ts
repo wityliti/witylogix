@@ -54,12 +54,15 @@ describe('ETAEngine', () => {
   });
 
   it('should adjust for time of day', () => {
+    const rushDeparture = new Date('2026-03-15T07:00:00');
+    const nightDeparture = new Date('2026-03-15T23:00:00');
+
     // Morning rush hour (7 AM)
     const rushPrediction = engine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T07:00:00'),
+      departureTime: rushDeparture,
     });
 
     // Night time (11 PM)
@@ -67,13 +70,17 @@ describe('ETAEngine', () => {
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
-      departureTime: new Date('2026-03-15T23:00:00'),
+      departureTime: nightDeparture,
     });
 
-    // Rush hour should have longer ETA
-    expect(rushPrediction.prediction.expected.getTime()).toBeGreaterThan(
-      nightPrediction.prediction.expected.getTime(),
-    );
+    // Rush hour trip should take longer than a night-time trip.
+    // Compare travel durations (not absolute timestamps — departure times differ by 16h).
+    const rushTravelMs =
+      rushPrediction.prediction.expected.getTime() - rushDeparture.getTime();
+    const nightTravelMs =
+      nightPrediction.prediction.expected.getTime() - nightDeparture.getTime();
+
+    expect(rushTravelMs).toBeGreaterThan(nightTravelMs);
   });
 
   it('should adjust for distance', () => {
