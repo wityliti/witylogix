@@ -1,5 +1,28 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+
+vi.mock('@witylogix/db', () => ({
+  Prisma: {
+    Decimal: class Decimal {
+      private value: string;
+      constructor(v: string | number) { this.value = String(v); }
+      toString() { return this.value; }
+      toNumber() { return Number(this.value); }
+    },
+    PrismaClientValidationError: class PrismaClientValidationError extends Error {
+      constructor(message: string) { super(message); this.name = 'PrismaClientValidationError'; }
+    },
+    PrismaClientKnownRequestError: class PrismaClientKnownRequestError extends Error {
+      code: string;
+      constructor(message: string, opts: { code: string }) { super(message); this.code = opts.code; this.name = 'PrismaClientKnownRequestError'; }
+    },
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+    sql: vi.fn((...args) => args),
+  },
+}));
+
 import { Prisma } from '@witylogix/db';
 import { NotFoundError } from '../../lib/errors.js';
 

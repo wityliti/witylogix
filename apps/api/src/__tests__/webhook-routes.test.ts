@@ -40,6 +40,7 @@ class WebhookRoutes {
     if (!this.authenticated) return { error: 'Unauthorized' };
 
     const id = `wh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
     const webhook: WebhookRequest = {
       id,
       tenantId: this.currentTenant,
@@ -47,8 +48,8 @@ class WebhookRoutes {
       eventTypes,
       secret: `secret_${Math.random().toString(36).substr(2, 16)}`,
       isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     this.webhooks.set(id, webhook);
