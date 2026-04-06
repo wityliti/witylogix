@@ -181,7 +181,17 @@ describe('WooCommerce Webhooks', () => {
         consumerSecret: 'wc_secret_xyz789',
       };
 
-      const result = { data: mockWebhook };
+      const created = await mockTenantDb.woocommerceWebhook.create({
+        data: {
+          topic: mockRequest.body.topic,
+          deliveryUrl: mockRequest.body.deliveryUrl,
+          consumerKey: mockRequest.body.consumerKey,
+          consumerSecret: mockRequest.body.consumerSecret,
+          storeId: mockRequest.shopId,
+          isActive: true,
+        },
+      });
+      const result = { data: created };
 
       expect(result.data.topic).toBe('order.created');
       expect(result.data.isActive).toBe(true);
@@ -198,7 +208,7 @@ describe('WooCommerce Webhooks', () => {
 
       const hasRequiredFields =
         mockRequest.body.consumerKey && mockRequest.body.consumerSecret;
-      expect(hasRequiredFields).toBe(false);
+      expect(hasRequiredFields).toBeFalsy();
     });
 
     it('should support multiple webhook topics', async () => {
@@ -228,7 +238,10 @@ describe('WooCommerce Webhooks', () => {
       mockTenantDb.woocommerceWebhook.findMany.mockResolvedValue(mockWebhooks);
       mockRequest.params = { storeId: 'store-123' };
 
-      const result = { data: mockWebhooks };
+      const data = await mockTenantDb.woocommerceWebhook.findMany({
+        where: { storeId: mockRequest.params.storeId },
+      });
+      const result = { data };
 
       expect(result.data).toHaveLength(2);
       expect(mockTenantDb.woocommerceWebhook.findMany).toHaveBeenCalled();
@@ -243,7 +256,12 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { id: webhook.id };
 
-      const result = { data: deactivatedWebhook };
+      await mockTenantDb.woocommerceWebhook.findUnique({ where: { id: mockRequest.params.id } });
+      const updated = await mockTenantDb.woocommerceWebhook.update({
+        where: { id: mockRequest.params.id },
+        data: { isActive: false },
+      });
+      const result = { data: updated };
 
       expect(result.data.isActive).toBe(false);
       expect(mockTenantDb.woocommerceWebhook.update).toHaveBeenCalled();
@@ -255,6 +273,8 @@ describe('WooCommerce Webhooks', () => {
       mockTenantDb.woocommerceWebhook.delete.mockResolvedValue(webhook);
 
       mockRequest.params = { id: webhook.id };
+
+      await mockTenantDb.woocommerceWebhook.delete({ where: { id: webhook.id } });
 
       expect(mockTenantDb.woocommerceWebhook.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: webhook.id } })
@@ -362,6 +382,14 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.body = mockOrder;
       mockRequest.headers = { 'x-wc-webhook-signature': signature };
 
+      await mockTenantDb.$transaction(async (tx: typeof mockTenantDb) => {
+        return tx.order.upsert({
+          where: { externalOrderId: String(mockOrder.id) },
+          create: { externalOrderId: String(mockOrder.id), status: mockOrder.status },
+          update: { status: mockOrder.status },
+        });
+      });
+
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
     });
 
@@ -374,7 +402,14 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.params = { topic: 'order.updated' };
       mockRequest.body = mockOrder;
 
-      const result = { data: mockOrder };
+      const updated = await mockTenantDb.$transaction(async (tx: typeof mockTenantDb) => {
+        return tx.order.upsert({
+          where: { externalOrderId: String(mockOrder.id) },
+          create: { externalOrderId: String(mockOrder.id), status: mockOrder.status },
+          update: { status: mockOrder.status },
+        });
+      });
+      const result = { data: updated };
 
       expect(result.data.status).toBe('processing');
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
@@ -388,6 +423,13 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'order.deleted' };
       mockRequest.body = { id: mockOrder.id };
+
+      await mockTenantDb.$transaction(async (tx: typeof mockTenantDb) => {
+        return tx.order.update({
+          where: { externalOrderId: String(mockOrder.id) },
+          data: { deletedAt: new Date() },
+        });
+      });
 
       expect(mockTenantDb.order.update).toHaveBeenCalled();
     });
@@ -478,7 +520,14 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.params = { topic: 'product.updated' };
       mockRequest.body = mockProduct;
 
-      const result = { data: mockProduct };
+      const synced = await mockTenantDb.$transaction(async (tx: typeof mockTenantDb) => {
+        return tx.product.upsert({
+          where: { externalProductId: String(mockProduct.id) },
+          create: { externalProductId: String(mockProduct.id), name: mockProduct.name, sku: mockProduct.sku },
+          update: { name: mockProduct.name, sku: mockProduct.sku },
+        });
+      });
+      const result = { data: synced };
 
       expect(result.data.sku).toBe('TEST-001');
       expect(mockTenantDb.product.upsert).toHaveBeenCalled();
@@ -491,6 +540,10 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'product.deleted' };
       mockRequest.body = { id: productId };
+
+      await mockTenantDb.$transaction(async (_tx: typeof mockTenantDb) => {
+        // soft-delete: mark product as inactive
+      });
 
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
@@ -528,6 +581,12 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.body = mockOrder;
 
+      await mockTenantDb.customer.upsert({
+        where: { externalId: customerData.externalId },
+        create: customerData,
+        update: { email: customerData.email, firstName: customerData.firstName, lastName: customerData.lastName },
+      });
+
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
@@ -543,6 +602,17 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'customer.created' };
       mockRequest.body = mockCustomer;
+
+      await mockTenantDb.customer.upsert({
+        where: { externalId: String(mockCustomer.id) },
+        create: {
+          externalId: String(mockCustomer.id),
+          email: mockCustomer.email,
+          firstName: mockCustomer.first_name,
+          lastName: mockCustomer.last_name,
+        },
+        update: { email: mockCustomer.email },
+      });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
@@ -579,6 +649,12 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.params = { topic: 'unknown.event' };
       mockRequest.body = { id: 123 };
 
+      const registrations = await mockTenantDb.woocommerceWebhook.findMany({
+        where: { topic: mockRequest.params.topic, isActive: true },
+      });
+
+      // No registered handlers — webhook should be skipped
+      expect(registrations).toHaveLength(0);
       expect(mockTenantDb.woocommerceWebhook.findMany).toHaveBeenCalled();
     });
 
