@@ -9,6 +9,7 @@
  *   GET  /token/:trackingToken/preferences    Get customer delivery preferences
  *   PATCH /token/:trackingToken/preferences   Update customer delivery preferences
  *   GET  /token/:trackingToken/slots          List available reschedule time slots
+ *   GET  /track/:trackingCode/eta             ML ETA prediction (public, rate-limited, Redis cached)
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -17,6 +18,7 @@ import { prisma } from "@witylogix/db";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
 import { createRateLimiter } from "../middleware/rate-limit-routes.js";
 import { etaEngine } from "@witylogix/core/ai-eta";
+import { getRedis } from "../lib/redis.js";
 
 // ─── ETA Cache (5-minute TTL per shipment) ──────────────────
 
@@ -391,6 +393,101 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       etaCache.set(trackingToken, { data: eta, expiresAt: Date.now() + 5 * 60 * 1000 });
 
       return { data: eta };
+    }
+  );
+
+  // ── GET AI ETA — PUBLIC (WIT-310) ─────────────────────────
+  //
+  // GET /track/:trackingCode/eta
+  // Returns: { estimatedArrival, confidenceScore, distanceKm, trafficStatus }
+  // Rate-limited 60 req/min per IP; cached in Redis for 60 s.
+  // "trackingCode" maps to the order's trackingToken field.
+
+  const ETA_REDIS_TTL = 60; // seconds
+  const ETA_REDIS_PREFIX = "eta:public:";
+
+  fastify.get(
+    "/track/:trackingCode/eta",
+    { preHandler: [trackingEtaRateLimiter] },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { trackingCode } = request.params as { trackingCode: string };
+
+      // 1. Check Redis cache
+      const redis = getRedis();
+      const cacheKey = `${ETA_REDIS_PREFIX}${trackingCode}`;
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return { data: JSON.parse(cached) };
+        }
+      } catch {
+        // Redis unavailable — continue without cache
+      }
+
+      // 2. Fetch order
+      const order = await prisma.order.findUnique({
+        where: { trackingToken: trackingCode },
+        select: {
+          id: true,
+          estimatedArrival: true,
+          deliveryLocation: true,
+          driver: {
+            select: { currentLocation: true },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new NotFoundError("Tracking", trackingCode);
+      }
+
+      // 3. Compute ETA via ML engine
+      const driverLoc = order.driver?.currentLocation as { lat?: number; lng?: number } | null;
+      const destLoc = order.deliveryLocation as { lat?: number; lng?: number } | null;
+
+      let result: {
+        estimatedArrival: string;
+        confidenceScore: number;
+        distanceKm: number;
+        trafficStatus: string;
+      };
+
+      if (
+        driverLoc?.lat != null && driverLoc?.lng != null &&
+        destLoc?.lat != null && destLoc?.lng != null
+      ) {
+        const distKm = haversineKm(driverLoc.lat, driverLoc.lng, destLoc.lat, destLoc.lng);
+        const prediction = etaEngine.predictETA({
+          origin: { lat: driverLoc.lat, lng: driverLoc.lng },
+          destination: { lat: destLoc.lat, lng: destLoc.lng },
+          distanceKm: distKm,
+          departureTime: new Date(),
+        });
+
+        result = {
+          estimatedArrival: prediction.prediction.expected.toISOString(),
+          confidenceScore: prediction.confidence,
+          distanceKm: Math.round(distKm * 10) / 10,
+          trafficStatus: prediction.trafficCondition,
+        };
+      } else {
+        // No driver location — return static DB estimate with low confidence
+        const fallback = order.estimatedArrival
+          ? new Date(order.estimatedArrival)
+          : new Date(Date.now() + 2 * 60 * 60 * 1000);
+
+        result = {
+          estimatedArrival: fallback.toISOString(),
+          confidenceScore: 0,
+          distanceKm: 0,
+          trafficStatus: "unknown",
+        };
+      }
+
+      // 4. Store in Redis (fire-and-forget; never block the response)
+      redis.set(cacheKey, JSON.stringify(result), "EX", ETA_REDIS_TTL).catch(() => {});
+
+      return { data: result };
     }
   );
 }
