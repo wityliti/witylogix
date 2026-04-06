@@ -7,6 +7,10 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import collectionsRoutes from "../collections.js";
 
+vi.mock("../../lib/queue.js", () => ({
+  getIntegrationQueue: vi.fn(() => ({ add: vi.fn().mockResolvedValue({ id: "job-1" }) })),
+}));
+
 // Mock types
 interface MockRequest extends Partial<FastifyRequest> {
   params: Record<string, string>;
