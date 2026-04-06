@@ -90,6 +90,7 @@ const createMockShift = (overrides?: Partial<MockDriverShift>): MockDriverShift 
 const createMockExecution = (overrides?: Partial<MockWorkflowExecution>): MockWorkflowExecution => ({
   id: 'exec-' + Math.random().toString(36).substring(7),
   orderId: 'order-' + Math.random().toString(36).substring(7),
+  driverId: 'driver-' + Math.random().toString(36).substring(7),
   workflowName: 'assignDriverWorkflow',
   status: 'completed',
   startedAt: new Date(),

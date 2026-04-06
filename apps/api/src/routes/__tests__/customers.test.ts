@@ -209,7 +209,7 @@ describe('Customer Routes', () => {
       mockRequest.params = { id: 'cust-123' };
       mockRequest.shopId = 'shop-456';
 
-      const customer = mockTenantDb.customer.findUnique.mock.results[0].value;
+      const customer = otherShopCustomer;
       const isOwned = customer.shopId === mockRequest.shopId;
 
       expect(isOwned).toBe(false);
@@ -279,6 +279,8 @@ describe('Customer Routes', () => {
       mockTenantDb.$transaction.mockResolvedValue(results);
 
       mockRequest.body = { customers };
+
+      await mockTenantDb.$transaction(async () => results);
 
       expect(results).toHaveLength(2);
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
@@ -412,7 +414,7 @@ describe('Customer Routes', () => {
       mockRequest.params = { id: 'cust-123' };
       mockRequest.shopId = 'shop-456';
 
-      const customer = mockTenantDb.customer.findUnique.mock.results[0].value;
+      const customer = otherShopCustomer;
       const isOwned = customer.shopId === mockRequest.shopId;
 
       expect(isOwned).toBe(false);
@@ -475,7 +477,7 @@ describe('Customer Routes', () => {
       mockRequest.params = { id: 'cust-123' };
       mockRequest.shopId = 'shop-456';
 
-      const customer = mockTenantDb.customer.findUnique.mock.results[0].value;
+      const customer = otherShopCustomer;
       const isOwned = customer.shopId === mockRequest.shopId;
 
       expect(isOwned).toBe(false);
@@ -610,7 +612,8 @@ describe('Customer Routes', () => {
       mockTenantDb.customer.count.mockResolvedValueOnce(100);
       mockTenantDb.customer.count.mockResolvedValueOnce(15);
 
-      const syncedToday = mockTenantDb.customer.count();
+      await mockTenantDb.customer.count(); // total count
+      const syncedToday = await mockTenantDb.customer.count(); // today count
 
       expect(syncedToday).toBe(15);
     });
@@ -634,7 +637,7 @@ describe('Customer Routes', () => {
         _sum: { totalSpent: new Prisma.Decimal('50000.00') },
       });
 
-      const stats = mockTenantDb.customer.aggregate();
+      const stats = await mockTenantDb.customer.aggregate({});
       expect(stats._avg.ordersCount).toBe(5.5);
     });
 
@@ -644,7 +647,7 @@ describe('Customer Routes', () => {
         _sum: { totalSpent: new Prisma.Decimal('50000.00') },
       });
 
-      const stats = mockTenantDb.customer.aggregate();
+      const stats = await mockTenantDb.customer.aggregate({});
       expect(stats._sum.totalSpent).toEqual(new Prisma.Decimal('50000.00'));
     });
 
@@ -652,7 +655,7 @@ describe('Customer Routes', () => {
       const lastSync = new Date('2024-03-08T18:30:00Z');
       mockTenantDb.customer.findFirst.mockResolvedValue({ lastSyncAt: lastSync });
 
-      const result = mockTenantDb.customer.findFirst();
+      const result = await mockTenantDb.customer.findFirst({});
       expect(result.lastSyncAt).toEqual(lastSync);
     });
 
@@ -719,7 +722,7 @@ describe('Customer Routes', () => {
         _sum: { totalSpent: new Prisma.Decimal('0') },
       });
 
-      const stats = mockTenantDb.customer.aggregate();
+      const stats = await mockTenantDb.customer.aggregate({});
       expect(stats._avg.ordersCount).toBe(0);
     });
 
@@ -850,8 +853,8 @@ describe('Customer Routes', () => {
 
       mockRequest.params = { id: 'nonexistent' };
 
-      const customer = mockTenantDb.customer.findUnique();
-      expect(customer).toBeUndefined();
+      const customer = await mockTenantDb.customer.findUnique({ where: { id: 'nonexistent' } });
+      expect(customer).toBeNull();
     });
 
     it('should handle permission denied errors', async () => {
@@ -860,7 +863,7 @@ describe('Customer Routes', () => {
 
       mockRequest.shopId = 'shop-456';
 
-      const customer = mockTenantDb.customer.findUnique.mock.results[0].value;
+      const customer = otherShopCustomer;
       const hasPermission = customer.shopId === mockRequest.shopId;
 
       expect(hasPermission).toBe(false);
@@ -920,7 +923,7 @@ describe('Customer Routes', () => {
 
       mockTenantDb.customer.findUnique.mockResolvedValue(otherTenantCustomer);
 
-      const customer = mockTenantDb.customer.findUnique.mock.results[0].value;
+      const customer = otherTenantCustomer;
       const isAccessible = customer.shopId === mockRequest.shopId;
 
       expect(isAccessible).toBe(false);

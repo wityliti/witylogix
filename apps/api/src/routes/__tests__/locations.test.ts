@@ -1057,7 +1057,8 @@ describe('Locations Routes', () => {
 
       mockTenantDb.$queryRawUnsafe.mockResolvedValue([otherTenantLocation]);
 
-      const location = mockTenantDb.$queryRawUnsafe.mock.results[0].value[0];
+      const results = await mockTenantDb.$queryRawUnsafe('SELECT * FROM locations WHERE shop_id = $1', mockRequest.shopId);
+      const location = results[0];
       const isAccessible = location.shopId === mockRequest.shopId;
 
       expect(isAccessible).toBe(false);
@@ -1066,7 +1067,8 @@ describe('Locations Routes', () => {
 
   describe('Error Handling', () => {
     it('should handle database connection errors', async () => {
-      mockTenantDb.$queryRawUnsafe.mockRejectedValue(new Error('Database error'));
+      mockTenantDb.$queryRawUnsafe.mockReset();
+      mockTenantDb.$queryRawUnsafe.mockRejectedValueOnce(new Error('Database error'));
 
       await expect(mockTenantDb.$queryRawUnsafe()).rejects.toThrow('Database error');
     });

@@ -963,7 +963,8 @@ describe('HelloSign Client', () => {
     });
 
     it('should validate embedding parameters', async () => {
-      const response = await hellosignClient.getEmbeddedSigningUrl('', '');
+      const unauthClient = new HelloSignClient('');
+      const response = await unauthClient.getEmbeddedSigningUrl('', '');
       expect(response.error).toBe('not_authed');
     });
   });

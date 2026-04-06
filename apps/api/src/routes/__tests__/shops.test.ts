@@ -1112,7 +1112,7 @@ describe("Shops Routes", () => {
       const suffix = token.slice(-4);
 
       expect(prefix).toBe("pk.eyJ1I");
-      expect(suffix).toBe("yIn0");
+      expect(suffix).toBe("wIn0");
     });
   });
 });

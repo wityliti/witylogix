@@ -123,6 +123,7 @@ describe('Tracking Routes', () => {
       shipmentTracking: {
         findUnique: vi.fn(),
         findFirst: vi.fn(),
+        findMany: vi.fn(),
         update: vi.fn(),
         create: vi.fn(),
       },

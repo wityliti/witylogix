@@ -62,6 +62,7 @@ describe('Shipping Profiles Routes', () => {
       shippingProfile: {
         findMany: vi.fn(),
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
         count: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),

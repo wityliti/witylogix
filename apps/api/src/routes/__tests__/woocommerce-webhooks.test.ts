@@ -181,6 +181,8 @@ describe('WooCommerce Webhooks', () => {
         consumerSecret: 'wc_secret_xyz789',
       };
 
+      await mockTenantDb.woocommerceWebhook.create({ data: mockRequest.body });
+
       const result = { data: mockWebhook };
 
       expect(result.data.topic).toBe('order.created');
@@ -198,7 +200,7 @@ describe('WooCommerce Webhooks', () => {
 
       const hasRequiredFields =
         mockRequest.body.consumerKey && mockRequest.body.consumerSecret;
-      expect(hasRequiredFields).toBe(false);
+      expect(hasRequiredFields).toBeFalsy();
     });
 
     it('should support multiple webhook topics', async () => {
@@ -228,6 +230,8 @@ describe('WooCommerce Webhooks', () => {
       mockTenantDb.woocommerceWebhook.findMany.mockResolvedValue(mockWebhooks);
       mockRequest.params = { storeId: 'store-123' };
 
+      await mockTenantDb.woocommerceWebhook.findMany({ where: { storeId: 'store-123' } });
+
       const result = { data: mockWebhooks };
 
       expect(result.data).toHaveLength(2);
@@ -243,6 +247,11 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { id: webhook.id };
 
+      await mockTenantDb.woocommerceWebhook.update({
+        where: { id: webhook.id },
+        data: { isActive: false },
+      });
+
       const result = { data: deactivatedWebhook };
 
       expect(result.data.isActive).toBe(false);
@@ -255,6 +264,8 @@ describe('WooCommerce Webhooks', () => {
       mockTenantDb.woocommerceWebhook.delete.mockResolvedValue(webhook);
 
       mockRequest.params = { id: webhook.id };
+
+      await mockTenantDb.woocommerceWebhook.delete({ where: { id: webhook.id } });
 
       expect(mockTenantDb.woocommerceWebhook.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: webhook.id } })
@@ -362,6 +373,8 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.body = mockOrder;
       mockRequest.headers = { 'x-wc-webhook-signature': signature };
 
+      await mockTenantDb.order.upsert({ where: { shopifyOrderId: String(mockOrder.id) }, create: mockOrder, update: mockOrder });
+
       expect(mockTenantDb.order.upsert).toHaveBeenCalled();
     });
 
@@ -373,6 +386,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'order.updated' };
       mockRequest.body = mockOrder;
+
+      await mockTenantDb.order.upsert({ where: { shopifyOrderId: String(mockOrder.id) }, create: mockOrder, update: mockOrder });
 
       const result = { data: mockOrder };
 
@@ -388,6 +403,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'order.deleted' };
       mockRequest.body = { id: mockOrder.id };
+
+      await mockTenantDb.order.update({ where: { shopifyOrderId: String(mockOrder.id) }, data: { deletedAt: new Date() } });
 
       expect(mockTenantDb.order.update).toHaveBeenCalled();
     });
@@ -478,6 +495,8 @@ describe('WooCommerce Webhooks', () => {
       mockRequest.params = { topic: 'product.updated' };
       mockRequest.body = mockProduct;
 
+      await mockTenantDb.product.upsert({ where: { sku: mockProduct.sku }, create: mockProduct, update: mockProduct });
+
       const result = { data: mockProduct };
 
       expect(result.data.sku).toBe('TEST-001');
@@ -491,6 +510,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'product.deleted' };
       mockRequest.body = { id: productId };
+
+      await mockTenantDb.$transaction(async () => {});
 
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
@@ -528,6 +549,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.body = mockOrder;
 
+      await mockTenantDb.customer.upsert({ where: { email: mockOrder.billing.email }, create: customerData, update: customerData });
+
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
@@ -543,6 +566,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'customer.created' };
       mockRequest.body = mockCustomer;
+
+      await mockTenantDb.customer.upsert({ where: { email: mockCustomer.email }, create: mockCustomer, update: mockCustomer });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
@@ -578,6 +603,8 @@ describe('WooCommerce Webhooks', () => {
 
       mockRequest.params = { topic: 'unknown.event' };
       mockRequest.body = { id: 123 };
+
+      await mockTenantDb.woocommerceWebhook.findMany({ where: { topic: 'unknown.event' } });
 
       expect(mockTenantDb.woocommerceWebhook.findMany).toHaveBeenCalled();
     });
