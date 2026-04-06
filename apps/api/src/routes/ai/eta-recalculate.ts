@@ -13,7 +13,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { requireAuth } from '../../middleware/auth.js';
+import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { tenantContext } from '../../middleware/tenant.js';
 import { ETARecalculator } from '@witylogix/core/eta-recalculator';
 import type {
@@ -122,7 +122,8 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
     '/',
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = recalculateSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId;
+      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
       const recalculator = getRecalculator(tenantId);
 
       const start = performance.now();
@@ -167,7 +168,8 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
     '/batch',
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = batchRecalculateSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId;
+      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
       const recalculator = getRecalculator(tenantId);
 
       const start = performance.now();
@@ -209,9 +211,11 @@ export default async function etaRecalculateRoutes(fastify: FastifyInstance): Pr
 
   fastify.post<{ Body: z.infer<typeof trainSchema> }>(
     '/train',
+    { preHandler: [requireRole('ADMIN', 'SUPER_ADMIN')] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = trainSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId;
+      if (!tenantId) return reply.code(401).send({ error: 'Missing tenant context' });
       const recalculator = getRecalculator(tenantId);
 
       const points: TrainingPoint[] = body.trainingPoints;
