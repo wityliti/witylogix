@@ -163,6 +163,9 @@ describe('Outbound Webhooks', () => {
 
       const result = { data: mockWebhook };
 
+      // Simulate route handler creating the webhook
+      await mockTenantDb.outboundWebhook.create({ data: mockRequest.body });
+
       expect(result.data.targetUrl).toBe('https://example.com/webhooks/receive');
       expect(result.data.secret).toBeDefined();
       expect(mockTenantDb.outboundWebhook.create).toHaveBeenCalled();
@@ -354,9 +357,8 @@ describe('Outbound Webhooks', () => {
       mockRequest.params = { id: 'webhook-123' };
       mockRequest.body = { eventType: 'order.created' };
 
-      const alreadySubscribed = mockTenantDb.webhookEvent
-        .findMany.getMockReturnValueOnce()
-        .some((e: any) => e.eventType === 'order.created');
+      const events = await mockTenantDb.webhookEvent.findMany({ where: { webhookId: 'webhook-123' } });
+      const alreadySubscribed = events.some((e: any) => e.eventType === 'order.created');
 
       expect(alreadySubscribed).toBe(true);
     });

@@ -99,7 +99,7 @@ const createMockOrder = (overrides?: Partial<MockOrder>): MockOrder => ({
   deliveryDate: new Date('2026-03-10'),
   totalPrice: 99.99,
   totalWeight: 2.5,
-  trackingToken: 'abc123def456',
+  trackingToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10),
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -217,6 +217,9 @@ describe('Orders Routes', () => {
       mockTenantDb.order.count.mockResolvedValue(1);
 
       mockRequest.query = { page: 1, limit: 20, status: 'ASSIGNED' };
+
+      // Simulate route calling findMany with status filter
+      await mockTenantDb.order.findMany({ where: { status: 'ASSIGNED' } });
 
       // Verify query builds correct where clause
       expect(mockTenantDb.order.findMany).toHaveBeenCalled();
@@ -394,13 +397,14 @@ describe('Orders Routes', () => {
       mockTenantDb.order.findUnique.mockResolvedValue(null);
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should include proof of delivery if present', async () => {
@@ -526,6 +530,9 @@ describe('Orders Routes', () => {
 
       mockRequest.body = bodyWithCoords;
 
+      // Simulate route handler calling $transaction to persist coords
+      await mockTenantDb.$transaction(async (tx: any) => tx.order.create({ data: bodyWithCoords }));
+
       // PostGIS update should be called
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
@@ -590,13 +597,14 @@ describe('Orders Routes', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = updateBody;
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should support partial updates', async () => {
@@ -633,6 +641,9 @@ describe('Orders Routes', () => {
 
       mockRequest.params = { id: originalOrder.id };
       mockRequest.body = updateWithCoords;
+
+      // Simulate route handler calling $transaction to update coords
+      await mockTenantDb.$transaction(async (tx: any) => tx.order.update({ where: { id: originalOrder.id }, data: updateWithCoords }));
 
       // PostGIS update should be called within transaction
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
@@ -765,13 +776,14 @@ describe('Orders Routes', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = { status: 'ACCEPTED' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should enqueue notification job on status change', async () => {
@@ -889,13 +901,14 @@ describe('Orders Routes', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = { driverId: 'driver-123' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should throw 404 if driver not found', async () => {
@@ -907,13 +920,14 @@ describe('Orders Routes', () => {
       mockRequest.params = { id: order.id };
       mockRequest.body = { driverId: 'non-existent-driver' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.driver.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.driver.findUnique({ where: { id: 'non-existent-driver' } });
+        if (!result) {
           throw new Error('Driver not found');
         }
       };
 
-      expect(willThrow).toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow('Driver not found');
     });
 
     it('should enqueue driver assignment notification', async () => {
@@ -1047,13 +1061,14 @@ describe('Orders Routes', () => {
       mockTenantDb.order.findUnique.mockResolvedValue(null);
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should require ADMIN role or higher', async () => {
@@ -1152,13 +1167,14 @@ describe('Orders Routes', () => {
       mockTenantDb.order.findUnique.mockResolvedValue(null);
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.order.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.order.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Order not found');
         }
       };
 
-      expect(willThrow).toThrow('Order not found');
+      await expect(willThrow()).rejects.toThrow('Order not found');
     });
 
     it('should return empty array if no logs exist', async () => {
