@@ -329,7 +329,7 @@ describe('Activity Logs Routes', () => {
     });
 
     it('should return 200 with complete log details', async () => {
-      const log = generateActivityLog();
+      const log = generateActivityLog({ changes: { status: ['PENDING', 'PROCESSING'] } });
       mockPrisma.activityLog.findUnique.mockResolvedValue(log);
 
       const result = await (mockPrisma as any).activityLog.findUnique({

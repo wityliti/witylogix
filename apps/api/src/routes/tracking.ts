@@ -15,6 +15,47 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { prisma } from "@witylogix/db";
 import { NotFoundError, ValidationError } from "../lib/errors.js";
+import { createRateLimiter } from "../middleware/rate-limit-routes.js";
+import { etaEngine } from "@witylogix/core/ai-eta";
+
+// ─── ETA Cache (5-minute TTL per shipment) ──────────────────
+
+interface CachedETA {
+  estimatedArrival: string;
+  confidenceLow: string;
+  confidenceHigh: string;
+  isAIPredicted: boolean;
+  lastUpdated: string;
+}
+
+const etaCache = new Map<string, { data: CachedETA; expiresAt: number }>();
+
+// ─── ETA Rate Limiter (60 req/min per IP) ───────────────────
+
+function extractIp(req: FastifyRequest): string {
+  const fwd = req.headers["x-forwarded-for"];
+  return (Array.isArray(fwd) ? fwd[0] : fwd) || req.ip;
+}
+
+const trackingEtaRateLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 60,
+  keyGenerator: (req) => `ratelimit:tracking-eta:${extractIp(req)}`,
+});
+
+// ─── Haversine distance helper ──────────────────────────────
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 // ─── Route Plugin ───────────────────────────────────────────
 
@@ -269,6 +310,87 @@ async function trackingRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       return { data: slots, locked: false };
+    }
+  );
+
+  // ── GET AI-PREDICTED ETA ───────────────────────────────────
+
+  fastify.get(
+    "/token/:trackingToken/eta",
+    { preHandler: [trackingEtaRateLimiter] },
+    async (request: FastifyRequest, _reply: FastifyReply) => {
+      const { trackingToken } = request.params as { trackingToken: string };
+
+      // Check cache first
+      const cached = etaCache.get(trackingToken);
+      if (cached && cached.expiresAt > Date.now()) {
+        return { data: cached.data };
+      }
+
+      // Fetch order with location data
+      const order = await prisma.order.findUnique({
+        where: { trackingToken },
+        select: {
+          id: true,
+          estimatedArrival: true,
+          deliveryLocation: true,
+          driver: {
+            select: { currentLocation: true },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new NotFoundError("Tracking", trackingToken);
+      }
+
+      let eta: CachedETA;
+
+      try {
+        const driverLoc = order.driver?.currentLocation as { lat?: number; lng?: number } | null;
+        const destLoc = order.deliveryLocation as { lat?: number; lng?: number } | null;
+
+        if (
+          driverLoc?.lat != null && driverLoc?.lng != null &&
+          destLoc?.lat != null && destLoc?.lng != null
+        ) {
+          const distKm = haversineKm(driverLoc.lat, driverLoc.lng, destLoc.lat, destLoc.lng);
+
+          const prediction = etaEngine.predictETA({
+            origin: { lat: driverLoc.lat, lng: driverLoc.lng },
+            destination: { lat: destLoc.lat, lng: destLoc.lng },
+            distanceKm: distKm,
+            departureTime: new Date(),
+          });
+
+          eta = {
+            estimatedArrival: prediction.prediction.expected.toISOString(),
+            confidenceLow: prediction.prediction.low.toISOString(),
+            confidenceHigh: prediction.prediction.high.toISOString(),
+            isAIPredicted: true,
+            lastUpdated: new Date().toISOString(),
+          };
+        } else {
+          throw new Error("Insufficient location data for AI prediction");
+        }
+      } catch {
+        // Fallback to static estimate from DB
+        const fallback = order.estimatedArrival ?? new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const fallbackMs = fallback instanceof Date ? fallback.getTime() : new Date(fallback).getTime();
+
+        eta = {
+          estimatedArrival: new Date(fallbackMs).toISOString(),
+          confidenceLow: new Date(fallbackMs - 30 * 60 * 1000).toISOString(),
+          confidenceHigh: new Date(fallbackMs + 30 * 60 * 1000).toISOString(),
+          isAIPredicted: false,
+          lastUpdated: new Date().toISOString(),
+        };
+      }
+
+      // Cache for 5 minutes
+      etaCache.set(trackingToken, { data: eta, expiresAt: Date.now() + 5 * 60 * 1000 });
+
+      return { data: eta };
     }
   );
 }

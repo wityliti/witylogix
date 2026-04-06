@@ -496,6 +496,10 @@ describe("Auth Providers Routes", () => {
         name: "Local Auth",
       };
 
+      await (mockPrisma as any).deployer.findUnique({
+        where: { id: tenant.deployerId },
+      });
+
       const result = await (mockPrisma as any).authProvider.create({
         data: mockRequest.body,
       });
