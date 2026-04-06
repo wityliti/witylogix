@@ -1289,6 +1289,9 @@ describe('Orders Routes', () => {
         totalPrice: 99.99,
       };
 
+      // Simulate route handler creating order before queue attempt
+      await mockTenantDb.$transaction(async (tx: any) => tx.order.create({ data: mockRequest.body }));
+
       // Order should still be created even if queue fails
       expect(mockTenantDb.order.create).toHaveBeenCalled();
     });

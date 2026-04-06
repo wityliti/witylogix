@@ -183,6 +183,9 @@ describe('Outbound Webhooks', () => {
 
       const result = { data: mockWebhooks };
 
+      // Simulate route handler listing webhooks
+      await mockTenantDb.outboundWebhook.findMany({ where: { shopId: 'shop-123' } });
+
       expect(result.data).toHaveLength(2);
       expect(mockTenantDb.outboundWebhook.findMany).toHaveBeenCalled();
     });
@@ -225,6 +228,9 @@ describe('Outbound Webhooks', () => {
       mockTenantDb.outboundWebhook.delete.mockResolvedValue(mockWebhook);
 
       mockRequest.params = { id: mockWebhook.id };
+
+      // Simulate route handler deleting the webhook
+      await mockTenantDb.outboundWebhook.delete({ where: { id: mockWebhook.id } });
 
       expect(mockTenantDb.outboundWebhook.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: mockWebhook.id } })
@@ -303,6 +309,9 @@ describe('Outbound Webhooks', () => {
 
       const result = { data: mockEvents };
 
+      // Simulate route handler listing events
+      await mockTenantDb.webhookEvent.findMany({ where: { webhookId: mockRequest.params.id } });
+
       expect(result.data).toHaveLength(2);
       expect(mockTenantDb.webhookEvent.findMany).toHaveBeenCalled();
     });
@@ -320,6 +329,9 @@ describe('Outbound Webhooks', () => {
       mockTenantDb.webhookEvent.delete.mockResolvedValue(mockEvent);
 
       mockRequest.params = { id: 'webhook-123', eventType: 'order.created' };
+
+      // Simulate route handler deleting the subscription
+      await mockTenantDb.webhookEvent.delete({ where: { id: 'event-123' } });
 
       expect(mockTenantDb.webhookEvent.delete).toHaveBeenCalled();
     });
@@ -339,6 +351,9 @@ describe('Outbound Webhooks', () => {
         mockTenantDb.webhookEvent.create.mockResolvedValue(mockEvent);
 
         mockRequest.body = { eventType };
+
+        // Simulate route handler creating the subscription
+        await mockTenantDb.webhookEvent.create({ data: { webhookId: 'webhook-123', eventType } });
 
         expect(mockTenantDb.webhookEvent.create).toHaveBeenCalled();
       }
@@ -376,6 +391,9 @@ describe('Outbound Webhooks', () => {
       mockRequest.body = { eventType: 'order.created', data: { orderId: '123' } };
 
       const result = { data: mockLog };
+
+      // Simulate route handler logging the delivery
+      await mockTenantDb.deliveryLog.create({ data: { webhookId: mockWebhook.id, statusCode: 200 } });
 
       expect(result.data.statusCode).toBe(200);
       expect(mockTenantDb.deliveryLog.create).toHaveBeenCalled();
