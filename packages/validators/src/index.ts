@@ -414,21 +414,3 @@ export const batchDeliveryEventsSchema = z.object({
 export type DeliveryEventInput = z.infer<typeof deliveryEventInputSchema>;
 export type BatchDeliveryEvents = z.infer<typeof batchDeliveryEventsSchema>;
 
-// ─── Failed Delivery Payload (WIT-141) ──────────────────────
-// Required in the `payload` field of `failed_delivery` events.
-
-export const failedDeliveryPayloadSchema = z.object({
-  failureReason: z.enum([
-    'not_home',
-    'wrong_address',
-    'refused',
-    'damaged',
-    'access_denied',
-    'business_closed',
-    'other',
-  ]),
-  note: z.string().max(500).optional(),
-  photoUrl: z.string().url().optional(),
-});
-
-export type FailedDeliveryPayload = z.infer<typeof failedDeliveryPayloadSchema>;
