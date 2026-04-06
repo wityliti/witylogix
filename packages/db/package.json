@@ -26,6 +26,8 @@
     "db:studio": "npx prisma studio --schema=./prisma/schema",
     "seed": "tsx src/seed.ts",
     "validate-env": "tsx src/validate-env.ts",
+    "lint": "tsx scripts/check-rls-coverage.ts",
+    "lint:rls": "tsx scripts/check-rls-coverage.ts",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
