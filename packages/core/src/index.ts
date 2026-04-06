@@ -50,6 +50,7 @@ export * from './dispatch/index.js';
 export * from './ai-slots/index.js';
 export * from './ai-eta/index.js';
 export * from './ai-eta-v2/index.js';
+export * from './eta-recalculator/index.js';
 export * from './ai-analytics/index.js';
 export * from './platform/index.js';
 export * from './config/index.js';
