@@ -16,10 +16,10 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import crypto from "crypto";
 import { WooCommerceAdapter } from "@witylogix/core/platforms/adapters";
 import type { WooCommerceOrder } from "@witylogix/core/platforms/adapters";
 import { persistWCOrder } from "@witylogix/core/woocommerce/normalize";
+import { verifyWooCommerceHmac } from "../middleware/hmac.js";
 
 /**
  * WooCommerce webhook topics that we handle
@@ -142,54 +142,6 @@ const WooCommerceProductSchema = z.object({
 // ─── Helpers ─────────────────────────────────────────────
 
 /**
- * Validate WooCommerce webhook signature
- *
- * @param rawBody Raw request body
- * @param signature X-WC-Webhook-Signature header value
- * @param secret Webhook secret from WooCommerce settings
- * @returns true if signature is valid
- */
-function validateWooCommerceSignature(
-  rawBody: string | Buffer,
-  signature: string,
-  secret: string
-): boolean {
-  const bodyString = typeof rawBody === "string" ? rawBody : rawBody.toString("utf-8");
-
-  const computed = crypto
-    .createHmac("sha256", secret)
-    .update(bodyString, "utf-8")
-    .digest("base64");
-
-  const expectedBuffer = Buffer.from(computed, "utf-8");
-  const actualBuffer = Buffer.from(signature, "utf-8");
-
-  if (expectedBuffer.length !== actualBuffer.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
-}
-
-/**
- * Find shop by domain or ID from webhook
- */
-async function findShopByWebhookSource(
-  db: any,
-  siteUrl: string
-): Promise<any> {
-  // Try to match by woocommerce site URL
-  return db.shop.findFirst({
-    where: {
-      OR: [
-        { woocommerceSiteUrl: siteUrl },
-        { domain: siteUrl },
-      ],
-    },
-  });
-}
-
-/**
  * Parse WooCommerce webhook topic to determine event type
  * Format: resource.action (e.g., "order.created", "product.updated")
  */
@@ -225,52 +177,20 @@ export default async function wooCommerceWebhookRoutes(
   /**
    * POST /api/v4/webhooks/woocommerce
    *
-   * Main webhook handler for all WooCommerce events
-   * Validates HMAC signature, maps payload, enqueues for processing
+   * Main webhook handler for all WooCommerce events.
+   * HMAC-SHA256 signature verification is performed by the preHandler middleware
+   * before this handler is reached; a 401 is returned for any invalid signature.
    */
   fastify.post(
     "/api/v4/webhooks/woocommerce",
+    { preHandler: verifyWooCommerceHmac(fastify) },
     async (request: any, reply: FastifyReply) => {
       try {
-        // Extract headers
-        const signature = request.headers["x-wc-webhook-signature"] as string;
         const topic = request.headers["x-wc-webhook-topic"] as string;
-        const siteUrl = request.headers["x-wc-webhook-source"] as string;
 
-        // Validate required headers
-        if (!signature || !topic) {
-          fastify.log.warn(
-            "WooCommerce webhook missing required headers (signature, topic)"
-          );
-          return reply.code(200).send({ success: true }); // Return 200 to stop retries
-        }
-
-        // Get the raw request body for signature validation
-        const rawBody = request.rawBody || JSON.stringify(request.body);
-
-        // Lookup shop to get webhook secret
-        const shop = await findShopByWebhookSource((fastify as any).db, siteUrl);
-        if (!shop || !shop.woocommerceWebhookSecret) {
-          fastify.log.warn(
-            { siteUrl },
-            "WooCommerce webhook from unknown shop or missing webhook secret"
-          );
+        if (!topic) {
+          fastify.log.warn("WooCommerce webhook missing X-WC-Webhook-Topic header");
           return reply.code(200).send({ success: true });
-        }
-
-        // Validate webhook signature using adapter
-        const isValid = adapter.validateWebhook(
-          rawBody,
-          signature,
-          shop.woocommerceWebhookSecret
-        );
-
-        if (!isValid) {
-          fastify.log.warn(
-            { siteUrl, topic },
-            "WooCommerce webhook signature validation failed"
-          );
-          return reply.code(200).send({ success: true }); // Return 200 to avoid retries for bad signatures
         }
 
         // Parse topic to determine event type
