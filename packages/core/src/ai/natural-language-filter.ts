@@ -47,9 +47,9 @@ export interface StructuredFilter {
 // ─── PATTERNS & KEYWORDS ────────────────────────────────────────────────
 
 const ENTITY_PATTERNS = {
-  order: /\b(orders?|shipments?|deliveries?)\b/i,
+  delivery: /\b(deliveries?|delivery)\b/i,
+  order: /\b(orders?|shipments?)\b/i,
   driver: /\b(drivers?|couriers?)\b/i,
-  delivery: /\b(deliveries?|shipments?)\b/i,
   customer: /\b(customers?|clients?|accounts?)\b/i,
   invoice: /\b(invoices?|bills?|payments?)\b/i,
 };
@@ -74,11 +74,11 @@ const DATE_PATTERNS: Record<string, RegExp> = {
 };
 
 const AMOUNT_PATTERNS = {
-  gt: /over\s+\$?([\d,]+)/i,
-  gte: /at\s+least\s+\$?([\d,]+)/i,
-  lt: /under\s+\$?([\d,]+)/i,
-  lte: /up\s+to\s+\$?([\d,]+)/i,
-  eq: /exactly\s+\$?([\d,]+)/i,
+  gt: /(?:over|@)\s*\$?([\d,]+(?:\.\d+)?)/i,
+  gte: /at\s+least\s+\$?([\d,]+(?:\.\d+)?)/i,
+  lt: /under\s+\$?([\d,]+(?:\.\d+)?)/i,
+  lte: /up\s+to\s+\$?([\d,]+(?:\.\d+)?)/i,
+  eq: /exactly\s+\$?([\d,]+(?:\.\d+)?)/i,
 };
 
 // ─── NATURAL LANGUAGE FILTER PARSER ─────────────────────────────────────
@@ -131,12 +131,17 @@ export class NaturalLanguageFilterParser {
    * Detect the entity type from query
    */
   private detectEntity(query: string): Entity | undefined {
+    let bestEntity: Entity | undefined;
+    let bestPosition = Infinity;
+
     for (const [entity, pattern] of Object.entries(ENTITY_PATTERNS)) {
-      if (pattern.test(query)) {
-        return entity as Entity;
+      const match = query.match(pattern);
+      if (match && match.index !== undefined && match.index < bestPosition) {
+        bestPosition = match.index;
+        bestEntity = entity as Entity;
       }
     }
-    return undefined;
+    return bestEntity;
   }
 
   /**
@@ -197,7 +202,7 @@ export class NaturalLanguageFilterParser {
     for (const [operator, pattern] of Object.entries(AMOUNT_PATTERNS)) {
       const match = query.match(pattern);
       if (match && match[1]) {
-        const amount = parseInt(match[1].replace(/,/g, ""), 10);
+        const amount = parseFloat(match[1].replace(/,/g, ""));
         if (!isNaN(amount)) {
           (condition as any)[operator] = amount;
         }

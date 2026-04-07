@@ -151,13 +151,20 @@ describe('Anomaly Detection', () => {
     it('should reset after detection', () => {
       const detector = new CUSUMDetector(controlValues, 3);
 
+      // Feed high values until anomaly detected (CUSUM resets on detection)
+      let detected = false;
       for (let i = 0; i < 30; i++) {
-        detector.update(70);
+        const result = detector.update(70);
+        if (result.isAnomaly) {
+          detected = true;
+          // After anomaly detection, sums should be reset to 0
+          expect(result.positiveSum).toBe(0);
+          expect(result.negativeSum).toBe(0);
+          break;
+        }
       }
 
-      const result = detector.update(50); // Normal value
-      expect(result.positiveSum).toBe(0);
-      expect(result.negativeSum).toBe(0);
+      expect(detected).toBe(true);
     });
   });
 

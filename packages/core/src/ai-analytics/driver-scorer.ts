@@ -143,8 +143,8 @@ function assignBadges(
     badges.push('top_performer');
   }
 
-  // Most Improved: improving trend + above 50th percentile
-  if (trend === 'improving' && percentileRank > 50) {
+  // Most Improved: improving trend + above average
+  if (trend === 'improving' && score >= 50) {
     badges.push('most_improved');
   }
 
@@ -216,20 +216,21 @@ function calculatePercentileRank(
     peers = peers.filter((p) => p.tenantId === tenantId);
   }
 
-  // Get unique drivers in peer group
-  const uniqueDrivers = [...new Set(peers.map((p) => p.driverId))];
-  const totalPeers = uniqueDrivers.length;
-
-  if (totalPeers === 0) {
-    return { rank: 1, totalPeers: 1, percentile: 50 };
-  }
-
   // Get latest score for each peer
   const latestPeerScores: Record<string, number> = {};
   for (const peer of peers) {
     if (!latestPeerScores[peer.driverId]) {
       latestPeerScores[peer.driverId] = peer.score;
     }
+  }
+
+  // Include the current driver's score for comparison
+  latestPeerScores[driverId] = score;
+
+  const totalPeers = Object.keys(latestPeerScores).length;
+
+  if (totalPeers <= 1) {
+    return { rank: 1, totalPeers: 1, percentile: 50 };
   }
 
   // Sort by score descending

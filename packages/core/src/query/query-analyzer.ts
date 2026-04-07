@@ -113,14 +113,14 @@ export class QueryAnalyzer {
       const joins = this.analyzeJoins(plan);
       const hasSequentialScan = this.hasSequentialScan(plan);
 
-      const totalCost = plan.totalCost || 0;
+      const totalCost = plan["Total Cost"] || 0;
       const severity = this.calculateSeverity(totalCost, hasSequentialScan);
 
       return {
         query: sql,
         totalCost,
-        rowsEstimated: plan.rows || 0,
-        rowsActual: plan.actualRows,
+        rowsEstimated: plan["Rows"] || plan.rows || 0,
+        rowsActual: plan["Actual Rows"] || plan.actualRows,
         hasSequentialScan,
         isProblematic: severity !== "low" || issues.length > 0,
         severity,

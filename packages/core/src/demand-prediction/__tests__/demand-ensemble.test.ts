@@ -380,8 +380,10 @@ describe('Demand Ensemble', () => {
     });
 
     it('should handle zones with sparse data', async () => {
-      // Create sparse training data
-      const sparseData = historicalData.filter((_, i) => i % 5 === 0); // Every 5th point
+      // Create sparse training data with correct zoneId
+      const sparseData = historicalData
+        .filter((_, i) => i % 5 === 0)
+        .map((d) => ({ ...d, zoneId: 'zone-sparse' }));
 
       const sparseEnsemble = new DemandEnsemble();
       await sparseEnsemble.train('zone-sparse', sparseData);

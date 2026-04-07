@@ -387,9 +387,10 @@ describe('ProviderComparisonEngine', () => {
         destination: { lat: 40.7589, lng: -73.9851 },
       });
 
-      // HERE should be recommended for speed
+      // HERE should be recommended for speed (faster duration)
       expect(report.recommendations.bestForSpeed).toBe('here');
-      expect(report.recommendations.bestForCost).toBe('here');
+      // TomTom has lower baseCostUsd (0.004 vs 0.008)
+      expect(report.recommendations.bestForCost).toBe('tomtom');
     });
   });
 

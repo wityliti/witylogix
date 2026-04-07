@@ -47,6 +47,8 @@ describe('WidgetManager', () => {
         updatedAt: new Date(),
       };
 
+      // findMany is called by findNextAvailablePosition to get existing widgets
+      prisma.widget.findMany.mockResolvedValue([]);
       prisma.widget.findFirst.mockResolvedValue(null);
       prisma.widget.create.mockResolvedValue(mockWidget);
 
@@ -348,14 +350,9 @@ describe('WidgetManager', () => {
 
   describe('resetLayout', () => {
     it('should reset layout to defaults', async () => {
-      const defaultWidgets: any = [
-        { id: 'widget-1', type: 'stat_card', name: 'Total Revenue' },
-        { id: 'widget-2', type: 'stat_card', name: "Today's Orders" },
-        { id: 'widget-3', type: 'chart_line', name: 'Revenue Trend' },
-        { id: 'widget-4', type: 'table', name: 'Recent Orders' },
-      ];
-
       prisma.widget.deleteMany.mockResolvedValue({ count: 0 });
+      // findMany is called by findNextAvailablePosition within addWidget
+      prisma.widget.findMany.mockResolvedValue([]);
       prisma.widget.findFirst.mockResolvedValue(null);
       prisma.widget.create.mockResolvedValue({
         isActive: true,
@@ -392,9 +389,9 @@ describe('WidgetManager', () => {
       };
 
       const duplicatedWidget: any = {
+        ...mockWidget,
         id: 'widget-2',
         name: 'Revenue (Copy)',
-        ...mockWidget,
       };
 
       prisma.widget.findUnique.mockResolvedValue(mockWidget);
@@ -436,10 +433,11 @@ describe('WidgetManager', () => {
 
   describe('Edge cases', () => {
     it('should handle position at grid boundary', async () => {
+      // GRID_COLS is 4, so max valid position is x=3 with w=1 (3+1=4)
       prisma.widget.findFirst.mockResolvedValue(null);
       prisma.widget.create.mockResolvedValue({
         id: 'widget-1',
-        position: { x: 11, y: 0, w: 1, h: 1 },
+        position: { x: 3, y: 0, w: 1, h: 1 },
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -448,10 +446,10 @@ describe('WidgetManager', () => {
       const result = await manager.addWidget('shop-1', 'user-1', {
         type: 'stat_card',
         name: 'Test',
-        position: { x: 11, y: 0, w: 1, h: 1 },
+        position: { x: 3, y: 0, w: 1, h: 1 },
       });
 
-      expect(result.position).toEqual({ x: 11, y: 0, w: 1, h: 1 });
+      expect(result.position).toEqual({ x: 3, y: 0, w: 1, h: 1 });
     });
 
     it('should throw error when position exceeds grid width', async () => {
@@ -459,7 +457,7 @@ describe('WidgetManager', () => {
         manager.addWidget('shop-1', 'user-1', {
           type: 'stat_card',
           name: 'Test',
-          position: { x: 11, y: 0, w: 2, h: 1 },
+          position: { x: 3, y: 0, w: 2, h: 1 },
         })
       ).rejects.toThrow(WidgetValidationError);
     });

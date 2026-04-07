@@ -132,8 +132,8 @@ describe("QueryCache", () => {
       // Before expiration
       expect(cache.get(key)).toEqual({ data: 1 });
 
-      // After expiration
-      vi.advanceTimersByTime(1100);
+      // After expiration AND stale-while-revalidate window (TTL * 1.5 = 1500ms)
+      vi.advanceTimersByTime(1600);
       expect(cache.get(key)).toBeNull();
 
       vi.useRealTimers();
@@ -148,7 +148,8 @@ describe("QueryCache", () => {
       vi.advanceTimersByTime(4000);
       expect(cache.get(key)).toEqual({ data: 1 });
 
-      vi.advanceTimersByTime(1500);
+      // Past both TTL (5s) and stale window (7.5s)
+      vi.advanceTimersByTime(4000);
       expect(cache.get(key)).toBeNull();
 
       vi.useRealTimers();
@@ -163,7 +164,8 @@ describe("QueryCache", () => {
       vi.advanceTimersByTime(299000);
       expect(cache.get(key)).toEqual({ data: 1 });
 
-      vi.advanceTimersByTime(2000);
+      // Past both TTL (300s) and stale window (450s)
+      vi.advanceTimersByTime(152000);
       expect(cache.get(key)).toBeNull();
 
       vi.useRealTimers();
@@ -268,6 +270,13 @@ describe("QueryCache", () => {
 
       cache.set(key1, { data: 1 });
       cache.set(key2, { data: 2 });
+
+      // Add specific invalidation rule for the users table
+      cache.addInvalidationRule({
+        table: "users",
+        operation: "ALL",
+        pattern: /users/i,
+      });
 
       cache.invalidate("users");
 

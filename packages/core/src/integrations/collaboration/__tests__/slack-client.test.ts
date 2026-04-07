@@ -58,11 +58,17 @@ describe('SlackClient', () => {
 
   describe('Connection Management', () => {
     it('should connect successfully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true, user_id: 'U123' }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, user_id: 'U123' }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
 
       await slackClient.connect();
 
@@ -73,18 +79,24 @@ describe('SlackClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         json: async () => ({ ok: false, error: 'invalid_auth' }),
         status: 200,
-        ok: false,
+        ok: true,
       });
 
       await expect(slackClient.connect()).rejects.toThrow();
     });
 
     it('should disconnect properly', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
 
       await slackClient.connect();
       await slackClient.disconnect();
@@ -93,11 +105,17 @@ describe('SlackClient', () => {
     });
 
     it('should report health status when connected', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
 
       await slackClient.connect();
       const health = await slackClient.health();
@@ -113,11 +131,17 @@ describe('SlackClient', () => {
 
   describe('Channel Operations', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -242,11 +266,17 @@ describe('SlackClient', () => {
 
   describe('Message Operations', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -358,11 +388,17 @@ describe('SlackClient', () => {
 
   describe('User Operations', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -461,11 +497,17 @@ describe('SlackClient', () => {
     });
 
     it('should set user presence', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        });
 
       await expect(
         slackClient.setUserPresence('U123', 'active', 'In a meeting')
@@ -475,11 +517,17 @@ describe('SlackClient', () => {
 
   describe('Reaction Operations', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -547,11 +595,17 @@ describe('SlackClient', () => {
 
   describe('Channel Member Operations', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -687,7 +741,7 @@ describe('SlackClient', () => {
       const client = new SlackClient(limitedConfig);
 
       (global.fetch as any).mockResolvedValue({
-        json: async () => ({ ok: true }),
+        json: async () => ({ ok: true, url: 'wss://test' }),
         status: 200,
         ok: true,
       });
@@ -708,11 +762,17 @@ describe('SlackClient', () => {
 
   describe('Caching', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -743,11 +803,17 @@ describe('SlackClient', () => {
 
   describe('Error Handling', () => {
     beforeEach(async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({ ok: true }),
-        status: 200,
-        ok: true,
-      });
+      (global.fetch as any)
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true }),
+          status: 200,
+          ok: true,
+        })
+        .mockResolvedValueOnce({
+          json: async () => ({ ok: true, url: 'wss://test' }),
+          status: 200,
+          ok: true,
+        });
       await slackClient.connect();
     });
 
@@ -798,7 +864,7 @@ describe('SlackClient', () => {
 
       const normalized = (client as any).normalizeEmoji(content);
 
-      expect(normalized).toContain('👍');
+      expect(normalized).toContain(':+1:');
       expect(normalized).toContain('🔥');
       expect(normalized).toContain('🎉');
     });

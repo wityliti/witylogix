@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,8 @@ function getRatingLabel(value: number): string {
   }
 }
 
-export default function RatePage({ params }: { params: { id: string } }) {
+export default function RatePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [step, setStep] = useState<RatingStep>('rating');
   const [driverRating, setDriverRating] = useState(0);
   const [experienceRating, setExperienceRating] = useState(0);
@@ -64,7 +65,7 @@ export default function RatePage({ params }: { params: { id: string } }) {
       {/* Back + Breadcrumb */}
       <div className="flex items-center gap-3 animate-fade-in">
         <Link
-          href={`/orders/${params.id}`}
+          href={`/orders/${id}`}
           className="btn btn-ghost p-2"
           aria-label="Back to order"
         >
@@ -76,7 +77,7 @@ export default function RatePage({ params }: { params: { id: string } }) {
           </Link>
           {' / '}
           <Link
-            href={`/orders/${params.id}`}
+            href={`/orders/${id}`}
             className="hover:text-wl-text-secondary transition-colors"
           >
             Details

@@ -287,7 +287,17 @@ export async function processWebhook(
   requestBody: string
 ): Promise<WebhookProcessResult> {
   try {
-    // Step 1: Verify signature
+    // Step 1: Check supported provider
+    const supportedProviders = ["onfleet", "stuart", "uber_direct"];
+    if (!supportedProviders.includes(provider as string)) {
+      return {
+        success: false,
+        error: `Unsupported provider: ${provider}`,
+        isDuplicate: false,
+      };
+    }
+
+    // Step 2: Verify signature
     const isValid = verifySignature(provider, requestBody, signature, secret);
     if (!isValid) {
       return {
@@ -297,7 +307,7 @@ export async function processWebhook(
       };
     }
 
-    // Step 2: Parse payload
+    // Step 3: Parse payload
     let parsedPayload: OnfleetWebhookPayload | StuartWebhookPayload | UberDirectWebhookPayload;
     try {
       parsedPayload = JSON.parse(payload);
@@ -309,7 +319,7 @@ export async function processWebhook(
       };
     }
 
-    // Step 3: Normalize to unified event
+    // Step 4: Normalize to unified event
     let normalizedEvent: NormalizedDeliveryEvent | null;
     let eventId: string;
 

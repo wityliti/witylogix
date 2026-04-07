@@ -77,7 +77,7 @@ describe('HERESDKClient', () => {
     });
 
     it('should handle API errors', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValue({
         ok: false,
         json: async () => ({ message: 'Invalid API key' }),
         statusText: 'Unauthorized',
@@ -161,7 +161,7 @@ describe('HERESDKClient', () => {
               street: 'Times Square',
               city: 'New York',
               state: 'NY',
-              country: 'United States',
+              countryName: 'United States',
             },
           },
         ],
@@ -369,7 +369,7 @@ describe('HERESDKClient', () => {
     });
 
     it('should throw error for no route found', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValue({
         ok: true,
         json: async () => ({ routes: [] }),
       } as Response);
@@ -514,7 +514,7 @@ describe('HERESDKClient', () => {
           matrix: [
             {
               startIndex: 0,
-              endIndex: 2,
+              endIndex: 1,
               error: { type: 'UNREACHABLE', message: 'No route found' },
             },
           ],

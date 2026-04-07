@@ -40,6 +40,9 @@ export class MailgunClient extends EmailAdapter {
     super(config);
     this.apiKey = config.apiKey || "";
     this.baseUrl = config.baseUrl || "https://api.mailgun.net/v3";
+    if (!this.apiKey) {
+      throw new Error("Mailgun adapter requires apiKey in config");
+    }
     if (!this.config.tenantId) {
       throw new Error("Mailgun adapter requires tenantId (domain) in config");
     }

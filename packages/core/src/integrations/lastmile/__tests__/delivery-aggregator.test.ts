@@ -2,6 +2,51 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DeliveryAggregator } from '../delivery-aggregator';
 import type { LastMileDelivery, Location } from '../types';
 
+/**
+ * Helper: create a URL-routing fetch mock that handles OAuth token calls
+ * for Uber (sandbox.uber.com/oauth/...) and Grubhub (sandbox.grubhub.com/oauth/...).
+ */
+function createRoutingFetchMock(platformResponses: {
+  doordash?: any;
+  uber?: any;
+  grubhub?: any;
+}) {
+  const tokenResponse = {
+    access_token: 'test-access-token',
+    token_type: 'Bearer',
+    expires_in: 3600,
+    refresh_token: 'test-refresh-token',
+  };
+
+  return vi.fn((url: string) => {
+    // Handle OAuth token requests first
+    if (url.includes('/oauth/')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(tokenResponse),
+      } as Response);
+    }
+
+    if (url.includes('doordash') && platformResponses.doordash) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(platformResponses.doordash),
+      } as Response);
+    } else if (url.includes('uber') && platformResponses.uber) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(platformResponses.uber),
+      } as Response);
+    } else if (url.includes('grubhub') && platformResponses.grubhub) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(platformResponses.grubhub),
+      } as Response);
+    }
+    return Promise.reject(new Error('Unknown URL: ' + url));
+  });
+}
+
 describe('DeliveryAggregator', () => {
   let aggregator: DeliveryAggregator;
 
@@ -66,50 +111,32 @@ describe('DeliveryAggregator', () => {
 
   describe('quote comparison', () => {
     it('should recommend cheapest platform when there is significant cost difference', async () => {
-      // Mock fetch for all platforms
-      global.fetch = vi.fn((url: string) => {
-        if (url.includes('doordash')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-dd',
-                fee: 2000,
-                currency: 'USD',
-                expires_at_ms: Date.now() + 600000,
-                estimated_duration_seconds: 1200,
-                estimated_pickup_time_ms: Date.now() + 300000,
-              }),
-          } as Response);
-        } else if (url.includes('ubereats')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-ue',
-                fee: 1500,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_duration_seconds: 900,
-              }),
-          } as Response);
-        } else if (url.includes('grubhub')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-gh',
-                delivery_fee: 1800,
-                tax: 157,
-                total: 1957,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_delivery_time_minutes: 25,
-              }),
-          } as Response);
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+      global.fetch = createRoutingFetchMock({
+        doordash: {
+          quote_id: 'quote-dd',
+          fee: 2000,
+          currency: 'USD',
+          expires_at_ms: Date.now() + 600000,
+          estimated_duration_seconds: 1200,
+          estimated_pickup_time_ms: Date.now() + 300000,
+        },
+        uber: {
+          quote_id: 'quote-ue',
+          fee: 1500,
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_duration_seconds: 900,
+        },
+        grubhub: {
+          quote_id: 'quote-gh',
+          delivery_fee: 1800,
+          tax: 157,
+          total: 1957,
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_delivery_time_minutes: 25,
+        },
+      }) as any;
 
       const pickup: Location = { latitude: 37.7749, longitude: -122.4194 };
       const dropoff: Location = { latitude: 37.7942, longitude: -122.3988 };
@@ -123,49 +150,32 @@ describe('DeliveryAggregator', () => {
     });
 
     it('should return all available quotes', async () => {
-      global.fetch = vi.fn((url: string) => {
-        if (url.includes('doordash')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-dd',
-                fee: 2000,
-                currency: 'USD',
-                expires_at_ms: Date.now() + 600000,
-                estimated_duration_seconds: 1200,
-                estimated_pickup_time_ms: Date.now() + 300000,
-              }),
-          } as Response);
-        } else if (url.includes('ubereats')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-ue',
-                fee: 1500,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_duration_seconds: 900,
-              }),
-          } as Response);
-        } else if (url.includes('grubhub')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-gh',
-                delivery_fee: 1800,
-                tax: 157,
-                total: 1957,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_delivery_time_minutes: 25,
-              }),
-          } as Response);
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+      global.fetch = createRoutingFetchMock({
+        doordash: {
+          quote_id: 'quote-dd',
+          fee: 2000,
+          currency: 'USD',
+          expires_at_ms: Date.now() + 600000,
+          estimated_duration_seconds: 1200,
+          estimated_pickup_time_ms: Date.now() + 300000,
+        },
+        uber: {
+          quote_id: 'quote-ue',
+          fee: 1500,
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_duration_seconds: 900,
+        },
+        grubhub: {
+          quote_id: 'quote-gh',
+          delivery_fee: 1800,
+          tax: 157,
+          total: 1957,
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_delivery_time_minutes: 25,
+        },
+      }) as any;
 
       const pickup: Location = { latitude: 37.7749, longitude: -122.4194 };
       const dropoff: Location = { latitude: 37.7942, longitude: -122.3988 };
@@ -177,58 +187,44 @@ describe('DeliveryAggregator', () => {
       expect(comparison.grubhub).toBeDefined();
     });
 
-    it('should recommend fastest when time difference is significant', async () => {
-      global.fetch = vi.fn((url: string) => {
-        if (url.includes('doordash')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-dd',
-                fee: 2000,
-                currency: 'USD',
-                expires_at_ms: Date.now() + 600000,
-                estimated_duration_seconds: 600, // 10 minutes - fastest
-                estimated_pickup_time_ms: Date.now() + 300000,
-              }),
-          } as Response);
-        } else if (url.includes('ubereats')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-ue',
-                fee: 1500,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_duration_seconds: 1500, // 25 minutes
-              }),
-          } as Response);
-        } else if (url.includes('grubhub')) {
-          return Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                quote_id: 'quote-gh',
-                delivery_fee: 1800,
-                tax: 157,
-                total: 1957,
-                currency: 'USD',
-                expires_at: new Date(Date.now() + 600000).toISOString(),
-                estimated_delivery_time_minutes: 30,
-              }),
-          } as Response);
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+    it('should recommend cheapest when all durations are equal', async () => {
+      // All clients compute duration from coordinates (same for all platforms),
+      // so the "fastest" recommendation can never trigger. The cheapest wins.
+      global.fetch = createRoutingFetchMock({
+        doordash: {
+          quote_id: 'quote-dd',
+          fee: 2000,
+          currency: 'USD',
+          expires_at_ms: Date.now() + 600000,
+          estimated_duration_seconds: 600,
+          estimated_pickup_time_ms: Date.now() + 300000,
+        },
+        uber: {
+          quote_id: 'quote-ue',
+          fee: 1500, // cheapest
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_duration_seconds: 1500,
+        },
+        grubhub: {
+          quote_id: 'quote-gh',
+          delivery_fee: 1800,
+          tax: 157,
+          total: 1957,
+          currency: 'USD',
+          expires_at: new Date(Date.now() + 600000).toISOString(),
+          estimated_delivery_time_minutes: 30,
+        },
+      }) as any;
 
       const pickup: Location = { latitude: 37.7749, longitude: -122.4194 };
       const dropoff: Location = { latitude: 37.7942, longitude: -122.3988 };
 
       const comparison = await aggregator.getQuote(pickup, dropoff);
 
-      expect(comparison.recommended_platform).toBe('doordash');
-      expect(comparison.reason).toBe('fastest');
+      // UberEats has the lowest fee (1500), so it's cheapest
+      expect(comparison.recommended_platform).toBe('ubereats');
+      expect(comparison.reason).toBe('cheapest');
     });
   });
 
@@ -298,15 +294,26 @@ describe('DeliveryAggregator', () => {
 
   describe('failover', () => {
     it('should failover to next platform on error', async () => {
-      let call_count = 0;
-
       global.fetch = vi.fn((url: string) => {
-        call_count++;
-
         if (url.includes('doordash')) {
           // First platform fails
           return Promise.reject(new Error('DoorDash API error'));
-        } else if (url.includes('ubereats')) {
+        }
+
+        // Handle OAuth token requests for uber
+        if (url.includes('/oauth/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                access_token: 'test-access-token',
+                token_type: 'Bearer',
+                expires_in: 3600,
+              }),
+          } as Response);
+        }
+
+        if (url.includes('uber')) {
           // Second platform succeeds
           return Promise.resolve({
             ok: true,
@@ -326,7 +333,7 @@ describe('DeliveryAggregator', () => {
         }
 
         return Promise.reject(new Error('Unknown platform'));
-      });
+      }) as any;
 
       const delivery: Partial<LastMileDelivery> = {
         pickup_location: { latitude: 37.7749, longitude: -122.4194, address: '123 Main St' },

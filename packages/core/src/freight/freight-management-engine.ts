@@ -38,6 +38,7 @@ export class LaneManager {
     return {
       id: this.generateId("lane"),
       ...laneData,
+      tenantId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

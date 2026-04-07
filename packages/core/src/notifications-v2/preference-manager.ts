@@ -54,13 +54,13 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
     push: {
       enabled: true,
       eventTypes: {
-        order_confirmed: false,
-        delivery_scheduled: false,
+        order_confirmed: true,
+        delivery_scheduled: true,
         out_for_delivery: true,
         delivery_arriving: true,
         delivered: true,
         delivery_failed: true,
-        rescheduled: false,
+        rescheduled: true,
       },
     },
   },
@@ -82,7 +82,9 @@ export class PreferenceManager {
   static getPreferences(customerId: string): NotificationPreferences {
     const existing = preferenceStore.get(customerId);
     if (existing) {
-      return JSON.parse(JSON.stringify(existing)); // Deep copy
+      const copy = JSON.parse(JSON.stringify(existing));
+      copy.updatedAt = new Date(copy.updatedAt); // Restore Date type
+      return copy;
     }
 
     // Create default preferences for new customer
@@ -91,7 +93,7 @@ export class PreferenceManager {
     defaultPrefs.updatedAt = new Date();
 
     preferenceStore.set(customerId, defaultPrefs);
-    return defaultPrefs;
+    return { ...defaultPrefs, updatedAt: new Date(defaultPrefs.updatedAt) };
   }
 
   /**

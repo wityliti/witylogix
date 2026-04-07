@@ -57,6 +57,7 @@ const mockPrisma = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
+    count: vi.fn(),
   },
   user: {
     findMany: vi.fn(),

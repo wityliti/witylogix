@@ -265,7 +265,7 @@ describe('GoogleRoutesSDK', () => {
 
       const request: MatrixRequest = {
         origins: [{ lat: 0, lng: 0 }],
-        destinations: [{ lat: 1, lng: 1 }],
+        destinations: [{ lat: 1, lng: 1 }, { lat: 2, lng: 2 }],
       };
 
       const result = await sdk.matrix(request);
@@ -329,7 +329,7 @@ describe('GoogleRoutesSDK', () => {
     });
 
     it('should extract error message from Google error response', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      const errorResponse = {
         ok: false,
         status: 400,
         json: async () => ({
@@ -340,7 +340,8 @@ describe('GoogleRoutesSDK', () => {
           },
         }),
         headers: new Headers(),
-      });
+      };
+      (global.fetch as any).mockResolvedValue(errorResponse);
 
       const request: RouteRequest = {
         origin: { lat: 0, lng: 0 },

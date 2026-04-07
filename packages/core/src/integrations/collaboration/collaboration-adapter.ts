@@ -30,11 +30,7 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   protected connected: boolean = false;
 
   // Rate limiting
-  protected rateLimitState: RateLimitState = {
-    tokensAvailable: this.config.rateLimitPerSecond,
-    lastRefillTime: Date.now(),
-    requestQueue: [],
-  };
+  protected rateLimitState!: RateLimitState;
 
   // Circuit breaker
   protected circuitBreakerState: CircuitBreakerState = {
@@ -55,6 +51,11 @@ export abstract class CollaborationAdapter implements CollaborationAdapterInterf
   constructor(platform: 'slack' | 'teams' | 'pusher', config: CollaborationConfig) {
     this.platform = platform;
     this.config = config;
+    this.rateLimitState = {
+      tokensAvailable: this.config.rateLimitPerSecond,
+      lastRefillTime: Date.now(),
+      requestQueue: [],
+    };
   }
 
   /**

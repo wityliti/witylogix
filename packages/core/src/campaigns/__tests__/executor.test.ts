@@ -548,7 +548,7 @@ describe('CampaignExecutor', () => {
 
   describe('Failure Threshold', () => {
     it('should fail campaign when failure rate exceeds 50%', async () => {
-      dispatcher.failureRate = 0.6; // 60% failure rate
+      dispatcher.failureRate = 1.0; // 100% failure rate — ensures >50% threshold is crossed
 
       const recipients: RecipientData[] = [];
       for (let i = 0; i < 10; i++) {
@@ -583,8 +583,9 @@ describe('CampaignExecutor', () => {
     it('should succeed when failure rate below threshold', async () => {
       dispatcher.failureRate = 0.3; // 30% failure rate
 
+      // Use 100 recipients so statistical variance stays well under the 50% threshold
       const recipients: RecipientData[] = [];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 100; i++) {
         recipients.push({
           customerId: `cust-${i}`,
           email: `user${i}@example.com`,
@@ -695,7 +696,7 @@ describe('CampaignExecutor', () => {
       ];
 
       const content: CampaignContent = {
-        whatsapp: { textMessage: 'Test WhatsApp' },
+        whatsapp: { templateName: 'order_update', textMessage: 'Test WhatsApp' },
       };
 
       const context = await executor.execute(

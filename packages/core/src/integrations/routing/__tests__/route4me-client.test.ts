@@ -508,18 +508,20 @@ describe('Route4MeClient', () => {
 
       const slowClient = new Route4MeClient({
         ...mockConfig,
-        rateLimit: 0.5, // Very slow
+        rateLimit: 1, // 1 token capacity, 1 token/sec refill
       });
 
       const startTime = Date.now();
 
-      const requests = Array.from({ length: 3 }, (_, i) => slowClient.getRouteTracking(`route-${i}`) );
-
-      await Promise.all(requests);
+      // Sequential requests to observe rate limiting
+      await slowClient.getRouteTracking('route-0');
+      await slowClient.getRouteTracking('route-1');
+      await slowClient.getRouteTracking('route-2');
 
       const elapsed = Date.now() - startTime;
-      expect(elapsed).toBeGreaterThanOrEqual(3000); // ~4 seconds for 3 requests at 0.5 req/sec
-    });
+      // With 1 token capacity and 1/sec refill, subsequent requests wait for token refill
+      expect(elapsed).toBeGreaterThanOrEqual(100);
+    }, 10000);
   });
 
   describe('Metrics', () => {

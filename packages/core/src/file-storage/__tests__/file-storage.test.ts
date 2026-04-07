@@ -525,6 +525,13 @@ describe("File Storage System", () => {
   });
 
   describe("Error Handling", () => {
+    beforeEach(() => {
+      mockS3Client.putObject.mockReset();
+      mockS3Client.getObject.mockReset();
+      mockS3Client.putObject.mockResolvedValue({});
+      mockS3Client.getObject.mockResolvedValue({ Body: Buffer.from("file content") });
+    });
+
     it("should handle S3 permission errors", async () => {
       mockS3Client.putObject.mockRejectedValueOnce(
         new Error("AccessDenied: User is not authorized to perform: s3:PutObject")
@@ -564,6 +571,16 @@ describe("File Storage System", () => {
   });
 
   describe("Performance and Optimization", () => {
+    beforeEach(() => {
+      mockS3Client.putObject.mockReset();
+      mockS3Client.headObject.mockReset();
+      mockS3Client.putObject.mockResolvedValue({});
+      mockS3Client.headObject.mockResolvedValue({
+        ContentLength: 1024,
+        LastModified: new Date(),
+      });
+    });
+
     it("should batch S3 uploads for multiple files", async () => {
       mockS3Client.putObject.mockResolvedValue({});
       mockS3Client.headObject.mockResolvedValue({

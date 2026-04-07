@@ -150,7 +150,7 @@ describe('WhatsAppProvider', () => {
 
     it('should handle Meta error code 131048 (spam limit)', async () => {
       mockFetch.mockResolvedValueOnce({
-        status: 429,
+        status: 400,
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({

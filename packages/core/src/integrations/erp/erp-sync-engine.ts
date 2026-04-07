@@ -188,6 +188,9 @@ export class ERPSyncEngine {
       summary.endTime = new Date();
       this.lastSyncTime.set(connectionId, summary.endTime);
 
+      // Persist audit logs for history queries
+      this.auditLogs.push(...summary.auditLogs);
+
       return summary;
     } catch (error: any) {
       summary.endTime = new Date();

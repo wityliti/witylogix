@@ -45,3 +45,7 @@ docker-compose.override.yml
 # Prisma
 packages/db/prisma/migrations/**/migration_lock.toml
 packages/db/src/generated/
+
+# pnpm workspaces — prevent accidental npm lockfiles from leaking in
+apps/*/package-lock.json
+packages/*/package-lock.json

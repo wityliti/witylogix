@@ -361,6 +361,10 @@ describe("EmailRoutingEngine", () => {
         new Error("API Error")
       );
 
+      vi.spyOn(gmailAdapter, "send").mockRejectedValue(
+        new Error("API Error")
+      );
+
       engine.registerProvider("failing", failingAdapter);
 
       const message: EmailMessage = {

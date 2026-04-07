@@ -158,6 +158,7 @@ const terminologyMappings: Record<string, Record<string, TerminologyMapping>> = 
       sourceCode: "I10",
       targetSystem: "SNOMED-CT",
       targetCode: "59621000",
+      equivalence: "equivalent",
       sourceDisplay: "Essential (primary) hypertension",
       targetDisplay: "Essential hypertension",
     },
@@ -166,11 +167,12 @@ const terminologyMappings: Record<string, Record<string, TerminologyMapping>> = 
       sourceCode: "E11",
       targetSystem: "SNOMED-CT",
       targetCode: "44054006",
+      equivalence: "equivalent",
       sourceDisplay: "Type 2 diabetes mellitus",
       targetDisplay: "Type 2 diabetes mellitus",
     },
   },
-  "LOINC-to-standard": {
+  "LOINC-to-SNOMED-CT": {
     "2345-7": {
       sourceSystem: "LOINC",
       sourceCode: "2345-7",
@@ -214,17 +216,17 @@ export function translateCode(
  * Unit conversion factors (base SI units).
  */
 const unitConversions: Record<string, Record<string, number>> = {
-  // Weight (kg)
-  kg: { kg: 1, lb: 0.453592, g: 0.001 },
-  lb: { kg: 2.20462, lb: 1, g: 453.592 },
-  g: { kg: 1000, lb: 0.00220462, g: 1 },
+  // Weight
+  kg: { kg: 1, lb: 2.20462, g: 1000 },
+  lb: { kg: 0.453592, lb: 1, g: 453.592 },
+  g: { kg: 0.001, lb: 0.00220462, g: 1 },
 
-  // Length (m)
-  m: { m: 1, cm: 0.01, mm: 0.001, in: 0.0254, ft: 0.3048 },
-  cm: { m: 100, cm: 1, mm: 0.1, in: 2.54, ft: 30.48 },
-  mm: { m: 1000, cm: 10, mm: 1, in: 25.4, ft: 304.8 },
-  in: { m: 39.3701, cm: 0.393701, mm: 0.0393701, in: 1, ft: 12 },
-  ft: { m: 3.28084, cm: 0.0328084, mm: 0.00328084, in: 0.0833333, ft: 1 },
+  // Length
+  m: { m: 1, cm: 100, mm: 1000, in: 39.3701, ft: 3.28084 },
+  cm: { m: 0.01, cm: 1, mm: 10, in: 0.393701, ft: 0.0328084 },
+  mm: { m: 0.001, cm: 0.1, mm: 1, in: 0.0393701, ft: 0.00328084 },
+  in: { m: 0.0254, cm: 2.54, mm: 25.4, in: 1, ft: 0.0833333 },
+  ft: { m: 0.3048, cm: 30.48, mm: 304.8, in: 12, ft: 1 },
 
   // Temperature (Celsius)
   C: { C: 1, F: (v: number) => v * 1.8 + 32, K: (v: number) => v + 273.15 },

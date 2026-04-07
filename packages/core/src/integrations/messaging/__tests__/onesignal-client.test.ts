@@ -3,12 +3,31 @@
  * 25+ test cases covering Push, In-App, SMS, A/B Testing, Segments, Devices
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MessagingAdapterConfig } from "../types.js";
 import { OneSignalClient } from "../onesignal-client.js";
 
+/**
+ * Default mock fetch that returns a successful JSON response.
+ * Individual tests can override via mockFetch.mockResolvedValueOnce().
+ */
+function createMockFetch() {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    headers: new Headers({ "content-type": "application/json" }),
+    json: async () => ({
+      id: "mock-id",
+      recipients: 1,
+      external_id: null,
+    }),
+  });
+}
+
 describe("OneSignalClient", () => {
   let client: OneSignalClient;
+  let mockFetch: ReturnType<typeof vi.fn>;
   const mockConfig: MessagingAdapterConfig = {
     provider: "onesignal",
     appId: "test-app-id",
@@ -16,8 +35,17 @@ describe("OneSignalClient", () => {
   };
 
   beforeEach(() => {
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
     client = new OneSignalClient(mockConfig);
     vi.clearAllMocks();
+    // Re-stub after clearAllMocks
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Configuration & Validation", () => {
@@ -341,6 +369,17 @@ describe("OneSignalClient", () => {
     });
 
     it("should get segment by ID", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({
+          id: "segment-123",
+          name: "Premium Users",
+        }),
+      });
+
       const segment = await client.getSegment("segment-123");
 
       expect(segment.id).toBe("segment-123");

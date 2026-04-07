@@ -420,6 +420,13 @@ export class EnsemblePredictor {
       last_calibration: this.lastCalibration,
       zone_specific_weights: Object.fromEntries(this.zoneSpecificWeights.entries()),
       time_specific_weights: Object.fromEntries(this.hourSpecificWeights.entries()),
+      sub_models: {
+        timeOfDay: this.timeOfDayModel.getState(),
+        distanceDecay: this.distanceDecayModel.getState(),
+        historical: this.historicalModel.getState(),
+        traffic: this.trafficModel.getState(),
+        weather: this.weatherModel.getState(),
+      },
     };
   }
 
@@ -444,6 +451,15 @@ export class EnsemblePredictor {
     this.hourSpecificWeights.clear();
     for (const [key, value] of Object.entries(state.time_specific_weights)) {
       this.hourSpecificWeights.set(parseInt(key, 10), value);
+    }
+
+    // Restore sub-model states
+    if (state.sub_models) {
+      this.timeOfDayModel.setState(state.sub_models.timeOfDay);
+      this.distanceDecayModel.setState(state.sub_models.distanceDecay);
+      this.historicalModel.setState(state.sub_models.historical);
+      this.trafficModel.setState(state.sub_models.traffic);
+      this.weatherModel.setState(state.sub_models.weather);
     }
   }
 
