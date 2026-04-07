@@ -106,6 +106,7 @@ class SyncManager {
       deviceCapturedAt: e.device_captured_at,
       gpsLat: e.gps_lat,
       gpsLng: e.gps_lng,
+      deviceTimezone: e.device_timezone,
     }));
 
     let attempt = 0;
