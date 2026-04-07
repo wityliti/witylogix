@@ -9,6 +9,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 import { ShipmentListScreen } from '../screens/ShipmentListScreen';
 import { ShipmentScreen } from '../screens/ShipmentScreen';
 import { DeliveryProofScreen } from '../screens/DeliveryProofScreen';
+import { CameraCaptureScreen } from '../screens/CameraCaptureScreen';
+import { SignaturePadScreen } from '../screens/SignaturePadScreen';
 import { BarcodeScannerScreen } from '../screens/BarcodeScannerScreen';
 
 const Tab = createBottomTabNavigator();
@@ -69,6 +71,16 @@ const ShipmentsStackNavigator = () => (
       name="DeliveryProof"
       component={DeliveryProofScreen}
       options={{ title: 'Proof of Delivery', headerBackTitle: 'Back' }}
+    />
+    <ShipmentsStack.Screen
+      name="CameraCapture"
+      component={CameraCaptureScreen}
+      options={{ title: 'Take Photo', headerShown: false }}
+    />
+    <ShipmentsStack.Screen
+      name="SignaturePad"
+      component={SignaturePadScreen}
+      options={{ title: 'Signature', headerBackTitle: 'Back' }}
     />
     <ShipmentsStack.Screen
       name="BarcodeScanner"
