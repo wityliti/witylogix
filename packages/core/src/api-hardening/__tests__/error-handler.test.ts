@@ -378,8 +378,8 @@ describe('Error Response Format', () => {
       },
     };
 
-    expect(response.error.details.email).toBe('Invalid email format');
-    expect(response.error.details.password).toBe('Must be at least 8 characters');
+    expect(response.error.details!.email).toBe('Invalid email format');
+    expect(response.error.details!.password).toBe('Must be at least 8 characters');
   });
 
   it('should return consistent error format for different error types', () => {

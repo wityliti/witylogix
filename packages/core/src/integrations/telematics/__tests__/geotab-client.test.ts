@@ -11,7 +11,7 @@ import type { TelematicsConfig } from "../types.js";
  * Mock fetch helper for JSONRPC responses
  */
 function mockFetch(
-  result: Record<string, unknown> | null,
+  result: Record<string, unknown> | Record<string, unknown>[] | null,
   error: { code: number; message: string } | null = null,
   status = 200,
 ): typeof fetch {
