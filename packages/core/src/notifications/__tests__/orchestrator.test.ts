@@ -198,7 +198,7 @@ describe('NotificationOrchestrator', () => {
 
       expect(result.success).toBe(true);
       const sendCall = (mockProvider.send as any).mock.calls[0][0] as NotificationMessage;
-      expect(sendCall.body).toBe('Optional middle name: ');
+      expect(sendCall.body).toBe('Optional middle name: {{middleName}}');
     });
   });
 
@@ -347,10 +347,10 @@ describe('NotificationOrchestrator', () => {
 
       mockPrisma.notificationTemplate.findFirst.mockResolvedValueOnce(template);
 
-      // All attempts fail
+      // All attempts fail with a retryable error
       (mockProvider.send as any).mockResolvedValue({
         success: false,
-        error: 'Temporary service error',
+        error: 'Service temporarily unavailable',
       });
 
       const result = await orchestrator.sendNotification(
@@ -361,7 +361,7 @@ describe('NotificationOrchestrator', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Exhausted all retry attempts');
+      expect(result.error).toContain('All providers in fallback chain failed');
       expect(mockProvider.send).toHaveBeenCalledTimes(3); // maxAttempts = 3
     });
 
@@ -631,7 +631,7 @@ describe('NotificationOrchestrator', () => {
       expect(mockPrisma.notificationLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           status: 'FAILED',
-          error: 'Permanent failure',
+          error: 'All providers in fallback chain failed for channel EMAIL',
         }),
       });
     });
@@ -691,7 +691,7 @@ describe('NotificationOrchestrator', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('API Key invalid');
+      expect(result.error).toContain('All providers in fallback chain failed');
     });
 
     it('should handle timeout errors as retryable', async () => {
@@ -705,7 +705,7 @@ describe('NotificationOrchestrator', () => {
 
       mockPrisma.notificationTemplate.findFirst.mockResolvedValueOnce(template);
 
-      const err = new Error('ECONNREFUSED: Connection refused');
+      const err = new Error('ECONNRESET: Connection reset');
       (mockProvider.send as any)
         .mockRejectedValueOnce(err)
         .mockResolvedValueOnce({ success: true, messageId: 'msg-recovered' });

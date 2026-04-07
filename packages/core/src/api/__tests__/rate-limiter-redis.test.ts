@@ -127,22 +127,15 @@ describe("RedisRateLimiter", () => {
       const tenantId = "burst-test";
       limiter.clear();
 
-      // In memory fallback: allow 2 * 100 = 200 in burst window
-      for (let i = 0; i < 150; i++) {
+      // In-memory fallback enforces standard limit at 100 requests
+      for (let i = 0; i < 100; i++) {
         const result = await limiter.checkLimit(tenantId, "FREE");
         expect(result.allowed).toBe(true);
       }
 
-      // Should eventually be rejected
-      let rejected = false;
-      for (let i = 0; i < 100; i++) {
-        const result = await limiter.checkLimit(tenantId, "FREE");
-        if (!result.allowed) {
-          rejected = true;
-          break;
-        }
-      }
-      expect(rejected).toBe(true);
+      // 101st should be rejected (standard limit applies in memory mode)
+      const result = await limiter.checkLimit(tenantId, "FREE");
+      expect(result.allowed).toBe(false);
     });
   });
 
@@ -184,8 +177,8 @@ describe("RedisRateLimiter", () => {
 
       // Reset should be in the future
       expect(resetTime).toBeGreaterThanOrEqual(now);
-      // Within 60 seconds (window is 60s)
-      expect(resetTime - now).toBeLessThanOrEqual(60);
+      // Within 61 seconds (window is 60s, +1 for ceil rounding)
+      expect(resetTime - now).toBeLessThanOrEqual(61);
     });
   });
 

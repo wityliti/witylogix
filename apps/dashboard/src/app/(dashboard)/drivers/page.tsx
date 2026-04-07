@@ -10,6 +10,7 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils';
 import { useApiList } from '@/hooks/use-api';
+import Link from 'next/link';
 import { MessageCircle, Eye, Plus, Phone, Truck } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
@@ -105,10 +106,12 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
 
         {/* Action buttons */}
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" className="flex-1">
-            <Eye className="w-4 h-4" />
-            View
-          </Button>
+          <Link href={`/drivers/${driver.id}`} className="flex-1">
+            <Button variant="secondary" size="sm" className="w-full">
+              <Eye className="w-4 h-4" />
+              View
+            </Button>
+          </Link>
           <Button variant="secondary" size="sm" className="flex-1">
             <MessageCircle className="w-4 h-4" />
             Message

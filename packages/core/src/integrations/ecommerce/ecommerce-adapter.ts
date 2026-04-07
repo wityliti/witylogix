@@ -180,6 +180,12 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   protected retryHandler: RetryHandler;
   protected requestLogs: RequestLog[] = [];
   protected maxLogs = 1000;
+  protected logger = {
+    error: (...args: unknown[]) => console.error(...args),
+    warn: (...args: unknown[]) => console.warn(...args),
+    info: (...args: unknown[]) => console.info(...args),
+    debug: (...args: unknown[]) => console.debug(...args),
+  };
 
   constructor(config: ECommerceAdapterConfig) {
     this.config = config;
@@ -196,7 +202,7 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
     });
 
     this.retryHandler = new RetryHandler({
-      maxRetries: config.retries || 3,
+      maxRetries: config.retries ?? 3,
       initialDelayMs: 1000,
       maxDelayMs: 30000,
       backoffMultiplier: 2,

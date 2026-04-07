@@ -427,11 +427,11 @@ export class LeadScorer {
   private calculateBehavioralScore(lead: Lead): number {
     // Score based on source (some sources are warmer than others)
     const sourceScores: Record<string, number> = {
-      inbound: 40, // best - they came to you
-      referral: 35,
-      event: 30,
-      outbound: 20,
-      content: 25,
+      inbound: 100, // best - they came to you
+      referral: 85,
+      event: 70,
+      content: 55,
+      outbound: 40,
     };
 
     return sourceScores[lead.source] || 0;
@@ -439,23 +439,23 @@ export class LeadScorer {
 
   private calculateTimelineScore(lead: Lead): number {
     const timelineScores: Record<string, number> = {
-      immediate: 40,
-      quarter: 35,
-      year: 20,
-      exploring: 5,
+      immediate: 100,
+      quarter: 75,
+      year: 40,
+      exploring: 10,
     };
 
     return timelineScores[lead.purchaseTimeline || 'exploring'] || 0;
   }
 
   private calculateBudgetScore(lead: Lead): number {
-    if (!lead.budget) return 10; // unknown budget
+    if (!lead.budget) return 20; // unknown budget
 
-    if (lead.budget >= 100000) return 40;
-    if (lead.budget >= 50000) return 35;
-    if (lead.budget >= 25000) return 25;
-    if (lead.budget >= 10000) return 15;
-    return 5;
+    if (lead.budget >= 100000) return 100;
+    if (lead.budget >= 50000) return 80;
+    if (lead.budget >= 25000) return 60;
+    if (lead.budget >= 10000) return 40;
+    return 15;
   }
 
   private determineGrade(score: number): 'A' | 'B' | 'C' | 'D' {

@@ -202,7 +202,8 @@ export class ZoneFeatureStore implements IFeatureStore {
     const current = new Date(startDate);
 
     while (current <= endDate) {
-      const temporal = await this.getTemporalFeatures(current);
+      const dateSnapshot = new Date(current);
+      const temporal = await this.getTemporalFeatures(dateSnapshot);
       features.push(temporal);
       current.setDate(current.getDate() + 1);
     }
@@ -235,17 +236,23 @@ export class ZoneFeatureStore implements IFeatureStore {
     const peakDistribution: Record<number, number> = {};
 
     // Peak hours: 9-11, 14-16, 18-20
+    // Assign raw weights first, then normalize to sum to 1.0
+    const rawWeights: Record<number, number> = {};
     for (let hour = 0; hour < 24; hour++) {
       if ((hour >= 9 && hour <= 11) || (hour >= 14 && hour <= 16) || (hour >= 18 && hour <= 20)) {
         hourlyDeliveries[hour] = 150 + Math.random() * 50;
-        peakDistribution[hour] = 0.10; // ~10% of daily deliveries
+        rawWeights[hour] = 10;
       } else if (hour >= 7 && hour < 22) {
         hourlyDeliveries[hour] = 80 + Math.random() * 30;
-        peakDistribution[hour] = 0.05;
+        rawWeights[hour] = 5;
       } else {
         hourlyDeliveries[hour] = 10 + Math.random() * 10;
-        peakDistribution[hour] = 0.005;
+        rawWeights[hour] = 0.5;
       }
+    }
+    const totalWeight = Object.values(rawWeights).reduce((a, b) => a + b, 0);
+    for (let hour = 0; hour < 24; hour++) {
+      peakDistribution[hour] = rawWeights[hour] / totalWeight;
     }
 
     // Day of week pattern: weekdays stronger than weekends
@@ -280,7 +287,6 @@ export class ZoneFeatureStore implements IFeatureStore {
   private isHolidayDate(date: Date): boolean {
     const month = date.getMonth();
     const day = date.getDate();
-    const dayOfWeek = date.getDay();
 
     // US holidays (simplified)
     const holidays = [
@@ -289,7 +295,28 @@ export class ZoneFeatureStore implements IFeatureStore {
       { month: 10, day: 23 }, // Thanksgiving (approximation)
     ];
 
-    return holidays.some(h => h.month === month && h.day === day) || dayOfWeek === 0;
+    return holidays.some(h => h.month === month && h.day === day);
+  }
+
+  /**
+   * Check if date is a high-demand shopping day
+   */
+  private isHighDemandDay(date: Date): boolean {
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    // Black Friday is the 4th Friday of November
+    // Approximate: Nov 23-29, and it's a Friday
+    if (month === 10 && day >= 23 && day <= 29 && date.getDay() === 5) {
+      return true;
+    }
+
+    // Cyber Monday (Monday after Black Friday)
+    if (month === 10 && day >= 26 && day <= 30 && date.getDay() === 1) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -302,15 +329,22 @@ export class ZoneFeatureStore implements IFeatureStore {
     let multiplier = 1.0;
 
     // Seasonal factors
-    if (month === 11) multiplier *= 1.3; // December holiday season
-    if (month === 0) multiplier *= 1.15; // January sales
+    if (month === 11) multiplier *= 1.1; // December holiday season (moderate boost)
+    if (month === 0) multiplier *= 1.05; // January sales
     if (month === 6) multiplier *= 0.9; // July summer (lower demand)
 
     // Day of week
     if (dayOfWeek === 0 || dayOfWeek === 6) multiplier *= 0.85; // Weekend
 
-    // Holiday check
-    if (this.isHolidayDate(date)) multiplier *= 1.5;
+    // Holiday check - holidays have LOW demand (people off)
+    if (this.isHolidayDate(date)) {
+      multiplier *= 0.5; // Holidays reduce demand
+    }
+
+    // High-demand shopping days
+    if (this.isHighDemandDay(date)) {
+      multiplier = 1.5; // Override for high-demand days
+    }
 
     return multiplier;
   }

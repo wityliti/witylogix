@@ -1,0 +1,119 @@
+[
+  {
+    "id": "mem-MEMORY-memory-index",
+    "key": "memory-index",
+    "content": "- [Railway deployment branch strategy](project_railway_branch_strategy.md) — Production must track `main`, not `staging`; blockers and status\n- [Witylogix project context](project_witylogix_context.md) — Monorepo structure, services, active sprint, key blockers",
+    "summary": "Memory Index",
+    "namespace": "core",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root--paperclip-instances-default-workspaces-d329b1c8-977e-4511-a7af-93c4e80c1e0f/memory/MEMORY.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347112
+  },
+  {
+    "id": "mem-project_railway_branch_strategy----",
+    "key": "-",
+    "content": "name: Railway deployment branch strategy\ndescription: Production Railway services must track main branch, not staging; documents current state and path to fix\ntype: project\n---\n\nProduction Railway services MUST track `main` branch (not `staging`).\n\n**Why:** `staging` was temporarily set as the tracked branch in WIT-30 to unblock Railway service creation when `origin/main` only had 3 old init commits. Now local `main` has all sprint work plus latest fixes and is the source of truth.\n\n**Current st",
+    "summary": "---",
+    "namespace": "project_railway_branch_strategy",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root--paperclip-instances-default-workspaces-d329b1c8-977e-4511-a7af-93c4e80c1e0f/memory/project_railway_branch_strategy.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347115
+  },
+  {
+    "id": "mem-project_witylogix_context----",
+    "key": "-",
+    "content": "name: Witylogix project context\ndescription: Monorepo structure, services, active sprint, and key deployment blockers for the Witylogix platform\ntype: project\n---\n\nWitylogix is a logistics/tracking platform. Monorepo at `/root/Witylogix/witylogix-platform` (GitHub: `wityliti/witylogix`).\n\n**6 Railway services:** api, dashboard, customer-portal, docs, shopify-app, tracking-page\n\n**Active sprint (as of 2026-03-26):** Sprint 11 — Shopify App Launch & Production Stabilization (WIT-48)\n\n**Key blocker",
+    "summary": "---",
+    "namespace": "project_witylogix_context",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root--paperclip-instances-default-workspaces-d329b1c8-977e-4511-a7af-93c4e80c1e0f/memory/project_witylogix_context.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347121
+  },
+  {
+    "id": "mem-MEMORY-memory-index",
+    "key": "memory-index",
+    "content": "- [Project context: WIT-221 test fixes](project_wit221.md) — fix/WIT-221-remaining-test-fixes branch fixing 123 failing API tests\n- [User role](user_role.md) — Kavya Sharma, test engineer on Witylogix platform",
+    "summary": "Memory Index",
+    "namespace": "core",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/MEMORY.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347125
+  },
+  {
+    "id": "mem-project_wit221----",
+    "key": "-",
+    "content": "name: WIT-221 test fixes project context\ndescription: Context for fix/WIT-221-remaining-test-fixes branch — all tests in scope passing, PR #140 open\ntype: project\n---\n\nWorking on `fix/WIT-221-remaining-test-fixes` branch — all in-scope tests passing.\n\n**Why:** Test suite was broken by previous changes, blocking staging builds.\n\n**How to apply:** Run tests per package to verify. PR wityliti/witylogix#140 is open against staging.",
+    "summary": "---",
+    "namespace": "project_wit221",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/project_wit221.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347126
+  },
+  {
+    "id": "mem-project_wit221-status--complete---pr--140-ope",
+    "key": "status-complete-pr-140-open",
+    "content": "### packages/core\n- 870 tests across 22 modified test files: all passing\n- Pre-existing failure in `analytics/__tests__/aggregator.test.ts` (float precision: -33.333... vs -33.3333...336) is NOT in scope for WIT-221\n\n### packages/db\n- 147 tests across 4 test files: all passing\n\n### apps/api\n- 3401 tests across 74 test files: all passing",
+    "summary": "Status: COMPLETE — PR #140 open",
+    "namespace": "project_wit221",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/project_wit221.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347127
+  },
+  {
+    "id": "mem-project_wit221-key-commits-",
+    "key": "key-commits-",
+    "content": "| Commit | Change |\n|--------|--------|\n| `2bf50ea` | Remove orphan cod route import + duplicate validator |\n| `1ef0787` | Fix UUID validation + queue mock in collections/shipments/support-tickets |\n| `213e846` | Fix remaining test anti-patterns across 23 API test files |\n| `b4af215` | Fix timestamp race condition and improve mock patterns in 4 test files |\n| `b00abf2` | Add Prisma.Decimal mock to unblock db import in products test |\n| `3143e6a` | Fix remaining failures in packages/core and pack",
+    "summary": "Key commits:",
+    "namespace": "project_wit221",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/project_wit221.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347127
+  },
+  {
+    "id": "mem-project_wit221-key-patterns-fixed-",
+    "key": "key-patterns-fixed-",
+    "content": "1. `vi.hoisted()` + `vi.mock()` for intercepting already-imported modules (integrations, slack-client)\n2. `.mock.results[0].value` accessed before mock is called → move after call\n3. UUID validation: pass valid UUIDs in test payloads\n4. `createdAt`/`updatedAt` missing from mock returns\n5. `Prisma.Decimal` mock to unblock db import\n6. Billable weight test: assertion was reversed — bulky light package (99.45lb dim) > heavy small package (50lb)\n7. Status transitions: `OUT_FOR_DELIVERY` → `ARRIVED` ",
+    "summary": "Key patterns fixed:",
+    "namespace": "project_wit221",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/project_wit221.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347127
+  },
+  {
+    "id": "mem-user_role----",
+    "key": "-",
+    "content": "name: User role - Kavya Sharma\ndescription: Kavya Sharma is a test engineer on the Witylogix platform team\ntype: user\n---\n\nKavya Sharma - test engineer / QA lead on Witylogix platform.\n\nResponsible for maintaining test suite health, fixing failing tests, and ensuring CI passes before PRs merge to staging.\n\nWorks in the `apps/api` Vitest test environment.",
+    "summary": "---",
+    "namespace": "user_role",
+    "type": "semantic",
+    "metadata": {
+      "sourceFile": "/home/paperclip/.claude/projects/-root-Witylogix-witylogix-platform/memory/user_role.md",
+      "bootstrapped": true
+    },
+    "createdAt": 1775550347128
+  }
+]

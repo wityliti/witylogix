@@ -5,6 +5,22 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("@witylogix/db", () => ({ prisma: {}, Prisma: { sql: vi.fn((...args: any[]) => args[0].join('')) } }));
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(),
+  requireRole: vi.fn(() => vi.fn()),
+}));
+vi.mock("../../middleware/tenant.js", () => ({ tenantContext: vi.fn() }));
+vi.mock("../../lib/events.js", () => ({
+  emitShipmentCreated: vi.fn(),
+  emitShipmentStatusChanged: vi.fn(),
+  emitShipmentAssigned: vi.fn(),
+}));
+vi.mock("../../lib/queue.js", () => ({
+  getNotificationQueue: vi.fn(() => ({ add: vi.fn().mockResolvedValue({}) })),
+}));
+
 import shipmentsRoutes from "../shipments.js";
 
 // Test UUIDs — route validators require uuid format for driverId/orderId

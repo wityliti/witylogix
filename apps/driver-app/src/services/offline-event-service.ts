@@ -22,6 +22,7 @@ export interface OfflineEvent {
   gps_lat: number | null;
   gps_lng: number | null;
   last_error: string | null;
+  device_timezone: string | null;
 }
 
 /** Tier 1: POD and final delivery status — sync immediately */
@@ -34,6 +35,14 @@ function resolvePriority(
   if (eventType === 'pod_signature') return 1;
   if (status && TIER1_STATUS.includes(status)) return 1;
   return 2;
+}
+
+function captureTimezone(): string | null {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function captureGps(): Promise<{ lat: number | null; lng: number | null }> {
@@ -60,6 +69,7 @@ export async function captureStatusTransition(
 ): Promise<string> {
   const db = await getDb();
   const { lat, lng } = await captureGps();
+  const timezone = captureTimezone();
   const id = generateId();
   const now = Date.now();
   const priority = resolvePriority('status_transition', status);
@@ -67,9 +77,9 @@ export async function captureStatusTransition(
 
   await db.runAsync(
     `INSERT INTO offline_events
-       (id, event_type, delivery_id, payload, status, sync_priority, retry_count, device_captured_at, gps_lat, gps_lng, last_error)
-     VALUES (?, ?, ?, ?, 'pending', ?, 0, ?, ?, ?, NULL)`,
-    [id, 'status_transition', deliveryId, payload, priority, now, lat, lng],
+       (id, event_type, delivery_id, payload, status, sync_priority, retry_count, device_captured_at, gps_lat, gps_lng, last_error, device_timezone)
+     VALUES (?, ?, ?, ?, 'pending', ?, 0, ?, ?, ?, NULL, ?)`,
+    [id, 'status_transition', deliveryId, payload, priority, now, lat, lng, timezone],
   );
 
   return id;
@@ -82,15 +92,16 @@ export async function capturePodSignature(
 ): Promise<string> {
   const db = await getDb();
   const { lat, lng } = await captureGps();
+  const timezone = captureTimezone();
   const id = generateId();
   const now = Date.now();
   const payload = JSON.stringify({ signatureData, ...extra });
 
   await db.runAsync(
     `INSERT INTO offline_events
-       (id, event_type, delivery_id, payload, status, sync_priority, retry_count, device_captured_at, gps_lat, gps_lng, last_error)
-     VALUES (?, ?, ?, ?, 'pending', 1, 0, ?, ?, ?, NULL)`,
-    [id, 'pod_signature', deliveryId, payload, now, lat, lng],
+       (id, event_type, delivery_id, payload, status, sync_priority, retry_count, device_captured_at, gps_lat, gps_lng, last_error, device_timezone)
+     VALUES (?, ?, ?, ?, 'pending', 1, 0, ?, ?, ?, NULL, ?)`,
+    [id, 'pod_signature', deliveryId, payload, now, lat, lng, timezone],
   );
 
   return id;

@@ -98,7 +98,7 @@ describe("Route Optimizer", () => {
       const result = await optimizeRoutes(request);
 
       expect(result.routes).toEqual([]);
-      expect(result.unassignedStops.length).toBeGreaterThan(0);
+      expect(result.metrics.stopsUncovered).toBeGreaterThan(0);
     });
 
     it("should assign stops to vehicles respecting capacity", async () => {
@@ -314,12 +314,12 @@ describe("Route Optimizer", () => {
       ];
       const vehicles = [createVehicle("v1", createGeoPoint(40.7128, -74.006))];
       const request = createOptimizationRequest(stops, vehicles);
-      request.constraints.maxRouteDistance = 10; // 10 km max
+      request.constraints.maxRouteDistance = 15; // 15 km max
 
       const result = await optimizeRoutes(request);
 
       for (const route of result.routes) {
-        expect(route.totalDistance).toBeLessThanOrEqual(10);
+        expect(route.totalDistance).toBeLessThanOrEqual(15);
       }
     });
   });

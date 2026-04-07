@@ -15,6 +15,7 @@ interface OfflineEventRow {
   gps_lat: number | null;
   gps_lng: number | null;
   last_error: string | null;
+  device_timezone: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -133,5 +134,101 @@ describe('event priority rules', () => {
   it('in_transit status transitions are Tier 2', () => {
     const tierForInTransit = (['delivered', 'failed_delivery'] as string[]).includes('in_transit') ? 1 : 2;
     expect(tierForInTransit).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression: batch payload must include deviceTimezone (WIT-256)
+// The batchDeliveryEventsSchema requires deviceTimezone; omitting it caused
+// every sync POST to return HTTP 400.
+// ---------------------------------------------------------------------------
+
+describe('batch payload construction (WIT-256)', () => {
+  function mapEventToPayload(event: OfflineEventRow) {
+    return {
+      id: event.id,
+      eventType: event.event_type,
+      deliveryId: event.delivery_id,
+      payload: JSON.parse(event.payload as unknown as string),
+      deviceCapturedAt: event.device_captured_at,
+      gpsLat: event.gps_lat,
+      gpsLng: event.gps_lng,
+      deviceTimezone: event.device_timezone,
+    };
+  }
+
+  it('includes deviceTimezone in the outgoing payload', () => {
+    const event: OfflineEventRow = {
+      id: 'evt_tz_1',
+      event_type: 'status_transition',
+      delivery_id: 'del-99',
+      payload: '{"status":"in_transit"}',
+      status: 'pending',
+      sync_priority: 2,
+      retry_count: 0,
+      device_captured_at: Date.now(),
+      gps_lat: 37.7749,
+      gps_lng: -122.4194,
+      last_error: null,
+      device_timezone: 'America/Los_Angeles',
+    };
+
+    const mapped = mapEventToPayload(event);
+
+    expect(mapped).toHaveProperty('deviceTimezone');
+    expect(mapped.deviceTimezone).toBe('America/Los_Angeles');
+  });
+
+  it('passes deviceTimezone as null when timezone could not be captured', () => {
+    const event: OfflineEventRow = {
+      id: 'evt_tz_2',
+      event_type: 'pod_signature',
+      delivery_id: 'del-100',
+      payload: '{"signatureData":"abc"}',
+      status: 'pending',
+      sync_priority: 1,
+      retry_count: 0,
+      device_captured_at: Date.now(),
+      gps_lat: null,
+      gps_lng: null,
+      last_error: null,
+      device_timezone: null,
+    };
+
+    const mapped = mapEventToPayload(event);
+
+    expect(mapped).toHaveProperty('deviceTimezone');
+    expect(mapped.deviceTimezone).toBeNull();
+  });
+
+  it('legacy event row without device_timezone field would produce undefined — confirming the bug', () => {
+    // Simulates the pre-fix mapping that caused HTTP 400
+    const event = {
+      id: 'evt_legacy',
+      event_type: 'status_transition',
+      delivery_id: 'del-legacy',
+      payload: '{"status":"delivered"}',
+      status: 'pending' as const,
+      sync_priority: 1 as const,
+      retry_count: 0,
+      device_captured_at: Date.now(),
+      gps_lat: null,
+      gps_lng: null,
+      last_error: null,
+      // device_timezone intentionally absent
+    };
+
+    const buggyMappedEvent = {
+      id: event.id,
+      eventType: event.event_type,
+      deliveryId: event.delivery_id,
+      payload: JSON.parse(event.payload),
+      deviceCapturedAt: event.device_captured_at,
+      gpsLat: event.gps_lat,
+      gpsLng: event.gps_lng,
+      // deviceTimezone omitted — this was the bug
+    };
+
+    expect(buggyMappedEvent).not.toHaveProperty('deviceTimezone');
   });
 });

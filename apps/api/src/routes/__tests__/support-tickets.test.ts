@@ -5,6 +5,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("@witylogix/db", () => ({ prisma: {}, Prisma: {} }));
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(),
+  requireRole: vi.fn(() => vi.fn()),
+}));
+vi.mock("../../middleware/tenant.js", () => ({ tenantContext: vi.fn() }));
+
 import supportTicketsRoutes from "../support-tickets.js";
 import {
   NotFoundError,

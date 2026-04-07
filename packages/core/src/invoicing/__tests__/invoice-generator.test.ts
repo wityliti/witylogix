@@ -33,6 +33,7 @@ describe('InvoiceGenerator', () => {
             isActive: true,
           }),
         ],
+        { customerId: 'cust-1' },
       );
 
       const deliveryContexts: BillingContext[] = [
@@ -353,7 +354,7 @@ describe('InvoiceGenerator', () => {
         total: 110,
         currency: 'USD',
         issuedAt: new Date(),
-        dueAt: new Date(),
+        dueAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         lineItems: [],
         discounts: [],
         taxes: [],

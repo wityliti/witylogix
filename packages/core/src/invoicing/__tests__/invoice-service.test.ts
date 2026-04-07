@@ -193,7 +193,7 @@ describe('InvoiceService', () => {
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
-        discounts: [{ id: 'disc-1', description: 'Volume Discount', amount: 1 }],
+        discounts: [{ id: 'disc-1', description: 'Volume Discount', type: 'PERCENTAGE', value: '10', amount: '1' }],
         taxes: [],
         payments: [],
       });

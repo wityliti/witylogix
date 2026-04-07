@@ -127,8 +127,8 @@ describe("Natural Language Filter Parser", () => {
 
     it("should have proper date boundaries", () => {
       const filter = parser.parse("today orders");
-      expect(filter.dateRange?.startDate).toBeLessThanOrEqual(
-        filter.dateRange?.endDate || new Date()
+      expect(filter.dateRange?.startDate?.getTime()).toBeLessThanOrEqual(
+        (filter.dateRange?.endDate || new Date()).getTime()
       );
     });
 

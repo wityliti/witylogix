@@ -178,7 +178,11 @@ describe('SubscriptionManager', () => {
       };
 
       prisma.billingPlan.findUnique.mockResolvedValue(plan);
-      prisma.billingSubscription.findUnique.mockResolvedValue(null);
+      // First call: check existing subscription (null = none found)
+      // Second call: inside initializeQuotaTracking to get shopId
+      prisma.billingSubscription.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ id: 'sub-1', shopId: 'shop-1' });
       prisma.billingSubscription.create.mockResolvedValue(mockSubscription);
       prisma.storeQuotaUsage.upsert.mockResolvedValue({});
 
@@ -256,6 +260,17 @@ describe('SubscriptionManager', () => {
       };
 
       prisma.billingSubscription.findUnique.mockResolvedValue(mockSubscription);
+      prisma.billingPlan.findUnique.mockResolvedValue({
+        id: 'plan-2',
+        name: 'Pro',
+        price: new Decimal('99'),
+        interval: 'monthly',
+        trialDays: 0,
+        features: [],
+        limits: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       await expect(manager.upgradeSubscription('sub-1', 'plan-2')).rejects.toThrow(
         SubscriptionError
@@ -585,9 +600,9 @@ describe('SubscriptionManager', () => {
       // New: $90
       // Net: $90 - $15 = $75 owed
 
-      expect(result.creditAmount).toEqual(new Decimal('15'));
-      expect(result.chargeAmount).toEqual(new Decimal('90'));
-      expect(result.netDueAmount).toEqual(new Decimal('75'));
+      expect(result.creditAmount).toBe(15);
+      expect(result.chargeAmount).toBe(90);
+      expect(result.netDueAmount).toBe(75);
       expect(result.daysRemaining).toBe(15);
     });
 
@@ -618,7 +633,7 @@ describe('SubscriptionManager', () => {
 
       const result = manager.calculateProration(currentPlan, newPlan, 10);
 
-      expect(result.netDueAmount.isPositive()).toBe(true);
+      expect(result.netDueAmount).toBeGreaterThan(0);
     });
 
     it('should handle downgrade with negative net amount', () => {
@@ -648,7 +663,7 @@ describe('SubscriptionManager', () => {
 
       const result = manager.calculateProration(currentPlan, newPlan, 15);
 
-      expect(result.netDueAmount.isNegative()).toBe(true);
+      expect(result.netDueAmount).toBeLessThan(0);
     });
 
     it('should handle yearly plans correctly', () => {
@@ -683,7 +698,7 @@ describe('SubscriptionManager', () => {
       // New: $900
       // Net: $900 - $147.95 ≈ $752.05 owed
 
-      expect(result.chargeAmount).toEqual(new Decimal('900'));
+      expect(result.chargeAmount).toBe(900);
       expect(result.daysRemaining).toBe(180);
     });
   });

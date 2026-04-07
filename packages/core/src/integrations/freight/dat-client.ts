@@ -5,8 +5,8 @@
  * loads with carriers. Includes rate analytics and carrier TMS integration.
  */
 
-// Node 22+ has global fetch
-const nodeFetch = globalThis.fetch;
+// Node 22+ has global fetch — resolve at call-time so tests can stub it
+const nodeFetch = (...args: Parameters<typeof fetch>) => globalThis.fetch(...args);
 
 import { FreightAdapter } from "./freight-adapter";
 import type {

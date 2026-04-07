@@ -443,7 +443,7 @@ describe('Email Template Engine', () => {
 
     it('should include return label link', () => {
       const html = returnInitiatedTemplate(returnData);
-      expect(html).toContain('returnLabelUrl');
+      expect(html).toContain('returns.carrier.com/label/RET-55555');
       expect(html).toContain('Download');
     });
 

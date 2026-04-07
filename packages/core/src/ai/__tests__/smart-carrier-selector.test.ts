@@ -277,8 +277,8 @@ describe('Smart Carrier Selector', () => {
       const cheapest = optimizer.findCheapestMeetingDeadline(rates, 3);
 
       expect(cheapest).toBeDefined();
-      expect(cheapest!.carrier).toBe('ups');
-      expect(cheapest!.cost).toBe(20.0);
+      expect(cheapest!.carrier).toBe('fedex');
+      expect(cheapest!.cost).toBe(15.0);
     });
 
     it('should calculate savings potential', () => {

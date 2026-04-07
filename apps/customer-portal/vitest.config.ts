@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
+  // @ts-expect-error — vite v5/v6 Plugin type mismatch in monorepo; runtime is correct
   plugins: [react()],
   define: {
     'process.env.NODE_ENV': JSON.stringify('development'),

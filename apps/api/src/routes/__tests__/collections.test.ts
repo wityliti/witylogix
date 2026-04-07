@@ -5,12 +5,27 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import collectionsRoutes from "../collections.js";
-import { ForbiddenError } from "../../lib/errors.js";
 
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(() => async () => {}),
+  requireRole: vi.fn(() => async () => {}),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(() => async () => {}),
+}));
+vi.mock("@witylogix/db", () => ({
+  Prisma: {
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+  },
+}));
 vi.mock("../../lib/queue.js", () => ({
   getIntegrationQueue: vi.fn().mockReturnValue({ add: vi.fn().mockResolvedValue({}) }),
 }));
+
+import collectionsRoutes from "../collections.js";
+import { ForbiddenError } from "../../lib/errors.js";
 
 // Mock types
 interface MockRequest extends Partial<FastifyRequest> {
