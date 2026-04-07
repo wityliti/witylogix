@@ -475,7 +475,7 @@ export class ThrottleRecommender {
     }
 
     // Priority threshold: only send HIGH/CRITICAL during throttle
-    const priorityThreshold = fatigueScore.overallFatigueScore > 80 ? "HIGH" : "NORMAL";
+    const priorityThreshold = fatigueScore.overallFatigueScore > 70 ? "HIGH" : "NORMAL";
 
     return {
       userId,

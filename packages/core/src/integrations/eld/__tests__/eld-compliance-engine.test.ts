@@ -157,22 +157,26 @@ describe("ELDComplianceEngine", () => {
 
   describe("violation detection - 8-day window", () => {
     it("should detect 60-hour violation in 8-day window", () => {
-      // Start from 2026-03-06 so all 8 logs fall within the 8-day window ending 2026-03-13
-      const logsExceeding60 = Array.from({ length: 8 }, (_, i) => ({
+      // detect8DayViolations filters: startTime >= (endDate - 7 days) && startTime <= endDate
+      // endDate = 2026-03-14T12:00:00Z => window start = 2026-03-07T12:00:00Z
+      // 7 logs from 2026-03-08 through 2026-03-14 at 01:00Z => all within window
+      // 7 * 9 = 63 driving hours > 60 => violation
+      const endDate = new Date("2026-03-14T12:00:00Z");
+      const logsExceeding60 = Array.from({ length: 7 }, (_, i) => ({
         ...mockLogs[0],
         id: `log_${i}`,
         startTime: new Date(
-          new Date("2026-03-06").getTime() + i * 86400000 + 28800000
+          new Date("2026-03-08T01:00:00Z").getTime() + i * 86400000
         ),
         endTime: new Date(
-          new Date("2026-03-06").getTime() + i * 86400000 + 36000000
+          new Date("2026-03-08T10:00:00Z").getTime() + i * 86400000
         ),
-        hours: 8.5, // 8 days * 8.5 hours = 68 hours
+        hours: 9,
       }));
 
       const violations = engine.detect8DayViolations(
         logsExceeding60,
-        new Date("2026-03-13T23:59:59")
+        endDate
       );
 
       const violation60 = violations.find((v) => v.violationType === "hours-60-70");
@@ -181,29 +185,26 @@ describe("ELDComplianceEngine", () => {
     });
 
     it("should detect 70-hour violation in 8-day window", () => {
-      // Window: endDate - 7 days to endDate.
-      // With endDate = 2026-03-13T23:59:59, window starts 2026-03-06T23:59:59.
-      // Logs start from 2026-03-06 08:00 through 2026-03-13 08:00 — all included.
-      // 8 logs alternating driving/on-duty at 9h each:
-      //   driving (i=0,2,4,6): 4*9 = 36h
-      //   on-duty (i=1,3,5,7): 4*9 = 36h
-      //   total70 = 36+36 = 72h > 70h => violation detected
-      const logsExceeding70 = Array.from({ length: 8 }, (_, i) => ({
+      // endDate = 2026-03-15T23:00:00Z => window start = 2026-03-08T23:00:00Z
+      // 8 logs from 2026-03-09 through 2026-03-15 at 08:00Z => all in window
+      // 4 driving * 9 = 36h, 4 on-duty * 9 = 36h, total70 = 72h > 70h
+      const endDate = new Date("2026-03-15T23:00:00Z");
+      const logsExceeding70 = Array.from({ length: 7 }, (_, i) => ({
         ...mockLogs[0],
         id: `log_${i}`,
         startTime: new Date(
-          new Date("2026-03-06").getTime() + i * 86400000 + 28800000
+          new Date("2026-03-09T08:00:00Z").getTime() + i * 86400000
         ),
         endTime: new Date(
-          new Date("2026-03-06").getTime() + i * 86400000 + 36000000
+          new Date("2026-03-09T18:00:00Z").getTime() + i * 86400000
         ),
         dutyStatus: i % 2 === 0 ? "driving" : "on-duty",
-        hours: 9, // 8 days * 9 hours = 72 hours total
+        hours: 10.5, // 4 driving * 10.5 = 42h, 3 on-duty * 10.5 = 31.5h, total = 73.5h > 70h
       }));
 
       const violations = engine.detect8DayViolations(
         logsExceeding70,
-        new Date("2026-03-13T23:59:59")
+        endDate
       );
 
       const violation70 = violations.find((v) => v.violationType === "hours-60-70");

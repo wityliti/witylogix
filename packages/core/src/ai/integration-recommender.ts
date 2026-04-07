@@ -667,6 +667,3 @@ export function analyzeCategoryGaps(
   };
 }
 
-// ─── EXPORTS ────────────────────────────────────────────────────────────
-
-export { IntegrationDependencyGraph };
