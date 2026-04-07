@@ -20,6 +20,12 @@ interface UseDeliveryTrackingReturn {
   driverPosition: DriverLocation | null;
   deliveryStatus: DeliveryStep | null;
   eta: Date | null;
+  /** Confidence score 0–1 from the LightGBM residual model, null if not AI-predicted */
+  etaConfidence: number | null;
+  /** ETA change vs previous in minutes (positive = later, negative = earlier), null if first update */
+  etaDeltaMinutes: number | null;
+  /** True when the ETA was produced by the WIT-204 predictive model */
+  isAIPredicted: boolean;
   isConnected: boolean;
   error: string | null;
   retryCount: number;
@@ -38,6 +44,9 @@ export function useDeliveryTracking({
   const [driverPosition, setDriverPosition] = useState<DriverLocation | null>(null);
   const [deliveryStatus, setDeliveryStatus] = useState<DeliveryStep | null>(null);
   const [eta, setEta] = useState<Date | null>(null);
+  const [etaConfidence, setEtaConfidence] = useState<number | null>(null);
+  const [etaDeltaMinutes, setEtaDeltaMinutes] = useState<number | null>(null);
+  const [isAIPredicted, setIsAIPredicted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -112,6 +121,13 @@ export function useDeliveryTracking({
               if (message.data.eta) {
                 setEta(new Date(message.data.eta));
               }
+              if (typeof message.data.confidence === 'number') {
+                setEtaConfidence(message.data.confidence);
+                setIsAIPredicted(true);
+              }
+              if (typeof message.data.etaDeltaMinutes === 'number') {
+                setEtaDeltaMinutes(message.data.etaDeltaMinutes);
+              }
               break;
             }
           }
@@ -169,6 +185,9 @@ export function useDeliveryTracking({
     driverPosition,
     deliveryStatus,
     eta,
+    etaConfidence,
+    etaDeltaMinutes,
+    isAIPredicted,
     isConnected,
     error,
     retryCount,

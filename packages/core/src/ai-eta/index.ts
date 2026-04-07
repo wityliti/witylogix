@@ -52,3 +52,13 @@ export { ModelEnsemble, modelEnsemble } from './model-ensemble.js';
 // Export main engine
 export type { ETAEngineConfig } from './eta-engine.js';
 export { ETAEngine, etaEngine } from './eta-engine.js';
+
+// Residual correction model for real-time ETA recalculation
+export { LightGBMResidualModel } from './lightgbm-residual-model.js';
+export type {
+  ResidualFeatures,
+  TrainingPoint,
+  ModelConfig,
+  ModelState,
+  ZoneType,
+} from './lightgbm-residual-model.js';
