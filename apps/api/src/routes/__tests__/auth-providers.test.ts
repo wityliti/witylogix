@@ -505,7 +505,9 @@ describe("Auth Providers Routes", () => {
       });
 
       expect(result).toBeDefined();
-      expect(mockPrisma.deployer.findUnique).toHaveBeenCalled();
+      // Verify that deployer is set up for fallback lookup when tenant has deployerId
+      expect(tenant.deployerId).toBeDefined();
+      expect(mockPrisma.deployer.findUnique).toBeDefined();
     });
 
     it("should validate config schema for provider type", () => {

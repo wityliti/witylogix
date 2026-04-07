@@ -89,6 +89,7 @@ const createMockDriver = (overrides?: Partial<Driver>): Driver => {
 
 describe('Drivers Core Module', () => {
   let prisma: any;
+  let db: any;
   let redis: any;
 
   beforeEach(() => {
@@ -116,6 +117,8 @@ describe('Drivers Core Module', () => {
       zrem: vi.fn(),
       del: vi.fn(),
     };
+
+    db = prisma;
   });
 
   afterEach(() => {

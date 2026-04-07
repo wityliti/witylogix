@@ -100,7 +100,7 @@ export class ETAPipeline {
       snow: { factor_light: 1.3, factor_moderate: 1.4, factor_heavy: 1.5 },
       fog: { factor_light: 1.1, factor_moderate: 1.15, factor_heavy: 1.2 },
       extreme_heat: { factor: 1.05 },
-      wind: { factor: 1.05 },
+      wind: { factor_light: 1.05, factor_moderate: 1.1, factor_heavy: 1.15 },
     };
   }
 
@@ -151,7 +151,9 @@ export class ETAPipeline {
     } else if (weather.condition === 'extreme_heat') {
       factor = 1.05; // Slight slowdown due to heat
     } else if (weather.condition === 'wind') {
-      factor = 1.05; // Slight slowdown due to wind
+      const severity = weather.severity || 'moderate';
+      const severityMap: Record<string, number> = { light: 1.05, moderate: 1.1, heavy: 1.15 };
+      factor = severityMap[severity] || 1.1;
     }
 
     delayMinutes = baseDurationMin * (factor - 1.0);

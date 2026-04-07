@@ -33,6 +33,7 @@ const startOptimizationWorker = async () => { try { const m = await import("./wo
 const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
 const startGeofenceWorker = async () => { try { const m = await import("./workers/geofence-worker.js"); return m.startGeofenceWorker(); } catch { console.warn("[Worker] Geofence worker unavailable"); } };
 const startFailedDeliveryWorker = async () => { try { const m = await import("./workers/failed-delivery-worker.js"); return m.startFailedDeliveryWorker(); } catch { console.warn("[Worker] Failed-delivery worker unavailable"); } };
+const startWCWebhookWorker = async () => { try { const m = await import("./workers/wc-webhook-worker.js"); return m.startWCWebhookWorker(); } catch { console.warn("[Worker] WC webhook worker unavailable"); } };
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -269,6 +270,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
   await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
   await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
+  await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 
@@ -521,7 +523,8 @@ async function start(): Promise<void> {
   });
 
   startFailedDeliveryWorker();
-  app.log.info("BullMQ workers started (notification, optimization, integration, geofence, failed-delivery)");
+  startWCWebhookWorker();
+  app.log.info("BullMQ workers started (notification, optimization, integration, geofence, failed-delivery, wc-webhooks)");
 
   // ─── Bootstrap Carrier Adapters ───────────────────────────
   try {

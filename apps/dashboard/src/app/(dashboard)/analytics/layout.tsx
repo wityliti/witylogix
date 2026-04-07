@@ -14,6 +14,8 @@ export default function AnalyticsLayout({ children }: LayoutProps) {
 
   const tabs = [
     { name: 'Overview', href: '/analytics' },
+    { name: 'Route Performance', href: '/analytics/route-performance' },
+    { name: 'ETA Accuracy', href: '/analytics/eta-accuracy' },
     { name: 'Reports', href: '/analytics/reports' },
     { name: 'Dashboards', href: '/analytics/dashboards' },
   ];
@@ -34,7 +36,9 @@ export default function AnalyticsLayout({ children }: LayoutProps) {
       <div className="border-b border-wl-border-subtle">
         <div className="flex gap-8">
           {tabs.map((tab) => {
-            const isActive = pathname === tab.href || (pathname === '/analytics' && tab.href === '/analytics');
+            const isActive = tab.href === '/analytics'
+              ? pathname === '/analytics'
+              : pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}

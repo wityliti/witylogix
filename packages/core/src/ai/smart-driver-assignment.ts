@@ -172,9 +172,9 @@ export class SmartDriverAssignment {
 
     const avgUtilization = (weightUtilization + volumeUtilization) / 2;
 
-    // Prefer drivers with moderate utilization (not too full, not too empty)
-    // Score peaks at 70% utilization
-    const score = Math.max(0, 100 - Math.abs(avgUtilization - 0.7) * 200);
+    // Prefer drivers with more remaining capacity
+    // Score is inversely proportional to utilization after the new order
+    const score = Math.max(0, (1 - avgUtilization) * 100);
 
     return {
       score: Math.round(Math.min(100, score)),
@@ -249,7 +249,7 @@ export class SmartDriverAssignment {
       isEligible = false;
     }
 
-    if (driver.workingHoursRemaining < order.estimatedDuration / 60) {
+    if (driver.workingHoursRemaining < order.estimatedDuration) {
       violatedConstraints.push("Insufficient shift time remaining");
       isEligible = false;
     }
@@ -275,6 +275,7 @@ export class SmartDriverAssignment {
       reasons.push(`${capacityScore}% capacity fit`);
     } else {
       reasons.push("Insufficient capacity");
+      violatedConstraints.push("Insufficient capacity for order weight/volume");
       isEligible = false;
     }
 

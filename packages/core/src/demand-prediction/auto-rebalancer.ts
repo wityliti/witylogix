@@ -196,17 +196,17 @@ export class AutoRebalancer {
         continue; // Below threshold, ignore
       }
 
-      // Determine severity
+      // Determine severity based on utilization ratio (demand/capacity)
       let severity: CapacityImbalance['severity'];
-      const absSeverityPercent = Math.abs(gapPercent) * 100;
-      if (absSeverityPercent > this.config.criticalGapPercent) {
-        severity = 'critical';
-      } else if (absSeverityPercent > 40) {
-        severity = 'high';
-      } else if (absSeverityPercent > 25) {
-        severity = 'medium';
+      const utilizationRatio = zone.capacity > 0 ? zone.demand / zone.capacity : 0;
+      if (utilizationRatio > 1 + this.config.criticalGapPercent / 100) {
+        severity = 'critical'; // e.g., > 150% utilization
+      } else if (utilizationRatio > 1) {
+        severity = 'high'; // Over capacity (100-150%)
+      } else if (utilizationRatio > 0.7) {
+        severity = 'medium'; // Near capacity (70-100%)
       } else {
-        severity = 'low';
+        severity = 'low'; // Under-utilized (< 70%)
       }
 
       // Calculate required capacity
@@ -300,6 +300,9 @@ export class AutoRebalancer {
    * Apply driver redistribution (with optional auto-approval)
    */
   executeRebalancing(plan: RebalancingPlan, autoApprove: boolean = false): RebalancingPlan {
+    // Store in pending plans for tracking
+    this.pendingPlans.set(plan.id, plan);
+
     const needsApproval = plan.requiresApproval && !autoApprove;
 
     if (needsApproval) {
@@ -312,32 +315,25 @@ export class AutoRebalancer {
     plan.approvedAt = new Date();
     plan.approvedBy = autoApprove ? 'system' : 'manual';
 
-    // Execute moves
-    plan.status = 'executing';
+    // Record in history synchronously
+    plan.executedAt = new Date();
+    plan.completedAt = new Date();
 
-    // Simulate execution
-    setTimeout(() => {
-      plan.status = 'completed';
-      plan.executedAt = new Date();
-      plan.completedAt = new Date();
+    const historyEntry: RebalancingHistory = {
+      planId: plan.id,
+      executedAt: plan.executedAt,
+      completedAt: plan.completedAt,
+      moves: plan.moves,
+      actualOutcome: {
+        actualWaitTimeReduction: plan.impactEstimate.projectedWaitTimeReduction * 0.9,
+        actualCostImpact: plan.impactEstimate.projectedCostImpact,
+        zonesImproved: plan.impactEstimate.affectedZones,
+        zonesDisrupted: [],
+      },
+      success: true,
+    };
 
-      // Record in history
-      const historyEntry: RebalancingHistory = {
-        planId: plan.id,
-        executedAt: plan.executedAt,
-        completedAt: plan.completedAt,
-        moves: plan.moves,
-        actualOutcome: {
-          actualWaitTimeReduction: plan.impactEstimate.projectedWaitTimeReduction * 0.9, // slightly less than projected
-          actualCostImpact: plan.impactEstimate.projectedCostImpact,
-          zonesImproved: plan.impactEstimate.affectedZones,
-          zonesDisrupted: [],
-        },
-        success: true,
-      };
-
-      this.history.set(plan.id, historyEntry);
-    }, 5000); // Simulate 5 second execution time
+    this.history.set(plan.id, historyEntry);
 
     return plan;
   }

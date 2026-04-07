@@ -86,8 +86,8 @@ describe("TemplateEngine", () => {
 
     it("should escape and remove uninterpolated placeholders", () => {
       const variables: TemplateVariables = {
-        customerName: "Test",
-        // Missing deliveryDate, timeWindow, trackingUrl
+        deliveryDate: "2026-03-15",
+        // Missing timeWindow, trackingUrl
       };
 
       const template = TemplateEngine.renderTemplate(
@@ -96,7 +96,7 @@ describe("TemplateEngine", () => {
         "sms"
       );
 
-      expect(template.text).toContain("Test");
+      expect(template.text).toContain("2026-03-15");
       expect(template.text).not.toContain("{{");
     });
   });
@@ -176,10 +176,10 @@ describe("TemplateEngine", () => {
         driverName: "O'Brien",
       };
 
-      const template = TemplateEngine.renderTemplate("delivery_arriving", variables, "sms");
+      const template = TemplateEngine.renderTemplate("delivery_arriving", variables, "email");
 
-      expect(template.text).toContain("John & Jane's Place");
-      expect(template.text).toContain("456 Oak St");
+      expect(template.html).toContain("John & Jane's Place");
+      expect(template.html).toContain("456 Oak St");
     });
 
     it("should handle unicode characters", () => {

@@ -80,6 +80,13 @@ export class SAPClient extends AbstractERPAdapter {
   }
 
   /**
+   * Get OAuth2 authorization URL
+   */
+  getAuthorizationUrl(state: string): string {
+    return `${this.config.instanceUrl}/oauth2/authorize?client_id=${this.config.clientId}&redirect_uri=${encodeURIComponent(this.config.redirectUri)}&state=${state}&response_type=code`;
+  }
+
+  /**
    * Authenticate with SAP using OAuth2
    */
   async authenticate(authCode: string): Promise<void> {
@@ -648,19 +655,22 @@ export class SAPClient extends AbstractERPAdapter {
   }
 
   private mapOrderToSAP(order: ERPOrder): Record<string, any> {
-    return {
-      CardCode: order.customerId,
-      DocDate: order.orderDate.toISOString().split('T')[0],
-      DueDate: order.dueDate?.toISOString().split('T')[0],
-      DocumentLines: order.lineItems.map((item) => ({
+    const result: Record<string, any> = {};
+    if (order.customerId) result.CardCode = order.customerId;
+    if (order.orderDate) result.DocDate = order.orderDate.toISOString().split('T')[0];
+    if (order.dueDate) result.DueDate = order.dueDate.toISOString().split('T')[0];
+    if (order.status) result.DocumentStatus = order.status;
+    if (order.lineItems) {
+      result.DocumentLines = order.lineItems.map((item) => ({
         ItemCode: item.itemCode,
         ItemDescription: item.itemName,
         Quantity: item.quantity,
         UnitPrice: item.unitPrice,
         DiscountPercent: item.discountPercent,
         TaxCode: item.taxCode,
-      })),
-    };
+      }));
+    }
+    return result;
   }
 
   private mapOrderFromSAP(order: any): ERPOrder {
@@ -678,19 +688,22 @@ export class SAPClient extends AbstractERPAdapter {
   }
 
   private mapInvoiceToSAP(invoice: ERPInvoice): Record<string, any> {
-    return {
-      CardCode: invoice.customerId,
-      DocDate: invoice.invoiceDate.toISOString().split('T')[0],
-      DueDate: invoice.dueDate.toISOString().split('T')[0],
-      DocumentLines: invoice.lineItems.map((item) => ({
+    const result: Record<string, any> = {};
+    if (invoice.customerId) result.CardCode = invoice.customerId;
+    if (invoice.invoiceDate) result.DocDate = invoice.invoiceDate.toISOString().split('T')[0];
+    if (invoice.dueDate) result.DueDate = invoice.dueDate.toISOString().split('T')[0];
+    if (invoice.status) result.DocumentStatus = invoice.status;
+    if (invoice.lineItems) {
+      result.DocumentLines = invoice.lineItems.map((item) => ({
         ItemCode: item.itemCode,
         ItemDescription: item.itemName,
         Quantity: item.quantity,
         UnitPrice: item.unitPrice,
         DiscountPercent: item.discountPercent,
         TaxCode: item.taxCode,
-      })),
-    };
+      }));
+    }
+    return result;
   }
 
   private mapInvoiceFromSAP(invoice: any): ERPInvoice {
@@ -737,16 +750,21 @@ export class SAPClient extends AbstractERPAdapter {
   }
 
   private mapJournalEntryToSAP(entry: ERPJournalEntry): Record<string, any> {
-    return {
-      Reference: entry.referenceNumber,
-      Memo: entry.description,
-      DebitCredit: entry.lines.map((line) => ({
+    const result: Record<string, any> = {};
+    if (entry.referenceNumber) result.Reference = entry.referenceNumber;
+    if (entry.description) result.Memo = entry.description;
+    if (entry.status) result.Status = entry.status;
+    if (entry.lines) {
+      result.DebitCredit = entry.lines.map((line) => ({
         AccountCode: line.accountCode,
         Debit: line.debitAmount || 0,
         Credit: line.creditAmount || 0,
         LineMemo: line.description,
-      })),
-    };
+      }));
+    } else if ((entry as any).DebitCredit) {
+      result.DebitCredit = (entry as any).DebitCredit;
+    }
+    return result;
   }
 
   private buildBatchRequestBody(requests: SAPBatchRequest[]): any {

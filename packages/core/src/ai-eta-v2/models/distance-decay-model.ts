@@ -235,8 +235,17 @@ export class DistanceDecayModel {
   getState(): DistanceDecayModelState {
     return {
       short_range_slope: this.shortRangeParams.slope,
+      short_range_intercept: this.shortRangeParams.intercept,
+      short_range_r_squared: this.shortRangeParams.r_squared,
+      short_range_sample_count: this.shortRangeParams.sample_count,
       medium_range_slope: this.mediumRangeParams.slope,
+      medium_range_intercept: this.mediumRangeParams.intercept,
+      medium_range_r_squared: this.mediumRangeParams.r_squared,
+      medium_range_sample_count: this.mediumRangeParams.sample_count,
       long_range_slope: this.longRangeParams.slope,
+      long_range_intercept: this.longRangeParams.intercept,
+      long_range_r_squared: this.longRangeParams.r_squared,
+      long_range_sample_count: this.longRangeParams.sample_count,
       urban_multiplier: this.urbanMultiplier,
       loading_unloading_baseline: this.loadingUnloadingBaseline,
     };
@@ -247,8 +256,17 @@ export class DistanceDecayModel {
    */
   setState(state: DistanceDecayModelState): void {
     this.shortRangeParams.slope = state.short_range_slope;
+    this.shortRangeParams.intercept = state.short_range_intercept;
+    this.shortRangeParams.r_squared = state.short_range_r_squared;
+    this.shortRangeParams.sample_count = state.short_range_sample_count;
     this.mediumRangeParams.slope = state.medium_range_slope;
+    this.mediumRangeParams.intercept = state.medium_range_intercept;
+    this.mediumRangeParams.r_squared = state.medium_range_r_squared;
+    this.mediumRangeParams.sample_count = state.medium_range_sample_count;
     this.longRangeParams.slope = state.long_range_slope;
+    this.longRangeParams.intercept = state.long_range_intercept;
+    this.longRangeParams.r_squared = state.long_range_r_squared;
+    this.longRangeParams.sample_count = state.long_range_sample_count;
     this.urbanMultiplier = state.urban_multiplier;
     this.loadingUnloadingBaseline = state.loading_unloading_baseline;
   }

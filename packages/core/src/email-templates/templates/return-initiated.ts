@@ -4,6 +4,7 @@
 
 import { ReturnEmailData } from '../types';
 import { baseLayout } from './base-layout';
+import { renderTemplate } from '../template-engine';
 
 export function returnInitiatedTemplate(data: ReturnEmailData): string {
   const content = `
@@ -113,10 +114,12 @@ export function returnInitiatedTemplate(data: ReturnEmailData): string {
     </div>
   `;
 
-  return baseLayout({
+  const html = baseLayout({
     storeName: data.storeName,
     storeUrl: '',
     supportEmail: data.supportEmail,
     content,
   });
+
+  return renderTemplate(html, data as unknown as Record<string, any>);
 }

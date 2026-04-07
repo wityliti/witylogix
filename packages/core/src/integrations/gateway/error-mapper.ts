@@ -213,12 +213,13 @@ export class ErrorMapper {
 
     // AWS error parser
     this.parsers.set("aws", (error) => {
-      if (typeof error === "object" && error !== null && "name" in error) {
+      if (typeof error === "object" && error !== null && ("name" in error || "code" in error)) {
+        const code = (error as any).code || (error as any).name;
         return {
           message: (error as any).message || "AWS API error",
-          code: (error as any).code || (error as any).name,
+          code,
           statusCode: (error as any).statusCode || 500,
-          retryable: this.isAwsRetryable((error as any).code),
+          retryable: this.isAwsRetryable(code || ""),
         };
       }
       return { message: String(error) };
@@ -249,6 +250,7 @@ export class ErrorMapper {
     if (error instanceof Error) {
       return {
         message: error.message,
+        code: (error as any).code,
         statusCode: (error as any).statusCode,
       };
     }
@@ -272,7 +274,7 @@ export class ErrorMapper {
     if (normalized.includes("auth") || normalized.includes("unauthorized")) {
       return "INTEGRATION_AUTH_FAILED";
     }
-    if (normalized.includes("rate")) {
+    if (normalized.includes("rate") || normalized.includes("throttl")) {
       return "INTEGRATION_RATE_LIMITED";
     }
     if (normalized.includes("timeout") || normalized.includes("timed_out")) {

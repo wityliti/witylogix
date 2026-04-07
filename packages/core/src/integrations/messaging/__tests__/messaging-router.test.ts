@@ -120,6 +120,30 @@ describe("MessagingRouter", () => {
     router.registerProvider("primary", primaryAdapter);
     router.registerProvider("fallback", fallbackAdapter);
     router.registerProvider("alternate", alternateAdapter);
+
+    // Override default channel configs to use our mock provider names
+    router.setChannelConfig("sms", {
+      channel: "sms",
+      primary: ["primary"],
+      fallback: ["fallback"],
+      deduplicateMessages: true,
+      deduplicationWindow: 30000,
+    });
+
+    router.setChannelConfig("push", {
+      channel: "push",
+      primary: ["primary"],
+      fallback: ["fallback"],
+      deduplicateMessages: true,
+      deduplicationWindow: 30000,
+    });
+
+    router.setChannelConfig("inapp", {
+      channel: "inapp",
+      primary: ["primary"],
+      fallback: [],
+      deduplicateMessages: false,
+    });
   });
 
   describe("Provider Registration", () => {
@@ -539,7 +563,10 @@ describe("MessagingRouter", () => {
         body: "Test",
       };
 
-      await expect(unconfiguredRouter.sendSMS(message)).rejects.toThrow();
+      // Router has default config but no providers registered,
+      // so all providers fail and it returns a failure result
+      const result = await unconfiguredRouter.sendSMS(message);
+      expect(result.success).toBe(false);
     });
 
     it("should warn about unregistered providers", async () => {

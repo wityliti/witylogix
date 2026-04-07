@@ -23,6 +23,7 @@ import {
   Zap,
   CheckCircle2,
   Plus,
+  ShieldCheck,
 } from 'lucide-react';
 
 // Types
@@ -193,6 +194,12 @@ const QuickActions = () => {
             <Button variant="secondary" size="sm">
               <ActivitySquare className="w-3.5 h-3.5 mr-1" />
               View Logs
+            </Button>
+          </Link>
+          <Link href="/admin/audit">
+            <Button variant="secondary" size="sm">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+              Audit Trail
             </Button>
           </Link>
           <Button variant="ghost" size="sm">

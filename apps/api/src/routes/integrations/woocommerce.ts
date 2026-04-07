@@ -22,8 +22,19 @@ import {
 import {
   WebhookConsumer,
 } from "@witylogix/core/integrations/woocommerce";
+import { createCryptoService } from "@witylogix/core/encryption";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
+
+function encryptCredential(value: string): string {
+  const crypto = createCryptoService(process.env.ENCRYPTION_MASTER_KEY);
+  return JSON.stringify(crypto.encrypt(value));
+}
+
+function decryptCredential(stored: string): string {
+  const crypto = createCryptoService(process.env.ENCRYPTION_MASTER_KEY);
+  return crypto.decrypt(stored);
+}
 
 // ─── Zod Schemas ────────────────────────────────────────────
 
@@ -91,7 +102,7 @@ export default async function wooCommerceRoutes(
           });
         }
 
-        // Verify connection by making a test API call
+        // Verify credentials via WooCommerce system_status endpoint
         const config: WCClientConfig = {
           storeUrl: body.storeUrl,
           consumerKey: body.consumerKey,
@@ -101,23 +112,29 @@ export default async function wooCommerceRoutes(
         const client = createWooCommerceClient(config);
 
         try {
-          // Test API call
-          await client.getOrders({ perPage: 1 });
+          await client.get("/system_status");
         } catch (error) {
-          return reply.status(400).send({
-            error: "Failed to verify WooCommerce credentials",
+          return reply.status(422).send({
+            error: "Invalid WooCommerce credentials",
             message: error instanceof Error ? error.message : "Unknown error",
           });
         }
 
-        // Create connection record
+        // Encrypt credentials before persisting
+        const encryptedKey = encryptCredential(body.consumerKey);
+        const encryptedSecret = encryptCredential(body.consumerSecret);
+        const encryptedWebhookSecret = body.webhookSecret
+          ? encryptCredential(body.webhookSecret)
+          : undefined;
+
+        // Create connection record with encrypted credentials
         const connection = await prisma.wooCommerceConnection.create({
           data: {
             tenantId,
             storeUrl: body.storeUrl,
-            consumerKey: body.consumerKey,
-            consumerSecret: body.consumerSecret,
-            webhookSecret: body.webhookSecret,
+            consumerKey: encryptedKey,
+            consumerSecret: encryptedSecret,
+            webhookSecret: encryptedWebhookSecret,
             ordersSync: body.ordersSync,
             productsSync: body.productsSync,
             customersSync: body.customersSync,
@@ -215,8 +232,8 @@ export default async function wooCommerceRoutes(
 
         const config: WCClientConfig = {
           storeUrl: connection.storeUrl,
-          consumerKey: connection.consumerKey,
-          consumerSecret: connection.consumerSecret,
+          consumerKey: decryptCredential(connection.consumerKey),
+          consumerSecret: decryptCredential(connection.consumerSecret),
         };
 
         const client = createWooCommerceClient(config);
@@ -278,19 +295,22 @@ export default async function wooCommerceRoutes(
           return reply.status(404).send({ error: "Connection not found" });
         }
 
-        // Verify connection is still active
+        // Verify connection is still active via system_status
         const config: WCClientConfig = {
           storeUrl: connection.storeUrl,
-          consumerKey: connection.consumerKey,
-          consumerSecret: connection.consumerSecret,
+          consumerKey: decryptCredential(connection.consumerKey),
+          consumerSecret: decryptCredential(connection.consumerSecret),
         };
 
         let isHealthy = true;
         let healthError = "";
+        let storeInfo: Record<string, unknown> | null = null;
 
         try {
           const client = createWooCommerceClient(config);
-          await client.getOrders({ perPage: 1 });
+          const systemStatus = await client.get<{ environment?: Record<string, unknown> }>("/system_status");
+          isHealthy = true;
+          storeInfo = systemStatus?.environment ?? null;
         } catch (error) {
           isHealthy = false;
           healthError =
@@ -304,6 +324,7 @@ export default async function wooCommerceRoutes(
             status: connection.status,
             isHealthy,
             healthError: healthError || null,
+            storeInfo,
             lastSyncAt: connection.lastSyncAt,
             lastHealthCheckAt: connection.lastHealthCheckAt,
           },
@@ -351,8 +372,8 @@ export default async function wooCommerceRoutes(
           try {
             const config: WCClientConfig = {
               storeUrl: connection.storeUrl,
-              consumerKey: connection.consumerKey,
-              consumerSecret: connection.consumerSecret,
+              consumerKey: decryptCredential(connection.consumerKey),
+              consumerSecret: decryptCredential(connection.consumerSecret),
             };
 
             const client = createWooCommerceClient(config);

@@ -149,8 +149,11 @@ export function isDateBlackedOut(
     return false;
   }
 
+  const dateStr = date.toISOString().split('T')[0];
   for (const blackout of blackoutDates) {
-    if (date >= blackout.startDate && date <= blackout.endDate) {
+    const startStr = blackout.startDate.toISOString().split('T')[0];
+    const endStr = blackout.endDate.toISOString().split('T')[0];
+    if (dateStr >= startStr && dateStr <= endStr) {
       return true;
     }
   }
@@ -208,7 +211,13 @@ export function isTimeWithinOperatingHours(
     return false; // No hours defined for this day
   }
 
-  const currentMinutes = getCurrentTimeInZone(timezone);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const currentMinutes = parseTime(formatter.format(date));
   const openMinutes = parseTime(timeWindow.open);
   const closeMinutes = parseTime(timeWindow.close);
 
@@ -262,7 +271,13 @@ export function isCutoffPassed(
   referenceDate?: Date
 ): boolean {
   const now = referenceDate || new Date();
-  const currentMinutes = getCurrentTimeInZone(timezone);
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const currentMinutes = parseTime(formatter.format(now));
   const slotMinutes = parseTime(slotStartTime);
   const cutoffAtMinutes = slotMinutes - cutoffMinutes;
 
@@ -436,11 +451,6 @@ export function getAvailableTimeSlots(
 
     // Check if slot has capacity
     if (slot.currentUtilization >= slot.maxCapacity) {
-      return false;
-    }
-
-    // Check if cutoff hasn't passed
-    if (isCutoffPassed(slot.startTime, slot.cutoffMinutes, timezone)) {
       return false;
     }
 

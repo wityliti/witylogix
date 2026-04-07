@@ -179,7 +179,7 @@ describe('HEREMapsClient', () => {
       expect(response.status).toBe('OK');
       expect(global.fetch).toHaveBeenCalled();
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('countryCode:FRA');
+      expect(callUrl).toContain('countryCode%3AFRA');
     });
   });
 
@@ -411,8 +411,10 @@ describe('HEREMapsClient', () => {
               },
               position: { lat: 40.7829, lng: -73.9654 },
               distance: 0,
-              phoneNumber: [{ value: '+1-555-0123' }],
-              website: [{ value: 'https://www.centralparknyc.org' }],
+              contacts: [{
+                phone: [{ value: '+1-555-0123' }],
+                website: [{ value: 'https://www.centralparknyc.org' }],
+              }],
             },
           ],
         }),
@@ -504,12 +506,13 @@ describe('HEREMapsClient', () => {
 
       const slowClient = new HEREMapsClient({
         ...mockConfig,
-        rateLimit: 10, // 10 requests per second
+        rateLimit: 2, // 2 requests per second (token bucket starts with 2 tokens)
       });
 
       const startTime = Date.now();
 
-      // Make multiple requests
+      // Make multiple requests — first 2 are instant (use initial tokens),
+      // remaining 3 must wait for refills
       const requests = Array.from({ length: 5 }, () =>
         slowClient.geocode({ address: `location${Math.random()}` })
       );
@@ -517,7 +520,7 @@ describe('HEREMapsClient', () => {
       await Promise.all(requests);
 
       const elapsed = Date.now() - startTime;
-      // With 10 req/sec, 5 requests should take roughly 500ms
+      // With 2 tokens initially and 2 tokens/sec refill, 5 requests need ~1.5s of waiting
       expect(elapsed).toBeGreaterThanOrEqual(400); // Allow some variance
     });
   });
@@ -550,8 +553,8 @@ describe('HEREMapsClient', () => {
 
       const metrics = client.getMetrics();
 
-      expect(metrics.totalRequests).toBe(3);
-      expect(metrics.successfulRequests).toBe(3);
+      expect(metrics.totalRequests).toBe(2); // Second geocode is cached, not counted as request
+      expect(metrics.successfulRequests).toBe(2);
       expect(metrics.failedRequests).toBe(0);
       expect(metrics.cacheHits).toBe(1); // Second geocode request is cached
     });

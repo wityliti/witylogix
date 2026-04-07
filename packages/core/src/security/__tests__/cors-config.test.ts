@@ -257,9 +257,12 @@ describe("CorsManager", () => {
     });
 
     it("should remove origin from whitelist", () => {
-      corsManager.removeOrigin("https://app.witylogix.com");
+      // Add a non-wildcard-covered origin, then remove it
+      corsManager.addOrigin("https://external.example.com");
+      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(true);
 
-      expect(corsManager.isWhitelisted("https://app.witylogix.com")).toBe(false);
+      corsManager.removeOrigin("https://external.example.com");
+      expect(corsManager.isWhitelisted("https://external.example.com")).toBe(false);
     });
 
     it("should get current whitelist", () => {

@@ -346,8 +346,11 @@ describe('CredentialVault', () => {
       const masked = await vault.getMasked('tenant-123', 'stripe');
 
       expect(masked).toBeDefined();
-      expect(masked?.masked.apiKey).toBe('****FAKE');
-      expect(masked?.masked.secret).toBe('*****word');
+      // maskValue shows last 4 chars, masks the rest with *
+      // 'sk_live_FAKEKEY12345' (20 chars) -> '****************2345'
+      expect(masked?.masked.apiKey).toBe('*'.repeat(16) + '2345');
+      // 'my_secret_password' (18 chars) -> '**************word'
+      expect(masked?.masked.secret).toBe('*'.repeat(14) + 'word');
     });
 
     it('should show only last 4 characters', async () => {

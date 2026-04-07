@@ -109,6 +109,7 @@ const createMockOrder = (overrides?: Partial<Order>): Order => ({
 
 describe('Orders Core Module', () => {
   let prisma: any;
+  let db: any;
 
   beforeEach(() => {
     prisma = {
@@ -124,6 +125,7 @@ describe('Orders Core Module', () => {
       $queryRaw: vi.fn(),
       $transaction: vi.fn(),
     };
+    db = prisma;
   });
 
   afterEach(() => {

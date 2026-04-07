@@ -479,6 +479,7 @@ describe('ZohoCRMAdapter', () => {
                 Modified_Time: new Date().toISOString(),
               },
             ],
+            info: { count: 1, more_records: false },
           }),
         });
 

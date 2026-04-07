@@ -261,8 +261,16 @@ export function forecastMultiSeasonal(
     upper[h - 1] += marginOfError;
   }
 
-  // Ensure non-negative
+  // Ensure non-negative and lower <= upper
   lower = lower.map((v) => Math.max(0, v));
+  for (let i = 0; i < horizon; i++) {
+    if (lower[i] > upper[i]) {
+      // Swap or center the bounds around the prediction
+      const margin = Math.abs(upper[i] - lower[i]) / 2;
+      lower[i] = Math.max(0, predictions[i] - margin);
+      upper[i] = predictions[i] + margin;
+    }
+  }
 
   return { predictions, lower, upper };
 }

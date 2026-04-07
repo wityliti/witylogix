@@ -20,6 +20,7 @@ export interface Order {
   deliveryAddress: Address;
   totalPrice: number;
   estimatedDelivery?: string;
+  deliveryProgress?: number;
   rating?: OrderRating;
 }
 

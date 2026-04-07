@@ -9,8 +9,7 @@
  * - Order status tracking
  */
 
-// Node 22+ has global fetch — no need for node-fetch
-const nodeFetch = globalThis.fetch;
+// Node 22+ has global fetch — use globalThis.fetch directly for testability
 import type {
   PaymentIntent,
   Transaction,
@@ -118,7 +117,7 @@ export class PayPalGateway extends PaymentGatewayBase {
 
     const authString = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
-    const response = await nodeFetch(`${this.baseUrl}/v1/oauth2/token`, {
+    const response = await globalThis.fetch(`${this.baseUrl}/v1/oauth2/token`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${authString}`,
@@ -179,7 +178,7 @@ export class PayPalGateway extends PaymentGatewayBase {
       },
     };
 
-    const response = await nodeFetch(`${this.baseUrl}/v2/checkout/orders`, {
+    const response = await globalThis.fetch(`${this.baseUrl}/v2/checkout/orders`, {
       method: 'POST',
       headers: {
         ...this.buildAuthHeaders(),
@@ -224,7 +223,7 @@ export class PayPalGateway extends PaymentGatewayBase {
   async capturePayment(paymentIntentId: string): Promise<Transaction> {
     const accessToken = await this.getAccessToken();
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/checkout/orders/${paymentIntentId}/capture`,
       {
         method: 'POST',
@@ -285,7 +284,7 @@ export class PayPalGateway extends PaymentGatewayBase {
       amount: amount ? ((amount / 100).toFixed(2)) : undefined,
     };
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/payments/captures/${transactionId}/refund`,
       {
         method: 'POST',
@@ -334,7 +333,7 @@ export class PayPalGateway extends PaymentGatewayBase {
 
     const accessToken = await this.getAccessToken();
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/checkout/orders/${orderId}`,
       {
         method: 'GET',
@@ -402,7 +401,7 @@ export class PayPalGateway extends PaymentGatewayBase {
       webhook_event: payload,
     };
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v1/notifications/verify-webhook-signature`,
       {
         method: 'POST',

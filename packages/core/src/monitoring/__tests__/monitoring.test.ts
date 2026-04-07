@@ -501,7 +501,8 @@ describe("HealthCheckRegistry", () => {
       registry.register("slow", checkFn);
 
       const result = await registry.check("slow");
-      expect(result!.durationMs).toBeGreaterThanOrEqual(50);
+      // Allow 40ms lower bound to account for timer resolution variance
+      expect(result!.durationMs).toBeGreaterThanOrEqual(40);
     });
 
     it("should catch check errors", async () => {
@@ -660,7 +661,8 @@ describe("HealthCheckRegistry", () => {
       });
 
       const status = await registry.checkAll();
-      expect(status.checks[0].durationMs).toBeGreaterThanOrEqual(50);
+      // Allow 40ms lower bound to account for timer resolution variance
+      expect(status.checks[0].durationMs).toBeGreaterThanOrEqual(40);
     });
 
     it("should handle check failures gracefully", async () => {

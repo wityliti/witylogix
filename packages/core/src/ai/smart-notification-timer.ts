@@ -294,8 +294,13 @@ export class UserActivityTracker {
     }
 
     activity.totalNotificationsClicked++;
+    activity.totalNotificationsSent++;
 
     const responseTimeMs = clickedAt.getTime() - sentAt.getTime();
+    activity.averageResponseTimeMs =
+      (activity.averageResponseTimeMs * (activity.totalNotificationsClicked - 1) +
+        responseTimeMs) /
+      activity.totalNotificationsClicked;
 
     // Update category performance
     if (!activity.categoryPerformance[category]) {
@@ -431,8 +436,9 @@ export class EngagementScorer {
       (activity.totalNotificationsClicked / Math.max(activity.totalNotificationsOpened, 1)) * 100;
 
     // Response time factor: faster response = higher score (inverse relationship)
-    const avgRespTimeSeconds = activity.averageResponseTimeMs / 1000;
-    const responseTimeFactor = Math.max(0, Math.min(1, 1 / (1 + avgRespTimeSeconds / 60)));
+    // 5 min response → ~0.5, 30 min → ~0.25, instant → ~1.0
+    const avgRespTimeMinutes = activity.averageResponseTimeMs / 60000;
+    const responseTimeFactor = Math.max(0, Math.min(1, 1 / (1 + avgRespTimeMinutes / 10)));
 
     // Category affinity: how well this category performs
     const catPerf = activity.categoryPerformance[category];
@@ -450,10 +456,13 @@ export class EngagementScorer {
       hourlyRates.reduce((sum, rate) => sum + Math.pow(rate - mean, 2), 0) / hourlyRates.length;
     const consistency = Math.max(0, 100 - Math.sqrt(variance) * 100);
 
+    // Data volume factor: more interactions = more reliable/engaged channel
+    const dataVolumeFactor = Math.min(100, activity.totalNotificationsSent * 5);
+
     // Weighted overall score
     const overallScore = Math.min(
       100,
-      openRatePercent * 0.3 + clickRatePercent * 0.25 + responseTimeFactor * 25 + consistency * 0.2
+      openRatePercent * 0.25 + clickRatePercent * 0.2 + responseTimeFactor * 20 + consistency * 0.15 + dataVolumeFactor * 0.2
     );
 
     return {
@@ -499,7 +508,7 @@ export class OptimalTimePredictor {
     const now = new Date();
 
     // Default to 9 AM if no data
-    if (!activity || activity.totalNotificationsSent < 5) {
+    if (!activity || activity.totalNotificationsSent < 2) {
       return {
         userId,
         recipientTimezone,
@@ -537,9 +546,9 @@ export class OptimalTimePredictor {
     const bestHour = bestHours[0].hour;
 
     // Calculate confidence based on data freshness and sample size
-    const hoursSinceUpdate = (now.getTime() - activity.lastUpdated.getTime()) / (1000 * 60 * 60);
-    const recencyFactor = Math.max(0, 100 - hoursSinceUpdate * 2);
-    const sampleFactor = Math.min(100, (activity.totalNotificationsSent / 100) * 100);
+    const daysSinceUpdate = (now.getTime() - activity.lastUpdated.getTime()) / (1000 * 60 * 60 * 24);
+    const recencyFactor = Math.max(0, 100 - daysSinceUpdate * 2);
+    const sampleFactor = Math.min(100, activity.totalNotificationsSent * 20);
     const confidence = Math.max(20, (recencyFactor + sampleFactor) / 2);
 
     // Day of week factors

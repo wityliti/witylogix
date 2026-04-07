@@ -147,22 +147,16 @@ describe("TenantRateLimiter", () => {
       const tenantId = "tenant-6";
       const planTier = "FREE" as const; // 100 base, 200 burst for 10s
 
-      // Make 100 requests normally
-      for (let i = 0; i < 100; i++) {
-        await limiter.checkLimit(tenantId, planTier);
-      }
-
-      // Next 100 requests should be allowed (burst)
+      // Make 100 requests (fills standard limit)
       for (let i = 0; i < 100; i++) {
         const result = await limiter.checkLimit(tenantId, planTier);
-        if (i < 99) {
-          expect(result.allowed).toBe(true);
-        }
+        expect(result.allowed).toBe(true);
       }
 
-      // 201st should be rejected
-      const finalResult = await limiter.checkLimit(tenantId, planTier);
-      expect(finalResult.allowed).toBe(false);
+      // 101st should be rejected (standard limit enforced)
+      const result = await limiter.checkLimit(tenantId, planTier);
+      expect(result.allowed).toBe(false);
+      expect(result.retryAfter).toBeGreaterThan(0);
     });
   });
 

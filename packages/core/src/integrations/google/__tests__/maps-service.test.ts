@@ -117,7 +117,7 @@ describe('GoogleMapsService', () => {
         ],
       };
 
-      const result = mapsService.isPointInZone(40.75, -73.95, zone);
+      const result = mapsService.isPointInZone({ lat: 40.75, lng: -73.95 }, zone);
       expect(result).toBe(true);
     });
 
@@ -133,7 +133,7 @@ describe('GoogleMapsService', () => {
         ],
       };
 
-      const result = mapsService.isPointInZone(40.6, -73.95, zone);
+      const result = mapsService.isPointInZone({ lat: 40.6, lng: -73.95 }, zone);
       expect(result).toBe(false);
     });
 
@@ -147,7 +147,7 @@ describe('GoogleMapsService', () => {
         ],
       };
 
-      const result = mapsService.isPointInZone(40.75, -73.95, zone);
+      const result = mapsService.isPointInZone({ lat: 40.75, lng: -73.95 }, zone);
       expect(result).toBe(false);
     });
   });

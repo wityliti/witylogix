@@ -4,7 +4,7 @@
 
 import { OrderEmailData } from '../types';
 import { baseLayout } from './base-layout';
-import { formatCurrency } from '../template-engine';
+import { renderTemplate, formatCurrency } from '../template-engine';
 
 export function orderConfirmedTemplate(data: OrderEmailData): string {
   const content = `
@@ -81,10 +81,12 @@ export function orderConfirmedTemplate(data: OrderEmailData): string {
     </div>
   `;
 
-  return baseLayout({
+  const html = baseLayout({
     storeName: data.storeName,
     storeUrl: data.storeUrl,
     supportEmail: data.supportEmail,
     content,
   });
+
+  return renderTemplate(html, data as unknown as Record<string, any>);
 }
