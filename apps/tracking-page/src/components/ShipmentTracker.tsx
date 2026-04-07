@@ -36,7 +36,6 @@ export interface ShipmentData {
 
 const BRAND_BLUE = '#3b82f6'
 const BRAND_GREEN = '#10b981'
-const BG_COLOR = '#f8fafc'
 const DARK_TEXT = '#1f2937'
 const LIGHT_TEXT = '#6b7280'
 
