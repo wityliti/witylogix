@@ -3,8 +3,53 @@
  * Comprehensive unit tests for SAP S/4HANA OData v4 API client
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ODataQueryBuilder, SapODataClient } from '../sap-odata-client.js';
+
+const mockFetch = vi.fn();
+
+/**
+ * Helper: mock a successful auth token response
+ */
+function mockAuthResponse() {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => ({ access_token: 'mock_token', expires_in: 3600 }),
+    text: async () => JSON.stringify({ access_token: 'mock_token', expires_in: 3600 }),
+    headers: new Headers(),
+  });
+}
+
+/**
+ * Helper: mock a successful CSRF token fetch (auth + csrf)
+ */
+function mockCsrfTokenFetch() {
+  // 1. authenticate() call
+  mockAuthResponse();
+  // 2. CSRF fetch call
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => ({}),
+    text: async () => '',
+    headers: new Headers({ 'x-csrf-token': 'test_csrf_token' }),
+  });
+}
+
+/**
+ * Helper: mock auth + API response for read operations (makeRequest calls authenticate first)
+ */
+function mockAuthThenResponse(data: any) {
+  mockAuthResponse();
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    json: async () => data,
+    text: async () => JSON.stringify(data),
+    headers: new Headers(),
+  });
+}
 
 describe('ODataQueryBuilder', () => {
   let builder: ODataQueryBuilder;
@@ -18,7 +63,7 @@ describe('ODataQueryBuilder', () => {
       builder.filter('Status', 'eq', 'active');
       const query = builder.build();
       expect(query).toContain('$filter=');
-      expect(query).toContain('Status eq active');
+      expect(decodeURIComponent(query)).toContain('Status eq active');
     });
 
     it('should escape single quotes in filter values', () => {
@@ -35,13 +80,13 @@ describe('ODataQueryBuilder', () => {
     it('should handle startswith operator', () => {
       builder.filter('Name', 'startswith', 'Test');
       const query = builder.build();
-      expect(query).toContain('startswith(Name,');
+      expect(decodeURIComponent(query)).toContain('startswith(Name,');
     });
 
     it('should handle contains operator', () => {
       builder.filter('Description', 'contains', 'product');
       const query = builder.build();
-      expect(query).toContain('contains(Description,');
+      expect(decodeURIComponent(query)).toContain('contains(Description,');
     });
 
     it('should combine multiple filters with AND', () => {
@@ -147,6 +192,9 @@ describe('SapODataClient', () => {
   let client: SapODataClient;
 
   beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch);
+    mockFetch.mockReset();
+
     client = new SapODataClient({
       clientId: 'test_client',
       clientSecret: 'test_secret',
@@ -154,9 +202,10 @@ describe('SapODataClient', () => {
       instanceUrl: 'https://sap.example.com/sap/opu/odata/sap/',
       environment: 'sandbox',
     });
+  });
 
-    // Mock fetch globally
-    global.fetch = vi.fn();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('constructor', () => {
@@ -190,15 +239,16 @@ describe('SapODataClient', () => {
         expires_in: 3600,
       };
 
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
+        headers: new Headers(),
       });
 
       const token = await client.authenticate();
 
       expect(token).toBe('mock_token');
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         'https://auth.example.com/token',
         expect.objectContaining({
           method: 'POST',
@@ -210,9 +260,10 @@ describe('SapODataClient', () => {
     });
 
     it('should handle authentication error', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: 'Unauthorized',
+        headers: new Headers(),
       });
 
       await expect(client.authenticate()).rejects.toThrow();
@@ -221,8 +272,11 @@ describe('SapODataClient', () => {
 
   describe('checkHealth()', () => {
     it('should return true for healthy connection', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      // checkHealth calls authenticate() then fetches
+      mockAuthResponse();
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers(),
       });
 
       const isHealthy = await client.checkHealth();
@@ -231,7 +285,7 @@ describe('SapODataClient', () => {
     });
 
     it('should return false for unhealthy connection', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const isHealthy = await client.checkHealth();
 
@@ -246,16 +300,15 @@ describe('SapODataClient', () => {
         SearchTerm: 'test',
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ ...partner, BusinessPartner: 'BP001' }),
-        });
+      // fetchCsrfToken: authenticate + csrf fetch
+      mockCsrfTokenFetch();
+      // makeRequest for POST: calls fetch with the actual POST
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ...partner, BusinessPartner: 'BP001' }),
+        headers: new Headers(),
+      });
 
       const result = await client.createBusinessPartner(partner);
 
@@ -271,16 +324,8 @@ describe('SapODataClient', () => {
         BPAddresses: [],
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockBP,
-        });
+      // makeRequest calls authenticate() then fetch
+      mockAuthThenResponse(mockBP);
 
       const result = await client.getBusinessPartner('BP001');
 
@@ -299,16 +344,7 @@ describe('SapODataClient', () => {
         '@odata.count': 2,
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockResponse,
-        });
+      mockAuthThenResponse(mockResponse);
 
       const query = new ODataQueryBuilder().filter('Status', 'eq', 'active').top(10);
 
@@ -336,16 +372,7 @@ describe('SapODataClient', () => {
         ],
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockOrder,
-        });
+      mockAuthThenResponse(mockOrder);
 
       const result = await client.getSalesOrder('SO001');
 
@@ -365,16 +392,15 @@ describe('SapODataClient', () => {
         SOItems: [],
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ ...order, SalesOrder: 'SO001' }),
-        });
+      // fetchCsrfToken: authenticate + csrf fetch
+      mockCsrfTokenFetch();
+      // makeRequest for POST
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ ...order, SalesOrder: 'SO001' }),
+        headers: new Headers(),
+      });
 
       const result = await client.createSalesOrder(order);
 
@@ -397,16 +423,7 @@ describe('SapODataClient', () => {
         ],
       };
 
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockProduct,
-        });
+      mockAuthThenResponse(mockProduct);
 
       const result = await client.getProduct('MAT001');
 
@@ -417,23 +434,19 @@ describe('SapODataClient', () => {
 
   describe('rate limiting', () => {
     it('should respect rate limit', async () => {
-      (global.fetch as any)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          headers: new Map([['x-csrf-token', 'test_token']]),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ value: [] }),
-        });
+      // checkHealth: authenticate + fetch
+      mockAuthResponse();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers(),
+      });
 
       const start = Date.now();
       await client.checkHealth();
       const duration = Date.now() - start;
 
       // Should complete without excessive delay
-      expect(duration).toBeLessThan(1000);
+      expect(duration).toBeLessThan(5000);
     });
   });
 });

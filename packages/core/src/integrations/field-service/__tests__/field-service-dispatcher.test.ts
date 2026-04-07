@@ -109,7 +109,12 @@ describe('FieldServiceDispatcher', () => {
         },
       ];
 
-      const request: DispatchOptimizationRequest = { jobs, technicians };
+      const skillMap = new Map([['job-1', ['Automation']]]);
+      const request: DispatchOptimizationRequest = {
+        jobs,
+        technicians,
+        constraints: { skillRequirements: skillMap },
+      };
       const result = await dispatcher.optimizeDispatch(request);
       expect(result.unassignedJobs).toHaveLength(1);
     });

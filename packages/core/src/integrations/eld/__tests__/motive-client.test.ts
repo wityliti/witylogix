@@ -190,10 +190,6 @@ describe("MotiveELDClient", () => {
         },
       };
 
-      vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
-      );
-
       const hosSummary = {
         hoursWorked11: 5,
         hoursWorked14: 6,
@@ -202,7 +198,12 @@ describe("MotiveELDClient", () => {
         hoursAvailable: 6,
       };
 
-      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      // Chain both mocks on a single spy — the second vi.spyOn overwrites the first
+      const fetchSpy = vi.spyOn(global, "fetch");
+      fetchSpy.mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDriver), { status: 200 })
+      );
+      fetchSpy.mockResolvedValueOnce(
         new Response(JSON.stringify(hosSummary), { status: 200 })
       );
 
@@ -408,13 +409,14 @@ describe("MotiveELDClient", () => {
         ],
       };
 
-      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      const fetchSpy = vi.spyOn(global, "fetch");
+      // First call: list vehicles
+      fetchSpy.mockResolvedValueOnce(
         new Response(JSON.stringify(mockVehicles), { status: 200 })
       );
-
-      // Mock individual vehicle requests
+      // Individual vehicle requests
       for (const v of mockVehicles.vehicles) {
-        vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        fetchSpy.mockResolvedValueOnce(
           new Response(JSON.stringify(v), { status: 200 })
         );
       }
@@ -588,7 +590,7 @@ describe("MotiveELDClient", () => {
     });
 
     it("should return false if API is unhealthy", async () => {
-      vi.spyOn(global, "fetch").mockRejectedValueOnce(
+      vi.spyOn(global, "fetch").mockRejectedValue(
         new Error("Connection timeout")
       );
 

@@ -10,6 +10,20 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+
+// Mock @witylogix/db to avoid real database calls
+vi.mock("@witylogix/db", () => ({
+  prisma: {},
+  db: {
+    searchIndex: {
+      upsert: vi.fn().mockResolvedValue({}),
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+  },
+}));
+
 import { createSemanticSearch, SemanticSearch } from "../semantic-search.js";
 import type { SearchableEntity, SearchResult } from "../semantic-search.js";
 

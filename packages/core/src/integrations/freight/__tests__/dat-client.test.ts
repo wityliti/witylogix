@@ -35,8 +35,8 @@ const createMockConfig = (): FreightConfig => ({
   },
   retry: {
     maxAttempts: 3,
-    delayMs: 1000,
-    backoffMultiplier: 2,
+    delayMs: 0,
+    backoffMultiplier: 1,
   },
 });
 
@@ -47,7 +47,7 @@ describe("DATClient", () => {
   beforeEach(() => {
     config = createMockConfig();
     client = new DATClient(config);
-    mockFetch.mockClear();
+    mockFetch.mockReset();
   });
 
   describe("Authentication", () => {
@@ -644,7 +644,7 @@ describe("DATClient", () => {
     it("should enforce rate limiting", async () => {
       await client.authenticate();
 
-      // Make requests up to the limit
+      // Make requests up to the limit (config maxRequests = 100)
       for (let i = 0; i < 100; i++) {
         mockFetch.mockResolvedValueOnce({
           ok: true,
@@ -653,11 +653,10 @@ describe("DATClient", () => {
             data: [],
           }),
         });
-
-        // This would normally hit the rate limit after 100 requests
+        await client.searchLoads({});
       }
 
-      // Try to exceed the rate limit
+      // The next request should exceed the rate limit
       await expect(client.searchLoads({})).rejects.toThrow(/Rate limit exceeded/);
     });
   });
@@ -676,7 +675,8 @@ describe("DATClient", () => {
     it("should handle API errors gracefully", async () => {
       await client.authenticate();
 
-      mockFetch.mockResolvedValueOnce({
+      // Provide enough error mocks for all retry attempts
+      mockFetch.mockResolvedValue({
         ok: false,
         statusText: "Internal Server Error",
       });
@@ -687,11 +687,8 @@ describe("DATClient", () => {
     it("should retry failed requests", async () => {
       await client.authenticate();
 
-      // First attempt fails
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        statusText: "Service Unavailable",
-      });
+      // First attempt fails with network error (triggers retry)
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       // Second attempt succeeds
       mockFetch.mockResolvedValueOnce({

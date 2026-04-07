@@ -1,0 +1,12 @@
+{
+  "id": "session-1775550347065",
+  "startedAt": "2026-04-07T08:25:47.065Z",
+  "cwd": "/root/Witylogix/witylogix-platform/packages/core",
+  "context": {},
+  "metrics": {
+    "edits": 12,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  }
+}

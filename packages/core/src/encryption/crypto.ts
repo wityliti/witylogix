@@ -75,7 +75,9 @@ export class CryptoService {
       ciphertext += cipher.final('base64');
 
       // Get authentication tag (GCM only)
-      const authTag = cipher.getAuthTag();
+      const authTag = this.defaultAlgorithm === EncryptionAlgorithm.AES_256_GCM
+        ? cipher.getAuthTag()
+        : Buffer.alloc(0);
 
       return {
         algorithm: this.defaultAlgorithm,

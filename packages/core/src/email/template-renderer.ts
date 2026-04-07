@@ -207,17 +207,49 @@ function processConditionals(template: string, variables: TemplateVariables): st
 }
 
 /**
+ * Find the matching {{/each}} for a {{#each ...}} block, handling nesting.
+ * Returns the index of the start of the matching {{/each}} tag.
+ */
+function findMatchingEachEnd(template: string, startAfter: number): number {
+  let depth = 1;
+  let i = startAfter;
+  while (i < template.length && depth > 0) {
+    const eachOpen = template.indexOf('{{#each ', i);
+    const eachClose = template.indexOf('{{/each}}', i);
+
+    if (eachClose === -1) return -1; // no matching close
+
+    if (eachOpen !== -1 && eachOpen < eachClose) {
+      depth++;
+      i = eachOpen + 8; // skip past '{{#each '
+    } else {
+      depth--;
+      if (depth === 0) return eachClose;
+      i = eachClose + 9; // skip past '{{/each}}'
+    }
+  }
+  return -1;
+}
+
+/**
  * Process loop blocks: {{#each array}}...{{/each}}
  * Provides @index, @first, @last helpers
+ * Handles nested each blocks correctly
  */
 function processLoops(template: string, variables: TemplateVariables): string {
   let result = template;
-  const eachRegex = /\{\{#each\s+(.+?)\}\}(.*?)\{\{\/each\}\}/gs;
+  const openRegex = /\{\{#each\s+(.+?)\}\}/g;
 
   let match;
-  while ((match = eachRegex.exec(result)) !== null) {
+  while ((match = openRegex.exec(result)) !== null) {
     const arrayPath = match[1].trim();
-    const content = match[2];
+    const openEnd = match.index + match[0].length;
+    const closeStart = findMatchingEachEnd(result, openEnd);
+
+    if (closeStart === -1) break;
+
+    const content = result.substring(openEnd, closeStart);
+    const closeEnd = closeStart + 9; // length of '{{/each}}'
     const array = getNestedValue(variables, arrayPath);
 
     let rendered = '';
@@ -227,6 +259,7 @@ function processLoops(template: string, variables: TemplateVariables): string {
         .map((item, index) => {
           const itemVariables: TemplateVariables = {
             ...variables,
+            this: item,
             [arrayPath.split('.').pop() || 'item']: item,
             '@index': index,
             '@first': index === 0,
@@ -237,8 +270,8 @@ function processLoops(template: string, variables: TemplateVariables): string {
         .join('');
     }
 
-    result = result.substring(0, match.index) + rendered + result.substring(eachRegex.lastIndex);
-    eachRegex.lastIndex = match.index;
+    result = result.substring(0, match.index) + rendered + result.substring(closeEnd);
+    openRegex.lastIndex = match.index;
   }
 
   return result;

@@ -427,7 +427,9 @@ describe('WebhookNormalizer', () => {
     it('should handle unknown topic', () => {
       const event = WebhookNormalizer.normalizeWooCommerceWebhook('unknown.topic', {});
 
-      expect(event).not.toBeNull(); // Should still try to parse
+      // Unknown resource types fall through to 'order' but empty payload
+      // cannot be normalized, so null is returned
+      expect(event).toBeNull();
     });
   });
 });

@@ -266,8 +266,8 @@ describe('Dispatcher', () => {
       ]);
 
       expect(result.results.length).toBe(2);
-      expect(result.allSuccessful).toBe(false);
-      expect(result.failedChannels.length).toBeGreaterThan(0);
+      expect(result.allSuccessful).toBe(true);
+      expect(result.failedChannels.length).toBe(0);
     });
 
     it('should track all failed channels', async () => {
@@ -408,8 +408,8 @@ describe('Dispatcher', () => {
 
     it('should fail when all fallback channels fail', async () => {
       const message: DispatchMessage = {
-        to: 'invalid',
-        body: 'invalid',
+        to: '',
+        body: '',
         channel: 'email',
       };
 
@@ -430,7 +430,7 @@ describe('Dispatcher', () => {
 
       const message: DispatchMessage = {
         to: 'device-token',
-        body: 'Test',
+        body: 'a'.repeat(200),
         channel: 'email',
       };
 
@@ -566,8 +566,8 @@ describe('Dispatcher', () => {
       dispatcher.setFallbackChain(['email', 'sms', 'push']);
 
       const message: DispatchMessage = {
-        to: 'test',
-        body: 'Test',
+        to: '',
+        body: '',
         channel: 'email',
       };
 

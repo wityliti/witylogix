@@ -53,9 +53,11 @@ const generateAuditEvent = (
   statusCode: 201,
   ipAddress: '192.168.1.1',
   userAgent: 'Mozilla/5.0',
-  timestamp: new Date('2026-03-09T10:00:00Z'),
+  timestamp: new Date('2026-01-01T10:00:00Z'),
   createdAt: new Date('2026-03-09T10:00:00Z'),
   retentionDays: 90,
+  previousValues: {},
+  newValues: {},
   ...overrides,
 });
 

@@ -43,7 +43,17 @@ describe('FedExAdapter', () => {
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          output: { rateReplyDetails: [] },
+          output: {
+            rateReplyDetails: [{
+              ratedShipmentDetails: [{
+                serviceType: 'FEDEX_GROUND',
+                totalNetCharge: '22.50',
+                totalBaseCharge: '20.00',
+                currency: 'USD',
+                surcharges: [],
+              }],
+            }],
+          },
         }),
       });
 
@@ -85,14 +95,26 @@ describe('FedExAdapter', () => {
         }),
       });
 
+      const rateReply = {
+        output: {
+          rateReplyDetails: [{
+            ratedShipmentDetails: [{
+              serviceType: 'FEDEX_GROUND',
+              totalNetCharge: '22.50',
+              totalBaseCharge: '20.00',
+              currency: 'USD',
+              surcharges: [],
+            }],
+          }],
+        },
+      };
+
       // First rate request
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({
-          output: { rateReplyDetails: [] },
-        }),
+        json: vi.fn().mockResolvedValueOnce(rateReply),
       });
 
       // Second rate request - should reuse token
@@ -100,9 +122,7 @@ describe('FedExAdapter', () => {
         status: 200,
         ok: true,
         headers: new Map(),
-        json: vi.fn().mockResolvedValueOnce({
-          output: { rateReplyDetails: [] },
-        }),
+        json: vi.fn().mockResolvedValueOnce(rateReply),
       });
 
       const request = {
@@ -431,6 +451,13 @@ describe('FedExAdapter', () => {
     });
 
     it('should void shipment successfully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        headers: new Map(),
+        json: vi.fn().mockResolvedValueOnce({}),
+      });
+
       const result = await adapter.voidLabel('TRK123456789');
 
       expect(result).toEqual(
@@ -464,6 +491,28 @@ describe('FedExAdapter', () => {
     });
 
     it('should retrieve tracking with scan events', async () => {
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        headers: new Map(),
+        json: vi.fn().mockResolvedValueOnce({
+          output: {
+            completeTrackResults: [{
+              trackingInfo: [{
+                status: 'IN_TRANSIT',
+                estimatedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                scanEvents: [{
+                  date: new Date().toISOString(),
+                  eventType: 'IN_TRANSIT',
+                  eventDescription: 'Package in transit',
+                  location: { city: 'Memphis', stateOrProvinceCode: 'TN', countryCode: 'US', postalCode: '38101' },
+                }],
+              }],
+            }],
+          },
+        }),
+      });
+
       const tracking = await adapter.getTracking('TRK123456789');
 
       expect(tracking).toEqual(
@@ -509,6 +558,15 @@ describe('FedExAdapter', () => {
     });
 
     it('should schedule pickup successfully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        headers: new Map(),
+        json: vi.fn().mockResolvedValueOnce({
+          output: { pickupConfirmationCode: 'PICKUP-123' },
+        }),
+      });
+
       const pickup = await adapter.schedulePickup({
         location: {
           name: 'Warehouse',
@@ -585,6 +643,27 @@ describe('FedExAdapter', () => {
     });
 
     it('should validate address successfully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        headers: new Map(),
+        json: vi.fn().mockResolvedValueOnce({
+          output: {
+            resolvedAddresses: [{
+              status: 'MATCHED',
+              address: {
+                streetLines: ['123 Main St'],
+                city: 'Los Angeles',
+                stateOrProvinceCode: 'CA',
+                postalCode: '90001',
+                countryCode: 'US',
+                residential: false,
+              },
+            }],
+          },
+        }),
+      });
+
       const result = await adapter.validateAddress({
         name: 'John Doe',
         street1: '123 Main St',

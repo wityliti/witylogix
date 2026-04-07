@@ -17,6 +17,7 @@ interface StockEntry {
 interface Reservation {
   id: string;
   skuId: string;
+  warehouseId: string;
   quantity: number;
   orderId: string;
   expiresAt: Date;
@@ -167,6 +168,7 @@ class InventoryManager {
     const reservation: Reservation = {
       id: reservationId,
       skuId,
+      warehouseId,
       quantity,
       orderId,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
@@ -191,7 +193,7 @@ class InventoryManager {
       throw new Error(`Reservation ${reservationId} is not active`);
     }
 
-    const key = this.getStockKey(reservation.skuId, reservation.skuId);
+    const key = this.getStockKey(reservation.skuId, reservation.warehouseId);
     const entry = this.stock.get(key);
     if (!entry) {
       throw new Error(`Stock entry not found`);
@@ -260,7 +262,7 @@ class InventoryManager {
     for (const [id, res] of this.reservations.entries()) {
       if (res.status === 'active' && res.expiresAt.getTime() < now) {
         // Auto-release expired reservations
-        const key = this.getStockKey(res.skuId, res.skuId);
+        const key = this.getStockKey(res.skuId, res.warehouseId);
         const entry = this.stock.get(key);
         if (entry) {
           entry.available += res.quantity;
@@ -476,7 +478,7 @@ describe('InventoryManager', () => {
     it('should prevent double release', async () => {
       await inventory.release(reservationId);
       await expect(inventory.release(reservationId)).rejects.toThrow(
-        'Reservation .* is not active'
+        'is not active'
       );
     });
 
@@ -504,7 +506,7 @@ describe('InventoryManager', () => {
     it('should prevent confirmation of non-active reservation', async () => {
       await inventory.release(reservationId);
       expect(() => inventory.confirmReservation(reservationId)).toThrow(
-        'Reservation .* is not active'
+        'is not active'
       );
     });
   });
@@ -558,7 +560,10 @@ describe('InventoryManager', () => {
     });
 
     it('should prevent transfers that would create negative stock', () => {
-      expect(() => inventory.transfer('SKU001', 'WH001', 'WH002', 100)).rejects;
+      inventory.initializeStock('SKU001', 'WH002', 10);
+      expect(() => inventory.transfer('SKU001', 'WH001', 'WH002', 100)).toThrow(
+        'Insufficient stock in source warehouse'
+      );
     });
   });
 

@@ -191,7 +191,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(contact as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('contact', contact as unknown as Record<string, unknown>);
 
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
@@ -205,7 +205,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     id: string,
     updates: Partial<CRMContact>
   ): Promise<CRMContact> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('contact', updates as unknown as Record<string, unknown>);
 
     await this.makeRequest('PUT', `/Contacts/${id}`, { data: [zohoData] });
     return this.getContact(id);
@@ -241,7 +241,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(account as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('account', account as unknown as Record<string, unknown>);
 
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
@@ -255,7 +255,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     id: string,
     updates: Partial<CRMAccount>
   ): Promise<CRMAccount> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('account', updates as unknown as Record<string, unknown>);
 
     await this.makeRequest('PUT', `/Accounts/${id}`, { data: [zohoData] });
     return this.getAccount(id);
@@ -291,7 +291,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createDeal(deal: Omit<CRMDeal, 'id' | 'lastModifiedAt'>): Promise<CRMDeal> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(deal as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('deal', deal as unknown as Record<string, unknown>);
 
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
@@ -302,7 +302,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async updateDeal(id: string, updates: Partial<CRMDeal>): Promise<CRMDeal> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('deal', updates as unknown as Record<string, unknown>);
 
     await this.makeRequest('PUT', `/Deals/${id}`, { data: [zohoData] });
     return this.getDeal(id);
@@ -337,7 +337,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createLead(lead: Omit<CRMLead, 'id' | 'lastModifiedAt'>): Promise<CRMLead> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(lead as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('lead', lead as unknown as Record<string, unknown>);
 
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
@@ -369,7 +369,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToExternal(activity as unknown as Record<string, unknown>);
+    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('activity', activity as unknown as Record<string, unknown>);
 
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
@@ -383,7 +383,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async bulkCreateContacts(contacts: Omit<CRMContact, 'id' | 'lastModifiedAt'>[]): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) =>
-      this.fieldMappingEngine.mapWitylogixToExternal(c as unknown as Record<string, unknown>)
+      this.fieldMappingEngine.mapWitylogixToCRM('contact', c as unknown as Record<string, unknown>)
     );
 
     const response = await this.makeRequest<{
@@ -404,7 +404,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   async bulkUpdateContacts(contacts: Array<{ id: string; data: Partial<CRMContact> }>): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       id: c.id,
-      ...this.fieldMappingEngine.mapWitylogixToExternal(c.data as unknown as Record<string, unknown>),
+      ...this.fieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
     }));
 
     const response = await this.makeRequest<{
@@ -429,7 +429,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   ): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       ...(c.externalId && { id: c.externalId }),
-      ...this.fieldMappingEngine.mapWitylogixToExternal(c.data as unknown as Record<string, unknown>),
+      ...this.fieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
     }));
 
     const response = await this.makeRequest<{

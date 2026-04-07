@@ -195,7 +195,8 @@ describe("TriggerRegistry", () => {
         workflowName: "createDeliveryOrder",
         conditions: [
           async (ctx) => {
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            // Use a microtask-based async instead of setTimeout to work with fake timers
+            await Promise.resolve();
             return ctx.entity.status === "PENDING";
           },
         ],
@@ -553,6 +554,7 @@ describe("TriggerRegistry", () => {
     });
 
     it("should respect timeout option", async () => {
+      const onError = vi.fn();
       const handler = vi.fn(
         () =>
           new Promise((resolve) => {
@@ -571,10 +573,17 @@ describe("TriggerRegistry", () => {
         entity: { id: "order_123" },
       });
 
-      // This will timeout
-      await matches[0].execute({ timeout: 10 });
+      // Start execution and advance timers so the timeout (10ms) fires
+      const executePromise = matches[0].execute({ timeout: 10, onError });
+
+      // Advance timers past the timeout but before handler resolves
+      vi.advanceTimersByTime(50);
+
+      await executePromise;
 
       expect(handler).toHaveBeenCalled();
+      // The execution should have timed out and called onError
+      expect(onError).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });

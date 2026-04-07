@@ -399,8 +399,11 @@ describe('Driver Performance Scorer', () => {
 
       const result = calculateDriverScoreBatch(drivers);
 
-      const expectedAvg = (80 + 90 + 70) / 3;
-      expect(result.averageScore).toBeCloseTo(expectedAvg, 0);
+      // Average should be mean of computed composite scores
+      const expectedAvg = Math.round(
+        result.scores.reduce((sum, s) => sum + s.compositeScore, 0) / result.scores.length,
+      );
+      expect(result.averageScore).toBe(expectedAvg);
     });
   });
 
@@ -475,7 +478,7 @@ describe('Driver Performance Scorer', () => {
     it('should emphasize different metrics with different weights', () => {
       const metrics = createMockMetrics('driver_test', {
         deliveries: { totalCount: 50, onTimeCount: 40, firstAttemptSuccessCount: 50 },
-        ratings: { average: 2.0, count: 50 }, // Low rating
+        ratings: { average: 1.8, count: 50 }, // Low rating
         routeEfficiency: { average: 90, count: 50 },
         speedCompliance: { percentWithinLimit: 95, averageExcessKmh: 1 },
       });

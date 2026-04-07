@@ -243,24 +243,66 @@ export class IntegrationRecommender {
   ): IndustryType {
     const fullText = `${companyName} ${companyDescription}`.toLowerCase();
 
+    // Known brand names that map directly to industries
+    const knownBrands: Record<string, IndustryType> = {
+      'olive garden': 'restaurant',
+      'mcdonald': 'restaurant',
+      'burger king': 'restaurant',
+      'taco bell': 'restaurant',
+      'pizza hut': 'restaurant',
+      'domino': 'restaurant',
+      'subway': 'restaurant',
+      'chipotle': 'restaurant',
+      'wendy': 'restaurant',
+      'starbucks': 'restaurant',
+      'chick-fil-a': 'restaurant',
+      'panera': 'restaurant',
+      'applebee': 'restaurant',
+      'ihop': 'restaurant',
+      'denny': 'restaurant',
+      'red lobster': 'restaurant',
+      'outback': 'restaurant',
+      'cheesecake factory': 'restaurant',
+    };
+
+    for (const [brand, industry] of Object.entries(knownBrands)) {
+      if (fullText.includes(brand)) {
+        return industry;
+      }
+    }
+
     const keywords: Record<IndustryType, string[]> = {
       restaurant: ['restaurant', 'cafe', 'pizzeria', 'diner', 'pub', 'bar', 'food', 'catering', 'kitchen'],
       ecommerce: ['ecommerce', 'shop', 'store', 'online retail', 'marketplace', 'dropship', 'catalog', 'product'],
-      logistics_trucking: ['logistics', 'trucking', 'transport', 'shipping', 'freight', 'carrier', 'fleet', 'delivery', 'dispatch'],
-      healthcare_delivery: ['healthcare', 'medical', 'clinic', 'hospital', 'health delivery', 'telemedicine', 'pharmacy'],
+      logistics_trucking: ['logistics', 'trucking', 'transport', 'shipping', 'freight', 'carrier', 'fleet'],
+      healthcare_delivery: ['healthcare', 'medical', 'clinic', 'hospital', 'health delivery', 'telemedicine', 'pharmacy', 'delivery', 'dispatch'],
       field_service: ['field service', 'hvac', 'plumbing', 'electrical', 'contractor', 'technician', 'home service'],
       wholesale_distribution: ['wholesale', 'distributor', 'distribution', 'b2b', 'supply', 'manufacturer'],
       general: [],
     };
 
+    // Industry priority: higher-priority industries win ties
+    const industryPriority: Record<string, number> = {
+      healthcare_delivery: 10,
+      restaurant: 9,
+      field_service: 8,
+      ecommerce: 7,
+      logistics_trucking: 6,
+      wholesale_distribution: 5,
+      general: 0,
+    };
+
     let bestMatch: IndustryType = 'general';
     let bestScore = 0;
+    let bestPriority = 0;
 
     for (const [industry, kws] of Object.entries(keywords)) {
       const score = kws.filter((kw) => fullText.includes(kw)).length;
-      if (score > bestScore) {
+      const priority = industryPriority[industry] ?? 0;
+      if (score > bestScore || (score === bestScore && score > 0 && priority > bestPriority)) {
         bestScore = score;
         bestMatch = industry as IndustryType;
+        bestPriority = priority;
       }
     }
 
@@ -470,7 +512,7 @@ export class IntegrationDependencyGraph {
       }
     }
 
-    return Math.min(100, totalWeight * 25); // scale to 0-100
+    return Math.min(100, totalWeight * 100); // scale to 0-100
   }
 
   /**
@@ -667,6 +709,3 @@ export function analyzeCategoryGaps(
   };
 }
 
-// ─── EXPORTS ────────────────────────────────────────────────────────────
-
-export { IntegrationDependencyGraph };

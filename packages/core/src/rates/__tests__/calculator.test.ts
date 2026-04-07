@@ -104,14 +104,14 @@ describe("Rate Calculator", () => {
     });
 
     it("should apply zone multipliers for distance", () => {
-      const request1 = createRequest("94105", "94107"); // Close
-      const request2 = createRequest("94105", "10001"); // Far (CA to NY)
+      const request1 = createRequest("10001", "10005"); // Same area — zone 3
+      const request2 = createRequest("10001", "94105"); // Cross-country — zone 8
 
       const profile = createWeightBasedProfile();
       const rate1 = calculateRate(request1, profile);
       const rate2 = calculateRate(request2, profile);
 
-      // Rate 2 should be higher due to distance
+      // Higher zone destination should cost more
       expect(rate2.totalRate).toBeGreaterThanOrEqual(rate1.totalRate);
     });
 
@@ -179,11 +179,14 @@ describe("Rate Calculator", () => {
         },
       ];
 
-      const profile = createFlatRateProfile();
+      const profile = createWeightBasedProfile();
       const lightRate = calculateRate(lightRequest, profile);
       const heavyRate = calculateRate(heavyRequest, profile);
 
-      expect(heavyRate.totalRate).toBeGreaterThan(lightRate.totalRate);
+      // Light package with large dims has higher billable weight (dim weight ~99.45 lb > actual 1 lb)
+      // Heavy package with small dims uses actual weight (50 lb)
+      // So the light-but-bulky package costs more
+      expect(lightRate.totalRate).toBeGreaterThan(heavyRate.totalRate);
     });
 
     it("should convert cm to inches for dimension calculation", () => {
@@ -485,7 +488,7 @@ describe("Rate Calculator", () => {
   describe("weight constraints", () => {
     it("should enforce minimum weight", () => {
       const request = createRequest();
-      request.packages = [createPackage(0.5)]; // Below minimum
+      request.packages = [{ weight: 0.5, weightUnit: "lb" as const, quantity: 1 }]; // Below minimum, no dimensions
 
       const profile = createFlatRateProfile();
       profile.minimumWeight = 1;

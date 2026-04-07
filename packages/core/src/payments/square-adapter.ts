@@ -9,8 +9,7 @@
  * - Invoice creation and tracking
  */
 
-// Node 22+ has global fetch
-const nodeFetch = globalThis.fetch;
+// Node 22+ has global fetch — use globalThis.fetch directly for testability
 import type {
   PaymentIntent,
   Transaction,
@@ -196,7 +195,7 @@ export class SquareGateway extends PaymentGatewayBase {
       receipt_url_requested: true,
     };
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/payments`,
       {
         method: 'POST',
@@ -259,7 +258,7 @@ export class SquareGateway extends PaymentGatewayBase {
       reason,
     };
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/refunds`,
       {
         method: 'POST',
@@ -305,7 +304,7 @@ export class SquareGateway extends PaymentGatewayBase {
    * Get payment status from Square
    */
   async getPaymentStatus(providerTransactionId: string): Promise<Transaction> {
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/payments/${providerTransactionId}`,
       {
         method: 'GET',
@@ -461,7 +460,7 @@ export class SquareGateway extends PaymentGatewayBase {
       },
     };
 
-    const response = await nodeFetch(
+    const response = await globalThis.fetch(
       `${this.baseUrl}/v2/invoices`,
       {
         method: 'POST',

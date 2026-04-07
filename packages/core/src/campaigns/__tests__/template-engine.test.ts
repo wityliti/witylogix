@@ -20,7 +20,7 @@ interface ParsedTemplate {
 }
 
 class TemplateEngine {
-  private variablePattern = /\{\{(\w+)\}\}/g;
+  private variablePattern = /\{\{([\w.]+)\}\}/g;
   private conditionalPattern = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
   private loopPattern = /\{\{#each\s+(\w+)\s+as\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
 
@@ -71,8 +71,16 @@ class TemplateEngine {
 
   private processVariables(template: string, context: TemplateContext): string {
     return template.replace(this.variablePattern, (match, variableName) => {
-      if (variableName in context) {
-        const value = context[variableName];
+      // Support dot-notation access (e.g., user.name)
+      const parts = variableName.split('.');
+      let value: any = context;
+      let found = true;
+      for (const part of parts) {
+        if (value == null || typeof value !== 'object') { found = false; break; }
+        if (!(part in value)) { found = false; break; }
+        value = value[part];
+      }
+      if (found) {
         return String(value !== null && value !== undefined ? value : '');
       }
       return match; // Return original if not found
@@ -230,7 +238,8 @@ describe('TemplateEngine', () => {
       const template = '{{nullValue}} {{undefinedValue}}';
       const context = { nullValue: null, undefinedValue: undefined };
       const result = engine.render(template, context);
-      expect(result).toBe('  ');
+      // null/undefined are replaced with empty string, leaving single space between
+      expect(result).toBe(' ');
     });
   });
 

@@ -134,21 +134,34 @@ export class CorsManager {
       return true;
     }
 
-    // Wildcard subdomain matching (*.example.com)
-    if (pattern.startsWith("*.")) {
-      const domain = pattern.substring(2); // Remove "*."
-      const protocol = origin.split("://")[0];
+    // Wildcard origin (allow any)
+    if (pattern === "*") {
+      return true;
+    }
+
+    // Wildcard subdomain matching (https://*.example.com or *.example.com)
+    if (pattern.includes("*.")) {
+      // Extract protocol and domain from pattern
+      const patternProtocol = pattern.includes("://") ? pattern.split("://")[0] : null;
+      const patternDomain = pattern.includes("://")
+        ? pattern.split("://")[1].replace("*.", "")
+        : pattern.replace("*.", "");
+
+      const originProtocol = origin.split("://")[0];
       const originDomain = origin.split("://")[1];
 
       if (!originDomain) {
         return false;
       }
 
-      // Check if origin domain ends with the pattern domain
-      return (
-        originDomain === domain ||
-        originDomain.endsWith(`.${domain}`)
-      );
+      // If pattern specifies a protocol, it must match
+      if (patternProtocol && patternProtocol !== originProtocol) {
+        return false;
+      }
+
+      // Check if origin domain is a subdomain of the pattern domain
+      // Do not match the bare domain itself (e.g. witylogix.com should not match *.witylogix.com)
+      return originDomain.endsWith(`.${patternDomain}`);
     }
 
     // Regex pattern (if pattern is provided as RegExp)
@@ -206,18 +219,22 @@ export class CorsManager {
    * @returns Validation result with headers
    */
   validateRequest(context: CorsContext): CorsValidationResult {
-    // Check if origin is allowed
-    if (!this.isOriginAllowed(context.origin)) {
+    // Find matching override or use defaults
+    const override = this.findOverride(context.path);
+    const policy = override || this.getDefaultPolicy();
+
+    // Check if origin is allowed (override origins take precedence)
+    const isOverrideAllowed = override
+      ? override.origins.some((o) => this.originMatches(context.origin, o))
+      : false;
+
+    if (!isOverrideAllowed && !this.isOriginAllowed(context.origin)) {
       return {
         allowed: false,
         headers: {},
         reason: "Origin not in whitelist",
       };
     }
-
-    // Find matching override or use defaults
-    const override = this.findOverride(context.path);
-    const policy = override || this.getDefaultPolicy();
 
     // Check method allowed
     if (!policy.methods.includes(context.method)) {

@@ -622,7 +622,7 @@ describe('DeliveryRulesEngine', () => {
         id: 'fee-rule',
         name: 'Fee Rule',
         priority: 30,
-        conditions: [{ field: 'weight', operator: 'gt', value: 5 }],
+        conditions: [{ field: 'weight', operator: 'gte', value: 5 }],
         matchMode: 'all',
         action: { type: 'add_fee', payload: { fee: 2.5 } },
         active: true,

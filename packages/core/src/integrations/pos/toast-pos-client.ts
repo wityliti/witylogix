@@ -196,12 +196,13 @@ export class ToastPOSClient extends POSAdapter {
    * Create order
    */
   async createOrder(locationId: string, order: Partial<POSOrder>): Promise<POSOrder> {
+    // Validate order before retries — validation errors are not transient
+    const validation = this.validateOrder(order);
+    if (!validation.valid) {
+      throw new Error(`Invalid order: ${validation.errors.join(', ')}`);
+    }
+
     return this.executeWithRetries(async () => {
-      // Validate order
-      const validation = this.validateOrder(order);
-      if (!validation.valid) {
-        throw new Error(`Invalid order: ${validation.errors.join(', ')}`);
-      }
 
       const totals = this.calculateOrderTotals(order);
 
@@ -631,8 +632,9 @@ export class ToastPOSClient extends POSAdapter {
       const data = await response.json();
 
       if (!response.ok && response.status >= 400) {
+        const statusCategory = response.status < 500 ? '4xx' : '5xx';
         throw new Error(
-          `Toast API error: ${data.errors?.[0]?.message || response.statusText}`
+          `Toast API error (${statusCategory} ${response.status}): ${data.errors?.[0]?.message || response.statusText}`
         );
       }
 

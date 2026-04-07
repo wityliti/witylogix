@@ -11,14 +11,15 @@
  */
 
 // Mock prisma - must be before any imports
-vi.mock("@witylogix/db", () => ({
-  prisma: {
+vi.mock("@witylogix/db", () => {
+  const prisma = {
     workspace: {
       create: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
       findMany: vi.fn(),
+      delete: vi.fn(),
     },
     workspaceSettings: {
       create: vi.fn(),
@@ -36,8 +37,9 @@ vi.mock("@witylogix/db", () => ({
       updateMany: vi.fn(),
       deleteMany: vi.fn(),
     },
-  },
-}));
+  };
+  return { prisma, db: prisma, default: prisma };
+});
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { WorkspaceProvisioner } from "../workspace-provisioner";
