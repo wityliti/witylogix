@@ -1,0 +1,118 @@
+# .github/workflows/staging-deploy.yml
+# Staging Auto-Deploy Pipeline for Witylogix
+#
+# Triggered on push to `staging` branch (after CI passes).
+# Deploys all services to Railway staging environment and
+# runs a smoke test against the staging API /health endpoint.
+
+name: Staging Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - staging
+
+# Prevent concurrent staging deploys
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    name: Deploy to Railway (staging)
+    runs-on: ubuntu-latest
+    # Only run when CI passed
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@latest
+
+      - name: Deploy API to Railway staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+        run: |
+          railway up \
+            --service api \
+            --environment staging \
+            --detach
+
+      - name: Deploy dashboard to Railway staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+        run: |
+          railway up \
+            --service dashboard \
+            --environment staging \
+            --detach
+
+      - name: Deploy shopify-app to Railway staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+        run: |
+          railway up \
+            --service shopify-app \
+            --environment staging \
+            --detach
+
+      - name: Deploy customer-portal to Railway staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+        run: |
+          railway up \
+            --service customer-portal \
+            --environment staging \
+            --detach
+
+  smoke-test:
+    name: Staging Smoke Test
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+
+    steps:
+      - name: Wait for Railway services to become healthy
+        run: sleep 30
+
+      - name: Verify staging API /health returns 200
+        env:
+          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
+        run: |
+          echo "Checking staging API health at ${STAGING_API_URL}/health ..."
+
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${STAGING_API_URL}/health" || echo "000")
+            echo "Attempt $i — HTTP ${STATUS}"
+
+            if [ "$STATUS" = "200" ]; then
+              echo "Staging API is healthy."
+              exit 0
+            fi
+
+            sleep 15
+          done
+
+          echo "Staging API health check failed after 5 attempts (last status: ${STATUS})."
+          exit 1
+
+      - name: Report smoke test result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## Staging Deploy: PASSED" >> "$GITHUB_STEP_SUMMARY"
+            echo "- API /health: 200 OK" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Commit: ${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Staging Deploy: FAILED" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Staging API did not return 200 on /health" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Commit: ${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Check Railway logs for details." >> "$GITHUB_STEP_SUMMARY"
+          fi
