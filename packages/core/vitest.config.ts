@@ -7,6 +7,7 @@ export default defineConfig({
     pool: 'forks',
     poolOptions: {
       forks: {
+        minForks: 1,
         maxForks: 4,
       },
     },
