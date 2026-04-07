@@ -62,7 +62,7 @@ export class EpicClient extends HealthcareAdapter {
   }
 
   async validateConfig(): Promise<void> {
-    if (!this.baseUrl) {
+    if (!this.config.baseUrl) {
       throw new Error("Epic base URL is required");
     }
 
@@ -125,6 +125,10 @@ export class EpicClient extends HealthcareAdapter {
         if (!response.ok) {
           const error = await response.text();
           throw new Error(`Epic API error (${response.status}): ${error}`);
+        }
+
+        if (response.status === 204 || response.status === 202) {
+          return undefined;
         }
 
         return response.json();
@@ -592,6 +596,36 @@ export class EpicClient extends HealthcareAdapter {
         scope: [],
       };
     }
+  }
+
+  // ─── HL7 v2 Message Operations ──────────────────────────────────────────
+
+  /**
+   * Parse an HL7 v2 message string into a structured object.
+   */
+  parseHL7Message(hl7: string): { messageType: string; messageControlId: string; [key: string]: string } {
+    const mshLine = hl7.split("\n")[0];
+    const fields = mshLine.split("|");
+    return {
+      messageType: fields[8] ?? "",
+      messageControlId: fields[9] ?? "",
+      processingId: fields[10] ?? "",
+      versionId: fields[11]?.trim() ?? "",
+    };
+  }
+
+  /**
+   * Generate an HL7 v2 MSH message string.
+   */
+  generateHL7Message(params: {
+    messageType: string;
+    messageControlId: string;
+    processingId?: string;
+    versionId?: string;
+    timestamp?: string;
+  }): string {
+    const ts = params.timestamp ?? new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+    return `MSH|^~\\&|||||||${ts}||${params.messageType}|${params.messageControlId}|${params.processingId ?? "P"}|${params.versionId ?? "2.5"}`;
   }
 
   // ─── Backend Services (JWT) ──────────────────────────────────────────────

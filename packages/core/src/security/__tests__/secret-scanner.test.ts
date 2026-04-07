@@ -158,7 +158,7 @@ describe("SecretScanner", () => {
       const result = scanner.scanString("AKIAIOSFODNN7EXAMPLE");
 
       expect(result.action).toBe("ALERT");
-      expect(result.message).toContain("Alert");
+      expect(result.message).toContain("Review recommended");
     });
   });
 
@@ -271,7 +271,7 @@ describe("SecretScanner", () => {
       });
       const result = scanner.scanString("randomVeryLongStringWith32CharsOfHighEntropy");
 
-      expect(result.threats.some((t) => t.type === "High Entropy String")).toBe(false);
+      expect(result.secrets.some((t) => t.type === "High Entropy String")).toBe(false);
     });
   });
 

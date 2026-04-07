@@ -81,8 +81,9 @@ describe("CursorPaginator", () => {
 
       expect(result.pageInfo.startCursor).toBeDefined();
       expect(result.pageInfo.endCursor).toBeDefined();
-      expect(result.pageInfo.startCursor).not.toContain("0");
-      expect(result.pageInfo.startCursor).not.toContain("25");
+      // Cursors should be base64-encoded (opaque), not plain numeric values
+      expect(result.pageInfo.startCursor!.length).toBeGreaterThan(10);
+      expect(() => JSON.parse(result.pageInfo.startCursor!)).toThrow(); // Not raw JSON
     });
 
     it("should validate cursor signature", async () => {

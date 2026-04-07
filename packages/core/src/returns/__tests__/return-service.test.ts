@@ -141,7 +141,8 @@ describe('Returns Service Tests', () => {
 
     it('should handle decimal amounts', () => {
       const fee = calculateRestockingFee(99.99, defaultPolicy);
-      expect(fee).toBeCloseTo(14.99, 2);
+      // 99.99 * 15 / 100 = 14.9985, rounded to 2 decimal places = 15
+      expect(fee).toBeCloseTo(15, 2);
     });
 
     it('should round to 2 decimal places', () => {

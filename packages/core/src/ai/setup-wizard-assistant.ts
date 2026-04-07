@@ -143,9 +143,15 @@ export class SetupWizardAssistant {
       // Check if this step's category complements the newly connected one
       const categoryScore = provider.category === currentProvider.category ? 0.3 : 0;
 
+      const priorityScores: Record<string, number> = {
+        critical: 1.0,
+        high: 0.8,
+        medium: 0.5,
+        low: 0.3,
+      };
       return {
         step,
-        score: step.priority === 'critical' ? 1.0 : 0.5,
+        score: (priorityScores[step.priority] ?? 0.5) + categoryScore,
       };
     });
 
@@ -344,9 +350,9 @@ export class SetupWizardAssistant {
       .slice(0, 10)
       .map((rec, index) => {
         let priority: 'critical' | 'high' | 'medium' | 'low' = 'low';
-        if (rec.relevanceScore >= 90) priority = 'critical';
-        else if (rec.relevanceScore >= 70) priority = 'high';
-        else if (rec.relevanceScore >= 50) priority = 'medium';
+        if (rec.relevanceScore >= 80) priority = 'critical';
+        else if (rec.relevanceScore >= 55) priority = 'high';
+        else if (rec.relevanceScore >= 35) priority = 'medium';
 
         const configSuggestions = this.getConfigSuggestions(rec.providerId, businessSize);
 
@@ -382,8 +388,8 @@ export class SetupWizardAssistant {
     switch (provider.authMethod) {
       case 'oauth2':
         return [
-          'Click "Connect with [Provider]"',
-          'You will be redirected to their login page',
+          'Click "Connect with [Provider]" to start the OAuth authorization flow',
+          'You will be redirected to authorize access on their login page',
           'Grant Witylogix the requested permissions',
           'You will be redirected back to Witylogix to confirm',
         ];

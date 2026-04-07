@@ -54,26 +54,34 @@ describe('ETAEngine', () => {
   });
 
   it('should adjust for time of day', () => {
-    // Morning rush hour (7 AM)
-    const rushPrediction = engine.predictETA({
+    // Use time-of-day model only to isolate the signal
+    const timeOnlyEngine = new ETAEngine({
+      enableTimeOfDay: true,
+      enableDistance: false,
+      enableHistorical: false,
+      enableTraffic: false,
+    });
+
+    // Morning rush hour (7 AM) — multiplier 1.4
+    const rushPrediction = timeOnlyEngine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
       departureTime: new Date('2026-03-15T07:00:00'),
     });
 
-    // Night time (11 PM)
-    const nightPrediction = engine.predictETA({
+    // Night time (11 PM) — multiplier 0.85
+    const nightPrediction = timeOnlyEngine.predictETA({
       origin: { lat: 40.7128, lng: -74.006 },
       destination: { lat: 40.758, lng: -73.9855 },
       distanceKm: 5.5,
       departureTime: new Date('2026-03-15T23:00:00'),
     });
 
-    // Rush hour should have longer ETA
-    expect(rushPrediction.prediction.expected.getTime()).toBeGreaterThan(
-      nightPrediction.prediction.expected.getTime(),
-    );
+    // Rush hour (7am, multiplier 1.4) should have longer travel duration than night (11pm, multiplier 0.85)
+    const rushDuration = rushPrediction.prediction.expected.getTime() - new Date('2026-03-15T07:00:00').getTime();
+    const nightDuration = nightPrediction.prediction.expected.getTime() - new Date('2026-03-15T23:00:00').getTime();
+    expect(rushDuration).toBeGreaterThan(nightDuration);
   });
 
   it('should adjust for distance', () => {

@@ -130,7 +130,7 @@ export class TenantRateLimiter {
       entry.resetAt = now + windowMs;
     }
 
-    // Check burst window
+    // Check burst limit
     const burstLimit = maxRequests * burstMultiplier;
     if (now < entry.burstResetAt && entry.burstCount >= burstLimit) {
       return {

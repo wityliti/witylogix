@@ -322,8 +322,6 @@ export class ManhattanClient extends SupplyChainAdapter {
         if (!response.ok) {
           throw new Error(`Failed to update warehouse: ${response.statusText}`);
         }
-
-        return response.json() as Promise<ManhattanWarehouse>;
       });
 
       this.handleApiResponse(true);
@@ -1355,6 +1353,8 @@ export class ManhattanClient extends SupplyChainAdapter {
         createdAt: new Date(result.CreatedOn),
         status: 'planned',
         fulfillmentRequestIds: fulfillmentIds,
+        orderCount: result.OrderCount,
+        unitCount: result.UnitCount,
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);

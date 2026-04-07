@@ -3,16 +3,42 @@
  * Comprehensive test suite for SAP Business One / S/4HANA adapter
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ERPConnection } from '../types.js';
 import { ConnectionStatus } from '../types.js';
 import { SAPClient } from '../sap-client.js';
+
+const mockFetch = vi.fn();
+
+/**
+ * Helper: build a successful JSON response mock
+ */
+function okJson(data: any) {
+  return {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    json: async () => data,
+    text: async () => JSON.stringify(data),
+    headers: new Headers(),
+  };
+}
+
+/**
+ * Helper: build a successful JSON response for OData list endpoints
+ */
+function okODataList(items: any[], count?: number) {
+  return okJson({ value: items, 'odata.count': count ?? items.length });
+}
 
 describe('SAPClient', () => {
   let sapClient: SAPClient;
   let mockConnection: ERPConnection;
 
   beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch);
+    mockFetch.mockReset();
+
     mockConnection = {
       id: 'sap_conn_1',
       tenantId: 'tenant_1',
@@ -41,6 +67,10 @@ describe('SAPClient', () => {
     });
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('Authentication', () => {
     it('should authenticate with OAuth2', async () => {
       await sapClient.authenticate('auth_code');
@@ -56,6 +86,7 @@ describe('SAPClient', () => {
 
   describe('Health Check', () => {
     it('should check health', async () => {
+      mockFetch.mockResolvedValueOnce(okODataList([{ CardCode: 'C001' }]));
       const isHealthy = await sapClient.checkHealth();
       expect(typeof isHealthy).toBe('boolean');
     });
@@ -72,17 +103,30 @@ describe('SAPClient', () => {
         currency: 'USD',
       };
 
+      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'CUST001', CardName: 'Test Customer' }));
+
       const result = await sapClient.createCustomer(customer);
       expect(result.id).toBeDefined();
       expect(result.externalId).toBeDefined();
     });
 
     it('should get customer', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({
+        CardCode: 'CUST001', CardName: 'Test Customer', Email: 'test@example.com',
+      }));
+
       const customer = await sapClient.getCustomer('CUST001');
       expect(customer).toHaveProperty('name');
     });
 
     it('should update customer', async () => {
+      // PATCH call
+      mockFetch.mockResolvedValueOnce(okJson({}));
+      // GET call (re-fetch after update)
+      mockFetch.mockResolvedValueOnce(okJson({
+        CardCode: 'CUST001', CardName: 'Test Customer', CreditLimit: 20000,
+      }));
+
       const updatedCustomer = await sapClient.updateCustomer('CUST001', {
         creditLimit: 20000,
       });
@@ -90,6 +134,10 @@ describe('SAPClient', () => {
     });
 
     it('should query business partners', async () => {
+      mockFetch.mockResolvedValueOnce(okODataList([
+        { CardCode: 'C001', CardName: 'Customer 1' },
+      ], 1));
+
       const result = await sapClient.queryBusinessPartners(undefined, {
         skip: 0,
         limit: 10,
@@ -106,6 +154,8 @@ describe('SAPClient', () => {
         email: 'vendor@example.com',
         phone: '+1987654321',
       };
+
+      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'VEND001', CardName: 'Test Vendor' }));
 
       const result = await sapClient.createVendor(vendor);
       expect(result.id).toBeDefined();
@@ -130,17 +180,32 @@ describe('SAPClient', () => {
         total: 500,
       };
 
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'SO001' }));
+
       const result = await sapClient.createOrder(order);
       expect(result.id).toBeDefined();
       expect(result.externalId).toBeDefined();
     });
 
     it('should get sales order', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
+        DocDate: '2024-01-01', DocumentLines: [],
+      }));
+
       const order = await sapClient.getOrder('1');
       expect(order).toHaveProperty('orderNumber');
     });
 
     it('should update sales order', async () => {
+      // PATCH
+      mockFetch.mockResolvedValueOnce(okJson({}));
+      // GET (re-fetch)
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
+        DocDate: '2024-01-01', DocumentLines: [],
+      }));
+
       const updatedOrder = await sapClient.updateOrder('1', {
         status: 'completed',
       });
@@ -148,10 +213,31 @@ describe('SAPClient', () => {
     });
 
     it('should close sales order', async () => {
+      // getOrder (inside closeOrder)
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
+        DocDate: '2024-01-01', DocumentLines: [],
+      }));
+      // updateOrder -> PATCH
+      mockFetch.mockResolvedValueOnce(okJson({}));
+      // updateOrder -> GET
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
+        DocDate: '2024-01-01', DocumentLines: [],
+      }));
+
       await expect(sapClient.closeOrder('1')).resolves.toBeUndefined();
     });
 
     it('should cancel sales order', async () => {
+      // updateOrder -> PATCH
+      mockFetch.mockResolvedValueOnce(okJson({}));
+      // updateOrder -> GET
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'SO001', CardCode: 'C001',
+        DocDate: '2024-01-01', DocumentLines: [],
+      }));
+
       await expect(sapClient.cancelOrder('1')).resolves.toBeUndefined();
     });
   });
@@ -175,17 +261,25 @@ describe('SAPClient', () => {
         total: 500,
       };
 
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'INV001' }));
+
       const result = await sapClient.createInvoice(invoice);
       expect(result.id).toBeDefined();
       expect(result.invoiceNumber).toBe('INV001');
     });
 
     it('should get invoice', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({
+        DocEntry: '1', DocNum: 'INV001', CardCode: 'C001',
+        DocDate: '2024-01-01', DueDate: '2024-02-01', DocumentLines: [],
+      }));
+
       const invoice = await sapClient.getInvoice('1');
       expect(invoice).toHaveProperty('invoiceNumber');
     });
 
     it('should post invoice', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({}));
       await expect(sapClient.postInvoice('1')).resolves.toBeUndefined();
     });
 
@@ -198,6 +292,8 @@ describe('SAPClient', () => {
         lineItems: [],
         total: -500,
       };
+
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1', DocNum: 'CN001' }));
 
       const result = await sapClient.createCreditNote(creditNote);
       expect(result.invoiceType).toBe('credit_memo');
@@ -217,17 +313,30 @@ describe('SAPClient', () => {
         status: 'active' as const,
       };
 
+      mockFetch.mockResolvedValueOnce(okJson({ ItemCode: 'ITEM001', ItemName: 'Test Product' }));
+
       const result = await sapClient.createItem(product);
       expect(result.id).toBeDefined();
       expect(result.sku).toBe('ITEM001');
     });
 
     it('should get item', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({
+        ItemCode: 'ITEM001', ItemName: 'Test Product', SalesUnit: 'EA',
+      }));
+
       const item = await sapClient.getItem('ITEM001');
       expect(item).toHaveProperty('name');
     });
 
     it('should update item', async () => {
+      // PATCH
+      mockFetch.mockResolvedValueOnce(okJson({}));
+      // GET
+      mockFetch.mockResolvedValueOnce(okJson({
+        ItemCode: 'ITEM001', ItemName: 'Test Product', SalesPrice: 109.99,
+      }));
+
       const updatedItem = await sapClient.updateItem('ITEM001', {
         unitPrice: 109.99,
       });
@@ -235,6 +344,10 @@ describe('SAPClient', () => {
     });
 
     it('should query items', async () => {
+      mockFetch.mockResolvedValueOnce(okODataList([
+        { ItemCode: 'ITEM001', ItemName: 'Test Product' },
+      ]));
+
       const result = await sapClient.queryItems({
         skip: 0,
         limit: 50,
@@ -246,18 +359,26 @@ describe('SAPClient', () => {
 
   describe('Inventory Management', () => {
     it('should get inventory for item', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({
+        ItemCode: 'ITEM001', QuantityOnStock: 42, QuantityOnOrder: 10,
+      }));
+
       const inventory = await sapClient.getInventory('ITEM001');
       expect(inventory).toHaveProperty('itemCode');
       expect(typeof inventory.quantity).toBe('number');
     });
 
     it('should perform stock transfer', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+
       await expect(
         sapClient.stockTransfer('WH001', 'WH002', 'ITEM001', 10),
       ).resolves.toBeUndefined();
     });
 
     it('should perform goods receipt', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+
       await expect(
         sapClient.goodsReceipt('PO001', [
           { itemCode: 'ITEM001', quantity: 100 },
@@ -266,6 +387,8 @@ describe('SAPClient', () => {
     });
 
     it('should perform goods issue', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ DocEntry: '1' }));
+
       await expect(
         sapClient.goodsIssue('SO001', [{ itemCode: 'ITEM001', quantity: 5 }]),
       ).resolves.toBeUndefined();
@@ -289,11 +412,20 @@ describe('SAPClient', () => {
         ],
       };
 
+      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: 'JE001' }));
+
       const result = await sapClient.postJournalEntry(entry);
       expect(result.id).toBeDefined();
     });
 
     it('should reverse journal entry', async () => {
+      // GET the existing entry
+      mockFetch.mockResolvedValueOnce(okJson({
+        ReferenceNumber: 'JE001', DebitCredit: [],
+      }));
+      // POST the reversal
+      mockFetch.mockResolvedValueOnce(okJson({ ReferenceNumber: 'JE001_REV' }));
+
       await expect(sapClient.reverseJournalEntry('JE001')).resolves.toBeUndefined();
     });
   });
@@ -385,6 +517,8 @@ describe('SAPClient', () => {
         },
       ];
 
+      mockFetch.mockResolvedValueOnce(okJson(requests));
+
       const results = await sapClient.executeBatchRequests(requests);
       expect(Array.isArray(results)).toBe(true);
     });
@@ -397,6 +531,8 @@ describe('SAPClient', () => {
         name: 'Test',
         email: 'test@example.com',
       };
+
+      mockFetch.mockResolvedValueOnce(okJson({ CardCode: 'CUST001', CardName: 'Test' }));
 
       const result = await sapClient.createCustomer(customer);
       expect(result).toBeDefined();

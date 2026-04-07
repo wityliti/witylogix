@@ -10,6 +10,8 @@ import { createHmac } from 'crypto';
 
 describe('StripeClient', () => {
   let client: StripeClient;
+  const mockFetch = vi.fn();
+  const mockHeaders = { get: () => null };
   const mockConfig: StripeConfig = {
     apiKey: 'sk_test_FAKE123456789abcdefghij',
     publishableKey: 'pk_test_FAKE123456789',
@@ -18,11 +20,14 @@ describe('StripeClient', () => {
   };
 
   beforeEach(() => {
+    mockFetch.mockReset();
+    vi.stubGlobal('fetch', mockFetch);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     client = new StripeClient(mockConfig);
-    vi.clearAllMocks();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -44,8 +49,9 @@ describe('StripeClient', () => {
 
   describe('createPaymentIntent', () => {
     it('should create payment intent successfully', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_12345',
           object: 'payment_intent',
@@ -71,8 +77,9 @@ describe('StripeClient', () => {
     });
 
     it('should support idempotency key', async () => {
-      const mockFetch = vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_idempotent',
           object: 'payment_intent',
@@ -93,9 +100,10 @@ describe('StripeClient', () => {
     });
 
     it('should handle API errors', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
+        headers: mockHeaders,
         json: async () => ({
           error: {
             message: 'Invalid request',
@@ -112,8 +120,9 @@ describe('StripeClient', () => {
 
   describe('capturePaymentIntent', () => {
     it('should capture payment intent', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_capture',
           object: 'payment_intent',
@@ -133,8 +142,9 @@ describe('StripeClient', () => {
     });
 
     it('should support partial capture', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_partial',
           object: 'payment_intent',
@@ -155,11 +165,14 @@ describe('StripeClient', () => {
 
   describe('cancelPaymentIntent', () => {
     it('should cancel payment intent', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_cancel',
           object: 'payment_intent',
+          amount: 1000,
+          currency: 'usd',
           status: 'canceled',
           created: Math.floor(Date.now() / 1000),
           updated: Math.floor(Date.now() / 1000),
@@ -175,8 +188,9 @@ describe('StripeClient', () => {
 
   describe('createSubscription', () => {
     it('should create subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'sub_test_123',
           object: 'subscription',
@@ -212,8 +226,9 @@ describe('StripeClient', () => {
 
   describe('updateSubscription', () => {
     it('should update subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'sub_test_update',
           object: 'subscription',
@@ -223,6 +238,7 @@ describe('StripeClient', () => {
           current_period_start: Math.floor(Date.now() / 1000),
           current_period_end: Math.floor(Date.now() / 1000) + 2592000,
           items: { data: [] },
+          currency: 'usd',
           created: Math.floor(Date.now() / 1000),
           updated: Math.floor(Date.now() / 1000),
         }),
@@ -238,8 +254,9 @@ describe('StripeClient', () => {
 
   describe('cancelSubscription', () => {
     it('should cancel subscription at period end', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'sub_test_cancel',
           object: 'subscription',
@@ -248,6 +265,7 @@ describe('StripeClient', () => {
           current_period_start: Math.floor(Date.now() / 1000),
           current_period_end: Math.floor(Date.now() / 1000) + 2592000,
           items: { data: [] },
+          currency: 'usd',
           created: Math.floor(Date.now() / 1000),
           updated: Math.floor(Date.now() / 1000),
         }),
@@ -261,8 +279,9 @@ describe('StripeClient', () => {
     });
 
     it('should immediately cancel subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'sub_test_immediate_cancel',
           object: 'subscription',
@@ -271,6 +290,7 @@ describe('StripeClient', () => {
           current_period_start: Math.floor(Date.now() / 1000),
           current_period_end: Math.floor(Date.now() / 1000) + 2592000,
           items: { data: [] },
+          currency: 'usd',
           created: Math.floor(Date.now() / 1000),
           updated: Math.floor(Date.now() / 1000),
         }),
@@ -284,8 +304,9 @@ describe('StripeClient', () => {
 
   describe('createInvoice', () => {
     it('should create invoice', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'in_test_123',
           object: 'invoice',
@@ -310,8 +331,9 @@ describe('StripeClient', () => {
 
   describe('createCheckoutSession', () => {
     it('should create checkout session', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 'cs_test_123',
           object: 'checkout.session',
@@ -342,8 +364,9 @@ describe('StripeClient', () => {
 
   describe('createRefund', () => {
     it('should create refund', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           id: 're_test_123',
           object: 'refund',
@@ -369,8 +392,9 @@ describe('StripeClient', () => {
 
   describe('listRefunds', () => {
     it('should list refunds', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: mockHeaders,
         json: async () => ({
           object: 'list',
           data: [
@@ -501,9 +525,9 @@ describe('StripeClient', () => {
       const startTime = Date.now();
 
       // Mock successful responses
-      vi.spyOn(global, 'fetch').mockResolvedValue({
+      mockFetch.mockResolvedValue({
         ok: true,
-        headers: new Map(),
+        headers: mockHeaders,
         json: async () => ({
           id: 'pi_test_rate_limit',
           object: 'payment_intent',
@@ -536,14 +560,24 @@ describe('StripeClient', () => {
 
   describe('error handling', () => {
     it('should handle network errors with retries', async () => {
+      // Use real timers for this test since it involves retry backoff delays
+      vi.useRealTimers();
+
+      // Create a fresh client with minimal retries/timeout to keep test fast
+      const retryClient = new StripeClient({
+        ...mockConfig,
+        maxNetworkRetries: 3,
+      });
+
       let attempts = 0;
-      vi.spyOn(global, 'fetch').mockImplementation(async () => {
+      mockFetch.mockImplementation(async () => {
         attempts++;
         if (attempts < 3) {
           throw new Error('Network error');
         }
         return {
           ok: true,
+          headers: mockHeaders,
           json: async () => ({
             id: 'pi_test_retry',
             object: 'payment_intent',
@@ -557,16 +591,25 @@ describe('StripeClient', () => {
         } as any;
       });
 
-      const intent = await client.createPaymentIntent(1000, 'USD');
+      const intent = await retryClient.createPaymentIntent(1000, 'USD');
 
       expect(intent).toBeDefined();
       expect(attempts).toBeGreaterThanOrEqual(2);
-    });
+    }, 30000);
 
     it('should handle rate limit errors', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // Use real timers for this test since retryable errors trigger backoff
+      vi.useRealTimers();
+
+      const retryClient = new StripeClient({
+        ...mockConfig,
+        maxNetworkRetries: 1, // Only 1 attempt so it fails fast
+      });
+
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 429,
+        headers: mockHeaders,
         json: async () => ({
           error: {
             message: 'Rate limit exceeded',
@@ -575,7 +618,7 @@ describe('StripeClient', () => {
         }),
       } as any);
 
-      await expect(client.createPaymentIntent(1000, 'USD')).rejects.toThrow();
-    });
+      await expect(retryClient.createPaymentIntent(1000, 'USD')).rejects.toThrow();
+    }, 10000);
   });
 });

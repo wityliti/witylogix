@@ -244,9 +244,10 @@ describe("BatchLoader", () => {
         return new Map(); // Return empty map
       });
 
-      const result = await loader.loadOr("req1", "999", { id: "999", name: "Fallback" });
+      const promise = loader.loadOr("req1", "999", { id: "999", name: "Fallback" });
       vi.advanceTimersByTime(15);
 
+      const result = await promise;
       expect(result.name).toBe("Fallback");
 
       vi.useRealTimers();
@@ -391,9 +392,21 @@ describe("CompositeKeyBatchLoader", () => {
     it("should use custom key serializer", async () => {
       vi.useFakeTimers();
 
+      // Custom batch function that handles deserialized string keys
+      const customBatchFn = vi.fn().mockImplementation(async (keys: any[]) => {
+        const map = new Map();
+        keys.forEach((key) => {
+          // When custom serializer is used, keys may be strings or objects
+          const userId = typeof key === "string" ? key.split(":")[0] : key.userId;
+          const orderId = typeof key === "string" ? key.split(":")[1] : key.orderId;
+          map.set(key, { userId, orderId, data: `${userId}-${orderId}` });
+        });
+        return map;
+      });
+
       const customLoader = new CompositeKeyBatchLoader({
         batchWindow: 10,
-        batchFn,
+        batchFn: customBatchFn,
         keySerializer: (key) => `${key.userId}:${key.orderId}`,
       });
 

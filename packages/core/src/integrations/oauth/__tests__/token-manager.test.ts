@@ -123,7 +123,7 @@ describe('OAuth2TokenManager', () => {
       expect(result.url).toContain('https://oauth.example.com/authorize');
       expect(result.url).toContain('client_id=test-client-id');
       expect(result.url).toContain('response_type=code');
-      expect(result.url).toContain('scope=read%20write');
+      expect(result.url).toContain('scope=read+write');
       expect(result.url).toContain('redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback');
     });
 
@@ -386,6 +386,7 @@ describe('OAuth2TokenManager', () => {
       const configWithoutSecret = {
         ...oauth2Config,
         clientSecret: undefined,
+        usePkce: undefined,
       };
 
       const managerWithoutSecret = new OAuth2TokenManager({

@@ -338,6 +338,13 @@ export class OAuthFlowManager {
   }
 
   /**
+   * Clear all states (for testing).
+   */
+  static clearAllStates(): void {
+    flowStateStore.clear();
+  }
+
+  /**
    * Get flow state store size (for testing/monitoring).
    */
   static getStoreSize(): number {

@@ -291,6 +291,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -308,6 +309,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -427,6 +429,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -579,6 +582,7 @@ describe('TeamsClient', () => {
 
     it('should set user presence', async () => {
       (global.fetch as any).mockResolvedValueOnce({
+        json: async () => ({}),
         status: 200,
         ok: true,
       });
@@ -616,6 +620,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 201,
           ok: true,
         });
@@ -636,6 +641,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -701,6 +707,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 201,
           ok: true,
         })
@@ -736,6 +743,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });

@@ -72,17 +72,22 @@ class TemplateRenderer {
 
       // Handle each loops {{#each items}}...{{/each}}
       if (template.substring(i, i + 7) === '{{#each') {
-        const match = template.substring(i).match(/^\{\{#each\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/each\}\}/);
-        if (match) {
-          const [fullMatch, iterableKey, content] = match;
-          const iterable = this.getNestedValue(context, iterableKey);
-          if (Array.isArray(iterable)) {
-            iterable.forEach((item) => {
-              result += this.renderNode(content, { ...context, this: item });
-            });
+        const headerMatch = template.substring(i).match(/^\{\{#each\s+(\w+(?:\.\w+)*)\}\}/);
+        if (headerMatch) {
+          const iterableKey = headerMatch[1];
+          const contentStart = i + headerMatch[0].length;
+          const contentEnd = this.findMatchingEachEnd(template, contentStart);
+          if (contentEnd !== -1) {
+            const content = template.substring(contentStart, contentEnd);
+            const iterable = this.getNestedValue(context, iterableKey);
+            if (Array.isArray(iterable)) {
+              iterable.forEach((item) => {
+                result += this.renderNode(content, { ...context, this: item });
+              });
+            }
+            i = contentEnd + 9; // skip past '{{/each}}'
+            continue;
           }
-          i += fullMatch.length;
-          continue;
         }
       }
 
@@ -116,6 +121,27 @@ class TemplateRenderer {
     }
 
     return result;
+  }
+
+  private findMatchingEachEnd(template: string, startAfter: number): number {
+    let depth = 1;
+    let i = startAfter;
+    while (i < template.length && depth > 0) {
+      const eachOpen = template.indexOf('{{#each ', i);
+      const eachClose = template.indexOf('{{/each}}', i);
+
+      if (eachClose === -1) return -1;
+
+      if (eachOpen !== -1 && eachOpen < eachClose) {
+        depth++;
+        i = eachOpen + 8;
+      } else {
+        depth--;
+        if (depth === 0) return eachClose;
+        i = eachClose + 9;
+      }
+    }
+    return -1;
   }
 
   private getNestedValue(context: RenderContext, path: string): any {

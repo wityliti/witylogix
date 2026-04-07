@@ -44,28 +44,28 @@ describe('Customer LTV Predictor', () => {
       dealValue: 15000,
     };
 
-    // Create sample orders
-    const baseDate = new Date('2025-01-15');
+    // Create sample orders (relative to reference date of 2026-03-17)
+    const refDate = new Date('2026-03-17');
     sampleOrders = [
       {
         orderId: 'order_1',
         customerId: 'cust_123',
         amount: 5000,
-        date: new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days later
+        date: new Date(refDate.getTime() - 60 * 24 * 60 * 60 * 1000), // 60 days before ref
         status: 'completed',
       },
       {
         orderId: 'order_2',
         customerId: 'cust_123',
         amount: 7500,
-        date: new Date(baseDate.getTime() + 90 * 24 * 60 * 60 * 1000), // 90 days later
+        date: new Date(refDate.getTime() - 30 * 24 * 60 * 60 * 1000), // 30 days before ref
         status: 'completed',
       },
       {
         orderId: 'order_3',
         customerId: 'cust_123',
         amount: 3000,
-        date: new Date(baseDate.getTime() + 180 * 24 * 60 * 60 * 1000), // 180 days later
+        date: new Date(refDate.getTime() - 7 * 24 * 60 * 60 * 1000), // 7 days before ref
         status: 'completed',
       },
     ];

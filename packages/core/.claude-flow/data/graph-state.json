@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "updatedAt": 1775550347171,
+  "nodeCount": 8,
+  "nodes": {
+    "mem-MEMORY-memory-index": {
+      "id": "mem-MEMORY-memory-index",
+      "category": "core",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347125
+    },
+    "mem-project_railway_branch_strategy----": {
+      "id": "mem-project_railway_branch_strategy----",
+      "category": "project_railway_branch_strategy",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347115
+    },
+    "mem-project_witylogix_context----": {
+      "id": "mem-project_witylogix_context----",
+      "category": "project_witylogix_context",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347121
+    },
+    "mem-project_wit221----": {
+      "id": "mem-project_wit221----",
+      "category": "project_wit221",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347126
+    },
+    "mem-project_wit221-status--complete---pr--140-ope": {
+      "id": "mem-project_wit221-status--complete---pr--140-ope",
+      "category": "project_wit221",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347127
+    },
+    "mem-project_wit221-key-commits-": {
+      "id": "mem-project_wit221-key-commits-",
+      "category": "project_wit221",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347127
+    },
+    "mem-project_wit221-key-patterns-fixed-": {
+      "id": "mem-project_wit221-key-patterns-fixed-",
+      "category": "project_wit221",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347127
+    },
+    "mem-user_role----": {
+      "id": "mem-user_role----",
+      "category": "user_role",
+      "confidence": 0.5,
+      "accessCount": 0,
+      "createdAt": 1775550347128
+    }
+  },
+  "edges": [
+    {
+      "sourceId": "mem-project_wit221----",
+      "targetId": "mem-project_wit221-status--complete---pr--140-ope",
+      "type": "temporal",
+      "weight": 0.5
+    },
+    {
+      "sourceId": "mem-project_wit221-status--complete---pr--140-ope",
+      "targetId": "mem-project_wit221-key-commits-",
+      "type": "temporal",
+      "weight": 0.5
+    },
+    {
+      "sourceId": "mem-project_wit221-key-commits-",
+      "targetId": "mem-project_wit221-key-patterns-fixed-",
+      "type": "temporal",
+      "weight": 0.5
+    }
+  ],
+  "pageRanks": {
+    "mem-MEMORY-memory-index": 0.07930764944876902,
+    "mem-project_railway_branch_strategy----": 0.07930764944876902,
+    "mem-project_witylogix_context----": 0.07930764944876902,
+    "mem-project_wit221----": 0.07930764944876902,
+    "mem-project_wit221-status--complete---pr--140-ope": 0.14671918923060606,
+    "mem-project_wit221-key-commits-": 0.20401895727478997,
+    "mem-project_wit221-key-patterns-fixed-": 0.25272360625075907,
+    "mem-user_role----": 0.07930764944876902
+  }
+}

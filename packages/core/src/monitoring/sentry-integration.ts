@@ -339,3 +339,10 @@ export function getSentryManager(): SentryManager {
   }
   return sentryInstance;
 }
+
+/**
+ * Reset the global Sentry instance (for testing only).
+ */
+export function resetSentryInstance(): void {
+  sentryInstance = null;
+}

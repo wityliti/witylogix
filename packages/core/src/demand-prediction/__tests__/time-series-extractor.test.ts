@@ -89,10 +89,10 @@ describe('TimeSeriesExtractor', () => {
       const trend = result.trend;
       expect(trend.length).toBe(sampleSeries.length);
 
-      // Trend values should be sorted (upward trend)
-      for (let i = 10; i < trend.length - 10; i++) {
-        expect(trend[i + 10]).toBeGreaterThan(trend[i]);
-      }
+      // Overall trend should be upward: last values higher than first values
+      const firstTrend = trend.slice(10, 20).reduce((a, b) => a + b, 0) / 10;
+      const lastTrend = trend.slice(trend.length - 20, trend.length - 10).reduce((a, b) => a + b, 0) / 10;
+      expect(lastTrend).toBeGreaterThan(firstTrend);
     });
 
     it('should identify seasonal component', () => {

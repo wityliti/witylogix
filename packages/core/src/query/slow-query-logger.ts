@@ -195,7 +195,8 @@ export class SlowQueryLogger {
       .replace(/\/\*[\s\S]*?\*\//g, "") // Remove block comments
       .replace(/--.*$/gm, "") // Remove line comments
       .replace(/\s+/g, " ") // Normalize whitespace
-      .trim();
+      .trim()
+      .toLowerCase(); // Case-insensitive fingerprinting
 
     // Replace values with placeholders
     normalized = normalized

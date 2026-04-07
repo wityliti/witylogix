@@ -277,7 +277,7 @@ export class TrendDetector {
     return {
       slope,
       acceleration,
-      direction: slope > 5 ? 'increasing' : slope < -5 ? 'decreasing' : 'stable',
+      direction: slope > 0.5 ? 'increasing' : slope < -0.5 ? 'decreasing' : 'stable',
       strength: Math.max(0, Math.min(1, strength)),
     };
   }

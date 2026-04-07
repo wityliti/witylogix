@@ -12,7 +12,7 @@
  * Run: npm test -- filter-builder.test.ts
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   FilterBuilder,
   FilterRule,
@@ -184,7 +184,8 @@ describe("FilterBuilder", () => {
       });
 
       expect(sql).toContain("AND");
-      expect(sql).toContain("!=");
+      // ne with null value generates IS NOT NULL, not !=
+      expect(sql).toContain("IS NOT NULL");
     });
 
     it("should build OR filters", () => {
