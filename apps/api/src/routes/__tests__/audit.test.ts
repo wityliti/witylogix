@@ -322,7 +322,7 @@ describe('Audit Trail Routes', () => {
     });
 
     it('should return 200 with complete audit event details', async () => {
-      const event = generateAuditEvent();
+      const event = generateAuditEvent({ previousValues: { status: 'PENDING' }, newValues: { status: 'PROCESSING' } });
       mockPrisma.auditEvent.findUnique.mockResolvedValue(event);
 
       const result = await (mockPrisma as any).auditEvent.findUnique({
@@ -525,7 +525,7 @@ describe('Audit Trail Routes', () => {
 
   describe('Retention Policy Enforcement', () => {
     it('should enforce 30-day retention for non-critical events', async () => {
-      const event = generateAuditEvent({ retentionDays: 30 });
+      const event = generateAuditEvent({ retentionDays: 30, timestamp: new Date('2026-01-01T10:00:00Z') });
 
       // Event older than 30 days should be eligible for deletion
       const createdDate = new Date(event.timestamp);
