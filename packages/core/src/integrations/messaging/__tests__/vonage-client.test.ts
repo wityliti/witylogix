@@ -7,6 +7,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MessagingAdapterConfig } from "../types.js";
 import { VonageClient } from "../vonage-client.js";
 
+/**
+ * Default mock fetch that returns a successful JSON response.
+ */
 function createMockFetch() {
   return vi.fn().mockResolvedValue({
     ok: true,
@@ -36,10 +39,13 @@ describe("VonageClient", () => {
     mockFetch = createMockFetch();
     vi.stubGlobal("fetch", mockFetch);
     client = new VonageClient(mockConfig);
+    vi.clearAllMocks();
+    // Re-stub after clearAllMocks
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 

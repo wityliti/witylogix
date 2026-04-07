@@ -389,8 +389,8 @@ export class SetupWizardAssistant {
       case 'oauth2':
         return [
           'Click "Connect with [Provider]" to start the OAuth authorization flow',
-          'You will be redirected to their login page',
-          'Authorize Witylogix to access your account by granting the requested permissions',
+          'You will be redirected to authorize access on their login page',
+          'Grant Witylogix the requested permissions',
           'You will be redirected back to Witylogix to confirm',
         ];
       case 'api-key':

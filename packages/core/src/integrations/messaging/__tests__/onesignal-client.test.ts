@@ -7,6 +7,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MessagingAdapterConfig } from "../types.js";
 import { OneSignalClient } from "../onesignal-client.js";
 
+/**
+ * Default mock fetch that returns a successful JSON response.
+ * Individual tests can override via mockFetch.mockResolvedValueOnce().
+ */
 function createMockFetch() {
   return vi.fn().mockResolvedValue({
     ok: true,
@@ -34,10 +38,13 @@ describe("OneSignalClient", () => {
     mockFetch = createMockFetch();
     vi.stubGlobal("fetch", mockFetch);
     client = new OneSignalClient(mockConfig);
+    vi.clearAllMocks();
+    // Re-stub after clearAllMocks
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
