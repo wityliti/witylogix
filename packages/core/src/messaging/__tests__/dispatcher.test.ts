@@ -337,10 +337,8 @@ describe('MessageDispatcher', () => {
         retryCount: 0,
       };
 
-      // This would be caught by validation
-      const result = await dispatcher.send(message);
-      // The mock always succeeds, so this passes
-      expect(result.success).toBe(true);
+      // Invalid email is rejected by validation before send
+      await expect(dispatcher.send(message)).rejects.toThrow(/Invalid recipient/);
     });
 
     it('should respect max retries configuration', async () => {
@@ -591,9 +589,8 @@ describe('MessageDispatcher', () => {
         retryCount: 0,
       };
 
-      // Mock always succeeds for validation
-      const result = await dispatcher.send(message);
-      expect(result.success).toBe(true);
+      // Invalid email is rejected by validation
+      await expect(dispatcher.send(message)).rejects.toThrow(/Invalid recipient/);
     });
 
     it('should return error message in result', async () => {

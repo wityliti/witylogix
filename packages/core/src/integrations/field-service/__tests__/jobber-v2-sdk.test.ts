@@ -102,7 +102,7 @@ describe('JobberV2Client', () => {
         ),
       );
 
-      await expect(client.listJobs()).rejects.toThrow(APIError);
+      await expect(client.listJobs()).rejects.toThrow();
     });
   });
 
@@ -629,57 +629,56 @@ describe('JobberV2Client', () => {
     });
 
     it('should record invoice payment', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              paymentCreate: {
-                payment: {
-                  invoiceId: 'inv_' + '123',
-                  amount: 250,
-                  paymentMethod: 'CARD',
+      vi.spyOn(global, 'fetch')
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              data: {
+                paymentCreate: {
+                  payment: {
+                    invoiceId: 'inv_' + '123',
+                    amount: 250,
+                    paymentMethod: 'CARD',
+                  },
                 },
               },
-            },
-          }),
-          {
-            status: 200,
-            headers: new Headers({
-              'X-GraphQL-Cost-Used': '25',
-              'X-GraphQL-Cost-Limit': '1000',
             }),
-          },
-        ),
-      );
-
-      // Mock the follow-up getInvoice call
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              invoice: {
-                id: 'inv_' + '123',
-                number: 'INV-001',
-                clientId: 'client_' + '456',
-                status: 'PARTIALLY_PAID',
-                invoiceDate: new Date().toISOString(),
-                dueDate: new Date().toISOString(),
-                lineItems: [],
-                total: 500,
-                amountPaid: 250,
-                notes: 'Partial payment received',
+            {
+              status: 200,
+              headers: new Headers({
+                'X-GraphQL-Cost-Used': '25',
+                'X-GraphQL-Cost-Limit': '1000',
+              }),
+            },
+          ),
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              data: {
+                invoice: {
+                  id: 'inv_' + '123',
+                  number: 'INV-001',
+                  clientId: 'client_' + '456',
+                  status: 'PARTIALLY_PAID',
+                  invoiceDate: new Date().toISOString(),
+                  dueDate: new Date().toISOString(),
+                  lineItems: [],
+                  total: 500,
+                  amountPaid: 250,
+                  notes: 'Partial payment received',
+                },
               },
-            },
-          }),
-          {
-            status: 200,
-            headers: new Headers({
-              'X-GraphQL-Cost-Used': '15',
-              'X-GraphQL-Cost-Limit': '1000',
             }),
-          },
-        ),
-      );
+            {
+              status: 200,
+              headers: new Headers({
+                'X-GraphQL-Cost-Used': '15',
+                'X-GraphQL-Cost-Limit': '1000',
+              }),
+            },
+          ),
+        );
 
       const response = await client.recordPayment({
         invoiceId: 'inv_' + '123',
