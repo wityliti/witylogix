@@ -115,17 +115,24 @@ export class HealthChecker {
       );
 
       if (!authTest.success) {
+        // Distinguish between auth failures and network/availability failures
+        const isAuthError = authTest.errorCode?.startsWith('HTTP_');
+        const status = isAuthError
+          ? HealthStatus.UNAUTHORIZED
+          : HealthStatus.DOWN;
+
         const result: HealthCheckResult = {
           providerId,
-          status: HealthStatus.UNAUTHORIZED,
+          status,
           timestamp,
           checks: {
             authentication: false,
-            apiAvailability: false,
+            apiAvailability: !isAuthError ? false : true,
           },
           details: {
             authError: authTest.message,
             errorCode: authTest.errorCode,
+            error: !isAuthError ? authTest.message : undefined,
           },
           nextCheckAt: new Date(Date.now() + this.getCheckInterval(providerId)),
         };
@@ -201,41 +208,29 @@ export class HealthChecker {
   ): Promise<HealthCheckResult[]> {
     const results: HealthCheckResult[] = [];
     const queue = [...integrations];
-    const active = new Set<Promise<HealthCheckResult>>();
 
-    while (queue.length > 0 || active.size > 0) {
-      while (active.size < concurrency && queue.length > 0) {
-        const integration = queue.shift()!;
-        const promise = this.checkIntegrationHealth(
+    // Process in batches with concurrency limit
+    while (queue.length > 0) {
+      const batch = queue.splice(0, concurrency);
+      const promises = batch.map((integration) =>
+        this.checkIntegrationHealth(
           integration.providerId,
           integration.credentials,
           forceRefresh
-        )
-          .then((result) => {
-            active.delete(promise);
-            return result;
-          })
-          .catch((error) => {
-            active.delete(promise);
-            return {
-              providerId: integration.providerId,
-              status: HealthStatus.DOWN,
-              timestamp: new Date(),
-              checks: {
-                authentication: false,
-                apiAvailability: false,
-              },
-              details: { error: String(error) },
-            } as HealthCheckResult;
-          });
+        ).catch((error) => ({
+          providerId: integration.providerId,
+          status: HealthStatus.DOWN,
+          timestamp: new Date(),
+          checks: {
+            authentication: false,
+            apiAvailability: false,
+          },
+          details: { error: String(error) },
+        } as HealthCheckResult))
+      );
 
-        active.add(promise);
-      }
-
-      if (active.size > 0) {
-        const result = await Promise.race(active);
-        results.push(result);
-      }
+      const batchResults = await Promise.all(promises);
+      results.push(...batchResults);
     }
 
     return results;
@@ -294,6 +289,13 @@ export class HealthChecker {
         healthCheckCache.delete(key);
       }
     }
+  }
+
+  /**
+   * Clear all cache entries (for testing).
+   */
+  static clearAllCache(): void {
+    healthCheckCache.clear();
   }
 
   /**
