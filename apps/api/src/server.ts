@@ -234,7 +234,6 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
   await safeRegister(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
   await safeRegister(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
-  await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/vehicles" });
   await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
   await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
   await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
@@ -270,7 +269,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
   await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
 
+
   await safeRegister(import("./routes/ai/eta-recalculate.js"), { prefix: "/api/v4/ai/eta/recalculate" });
+  await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
   await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
 
   // ─── Socket.io Real-time Events ──────────────────────────

@@ -2,6 +2,25 @@ import type { TrackingData } from '../types'
 
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api'
 
+export interface AIEtaData {
+  estimatedArrival: string
+  confidenceLow: string
+  confidenceHigh: string
+  isAIPredicted: boolean
+  lastUpdated: string
+}
+
+export async function fetchAIEta(trackingToken: string): Promise<AIEtaData | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tracking/token/${trackingToken}/eta`)
+    if (!response.ok) return null
+    const json = await response.json()
+    return json.data ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function fetchTrackingData(orderId: string): Promise<TrackingData> {
   const response = await fetch(`${API_BASE_URL}/tracking/${orderId}`)
 
