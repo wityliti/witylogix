@@ -546,10 +546,10 @@ export class EasyPostClient extends ShippingAdapter {
    */
   private normalizeCarrier(code: string): CarrierType {
     const mapping: Record<string, CarrierType> = {
-      fedex: "FEDEX",
-      ups: "UPS",
-      usps: "USPS",
-      dhl: "DHL",
+      FEDEX: "FEDEX",
+      UPS: "UPS",
+      USPS: "USPS",
+      DHL: "DHL",
     };
 
     const codeUpper = code.toUpperCase();

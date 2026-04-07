@@ -53,12 +53,16 @@ describe('Route Efficiency Scorer', () => {
   const createMockGPSTrace = (length: number = 100): RouteDataPoint[] => {
     const points: RouteDataPoint[] = [];
     const startTime = 1000;
+    // Scale geographic span so distance grows proportionally with length
+    // Base 100 points = ~50km, so each point covers ~500m of latitude
+    const latSpan = 0.45 * (length / 100); // ~50km per 100 points
+    const lngSpan = 0.10 * (length / 100);
 
     for (let i = 0; i < length; i++) {
       points.push({
-        lat: 40.7128 + (i / length) * 0.05,
-        lng: -74.006 + (i / length) * 0.02,
-        timestamp: startTime + (i * 60000) / length, // Spread over 100 minutes
+        lat: 40.7128 + (i / length) * latSpan,
+        lng: -74.006 + (i / length) * lngSpan,
+        timestamp: startTime + i * 72000, // Each point ~= 1.2 minutes
         speedKmh: 25 + Math.random() * 10,
       });
     }
@@ -278,19 +282,19 @@ describe('Route Efficiency Scorer', () => {
     it('should improve score with better performing route', () => {
       const planned = createMockPlannedRoute();
 
-      // Poor performance
+      // Poor performance: longer time, more distance, more deviations
       const poorTrace: RouteDataPoint[] = Array.from({ length: 200 }, (_, i) => ({
-        lat: 40.7128 + (i / 200) * 0.1,
-        lng: -74.006 + (i / 200) * 0.05,
-        timestamp: 1000 + i * 500,
+        lat: 40.7128 + (i / 200) * 0.9,       // Much larger deviation from planned
+        lng: -74.006 + (i / 200) * 0.3,
+        timestamp: 1000 + i * 72000,            // 200 min total (vs 120 planned)
         speedKmh: 15 + Math.random() * 5,
       }));
 
-      // Good performance
+      // Good performance: matches planned route closely
       const goodTrace: RouteDataPoint[] = Array.from({ length: 100 }, (_, i) => ({
-        lat: 40.7128 + (i / 100) * 0.05,
-        lng: -74.006 + (i / 100) * 0.02,
-        timestamp: 1000 + i * 1000,
+        lat: 40.7128 + (i / 100) * 0.05,        // Close to planned stops
+        lng: -74.006 + (i / 100) * 0.03,
+        timestamp: 1000 + i * 72000,             // 100 min total (< 120 planned)
         speedKmh: 40 + Math.random() * 5,
       }));
 
@@ -404,13 +408,13 @@ describe('Route Efficiency Scorer', () => {
     it('should handle very high deviation count', () => {
       const planned = createMockPlannedRoute();
 
-      // Create random scattered GPS points (all deviations)
+      // Create random scattered GPS points (all deviations, long duration, long distance)
       const deviatingTrace: RouteDataPoint[] = Array.from(
-        { length: 100 },
+        { length: 200 },
         (_, i) => ({
           lat: 40.7128 + Math.random() * 0.5,
           lng: -74.006 + Math.random() * 0.5,
-          timestamp: 1000 + i * 1000,
+          timestamp: 1000 + i * 120000, // 200 * 2min = 400 min total (vs 120 planned)
           speedKmh: 20,
         }),
       );

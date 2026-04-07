@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ChevronUp, ChevronDown, ArrowUpRight, ArrowDownRight } from "lucide-react";
@@ -174,14 +174,14 @@ export function DriverLeaderboard({
                   {/* Driver name + avatar */}
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      <Avatar
-                        src={driver.driverAvatarUrl}
-                        initials={driver.driverName
-                          .split(" ")
-                          .map(n => n[0])
-                          .join("")}
-                        size="sm"
-                      />
+                      <Avatar size="sm">
+                        {driver.driverAvatarUrl && (
+                          <AvatarImage src={driver.driverAvatarUrl} alt={driver.driverName} />
+                        )}
+                        <AvatarFallback>
+                          {driver.driverName.split(" ").map((n: string) => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="text-sm font-medium text-wl-text-primary">
                         {driver.driverName}
                       </span>

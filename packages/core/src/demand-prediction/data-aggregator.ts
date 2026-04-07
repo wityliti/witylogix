@@ -362,21 +362,74 @@ export class DataAggregator {
     endDate: Date
   ): Promise<DeliveryRecord[]> {
     // Simulated fetch - in production would query Shipments table
+    // Use deterministic seeded distribution based on zoneId
     const deliveries: DeliveryRecord[] = [];
     const count = 500;
+    const seed = this.hashString(zoneId);
+
+    // Business hour weights: higher during 9-11, 14-16, 18-20
+    const hourWeights: number[] = [];
+    for (let h = 0; h < 24; h++) {
+      if ((h >= 9 && h <= 11) || (h >= 14 && h <= 16) || (h >= 18 && h <= 20)) {
+        hourWeights.push(3.0);
+      } else if (h >= 7 && h < 22) {
+        hourWeights.push(1.5);
+      } else {
+        hourWeights.push(0.3);
+      }
+    }
+    const totalHourWeight = hourWeights.reduce((a, b) => a + b, 0);
+
+    // Deterministic pseudo-random number generator
+    let rng = seed;
+    const nextRng = () => {
+      rng = (rng * 1103515245 + 12345) & 0x7fffffff;
+      return rng / 0x7fffffff;
+    };
+
+    const durationMs = endDate.getTime() - startDate.getTime();
+
+    // Day of week weights: weekdays higher than weekends
+    const dayOfWeekWeights = [0.7, 1.1, 1.1, 1.1, 1.1, 1.1, 0.7]; // Sun-Sat
 
     for (let i = 0; i < count; i++) {
-      const timestamp = new Date(
-        startDate.getTime() +
-          Math.random() * (endDate.getTime() - startDate.getTime())
-      );
+      // Generate timestamp weighted toward weekdays
+      let baseTimestamp: Date;
+      let attempts = 0;
+      do {
+        const dayOffset = nextRng() * durationMs;
+        baseTimestamp = new Date(startDate.getTime() + dayOffset);
+        const dow = baseTimestamp.getDay();
+        // Accept with probability proportional to day weight
+        if (nextRng() < dayOfWeekWeights[dow]) break;
+        attempts++;
+      } while (attempts < 5);
+      // After 5 attempts, just use whatever we have
+
+      // Weight hours toward business hours
+      let hourCumulativeWeight = nextRng() * totalHourWeight;
+      let selectedHour = 0;
+      for (let h = 0; h < 24; h++) {
+        hourCumulativeWeight -= hourWeights[h];
+        if (hourCumulativeWeight <= 0) {
+          selectedHour = h;
+          break;
+        }
+      }
+
+      const timestamp = new Date(baseTimestamp);
+      timestamp.setHours(selectedHour, Math.floor(nextRng() * 60), 0, 0);
+
+      // Delivery time: higher during peak hours (rush hour delays)
+      const peakFactor = hourWeights[selectedHour] > 2.0 ? 1.3 : 1.0;
+      const deliveryTime = (20 + nextRng() * 25) * peakFactor;
 
       deliveries.push({
         id: `delivery_${i}`,
         zoneId,
         timestamp,
-        deliveryTime: 15 + Math.random() * 40,
-        hour: timestamp.getHours(),
+        deliveryTime,
+        hour: selectedHour,
         dayOfWeek: timestamp.getDay(),
         dayOfMonth: timestamp.getDate(),
         month: timestamp.getMonth(),
@@ -385,6 +438,18 @@ export class DataAggregator {
     }
 
     return deliveries;
+  }
+
+  /**
+   * Simple string hash for deterministic seeding
+   */
+  private hashString(str: string): number {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
   }
 
   /**

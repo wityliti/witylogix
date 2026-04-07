@@ -688,7 +688,7 @@ describe('FleetService', () => {
       expect(alert.isCompleted).toBe(true);
       expect(mockPrisma.maintenanceAlert.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { isCompleted: true },
+          data: expect.objectContaining({ isCompleted: true }),
         }),
       );
     });

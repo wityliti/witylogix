@@ -443,7 +443,10 @@ function insertBreaks(route: RouteSequence, vehicle: Vehicle): Break[] {
  */
 function validateTimeWindows(route: RouteSequence): string[] {
   const violations: string[] = [];
-  let currentTime = new Date();
+  // Start from the earliest open time of the first stop, not now
+  let currentTime = route.stops.length > 0
+    ? new Date(route.stops[0].timeWindow.openTime)
+    : new Date();
 
   for (let i = 0; i < route.sequence.length; i++) {
     const stop = route.stops[i];

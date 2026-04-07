@@ -152,7 +152,7 @@ describe('Organizations Routes', () => {
 
   describe('POST / - Create Organization', () => {
     it('should create organization with valid slug and name', async () => {
-      const newOrg = createMockOrg({ slug: 'my-delivery-co' });
+      const newOrg = createMockOrg({ slug: 'my-delivery-co', name: 'My Delivery Co' });
       mockRequest.body = { name: 'My Delivery Co', slug: 'my-delivery-co' };
       mockPrisma.organization.findUnique.mockResolvedValue(null);
       mockPrisma.organization.create.mockResolvedValue(newOrg);

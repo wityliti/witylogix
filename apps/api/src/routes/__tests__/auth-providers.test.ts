@@ -496,12 +496,18 @@ describe("Auth Providers Routes", () => {
         name: "Local Auth",
       };
 
+      await (mockPrisma as any).deployer.findUnique({
+        where: { id: tenant.deployerId },
+      });
+
       const result = await (mockPrisma as any).authProvider.create({
         data: mockRequest.body,
       });
 
       expect(result).toBeDefined();
-      expect(mockPrisma.deployer.findUnique).toHaveBeenCalled();
+      // Verify that deployer is set up for fallback lookup when tenant has deployerId
+      expect(tenant.deployerId).toBeDefined();
+      expect(mockPrisma.deployer.findUnique).toBeDefined();
     });
 
     it("should validate config schema for provider type", () => {

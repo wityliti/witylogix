@@ -6,6 +6,17 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
+/**
+ * Mock fetch function — must be set on globalThis BEFORE WEXClient loads,
+ * because WEX captures `const nodeFetch = globalThis.fetch` at module level.
+ * vi.hoisted() runs before imports are evaluated.
+ */
+const mockFetch = vi.hoisted(() => {
+  const fn = vi.fn();
+  globalThis.fetch = fn as any;
+  return fn;
+});
+
 import { FuelCardManager } from "../fuel-card-manager";
 import type {
   FuelFleetConfig,
@@ -13,12 +24,6 @@ import type {
   FuelTransaction,
   FuelPolicy,
 } from "../types";
-
-/**
- * Mock fetch function
- */
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
 
 /**
  * Create mock configuration for a provider
@@ -122,6 +127,27 @@ const createMockPolicy = (override?: Partial<FuelPolicy>): FuelPolicy => ({
   ...override,
 });
 
+/**
+ * Helper: mock both the OAuth token and the API response for a WEX call.
+ * Each WEX API call does: authenticate() -> fetch token URL, then apiRequest() -> fetch API URL.
+ */
+const mockAuthAndApi = (apiResponseBody: unknown) => {
+  // Auth token response
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      access_token: "mock-access-token",
+      token_type: "Bearer",
+      expires_in: 3600,
+    }),
+  });
+  // API response
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => apiResponseBody,
+  });
+};
+
 describe("FuelCardManager", () => {
   let manager: FuelCardManager;
 
@@ -134,17 +160,14 @@ describe("FuelCardManager", () => {
     };
 
     manager = new FuelCardManager(configs);
-    mockFetch.mockClear();
+    mockFetch.mockReset();
   });
 
   describe("Card Inventory Management", () => {
     it("should issue a card from a provider", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: createMockCard("wex"),
-        }),
+      mockAuthAndApi({
+        success: true,
+        data: createMockCard("wex"),
       });
 
       const inventory = await manager.issueCard("wex", {
@@ -166,13 +189,10 @@ describe("FuelCardManager", () => {
     });
 
     it("should manage card status across providers", async () => {
-      // Mock initial issue
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: createMockCard("wex"),
-        }),
+      // Mock initial issue (auth + api)
+      mockAuthAndApi({
+        success: true,
+        data: createMockCard("wex"),
       });
 
       await manager.issueCard("wex", {
@@ -180,7 +200,7 @@ describe("FuelCardManager", () => {
         driverId: "driver-123",
       });
 
-      // Mock suspend operation
+      // Mock suspend operation (auth token is cached, so only api call)
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -218,26 +238,25 @@ describe("FuelCardManager", () => {
       const policy = createMockPolicy();
       manager.registerPolicy(policy);
 
-      // Mock card issue
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: createMockCard("wex"),
-        }),
+      // Mock card issue (auth + api)
+      mockAuthAndApi({
+        success: true,
+        data: createMockCard("wex"),
       });
 
       await manager.issueCard("wex", {
         cardholderName: "John Driver",
       });
 
-      // Mock policy enforcement
+      // Mock policy enforcement - setPurchaseLimit calls (daily + monthly)
+      // Token is cached so only API calls needed
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          success: true,
-          data: {},
-        }),
+        json: async () => ({ success: true, data: {} }),
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: {} }),
       });
 
       const result = await manager.enforcePolicyOnCards(policy.policyId, [
@@ -281,10 +300,31 @@ describe("FuelCardManager", () => {
 
     it("should detect amount anomalies", async () => {
       const cardId = "card-wex-123";
+      // Need enough normal transactions so the outlier doesn't inflate
+      // the mean/stddev enough to hide itself.
+      // With 20 normal ~50 txns and one 1500 outlier:
+      //   avg ~ 119, stdDev ~ 313 => avg+3*stdDev ~ 1058 < 1500 => detected
       const transactions: FuelTransaction[] = [
-        createMockTransaction(cardId, { amount: 150 }),
-        createMockTransaction(cardId, { amount: 160 }),
-        createMockTransaction(cardId, { amount: 155 }),
+        createMockTransaction(cardId, { amount: 50 }),
+        createMockTransaction(cardId, { amount: 55 }),
+        createMockTransaction(cardId, { amount: 48 }),
+        createMockTransaction(cardId, { amount: 52 }),
+        createMockTransaction(cardId, { amount: 50 }),
+        createMockTransaction(cardId, { amount: 51 }),
+        createMockTransaction(cardId, { amount: 49 }),
+        createMockTransaction(cardId, { amount: 53 }),
+        createMockTransaction(cardId, { amount: 50 }),
+        createMockTransaction(cardId, { amount: 52 }),
+        createMockTransaction(cardId, { amount: 48 }),
+        createMockTransaction(cardId, { amount: 54 }),
+        createMockTransaction(cardId, { amount: 47 }),
+        createMockTransaction(cardId, { amount: 51 }),
+        createMockTransaction(cardId, { amount: 50 }),
+        createMockTransaction(cardId, { amount: 53 }),
+        createMockTransaction(cardId, { amount: 49 }),
+        createMockTransaction(cardId, { amount: 52 }),
+        createMockTransaction(cardId, { amount: 50 }),
+        createMockTransaction(cardId, { amount: 51 }),
         createMockTransaction(cardId, { amount: 1500 }), // Anomaly
       ];
 
@@ -317,17 +357,31 @@ describe("FuelCardManager", () => {
   });
 
   describe("Cost Optimization", () => {
-    it("should recommend cost optimization", () => {
-      // Create card inventory
-      const card1 = createMockCard("wex");
-      const card2 = createMockCard("comdata");
-      const card3 = createMockCard("fuelman", { cardId: "card-fuelman-123" });
+    it("should recommend cost optimization", async () => {
+      // Issue cards to add them to inventory
+      // WEX uses OAuth (2 mocks: auth + api)
+      mockAuthAndApi({ success: true, data: createMockCard("wex") });
+      await manager.issueCard("wex", { cardholderName: "Driver A" });
+
+      // Comdata uses token header, no OAuth (1 mock), and expects { status: "success" }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+      });
+      await manager.issueCard("comdata", { cardholderName: "Driver B" });
+
+      // Fuelman uses API key header, no OAuth (1 mock), and expects { success: true }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: createMockCard("fuelman", { cardId: "card-fuelman-123" }) }),
+      });
+      await manager.issueCard("fuelman", { cardholderName: "Driver C" });
 
       // Mock card costs
       const costs = new Map<string, number>([
-        [card1.cardId, 50], // Higher cost
-        [card2.cardId, 40],
-        [card3.cardId, 45],
+        ["card-wex-123", 50],
+        ["card-comdata-123", 40],
+        ["card-fuelman-123", 45],
       ]);
 
       const recommendations = manager.optimizeCosts(costs);
@@ -336,7 +390,19 @@ describe("FuelCardManager", () => {
       expect(Array.isArray(recommendations)).toBe(true);
     });
 
-    it("should calculate ROI for recommendations", () => {
+    it("should calculate ROI for recommendations", async () => {
+      // Issue cards to add them to inventory
+      // WEX uses OAuth (2 mocks: auth + api)
+      mockAuthAndApi({ success: true, data: createMockCard("wex") });
+      await manager.issueCard("wex", { cardholderName: "Driver A" });
+
+      // Comdata uses token header, no OAuth (1 mock), expects { status: "success" }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+      });
+      await manager.issueCard("comdata", { cardholderName: "Driver B" });
+
       const costs = new Map<string, number>([
         ["card-wex-123", 100],
         ["card-comdata-123", 50],
@@ -356,6 +422,7 @@ describe("FuelCardManager", () => {
       const transactions: FuelTransaction[] = [
         createMockTransaction("card-1", {
           fuelQuantity: 100,
+          transactionDate: new Date("2026-02-15"),
           merchantLocation: {
             city: "Los Angeles",
             state: "CA",
@@ -365,6 +432,7 @@ describe("FuelCardManager", () => {
         }),
         createMockTransaction("card-1", {
           fuelQuantity: 50,
+          transactionDate: new Date("2026-02-20"),
           merchantLocation: {
             city: "El Paso",
             state: "TX",
@@ -374,7 +442,7 @@ describe("FuelCardManager", () => {
         }),
       ];
 
-      const startDate = new Date("2026-Q1");
+      const startDate = new Date("2026-01-01");
       const endDate = new Date("2026-03-31");
 
       const calculation = manager.calculateIFTA(
@@ -394,6 +462,7 @@ describe("FuelCardManager", () => {
       const transactions: FuelTransaction[] = [
         createMockTransaction("card-1", {
           fuelQuantity: 100,
+          transactionDate: new Date("2026-02-10"),
           merchantLocation: {
             city: "Los Angeles",
             state: "CA",
@@ -403,6 +472,7 @@ describe("FuelCardManager", () => {
         }),
         createMockTransaction("card-1", {
           fuelQuantity: 50,
+          transactionDate: new Date("2026-02-15"),
           merchantLocation: {
             city: "San Francisco",
             state: "CA",
@@ -451,7 +521,7 @@ describe("FuelCardManager", () => {
     });
 
     it("should return empty calculations for no transactions", () => {
-      const startDate = new Date("2026-Q1");
+      const startDate = new Date("2026-01-01");
       const endDate = new Date("2026-03-31");
 
       const calculation = manager.calculateIFTA([], startDate, endDate);
@@ -463,12 +533,9 @@ describe("FuelCardManager", () => {
 
   describe("Manager Statistics", () => {
     it("should track card statistics", async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: createMockCard("wex"),
-        }),
+      mockAuthAndApi({
+        success: true,
+        data: createMockCard("wex"),
       });
 
       await manager.issueCard("wex", {
@@ -504,12 +571,9 @@ describe("FuelCardManager", () => {
       const listener = vi.fn();
       manager.on("card-issued", listener);
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: createMockCard("wex"),
-        }),
+      mockAuthAndApi({
+        success: true,
+        data: createMockCard("wex"),
       });
 
       await manager.issueCard("wex", {
@@ -541,12 +605,20 @@ describe("FuelCardManager", () => {
 
   describe("Multi-Provider Operations", () => {
     it("should support multiple providers simultaneously", async () => {
-      const wexCard = createMockCard("wex");
-      const comdataCard = createMockCard("comdata");
+      // Issue cards to get them into inventory
+      mockAuthAndApi({ success: true, data: createMockCard("wex") });
+      await manager.issueCard("wex", { cardholderName: "Driver A" });
+
+      // Comdata uses token header, no OAuth (1 mock), expects { status: "success" }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: "success", data: createMockCard("comdata") }),
+      });
+      await manager.issueCard("comdata", { cardholderName: "Driver B" });
 
       const costs = new Map<string, number>([
-        [wexCard.cardId, 50],
-        [comdataCard.cardId, 45],
+        ["card-wex-123", 50],
+        ["card-comdata-123", 45],
       ]);
 
       const recommendations = manager.optimizeCosts(costs);
@@ -555,9 +627,18 @@ describe("FuelCardManager", () => {
 
     it("should aggregate data across providers", () => {
       const transactions: FuelTransaction[] = [
-        createMockTransaction("card-wex-123"),
-        createMockTransaction("card-comdata-456"),
-        createMockTransaction("card-fuelman-789"),
+        createMockTransaction("card-wex-123", {
+          transactionDate: new Date("2026-03-15"),
+          merchantLocation: { city: "LA", state: "CA", zip: "90001", address: "" },
+        }),
+        createMockTransaction("card-comdata-456", {
+          transactionDate: new Date("2026-04-01"),
+          merchantLocation: { city: "Dallas", state: "TX", zip: "75201", address: "" },
+        }),
+        createMockTransaction("card-fuelman-789", {
+          transactionDate: new Date("2026-05-01"),
+          merchantLocation: { city: "Miami", state: "FL", zip: "33101", address: "" },
+        }),
       ];
 
       const startDate = new Date("2026-01-01");

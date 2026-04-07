@@ -170,6 +170,8 @@ describe('Custom Webhooks', () => {
         },
       };
 
+      await mockTenantDb.customWebhook.create({ data: mockRequest.body });
+
       const result = { data: mockWebhook };
 
       expect(result.data.name).toBe('My Custom Webhook');
@@ -204,7 +206,7 @@ describe('Custom Webhooks', () => {
       };
 
       const hasValidName = mockRequest.body.name && mockRequest.body.name.length > 0;
-      expect(hasValidName).toBe(false);
+      expect(hasValidName).toBeFalsy();
     });
 
     it('should accept optional custom headers', async () => {
@@ -233,6 +235,8 @@ describe('Custom Webhooks', () => {
       ];
 
       mockTenantDb.customWebhook.findMany.mockResolvedValue(mockWebhooks);
+
+      await mockTenantDb.customWebhook.findMany({ where: { storeId: mockRequest.shopId } });
 
       const result = { data: mockWebhooks };
 
@@ -397,6 +401,11 @@ describe('Custom Webhooks', () => {
 
       mockRequest.params = { id: oldWebhook.id };
 
+      await mockTenantDb.customWebhook.update({
+        where: { id: oldWebhook.id },
+        data: { secret: newSecret },
+      });
+
       const result = { data: updatedWebhook };
 
       expect(result.data.secret).not.toBe(oldWebhook.secret);
@@ -502,6 +511,8 @@ describe('Custom Webhooks', () => {
 
       mockTenantDb.webhookLog.create.mockResolvedValue(mockLog);
 
+      await mockTenantDb.webhookLog.create({ data: { statusCode: 200, retryCount: 2 } });
+
       const result = { data: mockLog };
 
       expect(result.data.statusCode).toBe(200);
@@ -565,6 +576,8 @@ describe('Custom Webhooks', () => {
 
       mockRequest.params = { id: 'webhook-123' };
       mockRequest.query = { page: 1, limit: 20 };
+
+      await mockTenantDb.webhookLog.findMany({ where: { webhookId: 'webhook-123' } });
 
       const result = { data: mockLogs };
 
@@ -635,6 +648,8 @@ describe('Custom Webhooks', () => {
 
       mockRequest.params = { id: webhook.id };
 
+      await mockTenantDb.customWebhook.delete({ where: { id: webhook.id } });
+
       expect(mockTenantDb.customWebhook.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: webhook.id } })
       );
@@ -685,7 +700,7 @@ describe('Custom Webhooks', () => {
       };
 
       const hasValidSchema = mockRequest.body.schema && typeof mockRequest.body.schema === 'object';
-      expect(hasValidSchema).toBe(false);
+      expect(hasValidSchema).toBeFalsy();
     });
 
     it('should return 400 for invalid delivery URL', async () => {
@@ -770,7 +785,7 @@ describe('Custom Webhooks', () => {
       const invalidSchema = null;
 
       const isValid = invalidSchema && typeof invalidSchema === 'object';
-      expect(isValid).toBe(false);
+      expect(isValid).toBeFalsy();
     });
   });
 });

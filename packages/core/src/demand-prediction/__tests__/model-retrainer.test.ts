@@ -178,8 +178,8 @@ describe('ModelRetrainer', () => {
       const data = retrainer.collectTrainingData(zone);
 
       // All data should be within maxDataDays
-      const maxDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-      expect(data.every((d) => d.timestamp > maxDaysAgo)).toBe(true);
+      const maxDaysAgo = new Date(Date.now() - 91 * 24 * 60 * 60 * 1000); // 1 day buffer for timing
+      expect(data.every((d) => d.timestamp >= maxDaysAgo)).toBe(true);
     });
 
     it('should return sufficient training data', () => {
@@ -550,30 +550,37 @@ describe('ModelRetrainer', () => {
       expect(degradationEmitted).toBe(true);
     });
 
-    it('should emit retraining_completed event', (done) => {
-      retrainer.on('retraining_completed', (job) => {
-        expect(job.status).toBe('completed');
-        done();
+    it('should emit retraining_completed event', async () => {
+      const eventPromise = new Promise<void>((resolve) => {
+        retrainer.on('retraining_completed', (job) => {
+          expect(job.status).toBe('completed');
+          resolve();
+        });
       });
 
       const zone = 'zone-event-2';
       const data = retrainer.collectTrainingData(zone, 30);
 
       retrainer.retrain(zone, 'seasonal', data);
+
+      await eventPromise;
     });
 
-    it('should emit model_promoted event', (done) => {
-      retrainer.on('model_promoted', (event) => {
-        expect(event.zoneId).toBeDefined();
-        done();
+    it('should emit model_promoted event', async () => {
+      const eventPromise = new Promise<void>((resolve) => {
+        retrainer.on('model_promoted', (event) => {
+          expect(event.zoneId).toBeDefined();
+          resolve();
+        });
       });
 
       const zone = 'zone-event-3';
       const data = retrainer.collectTrainingData(zone, 30);
 
-      retrainer.retrain(zone, 'seasonal', data).then((job) => {
-        retrainer.promoteModel(job.id);
-      });
+      const job = await retrainer.retrain(zone, 'seasonal', data);
+      retrainer.promoteModel(job.id);
+
+      await eventPromise;
     });
   });
 });

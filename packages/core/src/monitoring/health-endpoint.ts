@@ -259,13 +259,17 @@ export class HealthChecker {
       return null;
     }
 
+    const start = Date.now();
     try {
-      return await checkFn();
+      const result = await checkFn();
+      const elapsed = Date.now() - start;
+      return { ...result, duration: elapsed };
     } catch (error) {
+      const elapsed = Date.now() - start;
       return {
         name,
         status: "DOWN",
-        duration: 0,
+        duration: elapsed,
         message: error instanceof Error ? error.message : String(error),
       };
     }

@@ -138,8 +138,27 @@ class MockRedis implements RedisLike {
     throw new Error('Not implemented');
   }
 
-  async multi(): Promise<any> {
-    throw new Error('Not implemented');
+  multi(): any {
+    const self = this;
+    let currentKey = '';
+    let currentAmount = 0;
+    const mockMulti = {
+      incrby(key: string, amount: number) {
+        currentKey = key;
+        currentAmount = amount;
+        return mockMulti;
+      },
+      expire(_key: string, _seconds: number) {
+        return mockMulti;
+      },
+      async exec() {
+        const current = parseInt(self['store'].get(currentKey) || '0', 10);
+        const newValue = current + currentAmount;
+        self['store'].set(currentKey, String(newValue));
+        return [newValue];
+      },
+    };
+    return mockMulti;
   }
 
   async watch(): Promise<any> {
@@ -471,7 +490,7 @@ describe('Cache Strategies', () => {
     });
 
     it('should support sliding expiration on session access', async () => {
-      const sessionData = { userId: 'user_1', loginTime: new Date() };
+      const sessionData = { userId: 'user_1', loginTime: new Date().toISOString() };
       const sessionId = 'sess_123';
 
       await SessionCacheStrategy.setSession(cache, sessionId, sessionData, 3600);

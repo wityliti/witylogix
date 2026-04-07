@@ -614,7 +614,7 @@ describe('VroomClient', () => {
 
   describe('Error Handling', () => {
     it('should handle solver errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: true,
         json: async () => ({
           code: 1,

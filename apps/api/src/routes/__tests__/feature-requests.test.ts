@@ -96,6 +96,7 @@ describe("Feature Requests Routes", () => {
         findMany: vi.fn(),
         create: vi.fn(),
         delete: vi.fn(),
+        deleteMany: vi.fn(),
         updateMany: vi.fn(),
       },
       user: {

@@ -96,7 +96,7 @@ describe('TomTomSDKClient', () => {
     });
 
     it('should handle API errors', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValue({
         ok: false,
         json: async () => ({ errorText: 'Invalid API key' }),
         statusText: 'Unauthorized',
@@ -381,7 +381,7 @@ describe('TomTomSDKClient', () => {
     });
 
     it('should throw error for no route found', async () => {
-      vi.mocked(global.fetch).mockResolvedValueOnce({
+      vi.mocked(global.fetch).mockResolvedValue({
         ok: true,
         json: async () => ({ formatVersion: '0.0.12', routes: [] }),
       } as Response);

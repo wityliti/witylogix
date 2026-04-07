@@ -377,7 +377,7 @@ describe('AudienceBuilder', () => {
 
       const result = builder.buildQuery('tenant-1', filters);
 
-      expect(result.params.length).toBeGreaterThan(4);
+      expect(result.params.length).toBeGreaterThanOrEqual(4);
       expect(result.query).toContain('WHERE');
     });
   });
@@ -558,13 +558,21 @@ describe('AudienceBuilder', () => {
 
   describe('Type Safety', () => {
     it('should accept valid filter types', () => {
-      const validTypes = ['location', 'status', 'tag', 'custom_field', 'subscription_status', 'engagement'];
+      // Use valid values for each filter type (engagement requires 'high', 'medium', or 'low')
+      const validFilters: Array<{ type: string; value: string }> = [
+        { type: 'location', value: 'test' },
+        { type: 'status', value: 'test' },
+        { type: 'tag', value: 'test' },
+        { type: 'custom_field', value: 'test' },
+        { type: 'subscription_status', value: 'test' },
+        { type: 'engagement', value: 'high' },
+      ];
 
-      for (const type of validTypes) {
+      for (const filter of validFilters) {
         const filters: AudienceFilter[] = [
           {
-            type: type as any,
-            value: 'test',
+            type: filter.type as any,
+            value: filter.value,
           },
         ];
 

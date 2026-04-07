@@ -140,7 +140,7 @@ class CircuitBreaker {
  * Retry handler with exponential backoff
  * Manages transient failure recovery
  */
-class RetryHandler {
+export class RetryHandler {
   /**
    * Execute function with retry logic
    * @param fn Async function to retry
@@ -187,7 +187,7 @@ class RetryHandler {
   private static isTransient(error: unknown): boolean {
     if (error instanceof Error) {
       // Network errors
-      if (error.message.includes('ECONNREFUSED') || error.message.includes('ETIMEDOUT')) {
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('ETIMEDOUT') || error.message.toLowerCase().includes('network')) {
         return true;
       }
       // HTTP 429, 503, 504

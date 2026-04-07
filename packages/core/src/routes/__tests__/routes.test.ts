@@ -89,6 +89,7 @@ const createMockStop = (overrides?: Partial<RouteStop>): RouteStop => ({
 
 describe('Routes Core Module', () => {
   let prisma: any;
+  let db: any;
 
   beforeEach(() => {
     prisma = {
@@ -111,6 +112,7 @@ describe('Routes Core Module', () => {
       $transaction: vi.fn(),
       $executeRaw: vi.fn(),
     };
+    db = prisma;
   });
 
   afterEach(() => {

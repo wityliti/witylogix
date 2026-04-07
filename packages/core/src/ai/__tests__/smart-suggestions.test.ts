@@ -9,9 +9,25 @@
  * - Interaction tracking
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createSmartSuggestions } from "../smart-suggestions.js";
 import type { PageContext, SmartSuggestions } from "../smart-suggestions.js";
+
+// Mock @witylogix/db to avoid real Prisma calls
+vi.mock("@witylogix/db", () => ({
+  prisma: {
+    suggestionDismissal: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn().mockResolvedValue({}),
+    },
+    suggestionSnooze: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+    suggestionMetric: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+  },
+}));
 
 describe("Smart Suggestions", () => {
   let suggestions: SmartSuggestions;

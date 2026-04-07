@@ -12,6 +12,7 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+      - staging
       - develop
 
 concurrency:

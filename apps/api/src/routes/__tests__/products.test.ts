@@ -7,6 +7,21 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("@witylogix/db", () => ({
+  Prisma: {
+    Decimal: class Decimal {
+      private value: string;
+      constructor(v: string | number) { this.value = String(v); }
+      toString() { return this.value; }
+      toNumber() { return Number(this.value); }
+    },
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+  },
+}));
+
 import type { PrismaClient } from "@witylogix/db";
 import { Prisma } from "@witylogix/db";
 

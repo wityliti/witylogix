@@ -20,6 +20,7 @@
  */
 interface BatchQueue<K, V> {
   keys: K[];
+  callbackKeys: K[]; // Tracks which key each callback corresponds to (including duplicates)
   callbacks: Array<(value: V | Error) => void>;
   timer?: NodeJS.Timeout;
 }
@@ -77,6 +78,7 @@ export class BatchLoader<K, V> {
     if (!this.queues.has(id)) {
       this.queues.set(id, {
         keys: [],
+        callbackKeys: [],
         callbacks: [],
       });
     }
@@ -96,21 +98,19 @@ export class BatchLoader<K, V> {
         }
       };
 
-      // Add to queue if not duplicate
+      // Track which key each callback is for (including duplicates)
       if (!isDuplicate) {
         queue.keys.push(key);
       }
 
+      queue.callbackKeys.push(key);
       queue.callbacks.push(callback);
 
       // Schedule batch execution if not already scheduled
-      if (!queue.timer && !isDuplicate) {
+      if (!queue.timer) {
         queue.timer = setTimeout(() => {
           this.executeBatch(id);
         }, this.batchWindow);
-      } else if (isDuplicate && queue.callbacks.length > 1) {
-        // Duplicate key, reuse existing result
-        this.executeCallbacks(id, key);
       }
     });
   }
@@ -205,14 +205,14 @@ export class BatchLoader<K, V> {
     try {
       const results = await this.batchFn(uniqueKeys);
 
-      // Resolve all callbacks
-      let callbackIndex = 0;
-      for (const key of queue.keys) {
+      // Resolve all callbacks using callbackKeys to handle duplicates
+      for (let i = 0; i < queue.callbackKeys.length; i++) {
+        const key = queue.callbackKeys[i];
         const value = results.get(key);
         if (value !== undefined) {
-          queue.callbacks[callbackIndex++](value);
+          queue.callbacks[i](value);
         } else {
-          queue.callbacks[callbackIndex++](
+          queue.callbacks[i](
             new Error(`No result for key: ${key}`)
           );
         }
@@ -282,21 +282,29 @@ export function createPrismaBatchLoader(prisma: any) {
 export class CompositeKeyBatchLoader<K extends Record<string, any>, V> {
   private loader: BatchLoader<string, V>;
   private keySerializer: (key: K) => string;
+  private keyDeserializer: (serialized: string) => K;
 
   constructor(
     config: LoaderConfig & {
       keySerializer?: (key: K) => string;
+      keyDeserializer?: (serialized: string) => K;
     }
   ) {
+    const hasCustomSerializer = !!config.keySerializer;
     this.keySerializer = config.keySerializer || ((key) =>
       JSON.stringify(key)
     );
+    // If a custom serializer is provided without a deserializer,
+    // pass the serialized string through as-is (the batch function must handle it)
+    this.keyDeserializer = config.keyDeserializer || (hasCustomSerializer
+      ? ((k: string) => k as unknown as K)
+      : ((k: string) => JSON.parse(k) as K));
 
     this.loader = new BatchLoader<string, V>({
       ...config,
       batchFn: async (keys: string[]) => {
         // Deserialize keys back to original objects
-        const deserializedKeys = keys.map((k) => JSON.parse(k) as K);
+        const deserializedKeys = keys.map((k) => this.keyDeserializer(k));
 
         // Call original batch function with deserialized keys
         const result = await config.batchFn(deserializedKeys as any);
@@ -304,7 +312,10 @@ export class CompositeKeyBatchLoader<K extends Record<string, any>, V> {
         // Reserialize keys for map
         const reserializedMap = new Map<string, V>();
         result.forEach((value, key) => {
-          const serialized = this.keySerializer(key as any);
+          // If key is already a string (from passthrough deserializer), use directly
+          const serialized = typeof key === 'string'
+            ? key
+            : this.keySerializer(key as any);
           reserializedMap.set(serialized, value);
         });
 

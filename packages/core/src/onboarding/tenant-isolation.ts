@@ -98,21 +98,21 @@ export function createTenantContext(request: Request): TenantContext {
   }
 
   // Org ID from header or JWT
-  const orgId = request.headers["x-org-id"] || auth.orgId;
+  const orgId = auth.orgId || request.headers["x-org-id"];
 
   if (!orgId) {
     throw new Error("Organization context required");
   }
 
   // Workspace ID from header or JWT (optional)
-  const workspaceId = request.headers["x-workspace-id"] || auth.workspaceId;
+  const workspaceId = auth.workspaceId || request.headers["x-workspace-id"];
 
   // User and role from JWT
   const userId = auth.userId || auth.sub;
   const role = auth.role || "MEMBER";
 
   // Extract permissions from role
-  const permissions = this.roleToPermissions(role);
+  const permissions = roleToPermissions(role);
 
   return new TenantContext(
     orgId as string,

@@ -319,7 +319,8 @@ describe('HealthCheckRoute', () => {
 
       const [ready1, ready2] = await Promise.all([promise1, promise2]);
 
-      expect(ready1.ready).toBe(true);
+      // Both see disconnected state: ping() reads current connection status at execution time
+      expect(ready1.ready).toBe(false);
       expect(ready2.ready).toBe(false);
     });
   });

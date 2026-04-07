@@ -477,6 +477,8 @@ describe('RoutingEngine', () => {
         capabilities: ['route'],
       });
 
+      const routeSpy = vi.spyOn(provider1, 'route');
+
       const request: RouteRequest = {
         origin: [40.7128, -74.006],
         destination: [40.758, -73.9855],
@@ -486,7 +488,7 @@ describe('RoutingEngine', () => {
       engine.clearCache();
       await engine.route(request);
 
-      expect((provider1.route as any).mock.calls.length).toBe(2);
+      expect(routeSpy).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -496,6 +498,9 @@ describe('RoutingEngine', () => {
         type: 'open-source',
         capabilities: ['route'],
       });
+
+      // Force lastHealthCheck to be old enough to trigger a fresh check
+      (engine as any).lastHealthCheck = new Date(0);
 
       const health = await engine.checkProviderHealth();
 
@@ -511,6 +516,9 @@ describe('RoutingEngine', () => {
         type: 'open-source',
         capabilities: ['route'],
       });
+
+      // Force lastHealthCheck to be old enough to trigger a fresh check
+      (engine as any).lastHealthCheck = new Date(0);
 
       const health = await engine.checkProviderHealth();
       const providerHealth = health.get('unhealthy');

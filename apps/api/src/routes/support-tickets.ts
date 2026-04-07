@@ -14,7 +14,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@witylogix/db";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import {
@@ -73,7 +73,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
   // ── POST / ──────────────────────────────────────────────────
 
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = createTicketSchema.parse(request.body);
+    let body: z.infer<typeof createTicketSchema>;
+    try { body = createTicketSchema.parse(request.body); }
+    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
 
     const ticket = await (request.tenantDb as any).supportTicket.create({
       data: {
@@ -103,7 +105,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
   // ── GET / ────────────────────────────────────────────────────
 
   fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listTicketsQuery.parse(request.query);
+    let query: z.infer<typeof listTicketsQuery>;
+    try { query = listTicketsQuery.parse(request.query); }
+    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid query" : "Invalid query"); }
     const { page, limit, status, priority, category, search, sortBy, sortOrder } = query;
 
     const where: any = {
@@ -188,7 +192,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
     await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
     const { id } = request.params as { id: string };
-    const body = updateTicketSchema.parse(request.body);
+    let body: z.infer<typeof updateTicketSchema>;
+    try { body = updateTicketSchema.parse(request.body); }
+    catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
 
     const ticket = await (request.tenantDb as any).supportTicket.findUnique({
       where: { id },
@@ -249,7 +255,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
     "/:id/messages",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
-      const body = addMessageSchema.parse(request.body);
+      let body: z.infer<typeof addMessageSchema>;
+      try { body = addMessageSchema.parse(request.body); }
+      catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
 
       const ticket = await (request.tenantDb as any).supportTicket.findUnique({
         where: { id },
@@ -299,7 +307,9 @@ async function supportTicketsRoutes(fastify: FastifyInstance): Promise<void> {
       await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
       const { id } = request.params as { id: string };
-      const { assigneeId } = assignTicketSchema.parse(request.body);
+      let assigneeId: string;
+      try { ({ assigneeId } = assignTicketSchema.parse(request.body)); }
+      catch (err) { throw new ValidationError(err instanceof ZodError ? err.errors[0]?.message ?? "Invalid input" : "Invalid input"); }
 
       const ticket = await (request.tenantDb as any).supportTicket.findUnique({
         where: { id },

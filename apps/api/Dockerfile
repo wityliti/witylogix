@@ -37,18 +37,17 @@ COPY packages/workflows/      packages/workflows/
 RUN cd packages/db && npx prisma generate --schema=prisma/schema
 
 # Build shared packages (best-effort; errors in optional packages are non-fatal)
-RUN pnpm --filter @witylogix/types    build 2>/dev/null || \
-    cd packages/types && npx tsc --skipLibCheck 2>/dev/null || true
-RUN pnpm --filter @witylogix/validators build 2>/dev/null || \
-    cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
+RUN cd packages/types && npx tsc --project tsconfig.json --skipLibCheck 2>/dev/null || true
+RUN cd packages/validators && npx tsup src/index.ts --format cjs,esm --dts 2>/dev/null || true
 RUN cd packages/db && npx tsc --skipLibCheck 2>/dev/null || true
 RUN cd packages/core && npx tsc --skipLibCheck 2>/dev/null || true
 RUN cd packages/repo-core && npx tsc --skipLibCheck 2>/dev/null || true
 RUN cd packages/repo-db  && npx tsc --skipLibCheck 2>/dev/null || true
 RUN cd packages/framework && npx tsup 2>/dev/null || true
 
-# Build API
-RUN cd apps/api && npx tsc --project tsconfig.json --skipLibCheck
+# Build API — use tsconfig.build.json which excludes test files and has standalone settings
+# to avoid rootDir resolution issues when extends chain is evaluated from monorepo root
+RUN cd apps/api && npx tsc --project tsconfig.build.json --skipLibCheck
 
 # ---- runner stage ----
 FROM node:22-alpine AS runner

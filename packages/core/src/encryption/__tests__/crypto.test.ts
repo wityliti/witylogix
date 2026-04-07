@@ -183,12 +183,12 @@ describe('CryptoService', () => {
     it('should fail decryption with tampered auth tag', () => {
       const encrypted = crypto.encrypt('test');
 
-      // Tamper with auth tag
+      // Tamper with auth tag by flipping bits
+      const authTagBuf = Buffer.from(encrypted.authTag, 'base64');
+      authTagBuf[0] ^= 0xff;
       const tampered = {
         ...encrypted,
-        authTag: Buffer.from(Buffer.from(encrypted.authTag, 'base64').slice(0, -1)).toString(
-          'base64'
-        ),
+        authTag: authTagBuf.toString('base64'),
       };
 
       expect(() => crypto.decrypt(tampered)).toThrow(DecryptionError);

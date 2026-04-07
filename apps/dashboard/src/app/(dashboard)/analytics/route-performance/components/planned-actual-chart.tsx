@@ -118,7 +118,7 @@ export function PlannedActualChart({
                     borderRadius: "var(--wl-radius-md)",
                     color: "var(--wl-text-primary)",
                   }}
-                  formatter={(value: number) => [`${value}m`, ""]}
+                  formatter={(value: unknown) => [`${value}m`, ""] as [string, string]}
                   labelStyle={{ color: "var(--wl-text-primary)" }}
                 />
                 <Legend

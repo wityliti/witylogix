@@ -81,7 +81,7 @@ export class PODService {
           podRecord = await this.captureSignature(
             deliveryId,
             data,
-            options?.signerName || 'Unknown'
+            options?.signerName ?? 'Unknown'
           );
           break;
 

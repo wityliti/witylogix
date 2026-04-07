@@ -46,12 +46,12 @@ describe('PosManager', () => {
   let manager: PosManager;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     manager = new PosManager(mockPrisma);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('Config Management', () => {
@@ -303,6 +303,11 @@ describe('PosManager', () => {
       const orderId = 'order-1';
 
       // Attempting to transition from DELIVERED to PENDING
+      mockPrisma.posOrder.findUnique.mockResolvedValue({
+        id: orderId,
+        status: 'DELIVERED',
+      });
+
       await expect(
         manager.updateOrderStatus(orderId, 'PENDING')
       ).rejects.toThrow();
@@ -532,7 +537,7 @@ describe('PosManager', () => {
       const result = await manager.validateFormSubmission(formId, submission);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(
+      expect(result.errors).toContainEqual(
         expect.objectContaining({ field: 'phone' })
       );
     });
@@ -649,14 +654,14 @@ describe('PosManager', () => {
     });
 
     it('should reject delivery order without address', async () => {
-      const input: PosOrderInput = {
+      const input = {
         shopId: 'shop-1',
-        configId: 'config-1',
+        posConfigId: 'config-1',
         externalOrderId: 'ext-123',
         customerName: 'John Doe',
         items: [{ productId: 'prod-1', quantity: 1, price: 10 }],
         total: 10,
-        type: 'delivery',
+        deliveryType: 'LOCAL_DELIVERY',
         status: 'PENDING',
         // address is missing
       };
