@@ -710,4 +710,4 @@ async function fleetRoutes(fastify: FastifyInstance): Promise<void> {
   });
 }
 
-export default fp(fleetRoutes);
+export default fleetRoutes;
