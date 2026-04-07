@@ -72,7 +72,7 @@ const deliverySteps: DeliveryTimestep[] = [
   },
 ];
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params: _params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="page-container">
       {/* Back + Breadcrumb */}
