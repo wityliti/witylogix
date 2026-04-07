@@ -47,6 +47,7 @@ function createTestClient(
       database: "test-db",
       userName: "test-user",
       password: "test-password",
+      sessionId: "test-session-id",
     },
     timeout: 10000,
     rateLimit: 100,
@@ -71,8 +72,19 @@ describe("GeotabClient", () => {
   });
 
   describe("Authentication", () => {
+    /** Create a client without pre-set sessionId for auth tests */
+    function createUnauthenticatedClient(): GeotabClient {
+      return createTestClient({
+        credentials: {
+          database: "test-db",
+          userName: "test-user",
+          password: "test-password",
+        },
+      });
+    }
+
     it("should authenticate and cache session ID", async () => {
-      const client = createTestClient();
+      const client = createUnauthenticatedClient();
       global.fetch = mockFetch({
         sessionId: "new-session-id",
       });
@@ -98,7 +110,7 @@ describe("GeotabClient", () => {
     });
 
     it("should throw on authentication failure", async () => {
-      const client = createTestClient();
+      const client = createUnauthenticatedClient();
       global.fetch = mockFetch(null, {
         code: 401,
         message: "Invalid credentials",
@@ -110,7 +122,7 @@ describe("GeotabClient", () => {
     });
 
     it("should send credentials in request", async () => {
-      const client = createTestClient();
+      const client = createUnauthenticatedClient();
       const fetchSpy = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -513,7 +525,9 @@ describe("GeotabClient", () => {
 
   describe("healthCheck", () => {
     it("should return true when authenticated", async () => {
-      const client = createTestClient();
+      const client = createTestClient({
+        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+      });
       global.fetch = mockFetch({
         sessionId: "test-session",
       });
@@ -523,7 +537,9 @@ describe("GeotabClient", () => {
     });
 
     it("should return false when authentication fails", async () => {
-      const client = createTestClient();
+      const client = createTestClient({
+        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+      });
       global.fetch = mockFetch(null, {
         code: 401,
         message: "Invalid credentials",
@@ -561,7 +577,9 @@ describe("GeotabClient", () => {
 
   describe("Session Management", () => {
     it("should include session ID in credentials", async () => {
-      const client = createTestClient();
+      const client = createTestClient({
+        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+      });
       const fetchSpy = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -624,13 +642,15 @@ describe("GeotabClient", () => {
     });
 
     it("should include URL session ID parameter", async () => {
-      const client = createTestClient();
+      const client = createTestClient({
+        credentials: { database: "test-db", userName: "test-user", password: "test-password" },
+      });
       const fetchSpy = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => ({
           jsonrpc: "2.0",
-          result: [],
+          result: { sessionId: "new-session-id" },
           id: 1,
         }),
       });
@@ -656,14 +676,15 @@ describe("GeotabClient", () => {
 
   describe("Rate Limiting", () => {
     it("should respect rate limit", async () => {
-      const client = createTestClient({ rateLimit: 2 });
+      const client = createTestClient({ rateLimit: 1 });
       const startTime = Date.now();
 
       global.fetch = mockFetch([]);
 
-      await client.getVehicles();
+      // First request — goes through rate limiter
       await client.getVehicles();
       client.clearCache();
+      // Second request — should be throttled (rate limit = 1 per second)
       await client.getVehicles();
 
       const elapsed = Date.now() - startTime;
