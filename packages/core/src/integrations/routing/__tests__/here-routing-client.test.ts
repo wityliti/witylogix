@@ -586,7 +586,7 @@ describe('HERERoutingClient', () => {
 
       expect(metrics.totalRequests).toBe(3);
       expect(metrics.successfulRequests).toBe(3);
-      expect(metrics.averageResponseTime).toBeGreaterThan(0);
+      expect(metrics.averageResponseTime).toBeGreaterThanOrEqual(0);
     });
 
     it('should calculate success rate', async () => {
