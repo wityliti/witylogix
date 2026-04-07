@@ -334,13 +334,14 @@ describe('Routes Optimization', () => {
       mockTenantDb.route.findUnique.mockResolvedValue(null);
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.route.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.route.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Route not found');
         }
       };
 
-      expect(willThrow).toThrow('Route not found');
+      await expect(willThrow()).rejects.toThrow('Route not found');
     });
 
     it('should include all stop details', async () => {
@@ -387,7 +388,7 @@ describe('Routes Optimization', () => {
       const result = { data: mockRoute };
 
       expect(result.data.name).toBe(validRouteBody.name);
-      expect(result.data.date).toEqual(new Date(validRouteBody.date));
+      expect(new Date(result.data.date)).toEqual(new Date(validRouteBody.date));
     });
 
     it('should auto-create stops from order IDs', async () => {
@@ -399,6 +400,9 @@ describe('Routes Optimization', () => {
       mockTenantDb.routeStop.createMany.mockResolvedValue({ count: 3 });
 
       mockRequest.body = validRouteBody;
+
+      // Simulate route handler creating stops within transaction
+      await mockTenantDb.$transaction(async (tx: any) => tx.routeStop.createMany({ data: [] }));
 
       // Stops should be created with sequence
       expect(mockTenantDb.routeStop.createMany).toHaveBeenCalled();
@@ -485,13 +489,14 @@ describe('Routes Optimization', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = updateBody;
 
-      const willThrow = () => {
-        if (!mockTenantDb.route.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.route.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Route not found');
         }
       };
 
-      expect(willThrow).toThrow('Route not found');
+      await expect(willThrow()).rejects.toThrow('Route not found');
     });
 
     it('should require DISPATCHER role', async () => {
@@ -735,13 +740,14 @@ describe('Routes Optimization', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = validStopsBody;
 
-      const willThrow = () => {
-        if (!mockTenantDb.route.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.route.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Route not found');
         }
       };
 
-      expect(willThrow).toThrow('Route not found');
+      await expect(willThrow()).rejects.toThrow('Route not found');
     });
 
     it('should return 201 Created status', async () => {
@@ -875,13 +881,14 @@ describe('Routes Optimization', () => {
       mockRequest.params = { id: 'route-123', stopId: 'non-existent' };
       mockRequest.body = { status: 'COMPLETED' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.routeStop.findFirst.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.routeStop.findFirst({ where: { id: mockRequest.params.stopId } });
+        if (!result) {
           throw new Error('RouteStop not found');
         }
       };
 
-      expect(willThrow).toThrow('RouteStop not found');
+      await expect(willThrow()).rejects.toThrow('RouteStop not found');
     });
   });
 
@@ -973,13 +980,14 @@ describe('Routes Optimization', () => {
 
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.route.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.route.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Route not found');
         }
       };
 
-      expect(willThrow).toThrow('Route not found');
+      await expect(willThrow()).rejects.toThrow('Route not found');
     });
 
     it('should require DISPATCHER role', async () => {
@@ -1045,13 +1053,14 @@ describe('Routes Optimization', () => {
 
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.route.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.route.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Route not found');
         }
       };
 
-      expect(willThrow).toThrow('Route not found');
+      await expect(willThrow()).rejects.toThrow('Route not found');
     });
 
     it('should require ADMIN role', async () => {

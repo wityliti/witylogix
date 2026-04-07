@@ -5,6 +5,22 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(() => async () => {}),
+  requireRole: vi.fn(() => async () => {}),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(() => async () => {}),
+}));
+vi.mock("@witylogix/db", () => ({
+  Prisma: {
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+  },
+}));
+
 import analyticsRoutes from "../analytics.js";
 import { ValidationError, NotFoundError } from "../../lib/errors.js";
 

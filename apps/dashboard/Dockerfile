@@ -9,6 +9,7 @@ FROM base AS installer
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json tsconfig.json ./
 COPY apps/dashboard/package.json      apps/dashboard/
+COPY packages/core/package.json       packages/core/
 COPY packages/types/package.json      packages/types/
 COPY packages/validators/package.json packages/validators/
 COPY packages/db/package.json         packages/db/
@@ -18,6 +19,7 @@ RUN pnpm install --frozen-lockfile
 FROM installer AS builder
 WORKDIR /app
 COPY apps/dashboard/  apps/dashboard/
+COPY packages/core/   packages/core/
 COPY packages/types/  packages/types/
 COPY packages/validators/ packages/validators/
 COPY packages/db/     packages/db/

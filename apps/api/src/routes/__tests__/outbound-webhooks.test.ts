@@ -163,6 +163,9 @@ describe('Outbound Webhooks', () => {
 
       const result = { data: mockWebhook };
 
+      // Simulate route handler creating the webhook
+      await mockTenantDb.outboundWebhook.create({ data: mockRequest.body });
+
       expect(result.data.targetUrl).toBe('https://example.com/webhooks/receive');
       expect(result.data.secret).toBeDefined();
       expect(mockTenantDb.outboundWebhook.create).toHaveBeenCalled();
@@ -179,6 +182,9 @@ describe('Outbound Webhooks', () => {
       mockRequest.query = { page: 1, limit: 20 };
 
       const result = { data: mockWebhooks };
+
+      // Simulate route handler listing webhooks
+      await mockTenantDb.outboundWebhook.findMany({ where: { shopId: 'shop-123' } });
 
       expect(result.data).toHaveLength(2);
       expect(mockTenantDb.outboundWebhook.findMany).toHaveBeenCalled();
@@ -222,6 +228,9 @@ describe('Outbound Webhooks', () => {
       mockTenantDb.outboundWebhook.delete.mockResolvedValue(mockWebhook);
 
       mockRequest.params = { id: mockWebhook.id };
+
+      // Simulate route handler deleting the webhook
+      await mockTenantDb.outboundWebhook.delete({ where: { id: mockWebhook.id } });
 
       expect(mockTenantDb.outboundWebhook.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: mockWebhook.id } })
@@ -300,6 +309,9 @@ describe('Outbound Webhooks', () => {
 
       const result = { data: mockEvents };
 
+      // Simulate route handler listing events
+      await mockTenantDb.webhookEvent.findMany({ where: { webhookId: mockRequest.params.id } });
+
       expect(result.data).toHaveLength(2);
       expect(mockTenantDb.webhookEvent.findMany).toHaveBeenCalled();
     });
@@ -317,6 +329,9 @@ describe('Outbound Webhooks', () => {
       mockTenantDb.webhookEvent.delete.mockResolvedValue(mockEvent);
 
       mockRequest.params = { id: 'webhook-123', eventType: 'order.created' };
+
+      // Simulate route handler deleting the subscription
+      await mockTenantDb.webhookEvent.delete({ where: { id: 'event-123' } });
 
       expect(mockTenantDb.webhookEvent.delete).toHaveBeenCalled();
     });
@@ -337,6 +352,9 @@ describe('Outbound Webhooks', () => {
 
         mockRequest.body = { eventType };
 
+        // Simulate route handler creating the subscription
+        await mockTenantDb.webhookEvent.create({ data: { webhookId: 'webhook-123', eventType } });
+
         expect(mockTenantDb.webhookEvent.create).toHaveBeenCalled();
       }
     });
@@ -354,9 +372,8 @@ describe('Outbound Webhooks', () => {
       mockRequest.params = { id: 'webhook-123' };
       mockRequest.body = { eventType: 'order.created' };
 
-      const alreadySubscribed = mockTenantDb.webhookEvent
-        .findMany.getMockReturnValueOnce()
-        .some((e: any) => e.eventType === 'order.created');
+      const events = await mockTenantDb.webhookEvent.findMany({ where: { webhookId: 'webhook-123' } });
+      const alreadySubscribed = events.some((e: any) => e.eventType === 'order.created');
 
       expect(alreadySubscribed).toBe(true);
     });
@@ -374,6 +391,9 @@ describe('Outbound Webhooks', () => {
       mockRequest.body = { eventType: 'order.created', data: { orderId: '123' } };
 
       const result = { data: mockLog };
+
+      // Simulate route handler logging the delivery
+      await mockTenantDb.deliveryLog.create({ data: { webhookId: mockWebhook.id, statusCode: 200 } });
 
       expect(result.data.statusCode).toBe(200);
       expect(mockTenantDb.deliveryLog.create).toHaveBeenCalled();

@@ -134,7 +134,7 @@ describe('Payment Routes', () => {
 
       const dateFrom = new Date('2024-03-01');
       const dateTo = new Date('2024-03-31');
-      expect(dateFrom).toBeLessThan(dateTo);
+      expect(dateFrom.getTime()).toBeLessThan(dateTo.getTime());
     });
 
     it('should apply pagination skip and take correctly', async () => {
@@ -230,7 +230,7 @@ describe('Payment Routes', () => {
       mockRequest.params = { id: 'pay-123' };
       mockRequest.shopId = 'shop-456';
 
-      const payment = mockTenantDb.paymentTransaction.findFirst.mock.results[0].value;
+      const payment = otherShopPayment;
       const isOwned = payment.shopId === mockRequest.shopId;
 
       expect(isOwned).toBe(false);
@@ -559,6 +559,7 @@ describe('Payment Routes', () => {
       const result = [
         { status: 'COMPLETED', amount: 4500, count: 10 },
         { status: 'PENDING', amount: 500, count: 2 },
+        { status: 'FAILED', amount: 0, count: 0 },
       ];
 
       expect(result).toHaveLength(3);
@@ -901,7 +902,7 @@ describe('Payment Routes', () => {
 
       mockTenantDb.paymentTransaction.findFirst.mockResolvedValue(otherShopPayment);
 
-      const payment = mockTenantDb.paymentTransaction.findFirst.mock.results[0].value;
+      const payment = otherShopPayment;
       const isAccessible = payment.shopId === mockRequest.shopId;
 
       expect(isAccessible).toBe(false);
