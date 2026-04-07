@@ -21,6 +21,7 @@ describe('HealthChecker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     HealthChecker.clearAllCache();
+    HealthChecker.clearAllRateLimits();
   });
 
   afterEach(() => {

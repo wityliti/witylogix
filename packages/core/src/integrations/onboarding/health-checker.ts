@@ -299,6 +299,15 @@ export class HealthChecker {
   }
 
   /**
+   * Clear all rate limit tracking (for testing).
+   */
+  static clearAllRateLimits(): void {
+    for (const key of Object.keys(rateLimitTracking)) {
+      delete rateLimitTracking[key];
+    }
+  }
+
+  /**
    * Get cache stats for monitoring.
    */
   static getCacheStats() {
