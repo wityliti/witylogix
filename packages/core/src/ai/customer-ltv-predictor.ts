@@ -190,8 +190,9 @@ export class FeatureExtractor {
     activities: CustomerActivity[],
     referenceDate: Date = new Date()
   ): RFMFeatures {
-    // Recency: days since last order
-    const lastOrder = completedOrders[0];
+    // Recency: days since most recent order
+    const sortedOrders = [...completedOrders].sort((a, b) => b.date.getTime() - a.date.getTime());
+    const lastOrder = sortedOrders[0];
     const recency = lastOrder ? Math.floor((referenceDate.getTime() - lastOrder.date.getTime()) / (1000 * 60 * 60 * 24)) : 999;
 
     // Frequency: orders per month

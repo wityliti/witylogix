@@ -11,8 +11,8 @@
  */
 
 // Mock prisma - must be before any imports
-vi.mock("@witylogix/db", () => ({
-  prisma: {
+vi.mock("@witylogix/db", () => {
+  const prisma = {
     onboardingProgress: {
       findUnique: vi.fn(),
       create: vi.fn(),
@@ -22,8 +22,9 @@ vi.mock("@witylogix/db", () => ({
       findMany: vi.fn(),
       count: vi.fn(),
     },
-  },
-}));
+  };
+  return { prisma, db: prisma, default: prisma };
+});
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { EventEmitter } from "events";
@@ -62,7 +63,7 @@ describe("OnboardingService", () => {
         currentStep: OnboardingStep.EMAIL_VERIFICATION,
         currentSubStep: null,
         completedSteps: [],
-        data: expect.objectContaining({ email }),
+        data: { email },
         startedAt: new Date(),
         completedAt: null,
         abandonedAt: null,

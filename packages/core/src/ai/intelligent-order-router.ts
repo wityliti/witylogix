@@ -151,8 +151,8 @@ export class ProximityCalculator {
    */
   calculateScore(warehouseLocation: Coordinate, deliveryLocation: Coordinate): number {
     const distance = calculateHaversineDistance(warehouseLocation, deliveryLocation);
-    const maxDistance = 1000; // km
-    return Math.max(0, 100 * (1 - Math.min(distance, maxDistance) / maxDistance));
+    const maxDistance = 5000; // km (continental scale)
+    return Math.max(0, Math.round(100 * (1 - Math.min(distance, maxDistance) / maxDistance)));
   }
 }
 
@@ -215,21 +215,29 @@ export class CapacityTracker {
    * Check if warehouse has capacity for order.
    */
   hasCapacity(warehouse: Warehouse, order: Order): boolean {
-    const currentCount = this.dailyUtilization.get(warehouse.id) ?? warehouse.currentDailyCount;
-    return currentCount + order.items.length <= warehouse.dailyCapacity;
+    const trackedCount = this.dailyUtilization.get(warehouse.id);
+    const currentCount = trackedCount !== undefined
+      ? trackedCount
+      : warehouse.currentDailyCount;
+    const orderItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    return currentCount + orderItemCount <= warehouse.dailyCapacity;
   }
 
   /**
    * Calculate capacity score (0-100). 100% available = 100, full = 0.
    */
   calculateScore(warehouse: Warehouse): number {
-    const currentCount = warehouse.currentDailyCount;
+    const trackedCount = this.dailyUtilization.get(warehouse.id);
+    const currentCount = trackedCount !== undefined
+      ? trackedCount
+      : warehouse.currentDailyCount;
     const utilization = currentCount / warehouse.dailyCapacity;
     return Math.round(100 * (1 - Math.min(utilization, 1)));
   }
 
   /**
    * Record order assignment for capacity tracking.
+   * Adds to existing warehouse.currentDailyCount if first assignment.
    */
   recordAssignment(warehouseId: string, itemCount: number): void {
     const current = this.dailyUtilization.get(warehouseId) ?? 0;
@@ -498,8 +506,9 @@ export class IntelligentOrderRouter {
     const candidates: WarehouseCandidate[] = warehouses
       .map((warehouse) => {
         const scores = this.scorer.scoreWarehouse(warehouse, order, rules);
+        const orderItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
         const canFulfill =
-          warehouse.dailyCapacity - warehouse.currentDailyCount >= order.items.length &&
+          warehouse.dailyCapacity - warehouse.currentDailyCount >= orderItemCount &&
           (!rules.requireAllInStock || this.canFulfill(warehouse, order.items));
 
         return {
@@ -514,8 +523,9 @@ export class IntelligentOrderRouter {
       .sort((a, b) => b.score - a.score)
       .slice(0, maxCandidates);
 
-    // Select best candidate
-    const selected = candidates[0];
+    // Select best candidate, preferring those that can fulfill
+    const fulfillable = candidates.filter((c) => c.canFulfill);
+    const selected = fulfillable.length > 0 ? fulfillable[0] : candidates[0];
 
     if (!selected) {
       return {

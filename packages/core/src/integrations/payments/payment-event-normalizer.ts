@@ -578,5 +578,3 @@ export class PaymentEventNormalizer {
     };
   }
 }
-
-export { PaymentEventNormalizer };

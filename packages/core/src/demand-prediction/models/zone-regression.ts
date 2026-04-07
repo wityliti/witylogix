@@ -155,7 +155,13 @@ function solveWeightedLeastSquares(
     }
   }
 
-  // Solve (X^T W X)^-1 * X^T W y
+  // Add Tikhonov regularization (ridge) to avoid singular matrices
+  const lambda = 1e-6;
+  for (let i = 0; i < XTWX.length; i++) {
+    XTWX[i][i] += lambda;
+  }
+
+  // Solve (X^T W X + λI)^-1 * X^T W y
   const XTWXInv = invertMatrix(XTWX);
   const coefficients = matrixMultiply(XTWXInv, XTWy);
 

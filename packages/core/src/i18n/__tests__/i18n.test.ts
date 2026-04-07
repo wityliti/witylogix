@@ -27,6 +27,7 @@ const enTranslations = {
   },
   notifications: {
     order_created: 'Order {{order_id}} has been created',
+    order_assigned: 'Order {{order_id}} assigned to {{driver_name}}',
   },
 };
 
@@ -44,6 +45,7 @@ const esTranslations = {
   },
   notifications: {
     order_created: 'El pedido {{order_id}} ha sido creado',
+    order_assigned: 'Pedido {{order_id}} asignado a {{driver_name}}',
   },
 };
 

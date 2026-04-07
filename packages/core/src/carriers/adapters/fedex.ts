@@ -980,8 +980,8 @@ export class FedExAdapter implements CarrierAdapter {
   /**
    * Format date for FedEx API (YYYY-MM-DD)
    */
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+  private formatDate(date: Date | string): string {
+    return (typeof date === 'string' ? new Date(date) : date).toISOString().split('T')[0];
   }
 
   /**

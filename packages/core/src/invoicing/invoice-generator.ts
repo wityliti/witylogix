@@ -80,8 +80,8 @@ export class InvoiceGenerator {
       discounts = discountResult.discountRecords;
     }
 
-    // Calculate subtotal
-    const subtotal = finalLineItems.reduce((sum, item) => sum + item.amount, 0);
+    // Calculate subtotal from original line items (before discounts)
+    const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
     // Calculate taxes if not skipped
     let taxTotal = 0;

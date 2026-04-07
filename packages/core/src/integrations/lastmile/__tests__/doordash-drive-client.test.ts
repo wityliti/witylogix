@@ -341,8 +341,38 @@ describe('DoorDashDriveClient', () => {
   });
 
   describe('status mapping', () => {
-    it('should map DoorDash status to unified status', () => {
-      expect(client.getTracking('dd-123')).rejects.toThrow(); // Will fail due to no mock, but tests mapping logic exists
+    it('should map DoorDash status to unified status', async () => {
+      const mockResponse = {
+        delivery_id: 'dd-123',
+        external_delivery_id: 'order-456',
+        status: 'DELIVERED',
+        pickup_address: {
+          street_address: '123 Main St',
+          city: 'San Francisco',
+          state: 'CA',
+          zip_code: '94102',
+        },
+        dropoff_address: {
+          street_address: '456 Market St',
+          city: 'San Francisco',
+          state: 'CA',
+          zip_code: '94103',
+        },
+        estimated_pickup_time_ms: Date.now(),
+        estimated_dropoff_time_ms: Date.now() + 1200000,
+        tracking_url: 'https://tracking.doordash.com/dd-123',
+      };
+
+      global.fetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockResponse),
+        } as Response)
+      );
+
+      const result = await client.getTracking('dd-123');
+      expect(result.status).toBe('delivered');
     });
   });
 

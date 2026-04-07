@@ -149,7 +149,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
   describe("operating hours", () => {
     it("should respect business hours (9-5)", () => {
       const isBusinessHours = (date: Date) => {
-        const hour = date.getHours();
+        const hour = date.getUTCHours();
         return hour >= 9 && hour < 17;
       };
 
@@ -167,7 +167,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
       const operatingHours = { start: 6, end: 22 }; // 6 AM - 10 PM
 
       const isWithinOperatingHours = (date: Date) => {
-        const hour = date.getHours();
+        const hour = date.getUTCHours();
         return hour >= operatingHours.start && hour < operatingHours.end;
       };
 
@@ -190,7 +190,7 @@ describe("Calendar Engine (Task Scheduler)", () => {
       const cutoffHour = 14; // 2 PM cutoff
 
       const isBeforeCutoff = (date: Date) => {
-        return date.getHours() < cutoffHour;
+        return date.getUTCHours() < cutoffHour;
       };
 
       const beforeCutoff = new Date("2025-03-15T13:00:00Z");
@@ -222,9 +222,9 @@ describe("Calendar Engine (Task Scheduler)", () => {
       };
 
       const getNextDayExpected = (date: Date) => {
-        const dayOfWeek = date.getDay();
+        const dayOfWeek = date.getUTCDay();
         const cutoffHour = dailyCutoffs[dayOfWeek];
-        return date.getHours() < cutoffHour;
+        return date.getUTCHours() < cutoffHour;
       };
 
       const mondayAfternoon = new Date("2025-03-17T17:00:00Z"); // Monday 5 PM
@@ -384,10 +384,10 @@ describe("Calendar Engine (Task Scheduler)", () => {
     it("should handle timezone offsets", () => {
       const utcDate = new Date("2025-03-15T14:00:00Z");
 
-      // EST is UTC-5
+      // EST is UTC-5: subtracting 5 hours from 14:00 UTC gives 09:00 UTC
       const estDate = new Date(utcDate.getTime() - 5 * 60 * 60 * 1000);
 
-      expect(estDate.getUTCHours()).toBe(14);
+      expect(estDate.getUTCHours()).toBe(9);
     });
 
     it("should handle daylight saving time transitions", () => {

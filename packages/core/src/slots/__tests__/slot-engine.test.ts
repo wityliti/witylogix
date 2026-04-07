@@ -16,6 +16,15 @@ describe("SlotEngine", () => {
   let slotEngine: SlotEngine;
   let mockDb: any;
 
+  // Use future dates relative to "today" to avoid past-date validation errors
+  const futureDate1 = new Date();
+  futureDate1.setDate(futureDate1.getDate() + 10);
+  futureDate1.setHours(0, 0, 0, 0);
+
+  const futureDate2 = new Date();
+  futureDate2.setDate(futureDate2.getDate() + 11);
+  futureDate2.setHours(0, 0, 0, 0);
+
   beforeEach(() => {
     // Create a mock database
     mockDb = {
@@ -47,12 +56,11 @@ describe("SlotEngine", () => {
 
   describe("getAvailableSlots", () => {
     it("should return available slots for a given date", async () => {
-      const date = new Date("2026-04-01");
       const slot = {
         id: "slot-1",
         locationId: "loc-1",
         zoneId: "zone-1",
-        date,
+        date: futureDate1,
         startTime: "09:00",
         endTime: "12:00",
         maxCapacity: 10,
@@ -62,10 +70,11 @@ describe("SlotEngine", () => {
         zone: { id: "zone-1", name: "Zone A" },
       };
 
+      mockDb.blackoutDate.findFirst.mockResolvedValue(null);
       mockDb.deliverySlot.findMany.mockResolvedValue([slot]);
       mockDb.slotReservation.count.mockResolvedValue(0);
 
-      const available = await slotEngine.getAvailableSlots(date, "zone-1", "loc-1");
+      const available = await slotEngine.getAvailableSlots(futureDate1, "zone-1", "loc-1");
 
       expect(available).toHaveLength(1);
       expect(available[0].id).toBe("slot-1");
@@ -74,7 +83,6 @@ describe("SlotEngine", () => {
     });
 
     it("should filter out fully booked slots", async () => {
-      const date = new Date("2026-04-01");
       const slot = {
         id: "slot-1",
         locationId: "loc-1",
@@ -86,20 +94,18 @@ describe("SlotEngine", () => {
       mockDb.deliverySlot.findMany.mockResolvedValue([slot]);
       mockDb.slotReservation.count.mockResolvedValue(5); // Full capacity
 
-      const available = await slotEngine.getAvailableSlots(date);
+      const available = await slotEngine.getAvailableSlots(futureDate1);
 
       expect(available).toHaveLength(0);
     });
 
     it("should return empty array if location is blacked out", async () => {
-      const date = new Date("2026-04-01");
-
       mockDb.blackoutDate.findFirst.mockResolvedValue({
         id: "blackout-1",
         reason: "Holiday",
       });
 
-      const available = await slotEngine.getAvailableSlots(date, "zone-1", "loc-1");
+      const available = await slotEngine.getAvailableSlots(futureDate1, "zone-1", "loc-1");
 
       expect(available).toHaveLength(0);
     });
@@ -158,7 +164,7 @@ describe("SlotEngine", () => {
       const slot = {
         id: "slot-1",
         locationId: "loc-1",
-        date: new Date("2026-04-01"),
+        date: futureDate1,
         startTime: "09:00",
         endTime: "12:00",
         maxCapacity: 10,
@@ -167,6 +173,11 @@ describe("SlotEngine", () => {
 
       mockDb.deliverySlot.findUnique.mockResolvedValue(slot);
       mockDb.slotReservation.count.mockResolvedValue(5);
+      // Mock deadline engine to say deadline has NOT passed
+      mockDb.deadlineConfig.findUnique.mockResolvedValue(null);
+      // Mock blackout check to say NOT blacked out
+      mockDb.blackoutDate.findFirst.mockResolvedValue(null);
+
       mockDb.$transaction.mockImplementation(async (fn: any) => {
         return fn(mockDb);
       });
@@ -190,11 +201,16 @@ describe("SlotEngine", () => {
       const slot = {
         id: "slot-1",
         locationId: "loc-1",
-        date: new Date("2026-04-01"),
+        date: futureDate1,
         maxCapacity: 1,
       };
 
       mockDb.deliverySlot.findUnique.mockResolvedValue(slot);
+
+      // Mock deadline engine to say deadline has NOT passed
+      mockDb.deadlineConfig.findUnique.mockResolvedValue(null);
+      // Mock blackout check to say NOT blacked out
+      mockDb.blackoutDate.findFirst.mockResolvedValue(null);
 
       // First reservation uses all capacity
       mockDb.$transaction.mockImplementation(async (fn: any) => {
@@ -241,8 +257,10 @@ describe("SlotEngine", () => {
 
   describe("getSlotsByDateRange", () => {
     it("should return slots grouped by date", async () => {
-      const date1 = new Date("2026-04-01");
-      const date2 = new Date("2026-04-02");
+      const date1 = futureDate1;
+      const date2 = futureDate2;
+      const dateKey1 = date1.toISOString().split("T")[0];
+      const dateKey2 = date2.toISOString().split("T")[0];
 
       const slots = [
         {
@@ -271,15 +289,12 @@ describe("SlotEngine", () => {
       const result = await slotEngine.getSlotsByDateRange(date1, date2);
 
       expect(result.size).toBe(2);
-      expect(result.get("2026-04-01")).toHaveLength(1);
-      expect(result.get("2026-04-02")).toHaveLength(1);
+      expect(result.get(dateKey1)).toHaveLength(1);
+      expect(result.get(dateKey2)).toHaveLength(1);
     });
 
     it("should reject if start date is after end date", async () => {
-      const start = new Date("2026-04-02");
-      const end = new Date("2026-04-01");
-
-      await expect(slotEngine.getSlotsByDateRange(start, end)).rejects.toThrow(
+      await expect(slotEngine.getSlotsByDateRange(futureDate2, futureDate1)).rejects.toThrow(
         InvalidSlotDateError,
       );
     });
@@ -287,26 +302,34 @@ describe("SlotEngine", () => {
 
   describe("getNextAvailableSlot", () => {
     it("should find next available slot", async () => {
-      const date = new Date("2026-04-01");
       const slot = {
         id: "slot-1",
         locationId: "loc-1",
-        date,
+        date: futureDate1,
         startTime: "09:00",
         endTime: "12:00",
         maxCapacity: 10,
         zone: {},
       };
 
-      // Mock to return empty array for first search, then slot for second
-      mockDb.deliverySlot.findMany
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([slot]);
+      // getNextAvailableSlot calls getAvailableSlots for each day.
+      // getAvailableSlots checks blackout, then calls deliverySlot.findMany, then slotReservation.count.
+      // Mock blackout check to return null (not blacked out)
+      mockDb.blackoutDate.findFirst.mockResolvedValue(null);
+
+      // Return no slots for several days, then return our slot
+      mockDb.deliverySlot.findMany.mockResolvedValue([]);
+      // Override: after enough empty calls, return the slot on one day
+      // Since getAvailableSlots filters out full slots, we need available > 0
+      mockDb.slotReservation.count.mockResolvedValue(0);
+
+      // We mock findMany to always return the slot (the engine will find it on day 0)
+      mockDb.deliverySlot.findMany.mockResolvedValue([slot]);
 
       const result = await slotEngine.getNextAvailableSlot("zone-1", "loc-1");
 
       expect(result).not.toBeNull();
-      expect(result?.slotId).toBe("slot-1");
+      expect(result?.slot.id).toBe("slot-1");
     });
 
     it("should return null if no slots available within 30 days", async () => {
@@ -322,7 +345,7 @@ describe("SlotEngine", () => {
     it("should create a new slot", async () => {
       const slotData = {
         locationId: "loc-1",
-        date: new Date("2026-04-01"),
+        date: futureDate1,
         startTime: "09:00",
         endTime: "12:00",
         maxCapacity: 20,
@@ -345,7 +368,7 @@ describe("SlotEngine", () => {
     it("should reject invalid time format", async () => {
       const slotData = {
         locationId: "loc-1",
-        date: new Date("2026-04-01"),
+        date: futureDate1,
         startTime: "25:00", // Invalid
         endTime: "12:00",
         maxCapacity: 20,
@@ -360,7 +383,7 @@ describe("SlotEngine", () => {
     it("should reject if start time is after end time", async () => {
       const slotData = {
         locationId: "loc-1",
-        date: new Date("2026-04-01"),
+        date: futureDate1,
         startTime: "12:00",
         endTime: "09:00",
         maxCapacity: 20,

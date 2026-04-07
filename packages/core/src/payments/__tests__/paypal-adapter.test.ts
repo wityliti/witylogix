@@ -8,18 +8,44 @@
  * - Webhook verification
  */
 
-// Mock fetch for API calls - must be before any imports
-vi.mock('node-fetch');
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PayPalGateway } from '../paypal-adapter.js';
 import type { PaymentGatewayConfig } from '../types.js';
 
+// Helper to create a mock fetch response
+function mockFetchResponse(data: any, ok = true, status = 200) {
+  return Promise.resolve({
+    ok,
+    status,
+    json: () => Promise.resolve(data),
+    text: () => Promise.resolve(JSON.stringify(data)),
+  });
+}
+
+// Helper to create a mock fetch that handles OAuth + API calls
+function createMockFetch(apiResponse: any, apiOk = true) {
+  return vi.fn().mockImplementation((url: string) => {
+    if (url.includes('/v1/oauth2/token')) {
+      return mockFetchResponse({
+        access_token: 'test-access-token',
+        token_type: 'Bearer',
+        app_id: 'test-app-id',
+        expires_in: 32400,
+        scope: 'openid',
+      });
+    }
+    return mockFetchResponse(apiResponse, apiOk);
+  });
+}
+
 describe('PayPalGateway', () => {
   let gateway: PayPalGateway;
   let mockConfig: PaymentGatewayConfig;
+  let originalFetch: typeof globalThis.fetch;
 
   beforeEach(() => {
+    originalFetch = globalThis.fetch;
+
     process.env.PAYPAL_CLIENT_ID = 'test-client-id';
     process.env.PAYPAL_CLIENT_SECRET = 'test-client-secret';
 
@@ -38,20 +64,42 @@ describe('PayPalGateway', () => {
       updatedAt: new Date(),
     };
 
+    // Default mock fetch for OAuth + order creation
+    vi.stubGlobal('fetch', createMockFetch({
+      id: 'PAYPAL-ORDER-123',
+      status: 'CREATED',
+      purchase_units: [{
+        amount: { currency_code: 'USD', value: '50.00' },
+        payments: {
+          captures: [{
+            id: 'CAPTURE-123',
+            status: 'COMPLETED',
+            amount: { currency_code: 'USD', value: '50.00' },
+          }],
+        },
+      }],
+    }));
+
     gateway = new PayPalGateway(mockConfig);
   });
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Configuration', () => {
     it('should throw error when clientId is missing', () => {
+      // Clear env vars so constructor can't fall back to them
+      delete process.env.PAYPAL_CLIENT_ID;
       const invalidConfig = { ...mockConfig, metadata: { clientSecret: 'secret' } };
       expect(() => new PayPalGateway(invalidConfig)).toThrow('clientId');
     });
 
     it('should throw error when clientSecret is missing', () => {
+      // Clear env vars so constructor can't fall back to them
+      delete process.env.PAYPAL_CLIENT_SECRET;
       const invalidConfig = {
         ...mockConfig,
         secretKey: undefined,
@@ -133,6 +181,20 @@ describe('PayPalGateway', () => {
 
   describe('capturePayment', () => {
     it('should capture authorized payment', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'paypal-order-id-123',
+        status: 'COMPLETED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+          payments: {
+            captures: [{
+              id: 'CAPTURE-123',
+              status: 'COMPLETED',
+              amount: { currency_code: 'USD', value: '50.00' },
+            }],
+          },
+        }],
+      }));
       const transaction = await gateway.capturePayment('paypal-order-id-123');
 
       expect(transaction).toMatchObject({
@@ -149,6 +211,20 @@ describe('PayPalGateway', () => {
     });
 
     it('should include PayPal IDs in metadata', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'paypal-order-id-123',
+        status: 'COMPLETED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+          payments: {
+            captures: [{
+              id: 'CAPTURE-123',
+              status: 'COMPLETED',
+              amount: { currency_code: 'USD', value: '50.00' },
+            }],
+          },
+        }],
+      }));
       const transaction = await gateway.capturePayment('paypal-order-id-123');
 
       expect(transaction.metadata).toHaveProperty('paypalOrderId');
@@ -156,13 +232,25 @@ describe('PayPalGateway', () => {
     });
 
     it('should handle capture failure', async () => {
-      expect(
+      vi.stubGlobal('fetch', createMockFetch(
+        { name: 'RESOURCE_NOT_FOUND', message: 'Order not found' },
+        false,
+      ));
+      await expect(
         gateway.capturePayment('invalid-order-id'),
       ).rejects.toThrow();
     });
   });
 
   describe('refundPayment', () => {
+    beforeEach(() => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'REFUND-123',
+        status: 'COMPLETED',
+        amount: { value: '50.00', currency_code: 'USD' },
+      }));
+    });
+
     it('should refund full payment amount', async () => {
       const refund = await gateway.refundPayment('paypal-capture-id-123');
 
@@ -206,6 +294,23 @@ describe('PayPalGateway', () => {
   });
 
   describe('getPaymentStatus', () => {
+    beforeEach(() => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'paypal-order-id-123',
+        status: 'COMPLETED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+          payments: {
+            captures: [{
+              id: 'CAPTURE-123',
+              status: 'COMPLETED',
+              amount: { currency_code: 'USD', value: '50.00' },
+            }],
+          },
+        }],
+      }));
+    });
+
     it('should return transaction status', async () => {
       const transaction = await gateway.getPaymentStatus('paypal-order-id-123');
 
@@ -225,7 +330,11 @@ describe('PayPalGateway', () => {
     });
 
     it('should handle invalid order ID', async () => {
-      expect(
+      vi.stubGlobal('fetch', createMockFetch(
+        { name: 'RESOURCE_NOT_FOUND', message: 'Order not found' },
+        false,
+      ));
+      await expect(
         gateway.getPaymentStatus('invalid-order-id'),
       ).rejects.toThrow();
     });
@@ -233,6 +342,10 @@ describe('PayPalGateway', () => {
 
   describe('Webhook Verification', () => {
     it('should verify valid webhook signature', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        verification_status: 'SUCCESS',
+      }));
+
       const payload = {
         id: 'webhook-id-123',
         create_time: new Date().toISOString(),
@@ -247,6 +360,10 @@ describe('PayPalGateway', () => {
     });
 
     it('should reject invalid webhook signature', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        verification_status: 'FAILURE',
+      }));
+
       const payload = { id: 'webhook-id-123' };
       const signature = 'invalid-signature';
 
@@ -319,6 +436,13 @@ describe('PayPalGateway', () => {
 
   describe('Amount Handling', () => {
     it('should validate amount is in cents', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'PAYPAL-ORDER-AMT',
+        status: 'CREATED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '123.45' },
+        }],
+      }));
       const intent = await gateway.createPaymentIntent(
         'shop-123',
         12345, // $123.45
@@ -329,13 +453,13 @@ describe('PayPalGateway', () => {
     });
 
     it('should reject floating point amounts', async () => {
-      expect(
+      await expect(
         gateway.createPaymentIntent('shop-123', 50.5, 'USD'),
-      ).rejects.toThrow('must be positive integer');
+      ).rejects.toThrow('Must be positive integer');
     });
 
     it('should enforce maximum amount', async () => {
-      expect(
+      await expect(
         gateway.createPaymentIntent('shop-123', 1000000000, 'USD'), // > $9,999,999.99
       ).rejects.toThrow('exceeds maximum');
     });
@@ -346,6 +470,13 @@ describe('PayPalGateway', () => {
       const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
 
       for (const currency of currencies) {
+        vi.stubGlobal('fetch', createMockFetch({
+          id: `PAYPAL-ORDER-${currency}`,
+          status: 'CREATED',
+          purchase_units: [{
+            amount: { currency_code: currency, value: '50.00' },
+          }],
+        }));
         const intent = await gateway.createPaymentIntent(
           'shop-123',
           5000,
@@ -357,6 +488,13 @@ describe('PayPalGateway', () => {
     });
 
     it('should be case insensitive for currency codes', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'PAYPAL-ORDER-USD',
+        status: 'CREATED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+        }],
+      }));
       const intent = await gateway.createPaymentIntent('shop-123', 5000, 'usd');
 
       expect(intent.currency).toBe('USD');
@@ -365,13 +503,36 @@ describe('PayPalGateway', () => {
 
   describe('Idempotency', () => {
     it('should generate unique idempotency keys', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'PAYPAL-ORDER-1',
+        status: 'CREATED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+        }],
+      }));
       const intent1 = await gateway.createPaymentIntent('shop-123', 5000, 'USD');
+      // Small delay to ensure different timestamp
+      await new Promise(resolve => setTimeout(resolve, 2));
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'PAYPAL-ORDER-2',
+        status: 'CREATED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+        }],
+      }));
       const intent2 = await gateway.createPaymentIntent('shop-123', 5000, 'USD');
 
       expect(intent1.idempotencyKey).not.toBe(intent2.idempotencyKey);
     });
 
     it('should include shop ID in idempotency key', async () => {
+      vi.stubGlobal('fetch', createMockFetch({
+        id: 'PAYPAL-ORDER-SHOP',
+        status: 'CREATED',
+        purchase_units: [{
+          amount: { currency_code: 'USD', value: '50.00' },
+        }],
+      }));
       const intent = await gateway.createPaymentIntent(
         'shop-456',
         5000,

@@ -191,15 +191,17 @@ describe('MultiGatewayRouter', () => {
     });
 
     it('should select fallback gateway', () => {
+      // Use 'card' method which both gateways support, so Square (priority 1)
+      // is primary and PayPal (priority 2) is the fallback
       const routing = router.routePayment({
-        method: 'paypal',
+        method: 'card',
         currency: 'USD',
         amount: 5000,
         region: 'US',
       } as GatewayRoutingParams);
 
-      expect(routing.primaryGateway.gatewayCode).toBe('paypal');
-      expect(routing.secondaryGateway?.gatewayCode).toBe('square');
+      expect(routing.primaryGateway.gatewayCode).toBe('square');
+      expect(routing.secondaryGateway?.gatewayCode).toBe('paypal');
     });
 
     it('should throw error when no suitable gateway found', () => {

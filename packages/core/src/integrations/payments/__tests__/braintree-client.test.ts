@@ -19,6 +19,8 @@ describe('BraintreeClient', () => {
 
   beforeEach(() => {
     client = new BraintreeClient(mockConfig);
+    // Disable retry delays in tests to avoid timeouts
+    (client as any).retryDelayMs = 0;
     vi.clearAllMocks();
   });
 
@@ -51,8 +53,9 @@ describe('BraintreeClient', () => {
     });
 
     it('should handle charge failure', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      vi.spyOn(global, 'fetch').mockResolvedValue({
         ok: false,
+        status: 400,
         json: async () => ({
           success: false,
           errors: { transaction: { errors: [{ message: 'Card declined' }] } },
@@ -387,6 +390,21 @@ describe('BraintreeClient', () => {
 
   describe('rate limiting', () => {
     it('should handle rate limiting gracefully', async () => {
+      vi.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          transaction: {
+            id: 'txn-rate-limit',
+            status: 'authorized',
+            amount: '100.00',
+            currencyIsoCode: 'USD',
+            createdAt: '2024-03-12T00:00:00Z',
+            updatedAt: '2024-03-12T00:00:00Z',
+          },
+        }),
+      } as any);
+
       // Simulate rate limit by making multiple concurrent requests
       const requests = Array(10)
         .fill(null)
@@ -424,8 +442,9 @@ describe('BraintreeClient', () => {
     });
 
     it('should not retry on client errors', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      vi.spyOn(global, 'fetch').mockResolvedValue({
         ok: false,
+        status: 400,
         json: async () => ({
           success: false,
           errors: { message: 'Invalid request' },

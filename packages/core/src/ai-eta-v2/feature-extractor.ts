@@ -157,7 +157,7 @@ export class FeatureExtractor {
       weather_intensity: Math.min(1, weatherIntensity / 10), // Normalize 0-10 to 0-1
       traffic_condition: trafficMultiplier > 1.5 ? 'heavy' :
                          trafficMultiplier > 1.2 ? 'moderate' : 'light',
-      traffic_multiplier,
+      traffic_multiplier: trafficMultiplier,
       historical_avg_minutes: historicalAvgMinutes,
       driver_experience_score: this.normalizeExperience(driverExperienceYears),
       vehicle_type: vehicleType,

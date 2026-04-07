@@ -34,6 +34,7 @@ interface AdyenResponse {
   reference?: string;
   errorFields?: Array<{ fieldType: string; errorCode: string }>;
   errors?: Array<{ code: string; message: string }>;
+  paymentMethods?: any[];
 }
 
 /**
@@ -587,6 +588,7 @@ export class AdyenClient extends PaymentAdapter {
         reference: data.reference,
         errorCode: data.errorCode,
         errors: data.errors,
+        paymentMethods: data.paymentMethods,
       };
     } catch (error) {
       throw new Error(`Adyen API error: ${(error as Error).message}`);

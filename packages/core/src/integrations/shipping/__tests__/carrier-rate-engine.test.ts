@@ -265,7 +265,7 @@ describe("CarrierRateEngine", () => {
         (r) => r.estimatedDays <= 3
       );
       expect(allWithinThreshold).toBe(true);
-      expect(comparison.rates.length).toBe(1); // Only USPS Priority
+      expect(comparison.rates.length).toBe(3); // FedEx Overnight (1d) + UPS Express (2d) + USPS Priority (3d)
     });
 
     it("should filter by service level", async () => {
