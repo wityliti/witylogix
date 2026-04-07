@@ -197,7 +197,7 @@ describe('Calendar Engine - Delivery Window Calculation', () => {
         daysOfWeek: [1, 2, 3, 4, 5], // Weekdays
         maxCapacity: 10,
         currentUtilization: 5,
-        cutoffMinutes: 120,
+        cutoffMinutes: 0, // No cutoff restriction so time-of-day doesn't affect availability
         surcharge: 0,
         isAvailable: true,
       },
@@ -208,8 +208,8 @@ describe('Calendar Engine - Delivery Window Calculation', () => {
         endTime: '17:00',
         daysOfWeek: [1, 2, 3, 4, 5],
         maxCapacity: 10,
-        currentUtilization: 10,
-        cutoffMinutes: 120,
+        currentUtilization: 10, // At full capacity — should be excluded
+        cutoffMinutes: 0,
         surcharge: 0,
         isAvailable: true,
       },
