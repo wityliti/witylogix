@@ -286,45 +286,51 @@ describe('InMemoryDeadLetterQueue', () => {
 
   describe('Purge Operations', () => {
     beforeEach(async () => {
-      const now = new Date();
+      const now = Date.now();
+      const error = new Error('Failed');
+
+      // Use fake timers to backdate the "old" entry's createdAt.
+      // The implementation sets createdAt = new Date() inside add(),
+      // so we must control the clock to make the entry genuinely old.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(now - 2 * 24 * 60 * 60 * 1000)); // 2 days ago
+
       const oldEvent: BaseEvent = {
         id: 'evt-old',
         type: 'order.created',
         source: 'api',
-        timestamp: new Date(now.getTime() - 100000).toISOString(),
+        timestamp: new Date().toISOString(),
         correlationId: 'corr-1',
         data: { orderId: '123' },
       };
+      await dlq.add(oldEvent, error, 3);
+
+      vi.setSystemTime(new Date(now)); // restore to "now"
 
       const newEvent: BaseEvent = {
         id: 'evt-new',
         type: 'order.created',
         source: 'api',
-        timestamp: now.toISOString(),
+        timestamp: new Date().toISOString(),
         correlationId: 'corr-2',
         data: { orderId: '456' },
       };
-
-      const error = new Error('Failed');
-
-      await dlq.add(oldEvent, error, 3);
       await dlq.add(newEvent, error, 3);
+
+      vi.useRealTimers();
     });
 
     it('should get entries older than threshold', async () => {
-      const now = new Date();
-      const threshold = new Date(now.getTime() - 50000);
-
-      const old = await dlq.getOlderThan(Math.floor((now.getTime() - threshold.getTime()) / (1000 * 60 * 60 * 24)));
+      // The old entry was created 2 days ago, so getOlderThan(1) should find it
+      const old = await dlq.getOlderThan(1);
 
       expect(old.length).toBeGreaterThan(0);
     });
 
     it('should archive old entries', async () => {
-      const now = new Date();
-      const threshold = new Date(now.getTime() - 50000);
-
-      const archived = await dlq.archive(threshold);
+      // Archive entries created before 1 day ago
+      const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
+      const archived = await dlq.archive(oneDayAgo);
 
       expect(archived).toBe(1);
 
