@@ -191,8 +191,17 @@ export interface WeatherModelState {
  */
 export interface DistanceDecayModelState {
   short_range_slope: number; // < 5km
+  short_range_intercept: number;
+  short_range_r_squared: number;
+  short_range_sample_count: number;
   medium_range_slope: number; // 5-20km
+  medium_range_intercept: number;
+  medium_range_r_squared: number;
+  medium_range_sample_count: number;
   long_range_slope: number; // > 20km
+  long_range_intercept: number;
+  long_range_r_squared: number;
+  long_range_sample_count: number;
   urban_multiplier: number;
   loading_unloading_baseline: number;
 }
@@ -216,6 +225,14 @@ export interface EnsembleState {
   last_calibration: Date;
   zone_specific_weights: Record<string, ModelWeights>;
   time_specific_weights: Record<number, ModelWeights>;
+  // Sub-model states for full serialization
+  sub_models?: {
+    timeOfDay: TimeOfDayModelState;
+    distanceDecay: DistanceDecayModelState;
+    historical: HistoricalDeliveryModelState;
+    traffic: TrafficModelState;
+    weather: WeatherModelState;
+  };
 }
 
 /**
