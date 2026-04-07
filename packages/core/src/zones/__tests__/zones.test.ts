@@ -72,6 +72,7 @@ const createMockZone = (overrides?: Partial<Zone>): Zone => ({
 
 describe('Zones Core Module', () => {
   let prisma: any;
+  let db: any;
 
   beforeEach(() => {
     prisma = {
@@ -87,6 +88,7 @@ describe('Zones Core Module', () => {
       $queryRaw: vi.fn(),
       $transaction: vi.fn(),
     };
+    db = prisma;
   });
 
   afterEach(() => {

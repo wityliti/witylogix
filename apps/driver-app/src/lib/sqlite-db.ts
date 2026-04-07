@@ -22,7 +22,8 @@ async function initSchema(database: SQLite.SQLiteDatabase): Promise<void> {
       device_captured_at INTEGER NOT NULL,
       gps_lat REAL,
       gps_lng REAL,
-      last_error TEXT
+      last_error TEXT,
+      device_timezone TEXT
     );
 
     CREATE INDEX IF NOT EXISTS idx_offline_events_status
@@ -31,6 +32,15 @@ async function initSchema(database: SQLite.SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_offline_events_priority_time
       ON offline_events (sync_priority ASC, device_captured_at ASC);
   `);
+
+  // Migration: add device_timezone to existing databases that predate this column
+  try {
+    await database.execAsync(
+      `ALTER TABLE offline_events ADD COLUMN device_timezone TEXT`,
+    );
+  } catch {
+    // Column already exists — safe to ignore
+  }
 }
 
 export async function closeDb(): Promise<void> {

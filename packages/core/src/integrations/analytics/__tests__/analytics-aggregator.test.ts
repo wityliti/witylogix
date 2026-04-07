@@ -239,10 +239,20 @@ describe('AnalyticsAggregator', () => {
         fromCache: false,
       });
 
+      vi.spyOn(mockLooker, 'executeQuery').mockResolvedValueOnce({
+        executionId: 'exec-3',
+        columns: [{ name: 'revenue', type: 'number' }],
+        rows: [{ revenue: 11000 }],
+        executionTimeMs: 12,
+        fromCache: false,
+      });
+
       const results = await aggregator.executeAggregatedQuery(query);
 
-      expect(results).toHaveLength(1);
+      // Tableau fails, powerbi and looker succeed
+      expect(results).toHaveLength(2);
       expect(results[0].provider).toBe('powerbi');
+      expect(results[1].provider).toBe('looker');
     });
   });
 

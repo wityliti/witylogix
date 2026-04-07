@@ -5,6 +5,71 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+// Hoist mock factories so they are available before any import
+const { mockPrismaHoisted, mockRegistryHoisted } = vi.hoisted(() => {
+  const mockPrismaHoisted = {
+    integration: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    integrationApp: {
+      upsert: vi.fn(),
+    },
+    integrationEvent: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+    },
+  };
+  const mockRegistryHoisted = {
+    INTEGRATION_REGISTRY: [],
+    getIntegrationsByCategory: vi.fn(),
+    getIntegrationBySlug: vi.fn(),
+    getAvailableIntegrations: vi.fn(),
+    searchIntegrations: vi.fn(),
+    getIntegrationCounts: vi.fn(() => ({
+      total: 20,
+      installed: 5,
+      available: 15,
+    })),
+    getAllIntegrationSlugs: vi.fn(),
+    maskCredentials: vi.fn((creds: Record<string, unknown>) => creds),
+    CATEGORY_LABELS: {
+      COMMUNICATION: "Communication",
+      ROUTING: "Routing",
+      ORDER_MANAGEMENT: "Order Management",
+      INVENTORY: "Inventory",
+      PAYMENT: "Payment",
+      ANALYTICS: "Analytics",
+    },
+  };
+  return { mockPrismaHoisted, mockRegistryHoisted };
+});
+
+vi.mock("@witylogix/db", () => ({
+  prisma: mockPrismaHoisted,
+  Prisma: { JsonNull: null, DbNull: null, AnyNull: null },
+}));
+vi.mock("@witylogix/core/integrations", () => mockRegistryHoisted);
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(() => async () => {}),
+  requireRole: vi.fn((...roles: string[]) => async (req: any) => {
+    const role = (req.auth && req.auth.role) || req.userRole;
+    if (!role || !roles.includes(role)) {
+      const err = new Error("Role '" + role + "' does not have access. Required: " + roles.join(", "));
+      err.name = "ForbiddenError";
+      throw err;
+    }
+  }),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(() => async () => {}),
+}));
+
 import integrationRoutes from "../integrations.js";
 
 // Mock types
@@ -48,7 +113,7 @@ function createMockReply(overrides: Partial<MockReply> = {}): MockReply {
       return this;
     }),
     send: vi.fn(function (data: any) {
-      return this;
+      return data;
     }),
     ...overrides,
   };
@@ -57,70 +122,43 @@ function createMockReply(overrides: Partial<MockReply> = {}): MockReply {
 
 const handlers: Record<string, Record<string, Function>> = {};
 
-// Mock Prisma and integration registry
-const mockPrisma = {
-  integration: {
-    findMany: vi.fn(),
-    findUnique: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-  integrationApp: {
-    upsert: vi.fn(),
-  },
-  integrationEvent: {
-    findMany: vi.fn(),
-    create: vi.fn(),
-    count: vi.fn(),
-  },
-};
+// Aliases to the hoisted mocks for use in tests
+const mockPrisma = mockPrismaHoisted;
+const mockRegistry = mockRegistryHoisted;
 
-// Mock integration registry functions
-const mockRegistry = {
-  INTEGRATION_REGISTRY: [],
-  getIntegrationsByCategory: vi.fn(),
-  getIntegrationBySlug: vi.fn(),
-  getAvailableIntegrations: vi.fn(),
-  searchIntegrations: vi.fn(),
-  getIntegrationCounts: vi.fn(() => ({
-    total: 20,
-    installed: 5,
-    available: 15,
-  })),
-  getAllIntegrationSlugs: vi.fn(),
-  maskCredentials: vi.fn((creds: Record<string, unknown>) => creds),
-  CATEGORY_LABELS: {
-    COMMUNICATION: "Communication",
-    ROUTING: "Routing",
-    ORDER_MANAGEMENT: "Order Management",
-    INVENTORY: "Inventory",
-    PAYMENT: "Payment",
-    ANALYTICS: "Analytics",
-  },
-};
+// Wrap handler to invoke preHandlers before the actual handler
+function wrapWithPreHandlers(opts: any, handler?: Function): Function {
+  const h = handler || opts;
+  const rawPreHandlers = (typeof opts === "object" && opts.preHandler)
+    ? (Array.isArray(opts.preHandler) ? opts.preHandler : [opts.preHandler])
+    : [];
+  // Filter to only valid functions (mocks may return undefined after clearAllMocks)
+  const preHandlers: Function[] = rawPreHandlers.filter((p: any) => typeof p === "function");
+  return async (request: any, reply: any) => {
+    for (const pre of preHandlers) {
+      await pre(request, reply);
+    }
+    return h(request, reply);
+  };
+}
 
 const createMockFastify = (): Partial<FastifyInstance> => ({
   addHook: vi.fn(),
   get: vi.fn((path: string, opts: any, handler?: Function) => {
-    const h = handler || opts;
     if (!handlers["GET"]) handlers["GET"] = {};
-    handlers["GET"][path] = h;
+    handlers["GET"][path] = wrapWithPreHandlers(opts, handler);
   }),
   post: vi.fn((path: string, opts: any, handler?: Function) => {
-    const h = handler || opts;
     if (!handlers["POST"]) handlers["POST"] = {};
-    handlers["POST"][path] = h;
+    handlers["POST"][path] = wrapWithPreHandlers(opts, handler);
   }),
   patch: vi.fn((path: string, opts: any, handler?: Function) => {
-    const h = handler || opts;
     if (!handlers["PATCH"]) handlers["PATCH"] = {};
-    handlers["PATCH"][path] = h;
+    handlers["PATCH"][path] = wrapWithPreHandlers(opts, handler);
   }),
   delete: vi.fn((path: string, opts: any, handler?: Function) => {
-    const h = handler || opts;
     if (!handlers["DELETE"]) handlers["DELETE"] = {};
-    handlers["DELETE"][path] = h;
+    handlers["DELETE"][path] = wrapWithPreHandlers(opts, handler);
   }),
   log: {
     info: vi.fn(),
@@ -136,13 +174,6 @@ describe("Integrations Routes", () => {
     vi.clearAllMocks();
     fastify = createMockFastify();
 
-    // Mock the prisma export
-    vi.doMock("@witylogix/db", () => ({
-      prisma: mockPrisma,
-    }));
-
-    vi.doMock("@witylogix/core/integrations", () => mockRegistry);
-
     try {
       await integrationRoutes(fastify as FastifyInstance);
     } catch (err) {
@@ -152,7 +183,6 @@ describe("Integrations Routes", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
   });
 
   describe("GET / - List installed integrations", () => {
@@ -1206,7 +1236,9 @@ describe("Integrations Routes", () => {
 
       const handler = handlers["POST"]["/:slug/install"];
 
-      await expect(handler(request, reply)).rejects.toThrow();
+      // Handler catches ZodError and returns 422 response rather than throwing
+      const result = await handler(request, reply);
+      expect(reply.status).toHaveBeenCalledWith(422);
     });
   });
 

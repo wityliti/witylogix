@@ -7,8 +7,26 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PayPalClient } from '../paypal-sdk-client';
 import type { PayPalConfig } from '../paypal-sdk-client';
 
+/** Helper: returns a mock OAuth token response */
+function mockOAuthResponse(overrides?: Record<string, unknown>) {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({
+      scope: 'https://api.paypal.com/v1/payments/.*',
+      access_token: 'A21AAAAAA_valid_token',
+      token_type: 'Bearer',
+      app_id: 'APP-FAKE123456789',
+      expires_in: 3599,
+      ...overrides,
+    }),
+  } as unknown as Response;
+}
+
 describe('PayPalClient', () => {
   let client: PayPalClient;
+  let mockFetch: ReturnType<typeof vi.fn>;
+
   const mockConfig: PayPalConfig = {
     clientId: 'test_client_id_FAKE123456789',
     clientSecret: 'test_client_secret_FAKE123456789',
@@ -16,12 +34,14 @@ describe('PayPalClient', () => {
   };
 
   beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
     client = new PayPalClient(mockConfig);
-    vi.clearAllMocks();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('constructor', () => {
@@ -52,16 +72,21 @@ describe('PayPalClient', () => {
 
   describe('OAuth2 token management', () => {
     it('should obtain access token with client_credentials flow', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // First call: OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Second call: createOrder API
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token_FAKE123456789',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
+          id: 'order_oauth_test',
+          status: 'CREATED',
+          purchase_units: [{ amount: { currency_code: 'USD', value: '100.00' } }],
+          links: [],
+          create_time: new Date().toISOString(),
+          update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.createOrder({
         intent: 'CAPTURE',
@@ -80,37 +105,23 @@ describe('PayPalClient', () => {
     });
 
     it('should auto-refresh token before expiry', async () => {
-      const mockFetch = vi.spyOn(global, 'fetch');
-
-      // First OAuth call
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          access_token: 'token_expires_in_1_second',
-          expires_in: 1,
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          scope: 'https://api.paypal.com/v1/payments/.*',
-        }),
-      } as any);
+      // First OAuth call — token that expires immediately (1 second, with 60s buffer it's already expired)
+      mockFetch.mockResolvedValueOnce(
+        mockOAuthResponse({ access_token: 'token_expires_in_1_second', expires_in: 1 })
+      );
 
       // Simulate first request
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Second OAuth call for refresh
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          access_token: 'token_refreshed',
-          expires_in: 3600,
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          scope: 'https://api.paypal.com/v1/payments/.*',
-        }),
-      } as any);
+      // Second OAuth call for refresh (token already expired due to 60s buffer)
+      mockFetch.mockResolvedValueOnce(
+        mockOAuthResponse({ access_token: 'token_refreshed', expires_in: 3600 })
+      );
 
+      // The actual API call
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'order_with_refreshed_token',
           status: 'CREATED',
@@ -119,7 +130,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.createOrder({
         intent: 'CAPTURE',
@@ -138,25 +149,16 @@ describe('PayPalClient', () => {
   });
 
   describe('createOrder', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should create order for payment', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Create order response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'order_test_123',
-          status: 'CREATED',
+          status: 'COMPLETED',
           purchase_units: [
             {
               amount: {
@@ -170,7 +172,7 @@ describe('PayPalClient', () => {
           update_time: new Date().toISOString(),
           links: [],
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.createOrder({
         intent: 'CAPTURE',
@@ -190,8 +192,12 @@ describe('PayPalClient', () => {
     });
 
     it('should support PayPal experience context', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Create order response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'order_with_context',
           status: 'APPROVED',
@@ -205,7 +211,7 @@ describe('PayPalClient', () => {
           update_time: new Date().toISOString(),
           purchase_units: [],
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.createOrder({
         intent: 'AUTHORIZE',
@@ -234,22 +240,13 @@ describe('PayPalClient', () => {
   });
 
   describe('captureOrder', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should capture order', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Capture order response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({
           id: 'order_captured',
           status: 'COMPLETED',
@@ -272,7 +269,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.captureOrder('order_test_123');
 
@@ -282,22 +279,13 @@ describe('PayPalClient', () => {
   });
 
   describe('authorizeOrder', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should authorize order', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Authorize order response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({
           id: 'order_authorized',
           status: 'APPROVED',
@@ -317,7 +305,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const order = await client.authorizeOrder('order_test_123');
 
@@ -326,22 +314,13 @@ describe('PayPalClient', () => {
   });
 
   describe('createRefund', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should create refund', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Create refund response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'refund_test_123',
           status: 'COMPLETED',
@@ -352,7 +331,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const refund = await client.createRefund('capture_test_123', {
         amount: '50.00',
@@ -366,22 +345,13 @@ describe('PayPalClient', () => {
   });
 
   describe('createSubscription', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should create subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Create subscription response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'sub_paypal_123',
           status: 'ACTIVE',
@@ -394,7 +364,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           status_update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const subscription = await client.createSubscription('plan_test_monthly');
 
@@ -404,22 +374,13 @@ describe('PayPalClient', () => {
   });
 
   describe('suspendSubscription', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should suspend subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Suspend subscription response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({
           id: 'sub_suspended',
           status: 'SUSPENDED',
@@ -427,7 +388,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           status_update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const subscription = await client.suspendSubscription('sub_test_123', 'Customer request');
 
@@ -436,22 +397,13 @@ describe('PayPalClient', () => {
   });
 
   describe('cancelSubscription', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should cancel subscription', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Cancel subscription response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 200,
         json: async () => ({
           id: 'sub_canceled',
           status: 'CANCELLED',
@@ -459,7 +411,7 @@ describe('PayPalClient', () => {
           create_time: new Date().toISOString(),
           status_update_time: new Date().toISOString(),
         }),
-      } as any);
+      } as unknown as Response);
 
       const subscription = await client.cancelSubscription('sub_test_123', 'No longer needed');
 
@@ -468,22 +420,13 @@ describe('PayPalClient', () => {
   });
 
   describe('createPayoutBatch', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should create payout batch', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      // OAuth token
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+      // Create payout batch response
+      mockFetch.mockResolvedValueOnce({
         ok: true,
+        status: 201,
         json: async () => ({
           batch_header: {
             payout_batch_id: 'batch_test_123',
@@ -501,7 +444,7 @@ describe('PayPalClient', () => {
             },
           ],
         }),
-      } as any);
+      } as unknown as Response);
 
       const result = await client.createPayoutBatch({
         senderBatchId: 'sender_batch_123',
@@ -549,14 +492,14 @@ describe('PayPalClient', () => {
 
   describe('error handling', () => {
     it('should handle OAuth error', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
         json: async () => ({
           name: 'INVALID_CLIENT',
           message: 'Client authentication failed',
         }),
-      } as any);
+      } as unknown as Response);
 
       await expect(
         client.createOrder({
@@ -574,35 +517,17 @@ describe('PayPalClient', () => {
     });
 
     it('should handle request errors with retries', async () => {
-      let attempts = 0;
-
-      vi.spyOn(global, 'fetch')
+      // First call: OAuth token (succeeds)
+      mockFetch
+        .mockResolvedValueOnce(mockOAuthResponse({ access_token: 'token_test', expires_in: 3600 }))
+        // Second call: API request (fails with network error)
+        .mockRejectedValueOnce(new Error('Network timeout'))
+        // Third call: retry needs new OAuth token (the old one may still be cached, but the retry
+        // goes through makeRequest which calls getAccessToken again — token is cached so this is
+        // the actual API retry)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({
-            access_token: 'token_test',
-            expires_in: 3600,
-            token_type: 'Bearer',
-            app_id: 'APP-FAKE123456789',
-            scope: 'https://api.paypal.com/v1/payments/.*',
-          }),
-        } as any)
-        .mockImplementationOnce(async () => {
-          attempts++;
-          throw new Error('Network timeout');
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'token_retry',
-            expires_in: 3600,
-            token_type: 'Bearer',
-            app_id: 'APP-FAKE123456789',
-            scope: 'https://api.paypal.com/v1/payments/.*',
-          }),
-        } as any)
-        .mockResolvedValueOnce({
-          ok: true,
+          status: 201,
           json: async () => ({
             id: 'order_after_retry',
             status: 'CREATED',
@@ -611,7 +536,7 @@ describe('PayPalClient', () => {
             update_time: new Date().toISOString(),
             links: [],
           }),
-        } as any);
+        } as unknown as Response);
 
       const order = await client.createOrder({
         intent: 'CAPTURE',
@@ -630,24 +555,16 @@ describe('PayPalClient', () => {
   });
 
   describe('rate limiting', () => {
-    beforeEach(() => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          scope: 'https://api.paypal.com/v1/payments/.*',
-          access_token: 'A21AAAAAA_valid_token',
-          token_type: 'Bearer',
-          app_id: 'APP-FAKE123456789',
-          expires_in: 3599,
-        }),
-      } as any);
-    });
-
     it('should respect rate limits', async () => {
       const startTime = Date.now();
 
-      vi.spyOn(global, 'fetch').mockResolvedValue({
+      // OAuth token (called once, then cached)
+      mockFetch.mockResolvedValueOnce(mockOAuthResponse());
+
+      // All subsequent calls return order responses
+      mockFetch.mockResolvedValue({
         ok: true,
+        status: 201,
         json: async () => ({
           id: 'order_rate_limited',
           status: 'CREATED',
@@ -656,7 +573,7 @@ describe('PayPalClient', () => {
           update_time: new Date().toISOString(),
           links: [],
         }),
-      } as any);
+      } as unknown as Response);
 
       const promises = [];
       for (let i = 0; i < 3; i++) {

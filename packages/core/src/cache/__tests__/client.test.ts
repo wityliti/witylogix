@@ -180,11 +180,26 @@ class MockRedis implements RedisLike {
     throw new Error('Not implemented');
   }
 
-  async multi(): Promise<any> {
+  multi(): any {
+    const self = this;
+    let currentKey = '';
+    let currentAmount = 0;
     const mockMulti = {
-      incrby: vi.fn().mockResolvedValue(0),
-      expire: vi.fn().mockResolvedValue(1),
-      exec: vi.fn().mockResolvedValue([1]),
+      incrby(key: string, amount: number) {
+        currentKey = key;
+        currentAmount = amount;
+        return mockMulti;
+      },
+      expire(_key: string, _seconds: number) {
+        return mockMulti;
+      },
+      async exec() {
+        // Actually perform the increment
+        const current = parseInt(self['store'].get(currentKey) || '0', 10);
+        const newValue = current + currentAmount;
+        self['store'].set(currentKey, String(newValue));
+        return [newValue];
+      },
     };
     return mockMulti;
   }
@@ -654,7 +669,8 @@ describe('CacheClient', () => {
       cache.onInvalidation(listener1);
       cache.onInvalidation(listener2);
 
-      await cache.deleteByPattern('*');
+      await cache.set('notify:1', 'value');
+      await cache.deleteByPattern('notify:*');
 
       expect(listener1).toHaveBeenCalled();
       expect(listener2).toHaveBeenCalled();

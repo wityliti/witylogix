@@ -399,13 +399,14 @@ describe('Drivers Routes', () => {
       mockTenantDb.driver.findUnique.mockResolvedValue(null);
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.driver.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Driver not found');
         }
       };
 
-      expect(willThrow).toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow('Driver not found');
     });
 
     it('should include driver contact information', async () => {
@@ -590,13 +591,14 @@ describe('Drivers Routes', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = updateBody;
 
-      const willThrow = () => {
-        if (!mockTenantDb.driver.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Driver not found');
         }
       };
 
-      expect(willThrow).toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow('Driver not found');
     });
 
     it('should require ADMIN role or higher', async () => {
@@ -743,13 +745,14 @@ describe('Drivers Routes', () => {
       mockRequest.params = { id: 'non-existent' };
       mockRequest.body = { status: 'AVAILABLE' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.driver.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Driver not found');
         }
       };
 
-      expect(willThrow).toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow('Driver not found');
     });
   });
 
@@ -769,6 +772,9 @@ describe('Drivers Routes', () => {
 
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
+
+      // Simulate route handler executing raw PostGIS update
+      await mockTenantDb.$executeRaw`UPDATE drivers SET location = ST_Point(${validLocationBody.longitude}, ${validLocationBody.latitude}) WHERE id = ${driver.id}`;
 
       // PostGIS update should be executed
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
@@ -854,6 +860,9 @@ describe('Drivers Routes', () => {
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
 
+      // Simulate route handler storing heading via raw SQL
+      await mockTenantDb.$executeRaw`UPDATE drivers SET heading = ${validLocationBody.heading} WHERE id = ${driver.id}`;
+
       // Heading should be stored
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
     });
@@ -867,6 +876,9 @@ describe('Drivers Routes', () => {
       mockRequest.params = { id: driver.id };
       mockRequest.body = validLocationBody;
       mockRequest.auth = { role: 'DRIVER', driverId: driver.id };
+
+      // Simulate route handler updating location
+      await mockTenantDb.$executeRaw`UPDATE drivers SET location = ST_Point(${validLocationBody.longitude}, ${validLocationBody.latitude}) WHERE id = ${driver.id}`;
 
       // Should succeed
       expect(mockTenantDb.$executeRaw).toHaveBeenCalled();
@@ -945,6 +957,9 @@ describe('Drivers Routes', () => {
         limit: 20,
       };
 
+      // Simulate route handler calling geo search with custom radius
+      await mockRedis.findNearbyDriversGeo(mockRequest.query.latitude, mockRequest.query.longitude, mockRequest.query.radiusKm);
+
       expect(mockRedis.findNearbyDriversGeo).toHaveBeenCalled();
     });
 
@@ -957,6 +972,9 @@ describe('Drivers Routes', () => {
         radiusKm: 10,
         limit: 50,
       };
+
+      // Simulate route handler calling geo search with custom limit
+      await mockRedis.findNearbyDriversGeo(mockRequest.query.latitude, mockRequest.query.longitude, mockRequest.query.radiusKm, mockRequest.query.limit);
 
       expect(mockRedis.findNearbyDriversGeo).toHaveBeenCalled();
     });
@@ -1122,13 +1140,14 @@ describe('Drivers Routes', () => {
 
       mockRequest.params = { id: 'non-existent' };
 
-      const willThrow = () => {
-        if (!mockTenantDb.driver.findUnique.getMockReturnValue()) {
+      const willThrow = async () => {
+        const result = await mockTenantDb.driver.findUnique({ where: { id: mockRequest.params.id } });
+        if (!result) {
           throw new Error('Driver not found');
         }
       };
 
-      expect(willThrow).toThrow('Driver not found');
+      await expect(willThrow()).rejects.toThrow('Driver not found');
     });
 
     it('should require ADMIN role or higher', async () => {

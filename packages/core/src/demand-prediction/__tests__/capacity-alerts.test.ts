@@ -42,7 +42,7 @@ describe('CapacityAlertSystem', () => {
       const rule = alertSystem['rules'].get('capacity_shortage');
 
       expect(rule).toBeDefined();
-      expect(rule!.severity).toBe('critical');
+      expect(rule!.defaultSeverity).toBe('critical');
       expect(rule!.cooldownMinutes).toBeGreaterThan(0);
     });
   });
@@ -482,35 +482,39 @@ describe('CapacityAlertSystem', () => {
   });
 
   describe('Event Emission', () => {
-    it('should emit alert_triggered event', (done) => {
-      alertSystem.on('alert_triggered', (alert) => {
-        expect(alert.id).toBeDefined();
-        expect(alert.status).toBe('active');
-        done();
+    it('should emit alert_triggered event', () => {
+      return new Promise<void>((resolve) => {
+        alertSystem.on('alert_triggered', (alert) => {
+          expect(alert.id).toBeDefined();
+          expect(alert.status).toBe('active');
+          resolve();
+        });
+
+        const snapshot = {
+          demandGapPercent: 0.75,
+        };
+
+        alertSystem.evaluateAlerts(snapshot);
       });
-
-      const snapshot = {
-        demandGapPercent: 0.75,
-      };
-
-      alertSystem.evaluateAlerts(snapshot);
     });
 
-    it('should emit alert_acknowledged event', (done) => {
-      const snapshot = {
-        demandGapPercent: 0.75,
-      };
+    it('should emit alert_acknowledged event', () => {
+      return new Promise<void>((resolve) => {
+        const snapshot = {
+          demandGapPercent: 0.75,
+        };
 
-      const alerts = alertSystem.evaluateAlerts(snapshot);
-      const alertId = alerts[0].id;
+        const alerts = alertSystem.evaluateAlerts(snapshot);
+        const alertId = alerts[0].id;
 
-      alertSystem.on('alert_acknowledged', (alert) => {
-        expect(alert.id).toBe(alertId);
-        expect(alert.status).toBe('acknowledged');
-        done();
+        alertSystem.on('alert_acknowledged', (alert) => {
+          expect(alert.id).toBe(alertId);
+          expect(alert.status).toBe('acknowledged');
+          resolve();
+        });
+
+        alertSystem.acknowledgeAlert(alertId);
       });
-
-      alertSystem.acknowledgeAlert(alertId);
     });
   });
 });

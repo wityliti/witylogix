@@ -341,18 +341,18 @@ export function predictDeliveryWindow(
   const { minutes: contextualMinutes, confidence: contextualConfidence } =
     contextualModel(context);
 
+  // Ensemble: weighted average
+  const estimatedMinutes =
+    historicalMinutes * modelWeights.historical +
+    distanceMinutes * modelWeights.distance +
+    contextualMinutes * modelWeights.contextual;
+
   const models: ModelPredictions = {
     historicalModel: historicalMinutes,
     distanceModel: distanceMinutes,
     contextualModel: contextualMinutes,
     ensemble: estimatedMinutes,
   };
-
-  // Ensemble: weighted average
-  const estimatedMinutes =
-    historicalMinutes * modelWeights.historical +
-    distanceMinutes * modelWeights.distance +
-    contextualMinutes * modelWeights.contextual;
 
   // Calculate confidence
   const modelConfidences = {
@@ -375,7 +375,7 @@ export function predictDeliveryWindow(
     confidenceRange: {
       p80Lower: now + bounds.p80Lower * 60 * 1000,
       p80Upper: now + bounds.p80Upper * 60 * 1000,
-      p95Lower: now + Math.max(now, bounds.p95Lower * 60 * 1000),
+      p95Lower: Math.max(now, now + bounds.p95Lower * 60 * 1000),
       p95Upper: now + bounds.p95Upper * 60 * 1000,
     },
     models,

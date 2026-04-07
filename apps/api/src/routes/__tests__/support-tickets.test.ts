@@ -5,6 +5,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("@witylogix/db", () => ({ prisma: {}, Prisma: {} }));
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(),
+  requireRole: vi.fn(() => vi.fn()),
+}));
+vi.mock("../../middleware/tenant.js", () => ({ tenantContext: vi.fn() }));
+
 import supportTicketsRoutes from "../support-tickets.js";
 import {
   NotFoundError,
@@ -28,7 +36,7 @@ describe("Support Tickets Routes", () => {
     } as any;
 
     mockRequest = {
-      auth: { userId: "user-123", role: "ADMIN" },
+      auth: { userId: "user-123", shopId: "shop-1", role: "ADMIN" } as any,
       shopId: "shop-1",
       query: {},
       body: {},
@@ -138,7 +146,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should throw ValidationError on missing required fields", async () => {
@@ -151,7 +161,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should throw ValidationError on invalid priority enum", async () => {
@@ -166,7 +178,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should log ticket creation", async () => {
@@ -410,7 +424,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
   });
 
@@ -586,7 +602,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/:id"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should allow OPEN to IN_PROGRESS transition", async () => {
@@ -848,8 +866,6 @@ describe("Support Tickets Routes", () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: "ticket-1" },
-        }),
-        expect.objectContaining({
           data: expect.objectContaining({
             updatedAt: expect.any(Date),
           }),
@@ -866,7 +882,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/:id/messages"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should throw ForbiddenError for ticket from another shop", async () => {
@@ -935,8 +953,9 @@ describe("Support Tickets Routes", () => {
 
   describe("PUT /:id/assign (Assign Ticket)", () => {
     it("should assign ticket to a user", async () => {
+      const agentId = "11111111-1111-1111-1111-111111111111";
       mockRequest.params = { id: "ticket-1" };
-      mockRequest.body = { assigneeId: "agent-1" };
+      mockRequest.body = { assigneeId: agentId };
 
       const ticket = {
         id: "ticket-1",
@@ -945,15 +964,15 @@ describe("Support Tickets Routes", () => {
       };
 
       const assignee = {
-        id: "agent-1",
+        id: agentId,
         shopId: "shop-1",
       };
 
       const updatedTicket = {
         id: "ticket-1",
-        assigneeId: "agent-1",
+        assigneeId: agentId,
         status: "IN_PROGRESS",
-        assignee: { id: "agent-1", email: "agent@example.com", name: "Agent" },
+        assignee: { id: agentId, email: "agent@example.com", name: "Agent" },
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
@@ -971,13 +990,13 @@ describe("Support Tickets Routes", () => {
 
       const result = await handler(mockRequest, mockReply);
 
-      expect(result.data.assigneeId).toBe("agent-1");
+      expect(result.data.assigneeId).toBe(agentId);
       expect(result.data.status).toBe("IN_PROGRESS");
     });
 
     it("should throw NotFoundError for non-existent assignee", async () => {
       mockRequest.params = { id: "ticket-1" };
-      mockRequest.body = { assigneeId: "nonexistent-agent" };
+      mockRequest.body = { assigneeId: "00000000-0000-0000-0000-000000000000" };
 
       const ticket = {
         id: "ticket-1",
@@ -1000,8 +1019,9 @@ describe("Support Tickets Routes", () => {
     });
 
     it("should throw NotFoundError if assignee from different shop", async () => {
+      const foreignAgentId = "22222222-2222-2222-2222-222222222222";
       mockRequest.params = { id: "ticket-1" };
-      mockRequest.body = { assigneeId: "agent-1" };
+      mockRequest.body = { assigneeId: foreignAgentId };
 
       const ticket = {
         id: "ticket-1",
@@ -1009,7 +1029,7 @@ describe("Support Tickets Routes", () => {
       };
 
       const assignee = {
-        id: "agent-1",
+        id: foreignAgentId,
         shopId: "shop-2",
       };
 
@@ -1030,7 +1050,7 @@ describe("Support Tickets Routes", () => {
 
     it("should require ADMIN role", async () => {
       mockRequest.params = { id: "ticket-1" };
-      mockRequest.body = { assigneeId: "agent-1" };
+      mockRequest.body = { assigneeId: "11111111-1111-1111-1111-111111111111" };
 
       await supportTicketsRoutes(fastify);
       const handler = (fastify.put as any).mock.calls.find(
@@ -1041,8 +1061,9 @@ describe("Support Tickets Routes", () => {
     });
 
     it("should log ticket assignment", async () => {
+      const logAgentId = "33333333-3333-3333-3333-333333333333";
       mockRequest.params = { id: "ticket-1" };
-      mockRequest.body = { assigneeId: "agent-1" };
+      mockRequest.body = { assigneeId: logAgentId };
 
       const ticket = {
         id: "ticket-1",
@@ -1051,14 +1072,14 @@ describe("Support Tickets Routes", () => {
       };
 
       const assignee = {
-        id: "agent-1",
+        id: logAgentId,
         shopId: "shop-1",
       };
 
       const updatedTicket = {
         id: "ticket-1",
         status: "IN_PROGRESS",
-        assignee: { id: "agent-1", email: "agent@example.com", name: "Agent" },
+        assignee: { id: logAgentId, email: "agent@example.com", name: "Agent" },
       };
 
       (mockRequest.tenantDb as any).supportTicket.findUnique.mockResolvedValue(
@@ -1080,7 +1101,7 @@ describe("Support Tickets Routes", () => {
         expect.objectContaining({
           shopId: "shop-1",
           ticketId: "ticket-1",
-          assigneeId: "agent-1",
+          assigneeId: logAgentId,
         }),
         "Ticket assigned"
       );
@@ -1359,7 +1380,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
   });
 
@@ -1416,7 +1439,9 @@ describe("Support Tickets Routes", () => {
         (call) => call[0] === "/:id/assign"
       )?.[1];
 
-      await expect(handler(mockRequest, mockReply)).rejects.toThrow();
+      await expect(handler(mockRequest, mockReply)).rejects.toThrow(
+        ValidationError
+      );
     });
   });
 });

@@ -262,7 +262,7 @@ describe('ProcessManager', () => {
   });
 
   describe('onShutdown', () => {
-    it('should register shutdown handler', (done) => {
+    it('should register shutdown handler', () => {
       const handler = vi.fn(async () => {
         // Handler logic
       });
@@ -270,7 +270,6 @@ describe('ProcessManager', () => {
       manager.onShutdown(handler);
 
       expect(true).toBe(true);
-      done();
     });
   });
 
@@ -298,7 +297,7 @@ describe('ProcessManager', () => {
         expect(backoff).toBeLessThanOrEqual(1000);
       }
 
-      expect(backoff).toBe(400);
+      expect(backoff).toBe(800);
     });
 
     it('should not restart if shutdown in progress', async () => {

@@ -204,7 +204,7 @@ export class FatigueScorer {
       this.categoryFatigue.set(userId, {} as any);
     }
     const catFatigue = this.categoryFatigue.get(userId)!;
-    catFatigue[category] = (catFatigue[category] ?? 0) + 0.05;
+    catFatigue[category] = (catFatigue[category] ?? 0) + 0.2;
   }
 
   recordNotificationOpened(userId: string): void {
@@ -303,9 +303,9 @@ export class FatigueScorer {
     const openRates = this.openRates.get(userId) ?? [];
     const dismissRates = this.dismissRates.get(userId) ?? [];
     const avgOpenRate =
-      openRates.length > 0 ? openRates.reduce((a, b) => a + b) / openRates.length : 0.5;
+      openRates.length > 0 ? openRates.reduce((a, b) => a + b) / openRates.length : 0.7;
     const avgDismissRate =
-      dismissRates.length > 0 ? dismissRates.reduce((a, b) => a + b) / dismissRates.length : 0.3;
+      dismissRates.length > 0 ? dismissRates.reduce((a, b) => a + b) / dismissRates.length : 0;
 
     // Volume scores (0-50 each)
     const dailyVolumeScore = Math.min(50, (notificationsToday / 10) * 50);
@@ -331,14 +331,21 @@ export class FatigueScorer {
     }
 
     // Overall fatigue score (weighted average)
+    const avgChFatigue = Object.keys(normChFatigue).length > 0
+      ? Object.values(normChFatigue).reduce((a, b) => a + b, 0) / Object.keys(normChFatigue).length
+      : 0;
+
+    // Scale volume scores to 0-100 range (from 0-50)
+    const scaledDailyVolume = dailyVolumeScore * 2;
+    const scaledWeeklyVolume = weeklyVolumeScore * 2;
+
     const overallFatigue = Math.min(
       100,
-      (dailyVolumeScore * 0.2 +
-        weeklyVolumeScore * 0.2 +
-        openRateTrendScore * 0.25 +
-        dismissRateTrendScore * 0.25 +
-        Object.values(normChFatigue).reduce((a, b) => a + b, 0) / Math.max(1, Object.keys(normChFatigue).length) * 0.1) /
-        1.1
+      scaledDailyVolume * 0.3 +
+        scaledWeeklyVolume * 0.2 +
+        openRateTrendScore * 0.15 +
+        dismissRateTrendScore * 0.15 +
+        avgChFatigue * 0.2
     );
 
     const severity =
@@ -468,7 +475,7 @@ export class ThrottleRecommender {
     }
 
     // Priority threshold: only send HIGH/CRITICAL during throttle
-    const priorityThreshold = fatigueScore.overallFatigueScore > 80 ? "HIGH" : "NORMAL";
+    const priorityThreshold = fatigueScore.overallFatigueScore > 70 ? "HIGH" : "NORMAL";
 
     return {
       userId,
@@ -479,8 +486,8 @@ export class ThrottleRecommender {
         endAt: throttleEnd,
         durationHours: throttleHours,
       },
-      categoriesAffected,
-      channelsAffected: affectedChannels.length > 0 ? affectedChannels : undefined as any,
+      categoriesAffected: affectedCategories.length > 0 ? affectedCategories : [],
+      channelsAffected: affectedChannels.length > 0 ? affectedChannels : [],
       priorityThreshold: priorityThreshold as NotificationPriority,
       reasoning: {
         primaryCause: `High fatigue score (${fatigueScore.overallFatigueScore})`,
@@ -602,10 +609,11 @@ export class UnsubscribePrediction {
     const fatigueRisk = (fatigueScore.overallFatigueScore / 100) * 60;
     const openRateDecliningRisk = fatigueScore.factors.openRateTrendScore > 50 ? 15 : 0;
     const dismissRateRising = fatigueScore.metrics.averageDismissRateLast7Days > 0.5 ? 10 : 0;
+    const unsubscribeAttemptRisk = fatigueScore.metrics.unsubscribeAttempts > 0 ? 25 : 0;
 
     const likelihood = Math.min(
       100,
-      baselineRisk + fatigueRisk + openRateDecliningRisk + dismissRateRising
+      baselineRisk + fatigueRisk + openRateDecliningRisk + dismissRateRising + unsubscribeAttemptRisk
     );
 
     const riskLevel =

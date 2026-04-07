@@ -123,11 +123,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => mockWorkbooks,
         } as Response);
 
@@ -153,11 +148,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => mockWorkbook,
         } as Response);
 
@@ -171,11 +161,6 @@ describe('TableauClient', () => {
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
           ok: false,
           statusText: 'Not Found',
         } as Response);
@@ -184,18 +169,16 @@ describe('TableauClient', () => {
     });
 
     it('should publish workbook successfully', async () => {
-      const fs = await import('fs');
-      vi.spyOn(fs, 'readFileSync').mockReturnValueOnce(
-        Buffer.from('workbook content')
-      );
+      // Mock fs.readFileSync via vi.mock at module level is not feasible here,
+      // so we mock fetch to return the expected result and mock the dynamic import
+      const mockReadFileSync = vi.fn().mockReturnValue(Buffer.from('workbook content'));
+      vi.doMock('fs', () => ({
+        readFileSync: mockReadFileSync,
+        default: { readFileSync: mockReadFileSync },
+      }));
 
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -210,6 +193,7 @@ describe('TableauClient', () => {
 
       expect(published.id).toBe('wb-new');
       expect(published.name).toBe('New Workbook');
+      vi.doUnmock('fs');
     });
   });
 
@@ -247,11 +231,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => mockDataSources,
         } as Response);
 
@@ -265,11 +244,6 @@ describe('TableauClient', () => {
     it('should refresh data source', async () => {
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -299,11 +273,6 @@ describe('TableauClient', () => {
     it('should create subscription', async () => {
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -343,11 +312,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           text: async () => 'ticket-123',
         } as Response);
 
@@ -364,11 +328,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           text: async () => 'ticket-123',
         } as Response);
 
@@ -379,12 +338,13 @@ describe('TableauClient', () => {
     });
 
     it('should generate embed token with RLS rules', async () => {
+      config.credentials.trustedTicketToken = 'trusted-token';
+
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
+          text: async () => 'ticket-for-embed',
         } as Response);
 
       const token = await client.generateEmbedToken('view-1', 'user-1', ['view'], [
@@ -413,11 +373,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => ({
             columns: [
               { name: 'Region' },
@@ -439,11 +394,6 @@ describe('TableauClient', () => {
     it('should apply filters to query', async () => {
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -484,11 +434,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           arrayBuffer: async () => mockPdfBuffer.buffer,
         } as Response);
 
@@ -505,11 +450,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           arrayBuffer: async () => mockPngBuffer.buffer,
         } as Response);
 
@@ -522,11 +462,6 @@ describe('TableauClient', () => {
     it('should export dashboard to CSV', async () => {
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           arrayBuffer: async () =>
@@ -565,11 +500,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
           json: async () => ({ id: 'dash-1', name: 'Sales Dashboard' }),
         } as Response);
 
@@ -582,11 +512,6 @@ describe('TableauClient', () => {
     it('should get dashboard', async () => {
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -608,11 +533,6 @@ describe('TableauClient', () => {
         .fn()
         .mockResolvedValueOnce({
           ok: true,
-          text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
         } as Response);
 
       await expect(client.deleteDashboard('dash-1')).resolves.toBeUndefined();
@@ -626,7 +546,7 @@ describe('TableauClient', () => {
         .mockResolvedValueOnce({
           ok: true,
           text: async () =>
-            `<tsRequest><token>token</token><site id="site-123" /></tsRequest>`,
+            `<tsRequest><token>health-token</token><site id="site-123" /></tsRequest>`,
         } as Response)
         .mockResolvedValueOnce({
           ok: true,

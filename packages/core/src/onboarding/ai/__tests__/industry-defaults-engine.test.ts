@@ -181,7 +181,7 @@ describe("Industry Defaults Engine", () => {
     });
 
     it("should mention mobile app in tips", () => {
-      expect(profile.tips.some((t) => t.includes("mobile"))).toBe(true);
+      expect(profile.tips.some((t) => t.toLowerCase().includes("mobile"))).toBe(true);
     });
   });
 
@@ -256,7 +256,7 @@ describe("Industry Defaults Engine", () => {
     });
 
     it("should mention cold-chain in tips", () => {
-      expect(profile.tips.some((t) => t.includes("cold"))).toBe(true);
+      expect(profile.tips.some((t) => t.toLowerCase().includes("cold"))).toBe(true);
     });
 
     it("should suggest Fresh Delivery layout", () => {

@@ -5,6 +5,24 @@
  * Tests all three providers: Onfleet, Stuart, Uber Direct
  */
 
+vi.mock("@witylogix/db", () => {
+  const prisma = {
+    courierDelivery: {
+      findFirst: vi.fn(),
+      update: vi.fn(),
+    },
+    courierWebhookLog: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      count: vi.fn(),
+    },
+  };
+  return { prisma, db: prisma, default: prisma };
+});
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   verifyOnfleetSignature,
@@ -168,14 +186,6 @@ describe("Webhook Normalization", () => {
       "sha512"
     );
 
-    // Mock the database calls
-    vi.mock("@witylogix/db", () => ({
-      prisma: {
-        courierDelivery: { findFirst: vi.fn() },
-        courierWebhookLog: { create: vi.fn() },
-      },
-    }));
-
     // Test normalization happens correctly
     expect(payload.taskId).toBe("task_onfleet_123");
     expect(payload.data.status).toBe("completed");
@@ -251,7 +261,8 @@ describe("Webhook Processing", () => {
 
   it("should reject webhook with invalid JSON", async () => {
     const invalidJson = "{ invalid json }";
-    const signature = "some_signature";
+    // Generate valid signature so signature check passes, JSON parse fails
+    const signature = createSignature(invalidJson, ONFLEET_SECRET, "sha512");
 
     const result = await processWebhook(
       "onfleet",

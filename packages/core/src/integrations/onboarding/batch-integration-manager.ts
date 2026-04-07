@@ -79,7 +79,7 @@ export class BatchIntegrationManager {
 
         // Persist to database (using Prisma)
         try {
-          await db.integrationConnection.create({
+          await prisma.integrationConnection.create({
             data: {
               orgId,
               providerId: integration.providerId,
@@ -140,7 +140,7 @@ export class BatchIntegrationManager {
 
     for (const providerId of providerIds) {
       try {
-        await db.integrationConnection.updateMany({
+        await prisma.integrationConnection.updateMany({
           where: {
             orgId,
             providerId,
@@ -181,7 +181,7 @@ export class BatchIntegrationManager {
     orgId: string,
     prisma: any
   ): Promise<IntegrationConnection[]> {
-    const connections = await db.integrationConnection.findMany({
+    const connections = await prisma.integrationConnection.findMany({
       where: {
         orgId,
         isEnabled: true,
@@ -209,7 +209,7 @@ export class BatchIntegrationManager {
     orgId: string,
     prisma: any
   ): Promise<IntegrationConnection[]> {
-    const connections = await db.integrationConnection.findMany({
+    const connections = await prisma.integrationConnection.findMany({
       where: { orgId },
     });
 
@@ -240,7 +240,7 @@ export class BatchIntegrationManager {
     prisma: any
   ): Promise<IntegrationConnection | null> {
     try {
-      const updated = await db.integrationConnection.updateMany({
+      const updated = await prisma.integrationConnection.updateMany({
         where: {
           orgId,
           providerId,
@@ -256,7 +256,7 @@ export class BatchIntegrationManager {
       }
 
       // Fetch updated record
-      const connection = await db.integrationConnection.findFirst({
+      const connection = await prisma.integrationConnection.findFirst({
         where: {
           orgId,
           providerId,
@@ -280,7 +280,7 @@ export class BatchIntegrationManager {
     healthStatus: HealthStatus,
     prisma: any
   ): Promise<void> {
-    await db.integrationConnection.updateMany({
+    await prisma.integrationConnection.updateMany({
       where: {
         orgId,
         providerId,
@@ -301,7 +301,7 @@ export class BatchIntegrationManager {
     providerId: string,
     prisma: any
   ): Promise<IntegrationConnection | null> {
-    const connection = await db.integrationConnection.findFirst({
+    const connection = await prisma.integrationConnection.findFirst({
       where: {
         orgId,
         providerId,
@@ -332,7 +332,7 @@ export class BatchIntegrationManager {
     providerId: string,
     prisma: any
   ): Promise<boolean> {
-    const result = await db.integrationConnection.deleteMany({
+    const result = await prisma.integrationConnection.deleteMany({
       where: {
         orgId,
         providerId,
@@ -400,7 +400,7 @@ export class BatchIntegrationManager {
     degraded: number;
     down: number;
   }> {
-    const connections = await db.integrationConnection.findMany({
+    const connections = await prisma.integrationConnection.findMany({
       where: { orgId },
     });
 

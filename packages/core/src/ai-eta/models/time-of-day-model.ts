@@ -81,11 +81,12 @@ export class TimeOfDayModel {
 
     const expectedMinutes = baseTimeMinutes * multiplier;
 
-    // Confidence increases with more data for this hour
+    // Base confidence from domain knowledge (default multipliers); increases with data
     const dataPoints = this.historicalData.filter(
       (d) => d.hourOfDay === hour && d.success,
     ).length;
-    const confidence = Math.min(dataPoints / 30, 1.0);
+    const baseConfidence = 0.5; // Default multipliers encode known traffic patterns
+    const confidence = Math.min(baseConfidence + dataPoints / 30, 1.0);
 
     // Confidence intervals: ±15% standard deviation
     const stdDev = expectedMinutes * 0.15;

@@ -79,7 +79,9 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
   const result: Record<string, any> = {};
 
   // Basic type inference from Zod schema
-  const zodType = (schema as any)._type;
+  // Zod stores type info in _def.typeName (e.g. "ZodString", "ZodArray")
+  const def = (schema as any)._def;
+  const zodType = (schema as any)._type || (def?.typeName ? def.typeName.replace('Zod', '').toLowerCase() : undefined);
 
   switch (zodType) {
     case 'string':
@@ -108,17 +110,19 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
 
     case 'array':
       result.type = 'array';
-      if ((schema as any).element) {
-        result.items = zodToJsonSchema((schema as any).element);
+      if ((schema as any).element || def?.type) {
+        result.items = zodToJsonSchema(((schema as any).element || def.type) as ZodSchema);
       }
       break;
 
-    case 'object':
+    case 'object': {
       result.type = 'object';
       result.properties = {};
       result.required = [];
 
-      const shape = (schema as any).shape ?? {};
+      // Zod stores shape as a function in _def.shape() or as a direct property
+      const rawShape = (schema as any).shape;
+      const shape = typeof rawShape === 'function' ? rawShape() : (rawShape ?? {});
       for (const [key, fieldSchema] of Object.entries(shape)) {
         result.properties[key] = zodToJsonSchema(fieldSchema as ZodSchema);
 
@@ -133,9 +137,10 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
         delete result.required;
       }
       break;
+    }
 
     case 'enum':
-      result.enum = (schema as any).options ?? [];
+      result.enum = (schema as any).options ?? def?.values ?? [];
       break;
 
     case 'date':
@@ -144,6 +149,7 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
       break;
 
     case 'null':
+    case 'nativenull':
       result.type = 'null';
       break;
 

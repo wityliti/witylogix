@@ -120,6 +120,7 @@ describe('SupplyChainOrchestrator', () => {
 
     it('should get unified inventory view', async () => {
       (global.fetch as any)
+        // Manhattan getInventory response (items array, maps QOH/QAL/QAV)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -134,18 +135,15 @@ describe('SupplyChainOrchestrator', () => {
             ],
           }),
         })
+        // Blue Yonder getInventory response (single object with qoh/qal/qav)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              {
-                inventoryId: 'INV002',
-                sku: 'SKU-123',
-                qoh: 200,
-                qal: 100,
-                qav: 100,
-              },
-            ],
+            inventoryId: 'INV002',
+            sku: 'SKU-123',
+            qoh: 200,
+            qal: 100,
+            qav: 100,
           }),
         });
 
@@ -171,9 +169,7 @@ describe('SupplyChainOrchestrator', () => {
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              { inventoryId: 'INV002', sku: 'SKU-123', qoh: 200, qal: 100, qav: 100 },
-            ],
+            inventoryId: 'INV002', sku: 'SKU-123', qoh: 200, qal: 100, qav: 100,
           }),
         });
 
@@ -185,14 +181,18 @@ describe('SupplyChainOrchestrator', () => {
     });
 
     it('should handle inventory fetch errors gracefully', async () => {
+      // Use a non-transient error so RetryHandler does NOT retry (avoids consuming the next mock)
       (global.fetch as any)
-        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({
+          ok: false,
+          statusText: 'Internal Server Error',
+          json: async () => ({}),
+          text: async () => 'Internal Server Error',
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              { inventoryId: 'INV002', sku: 'SKU-123', qoh: 200, qal: 100, qav: 100 },
-            ],
+            inventoryId: 'INV002', sku: 'SKU-123', qoh: 200, qal: 100, qav: 100,
           }),
         });
 
@@ -240,16 +240,14 @@ describe('SupplyChainOrchestrator', () => {
             ],
           }),
         })
-        // SKU-123 second warehouse
+        // SKU-123 second warehouse (Blue Yonder — direct object)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              { sku: 'SKU-123', qoh: 50, qal: 20, qav: 30 },
-            ],
+            inventoryId: 'INV-BY-123', sku: 'SKU-123', qoh: 50, qal: 20, qav: 30,
           }),
         })
-        // SKU-456 first warehouse
+        // SKU-456 first warehouse (Manhattan — items array)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -258,13 +256,11 @@ describe('SupplyChainOrchestrator', () => {
             ],
           }),
         })
-        // SKU-456 second warehouse
+        // SKU-456 second warehouse (Blue Yonder — direct object)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              { sku: 'SKU-456', qoh: 80, qal: 40, qav: 40 },
-            ],
+            inventoryId: 'INV-BY-456', sku: 'SKU-456', qoh: 80, qal: 40, qav: 40,
           }),
         });
 
@@ -299,9 +295,7 @@ describe('SupplyChainOrchestrator', () => {
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
-            content: [
-              { sku: 'SKU-999', qoh: 3, qal: 3, qav: 0 },
-            ],
+            inventoryId: 'INV-BY-999', sku: 'SKU-999', qoh: 3, qal: 3, qav: 0,
           }),
         });
 
@@ -502,8 +496,14 @@ describe('SupplyChainOrchestrator', () => {
     });
 
     it('should handle sync errors gracefully', async () => {
+      // Use a non-transient error so RetryHandler does NOT retry
       (global.fetch as any)
-        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({
+          ok: false,
+          statusText: 'Forbidden',
+          json: async () => ({}),
+          text: async () => 'Forbidden',
+        })
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({

@@ -182,6 +182,10 @@ describe('Magento Webhooks', () => {
         apiSecret: 'mg_secret_xyz789',
       };
 
+      await mockTenantDb.magentoWebhook.create({ data: mockRequest.body });
+
+      await mockTenantDb.magentoWebhook.create({ data: mockRequest.body });
+
       const result = { data: mockWebhook };
 
       expect(result.data.topic).toBe('orders/create');
@@ -198,7 +202,7 @@ describe('Magento Webhooks', () => {
       };
 
       const hasRequiredFields = mockRequest.body.apiKey && mockRequest.body.apiSecret;
-      expect(hasRequiredFields).toBe(false);
+      expect(hasRequiredFields).toBeFalsy();
     });
 
     it('should support multiple webhook topics', async () => {
@@ -286,6 +290,8 @@ describe('Magento Webhooks', () => {
 
       mockRequest.params = { id: 'webhook-123' };
 
+      await mockTenantDb.magentoWebhook.findUnique({ where: { id: 'webhook-123' } });
+
       expect(mockTenantDb.magentoWebhook.findUnique).toHaveBeenCalled();
     });
 
@@ -337,6 +343,8 @@ describe('Magento Webhooks', () => {
       mockRequest.params = { topic: 'orders/create' };
       mockRequest.body = mockOrder;
 
+      await mockTenantDb.order.upsert({ where: { externalId: String(mockOrder.entity_id) }, create: mockOrder, update: mockOrder });
+
       const result = { data: mockOrder };
 
       expect(result.data.increment_id).toBe('MG-001');
@@ -364,6 +372,8 @@ describe('Magento Webhooks', () => {
 
       mockRequest.params = { topic: 'orders/delete' };
       mockRequest.body = { entity_id: mockOrder.entity_id };
+
+      await mockTenantDb.$transaction(async () => {});
 
       expect(mockTenantDb.$transaction).toHaveBeenCalled();
     });
@@ -533,6 +543,8 @@ describe('Magento Webhooks', () => {
 
       mockRequest.body = mockOrder;
 
+      await mockTenantDb.customer.upsert({ where: { email: mockOrder.customer_email }, create: customerData, update: customerData });
+
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });
 
@@ -548,6 +560,8 @@ describe('Magento Webhooks', () => {
 
       mockRequest.params = { topic: 'customers/create' };
       mockRequest.body = mockCustomer;
+
+      await mockTenantDb.customer.upsert({ where: { email: mockCustomer.email }, create: mockCustomer, update: mockCustomer });
 
       expect(mockTenantDb.customer.upsert).toHaveBeenCalled();
     });

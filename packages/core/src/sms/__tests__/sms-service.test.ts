@@ -28,8 +28,11 @@ class ConsoleSmsProvider implements SmsProvider {
 
 class PhoneValidator {
   static isValidPhone(phone: string): boolean {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    return phoneRegex.test(phone.replace(/\s|-/g, ''));
+    // Strip formatting characters: spaces, dashes, parentheses
+    const cleaned = phone.replace(/[\s\-()]/g, '');
+    // Require at least 7 digits (E.164 minimum is typically 7+ digits)
+    const phoneRegex = /^\+?[1-9]\d{6,14}$/;
+    return phoneRegex.test(cleaned);
   }
 }
 
@@ -187,8 +190,9 @@ describe('SmsService', () => {
 
     it('should calculate segments correctly for various lengths', () => {
       expect(SmsSegmentCalculator.calculate('a'.repeat(153))).toBe(1);
-      expect(SmsSegmentCalculator.calculate('a'.repeat(313))).toBe(2);
-      expect(SmsSegmentCalculator.calculate('a'.repeat(314))).toBe(3);
+      // Multi-part segments are 153 chars each: ceil(306/153)=2, ceil(307/153)=3
+      expect(SmsSegmentCalculator.calculate('a'.repeat(306))).toBe(2);
+      expect(SmsSegmentCalculator.calculate('a'.repeat(307))).toBe(3);
     });
 
     it('should return 0 segments for empty message', () => {

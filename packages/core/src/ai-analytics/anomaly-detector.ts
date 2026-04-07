@@ -25,7 +25,7 @@ import type {
  * Default anomaly thresholds
  */
 const DEFAULT_THRESHOLDS: AnomalyThresholds = {
-  stopDurationSigma: 2,
+  stopDurationSigma: 3,
   routeDeviationMeters: 1000,
   routeDeviationMinutes: 5,
   speedLimitExcess: 20,

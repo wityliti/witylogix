@@ -42,7 +42,7 @@ describe('BillingRuleEngine', () => {
       expect(items).toHaveLength(1);
       expect(items[0].amount).toBe(25);
       expect(items[0].quantity).toBe(1);
-      expect(items[0].description).toContain('Delivery Charge');
+      expect(items[0].description).toContain('Per Delivery');
     });
 
     it('should apply minimum charge', () => {

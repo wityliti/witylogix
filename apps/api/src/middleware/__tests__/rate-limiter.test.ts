@@ -41,6 +41,7 @@ class TokenBucketStore {
     this.cleanupInterval = setInterval(() => {
       this.cleanupExpired();
     }, 300000);
+    this.cleanupInterval.unref();
   }
 
   destroy(): void {
@@ -145,6 +146,10 @@ describe('RateLimiter', () => {
   let mockRequest: MockRequest;
   let mockReply: MockReply;
 
+  afterEach(() => {
+    store.destroy();
+  });
+
   beforeEach(() => {
     store = new TokenBucketStore();
     mockRequest = {
@@ -187,7 +192,7 @@ describe('RateLimiter', () => {
       expect(remaining).toBe(-1);
     });
 
-    it('should refill tokens after window expires', (done) => {
+    it('should refill tokens after window expires', async () => {
       const config: RateLimitConfig = {
         windowMs: 100,
         maxRequests: 2,
@@ -198,12 +203,14 @@ describe('RateLimiter', () => {
       store.consume('test_key', config);
       expect(store.consume('test_key', config)).toBe(-1);
 
-      setTimeout(() => {
-        const remaining = store.consume('test_key', config);
-        expect(remaining).toBeGreaterThanOrEqual(0);
-        store.destroy();
-        done();
-      }, 150);
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          const remaining = store.consume('test_key', config);
+          expect(remaining).toBeGreaterThanOrEqual(0);
+          store.destroy();
+          resolve();
+        }, 150);
+      });
     });
   });
 
@@ -367,31 +374,29 @@ describe('RateLimiter', () => {
   });
 
   describe('Sliding Window', () => {
-    it('should implement sliding window correctly', (done) => {
+    it('should implement sliding window correctly', async () => {
       const limiter = createRateLimiter({
         windowMs: 100,
         maxRequests: 3,
         keyGenerator: () => 'sliding_test',
       });
 
-      const requests = async () => {
-        // Make 3 requests in first 100ms
-        await limiter(mockRequest, mockReply);
-        await limiter(mockRequest, mockReply);
-        await limiter(mockRequest, mockReply);
+      // Make 3 requests in first 100ms
+      await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
 
-        // Next request should be blocked
-        await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
+      // Next request should be blocked
+      await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
 
-        // Wait 150ms (so 50ms into second window)
+      // Wait 150ms (so 50ms into second window)
+      await new Promise<void>((resolve) => {
         setTimeout(async () => {
           // Make another request (should succeed as window has reset)
           await limiter(mockRequest, mockReply);
-          done();
+          resolve();
         }, 150);
-      };
-
-      requests();
+      });
     });
   });
 
@@ -610,20 +615,20 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should handle very short window', (done) => {
+    it('should handle very short window', async () => {
       const limiter = createRateLimiter({
         windowMs: 10,
         maxRequests: 1,
         keyGenerator: () => 'short_window',
       });
 
-      (async () => {
-        await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
+      await new Promise<void>((resolve) => {
         setTimeout(async () => {
           await limiter(mockRequest, mockReply);
-          done();
+          resolve();
         }, 20);
-      })();
+      });
     });
   });
 

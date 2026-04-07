@@ -37,7 +37,7 @@ export function interpolate(
   html: string,
   variables: Record<string, any>
 ): string {
-  return html.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+  return html.replace(/\{\{([^}]*)\}\}/g, (match, key) => {
     const trimmedKey = key.trim();
     const value = getNestedValue(variables, trimmedKey);
 

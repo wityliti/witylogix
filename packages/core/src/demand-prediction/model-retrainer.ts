@@ -190,9 +190,9 @@ export class ModelRetrainer extends EventEmitter {
     const baselineAccuracy =
       recentHistory.reduce((sum, h) => sum + h.accuracy, 0) / recentHistory.length;
 
-    // Check if degraded
+    // Check if degraded - for MAPE, higher is worse
     const currentAccuracy = currentMetrics.mape; // Mean Absolute Percentage Error
-    const degradation = ((baselineAccuracy - currentAccuracy) / baselineAccuracy) * 100;
+    const degradation = ((currentAccuracy - baselineAccuracy) / baselineAccuracy) * 100;
 
     const shouldRetrain =
       degradation > this.config.accuracyDegradationThreshold ||
@@ -242,12 +242,13 @@ export class ModelRetrainer extends EventEmitter {
     const now = new Date();
     const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-    for (let i = 0; i < Math.min(this.config.minSamplesRequired * 2, days * 24); i++) {
+    const pointCount = Math.max(this.config.minSamplesRequired * 2, Math.min(days * 24, 720));
+    for (let i = 0; i < pointCount; i++) {
       const timestamp = new Date(startDate.getTime() + i * 60 * 60 * 1000);
 
-      // Skip if too old
-      if (timestamp < new Date(now.getTime() - days * 24 * 60 * 60 * 1000)) {
-        continue;
+      // Skip if beyond current time
+      if (timestamp > now) {
+        break;
       }
 
       dataPoints.push({
@@ -306,8 +307,8 @@ export class ModelRetrainer extends EventEmitter {
     job.startedAt = new Date();
 
     try {
-      // Simulate training delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Simulate training delay (short for testing)
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Generate mock metrics (in production, would be from actual model)
       const oldMetrics: ModelPerformanceMetrics = {

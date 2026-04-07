@@ -148,31 +148,38 @@ describe("Read Replica Router", () => {
   });
 
   describe("Scheduled Health Checks", () => {
-    it("should start periodic health checks", (done) => {
-      const checkSpy = vi.spyOn(router, "checkReplicaLag");
+    it("should start periodic health checks", async () => {
+      // Use a router with a short health check interval for testing
+      const fastRouter = new ReadReplicaRouter({
+        primaryUrl,
+        replicas: replicaUrls,
+        lagThresholdMs: 5000,
+        healthCheckIntervalMs: 50,
+        failoverTimeoutMs: 10000,
+      });
+      const checkSpy = vi.spyOn(fastRouter, "checkReplicaLag");
 
-      router.startHealthChecks();
+      fastRouter.startHealthChecks();
 
-      setTimeout(() => {
-        expect(checkSpy).toHaveBeenCalled();
-        checkSpy.mockRestore();
-        done();
-      }, 100);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      expect(checkSpy).toHaveBeenCalled();
+      checkSpy.mockRestore();
+      fastRouter.stopHealthChecks();
     });
 
-    it("should stop periodic health checks", (done) => {
+    it("should stop periodic health checks", async () => {
       router.startHealthChecks();
       router.stopHealthChecks();
 
       const health1 = router.getReplicaHealth();
 
-      setTimeout(() => {
-        const health2 = router.getReplicaHealth();
-        // If checks are stopped, health shouldn't change much
-        expect(health1).toBeDefined();
-        expect(health2).toBeDefined();
-        done();
-      }, 100);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const health2 = router.getReplicaHealth();
+      // If checks are stopped, health shouldn't change much
+      expect(health1).toBeDefined();
+      expect(health2).toBeDefined();
     });
 
     it("should not start health checks twice", () => {

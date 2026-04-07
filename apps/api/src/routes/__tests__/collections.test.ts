@@ -5,11 +5,27 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import collectionsRoutes from "../collections.js";
 
-vi.mock("../../lib/queue.js", () => ({
-  getIntegrationQueue: vi.fn(() => ({ add: vi.fn().mockResolvedValue({ id: "job-1" }) })),
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(() => async () => {}),
+  requireRole: vi.fn(() => async () => {}),
 }));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(() => async () => {}),
+}));
+vi.mock("@witylogix/db", () => ({
+  Prisma: {
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+  },
+}));
+vi.mock("../../lib/queue.js", () => ({
+  getIntegrationQueue: vi.fn().mockReturnValue({ add: vi.fn().mockResolvedValue({}) }),
+}));
+
+import collectionsRoutes from "../collections.js";
+import { ForbiddenError } from "../../lib/errors.js";
 
 // Mock types
 interface MockRequest extends Partial<FastifyRequest> {
@@ -29,14 +45,16 @@ interface MockReply extends Partial<FastifyReply> {
 }
 
 function createMockRequest(overrides: Partial<MockRequest> = {}): MockRequest {
+  const role = (overrides.userRole ?? "ADMIN") as any;
+  const shopId = overrides.shopId ?? "shop-123";
   return {
     params: {},
     query: {},
     body: {},
-    shopId: "shop-123",
+    shopId,
     userId: "user-123",
-    userRole: "ADMIN",
-    auth: { role: "ADMIN", userId: "user-123", shopId: "shop-123" },
+    userRole: role,
+    auth: { role, shopId } as any,
     tenantDb: {
       collection: {
         findMany: vi.fn(),
@@ -459,7 +477,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["GET"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Cannot");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should order products by position", async () => {
@@ -601,7 +619,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["PUT"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Cannot");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should reject unauthorized users", async () => {
@@ -681,7 +699,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["DELETE"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Cannot");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should reject unauthorized users", async () => {
@@ -776,7 +794,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["00000000-0000-0000-0000-000000000001", "invalid-prod"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000099"] },
       });
       const reply = createMockReply();
 
@@ -822,7 +840,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["POST"]["/:id/products"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Cannot");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
   });
 
@@ -972,7 +990,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["PUT"]["/:id/products/reorder"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Cannot");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
   });
 

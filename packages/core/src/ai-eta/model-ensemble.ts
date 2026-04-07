@@ -240,7 +240,11 @@ export class ModelEnsemble {
     points: Array<{ time: number; weight: number }>,
     percentile: number,
   ): number {
+    if (points.length === 0) return 0;
+
     const totalWeight = points.reduce((sum, p) => sum + p.weight, 0);
+    if (totalWeight === 0) return points[0].time;
+
     let cumulativeWeight = 0;
 
     for (const point of points) {

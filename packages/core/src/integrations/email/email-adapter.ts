@@ -201,11 +201,27 @@ export abstract class EmailAdapter {
   /** Suppression list (email -> suppression reason) */
   protected suppressionList: Map<string, SuppressionEntry> = new Map();
 
+  /** Logger instance (no-op by default, override in subclass or pass via config) */
+  protected logger: {
+    error: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+    info: (...args: unknown[]) => void;
+    debug: (...args: unknown[]) => void;
+  };
+
   constructor(config: EmailAdapterConfig) {
     this.config = config;
     this.rateLimiter = new RateLimiter(1000, 10); // 1000 tokens, 10/sec refill
     this.circuitBreaker = new CircuitBreaker(5, 60000);
     this.retryHandler = new RetryHandler(3, 1000, 30000);
+
+    // Default no-op logger
+    this.logger = {
+      error: () => {},
+      warn: () => {},
+      info: () => {},
+      debug: () => {},
+    };
   }
 
   /**

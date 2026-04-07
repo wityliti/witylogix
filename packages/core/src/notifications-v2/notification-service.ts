@@ -117,7 +117,7 @@ export class NotificationService {
         // Record send
         if (result.success) {
           this.rateLimiter.recordSend(request.customerId, channel);
-          this.recordNotification(request.customerId, result);
+          this.recordNotification(request.customerId, result, request.eventType);
         }
 
         // Fire webhooks
@@ -302,13 +302,13 @@ export class NotificationService {
   /**
    * Record notification in history
    */
-  private recordNotification(customerId: string, result: SendResult): void {
+  private recordNotification(customerId: string, result: SendResult, eventType: string = "order_confirmed"): void {
     let history = notificationHistory.get(customerId) || [];
 
     const record: NotificationRecord = {
       id: result.notificationId,
       customerId,
-      eventType: "order_confirmed", // Would come from request
+      eventType,
       channel: result.channel,
       messageId: result.messageId,
       status: result.success ? "sent" : "failed",

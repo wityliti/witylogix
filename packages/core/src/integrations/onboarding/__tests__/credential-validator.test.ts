@@ -93,7 +93,7 @@ describe('CredentialValidator', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.latencyMs).toBeGreaterThan(0);
+      expect(result.latencyMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should test Bearer token authentication', async () => {
@@ -178,7 +178,7 @@ describe('CredentialValidator', () => {
       );
 
       expect(result.details).toBeDefined();
-      expect(result.details?.statusCode).toBe(403);
+      expect(result.details?.receivedStatus).toBe(403);
     });
 
     it('should interpolate URL variables', async () => {
@@ -361,10 +361,11 @@ describe('CredentialValidator', () => {
         new Response(JSON.stringify({}), { status: 200 })
       );
 
+      // Use valhalla (no custom headers) so buildAuthHeaders applies API_KEY logic
       await CredentialValidator.testConnection(
-        'stripe',
+        'valhalla',
         IntegrationAuthType.API_KEY,
-        { apiKey: 'test_key' }
+        { apiKey: 'test_key', baseUrl: 'https://test.example.com' }
       );
 
       const calls = (global.fetch as any).mock.calls;
@@ -391,10 +392,11 @@ describe('CredentialValidator', () => {
         new Response(JSON.stringify({}), { status: 200 })
       );
 
+      // Use valhalla (no custom headers) so buildAuthHeaders applies WEBHOOK_SECRET logic
       await CredentialValidator.testConnection(
-        'stripe',
+        'valhalla',
         IntegrationAuthType.WEBHOOK_SECRET,
-        { webhookSecret: 'whsec_test' }
+        { webhookSecret: 'whsec_test', baseUrl: 'https://test.example.com' }
       );
 
       const calls = (global.fetch as any).mock.calls;

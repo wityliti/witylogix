@@ -459,9 +459,7 @@ describe('Delivery Time Prediction', () => {
     });
 
     it('should have higher confidence with more carrier data', () => {
-      const tracker = new CarrierPerformanceTracker();
-
-      // Record many deliveries to build up data
+      // Record many deliveries to build up data in the predictor itself
       for (let i = 0; i < 25; i++) {
         const outcome: DeliveryOutcome = {
           carrier: 'ups',
@@ -477,7 +475,7 @@ describe('Delivery Time Prediction', () => {
           distance: 2000,
           onTime: Math.random() > 0.1, // 90% on-time
         };
-        tracker.recordDelivery(outcome);
+        predictor.recordDelivery(outcome);
       }
 
       // Predictor should have higher confidence with this data

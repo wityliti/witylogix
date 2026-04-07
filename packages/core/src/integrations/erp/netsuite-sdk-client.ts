@@ -371,7 +371,7 @@ interface ConcurrencyTracker {
 /**
  * Builds OAuth1 signatures for NetSuite TBA requests
  */
-class OAuth1SignatureBuilder {
+export class OAuth1SignatureBuilder {
   /**
    * Generate OAuth1 signature
    */

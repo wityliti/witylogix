@@ -39,6 +39,12 @@ describe('Delivery Timeline Service', () => {
     });
 
     it('should record event with location', () => {
+      // Walk through valid transitions: pending -> confirmed -> picked_up
+      deliveryTimelineService.recordEvent({
+        deliveryId: testDeliveryId,
+        event: 'CONFIRMED',
+      });
+
       const entry = deliveryTimelineService.recordEvent({
         deliveryId: testDeliveryId,
         event: 'PICKED_UP',
@@ -52,6 +58,12 @@ describe('Delivery Timeline Service', () => {
     });
 
     it('should record event with attachments', () => {
+      // Walk through valid transitions: pending -> confirmed -> picked_up -> out_for_delivery -> arrived -> delivered
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'CONFIRMED' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'PICKED_UP' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'OUT_FOR_DELIVERY' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'ARRIVED' });
+
       const entry = deliveryTimelineService.recordEvent({
         deliveryId: testDeliveryId,
         event: 'DELIVERED',
@@ -69,6 +81,12 @@ describe('Delivery Timeline Service', () => {
     });
 
     it('should use default description for known events', () => {
+      // Walk through valid transitions: pending -> confirmed -> picked_up -> out_for_delivery -> arrived -> delivered
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'CONFIRMED' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'PICKED_UP' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'OUT_FOR_DELIVERY' });
+      deliveryTimelineService.recordEvent({ deliveryId: testDeliveryId, event: 'ARRIVED' });
+
       const entry = deliveryTimelineService.recordEvent({
         deliveryId: testDeliveryId,
         event: 'DELIVERED',
@@ -180,10 +198,15 @@ describe('Delivery Timeline Service', () => {
       // Clear for next test
       deliveryTimelineService.clearTimeline(testDeliveryId);
 
-      // From PICKED_UP
+      // From PICKED_UP (pending -> confirmed -> picked_up -> failed)
       entry = deliveryTimelineService.recordEvent({
         deliveryId: testDeliveryId,
         event: 'CREATED',
+      });
+
+      deliveryTimelineService.recordEvent({
+        deliveryId: testDeliveryId,
+        event: 'CONFIRMED',
       });
 
       deliveryTimelineService.recordEvent({
@@ -247,6 +270,11 @@ describe('Delivery Timeline Service', () => {
       deliveryTimelineService.recordEvent({
         deliveryId: testDeliveryId,
         event: 'CREATED',
+      });
+
+      deliveryTimelineService.recordEvent({
+        deliveryId: testDeliveryId,
+        event: 'CONFIRMED',
       });
 
       deliveryTimelineService.recordEvent({
