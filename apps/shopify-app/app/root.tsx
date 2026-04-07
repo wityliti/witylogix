@@ -16,7 +16,7 @@
  * linkComponent wires Navigation (and other Polaris links) to React Router <Link>.
  */
 
-import { forwardRef, type ComponentPropsWithoutRef } from "react";
+import { forwardRef, useEffect, type ComponentPropsWithoutRef } from "react";
 import {
   Links,
   Link,
@@ -249,6 +249,13 @@ export default function App() {
   const location = useLocation();
   const { apiKey, publicApiBaseUrl } = useLoaderData<typeof loader>();
   const isLoading = navigation.state === "loading";
+
+  useEffect(() => {
+    // Dynamic import keeps web-vitals out of the SSR bundle (zero server-side impact).
+    import("~/lib/vitals.client").then(({ initVitals }) => {
+      initVitals(publicApiBaseUrl ?? null);
+    });
+  }, [publicApiBaseUrl]);
 
   return (
     <html lang="en">
