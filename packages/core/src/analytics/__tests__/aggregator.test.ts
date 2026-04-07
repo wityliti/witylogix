@@ -390,7 +390,7 @@ describe("Analytics Aggregator", () => {
       const currentValue = 100;
       const growthRate = ((currentValue - previousValue) / previousValue) * 100;
 
-      expect(growthRate).toBe(-33.333333333333336); // ~-33% decline
+      expect(growthRate).toBeCloseTo(-33.333, 3); // ~-33% decline
       expect(growthRate).toBeLessThan(0);
     });
 

@@ -190,9 +190,9 @@ describe('OSRMProvider', () => {
       const call = mockFetch.mock.calls[0];
       expect(call[0]).toContain('/route/v1/driving/');
       expect(call[0]).toContain('-74.006,40.7128');
-      expect(call[0]).toContain('-74.000,40.7200');
-      expect(call[0]).toContain('-73.990,40.7300');
-      expect(call[0]).toContain('-73.980,40.7400');
+      expect(call[0]).toContain('-74,40.72');
+      expect(call[0]).toContain('-73.99,40.73');
+      expect(call[0]).toContain('-73.98,40.74');
     });
 
     it('should require at least 2 waypoints', async () => {

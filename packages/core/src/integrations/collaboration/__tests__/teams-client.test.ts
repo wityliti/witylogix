@@ -54,8 +54,12 @@ describe('TeamsClient', () => {
 
     teamsClient = new TeamsClient(mockConfig);
 
-    // Mock fetch globally
-    global.fetch = vi.fn();
+    // Mock fetch globally with a default successful response
+    global.fetch = vi.fn().mockResolvedValue({
+      json: async () => ({ id: 'default-id', ok: true }),
+      status: 200,
+      ok: true,
+    });
   });
 
   afterEach(() => {
@@ -199,13 +203,15 @@ describe('TeamsClient', () => {
     });
 
     it('should return null for non-existent channel', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({
-          error: { message: 'Not found' },
-        }),
+      const notFoundResponse = {
+        json: async () => ({ error: { message: 'Not found' } }),
         status: 404,
         ok: false,
-      });
+      };
+      (global.fetch as any)
+        .mockResolvedValueOnce(notFoundResponse)
+        .mockResolvedValueOnce(notFoundResponse)
+        .mockResolvedValueOnce(notFoundResponse);
 
       const channel = await teamsClient.getChannel('invalid-id');
 
@@ -291,6 +297,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -308,6 +315,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 204,
           ok: true,
         });
@@ -701,6 +709,7 @@ describe('TeamsClient', () => {
           ok: true,
         })
         .mockResolvedValueOnce({
+          json: async () => ({}),
           status: 201,
           ok: true,
         })
@@ -829,13 +838,15 @@ describe('TeamsClient', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
-        json: async () => ({
-          error: { message: 'Not found' },
-        }),
+      const notFoundResponse = {
+        json: async () => ({ error: { message: 'Not found' } }),
         status: 404,
         ok: false,
-      });
+      };
+      (global.fetch as any)
+        .mockResolvedValueOnce(notFoundResponse)
+        .mockResolvedValueOnce(notFoundResponse)
+        .mockResolvedValueOnce(notFoundResponse);
 
       const user = await teamsClient.getUser('invalid-id');
 

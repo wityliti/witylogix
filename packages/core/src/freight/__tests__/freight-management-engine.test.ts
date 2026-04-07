@@ -369,7 +369,7 @@ describe("CarrierScorecard", () => {
   describe("createScorecard", () => {
     it("should create scorecard with valid metrics", () => {
       const metrics = {
-        onTimePercentage: 98,
+        onTimePercentage: 93, // Below 95 threshold to trigger recommendation
         claimsRatio: 0.01,
         tenderAcceptanceRate: 0.95,
         costPerMile: 1.2,

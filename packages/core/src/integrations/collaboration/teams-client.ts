@@ -742,7 +742,7 @@ export class TeamsClient extends CollaborationAdapter {
       }
 
       const users = (result.value || [])
-        .filter((user: any) => options?.includeInactive || !user.accountEnabled)
+        .filter((user: any) => options?.includeInactive || user.accountEnabled)
         .map((user: any) => this.mapTeamsUserToCollaborationUser(user));
 
       return {

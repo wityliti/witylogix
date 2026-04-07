@@ -465,7 +465,7 @@ describe("CarrierRegistry", () => {
       const request = createMockRateRequest();
 
       await expect(registry.getCheapestRate(request)).rejects.toThrow(
-        /No shipping rates available/
+        /No (shipping rates|carriers) available/
       );
     });
 

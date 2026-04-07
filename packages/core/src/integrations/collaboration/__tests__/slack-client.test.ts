@@ -48,8 +48,12 @@ describe('SlackClient', () => {
 
     slackClient = new SlackClient(mockConfig);
 
-    // Mock fetch globally
-    global.fetch = vi.fn();
+    // Mock fetch globally with a default successful response
+    global.fetch = vi.fn().mockResolvedValue({
+      json: async () => ({ ok: true }),
+      status: 200,
+      ok: true,
+    });
   });
 
   afterEach(() => {

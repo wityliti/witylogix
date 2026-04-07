@@ -83,6 +83,11 @@ export class InvoiceAuditor {
     item: InvoiceLineItem,
     rateSheets: RateSheet[]
   ): number {
+    // Use item's contracted rate directly if provided
+    if (item.contractedRate !== undefined) {
+      return item.contractedRate;
+    }
+
     // Find applicable rate sheet by date
     const applicableSheet = rateSheets.find((sheet) => {
       const now = new Date();
@@ -239,7 +244,7 @@ export class DuplicateDetector {
         const item2 = invoice.loads[j];
 
         const similarity = this.calculateSimilarity(item1, item2);
-        if (similarity > 75) {
+        if (similarity >= 75) {
           duplicates.push({
             duplicate1: item1.lineId,
             duplicate2: item2.lineId,
