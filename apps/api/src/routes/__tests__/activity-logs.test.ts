@@ -41,6 +41,7 @@ const generateActivityLog = (overrides?: Partial<MockActivityLog>): MockActivity
   entityName: 'Order #1001',
   description: 'Order created',
   status: 'SUCCESS',
+  changes: {},
   createdAt: new Date('2026-03-09T10:00:00Z'),
   updatedAt: new Date('2026-03-09T10:00:00Z'),
   ...overrides,
@@ -329,7 +330,7 @@ describe('Activity Logs Routes', () => {
     });
 
     it('should return 200 with complete log details', async () => {
-      const log = generateActivityLog();
+      const log = generateActivityLog({ changes: { status: ['PENDING', 'PROCESSING'] } });
       mockPrisma.activityLog.findUnique.mockResolvedValue(log);
 
       const result = await (mockPrisma as any).activityLog.findUnique({

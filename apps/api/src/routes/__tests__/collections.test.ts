@@ -5,7 +5,27 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(() => async () => {}),
+  requireRole: vi.fn(() => async () => {}),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(() => async () => {}),
+}));
+vi.mock("@witylogix/db", () => ({
+  Prisma: {
+    JsonNull: null,
+    DbNull: null,
+    AnyNull: null,
+  },
+}));
+vi.mock("../../lib/queue.js", () => ({
+  getIntegrationQueue: vi.fn().mockReturnValue({ add: vi.fn().mockResolvedValue({}) }),
+}));
+
 import collectionsRoutes from "../collections.js";
+import { ForbiddenError } from "../../lib/errors.js";
 
 // Mock types
 interface MockRequest extends Partial<FastifyRequest> {
@@ -25,13 +45,16 @@ interface MockReply extends Partial<FastifyReply> {
 }
 
 function createMockRequest(overrides: Partial<MockRequest> = {}): MockRequest {
+  const role = (overrides.userRole ?? "ADMIN") as any;
+  const shopId = overrides.shopId ?? "shop-123";
   return {
     params: {},
     query: {},
     body: {},
-    shopId: "shop-123",
+    shopId,
     userId: "user-123",
-    userRole: "ADMIN",
+    userRole: role,
+    auth: { role, shopId } as any,
     tenantDb: {
       collection: {
         findMany: vi.fn(),
@@ -406,7 +429,7 @@ describe("Collections Routes", () => {
         products: [
           {
             product: {
-              id: "prod-1",
+              id: "00000000-0000-0000-0000-000000000001",
               title: "Product 1",
               shopifyProductId: "gid://shopify/Product/1",
             },
@@ -454,7 +477,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["GET"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Forbidden");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should order products by position", async () => {
@@ -596,7 +619,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["PUT"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Forbidden");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should reject unauthorized users", async () => {
@@ -676,7 +699,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["DELETE"]["/:id"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Forbidden");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
 
     it("should reject unauthorized users", async () => {
@@ -697,7 +720,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1", "prod-2"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"] },
       });
       const reply = createMockReply();
 
@@ -706,8 +729,8 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
       });
       (request.tenantDb.product.findMany as any).mockResolvedValue([
-        { id: "prod-1" },
-        { id: "prod-2" },
+        { id: "00000000-0000-0000-0000-000000000001" },
+        { id: "00000000-0000-0000-0000-000000000002" },
       ]);
       (request.tenantDb.collectionProduct.findFirst as any).mockResolvedValue({
         position: 5,
@@ -732,7 +755,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1", "prod-2", "prod-3"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", "00000000-0000-0000-0000-000000000003"] },
       });
       const reply = createMockReply();
 
@@ -741,9 +764,9 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
       });
       (request.tenantDb.product.findMany as any).mockResolvedValue([
-        { id: "prod-1" },
-        { id: "prod-2" },
-        { id: "prod-3" },
+        { id: "00000000-0000-0000-0000-000000000001" },
+        { id: "00000000-0000-0000-0000-000000000002" },
+        { id: "00000000-0000-0000-0000-000000000003" },
       ]);
       (request.tenantDb.collectionProduct.findFirst as any).mockResolvedValue({
         position: 10,
@@ -771,7 +794,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1", "invalid-prod"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000099"] },
       });
       const reply = createMockReply();
 
@@ -780,7 +803,7 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
       });
       (request.tenantDb.product.findMany as any).mockResolvedValue([
-        { id: "prod-1" },
+        { id: "00000000-0000-0000-0000-000000000001" },
       ]);
 
       const handler = handlers["POST"]["/:id/products"];
@@ -806,7 +829,7 @@ describe("Collections Routes", () => {
         userRole: "ADMIN",
         shopId: "shop-123",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001"] },
       });
       const reply = createMockReply();
 
@@ -817,7 +840,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["POST"]["/:id/products"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Forbidden");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
   });
 
@@ -826,7 +849,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1", "prod-2"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"] },
       });
       const reply = createMockReply();
 
@@ -866,7 +889,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "invalid-id" },
-        body: { productIds: ["prod-1"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001"] },
       });
       const reply = createMockReply();
 
@@ -885,9 +908,9 @@ describe("Collections Routes", () => {
         params: { id: "col-1" },
         body: {
           items: [
-            { productId: "prod-1", position: 3 },
-            { productId: "prod-2", position: 1 },
-            { productId: "prod-3", position: 2 },
+            { productId: "00000000-0000-0000-0000-000000000001", position: 3 },
+            { productId: "00000000-0000-0000-0000-000000000002", position: 1 },
+            { productId: "00000000-0000-0000-0000-000000000003", position: 2 },
           ],
         },
       });
@@ -913,7 +936,7 @@ describe("Collections Routes", () => {
         userRole: "ADMIN",
         params: { id: "col-1" },
         body: {
-          items: [{ productId: "prod-1", position: 5 }],
+          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 5 }],
         },
       });
       const reply = createMockReply();
@@ -937,7 +960,7 @@ describe("Collections Routes", () => {
         userRole: "ADMIN",
         params: { id: "invalid-id" },
         body: {
-          items: [{ productId: "prod-1", position: 1 }],
+          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 1 }],
         },
       });
       const reply = createMockReply();
@@ -955,7 +978,7 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
         params: { id: "col-1" },
         body: {
-          items: [{ productId: "prod-1", position: 1 }],
+          items: [{ productId: "00000000-0000-0000-0000-000000000001", position: 1 }],
         },
       });
       const reply = createMockReply();
@@ -967,7 +990,7 @@ describe("Collections Routes", () => {
 
       const handler = handlers["PUT"]["/:id/products/reorder"];
 
-      await expect(handler(request, reply)).rejects.toThrow("Forbidden");
+      await expect(handler(request, reply)).rejects.toThrow(ForbiddenError);
     });
   });
 
@@ -1110,7 +1133,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1", "prod-2", "prod-3"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", "00000000-0000-0000-0000-000000000003"] },
       });
       const reply = createMockReply();
 
@@ -1119,9 +1142,9 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
       });
       (request.tenantDb.product.findMany as any).mockResolvedValue([
-        { id: "prod-1" },
-        { id: "prod-2" },
-        { id: "prod-3" },
+        { id: "00000000-0000-0000-0000-000000000001" },
+        { id: "00000000-0000-0000-0000-000000000002" },
+        { id: "00000000-0000-0000-0000-000000000003" },
       ]);
       (request.tenantDb.collectionProduct.findFirst as any).mockResolvedValue(
         null
@@ -1149,7 +1172,7 @@ describe("Collections Routes", () => {
       const request = createMockRequest({
         userRole: "ADMIN",
         params: { id: "col-1" },
-        body: { productIds: ["prod-1"] },
+        body: { productIds: ["00000000-0000-0000-0000-000000000001"] },
       });
       const reply = createMockReply();
 
@@ -1158,7 +1181,7 @@ describe("Collections Routes", () => {
         shopId: "shop-123",
       });
       (request.tenantDb.product.findMany as any).mockResolvedValue([
-        { id: "prod-1" },
+        { id: "00000000-0000-0000-0000-000000000001" },
       ]);
       (request.tenantDb.collectionProduct.findFirst as any).mockResolvedValue({
         position: 5,

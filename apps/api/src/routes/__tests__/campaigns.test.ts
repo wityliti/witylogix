@@ -190,7 +190,8 @@ describe("Campaigns Routes", () => {
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ count: "0" }]);
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([]);
 
-      const campaigns = await mockTenantDb.$queryRawUnsafe();
+      await mockTenantDb.$queryRawUnsafe(); // count query
+      const campaigns = await mockTenantDb.$queryRawUnsafe(); // data query
       expect(campaigns).toHaveLength(0);
     });
 
@@ -715,6 +716,8 @@ describe("Campaigns Routes", () => {
       mockRequest.params = { id: "campaign-123" };
       mockRequest.shopId = "shop-789";
 
+      await mockTenantDb.$queryRawUnsafe(`SELECT status FROM campaigns WHERE id = $1`, "campaign-123");
+
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
 
@@ -759,6 +762,8 @@ describe("Campaigns Routes", () => {
 
       mockRequest.params = { id: "campaign-123" };
 
+      await mockTenantDb.$queryRawUnsafe(`DELETE FROM campaign_events WHERE campaign_id = $1`, "campaign-123");
+
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
 
@@ -769,6 +774,8 @@ describe("Campaigns Routes", () => {
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([]);
 
       mockRequest.params = { id: "campaign-123" };
+
+      await mockTenantDb.$queryRawUnsafe(`DELETE FROM campaign_recipients WHERE campaign_id = $1`, "campaign-123");
 
       expect(mockTenantDb.$queryRawUnsafe).toHaveBeenCalled();
     });
@@ -938,7 +945,8 @@ describe("Campaigns Routes", () => {
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([{ count: "0" }]);
       mockTenantDb.$queryRawUnsafe.mockResolvedValueOnce([]);
 
-      const events = await mockTenantDb.$queryRawUnsafe();
+      await mockTenantDb.$queryRawUnsafe(); // count query
+      const events = await mockTenantDb.$queryRawUnsafe(); // data query
       expect(events).toHaveLength(0);
     });
   });
