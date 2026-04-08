@@ -1,0 +1,225 @@
+---
+title: Railway Post-Deploy Validation
+description: Smoke test checklist for validating a WityLogix deployment on Railway after each production deploy.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## Overview
+
+Run these checks immediately after every Railway production deploy to confirm all services are healthy before marking the release complete. Work through each section in order — earlier checks are prerequisites for later ones.
+
+<Callout type="info">
+Replace `https://api.witylogix.com` and `https://dashboard.witylogix.com` with your own Railway service URLs if you are running a self-hosted instance.
+</Callout>
+
+---
+
+## 1. Core API health
+
+| Check | Command | Expected result |
+|-------|---------|-----------------|
+| Health endpoint | `curl -s https://api.witylogix.com/health` | `{"status":"ok","database":"connected","redis":"connected"}` |
+| Status endpoint | `curl -s https://api.witylogix.com/api/v1/status` | `200 OK` with version and uptime fields |
+| Database connectivity | Included in `/health` response | `"database":"connected"` |
+| Redis connectivity | Included in `/health` response | `"redis":"connected"` |
+
+```bash
+# Quick one-liner — all four checks
+curl -sf https://api.witylogix.com/health | jq '{status,database,redis}'
+```
+
+Expected output:
+
+```json
+{
+  "status": "ok",
+  "database": "connected",
+  "redis": "connected"
+}
+```
+
+<Callout type="warn">
+If `database` or `redis` is not `"connected"`, stop here. Check Railway environment variables (`DATABASE_URL`, `REDIS_URL`) before continuing.
+</Callout>
+
+---
+
+## 2. Auth flow
+
+Run each step in sequence — each depends on the token from the previous step.
+
+<Steps>
+<Step>
+**Register a test tenant**
+
+```bash
+curl -s -X POST https://api.witylogix.com/api/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"smoke-test@example.com","password":"Smoke!Test99","tenantName":"smoke-test-tenant"}'
+```
+
+Expected: `201 Created` with `{ "user": {...}, "tenant": {...} }`.
+</Step>
+
+<Step>
+**Log in**
+
+```bash
+curl -s -X POST https://api.witylogix.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"smoke-test@example.com","password":"Smoke!Test99"}' \
+  | jq '{accessToken,refreshToken}'
+```
+
+Expected: `200 OK` with non-null `accessToken` and `refreshToken`.
+</Step>
+
+<Step>
+**Refresh token**
+
+```bash
+curl -s -X POST https://api.witylogix.com/api/auth/refresh \
+  -H 'Content-Type: application/json' \
+  -d '{"refreshToken":"<refreshToken from above>"}'
+```
+
+Expected: `200 OK` with a new `accessToken`.
+</Step>
+
+<Step>
+**Verify production URL**
+
+Confirm all auth responses include `https://api.witylogix.com` in the `Location` or `Host` headers — not `localhost:8000`.
+
+```bash
+curl -sI -X POST https://api.witylogix.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"smoke-test@example.com","password":"Smoke!Test99"}' \
+  | grep -i 'location\|host'
+```
+</Step>
+</Steps>
+
+---
+
+## 3. Dashboard
+
+Open each URL in an incognito browser window.
+
+- [ ] `https://dashboard.witylogix.com` loads without errors
+- [ ] Login with the smoke-test credentials succeeds
+- [ ] **Orders** page renders a table (empty is fine; a 500 or blank page is not)
+- [ ] **Drivers** page renders a table
+
+<Callout type="info">
+If the dashboard shows a CORS error or a blank white page, check that `NEXT_PUBLIC_API_URL` is set to `https://api.witylogix.com` (not `localhost`) in the Railway dashboard service's environment variables.
+</Callout>
+
+---
+
+## 4. Shopify integration
+
+- [ ] Install the Shopify app from the Railway-hosted URL — no error during OAuth redirect
+- [ ] OAuth flow completes and returns to the Shopify admin
+- [ ] Carrier service responds within 500 ms:
+
+```bash
+time curl -s -X POST https://api.witylogix.com/api/v1/shopify/carrier-service \
+  -H 'Content-Type: application/json' \
+  -d '{"origin":{"postal_code":"94105"},"destination":{"postal_code":"10001"},"items":[]}'
+```
+
+Expected: HTTP 200 in under 500 ms.
+
+---
+
+## 5. Real-time / Socket.io
+
+```bash
+# Confirm the WebSocket upgrade handshake succeeds
+curl -sv "https://api.witylogix.com/socket.io/?EIO=4&transport=websocket" \
+  2>&1 | grep -E 'HTTP|Upgrade|101'
+```
+
+Expected lines in output:
+
+```
+< HTTP/1.1 101 Switching Protocols
+< Upgrade: websocket
+```
+
+- [ ] WebSocket upgrade returns `101 Switching Protocols`
+- [ ] Driver location update event broadcasts correctly (verify in the dashboard live map, or via a Socket.io test client)
+
+---
+
+## 6. Environment variable verification
+
+Check these in the Railway dashboard under **Variables** for each service.
+
+### API service
+
+| Variable | Required value |
+|----------|---------------|
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | Railway Postgres internal URL (not localhost) |
+| `REDIS_URL` | Railway Redis internal URL (not localhost) |
+| `JWT_SECRET` | Set, non-empty, ≥ 32 characters |
+| `CORS_ORIGINS` | Includes `https://dashboard.witylogix.com` |
+
+### Dashboard service
+
+| Variable | Required value |
+|----------|---------------|
+| `NEXT_PUBLIC_API_URL` | `https://api.witylogix.com` (not `localhost:8000`) |
+| `NODE_ENV` | `production` |
+
+<Callout type="warn">
+Run this check from the deployed API response — not just from Railway's UI — to confirm no secret values are leaking into HTTP responses:
+
+```bash
+curl -s https://api.witylogix.com/api/v1/status | grep -i 'secret\|password\|token\|key'
+```
+
+Expected: no matches. Any match is a security incident — escalate immediately.
+</Callout>
+
+---
+
+## Checklist summary
+
+Copy and paste into your deploy notes or PR description:
+
+```markdown
+## Post-deploy smoke test — WityLogix on Railway
+
+### 1. Core API health
+- [ ] GET /health → 200, database: connected, redis: connected
+- [ ] GET /api/v1/status → 200 with version/uptime fields
+
+### 2. Auth flow
+- [ ] POST /api/auth/register → 201
+- [ ] POST /api/auth/login → 200 with accessToken + refreshToken
+- [ ] POST /api/auth/refresh → 200 with new accessToken
+- [ ] All auth URLs point to https://api.witylogix.com (not localhost)
+
+### 3. Dashboard
+- [ ] dashboard.witylogix.com loads
+- [ ] Login succeeds
+- [ ] Orders page renders
+- [ ] Drivers page renders
+
+### 4. Shopify
+- [ ] App install OAuth flow completes without error
+- [ ] Carrier service responds < 500 ms
+
+### 5. Real-time
+- [ ] WebSocket upgrade returns 101 Switching Protocols
+- [ ] Driver location broadcast works
+
+### 6. Environment variables
+- [ ] NEXT_PUBLIC_API_URL = https://api.witylogix.com (not localhost)
+- [ ] No secrets exposed in API responses
+```
