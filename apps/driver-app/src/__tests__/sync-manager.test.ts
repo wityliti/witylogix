@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Inline types mirroring OfflineEvent to keep tests self-contained
@@ -60,8 +60,8 @@ describe('sync queue ordering', () => {
   it('sorts Tier 1 events before Tier 2 events', () => {
     const now = Date.now();
     const events: OfflineEventRow[] = [
-      { id: 'b', sync_priority: 2, device_captured_at: now - 2000, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
-      { id: 'a', sync_priority: 1, device_captured_at: now - 1000, event_type: 'pod_signature', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
+      { id: 'b', sync_priority: 2, device_captured_at: now - 2000, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
+      { id: 'a', sync_priority: 1, device_captured_at: now - 1000, event_type: 'pod_signature', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
     ];
 
     const sorted = sortByPriorityThenTime(events);
@@ -72,9 +72,9 @@ describe('sync queue ordering', () => {
   it('within the same tier sorts by device_captured_at ascending', () => {
     const now = Date.now();
     const events: OfflineEventRow[] = [
-      { id: 'c', sync_priority: 2, device_captured_at: now - 500, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
-      { id: 'd', sync_priority: 2, device_captured_at: now - 3000, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
-      { id: 'e', sync_priority: 2, device_captured_at: now - 1500, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
+      { id: 'c', sync_priority: 2, device_captured_at: now - 500, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
+      { id: 'd', sync_priority: 2, device_captured_at: now - 3000, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
+      { id: 'e', sync_priority: 2, device_captured_at: now - 1500, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
     ];
 
     const sorted = sortByPriorityThenTime(events);
@@ -83,9 +83,9 @@ describe('sync queue ordering', () => {
 
   it('partitions events correctly by tier', () => {
     const events: OfflineEventRow[] = [
-      { id: '1', sync_priority: 1, device_captured_at: 0, event_type: 'pod_signature', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
-      { id: '2', sync_priority: 2, device_captured_at: 0, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
-      { id: '3', sync_priority: 1, device_captured_at: 0, event_type: 'status_transition', delivery_id: 'd2', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null },
+      { id: '1', sync_priority: 1, device_captured_at: 0, event_type: 'pod_signature', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
+      { id: '2', sync_priority: 2, device_captured_at: 0, event_type: 'status_transition', delivery_id: 'd1', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
+      { id: '3', sync_priority: 1, device_captured_at: 0, event_type: 'status_transition', delivery_id: 'd2', payload: '{}', status: 'pending', retry_count: 0, gps_lat: null, gps_lng: null, last_error: null, device_timezone: null },
     ];
 
     const { tier1, tier2 } = partitionByTier(events);
