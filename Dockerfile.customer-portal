@@ -1,10 +1,18 @@
 FROM node:20-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+# Use npm to install pnpm — more reliable than corepack in restricted Alpine builds
+# (corepack has certificate/proxy issues in Railway's Alpine build environment)
+RUN npm install -g pnpm@9.15.0
+RUN apk add --no-cache python3 make g++ git
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN cd apps/customer-portal && npx next build
+# NEXT_PUBLIC_* vars are baked in at build time — must be provided as build args
+ARG NEXT_PUBLIC_API_URL=https://api.witylogix.com
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG API_URL=https://api.witylogix.com
+ENV API_URL=$API_URL
+RUN cd apps/customer-portal && NODE_OPTIONS='--max-old-space-size=3072' npx next build
 
 # Collect optional public dir
 RUN mkdir -p /tmp/public && \

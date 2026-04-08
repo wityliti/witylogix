@@ -7,7 +7,11 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN cd apps/dashboard && npx next build
+# NEXT_PUBLIC_* vars are baked in at build time — must be provided as build args
+# Railway: set NEXT_PUBLIC_API_URL in the dashboard service's build variables
+ARG NEXT_PUBLIC_API_URL=https://api.witylogix.com
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN cd apps/dashboard && NODE_OPTIONS='--max-old-space-size=3072' npx next build
 
 # Collect optional public dir
 RUN mkdir -p /tmp/public && \

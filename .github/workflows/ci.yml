@@ -64,6 +64,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build shared packages (required for type resolution)
         run: |
+          pnpm --filter @witylogix/db db:generate
           pnpm --filter @witylogix/types build
           pnpm --filter @witylogix/validators build
           pnpm --filter @witylogix/framework build
@@ -87,6 +88,7 @@ jobs:
 
       - name: Build shared packages
         run: |
+          pnpm --filter @witylogix/db db:generate
           pnpm --filter @witylogix/types build
           pnpm --filter @witylogix/validators build
           pnpm --filter @witylogix/framework build
@@ -123,6 +125,9 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @witylogix/db db:generate
 
       - name: Run tests
         run: pnpm test:run
