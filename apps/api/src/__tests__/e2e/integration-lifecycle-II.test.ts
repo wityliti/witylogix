@@ -542,10 +542,15 @@ describe('End-to-End Integration Lifecycle II', () => {
 
   describe('Error Recovery and Retry Flows', () => {
     it('should retry failed operation', async () => {
-      const result = await orchestrator.retryFailedOperation('payment_process', { amount: 1000 });
-      expect(result.success).toBe(true);
-      expect(result.attempts).toBeGreaterThan(0);
-      expect(result.attempts).toBeLessThanOrEqual(3);
+      const randSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9);
+      try {
+        const result = await orchestrator.retryFailedOperation('payment_process', { amount: 1000 });
+        expect(result.success).toBe(true);
+        expect(result.attempts).toBeGreaterThan(0);
+        expect(result.attempts).toBeLessThanOrEqual(3);
+      } finally {
+        randSpy.mockRestore();
+      }
     });
 
     it('should handle max retries exceeded', async () => {
