@@ -108,7 +108,7 @@ export class ServiceUnavailableError extends AppError {
 /**
  * Extract field-level error details from Zod validation errors
  */
-function extractZodErrors(error: any): Record<string, unknown> {
+export function extractZodErrors(error: any): Record<string, unknown> {
   const fieldErrors: Record<string, unknown> = {};
 
   error.errors.forEach((err: any) => {
@@ -125,7 +125,7 @@ function extractZodErrors(error: any): Record<string, unknown> {
 /**
  * Map Prisma error codes to AppError subclasses
  */
-function handlePrismaError(error: any): AppError {
+export function handlePrismaError(error: any): AppError {
   // P2002: Unique constraint failed
   if (error.code === 'P2002') {
     const fields = error.meta?.target || ['unknown'];
@@ -140,6 +140,15 @@ function handlePrismaError(error: any): AppError {
     return new NotFoundError(error.meta?.cause || 'Resource not found', {
       prismaCode: 'P2025',
     });
+  }
+
+  // P2003: Foreign key constraint failed
+  if (error.code === 'P2003') {
+    const field = error.meta?.field_name || 'unknown';
+    return new ConflictError(
+      `Foreign key constraint failed on field: ${field}`,
+      { prismaCode: 'P2003', field }
+    );
   }
 
   // P2014: Required relation violated
@@ -158,12 +167,9 @@ function handlePrismaError(error: any): AppError {
     );
   }
 
-  // Generic Prisma error
-  return new AppError(
-    500,
-    'DATABASE_ERROR',
-    'An error occurred while processing your request',
-    { prismaCode: error.code }
+  // Generic Prisma error — treat as service unavailable
+  return new ServiceUnavailableError(
+    'An error occurred while processing your request'
   );
 }
 
@@ -263,3 +269,9 @@ export async function errorHandlerPlugin(fastify: FastifyInstance) {
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError;
 }
+
+/** Alias for extractZodErrors — transforms a ZodError to field-level details */
+export const transformZodError = extractZodErrors;
+
+/** Alias for handlePrismaError — transforms a Prisma error to an AppError */
+export const transformPrismaError = handlePrismaError;
