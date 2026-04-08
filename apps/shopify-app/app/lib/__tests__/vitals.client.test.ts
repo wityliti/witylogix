@@ -64,12 +64,16 @@ describe("initVitals", () => {
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
+    // Simulate production mode by default — tests that check console output will override
+    vi.stubEnv('DEV', false);
+
     // Reset module so initVitals is fresh for each test
     vi.resetModules();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it("registers callbacks for LCP, CLS, and INP", async () => {
@@ -150,6 +154,8 @@ describe("initVitals", () => {
   });
 
   it("does not call sendBeacon when apiBaseUrl is null", async () => {
+    vi.stubEnv('DEV', true);
+    vi.resetModules();
     const { initVitals } = await import("../vitals.client");
     initVitals(null);
 
