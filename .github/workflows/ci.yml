@@ -130,6 +130,9 @@ jobs:
         run: |
           pnpm --filter @witylogix/db db:generate
           pnpm --filter @witylogix/db build
+          # Copy generated Prisma JS runtime files to dist — tsc only emits TS→JS,
+          # not the pre-compiled .js files Prisma puts in src/generated/prisma
+          cp -r packages/db/src/generated packages/db/dist/
 
       - name: Run tests
         run: pnpm test:run
