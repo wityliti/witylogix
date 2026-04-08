@@ -126,8 +126,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client
-        run: pnpm --filter @witylogix/db db:generate
+      - name: Generate Prisma client and build db package
+        run: |
+          pnpm --filter @witylogix/db db:generate
+          pnpm --filter @witylogix/db build
 
       - name: Run tests
         run: pnpm test:run
