@@ -260,7 +260,7 @@ export default function ShippingProfilesList() {
         <Filters
           queryValue=""
           queryPlaceholder=""
-          queryHidden
+          hideQueryField
           onQueryChange={() => {}}
           onQueryClear={() => {}}
           filters={filters}

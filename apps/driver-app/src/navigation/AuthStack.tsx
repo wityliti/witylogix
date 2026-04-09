@@ -13,7 +13,7 @@ const AuthStack: React.FC = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animationEnabled: true,
+        animation: 'none',
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />

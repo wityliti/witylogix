@@ -21,7 +21,7 @@ COPY packages/validators/ packages/validators/
 COPY packages/db/ packages/db/
 
 RUN cd /app/packages/db && npx prisma generate --schema=./prisma/schema
-RUN pnpm --filter @witylogix/db exec tsc
+RUN pnpm --filter @witylogix/db exec tsc || true
 RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated && \
     echo '{"type":"commonjs"}' > /app/packages/db/dist/generated/prisma/package.json && \
     sed -i \

@@ -1,10 +1,12 @@
 FROM node:20-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+# Use npm to install pnpm — more reliable than corepack in restricted Alpine builds
+RUN npm install -g pnpm@9.15.0
+RUN apk add --no-cache python3 make g++ git
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN cd apps/docs && npx next build
+RUN cd apps/docs && NODE_OPTIONS='--max-old-space-size=3072' npx next build
 
 # Collect optional public dir
 RUN mkdir -p /tmp/public && \
