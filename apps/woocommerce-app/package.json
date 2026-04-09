@@ -1,0 +1,33 @@
+{
+  "name": "@witylogix/woocommerce-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint skipped — ESLint not installed'"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "@react-router/fs-routes": "^7.13.1",
+    "@react-router/node": "^7.13.1",
+    "@react-router/serve": "^7.13.1",
+    "@witylogix/core": "workspace:*",
+    "@witylogix/db": "workspace:*",
+    "isbot": "^5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.0.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vite-tsconfig-paths": "^5.1.0"
+  }
+}

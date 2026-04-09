@@ -109,7 +109,7 @@ interface GoogleRoutesConfig extends RoutingAdapterConfig {
  */
 export class GoogleRoutesSDK extends RoutingAdapter {
   private config: GoogleRoutesConfig;
-  private baseUrl: string = 'https://routes.googleapis.com/routes/v2';
+  private baseUrl: string = 'https://routes.googleapis.com/directions/v2';
   private rateLimitInfo: RateLimitInfo = {
     remaining: 100,
     limit: 100,

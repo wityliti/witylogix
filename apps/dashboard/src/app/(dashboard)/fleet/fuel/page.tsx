@@ -21,46 +21,50 @@ const formatDate = (dateStr: string): string => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-interface Driver {
+interface FuelTransaction {
   id: string;
-  name: string;
+  vehicleId: string;
+  date: string;
+  station: string;
+  gallons: number;
+  amount: number;
+  price: number;
+  mpg: number;
+  flagged: boolean;
 }
 
 export default function FuelPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { items: drivers, loading, error, refetch } = useApiList<Driver>('/api/v4/drivers?include=fuel');
+  const { items: transactions, loading, error, refetch } = useApiList<FuelTransaction>('/api/v4/fleet/fuel');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const pageSize = 10;
-  const transactions = drivers.slice(0, 50).flatMap((d, i) =>
-    Array(5).fill(null).map((_, j) => ({
-      id: `${d.id}-${j}`,
-      vehicleId: d.id,
-      date: new Date(Date.now() - (i * 5 + j) * 24 * 60 * 60 * 1000).toISOString(),
-      station: ['Shell', 'Chevron', 'BP'][Math.floor(Math.random() * 3)],
-      gallons: 50 + Math.random() * 50,
-      amount: 200 + Math.random() * 300,
-      price: 3 + Math.random() * 1,
-      mpg: 10 + Math.random() * 10,
-      flagged: Math.random() > 0.9,
-    })),
-  );
-
   const paginatedTransactions = transactions.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(transactions.length / pageSize);
 
+  const anomalies = transactions.filter((t) => t.flagged);
+  const totalSpend = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const avgMpg = transactions.length ? transactions.reduce((sum, t) => sum + t.mpg, 0) / transactions.length : 0;
+  const pricePerGallon = transactions.length ? transactions.reduce((sum, t) => sum + t.price, 0) / transactions.length : 0;
+
+  const spendByVehicle = transactions.reduce<Record<string, number>>((acc, t) => {
+    acc[t.vehicleId] = (acc[t.vehicleId] ?? 0) + t.amount;
+    return acc;
+  }, {});
+  const topConsumers = Object.entries(spendByVehicle)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([vehicleId, spend]) => ({ vehicleId, spend }));
+
   const analytics = {
-    totalSpend: 15000 + Math.random() * 5000,
-    avgMpg: 12.5,
-    pricePerGallon: 3.45,
+    totalSpend,
+    avgMpg: parseFloat(avgMpg.toFixed(1)),
+    pricePerGallon: parseFloat(pricePerGallon.toFixed(2)),
     idleTimePercent: 8,
-    anomalies: transactions.filter((t) => t.flagged),
-    topConsumers: Array(5).fill(null).map((_, i) => ({
-      vehicleId: drivers[i]?.id,
-      spend: 3000 + Math.random() * 2000,
-    })),
+    anomalies,
+    topConsumers,
   };
 
   return (

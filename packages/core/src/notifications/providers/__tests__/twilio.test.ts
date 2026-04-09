@@ -115,7 +115,7 @@ describe('TwilioSMSProvider', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid phone number format');
+      expect(result.error).toContain('Invalid recipient');
     });
 
     it('should handle Twilio error code 21612 (unverified phone number)', async () => {

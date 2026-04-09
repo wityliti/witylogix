@@ -12,10 +12,23 @@
  */
 
 import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, Link } from "react-router";
+import { useLoaderData } from "react-router";
+import {
+  Page,
+  Layout,
+  Card,
+  Text,
+  Badge,
+  Button,
+  ButtonGroup,
+  InlineGrid,
+  InlineStack,
+  BlockStack,
+  Box,
+} from "@shopify/polaris";
 import { KPICard } from "~/components/KPICard";
 import { StatusTimeline } from "~/components/StatusTimeline";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -49,7 +62,7 @@ interface DashboardData {
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   // Fetch dashboard stats and recent activity in parallel
   const [statsResponse, activityResponse] = await Promise.allSettled([
@@ -88,172 +101,74 @@ export default function Dashboard() {
   const { stats, recentActivity } = useLoaderData<DashboardData>();
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Page Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "24px 0 16px",
-        }}
-      >
-        <div>
-          <h1 style={headingStyle}>Dashboard</h1>
-          <p style={subtextStyle}>
-            Overview of today&apos;s delivery operations
-          </p>
-        </div>
-      </div>
+    <Page
+      title="Dashboard"
+      subtitle="Overview of today's delivery operations"
+    >
+      <Layout>
+        {/* KPI Cards */}
+        <Layout.Section>
+          <InlineGrid columns={4} gap="400">
+            <KPICard
+              title="Orders Today"
+              value={stats.ordersToday}
+              delta={stats.ordersDelta}
+              deltaPeriod="vs yesterday"
+            />
+            <KPICard
+              title="Active Deliveries"
+              value={stats.activeDeliveries}
+              description="Currently in progress"
+            />
+            <KPICard
+              title="Drivers Online"
+              value={`${stats.driversOnline} / ${stats.driversTotal}`}
+              description="Available now"
+            />
+            <KPICard
+              title="Success Rate"
+              value={`${stats.successRate}%`}
+              delta={stats.successRateDelta}
+              deltaUnit="%"
+              deltaPeriod="vs last 7 days"
+            />
+          </InlineGrid>
+        </Layout.Section>
 
-      {/* KPI Cards */}
-      <div style={kpiGridStyle}>
-        <KPICard
-          title="Orders Today"
-          value={stats.ordersToday}
-          delta={stats.ordersDelta}
-          deltaPeriod="vs yesterday"
-        />
-        <KPICard
-          title="Active Deliveries"
-          value={stats.activeDeliveries}
-          description="Currently in progress"
-        />
-        <KPICard
-          title="Drivers Online"
-          value={`${stats.driversOnline} / ${stats.driversTotal}`}
-          description="Available now"
-        />
-        <KPICard
-          title="Success Rate"
-          value={`${stats.successRate}%`}
-          delta={stats.successRateDelta}
-          deltaUnit="%"
-          deltaPeriod="vs last 7 days"
-        />
-      </div>
+        {/* Quick Actions */}
+        <Layout.Section>
+          <ButtonGroup>
+            <Button url="/orders?status=PENDING">
+              <InlineStack gap="200" align="center">
+                {stats.unassignedCount > 0 && (
+                  <Badge tone="critical">{String(stats.unassignedCount)}</Badge>
+                )}
+                <span>View Unassigned</span>
+              </InlineStack>
+            </Button>
+            <Button variant="primary" url="/routes/new">
+              Build Route
+            </Button>
+          </ButtonGroup>
+        </Layout.Section>
 
-      {/* Quick Actions */}
-      <div style={quickActionsStyle}>
-        <Link to="/orders?status=PENDING" style={actionButtonSecondary}>
-          {stats.unassignedCount > 0 && (
-            <span style={badgeStyle}>{stats.unassignedCount}</span>
-          )}
-          View Unassigned
-        </Link>
-        <Link to="/routes/new" style={actionButtonPrimary}>
-          Build Route
-        </Link>
-      </div>
-
-      {/* Recent Activity */}
-      <div style={sectionStyle}>
-        <div style={sectionHeaderStyle}>
-          <h2 style={sectionTitleStyle}>Recent Activity</h2>
-          <span style={subtextStyle}>Real-time updates</span>
-        </div>
-        <div style={cardStyle}>
-          <StatusTimeline events={recentActivity} />
-        </div>
-      </div>
-    </div>
+        {/* Recent Activity */}
+        <Layout.Section>
+          <BlockStack gap="300">
+            <InlineStack align="space-between" blockAlign="baseline">
+              <Text as="h2" variant="headingMd">
+                Recent Activity
+              </Text>
+              <Text as="span" variant="bodySm" tone="subdued">
+                Real-time updates
+              </Text>
+            </InlineStack>
+            <Card>
+              <StatusTimeline events={recentActivity} />
+            </Card>
+          </BlockStack>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headingStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "4px 0 0",
-};
-
-const kpiGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 16,
-  marginBottom: 24,
-};
-
-const quickActionsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 12,
-  marginBottom: 32,
-};
-
-const actionButtonPrimary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-};
-
-const actionButtonSecondary: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minWidth: 20,
-  height: 20,
-  padding: "0 6px",
-  fontSize: 11,
-  fontWeight: 600,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-critical, #d72c0d)",
-  borderRadius: 10,
-};
-
-const sectionStyle: React.CSSProperties = {
-  marginBottom: 32,
-};
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "baseline",
-  marginBottom: 12,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const cardStyle: React.CSSProperties = {
-  padding: 16,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};

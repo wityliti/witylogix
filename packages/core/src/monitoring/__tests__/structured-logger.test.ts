@@ -280,7 +280,7 @@ describe("Structured Logger", () => {
       });
 
       customLogger.info("test", { secret: "should be redacted" });
-      expect(capturedLogs[1].fields.secret).toBe("[REDACTED]");
+      expect(capturedLogs[0].fields.secret).toBe("[REDACTED]");
     });
   });
 
@@ -310,10 +310,10 @@ describe("Structured Logger", () => {
   describe("Multiple transports", () => {
     it("should write to multiple transports", async () => {
       const transport1: LogTransport = {
-        write: vi.fn(),
+        write: vi.fn().mockResolvedValue(undefined),
       };
       const transport2: LogTransport = {
-        write: vi.fn(),
+        write: vi.fn().mockResolvedValue(undefined),
       };
 
       const multiLogger = new Logger({
@@ -333,14 +333,13 @@ describe("Structured Logger", () => {
       const prettyLogger = new Logger({
         service: "test-service",
         format: "pretty",
-        transports: [mockTransport],
       });
 
-      const consoleSpy = vi.spyOn(console, "log");
+      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       prettyLogger.info("test message", { key: "value" });
-      consoleSpy.restore();
 
       expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 });

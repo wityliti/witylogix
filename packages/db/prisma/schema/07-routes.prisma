@@ -36,6 +36,8 @@ model RouteStop {
   estimatedArrival DateTime?  @map("estimated_arrival")
   actualArrival    DateTime?  @map("actual_arrival")
   departedAt       DateTime?  @map("departed_at")
+  timeWindowStart  DateTime?  @map("time_window_start")
+  timeWindowEnd    DateTime?  @map("time_window_end")
   notes            String?
   createdAt        DateTime   @default(now()) @map("created_at")
   updatedAt        DateTime   @updatedAt @map("updated_at")

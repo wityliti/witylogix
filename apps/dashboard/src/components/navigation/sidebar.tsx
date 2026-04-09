@@ -52,6 +52,31 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     ],
   },
   {
+    label: "AI & Intelligence",
+    items: [
+      {
+        label: "AI Hub",
+        href: "/ai",
+        icon: "M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73A2 2 0 0110 4a2 2 0 012-2z",
+      },
+      {
+        label: "Co-pilot",
+        href: "/ai/copilot",
+        icon: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
+      },
+      {
+        label: "Demand",
+        href: "/demand",
+        icon: "M3 3h18v18H3z M3 9h18 M3 15h18 M9 3v18 M15 3v18",
+      },
+      {
+        label: "Anomaly Alerts",
+        href: "/analytics/anomalies",
+        icon: "M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z M12 9v4 M12 17h.01",
+      },
+    ],
+  },
+  {
     label: "Overview",
     items: [
       {

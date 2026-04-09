@@ -13,8 +13,31 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import * as Camera from 'expo-camera';
+import { useCameraPermissions } from 'expo-camera';
 import { api } from '../services/api';
+import {
+  captureStatusTransition,
+  capturePodSignature,
+  StatusTransitionType,
+} from '../services/offline-event-service';
+import { syncManager } from '../services/sync-manager';
+import { connectivityMonitor } from '../services/connectivity-monitor';
+import OfflineIndicator from '../components/OfflineIndicator';
+
+interface CustomerPreferences {
+  deliveryMethod?: 'door' | 'signature' | 'neighbor';
+  safePlace?: string;
+  instructions?: string;
+  rescheduleDate?: string;
+  rescheduleTimeWindow?: string;
+  redirectAddress?: {
+    line1: string;
+    city: string;
+    postalCode: string;
+  };
+  phoneNumber?: string;
+  updatedAt?: string;
+}
 
 interface Delivery {
   id: string;
@@ -22,7 +45,14 @@ interface Delivery {
   address: string;
   phone: string;
   status: string;
+  preferences?: CustomerPreferences;
 }
+
+const STATUS_MAP: Record<string, StatusTransitionType> = {
+  arrived: 'in_transit',
+  delivered: 'delivered',
+  failed: 'failed_delivery',
+};
 
 const DeliveryScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -31,6 +61,7 @@ const DeliveryScreen: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, requestCameraPermission] = useCameraPermissions();
 
   const { deliveryId } = route.params || {};
 
@@ -55,20 +86,20 @@ const DeliveryScreen: React.FC = () => {
 
   const handleTakePhoto = async () => {
     try {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
+      const result = await requestCameraPermission();
+      if (!result.granted) {
         Alert.alert('Permission Denied', 'Camera permission is required');
         return;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
+      const pickerResult = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setProofImage(result.assets[0].uri);
+      if (!pickerResult.canceled && pickerResult.assets[0]) {
+        setProofImage(pickerResult.assets[0].uri);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to take photo');
@@ -76,26 +107,31 @@ const DeliveryScreen: React.FC = () => {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
+    if (!delivery) return;
     try {
       setIsSubmitting(true);
-      const formData = new FormData();
-      formData.append('status', newStatus);
-      if (notes) {
-        formData.append('notes', notes);
-      }
-      if (proofImage) {
-        formData.append('proofImage', {
-          uri: proofImage,
-          type: 'image/jpeg',
-          name: 'proof.jpg',
-        } as any);
+
+      const offlineStatus = STATUS_MAP[newStatus] ?? (newStatus as StatusTransitionType);
+
+      // Always write to offline queue first (works regardless of connectivity)
+      await captureStatusTransition(delivery.id, offlineStatus, { notes: notes || undefined });
+
+      // If a POD image is captured, record it as a pod_signature event
+      if (proofImage && (newStatus === 'delivered' || newStatus === 'arrived')) {
+        await capturePodSignature(delivery.id, proofImage, { notes: notes || undefined });
       }
 
-      await api.patch(`/api/v4/deliveries/${deliveryId}`, formData);
-      Alert.alert('Success', `Delivery marked as ${newStatus}`);
-      fetchDelivery();
+      // Optimistically update UI
+      setDelivery((prev) => prev ? { ...prev, status: newStatus } : prev);
+
+      // Attempt immediate sync if online
+      if (connectivityMonitor.isCurrentlyOnline()) {
+        syncManager.flush().catch(() => {});
+      }
+
+      Alert.alert('Saved', `Delivery status saved${connectivityMonitor.isCurrentlyOnline() ? '' : ' offline — will sync when connected'}`);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update delivery');
+      Alert.alert('Error', 'Failed to save delivery status');
     } finally {
       setIsSubmitting(false);
     }
@@ -104,6 +140,7 @@ const DeliveryScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
+        <OfflineIndicator />
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color="#005bd3" />
         </View>
@@ -114,6 +151,7 @@ const DeliveryScreen: React.FC = () => {
   if (!delivery) {
     return (
       <SafeAreaView style={styles.container}>
+        <OfflineIndicator />
         <View style={styles.centerContent}>
           <Text style={styles.errorText}>Delivery not found</Text>
         </View>
@@ -123,6 +161,7 @@ const DeliveryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <OfflineIndicator />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.customerName}>{delivery.customerName}</Text>
@@ -142,6 +181,67 @@ const DeliveryScreen: React.FC = () => {
             <Text style={styles.statusValue}>{delivery.status}</Text>
           </View>
         </View>
+
+        {/* Customer delivery preferences */}
+        {delivery.preferences && (
+          <View style={[styles.section, styles.preferencesCard]}>
+            <Text style={styles.sectionTitle}>Customer Instructions</Text>
+            {delivery.preferences.deliveryMethod && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Method</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.deliveryMethod === 'door' && 'Leave at Door'}
+                  {delivery.preferences.deliveryMethod === 'signature' && 'Require Signature'}
+                  {delivery.preferences.deliveryMethod === 'neighbor' && 'Leave with Neighbour'}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.safePlace && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Safe Place</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.safePlace}</Text>
+              </View>
+            )}
+            {!!delivery.preferences.instructions && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Instructions</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.instructions}</Text>
+              </View>
+            )}
+            {delivery.preferences.redirectAddress && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Redirect To</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.redirectAddress.line1},{' '}
+                  {delivery.preferences.redirectAddress.city}{' '}
+                  {delivery.preferences.redirectAddress.postalCode}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.rescheduleDate && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Reschedule</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.rescheduleDate}
+                  {delivery.preferences.rescheduleTimeWindow &&
+                    delivery.preferences.rescheduleTimeWindow !== 'anytime' &&
+                    ` (${delivery.preferences.rescheduleTimeWindow})`}
+                </Text>
+              </View>
+            )}
+            {!!delivery.preferences.phoneNumber && (
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Contact</Text>
+                <Text style={styles.prefValue}>{delivery.preferences.phoneNumber}</Text>
+              </View>
+            )}
+            {delivery.preferences.updatedAt && (
+              <Text style={styles.prefUpdated}>
+                Updated {new Date(delivery.preferences.updatedAt).toLocaleTimeString()}
+              </Text>
+            )}
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Proof of Delivery</Text>
@@ -427,6 +527,35 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: '#666',
+  },
+  preferencesCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#005bd3',
+    backgroundColor: '#f0f7ff',
+  },
+  prefRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  prefLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005bd3',
+    width: 90,
+    marginTop: 1,
+  },
+  prefValue: {
+    fontSize: 13,
+    color: '#202223',
+    flex: 1,
+    lineHeight: 18,
+  },
+  prefUpdated: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 

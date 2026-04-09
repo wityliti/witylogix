@@ -57,6 +57,17 @@ model Shipment {
   carrier            String? // external carrier name
   carrierTrackingUrl String? @map("carrier_tracking_url")
 
+  // Cold-chain flag (WIT-91)
+  isColdChain Boolean @default(false) @map("is_cold_chain")
+
+  // Failed delivery tracking (WIT-141)
+  attemptCount      Int     @default(0) @map("attempt_count")
+  lastFailureReason String? @map("last_failure_reason")
+
+  // Geofencing (WIT-140)
+  geofenceTriggeredAt DateTime? @map("geofence_triggered_at") @db.Timestamptz
+
+
   // Metadata
   tags          String[] @default([])
   notes         String?
@@ -78,11 +89,16 @@ model Shipment {
   codcollections      CODCollection[]
   deliveryTimeSlot    DeliveryTimeSlot?    @relation(fields: [deliveryTimeSlotId], references: [id])
   deliveryTimeSlotId  String?              @db.Uuid
+  deliveryEvents      DeliveryEvent[]
+  deliveryAttempts    DeliveryAttempt[]
+  temperatureLogs     TemperatureLog[]
+  coldChainAlerts     ColdChainAlert[]
 
   @@unique([shopId, shipmentNumber])
   @@index([shopId, status, createdAt(sort: Desc)])
   @@index([shopId, orderId])
   @@index([shopId, driverId])
+  @@index([shopId, locationId])
   @@index([shopId, deliveryDate])
   @@index([trackingNumber])
   @@map("shipments")
@@ -117,8 +133,9 @@ enum ShipmentStatus {
   OUT_FOR_DELIVERY // Last-mile delivery in progress
   ARRIVED // Driver at delivery location
   DELIVERED // Successfully delivered + POD captured
-  FAILED // Delivery attempt failed
-  RETURNED // Returned to origin
+  FAILED // All attempts exhausted — permanent failure
+  FAILED_ATTEMPT // Attempt failed; retries remaining (WIT-141)
+  RETURNED // Returned to origin (auto-return or manual)
   CANCELLED // Cancelled before delivery
 }
 

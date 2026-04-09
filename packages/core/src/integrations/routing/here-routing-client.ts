@@ -327,7 +327,7 @@ export class HERERoutingClient {
       if (options?.avoidFerries) params.append('avoid[ferries]', 'true');
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/routes?${routePoints}?${params.toString()}`, {
+        return fetch(`${this.baseUrl}/routes?${routePoints}&${params.toString()}`, {
           method: 'GET',
           timeout: this.timeout,
           headers: {

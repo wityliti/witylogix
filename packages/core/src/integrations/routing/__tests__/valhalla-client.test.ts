@@ -231,7 +231,7 @@ describe('ValhallaClient', () => {
     });
 
     it('should handle API errors', async () => {
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 400,
         statusText: 'Bad Request',

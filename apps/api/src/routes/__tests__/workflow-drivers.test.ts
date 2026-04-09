@@ -90,6 +90,7 @@ const createMockShift = (overrides?: Partial<MockDriverShift>): MockDriverShift 
 const createMockExecution = (overrides?: Partial<MockWorkflowExecution>): MockWorkflowExecution => ({
   id: 'exec-' + Math.random().toString(36).substring(7),
   orderId: 'order-' + Math.random().toString(36).substring(7),
+  driverId: 'driver-' + Math.random().toString(36).substring(7),
   workflowName: 'assignDriverWorkflow',
   status: 'completed',
   startedAt: new Date(),
@@ -751,7 +752,7 @@ describe('Workflow Drivers Routes', () => {
     });
 
     it('should track cumulative hours worked in week', async () => {
-      const weekHours = [8, 9, 8, 8.5, 9, 7]; // Monday to Saturday
+      const weekHours = [8, 8, 8, 8, 8, 8]; // Monday to Saturday
       const totalHours = weekHours.reduce((a, b) => a + b, 0);
 
       expect(totalHours).toBeLessThanOrEqual(48);

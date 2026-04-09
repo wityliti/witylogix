@@ -31,9 +31,13 @@ interface UseSocketResult {
   emit: (event: string, ...args: unknown[]) => void;
 }
 
-const SOCKET_URL = typeof window !== "undefined"
-  ? (window as unknown as Record<string, string>).__SOCKET_URL ?? "http://localhost:8000"
-  : "http://localhost:8000";
+function readSocketUrl(): string {
+  if (typeof window === "undefined") return "http://localhost:8000";
+  return (
+    (window as unknown as Record<string, string>).__SOCKET_URL ??
+    "http://localhost:8000"
+  );
+}
 
 export function useSocket(options: UseSocketOptions = {}): UseSocketResult {
   const { namespace = "", token, room, autoConnect = true } = options;
@@ -49,7 +53,8 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketResult {
       const { io } = await import("socket.io-client");
       if (cancelled) return;
 
-      const socket = io(`${SOCKET_URL}${namespace}`, {
+      const socketUrl = readSocketUrl();
+      const socket = io(`${socketUrl}${namespace}`, {
         auth: token ? { token } : undefined,
         transports: ["websocket", "polling"],
         reconnection: true,

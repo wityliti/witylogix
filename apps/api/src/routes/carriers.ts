@@ -1,5 +1,5 @@
 /**
- * Carrier Service — Shopify Carrier Service API endpoint.
+ * Carrier Service — Shopify Carrier Service API endpoint + carrier coverage matrix.
  *
  * This is the performance-critical endpoint that Shopify calls during checkout
  * to get shipping rates. Target: p95 < 500ms response time.
@@ -8,6 +8,7 @@
  *   POST /rates         Calculate shipping rates (called by Shopify)
  *   GET  /services      List carrier services for the tenant
  *   POST /services      Register a new carrier service
+ *   GET  /adapters      List registered native carrier adapters (coverage matrix)
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -173,6 +174,35 @@ async function carriersRoutes(fastify: FastifyInstance): Promise<void> {
 
       reply.status(201);
       return { data: service };
+    },
+  );
+
+  // ── LIST NATIVE CARRIER ADAPTERS (coverage matrix) ───────────
+
+  fastify.get(
+    "/adapters",
+    { preHandler: [requireAuth, tenantContext] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+
+      // Lazy-import to avoid hard dep when carriers not configured
+      let entries: Array<{ name: string; label: string; enabled: boolean; configSource: string }> = [];
+      try {
+        const { carrierRegistry } = await import("@witylogix/core/integrations/shipping");
+        entries = carrierRegistry.list().map(({ name, label, enabled, configSource }) => ({
+          name,
+          label,
+          enabled,
+          configSource,
+        }));
+      } catch {
+        // core not available or no adapters bootstrapped — return empty
+      }
+
+      return {
+        data: entries,
+        total: entries.length,
+      };
     },
   );
 }

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
+import { useOfflineSync } from '../hooks/useOfflineSync';
 
 interface DriverProfile {
   id: string;
@@ -35,6 +36,7 @@ const ProfileScreen: React.FC = () => {
   const [profile, setProfile] = useState<DriverProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { lastSyncAt, pendingCount } = useOfflineSync();
 
   useEffect(() => {
     fetchProfile();
@@ -156,6 +158,21 @@ const ProfileScreen: React.FC = () => {
               trackColor={{ false: '#ddd', true: '#81c784' }}
               thumbColor={notificationsEnabled ? '#008060' : '#999'}
             />
+          </View>
+          <View style={styles.settingRow}>
+            <View>
+              <Text style={styles.settingLabel}>Last Synced</Text>
+              <Text style={styles.settingDescription}>
+                {lastSyncAt
+                  ? new Date(lastSyncAt).toLocaleString()
+                  : 'Not yet synced this session'}
+              </Text>
+            </View>
+            {pendingCount > 0 && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>{pendingCount} pending</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -285,6 +302,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     marginTop: 2,
+  },
+  pendingBadge: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  pendingBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
   },
   actionContainer: {
     paddingHorizontal: 16,

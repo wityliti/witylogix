@@ -1,0 +1,54 @@
+{
+  "version": "wit57-post-optimization",
+  "recordedDate": "2026-03-26",
+  "environment": "production-db",
+  "testIterations": 30,
+  "thresholds": {
+    "p95": 500
+  },
+  "optimizationsApplied": [
+    "Eliminated N+1 in GET /analytics/driver-performance (batch driverId IN query)",
+    "Eliminated N+1 in GET /analytics/zone-performance (batch locationId IN query)",
+    "Eliminated N+1 in GET /analytics/export drivers and zones types",
+    "Added DB index: shipments(shop_id, location_id)"
+  ],
+  "endpoints": {
+    "GET /analytics/driver-performance": {
+      "p50": 391,
+      "p95": 395,
+      "p99": 396,
+      "avg": 392,
+      "min": 390,
+      "max": 396,
+      "passP95": true
+    },
+    "GET /analytics/zone-performance": {
+      "p50": 392,
+      "p95": 399,
+      "p99": 587,
+      "avg": 399,
+      "min": 389,
+      "max": 587,
+      "passP95": true
+    },
+    "GET /analytics/delivery-trends": {
+      "p50": 197,
+      "p95": 229,
+      "p99": 396,
+      "avg": 206,
+      "min": 194,
+      "max": 396,
+      "passP95": true
+    },
+    "GET /analytics/cost-breakdown": {
+      "p50": 195,
+      "p95": 197,
+      "p99": 199,
+      "avg": 196,
+      "min": 194,
+      "max": 199,
+      "passP95": true
+    }
+  },
+  "allPassP95": true
+}

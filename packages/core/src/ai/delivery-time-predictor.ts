@@ -158,7 +158,7 @@ const WEATHER_IMPACTS: WeatherImpact[] = [
   { condition: 'extreme', location: 'route', delayDaysMin: 2, delayDaysMax: 4, affectedCarriers: [] },
 ];
 
-const MIN_SAMPLES_FOR_CARRIER_FACTOR = 5; // require at least N shipments to use carrier performance data
+const MIN_SAMPLES_FOR_CARRIER_FACTOR = 1; // require at least N shipments to use carrier performance data
 const CONFIDENCE_INTERVAL_PERCENT = 0.2; // ±20% confidence interval width
 
 // ─── CARRIER PERFORMANCE TRACKER ────────────────────────────────────────────
@@ -518,8 +518,12 @@ export class DeliveryTimePrediction {
     const matchingPerformances = performances.filter((p) => p.carrier === factors.carrier);
 
     if (matchingPerformances.length === 0) return 65; // low confidence without carrier data
-    if (matchingPerformances.length < 5) return 75; // medium confidence
-    if (matchingPerformances.length < 20) return 85; // good confidence
+
+    // Use total sample count across all lanes for this carrier
+    const totalSamples = matchingPerformances.reduce((sum, p) => sum + p.sampleCount, 0);
+
+    if (totalSamples < 3) return 75; // medium confidence
+    if (totalSamples < 15) return 85; // good confidence
     return 92; // high confidence with lots of data
   }
 

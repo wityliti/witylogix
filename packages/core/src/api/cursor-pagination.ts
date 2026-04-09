@@ -94,7 +94,7 @@ export class CursorPaginator {
     const startCursor = data.length > 0 ? this.encodeCursor(startIndex) : undefined;
     const endCursor =
       data.length > 0
-        ? this.encodeCursor(startIndex + data.length - 1)
+        ? this.encodeCursor(startIndex + data.length)
         : undefined;
 
     // Build response

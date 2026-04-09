@@ -347,7 +347,7 @@ export default async function shopifyCheckoutRoutes(app: FastifyInstance): Promi
       // Create delivery order record
       const deliveryOrder = await prisma.deliveryOrder.create({
         data: {
-          shopifyOrderId: orderData.orderId,
+          externalOrderId: orderData.orderId,
           shopId: shop.id,
           slotId: reservation.slotId,
           customerEmail: orderData.customerEmail,
@@ -368,7 +368,7 @@ export default async function shopifyCheckoutRoutes(app: FastifyInstance): Promi
       return reply.status(201).send({
         success: true,
         orderId: deliveryOrder.id,
-        shopifyOrderId: orderData.orderId,
+        externalOrderId: orderData.orderId,
       });
     } catch (error) {
       app.log.error(error);

@@ -227,21 +227,21 @@ async function shopifyWorkflowBridgeRoutes(
 
         const order = validPayload.data;
         request.log.info(
-          { shopId, shopifyOrderId: order.id, orderNumber: order.order_number },
+          { shopId, externalOrderId: order.id, orderNumber: order.order_number },
           "Shopify order webhook received"
         );
 
         // Check idempotency — avoid duplicate processing
         const existingOrder = await db.order.findFirst({
           where: {
-            shopifyOrderId: String(order.id),
+            externalOrderId: String(order.id),
           },
           select: { id: true },
         });
 
         if (existingOrder) {
           request.log.info(
-            { shopifyOrderId: order.id, existingId: existingOrder.id },
+            { externalOrderId: order.id, existingId: existingOrder.id },
             "Order already processed, skipping"
           );
           return reply.status(200).json({
@@ -275,8 +275,8 @@ async function shopifyWorkflowBridgeRoutes(
             organizationId: shop.organizationId,
             correlationId: `shopify-${order.id}`,
             data: {
-              shopifyOrderId: String(order.id),
-              shopifyOrderNumber: order.order_number,
+              externalOrderId: String(order.id),
+              externalOrderNumber: order.order_number,
               ...transformedOrder,
             },
           },
@@ -292,7 +292,7 @@ async function shopifyWorkflowBridgeRoutes(
         );
 
         request.log.info(
-          { jobId, shopifyOrderId: order.id },
+          { jobId, externalOrderId: order.id },
           "Enqueued createDeliveryOrder workflow"
         );
 
@@ -421,14 +421,14 @@ async function shopifyWorkflowBridgeRoutes(
         // Find associated order
         const order = await db.order.findFirst({
           where: {
-            shopifyOrderId: String(fulfillment.order_id),
+            externalOrderId: String(fulfillment.order_id),
           },
           select: { id: true, organizationId: true },
         });
 
         if (!order) {
           request.log.warn(
-            { shopifyOrderId: fulfillment.order_id },
+            { externalOrderId: fulfillment.order_id },
             "Order not found for fulfillment"
           );
           return reply.status(404).json({
@@ -450,7 +450,7 @@ async function shopifyWorkflowBridgeRoutes(
             correlationId: `shopify-fulfill-${fulfillment.id}`,
             data: {
               shopifyFulfillmentId: String(fulfillment.id),
-              shopifyOrderId: String(fulfillment.order_id),
+              externalOrderId: String(fulfillment.order_id),
               orderId: order.id,
               ...shipmentUpdate,
             },

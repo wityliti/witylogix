@@ -49,7 +49,7 @@ export default function AnomaliesPage() {
   const [expandedAnomalies, setExpandedAnomalies] = useState<Set<string>>(new Set());
 
   const { items: anomalies, loading, error } = useApiList<AnomalyEvent>(
-    '/api/v4/analytics?type=demand-anomalies'
+    '/api/v4/analytics/demand-anomalies'
   );
 
   const filteredAnomalies = useMemo(() => {
@@ -102,7 +102,7 @@ export default function AnomaliesPage() {
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return <ErrorState message={error.message} />;
   }
 
   const getSeverityColor = (severity: string) => {

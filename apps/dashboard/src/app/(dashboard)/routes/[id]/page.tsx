@@ -55,7 +55,7 @@ export default function RouteDetailPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] p-6">
-        <ErrorState error={error} onRetry={refetch} />
+        <ErrorState message={error.message} onRetry={refetch} />
       </div>
     );
   }

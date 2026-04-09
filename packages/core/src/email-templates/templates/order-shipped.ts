@@ -4,6 +4,7 @@
 
 import { ShippingEmailData } from '../types';
 import { baseLayout } from './base-layout';
+import { renderTemplate } from '../template-engine';
 
 export function orderShippedTemplate(data: ShippingEmailData): string {
   const content = `
@@ -78,10 +79,12 @@ export function orderShippedTemplate(data: ShippingEmailData): string {
     </div>
   `;
 
-  return baseLayout({
+  const html = baseLayout({
     storeName: data.storeName,
     storeUrl: data.storeUrl,
     supportEmail: data.supportEmail,
     content,
   });
+
+  return renderTemplate(html, data as unknown as Record<string, any>);
 }

@@ -1,0 +1,91 @@
+# Shopify App Dockerfile
+FROM node:22-alpine AS builder
+
+# Cache bust: force rebuild (2026-03-27-v6)
+RUN echo "cache-bust-2026-03-27-v6"
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json tsconfig.json ./
+COPY apps/shopify-app/package.json apps/shopify-app/
+COPY packages/types/package.json packages/types/
+COPY packages/validators/package.json packages/validators/
+COPY packages/db/package.json packages/db/
+
+RUN pnpm install --frozen-lockfile --filter @witylogix/shopify-app...
+
+COPY apps/shopify-app/ apps/shopify-app/
+COPY packages/types/ packages/types/
+COPY packages/validators/ packages/validators/
+COPY packages/db/ packages/db/
+
+RUN cd /app/packages/db && npx prisma generate --schema=./prisma/schema
+RUN pnpm --filter @witylogix/db exec tsc || true
+RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated && \
+    echo '{"type":"commonjs"}' > /app/packages/db/dist/generated/prisma/package.json && \
+    sed -i \
+      's|import { PrismaClient, Prisma } from "./generated/prisma";|import { createRequire as _cr } from "module"; const { PrismaClient, Prisma } = _cr(import.meta.url)("./generated/prisma/index.js");|' \
+      /app/packages/db/dist/index.js
+
+WORKDIR /app/apps/shopify-app
+RUN pnpm build
+
+WORKDIR /app
+RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
+
+# --- Prisma client for production ---
+#
+# Problem: pnpm deploy --prod creates a virtual store under node_modules/.pnpm/.
+# @prisma/client is hoisted (per .npmrc public-hoist-pattern) as a SYMLINK to
+# .pnpm/@prisma+client@.../node_modules/@prisma/client/.
+# Node.js follows symlinks when resolving, so require('@prisma/client') starts
+# resolution from the REAL path inside .pnpm/. When @prisma/client/default.js does
+# require('.prisma/client'), Node.js looks for .prisma/client ADJACENT to the real
+# pnpm store path — e.g. .pnpm/@prisma+client@.../node_modules/.prisma/client — NOT
+# at the flat node_modules/.prisma/client we generate to.
+#
+# Fix: generate to the flat location first (for any non-symlink consumers), then
+# copy the generated client into every .prisma/client directory inside the pnpm store.
+WORKDIR /standalone
+RUN cp -r /app/packages/db/prisma ./prisma_default && \
+    sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
+    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/.prisma/client\""; next } 1' \
+        ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
+    mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
+    /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
+    echo "Copying generated Prisma client into pnpm store .prisma/client stubs..." && \
+    find ./node_modules/.pnpm -maxdepth 7 -type d -name ".prisma" 2>/dev/null | while read prisma_dir; do \
+      if [ -d "$prisma_dir/client" ]; then \
+        echo "  -> $prisma_dir/client"; \
+        cp -rf ./node_modules/.prisma/client/. "$prisma_dir/client/"; \
+      fi; \
+    done && \
+    rm -rf ./prisma_default
+
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+COPY --from=builder /standalone/node_modules ./node_modules
+COPY --from=builder /standalone/package.json ./
+COPY --from=builder /app/apps/shopify-app/build ./build
+
+# Copy prisma schema/migrations so `prisma migrate deploy` can run at startup.
+# The prisma CLI binary is available via node_modules/.bin/prisma (hoisted by
+# public-hoist-pattern in .npmrc during pnpm deploy --prod).
+COPY --from=builder /app/packages/db/prisma ./prisma
+
+# Railway's internal runner maps `node_modules` → `app_modules` in start commands.
+# Create a symlink so both paths resolve to the same directory.
+RUN ln -s /app/node_modules /app/app_modules
+
+EXPOSE 3000
+
+# Run Prisma migrations then start the server.
+# DATABASE_URL is injected at runtime by Railway.
+# node_modules/.bin/prisma is a hoisted pnpm shim that invokes the CLI.
+CMD ["sh", "-c", "/app/node_modules/.bin/prisma migrate deploy --schema ./prisma/schema && node /app/node_modules/@react-router/serve/bin.js ./build/server/index.js"]

@@ -96,72 +96,41 @@ function countRouteDeviations(
   plannedStops: Array<{ lat: number; lng: number }>,
   deviationThreshold = 500,
 ): number {
-  if (gpsTrace.length < 2 || plannedStops.length === 0) return 0;
+  if (gpsTrace.length < 2 || plannedStops.length < 2) return 0;
 
-  // Create segments between planned stops
-  const segments: Array<{ start: RouteDataPoint; end: RouteDataPoint }> = [];
-  let traceIndex = 0;
-
-  for (let i = 0; i < plannedStops.length - 1; i++) {
-    const segmentStart = plannedStops[i];
-    const segmentEnd = plannedStops[i + 1];
-
-    // Find GPS points between this segment
-    while (
-      traceIndex < gpsTrace.length &&
-      haversineDistance(
-        gpsTrace[traceIndex].lat,
-        gpsTrace[traceIndex].lng,
-        segmentStart.lat,
-        segmentStart.lng,
-      ) < 100
-    ) {
-      traceIndex++;
-    }
-
-    const startIdx = Math.max(0, traceIndex - 1);
-    const endIdx = Math.min(gpsTrace.length - 1, traceIndex);
-
-    if (startIdx < endIdx) {
-      segments.push({
-        start: gpsTrace[startIdx],
-        end: gpsTrace[endIdx],
-      });
-    }
-  }
-
-  // Count deviations in each segment
+  // For each GPS point, compute its distance to the nearest planned segment
+  // A segment is the straight line between two consecutive planned stops
   let deviationCount = 0;
-  for (const segment of segments) {
-    const segmentGps = gpsTrace.filter(
-      (p) =>
-        p.timestamp >= segment.start.timestamp &&
-        p.timestamp <= segment.end.timestamp,
-    );
 
-    for (const point of segmentGps) {
-      // Calculate distance from this point to the segment line
-      const expectedLat =
-        segment.start.lat +
-        ((segment.end.lat - segment.start.lat) *
-          (point.timestamp - segment.start.timestamp)) /
-          (segment.end.timestamp - segment.start.timestamp);
-      const expectedLng =
-        segment.start.lng +
-        ((segment.end.lng - segment.start.lng) *
-          (point.timestamp - segment.start.timestamp)) /
-          (segment.end.timestamp - segment.start.timestamp);
+  for (const point of gpsTrace) {
+    let minDistance = Infinity;
 
-      const deviation = haversineDistance(
-        point.lat,
-        point.lng,
-        expectedLat,
-        expectedLng,
-      );
+    for (let i = 0; i < plannedStops.length - 1; i++) {
+      const segStart = plannedStops[i];
+      const segEnd = plannedStops[i + 1];
 
-      if (deviation > deviationThreshold) {
-        deviationCount++;
+      // Interpolate expected position on this segment based on nearest point
+      const d1 = haversineDistance(point.lat, point.lng, segStart.lat, segStart.lng);
+      const d2 = haversineDistance(point.lat, point.lng, segEnd.lat, segEnd.lng);
+      const segLen = haversineDistance(segStart.lat, segStart.lng, segEnd.lat, segEnd.lng);
+
+      if (segLen < 1) continue;
+
+      // Project point onto segment: clamp t to [0, 1]
+      const t = Math.max(0, Math.min(1, (d1 * d1 + segLen * segLen - d2 * d2) / (2 * segLen * segLen)));
+
+      // Interpolate the expected position on the segment
+      const expectedLat = segStart.lat + t * (segEnd.lat - segStart.lat);
+      const expectedLng = segStart.lng + t * (segEnd.lng - segStart.lng);
+
+      const dist = haversineDistance(point.lat, point.lng, expectedLat, expectedLng);
+      if (dist < minDistance) {
+        minDistance = dist;
       }
+    }
+
+    if (minDistance > deviationThreshold) {
+      deviationCount++;
     }
   }
 

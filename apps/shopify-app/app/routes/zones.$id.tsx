@@ -15,7 +15,24 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import {
+  Page,
+  Layout,
+  Card,
+  Text,
+  Badge,
+  Button,
+  InlineStack,
+  BlockStack,
+  DescriptionList,
+  ResourceList,
+  ResourceItem,
+  Avatar,
+  ProgressBar,
+  Divider,
+  Box,
+} from "@shopify/polaris";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -69,7 +86,7 @@ interface ZonePageData {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   // Mock data for zone detail page
   const mockZone: Zone = {
@@ -143,396 +160,294 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   };
 }
 
+// ─── Helpers ───────────────────────────────────────────────
+
+function getStatusBadgeTone(status: string): "success" | "critical" | undefined {
+  if (status === "ACTIVE") return "success";
+  if (status === "CLOSED") return "critical";
+  return undefined;
+}
+
+function getDriverBadgeTone(status: string): "success" | "info" | undefined {
+  if (status === "ACTIVE") return "success";
+  if (status === "ON_DELIVERY") return "info";
+  return undefined;
+}
+
+function getShipmentBadgeTone(status: string): "info" | undefined {
+  if (status === "OUT_FOR_DELIVERY") return "info";
+  return undefined;
+}
+
+function getUtilizationTone(percent: number): "critical" | "highlight" | "success" {
+  if (percent > 80) return "critical";
+  if (percent > 60) return "highlight";
+  return "success";
+}
+
 // ─── Component ─────────────────────────────────────────────
 
 export default function ZoneDetailPage() {
   const { zone, drivers, timeSlots, activeShipments } = useLoaderData<ZonePageData>();
 
-  const statusColors: Record<string, string> = {
-    ACTIVE: "#2d7d2d",
-    INACTIVE: "#6d7175",
-    CLOSED: "#d72c0d",
-  };
-
   const dayGroups = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/zones" style={backLinkStyle}>
-            &larr;
-          </Link>
-          <div>
-            <h1 style={headingStyle}>{zone.name}</h1>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-              <span style={{ ...badgeStyle, backgroundColor: statusColors[zone.status] }}>
-                {zone.status}
-              </span>
-              <span style={subtextStyle}>{zone.type}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Two-column layout */}
-      <div style={columnsStyle}>
+    <Page
+      backAction={{ content: "Zones", url: "/zones" }}
+      title={zone.name}
+      titleMetadata={
+        <InlineStack gap="200">
+          <Badge tone={getStatusBadgeTone(zone.status)}>
+            {zone.status}
+          </Badge>
+          <Text as="span" variant="bodySm" tone="subdued">
+            {zone.type}
+          </Text>
+        </InlineStack>
+      }
+    >
+      <Layout>
         {/* Left Column */}
-        <div style={leftColStyle}>
-          {/* Coverage Area Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Coverage Area</h3>
-            <div style={{ fontSize: 14, color: "var(--p-color-text, #202223)", lineHeight: 1.6 }}>
-              {zone.coverageArea}
-            </div>
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--p-color-border-subdued, #e1e3e5)" }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                Boundaries
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginTop: 8 }}>
-                <div>
-                  <span style={labelStyle}>North</span>
-                  <span style={valueStyle}>{zone.boundaryNorth.toFixed(4)}</span>
-                </div>
-                <div>
-                  <span style={labelStyle}>South</span>
-                  <span style={valueStyle}>{zone.boundarySouth.toFixed(4)}</span>
-                </div>
-                <div>
-                  <span style={labelStyle}>East</span>
-                  <span style={valueStyle}>{zone.boundaryEast.toFixed(4)}</span>
-                </div>
-                <div>
-                  <span style={labelStyle}>West</span>
-                  <span style={valueStyle}>{zone.boundaryWest.toFixed(4)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <Layout.Section>
+          <BlockStack gap="400">
+            {/* Coverage Area Card */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Coverage Area
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  {zone.coverageArea}
+                </Text>
+                <Divider />
+                <Text as="p" variant="bodySm" tone="subdued" fontWeight="medium">
+                  BOUNDARIES
+                </Text>
+                <DescriptionList
+                  items={[
+                    {
+                      term: "North",
+                      description: Number(zone.boundaryNorth).toFixed(4),
+                    },
+                    {
+                      term: "South",
+                      description: Number(zone.boundarySouth).toFixed(4),
+                    },
+                    {
+                      term: "East",
+                      description: Number(zone.boundaryEast).toFixed(4),
+                    },
+                    {
+                      term: "West",
+                      description: Number(zone.boundaryWest).toFixed(4),
+                    },
+                  ]}
+                />
+              </BlockStack>
+            </Card>
 
-          {/* Capacity Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Capacity</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={labelStyle}>Utilization</span>
-                  <span style={valueStyle}>{zone.currentUtilization}%</span>
-                </div>
-                <div
-                  style={{
-                    width: "100%",
-                    height: 8,
-                    backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-                    borderRadius: 4,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${zone.currentUtilization}%`,
-                      backgroundColor:
-                        zone.currentUtilization > 80
-                          ? "#d72c0d"
-                          : zone.currentUtilization > 60
-                          ? "#f5a623"
-                          : "#2d7d2d",
-                    }}
+            {/* Capacity Card */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Capacity
+                </Text>
+                <BlockStack gap="200">
+                  <InlineStack align="space-between">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Utilization
+                    </Text>
+                    <Text as="span" variant="bodyMd" fontWeight="medium">
+                      {zone.currentUtilization}%
+                    </Text>
+                  </InlineStack>
+                  <ProgressBar
+                    progress={zone.currentUtilization}
+                    tone={getUtilizationTone(zone.currentUtilization)}
+                    size="small"
                   />
-                </div>
-              </div>
-              <div style={{ fontSize: 13 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={subtextStyle}>Max per day</span>
-                  <span style={valueStyle}>{zone.maxDeliveriesPerDay}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={subtextStyle}>Current</span>
-                  <span style={valueStyle}>
-                    {Math.round((zone.currentUtilization / 100) * zone.maxDeliveriesPerDay)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+                </BlockStack>
+                <BlockStack gap="100">
+                  <InlineStack align="space-between">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Max per day
+                    </Text>
+                    <Text as="span" variant="bodyMd" fontWeight="medium">
+                      {zone.maxDeliveriesPerDay}
+                    </Text>
+                  </InlineStack>
+                  <InlineStack align="space-between">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Current
+                    </Text>
+                    <Text as="span" variant="bodyMd" fontWeight="medium">
+                      {Math.round((zone.currentUtilization / 100) * zone.maxDeliveriesPerDay)}
+                    </Text>
+                  </InlineStack>
+                </BlockStack>
+              </BlockStack>
+            </Card>
 
-          {/* Assigned Drivers Card */}
-          {drivers.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Assigned Drivers ({drivers.length})</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {drivers.map((driver) => (
-                  <div key={driver.id} style={driverCardStyle}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: "50%",
-                          backgroundColor:
-                            driver.status === "ACTIVE"
-                              ? "#2d7d2d"
-                              : driver.status === "ON_DELIVERY"
-                              ? "#005bd3"
-                              : "#6d7175",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontWeight: 600,
-                          fontSize: 12,
-                        }}
+            {/* Assigned Drivers Card */}
+            {drivers.length > 0 && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Assigned Drivers ({drivers.length})
+                  </Text>
+                  <ResourceList
+                    resourceName={{ singular: "driver", plural: "drivers" }}
+                    items={drivers}
+                    renderItem={(driver) => (
+                      <ResourceItem
+                        id={driver.id}
+                        url={`/drivers/${driver.id}`}
+                        media={
+                          <Avatar
+                            initials={driver.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                            name={driver.name}
+                            size="sm"
+                          />
+                        }
+                        accessibilityLabel={`View ${driver.name}`}
                       >
-                        {driver.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div>
-                        <Link to={`/drivers/${driver.id}`} style={linkStyle}>
-                          {driver.name}
-                        </Link>
-                        <div style={subtextStyle}>{driver.phone}</div>
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "2px 8px",
-                        fontSize: 11,
-                        fontWeight: 500,
-                        backgroundColor:
-                          driver.status === "ACTIVE"
-                            ? "#ccf1e2"
-                            : driver.status === "ON_DELIVERY"
-                            ? "#e8f0fe"
-                            : "#f1f2f3",
-                        color:
-                          driver.status === "ACTIVE"
-                            ? "#005c35"
-                            : driver.status === "ON_DELIVERY"
-                            ? "#1a3a6e"
-                            : "#6d7175",
-                        borderRadius: 6,
-                      }}
-                    >
-                      {driver.status.replace(/_/g, " ")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+                        <InlineStack align="space-between" blockAlign="center">
+                          <BlockStack gap="050">
+                            <Text as="span" variant="bodyMd" fontWeight="medium">
+                              {driver.name}
+                            </Text>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              {driver.phone}
+                            </Text>
+                          </BlockStack>
+                          <Badge tone={getDriverBadgeTone(driver.status)}>
+                            {driver.status.replace(/_/g, " ")}
+                          </Badge>
+                        </InlineStack>
+                      </ResourceItem>
+                    )}
+                  />
+                </BlockStack>
+              </Card>
+            )}
+          </BlockStack>
+        </Layout.Section>
 
         {/* Right Column */}
-        <div style={rightColStyle}>
-          {/* Actions Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Actions</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <a href="#" style={primaryButtonStyle}>
-                Edit Zone
-              </a>
-              <button style={secondaryButtonStyle}>
-                Manage Drivers
-              </button>
-              <button style={secondaryButtonStyle}>
-                Adjust Capacity
-              </button>
-            </div>
-          </div>
+        <Layout.Section variant="oneThird">
+          <BlockStack gap="400">
+            {/* Actions Card */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Actions
+                </Text>
+                <Button variant="primary" fullWidth>
+                  Edit Zone
+                </Button>
+                <Button fullWidth>
+                  Manage Drivers
+                </Button>
+                <Button fullWidth>
+                  Adjust Capacity
+                </Button>
+              </BlockStack>
+            </Card>
 
-          {/* Time Slots Card */}
-          {timeSlots.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Time Slots</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {dayGroups.slice(0, 3).map((day) => {
-                  const daySlots = timeSlots.filter((slot) => slot.day === day);
-                  return (
-                    <div key={day}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--p-color-text, #202223)", marginBottom: 8 }}>
-                        {day}
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        {daySlots.map((slot) => (
-                          <div key={slot.id} style={timeSlotStyle}>
-                            <div style={{ fontSize: 12, fontWeight: 500 }}>
-                              {slot.startTime} – {slot.endTime}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "var(--p-color-text-subdued, #6d7175)",
-                                marginTop: 2,
-                              }}
+            {/* Time Slots Card */}
+            {timeSlots.length > 0 && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Time Slots
+                  </Text>
+                  {dayGroups.slice(0, 3).map((day) => {
+                    const daySlots = timeSlots.filter((slot) => slot.day === day);
+                    if (daySlots.length === 0) return null;
+                    return (
+                      <BlockStack key={day} gap="200">
+                        <Text as="p" variant="bodySm" fontWeight="semibold">
+                          {day}
+                        </Text>
+                        {daySlots.map((slot) => {
+                          const utilizationPercent = Math.round(
+                            (slot.utilization / slot.capacity) * 100,
+                          );
+                          return (
+                            <Box
+                              key={slot.id}
+                              background="bg-surface-secondary"
+                              padding="200"
+                              borderRadius="100"
                             >
-                              {slot.utilization}/{slot.capacity}
-                            </div>
-                            <div
-                              style={{
-                                width: "100%",
-                                height: 4,
-                                backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-                                borderRadius: 2,
-                                marginTop: 4,
-                                overflow: "hidden",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  height: "100%",
-                                  width: `${(slot.utilization / slot.capacity) * 100}%`,
-                                  backgroundColor:
-                                    slot.utilization / slot.capacity > 0.8
-                                      ? "#d72c0d"
-                                      : slot.utilization / slot.capacity > 0.6
-                                      ? "#f5a623"
-                                      : "#2d7d2d",
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                              <BlockStack gap="100">
+                                <Text as="span" variant="bodySm" fontWeight="medium">
+                                  {slot.startTime} – {slot.endTime}
+                                </Text>
+                                <Text as="span" variant="bodySm" tone="subdued">
+                                  {slot.utilization}/{slot.capacity}
+                                </Text>
+                                <ProgressBar
+                                  progress={utilizationPercent}
+                                  tone={getUtilizationTone(utilizationPercent)}
+                                  size="small"
+                                />
+                              </BlockStack>
+                            </Box>
+                          );
+                        })}
+                      </BlockStack>
+                    );
+                  })}
+                </BlockStack>
+              </Card>
+            )}
 
-          {/* Active Shipments Card */}
-          {activeShipments.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Active Shipments ({activeShipments.length})</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {activeShipments.map((shipment) => (
-                  <div key={shipment.id} style={shipmentCardStyle}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                      <div style={{ flex: 1 }}>
-                        <Link to={`/shipments/${shipment.shipmentId}`} style={linkStyle}>
-                          {shipment.shipmentId}
-                        </Link>
-                        <div style={{ fontSize: 12, color: "var(--p-color-text, #202223)", marginTop: 2 }}>
-                          {shipment.customerName}
-                        </div>
-                        <div style={{ fontSize: 11, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
-                          {shipment.address}
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "2px 8px",
-                          fontSize: 11,
-                          fontWeight: 500,
-                          backgroundColor:
-                            shipment.status === "OUT_FOR_DELIVERY" ? "#e8f0fe" : "#f1f2f3",
-                          color:
-                            shipment.status === "OUT_FOR_DELIVERY" ? "#1a3a6e" : "#6d7175",
-                          borderRadius: 6,
-                          whiteSpace: "nowrap",
-                        }}
+            {/* Active Shipments Card */}
+            {activeShipments.length > 0 && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Active Shipments ({activeShipments.length})
+                  </Text>
+                  <ResourceList
+                    resourceName={{ singular: "shipment", plural: "shipments" }}
+                    items={activeShipments}
+                    renderItem={(shipment) => (
+                      <ResourceItem
+                        id={shipment.id}
+                        url={`/shipments/${shipment.shipmentId}`}
+                        accessibilityLabel={`View shipment ${shipment.shipmentId}`}
                       >
-                        {shipment.status.replace(/_/g, " ")}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                        <InlineStack align="space-between" blockAlign="start" wrap={false} gap="200">
+                          <BlockStack gap="050">
+                            <Text as="span" variant="bodyMd" fontWeight="medium" tone="magic">
+                              {shipment.shipmentId}
+                            </Text>
+                            <Text as="span" variant="bodySm">
+                              {shipment.customerName}
+                            </Text>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              {shipment.address}
+                            </Text>
+                          </BlockStack>
+                          <Badge tone={getShipmentBadgeTone(shipment.status)}>
+                            {shipment.status.replace(/_/g, " ")}
+                          </Badge>
+                        </InlineStack>
+                      </ResourceItem>
+                    )}
+                  />
+                </BlockStack>
+              </Card>
+            )}
+          </BlockStack>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = { padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, color: "var(--p-color-text, #202223)", margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)" };
-const backLinkStyle: React.CSSProperties = { fontSize: 20, color: "var(--p-color-text-subdued, #6d7175)", textDecoration: "none", padding: 4 };
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 12px",
-  fontSize: 12,
-  fontWeight: 500,
-  color: "white",
-  borderRadius: 12,
-};
-
-const columnsStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" };
-const leftColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-const rightColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-
-const cardStyle: React.CSSProperties = {
-  padding: 20,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};
-
-const cardTitleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, margin: "0 0 12px", color: "var(--p-color-text, #202223)" };
-
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" };
-const valueStyle: React.CSSProperties = { fontSize: 14, color: "var(--p-color-text, #202223)" };
-
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500, fontSize: 13 };
-
-const driverCardStyle: React.CSSProperties = {
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 8,
-};
-
-const timeSlotStyle: React.CSSProperties = {
-  padding: 8,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 6,
-};
-
-const shipmentCardStyle: React.CSSProperties = {
-  padding: 10,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 8,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-  textAlign: "center" as const,
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  cursor: "pointer",
-};

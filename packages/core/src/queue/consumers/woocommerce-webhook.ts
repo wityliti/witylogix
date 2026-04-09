@@ -95,6 +95,8 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     const jobId = metadata.jobId;
 
     try {
+      await this.validateJob(job);
+
       if (job.type === "order_webhook") {
         return await this.processOrderWebhook(
           job as { type: "order_webhook"; data: OrderWebhookJob },
@@ -145,60 +147,114 @@ export class WooCommerceWebhookConsumer extends QueueConsumer {
     metadata: QueueJobMetadata,
   ): Promise<JobProcessingResult> {
     const { data } = job;
-    const { shopId, payload } = data;
+    const { shopId, payload, topic, deliveryId, connectionId } = data;
+    const externalOrderId = data.externalOrderId;
     const jobId = metadata.jobId;
 
-    try {
-      console.log(
-        `[WooCommerceWebhookConsumer] Processing order webhook ${data.externalOrderId} for shop ${shopId}`,
-      );
-
-      // Step 1: Map WooCommerce order data using adapter
-      const mappedOrder = this.adapter.mapOrder(payload as unknown as WooCommerceOrder);
-
-      // Step 2: Upsert order in database with source='WOOCOMMERCE'
-      await this.upsertOrder(shopId, mappedOrder);
-
-      // Step 3: Check fulfillment eligibility and trigger if applicable
-      const canFulfill = await this.checkFulfillmentReadiness(
-        shopId,
-        data.externalOrderId,
-        mappedOrder.financialStatus,
-      );
-
-      if (canFulfill && mappedOrder.fulfillmentStatus === "unshipped") {
-        await this.triggerFulfillmentCheck(shopId, data.externalOrderId);
+    // Step 1: Idempotency — skip if this delivery was already processed
+    if (deliveryId && connectionId) {
+      const existing = await (dbPrisma as any).wooCommerceWebhookLog.findFirst({
+        where: { connectionId, deliveryId },
+      });
+      if (existing?.processed === true) {
+        return {
+          success: true,
+          jobId,
+          processingTimeMs: 0,
+          data: { duplicate: true, deliveryId },
+        };
       }
-
-      // Step 4: Emit order events
-      await this.emitOrderEvents(shopId, data.externalOrderId, mappedOrder);
-
-      // Step 5: Trigger notifications if payment is complete
-      if (mappedOrder.financialStatus === "paid") {
-        await this.triggerOrderConfirmationNotification(
-          shopId,
-          data.externalOrderId,
-          mappedOrder.email,
-        );
-      }
-
-      const processingTimeMs = Date.now() - metadata.processingStartedAt!;
-
-      return {
-        success: true,
-        jobId,
-        processingTimeMs,
-        data: {
-          orderId: data.externalOrderId,
-          shopId,
-          source: "WOOCOMMERCE",
-          status: mappedOrder.fulfillmentStatus,
-          fulfillmentTriggered: canFulfill,
-        },
-      };
-    } catch (error) {
-      throw error;
     }
+
+    // Step 2: Validate payload has required fields
+    if (!payload || typeof (payload as any).id === "undefined") {
+      throw new QueueValidationError("Order payload missing required field: id");
+    }
+
+    // Step 3: Map WooCommerce order data using adapter
+    console.log(`[WooCommerceWebhookConsumer] Upserting order ${externalOrderId} to database`);
+    const mappedOrder = this.adapter.mapOrder(payload as unknown as WooCommerceOrder);
+
+    // Step 4: Upsert order in database with source='WOOCOMMERCE'
+    await this.upsertOrder(shopId, mappedOrder);
+
+    // Step 5: Create Shipment for order.created (idempotent — skip if one already exists)
+    let shipmentCreated = false;
+    if (topic === "order.created") {
+      const order = await (dbPrisma as any).order.findFirst({
+        where: { shopId, externalOrderId },
+      });
+      if (order) {
+        const existingShipment = await (dbPrisma as any).shipment.findFirst({
+          where: { orderId: order.id, shopId },
+        });
+        if (!existingShipment) {
+          const shippingAddr = (payload as any).shipping ?? (payload as any).billing ?? {};
+          await (dbPrisma as any).shipment.create({
+            data: {
+              shopId,
+              orderId: order.id,
+              shipmentNumber: `WC-${externalOrderId}`,
+              status: "PENDING",
+              recipientName: `${shippingAddr.first_name ?? ""} ${shippingAddr.last_name ?? ""}`.trim(),
+              recipientPhone: shippingAddr.phone ?? null,
+              addressLine1: shippingAddr.address_1 ?? "",
+              addressLine2: shippingAddr.address_2 ?? null,
+              city: shippingAddr.city ?? "",
+              state: shippingAddr.state ?? "",
+              postalCode: shippingAddr.postcode ?? "",
+              country: shippingAddr.country ?? "",
+            },
+          });
+          shipmentCreated = true;
+        }
+      }
+    }
+
+    // Step 6: Mark delivery as processed in idempotency log
+    if (deliveryId && connectionId) {
+      const resource = topic?.split(".")[0] ?? "order";
+      const event = topic?.split(".")[1] ?? "unknown";
+      await (dbPrisma as any).wooCommerceWebhookLog.upsert({
+        where: { connectionId_deliveryId: { connectionId, deliveryId } },
+        create: {
+          connectionId,
+          deliveryId,
+          topic: topic ?? null,
+          resource,
+          event,
+          payload,
+          verified: true,
+          processed: true,
+          status: "processed",
+          processedAt: new Date(),
+        },
+        update: {
+          processed: true,
+          status: "processed",
+          processedAt: new Date(),
+        },
+      });
+    }
+
+    // Step 7: Emit order events
+    console.log(`[WooCommerceWebhookConsumer] Emitting order events for order ${externalOrderId}`);
+    await this.emitOrderEvents(shopId, externalOrderId, mappedOrder);
+
+    const processingTimeMs = Date.now() - (metadata.processingStartedAt ?? Date.now());
+
+    return {
+      success: true,
+      jobId,
+      processingTimeMs,
+      data: {
+        orderId: externalOrderId,
+        shopId,
+        source: "WOOCOMMERCE",
+        shipmentCreated,
+        topic: topic ?? null,
+      },
+    };
   }
 
   /**

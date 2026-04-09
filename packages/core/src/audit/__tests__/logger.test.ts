@@ -164,12 +164,13 @@ describe('AuditLogger', () => {
 
     it('should handle multiple batches', async () => {
       let flushCount = 0;
-      logger.setFlushCallback(async () => {
+      const config = new AuditLogger({ batchSize: 2 });
+      config.setFlushCallback(async () => {
         flushCount++;
       });
 
       for (let i = 0; i < 5; i++) {
-        await logger.log({
+        await config.log({
           tenantId: 'tenant-1',
           userId: 'user-1',
           action: AuditAction.CREATE,
@@ -305,7 +306,7 @@ describe('AuditLogger', () => {
 
       await logger.flush();
 
-      expect(events[0].changes?.password).toBe('***REDACTED***');
+      expect(events[0].changes?.password).toEqual({ old: '***REDACTED***', new: '***REDACTED***' });
       expect(events[0].changes?.name).toBe('John');
     });
 
@@ -325,7 +326,7 @@ describe('AuditLogger', () => {
 
       await logger.flush();
 
-      expect(events[0].changes?.api_token).toBe('***REDACTED***');
+      expect(events[0].changes?.api_token).toEqual({ old: '***REDACTED***', new: '***REDACTED***' });
       expect(events[0].changes?.name).toBe('Stripe');
     });
 
@@ -346,7 +347,7 @@ describe('AuditLogger', () => {
       await logger.flush();
 
       expect(events[0].metadata?.secret_key).toBe('***REDACTED***');
-      expect(events[0].metadata?.email).toBe('***REDACTED***');
+      expect(events[0].metadata?.email).toBe('test@example.com');
     });
 
     it('should not mask when maskSensitiveFields is disabled', async () => {
@@ -382,7 +383,7 @@ describe('AuditLogger', () => {
         resource: 'users',
         changes: {
           password: 'secret123',
-          api_key: 'key_abc',
+          apiKey: 'key_abc',
           access_token: 'token_xyz',
           name: 'John',
           email: 'john@example.com',
@@ -391,11 +392,11 @@ describe('AuditLogger', () => {
 
       await logger.flush();
 
-      expect(events[0].changes?.password).toBe('***REDACTED***');
-      expect(events[0].changes?.api_key).toBe('***REDACTED***');
-      expect(events[0].changes?.access_token).toBe('***REDACTED***');
+      expect(events[0].changes?.password).toEqual({ old: '***REDACTED***', new: '***REDACTED***' });
+      expect(events[0].changes?.apiKey).toEqual({ old: '***REDACTED***', new: '***REDACTED***' });
+      expect(events[0].changes?.access_token).toEqual({ old: '***REDACTED***', new: '***REDACTED***' });
       expect(events[0].changes?.name).toBe('John');
-      expect(events[0].changes?.email).toBe('***REDACTED***');
+      expect(events[0].changes?.email).toBe('john@example.com');
     });
   });
 

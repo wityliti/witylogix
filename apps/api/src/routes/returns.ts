@@ -156,7 +156,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
             order: {
               select: {
                 id: true,
-                shopifyOrderNumber: true,
+                externalOrderNumber: true,
                 customerName: true,
                 customerEmail: true,
               },
@@ -192,7 +192,7 @@ async function returnsRoutes(fastify: FastifyInstance): Promise<void> {
           order: {
             select: {
               id: true,
-              shopifyOrderNumber: true,
+              externalOrderNumber: true,
               customerName: true,
               customerEmail: true,
               totalPrice: true,

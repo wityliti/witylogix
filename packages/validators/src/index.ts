@@ -361,14 +361,56 @@ export const syncCustomersSchema = z.object({
 export type SyncProduct = z.infer<typeof syncProductSchema>;
 export type SyncCustomer = z.infer<typeof syncCustomerSchema>;
 
-// Schema re-exports for bundler visibility
-
-// Type exports (moved to end to avoid vitest parsing issues)
-export type CreateActivityLog = z.infer<typeof createActivityLogSchema>;
-export type ActivityLogFilter = z.infer<typeof activityLogFilterSchema>;
+// Type exports
 export type CreateOrder = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatus = z.infer<typeof updateOrderStatusSchema>;
 export type CreateDriver = z.infer<typeof createDriverSchema>;
 export type UpdateDriverLocation = z.infer<typeof updateDriverLocationSchema>;
 export type CreateDeliveryZone = z.infer<typeof createDeliveryZoneSchema>;
 export type OptimizeRoute = z.infer<typeof optimizeRouteSchema>;
+
+// ─── Delivery Events Batch (WIT-127) + Failed Delivery (WIT-141) ───────────
+
+// Structured payload for failed_delivery events (WIT-141)
+export const failedDeliveryPayloadSchema = z.object({
+  failureReason: z.enum([
+    "nobody_home",
+    "address_not_found",
+    "refused",
+    "access_denied",
+    "other",
+  ]),
+  note: z.string().max(500).optional(),
+  photoUrl: z.string().url().optional(),
+});
+
+export type FailedDeliveryPayload = z.infer<typeof failedDeliveryPayloadSchema>;
+
+export const deliveryEventInputSchema = z.object({
+  id: z.string().min(1).max(128),
+  eventType: z.enum([
+    "picked_up",
+    "in_transit",
+    "out_for_delivery",
+    "arrived",
+    "delivered",
+    "failed_delivery",
+  ]),
+  deliveryId: z.string().uuid(),
+  payload: z.record(z.unknown()).default({}),
+  deviceCapturedAt: z.string().datetime({ offset: true }),
+  deviceTimezone: z.string().min(1).max(64),
+  gpsLat: z.number().min(-90).max(90).optional(),
+  gpsLng: z.number().min(-180).max(180).optional(),
+});
+
+export const batchDeliveryEventsSchema = z.object({
+  events: z
+    .array(deliveryEventInputSchema)
+    .min(1)
+    .max(100),
+});
+
+export type DeliveryEventInput = z.infer<typeof deliveryEventInputSchema>;
+export type BatchDeliveryEvents = z.infer<typeof batchDeliveryEventsSchema>;
+

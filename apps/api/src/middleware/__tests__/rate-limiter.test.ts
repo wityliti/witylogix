@@ -41,6 +41,7 @@ class TokenBucketStore {
     this.cleanupInterval = setInterval(() => {
       this.cleanupExpired();
     }, 300000);
+    this.cleanupInterval.unref();
   }
 
   destroy(): void {
@@ -108,29 +109,34 @@ function createRateLimiter(config: RateLimitConfig) {
       return;
     }
 
+    // Separate try-catch so that keyGenerator errors can be optionally skipped
+    // (skipOnError), while intentional rate-limit errors always propagate.
+    let key: string;
+    let remaining: number;
+
     try {
-      const key = config.keyGenerator(request);
-      const remaining = store.consume(key, config);
-
-      const bucket = store.getBucket(key);
-      const resetTime = bucket
-        ? Math.floor(bucket.refillTime / 1000)
-        : Math.floor((Date.now() + config.windowMs) / 1000);
-
-      reply.header('X-RateLimit-Limit', String(config.maxRequests));
-      reply.header('X-RateLimit-Remaining', String(Math.max(0, remaining)));
-      reply.header('X-RateLimit-Reset', String(resetTime));
-
-      if (remaining < 0) {
-        const retryAfter = Math.ceil((bucket!.refillTime - Date.now()) / 1000);
-        reply.header('Retry-After', String(retryAfter));
-        throw new Error('Rate limit exceeded');
-      }
+      key = config.keyGenerator(request);
+      remaining = store.consume(key, config);
     } catch (error) {
       if (config.skipOnError !== false) {
         return;
       }
       throw error;
+    }
+
+    const bucket = store.getBucket(key!);
+    const resetTime = bucket
+      ? Math.floor(bucket.refillTime / 1000)
+      : Math.floor((Date.now() + config.windowMs) / 1000);
+
+    reply.header('X-RateLimit-Limit', String(config.maxRequests));
+    reply.header('X-RateLimit-Remaining', String(Math.max(0, remaining)));
+    reply.header('X-RateLimit-Reset', String(resetTime));
+
+    if (remaining < 0) {
+      const retryAfter = Math.ceil((bucket!.refillTime - Date.now()) / 1000);
+      reply.header('Retry-After', String(retryAfter));
+      throw new Error('Rate limit exceeded');
     }
   };
 }
@@ -139,6 +145,10 @@ describe('RateLimiter', () => {
   let store: TokenBucketStore;
   let mockRequest: MockRequest;
   let mockReply: MockReply;
+
+  afterEach(() => {
+    store.destroy();
+  });
 
   beforeEach(() => {
     store = new TokenBucketStore();
@@ -163,10 +173,10 @@ describe('RateLimiter', () => {
       };
 
       let remaining = store.consume('test_key', config);
-      expect(remaining).toBe(8); // 10 - 1 (initial) - 1 (consumed) = 8
+      expect(remaining).toBe(9); // 10 - 1 (first consume) = 9 remaining
 
       remaining = store.consume('test_key', config);
-      expect(remaining).toBe(7);
+      expect(remaining).toBe(8);
     });
 
     it('should return -1 when limit exceeded', () => {
@@ -182,7 +192,7 @@ describe('RateLimiter', () => {
       expect(remaining).toBe(-1);
     });
 
-    it('should refill tokens after window expires', (done) => {
+    it('should refill tokens after window expires', async () => {
       const config: RateLimitConfig = {
         windowMs: 100,
         maxRequests: 2,
@@ -193,12 +203,14 @@ describe('RateLimiter', () => {
       store.consume('test_key', config);
       expect(store.consume('test_key', config)).toBe(-1);
 
-      setTimeout(() => {
-        const remaining = store.consume('test_key', config);
-        expect(remaining).toBeGreaterThanOrEqual(0);
-        store.destroy();
-        done();
-      }, 150);
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          const remaining = store.consume('test_key', config);
+          expect(remaining).toBeGreaterThanOrEqual(0);
+          store.destroy();
+          resolve();
+        }, 150);
+      });
     });
   });
 
@@ -362,31 +374,29 @@ describe('RateLimiter', () => {
   });
 
   describe('Sliding Window', () => {
-    it('should implement sliding window correctly', (done) => {
+    it('should implement sliding window correctly', async () => {
       const limiter = createRateLimiter({
-        windowMs: 200,
+        windowMs: 100,
         maxRequests: 3,
         keyGenerator: () => 'sliding_test',
       });
 
-      const requests = async () => {
-        // Make 3 requests in first 100ms
-        await limiter(mockRequest, mockReply);
-        await limiter(mockRequest, mockReply);
-        await limiter(mockRequest, mockReply);
+      // Make 3 requests in first 100ms
+      await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
 
-        // Next request should be blocked
-        await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
+      // Next request should be blocked
+      await expect(limiter(mockRequest, mockReply)).rejects.toThrow();
 
-        // Wait 150ms (so 50ms into second window)
+      // Wait 150ms (so 50ms into second window)
+      await new Promise<void>((resolve) => {
         setTimeout(async () => {
           // Make another request (should succeed as window has reset)
           await limiter(mockRequest, mockReply);
-          done();
+          resolve();
         }, 150);
-      };
-
-      requests();
+      });
     });
   });
 
@@ -605,20 +615,20 @@ describe('RateLimiter', () => {
       expect(mockReply.header).toHaveBeenCalled();
     });
 
-    it('should handle very short window', (done) => {
+    it('should handle very short window', async () => {
       const limiter = createRateLimiter({
         windowMs: 10,
         maxRequests: 1,
         keyGenerator: () => 'short_window',
       });
 
-      (async () => {
-        await limiter(mockRequest, mockReply);
+      await limiter(mockRequest, mockReply);
+      await new Promise<void>((resolve) => {
         setTimeout(async () => {
           await limiter(mockRequest, mockReply);
-          done();
+          resolve();
         }, 20);
-      })();
+      });
     });
   });
 

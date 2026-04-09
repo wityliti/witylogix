@@ -3,12 +3,31 @@
  * 25+ test cases covering SMS, MMS, WhatsApp, 2FA, Number Lookup, Health Checks
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MessagingAdapterConfig } from "../types.js";
 import { VonageClient } from "../vonage-client.js";
 
+/**
+ * Default mock fetch that returns a successful JSON response.
+ */
+function createMockFetch() {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    headers: new Headers({ "content-type": "application/json" }),
+    json: async () => ({
+      "message-id": "mock-msg-id",
+      messages: [{ status: "0", "message-id": "mock-msg-id" }],
+      "message-count": 1,
+      status: "0",
+    }),
+  });
+}
+
 describe("VonageClient", () => {
   let client: VonageClient;
+  let mockFetch: ReturnType<typeof vi.fn>;
   const mockConfig: MessagingAdapterConfig = {
     provider: "vonage",
     apiKey: "test-api-key",
@@ -17,8 +36,17 @@ describe("VonageClient", () => {
   };
 
   beforeEach(() => {
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
     client = new VonageClient(mockConfig);
     vi.clearAllMocks();
+    // Re-stub after clearAllMocks
+    mockFetch = createMockFetch();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Configuration & Validation", () => {

@@ -14,7 +14,7 @@
 
 import { useState, useCallback } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, useNavigate, json } from "react-router";
+import { useLoaderData, useActionData, useNavigate } from "react-router";
 import {
   Page,
   Layout,
@@ -33,7 +33,7 @@ import {
 } from "@shopify/polaris";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { authenticate } from "~/lib/shopify.server";
-import { createApiClient } from "~/lib/api.server";
+import { createApiClientFromRequest } from "~/lib/api.server";
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -74,7 +74,7 @@ interface WebhookPageData {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   try {
     // Fetch webhook endpoints, triggers, and delivery logs in parallel
@@ -100,10 +100,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const deliveries: WebhookDelivery[] =
       deliveriesRes.status === "fulfilled" ? deliveriesRes.value.data : [];
 
-    return json<WebhookPageData>({ endpoints, triggers, deliveries });
+    return Response.json({ endpoints, triggers, deliveries });
   } catch (error) {
     console.error("Failed to load webhook data", error);
-    return json<WebhookPageData>(
+    return Response.json(
       {
         endpoints: [],
         triggers: [],
@@ -118,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   if (request.method === "POST") {
     const formData = await request.formData();
@@ -130,13 +130,13 @@ export async function action({ request }: ActionFunctionArgs) {
         const events = JSON.parse(formData.get("events") as string);
 
         await api.post("/api/v4/shops/me/webhooks/endpoints", { url, events });
-        return json({ success: true });
+        return Response.json({ success: true });
       }
 
       if (action === "delete-endpoint") {
         const id = formData.get("id") as string;
         await api.delete(`/api/v4/shops/me/webhooks/endpoints/${id}`);
-        return json({ success: true });
+        return Response.json({ success: true });
       }
 
       if (action === "update-trigger") {
@@ -146,13 +146,13 @@ export async function action({ request }: ActionFunctionArgs) {
         await api.patch(`/api/v4/shops/me/webhooks/triggers/${shopifyEvent}`, {
           enabled,
         });
-        return json({ success: true });
+        return Response.json({ success: true });
       }
 
-      return json({ error: "Unknown action" }, { status: 400 });
+      return Response.json({ error: "Unknown action" }, { status: 400 });
     } catch (error) {
       console.error("Action failed", error);
-      return json(
+      return Response.json(
         {
           error: error instanceof Error ? error.message : "Unknown error",
         },
@@ -161,7 +161,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  return json({ error: "Method not allowed" }, { status: 405 });
+  return Response.json({ error: "Method not allowed" }, { status: 405 });
 }
 
 // ─── Component ─────────────────────────────────────────────

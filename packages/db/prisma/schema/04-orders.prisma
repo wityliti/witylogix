@@ -40,6 +40,9 @@ model Order {
   itemCount   Int      @default(1) @map("item_count")
   lineItems   Json     @default("[]") @map("line_items")
 
+  // OTP confirmation (WIT-92)
+  requireOTPConfirmation Boolean @default(false) @map("require_otp_confirmation")
+
   // Fulfillment
   trackingToken String?  @unique @map("tracking_token")
   fulfillmentId String?  @map("fulfillment_id")
@@ -51,14 +54,17 @@ model Order {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  shop                Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  driver              Driver?              @relation(fields: [driverId], references: [id])
-  timeSlot            TimeSlot?            @relation(fields: [timeSlotId], references: [id])
-  proofOfDelivery     ProofOfDelivery?
-  notificationLogs    NotificationLog[]
-  shipments           Shipment[]
-  paymentTransactions PaymentTransaction[]
-  codcollections      CODCollection[]
+  shop                        Shop                        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  driver                      Driver?                     @relation(fields: [driverId], references: [id])
+  timeSlot                    TimeSlot?                   @relation(fields: [timeSlotId], references: [id])
+  proofOfDelivery             ProofOfDelivery?
+  notificationLogs            NotificationLog[]
+  shipments                   Shipment[]
+  paymentTransactions         PaymentTransaction[]
+  codcollections              CODCollection[]
+  customerDeliveryPreferences CustomerDeliveryPreferences?
+  deliveryOTPs                DeliveryOTP[]
+  deliveryAuditLogs           DeliveryAuditLog[]
 
   @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])

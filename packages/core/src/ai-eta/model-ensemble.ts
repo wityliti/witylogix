@@ -119,12 +119,19 @@ export class ModelEnsemble {
       return this.getEmptyPrediction(departureTime);
     }
 
-    // Get weighted models
+    // Get weighted models.
+    // Apply a minimum confidence floor (0.1) so models that have zero historical
+    // confidence (cold-start) can still contribute via their default multipliers
+    // (e.g. TimeOfDayModel rush-hour factor, DistanceModel zone speeds).
+    // Without the floor, zero-confidence models are discarded, letting a single
+    // moderate-confidence model (TrafficModel fallback) dominate and erasing any
+    // time-of-day differentiation.
+    const MIN_CONFIDENCE = 0.1;
     const weightedModels = validPredictions
       .map((pred) => {
         const model = this.models.get(pred.modelName);
         const weight = model ? model.weight : 1 / validPredictions.length;
-        const confidence = pred.confidence ?? 0.5;
+        const confidence = Math.max(pred.confidence ?? 0, MIN_CONFIDENCE);
 
         return {
           prediction: pred,
@@ -240,7 +247,11 @@ export class ModelEnsemble {
     points: Array<{ time: number; weight: number }>,
     percentile: number,
   ): number {
+    if (points.length === 0) return 0;
+
     const totalWeight = points.reduce((sum, p) => sum + p.weight, 0);
+    if (totalWeight === 0) return points[0].time;
+
     let cumulativeWeight = 0;
 
     for (const point of points) {

@@ -37,7 +37,7 @@ export class LocationService {
   private locations: LocationCoordinate[] = [];
   private isTracking: boolean = false;
   private trackingStartTime: number = 0;
-  private trackingInterval: number = 10000; // 10 seconds default
+
   private listeners: Set<(location: LocationCoordinate) => void> = new Set();
 
   constructor() {
@@ -47,7 +47,7 @@ export class LocationService {
   /**
    * Start GPS tracking
    */
-  async startTracking(intervalMs: number = 10000): Promise<void> {
+  async startTracking(): Promise<void> {
     if (this.isTracking) {
       console.warn('Tracking already in progress');
       return;
@@ -60,7 +60,7 @@ export class LocationService {
 
     this.isTracking = true;
     this.trackingStartTime = Date.now();
-    this.trackingInterval = intervalMs;
+
 
     try {
       this.watchId = navigator.geolocation.watchPosition(

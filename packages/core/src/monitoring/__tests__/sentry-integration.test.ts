@@ -8,6 +8,7 @@ import {
   SentryManager,
   initializeSentry,
   getSentryManager,
+  resetSentryInstance,
 } from "../sentry-integration";
 
 describe("Sentry Integration", () => {
@@ -210,6 +211,10 @@ describe("Sentry Integration", () => {
   });
 
   describe("singleton pattern", () => {
+    beforeEach(() => {
+      resetSentryInstance();
+    });
+
     it("should initialize global instance", () => {
       const instance = initializeSentry({
         dsn: "https://test@sentry.io/123",

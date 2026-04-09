@@ -19,7 +19,6 @@
  */
 
 import type { ActionFunctionArgs } from "react-router";
-import { json } from "react-router";
 import crypto from "node:crypto";
 
 // ─── Types ────────────────────────────────────────────────
@@ -101,7 +100,7 @@ interface WebhookDeliveryLog {
 export async function action({ request }: ActionFunctionArgs) {
   // Only accept POST requests
   if (request.method !== "POST") {
-    return json(
+    return Response.json(
       { error: "Method not allowed" },
       { status: 405 }
     );
@@ -128,7 +127,7 @@ export async function action({ request }: ActionFunctionArgs) {
         hasShopId: !!shopId,
         hasWebhookId: !!webhookId,
       });
-      return json(
+      return Response.json(
         { error: "Missing required headers" },
         { status: 400 }
       );
@@ -143,7 +142,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!isValid) {
       console.warn("Invalid webhook signature", { shopId, topic, webhookId });
-      return json(
+      return Response.json(
         { error: "Invalid signature" },
         { status: 401 }
       );
@@ -155,7 +154,7 @@ export async function action({ request }: ActionFunctionArgs) {
       payload = JSON.parse(rawBody);
     } catch (e) {
       console.error("Failed to parse webhook payload", { error: e });
-      return json(
+      return Response.json(
         { error: "Invalid JSON payload" },
         { status: 400 }
       );
@@ -186,7 +185,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Return 200 OK immediately (webhook is async)
-    return json(
+    return Response.json(
       { success: true, webhookId, topic },
       { status: 200 }
     );
@@ -197,7 +196,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Always return 2xx to prevent Shopify retry loop
     // Shopify will retry on 5xx and network errors
-    return json(
+    return Response.json(
       {
         success: false,
         error:
@@ -375,8 +374,8 @@ async function triggerCreateDeliveryOrderWorkflow(
       {
         shopId,
         userId,
-        shopifyOrderId: String(payload.id),
-        shopifyOrderNumber: String(payload.order_number || ""),
+        externalOrderId: String(payload.id),
+        externalOrderNumber: String(payload.order_number || ""),
         customerName,
         customerEmail,
         customerPhone,
@@ -392,7 +391,7 @@ async function triggerCreateDeliveryOrderWorkflow(
         totalWeight,
         tags: ["shopify", "webhook"],
         metadata: {
-          shopifyOrderId: payload.id,
+          externalOrderId: payload.id,
           webhookId: logEntry.id,
           triggeredAt: new Date().toISOString(),
         },
@@ -494,7 +493,7 @@ async function triggerCompleteDeliveryWorkflow(
         completedAt: new Date().toISOString(),
         tags: ["shopify", "webhook", "fulfillment"],
         metadata: {
-          shopifyOrderId: payload.id,
+          externalOrderId: payload.id,
           fulfillmentId: payload.id,
           webhookId: logEntry.id,
           triggeredAt: new Date().toISOString(),

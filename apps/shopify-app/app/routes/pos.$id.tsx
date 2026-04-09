@@ -536,8 +536,8 @@ export default function POSOrderDetail() {
                   <tr key={item.id}>
                     <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>{item.name}</td>
                     <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>{item.quantity}</td>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${item.price.toFixed(2)}</td>
-                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${item.total.toFixed(2)}</td>
+                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${Number(item.price).toFixed(2)}</td>
+                    <td style={{ padding: "8px", borderBottom: "1px solid var(--p-color-border)" }}>${Number(item.total).toFixed(2)}</td>
                   </tr>
                 ))}
               </table>
@@ -557,7 +557,7 @@ export default function POSOrderDetail() {
                   }}
                 >
                   <Text as="span" variant="bodySm">Subtotal:</Text>
-                  <Text as="span" variant="bodySm">${order.subtotal.toFixed(2)}</Text>
+                  <Text as="span" variant="bodySm">${Number(order.subtotal).toFixed(2)}</Text>
                 </div>
                 <div
                   style={{
@@ -567,7 +567,7 @@ export default function POSOrderDetail() {
                   }}
                 >
                   <Text as="span" variant="bodySm">Tax:</Text>
-                  <Text as="span" variant="bodySm">${order.tax.toFixed(2)}</Text>
+                  <Text as="span" variant="bodySm">${Number(order.tax).toFixed(2)}</Text>
                 </div>
                 {order.deliveryFee > 0 && (
                   <div
@@ -578,7 +578,7 @@ export default function POSOrderDetail() {
                     }}
                   >
                     <Text as="span" variant="bodySm">Delivery Fee:</Text>
-                    <Text as="span" variant="bodySm">${order.deliveryFee.toFixed(2)}</Text>
+                    <Text as="span" variant="bodySm">${Number(order.deliveryFee).toFixed(2)}</Text>
                   </div>
                 )}
                 <div
@@ -590,7 +590,7 @@ export default function POSOrderDetail() {
                   }}
                 >
                   <span>Total:</span>
-                  <span>${order.total.toFixed(2)}</span>
+                  <span>${Number(order.total).toFixed(2)}</span>
                 </div>
               </div>
             </BlockStack>

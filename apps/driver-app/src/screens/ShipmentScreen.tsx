@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -40,7 +40,7 @@ interface Shipment {
 }
 
 export const ShipmentScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { shipmentId } = route.params as { shipmentId: string };
 
@@ -73,7 +73,7 @@ export const ShipmentScreen = () => {
       await api.patch(`/api/v4/shipments/${shipmentId}`, { status: newStatus });
 
       // Update local state
-      setShipment({ ...shipment, status: newStatus as any });
+      setShipment({ ...shipment, status: newStatus as Shipment['status'] });
       Alert.alert('Success', 'Shipment status updated');
     } catch (error) {
       Alert.alert('Error', 'Failed to update shipment status');
@@ -101,6 +101,14 @@ export const ShipmentScreen = () => {
     navigation.navigate('DeliveryProof', { shipmentId });
   };
 
+  const handleScanPickup = () => {
+    navigation.navigate('BarcodeScanner', {
+      mode: 'pickup',
+      shipmentId,
+      expectedBarcode: shipment?.trackingNumber ?? '',
+    });
+  };
+
   const getActionButtons = () => {
     if (!shipment || updating) return null;
 
@@ -110,9 +118,9 @@ export const ShipmentScreen = () => {
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity
               style={[styles.actionButton, styles.acceptButton]}
-              onPress={() => handleStatusUpdate('PICKED_UP')}
+              onPress={handleScanPickup}
             >
-              <Text style={styles.actionButtonText}>Accept Shipment</Text>
+              <Text style={styles.actionButtonText}>Scan Package</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.rejectButton]}

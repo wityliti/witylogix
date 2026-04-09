@@ -6,10 +6,17 @@ import RoutesScreen from '../screens/RoutesScreen';
 import RouteDetailScreen from '../screens/RouteDetailScreen';
 import DeliveryScreen from '../screens/DeliveryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { ShipmentListScreen } from '../screens/ShipmentListScreen';
+import { ShipmentScreen } from '../screens/ShipmentScreen';
+import { DeliveryProofScreen } from '../screens/DeliveryProofScreen';
+import { CameraCaptureScreen } from '../screens/CameraCaptureScreen';
+import { SignaturePadScreen } from '../screens/SignaturePadScreen';
+import { BarcodeScannerScreen } from '../screens/BarcodeScannerScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
 const RoutesStack = createNativeStackNavigator();
+const ShipmentsStack = createNativeStackNavigator();
 
 const HomeStackNavigator = () => (
   <HomeStack.Navigator
@@ -43,6 +50,46 @@ const RoutesStackNavigator = () => (
   </RoutesStack.Navigator>
 );
 
+const ShipmentsStackNavigator = () => (
+  <ShipmentsStack.Navigator
+    screenOptions={{
+      headerShown: true,
+      headerTintColor: '#005bd3',
+    }}
+  >
+    <ShipmentsStack.Screen
+      name="ShipmentList"
+      component={ShipmentListScreen}
+      options={{ title: 'Shipments' }}
+    />
+    <ShipmentsStack.Screen
+      name="ShipmentDetail"
+      component={ShipmentScreen}
+      options={{ title: 'Shipment', headerBackTitle: 'Back' }}
+    />
+    <ShipmentsStack.Screen
+      name="DeliveryProof"
+      component={DeliveryProofScreen}
+      options={{ title: 'Proof of Delivery', headerBackTitle: 'Back' }}
+    />
+    <ShipmentsStack.Screen
+      name="CameraCapture"
+      component={CameraCaptureScreen}
+      options={{ title: 'Take Photo', headerShown: false }}
+    />
+    <ShipmentsStack.Screen
+      name="SignaturePad"
+      component={SignaturePadScreen}
+      options={{ title: 'Signature', headerBackTitle: 'Back' }}
+    />
+    <ShipmentsStack.Screen
+      name="BarcodeScanner"
+      component={BarcodeScannerScreen}
+      options={{ title: 'Scan', headerShown: false }}
+    />
+  </ShipmentsStack.Navigator>
+);
+
 const MainTabs: React.FC = () => {
   return (
     <Tab.Navigator
@@ -66,6 +113,14 @@ const MainTabs: React.FC = () => {
         options={{
           title: 'Routes',
           tabBarLabel: 'Routes',
+        }}
+      />
+      <Tab.Screen
+        name="Shipments"
+        component={ShipmentsStackNavigator}
+        options={{
+          title: 'Shipments',
+          tabBarLabel: 'Shipments',
         }}
       />
       <Tab.Screen

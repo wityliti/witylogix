@@ -31,6 +31,9 @@ import { shutdownQueues } from "./lib/queue.js";
 const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
 const startIntegrationWorker = async () => { try { const m = await import("./workers/integration-worker.js"); return m.startIntegrationWorker(); } catch { console.warn("[Worker] Integration worker unavailable"); } };
+const startGeofenceWorker = async () => { try { const m = await import("./workers/geofence-worker.js"); return m.startGeofenceWorker(); } catch { console.warn("[Worker] Geofence worker unavailable"); } };
+const startFailedDeliveryWorker = async () => { try { const m = await import("./workers/failed-delivery-worker.js"); return m.startFailedDeliveryWorker(); } catch { console.warn("[Worker] Failed-delivery worker unavailable"); } };
+const startWCWebhookWorker = async () => { try { const m = await import("./workers/wc-webhook-worker.js"); return m.startWCWebhookWorker(); } catch { console.warn("[Worker] WC webhook worker unavailable"); } };
 // Lazy imports — @witylogix/core modules may not resolve in dev
 const onRoutingMeter = (..._args: any[]) => {};
 const onNotificationMeter = (..._args: any[]) => {};
@@ -106,24 +109,40 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(sensible);
 
   // JWT signing & verification
+  // verify.algorithms: restrict to HS256 to prevent algorithm confusion (CVE-2026-34950)
+  // verify.cache: disabled to prevent cache-key collision identity leaks (CVE-2026-35039)
   await app.register(jwt, {
     secret: config.JWT_SECRET,
     sign: {
       expiresIn: config.JWT_EXPIRES_IN,
+      algorithm: "HS256",
+    },
+    verify: {
+      algorithms: ["HS256"],
+      cache: false,
     },
   });
 
-  // 5. Global rate limiter — enforced before authentication
-  await app.register(rateLimit, {
+  // 5. Global rate limiter — enforced before authentication.
+  // In development use the built-in in-memory store to avoid blocking HTTP
+  // requests when Railway Redis resets connections (ECONNRESET).
+  // In production, Redis-backed rate limiting is used for distributed counting.
+  const rateLimitOpts: any = {
     global: true,
     max: isDev() ? 1000 : config.RATE_LIMIT_MAX_REQUESTS,
     timeWindow: "1 minute",
-    redis: getRedis(),
-    keyGenerator: (request) => {
-      // Rate-limit per tenant if authenticated, else by IP
+    keyGenerator: (request: any) => {
       return (request as any).auth?.shopId || request.ip;
     },
-  });
+  };
+  if (!isDev()) {
+    try {
+      rateLimitOpts.redis = getRedis();
+    } catch {
+      app.log.warn("[RateLimit] Redis unavailable, falling back to in-memory store");
+    }
+  }
+  await app.register(rateLimit, rateLimitOpts);
 
   // 6. Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);
@@ -199,6 +218,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/customers.js"), { prefix: "/api/v4/customers" });
   await safeRegister(import("./routes/analytics.js"), { prefix: "/api/v4/analytics" });
   await safeRegister(import("./routes/analytics-events.js"), { prefix: "/api/v4/analytics/v2" });
+  await safeRegister(import("./routes/analytics/route-performance.js"), { prefix: "/api/v4/analytics" });
   await safeRegister(import("./routes/dashboard-stats.js"), { prefix: "/api/v4/dashboard" });
   await safeRegister(import("./routes/payment-methods.js"), { prefix: "/api/v4/payment-methods" });
   await safeRegister(import("./routes/billing.js"), { prefix: "/api/v4/billing" });
@@ -214,6 +234,11 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/pos.js"), { prefix: "/api/v4/pos" });
   await safeRegister(import("./routes/collections.js"), { prefix: "/api/v4/collections" });
   await safeRegister(import("./routes/couriers.js"), { prefix: "/api/v4/couriers" });
+  await safeRegister(import("./routes/dispatch.js"), { prefix: "/api/v4/dispatch" });
+  await safeRegister(import("./routes/deliveries.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/delivery-otp.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/delivery-events.js"), { prefix: "/api/v4/deliveries" });
+  await safeRegister(import("./routes/failed-deliveries.js"), { prefix: "/api/v4/failed-deliveries" });
   await safeRegister(import("./routes/custom-webhooks.js"), { prefix: "/api/v4/custom-webhooks" });
   await safeRegister(import("./routes/driver-scoring.js"), { prefix: "/api/v4/driver-scoring" });
   await safeRegister(import("./routes/ecommerce.js"), { prefix: "/api/v4/ecommerce" });
@@ -238,6 +263,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/route-optimization.js"), { prefix: "/api/v4/route-optimization" });
   await safeRegister(import("./routes/live-tracking.js"), { prefix: "/api/v4/tracking/live" });
   await safeRegister(import("./routes/proof-of-delivery.js"), { prefix: "/api/v4/pod/v2" });
+  await safeRegister(import("./routes/supply-chain.js"), { prefix: "/api/v4/supply-chain" });
+  await safeRegister(import("./routes/inventory.js"), { prefix: "/api/v4/inventory" });
+  await safeRegister(import("./routes/warehouse.js"), { prefix: "/api/v4/warehouse" });
+  await safeRegister(import("./routes/fleet/fleet.js"), { prefix: "/api/v4/fleet" });
+  await safeRegister(import("./routes/cold-chain/cold-chain.js"), { prefix: "/api/v4/cold-chain" });
+
+
+  await safeRegister(import("./routes/ai/eta-recalculate.js"), { prefix: "/api/v4/ai/eta/recalculate" });
+  await safeRegister(import("./routes/finance-cod.js"), { prefix: "/api/v4/finance/cod" });
+  await safeRegister(import("./routes/ai/copilot.js"), { prefix: "/api/v4/ai/copilot" });
 
   // ─── Socket.io Real-time Events ──────────────────────────
 
@@ -471,7 +506,36 @@ async function start(): Promise<void> {
   startNotificationWorker();
   startOptimizationWorker();
   startIntegrationWorker();
-  app.log.info("BullMQ workers started (notification, optimization, integration)");
+
+  // Geofence checker — repeatable job every 30s (WIT-140)
+  startGeofenceWorker().then(async () => {
+    try {
+      const { getGeofenceQueue } = await import("./lib/queue.js");
+      const intervalMs = parseInt(process.env.GEOFENCE_CHECK_INTERVAL_MS ?? "30000", 10);
+      const geofenceQueue = getGeofenceQueue();
+      await geofenceQueue.add(
+        "geofence-check",
+        { triggeredAt: new Date().toISOString() },
+        { repeat: { every: intervalMs }, jobId: "geofence-check-repeatable" },
+      );
+      app.log.info(`[geofence-worker] Repeatable job scheduled every ${intervalMs}ms`);
+    } catch (err: any) {
+      app.log.warn(`[geofence-worker] Failed to schedule repeatable job: ${err.message}`);
+    }
+  });
+
+  startFailedDeliveryWorker();
+  startWCWebhookWorker();
+  app.log.info("BullMQ workers started (notification, optimization, integration, geofence, failed-delivery, wc-webhooks)");
+
+  // ─── Bootstrap Carrier Adapters ───────────────────────────
+  try {
+    const { bootstrapCarriersFromEnv } = await import("@witylogix/core/integrations/shipping");
+    await bootstrapCarriersFromEnv();
+    app.log.info("Carrier adapters bootstrapped from env");
+  } catch (err) {
+    app.log.warn(err, "Carrier adapter bootstrap skipped (non-fatal)");
+  }
 
   // ─── Listen ───────────────────────────────────────────────
 

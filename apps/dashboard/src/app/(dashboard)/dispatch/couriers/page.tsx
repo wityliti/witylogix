@@ -11,8 +11,8 @@ import { CourierAssignmentPanel } from "@/components/couriers/courier-assignment
 import { DispatchStatsBar } from "@/components/couriers/dispatch-stats-bar";
 import { useApiList, useApiMutation } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
+import { DeliveryStatus } from "@witylogix/core/integrations/couriers";
 import type {
-  DeliveryStatus,
   DriverPosition,
   LocationInfo,
   PackageSpec,
@@ -136,7 +136,7 @@ export default function CourierDispatchPage() {
 
   // Get pending deliveries for left panel
   const pendingDeliveries = useMemo(
-    () => deliveries.filter((d) => d.status === "pending" || d.status === "assigned"),
+    () => deliveries.filter((d) => d.status === DeliveryStatus.PENDING || d.status === DeliveryStatus.PICKED_UP),
     [deliveries]
   );
 
@@ -147,14 +147,13 @@ export default function CourierDispatchPage() {
   );
 
   if (couriersError || deliveriesError) {
-    return <ErrorState error={couriersError || deliveriesError} onRetry={() => { refetchCouriers(); refetchDeliveries(); }} />;
+    return <ErrorState message={(couriersError || deliveriesError)?.message ?? "Failed to load data"} onRetry={() => { refetchCouriers(); refetchDeliveries(); }} />;
   }
 
   const getStatusBadgeVariant = (status: DeliveryStatus) => {
     switch (status) {
       case "pending":
         return "default";
-      case "assigned":
       case "picked_up":
         return "info";
       case "in_transit":

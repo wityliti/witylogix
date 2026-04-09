@@ -3,7 +3,18 @@
  *
  * Shows chronological events with timestamps, actors, and descriptions.
  * Used on order detail pages, activity feeds, and driver history.
+ *
+ * Uses Polaris v13 components for layout and typography.
  */
+
+import {
+  BlockStack,
+  Box,
+  Card,
+  InlineStack,
+  SkeletonBodyText,
+  Text,
+} from "@shopify/polaris";
 
 interface TimelineEvent {
   id: string;
@@ -21,107 +32,59 @@ interface StatusTimelineProps {
 export function StatusTimeline({ events, loading = false }: StatusTimelineProps) {
   if (loading) {
     return (
-      <div style={{ padding: 16 }}>
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            style={{
-              display: "flex",
-              gap: 12,
-              marginBottom: 20,
-            }}
-          >
-            <div style={skeletonCircle} />
-            <div>
-              <div style={skeletonLine(180, 14)} />
-              <div style={{ ...skeletonLine(120, 12), marginTop: 6 }} />
-            </div>
-          </div>
-        ))}
-      </div>
+      <Card>
+        <BlockStack gap="400">
+          {[1, 2, 3].map((i) => (
+            <SkeletonBodyText key={i} lines={2} />
+          ))}
+        </BlockStack>
+      </Card>
     );
   }
 
   if (events.length === 0) {
     return (
-      <div style={{ padding: 16, color: "var(--p-color-text-subdued, #6d7175)", fontSize: 13 }}>
-        No events yet.
-      </div>
+      <Card>
+        <Text as="p" variant="bodySm" tone="subdued">
+          No events yet.
+        </Text>
+      </Card>
     );
   }
 
   return (
-    <div style={{ padding: "0 4px" }}>
-      {events.map((event, index) => {
-        const isLast = index === events.length - 1;
-        return (
-          <div
-            key={event.id}
-            style={{
-              display: "flex",
-              gap: 12,
-              position: "relative",
-              paddingBottom: isLast ? 0 : 20,
-            }}
-          >
-            {/* Timeline line + dot */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 20 }}>
-              <div
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  backgroundColor:
-                    index === 0
-                      ? "var(--p-color-bg-fill-brand, #005bd3)"
-                      : "var(--p-color-border, #c9cccf)",
-                  flexShrink: 0,
-                  marginTop: 4,
-                }}
-              />
-              {!isLast && (
-                <div
-                  style={{
-                    width: 2,
-                    flex: 1,
-                    backgroundColor: "var(--p-color-border-subdued, #e1e3e5)",
-                    marginTop: 4,
-                  }}
-                />
-              )}
-            </div>
-
-            {/* Content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: "var(--p-color-text, #202223)" }}>
+    <Card>
+      <BlockStack gap="400">
+        {events.map((event) => (
+          <Box key={event.id}>
+            <BlockStack gap="050">
+              <Text as="p" variant="bodyMd" fontWeight="medium">
                 {event.message}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  marginTop: 2,
-                  fontSize: 12,
-                  color: "var(--p-color-text-subdued, #6d7175)",
-                }}
-              >
-                <span>{formatTimestamp(event.timestamp)}</span>
+              </Text>
+              <InlineStack gap="200">
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {formatTimestamp(event.timestamp)}
+                </Text>
                 {event.actor && (
                   <>
-                    <span>&middot;</span>
-                    <span>{event.actor}</span>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      &middot;
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      {event.actor}
+                    </Text>
                   </>
                 )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+              </InlineStack>
+            </BlockStack>
+          </Box>
+        ))}
+      </BlockStack>
+    </Card>
   );
 }
 
-// ─── Helpers ───────────────────────────────────────────────
+// --- Helpers ---
 
 function formatTimestamp(iso: string): string {
   try {
@@ -145,22 +108,4 @@ function formatTimestamp(iso: string): string {
   } catch {
     return iso;
   }
-}
-
-const skeletonCircle: React.CSSProperties = {
-  width: 10,
-  height: 10,
-  borderRadius: "50%",
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  marginTop: 4,
-  flexShrink: 0,
-};
-
-function skeletonLine(width: number, height: number): React.CSSProperties {
-  return {
-    width,
-    height,
-    backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-    borderRadius: 4,
-  };
 }

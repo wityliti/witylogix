@@ -4,6 +4,7 @@ node_modules/
 
 # Build outputs
 dist/
+build/
 .next/
 .turbo/
 .temp/
@@ -44,3 +45,13 @@ docker-compose.override.yml
 # Prisma
 packages/db/prisma/migrations/**/migration_lock.toml
 packages/db/src/generated/
+
+# pnpm workspaces — prevent accidental npm lockfiles from leaking in
+apps/*/package-lock.json
+packages/*/package-lock.json
+
+# Vite/Vitest timestamp cache files
+**/*.timestamp-*.mjs
+
+# Claude-Flow runtime state
+**/.claude-flow/

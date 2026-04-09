@@ -279,6 +279,10 @@ describe('IntegrationGateway', () => {
       const result = await gateway.get('test-provider', '/test');
       expect(result).toEqual({ message: 'ok' });
 
+      // With successThreshold: 2, need more successes to fully close
+      const result2 = await gateway.get('test-provider', '/test2');
+      expect(result2).toEqual({ message: 'ok' });
+
       // Should be back to CLOSED after enough successes
       expect(gateway.getCircuitBreakerStatus('test-provider')).toBe('CLOSED');
     });

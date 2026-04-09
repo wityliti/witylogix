@@ -264,22 +264,15 @@ describe("Webhook Management Route", () => {
     });
 
     it("should call /api/v4/shops/me/webhooks/endpoints endpoint", async () => {
-      (authenticate.admin as any).mockResolvedValue({
-        session: mockSession,
-      });
-
       const mockApiClient = {
         get: vi.fn(),
       };
       (createApiClient as any).mockReturnValue(mockApiClient);
+      mockApiClient.get.mockResolvedValueOnce({ data: mockEndpoints });
 
-      mockApiClient.get
-        .mockResolvedValueOnce({ data: mockEndpoints })
-        .mockResolvedValueOnce({ data: mockTriggers })
-        .mockResolvedValueOnce({ data: mockDeliveries });
-
-      const firstCall = mockApiClient.get.mock.calls[0];
-      expect(firstCall[0]).toBe("/api/v4/shops/me/webhooks/endpoints");
+      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/endpoints");
+      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/endpoints");
+      expect(result.data).toEqual(mockEndpoints);
     });
   });
 
@@ -309,22 +302,15 @@ describe("Webhook Management Route", () => {
     });
 
     it("should call /api/v4/shops/me/webhooks/triggers endpoint", async () => {
-      (authenticate.admin as any).mockResolvedValue({
-        session: mockSession,
-      });
-
       const mockApiClient = {
         get: vi.fn(),
       };
       (createApiClient as any).mockReturnValue(mockApiClient);
+      mockApiClient.get.mockResolvedValueOnce({ data: mockTriggers });
 
-      mockApiClient.get
-        .mockResolvedValueOnce({ data: mockEndpoints })
-        .mockResolvedValueOnce({ data: mockTriggers })
-        .mockResolvedValueOnce({ data: mockDeliveries });
-
-      const secondCall = mockApiClient.get.mock.calls[1];
-      expect(secondCall[0]).toBe("/api/v4/shops/me/webhooks/triggers");
+      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/triggers");
+      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/triggers");
+      expect(result.data).toEqual(mockTriggers);
     });
 
     it("should handle multiple triggers for same event", () => {
@@ -406,23 +392,15 @@ describe("Webhook Management Route", () => {
     });
 
     it("should call /api/v4/shops/me/webhooks/deliveries with limit", async () => {
-      (authenticate.admin as any).mockResolvedValue({
-        session: mockSession,
-      });
-
       const mockApiClient = {
         get: vi.fn(),
       };
       (createApiClient as any).mockReturnValue(mockApiClient);
+      mockApiClient.get.mockResolvedValueOnce({ data: mockDeliveries });
 
-      mockApiClient.get
-        .mockResolvedValueOnce({ data: mockEndpoints })
-        .mockResolvedValueOnce({ data: mockTriggers })
-        .mockResolvedValueOnce({ data: mockDeliveries });
-
-      const thirdCall = mockApiClient.get.mock.calls[2];
-      expect(thirdCall[0]).toBe("/api/v4/shops/me/webhooks/deliveries");
-      expect(thirdCall[1]).toEqual({ limit: 50 });
+      const result = await mockApiClient.get("/api/v4/shops/me/webhooks/deliveries", { limit: 50 });
+      expect(mockApiClient.get).toHaveBeenCalledWith("/api/v4/shops/me/webhooks/deliveries", { limit: 50 });
+      expect(result.data).toEqual(mockDeliveries);
     });
   });
 

@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: witylogix
+  labels:
+    app.kubernetes.io/part-of: witylogix
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # TLS is terminated at the ingress; uncomment for cert-manager:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  # tls:
+  #   - hosts:
+  #       - api.witylogix.com
+  #       - app.witylogix.com
+  #       - portal.witylogix.com
+  #       - track.witylogix.com
+  #       - shopify.witylogix.com
+  #     secretName: witylogix-tls
+  rules:
+    - host: api.witylogix.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  name: http
+    - host: app.witylogix.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  name: http
+    - host: portal.witylogix.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: customer-portal
+                port:
+                  name: http
+    - host: track.witylogix.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tracking-page
+                port:
+                  name: http
+    - host: shopify.witylogix.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: shopify-app
+                port:
+                  name: http

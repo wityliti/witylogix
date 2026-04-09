@@ -222,7 +222,7 @@ export class Logger {
       if (typeof value === "string") {
         // Check key names for sensitive patterns
         if (
-          /password|token|secret|credential|key|authorization|credit|cvv|ssn|api_key/i.test(
+          /password|token|secret|credential|key|authorization|credit|card|cvv|ssn|api_key/i.test(
             key
           )
         ) {

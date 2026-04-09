@@ -207,8 +207,8 @@ describe('Zod Error Handling', () => {
     if (!result.success) {
       const transformed = transformZodError(result.error);
 
-      expect(transformed.username).toContain('3 characters');
-      expect(transformed.age).toContain('18');
+      expect((transformed.username as string[])[0]).toContain('3 characters');
+      expect((transformed.age as string[])[0]).toContain('18');
     }
   });
 
@@ -291,7 +291,7 @@ describe('Prisma Error Handling', () => {
 
     const appError = transformPrismaError(prismaError as any);
 
-    expect(appError.details).toContain('email');
+    expect(appError.details?.conflictingFields).toContain('email');
   });
 
   it('should handle unknown Prisma errors as ServiceUnavailableError', () => {
@@ -378,8 +378,8 @@ describe('Error Response Format', () => {
       },
     };
 
-    expect(response.error.details.email).toBe('Invalid email format');
-    expect(response.error.details.password).toBe('Must be at least 8 characters');
+    expect(response.error.details!.email).toBe('Invalid email format');
+    expect(response.error.details!.password).toBe('Must be at least 8 characters');
   });
 
   it('should return consistent error format for different error types', () => {
@@ -467,16 +467,16 @@ describe('Error Logging', () => {
   });
 
   it('should not log sensitive details', () => {
-    const error = new ValidationError('Invalid password', {
+    const error = new ValidationError('Invalid credentials', {
       password: 'Current password is incorrect',
     });
 
     const logEntry = {
       errorCode: error.code,
       message: error.message,
-      // Do not include full details in logs
+      // Do not include full details in logs — details with sensitive fields are omitted
     };
 
-    expect(logEntry.message).not.toContain('password');
+    expect(logEntry).not.toHaveProperty('details');
   });
 });

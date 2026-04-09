@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking-page
+  labels:
+    app.kubernetes.io/name: tracking-page
+    app.kubernetes.io/part-of: witylogix
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tracking-page
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tracking-page
+        app.kubernetes.io/part-of: witylogix
+        app.kubernetes.io/component: frontend
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: tracking-page
+          image: ghcr.io/wityliti/witylogix/tracking-page:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000

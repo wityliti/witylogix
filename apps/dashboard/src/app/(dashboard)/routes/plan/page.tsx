@@ -506,7 +506,7 @@ export default function RoutePlanningPage() {
             {state.currentStep === 'optimize' && state.results.length === 0 && (
               <Card className="p-3 bg-blue-500/10 border border-blue-500/30">
                 <div className="text-sm text-blue-400">
-                  Click "Optimize Route" to calculate routes
+                  Click &quot;Optimize Route&quot; to calculate routes
                 </div>
               </Card>
             )}

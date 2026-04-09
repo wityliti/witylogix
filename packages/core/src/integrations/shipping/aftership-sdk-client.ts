@@ -1,5 +1,5 @@
 /**
- * AfterShip Tracking API v4 SDK Client
+ * AfterShip Tracking API 2026-01 SDK Client
  *
  * Comprehensive AfterShip tracking integration with:
  * - Auto-detection of 1000+ couriers
@@ -9,12 +9,12 @@
  * - Last checkpoint status tracking
  * - HMAC-SHA256 webhook verification
  *
- * Authentication: API key (header: aftership-api-key)
- * Base URL: https://api.aftership.com/v4
+ * Authentication: API key (header: as-api-key)
+ * Base URL: https://api.aftership.com/tracking/2026-01
  * Rate Limit: 10 requests/second
  * Pagination: Page-based (limit + page)
  * Webhook Events: tracking_update
- * API Version: v4 (2024-compatible)
+ * API Version: 2026-01 (migrated from deprecated v4)
  */
 
 import { createHmac } from "crypto";
@@ -172,7 +172,7 @@ export interface AfterShipWebhookEvent {
 // ─── AfterShip SDK Client ───────────────────────────────────────────
 
 /**
- * AfterShip Tracking API v4 SDK Client
+ * AfterShip Tracking API 2026-01 SDK Client
  *
  * Complete implementation for tracking shipments across 1000+ couriers
  * with webhook support and ETA tracking.
@@ -181,7 +181,6 @@ export interface AfterShipWebhookEvent {
  * ```typescript
  * const aftership = new AfterShipSDKClient({
  *   apiKey: 'aftership_...',
- *   baseUrl: 'https://api.aftership.com/v4'
  * });
  *
  * const tracking = await aftership.createTracking({
@@ -212,7 +211,7 @@ export class AfterShipSDKClient {
       throw new Error("AfterShip API key is required");
     }
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl || "https://api.aftership.com/v4";
+    this.baseUrl = config.baseUrl || "https://api.aftership.com/tracking/2026-01";
     this.timeout = config.timeout || 30000;
   }
 
@@ -612,7 +611,7 @@ export class AfterShipSDKClient {
       const response = await fetch(url, {
         method,
         headers: {
-          "aftership-api-key": this.apiKey,
+          "as-api-key": this.apiKey,
           "Content-Type": "application/json",
         },
         body: body ? JSON.stringify(body) : undefined,

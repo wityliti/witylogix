@@ -288,7 +288,7 @@ describe('Delivery Zones API', () => {
         { latitude: 40.7489, longitude: -73.9680 },
         { latitude: 40.7128, longitude: -74.006 }, // Closed ring
       ];
-      const newZone = createMockZone();
+      const newZone = createMockZone({ name: 'Downtown' });
       mockRequest.body = {
         name: 'Downtown',
         baseRate: 5.0,

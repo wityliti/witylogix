@@ -17,8 +17,22 @@
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link, Form } from "react-router";
-import { useState } from "react";
-import { EmptyState } from "~/components/EmptyState";
+import {
+  Page,
+  Card,
+  IndexTable,
+  Badge,
+  Pagination,
+  TextField,
+  Select,
+  ButtonGroup,
+  Button,
+  Text,
+  BlockStack,
+  InlineStack,
+  EmptyState,
+  Box,
+} from "@shopify/polaris";
 import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -106,7 +120,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function CustomersIndex() {
   const { customers, meta } = useLoaderData<CustomersPageData>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const currentSearch = searchParams.get("search") || "";
   const currentStatus = searchParams.get("status") || "all";
@@ -144,414 +157,245 @@ export default function CustomersIndex() {
     });
   };
 
-  const getSegmentColor = (segment: string) => {
+  const getSegmentBadgeTone = (segment: string): "warning" | "success" | "critical" | undefined => {
     switch (segment) {
       case "vip":
-        return "#d4af37";
+        return "warning";
       case "new":
-        return "#00a699";
+        return "success";
       case "at_risk":
-        return "#ff6b6b";
+        return "critical";
       default:
-        return "#8c9196";
+        return undefined;
     }
   };
 
-  const getSyncStatusColor = (status: string) => {
-    switch (status) {
-      case "synced":
-        return "var(--p-color-bg-fill-success, #22c55e)";
-      case "pending":
-        return "var(--p-color-bg-fill-warning, #f59e0b)";
-      case "failed":
-        return "var(--p-color-bg-fill-critical, #ef4444)";
+  const getSegmentLabel = (segment: string): string => {
+    switch (segment) {
+      case "vip":
+        return "VIP";
+      case "new":
+        return "New";
+      case "at_risk":
+        return "At Risk";
       default:
-        return "#8c9196";
+        return "Regular";
     }
   };
+
+  const getSyncStatusBadgeTone = (status: string): "success" | "warning" | "critical" | undefined => {
+    switch (status) {
+      case "synced":
+        return "success";
+      case "pending":
+        return "warning";
+      case "failed":
+        return "critical";
+      default:
+        return undefined;
+    }
+  };
+
+  const statusOptions = [
+    { label: "All Statuses", value: "all" },
+    { label: "Active", value: "active" },
+    { label: "Inactive", value: "inactive" },
+  ];
 
   if (customers.length === 0 && !currentSearch && currentStatus === "all") {
     return (
-      <EmptyState
-        title="No customers yet"
-        description="Your customers will appear here once you start syncing customer data from Shopify."
-        actionLabel="Sync Customers Now"
-        onAction={() => {
-          const form = document.createElement("form");
-          form.method = "post";
-          form.innerHTML = '<input type="hidden" name="intent" value="sync-customers">';
-          document.body.appendChild(form);
-          form.submit();
-        }}
-      />
+      <Page title="Customers">
+        <Card>
+          <EmptyState
+            heading="No customers yet"
+            action={{
+              content: "Sync Customers Now",
+              onAction: () => {
+                const form = document.createElement("form");
+                form.method = "post";
+                form.innerHTML = '<input type="hidden" name="intent" value="sync-customers">';
+                document.body.appendChild(form);
+                form.submit();
+              },
+            }}
+            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+          >
+            <p>
+              Your customers will appear here once you start syncing customer
+              data from Shopify.
+            </p>
+          </EmptyState>
+        </Card>
+      </Page>
     );
   }
 
+  const resourceName = {
+    singular: "customer",
+    plural: "customers",
+  };
+
+  const rowMarkup = customers.map((customer, index) => (
+    <IndexTable.Row id={customer.id} key={customer.id} position={index}>
+      <IndexTable.Cell>
+        <BlockStack gap="100">
+          <Link to={`/customers/${customer.id}`}>
+            <Text as="span" variant="bodyMd" fontWeight="semibold">
+              {customer.firstName} {customer.lastName}
+            </Text>
+          </Link>
+          <Badge tone={getSegmentBadgeTone(customer.segment)}>
+            {getSegmentLabel(customer.segment)}
+          </Badge>
+        </BlockStack>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {customer.email || "\u2014"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {customer.phone || "\u2014"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          {customer.ordersCount}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          ${Number(customer.totalSpent).toFixed(2)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {customer.lastOrderDate
+            ? new Date(customer.lastOrderDate).toLocaleDateString()
+            : "\u2014"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge
+          tone={getSyncStatusBadgeTone(customer.syncStatus)}
+        >
+          {customer.syncStatus === "synced"
+            ? "Synced"
+            : customer.syncStatus === "pending"
+            ? "Pending"
+            : "Failed"}
+        </Badge>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={containerStyle}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div>
-          <h1 style={pageHeadingStyle}>Customers</h1>
-          <p style={pageSubheadingStyle}>
-            Manage and sync your customer data ({meta.total} total)
-          </p>
-        </div>
+    <Page
+      title="Customers"
+      subtitle={`Manage and sync your customer data (${meta.total} total)`}
+      primaryAction={
         <Form method="post">
           <input type="hidden" name="intent" value="sync-customers" />
-          <button type="submit" style={primaryButtonStyle}>
+          <Button submit variant="primary">
             Sync Customers
-          </button>
+          </Button>
         </Form>
-      </div>
-
-      {/* Search and Filters */}
-      <div style={filterBarStyle}>
-        <input
-          type="text"
-          placeholder="Search customers by name, email, or phone..."
-          value={currentSearch}
-          onChange={(e) => handleSearch(e.target.value)}
-          style={searchInputStyle}
-        />
-        <select
-          value={currentStatus}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          style={filterSelectStyle}
-        >
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-
-      {/* Segment Chips */}
-      <div style={chipContainerStyle}>
-        {["all", "vip", "new", "at_risk"].map((segment) => (
-          <button
-            key={segment}
-            onClick={() => handleSegmentChange(segment)}
-            style={{
-              ...chipStyle,
-              backgroundColor:
-                currentSegment === segment
-                  ? getSegmentColor(segment)
-                  : "var(--p-color-bg-surface, #ffffff)",
-              color:
-                currentSegment === segment
-                  ? "white"
-                  : "var(--p-color-text, #202223)",
-              border:
-                currentSegment === segment
-                  ? "none"
-                  : "1px solid var(--p-color-border, #c9cccf)",
-            }}
-          >
-            {segment === "all"
-              ? "All"
-              : segment === "vip"
-              ? "VIP"
-              : segment === "new"
-              ? "New"
-              : "At Risk"}
-          </button>
-        ))}
-      </div>
-
-      {/* Table */}
-      {customers.length > 0 ? (
-        <div style={tableContainerStyle}>
-          <table style={tableStyle}>
-            <thead>
-              <tr style={trStyle}>
-                <th style={thStyle}>Customer</th>
-                <th style={thStyle}>Email</th>
-                <th style={thStyle}>Phone</th>
-                <th style={thStyle}>Orders</th>
-                <th style={thStyle}>Total Spent</th>
-                <th style={thStyle}>Last Order</th>
-                <th style={thStyle}>Sync Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((customer) => (
-                <tr
-                  key={customer.id}
-                  style={trStyle}
-                  onClick={() =>
-                    setExpandedId(expandedId === customer.id ? null : customer.id)
-                  }
+      }
+    >
+      <BlockStack gap="400">
+        {/* Search and Filters */}
+        <Card>
+          <BlockStack gap="300">
+            <InlineStack gap="300" wrap={false}>
+              <Box minWidth="0" width="100%">
+                <TextField
+                  label="Search"
+                  labelHidden
+                  placeholder="Search customers by name, email, or phone..."
+                  value={currentSearch}
+                  onChange={handleSearch}
+                  autoComplete="off"
+                />
+              </Box>
+              <Box minWidth="150px">
+                <Select
+                  label="Status"
+                  labelHidden
+                  options={statusOptions}
+                  value={currentStatus}
+                  onChange={handleStatusChange}
+                />
+              </Box>
+            </InlineStack>
+            <ButtonGroup variant="segmented">
+              {(["all", "vip", "new", "at_risk"] as const).map((segment) => (
+                <Button
+                  key={segment}
+                  pressed={currentSegment === segment}
+                  onClick={() => handleSegmentChange(segment)}
                 >
-                  <td style={tdStyle}>
-                    <div>
-                      <Link
-                        to={`/customers/${customer.id}`}
-                        style={customerLinkStyle}
-                      >
-                        {customer.firstName} {customer.lastName}
-                      </Link>
-                      <div style={cellSubtext}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "2px 8px",
-                            backgroundColor: getSegmentColor(customer.segment),
-                            color: "white",
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 500,
-                            marginTop: 4,
-                          }}
-                        >
-                          {customer.segment === "vip"
-                            ? "VIP"
-                            : customer.segment === "new"
-                            ? "New"
-                            : customer.segment === "at_risk"
-                            ? "At Risk"
-                            : "Regular"}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>{customer.email || "—"}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>{customer.phone || "—"}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ fontWeight: 500 }}>{customer.ordersCount}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ fontWeight: 500 }}>
-                      ${customer.totalSpent.toFixed(2)}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={cellSubtext}>
-                      {customer.lastOrderDate
-                        ? new Date(customer.lastOrderDate).toLocaleDateString()
-                        : "—"}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "4px 12px",
-                        backgroundColor: getSyncStatusColor(customer.syncStatus),
-                        color: "white",
-                        borderRadius: 4,
-                        fontSize: 12,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {customer.syncStatus === "synced"
-                        ? "Synced"
-                        : customer.syncStatus === "pending"
-                        ? "Pending"
-                        : "Failed"}
-                    </span>
-                  </td>
-                </tr>
+                  {segment === "all"
+                    ? "All"
+                    : segment === "vip"
+                    ? "VIP"
+                    : segment === "new"
+                    ? "New"
+                    : "At Risk"}
+                </Button>
               ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <EmptyState
-          title="No customers found"
-          description="Try adjusting your search or filters to find customers."
-        />
-      )}
+            </ButtonGroup>
+          </BlockStack>
+        </Card>
 
-      {/* Pagination */}
-      {meta.totalPages > 1 && (
-        <div style={paginationStyle}>
-          <span style={paginationInfoStyle}>
-            Page {currentPage} of {meta.totalPages} ({meta.total} total)
-          </span>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              style={{
-                ...paginationButtonStyle,
-                opacity: currentPage === 1 ? 0.5 : 1,
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              }}
+        {/* Table */}
+        {customers.length > 0 ? (
+          <Card padding="0">
+            <IndexTable
+              resourceName={resourceName}
+              itemCount={customers.length}
+              headings={[
+                { title: "Customer" },
+                { title: "Email" },
+                { title: "Phone" },
+                { title: "Orders" },
+                { title: "Total Spent" },
+                { title: "Last Order" },
+                { title: "Sync Status" },
+              ]}
+              selectable={false}
             >
-              Previous
-            </button>
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === meta.totalPages}
-              style={{
-                ...paginationButtonStyle,
-                opacity: currentPage === meta.totalPages ? 0.5 : 1,
-                cursor: currentPage === meta.totalPages ? "not-allowed" : "pointer",
-              }}
+              {rowMarkup}
+            </IndexTable>
+          </Card>
+        ) : (
+          <Card>
+            <EmptyState
+              heading="No customers found"
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
             >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+              <p>Try adjusting your search or filters to find customers.</p>
+            </EmptyState>
+          </Card>
+        )}
+
+        {/* Pagination */}
+        {meta.totalPages > 1 && (
+          <Box paddingBlockStart="400" paddingBlockEnd="400">
+            <InlineStack align="center" blockAlign="center" gap="400">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Page {currentPage} of {meta.totalPages} ({meta.total} total)
+              </Text>
+              <Pagination
+                hasPrevious={currentPage > 1}
+                onPrevious={() => goToPage(currentPage - 1)}
+                hasNext={currentPage < meta.totalPages}
+                onNext={() => goToPage(currentPage + 1)}
+              />
+            </InlineStack>
+          </Box>
+        )}
+      </BlockStack>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const containerStyle: React.CSSProperties = {
-  padding: "32px",
-  backgroundColor: "var(--p-color-bg, #ffffff)",
-};
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: "32px",
-};
-
-const pageHeadingStyle: React.CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const pageSubheadingStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "8px 0 0",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  cursor: "pointer",
-};
-
-const filterBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "16px",
-  marginBottom: "20px",
-};
-
-const searchInputStyle: React.CSSProperties = {
-  flex: 1,
-  padding: "10px 14px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  color: "var(--p-color-text, #202223)",
-};
-
-const filterSelectStyle: React.CSSProperties = {
-  padding: "10px 14px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  color: "var(--p-color-text, #202223)",
-  minWidth: 150,
-};
-
-const chipContainerStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "8px",
-  marginBottom: "20px",
-  flexWrap: "wrap",
-};
-
-const chipStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 13,
-  fontWeight: 500,
-  borderRadius: "20px",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  cursor: "pointer",
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-};
-
-const tableContainerStyle: React.CSSProperties = {
-  overflowX: "auto",
-  marginBottom: "20px",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 13,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  cursor: "pointer",
-  transition: "background-color 0.2s",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "top",
-};
-
-const customerLinkStyle: React.CSSProperties = {
-  color: "var(--p-color-text-primary, #005bd3)",
-  fontWeight: 600,
-  textDecoration: "none",
-};
-
-const cellSubtext: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  marginTop: 2,
-};
-
-const paginationStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "16px 0",
-};
-
-const paginationInfoStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const paginationButtonStyle: React.CSSProperties = {
-  padding: "6px 14px",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  cursor: "pointer",
-};
-
-

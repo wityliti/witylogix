@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,111 +12,119 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api } from '../services/api';
+import * as Location from 'expo-location';
+import { offlineQueue } from '../lib/offline-queue';
 
-interface DeliveryProof {
-  recipientName: string;
-  notes: string;
-  photoPath?: string;
-  signaturePath?: string;
+interface RouteParams {
+  shipmentId: string;
+  photoBase64?: string;
+  signatureBase64?: string;
 }
 
 export const DeliveryProofScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
-  const { shipmentId } = route.params as { shipmentId: string };
+  const params = route.params as RouteParams;
+  const { shipmentId } = params;
 
-  const [proof, setProof] = useState<DeliveryProof>({
-    recipientName: '',
-    notes: '',
-  });
-  const [photoTaken, setPhotoTaken] = useState(false);
-  const [signatureCaptured, setSignatureCaptured] = useState(false);
+  const [photoBase64, setPhotoBase64] = useState<string | undefined>(params.photoBase64);
+  const [signatureBase64, setSignatureBase64] = useState<string | undefined>(
+    params.signatureBase64,
+  );
+  const [recipientName, setRecipientName] = useState('');
+  const [notes, setNotes] = useState('');
+  const [qrScanned, setQrScanned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Sync photo/signature passed back from camera/signature screens
+  useEffect(() => {
+    const p = route.params as RouteParams;
+    if (p.photoBase64 !== undefined) setPhotoBase64(p.photoBase64);
+    if (p.signatureBase64 !== undefined) setSignatureBase64(p.signatureBase64);
+  }, [route.params]);
+
   const handleCapturePhoto = () => {
-    Alert.alert('Camera', 'Simulated camera capture', [
-      {
-        text: 'Capture Photo',
-        onPress: () => {
-          setPhotoTaken(true);
-          Alert.alert('Success', 'Package photo captured successfully');
-        },
-      },
-      { text: 'Cancel', onPress: () => {}, style: 'cancel' },
-    ]);
+    navigation.navigate('CameraCapture', { shipmentId });
   };
 
   const handleCaptureSignature = () => {
-    Alert.alert('Signature Capture', 'Simulated signature pad', [
-      {
-        text: 'Capture Signature',
-        onPress: () => {
-          setSignatureCaptured(true);
-          Alert.alert('Success', 'Signature captured successfully');
-        },
-      },
-      { text: 'Cancel', onPress: () => {}, style: 'cancel' },
-    ]);
+    navigation.navigate('SignaturePad', { shipmentId, photoBase64 });
+  };
+
+  const handleScanQrCode = () => {
+    navigation.navigate('BarcodeScanner', { mode: 'pod', shipmentId });
+    setQrScanned(true);
   };
 
   const handleSubmitProof = async () => {
-    if (!proof.recipientName.trim()) {
+    if (!recipientName.trim()) {
       Alert.alert('Validation Error', 'Please enter recipient name');
       return;
     }
-
-    if (!photoTaken) {
+    if (!photoBase64) {
       Alert.alert('Validation Error', 'Please capture a package photo');
       return;
     }
-
-    if (!signatureCaptured) {
-      Alert.alert('Validation Error', 'Please capture signature');
+    if (!signatureBase64) {
+      Alert.alert('Validation Error', 'Please capture recipient signature');
       return;
     }
 
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      const proofPayload = {
-        recipientName: proof.recipientName,
-        notes: proof.notes,
-        photoPath: proof.photoPath || 'placeholder_photo_url',
-        signaturePath: proof.signaturePath || 'placeholder_signature_url',
+      // Capture GPS at submission time
+      let latitude: number | undefined;
+      let longitude: number | undefined;
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        latitude = loc.coords.latitude;
+        longitude = loc.coords.longitude;
+      }
+
+      const proofData = {
+        shipmentId,
+        recipientName: recipientName.trim(),
+        notes: notes.trim(),
+        photoBase64,
+        signatureBase64,
+        latitude,
+        longitude,
+        timestamp: Date.now(),
       };
 
-      await api.post(`/api/v4/shipments/${shipmentId}/proof`, proofPayload);
+      // Enqueue for offline-first submission
+      offlineQueue.enqueue({
+        type: 'POST',
+        endpoint: `/api/v4/shipments/${shipmentId}/proof-of-delivery`,
+        method: 'POST',
+        body: proofData,
+      });
+
+      // Try to sync immediately if online
+      if (offlineQueue.isCurrentlyOnline()) {
+        await offlineQueue.processQueue();
+      }
 
       Alert.alert('Success', 'Delivery proof submitted successfully', [
-        {
-          text: 'OK',
-          onPress: () => {
-            navigation.goBack();
-          },
-        },
+        { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit delivery proof');
+      Alert.alert('Error', 'Failed to submit delivery proof. It has been queued for retry.');
       console.error('Submit proof error:', error);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleRecipientNameChange = (text: string) => {
-    setProof({ ...proof, recipientName: text });
-  };
-
-  const handleNotesChange = (text: string) => {
-    setProof({ ...proof, notes: text });
-  };
+  const isReady = !!photoBase64 && !!signatureBase64 && !!recipientName.trim();
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Delivery Proof of Delivery</Text>
+          <Text style={styles.headerTitle}>Proof of Delivery</Text>
           <Text style={styles.headerSubtitle}>Complete all required fields</Text>
         </View>
 
@@ -131,30 +139,22 @@ export const DeliveryProofScreen = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.captureButton,
-              photoTaken && styles.captureButtonSuccess,
-            ]}
+            style={[styles.captureButton, photoBase64 && styles.captureButtonSuccess]}
             onPress={handleCapturePhoto}
             disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>
-              {photoTaken ? '✓' : '📱'}
-            </Text>
+            <Text style={styles.captureButtonIcon}>{photoBase64 ? '✓' : '📱'}</Text>
             <Text style={styles.captureButtonText}>
-              {photoTaken ? 'Photo Captured' : 'Tap to Capture Package Photo'}
+              {photoBase64 ? 'Photo Captured — Tap to Retake' : 'Tap to Capture Package Photo'}
             </Text>
-            {photoTaken && (
-              <Text style={styles.captureButtonSubtext}>Clear photo of package</Text>
-            )}
           </TouchableOpacity>
 
-          {photoTaken && (
-            <View style={styles.photoPreviewPlaceholder}>
-              <Text style={styles.previewIcon}>📸</Text>
-              <Text style={styles.previewText}>Photo Captured</Text>
-              <Text style={styles.previewSubtext}>Ready to submit</Text>
-            </View>
+          {photoBase64 && (
+            <Image
+              source={{ uri: photoBase64 }}
+              style={styles.photoPreview}
+              resizeMode="cover"
+            />
           )}
         </View>
 
@@ -169,31 +169,44 @@ export const DeliveryProofScreen = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.captureButton,
-              signatureCaptured && styles.captureButtonSuccess,
-            ]}
+            style={[styles.captureButton, signatureBase64 && styles.captureButtonSuccess]}
             onPress={handleCaptureSignature}
             disabled={submitting}
           >
-            <Text style={styles.captureButtonIcon}>
-              {signatureCaptured ? '✓' : '✏'}
-            </Text>
+            <Text style={styles.captureButtonIcon}>{signatureBase64 ? '✓' : '✏'}</Text>
             <Text style={styles.captureButtonText}>
-              {signatureCaptured ? 'Signature Captured' : 'Tap to Capture Signature'}
+              {signatureBase64 ? 'Signature Captured — Tap to Redo' : 'Tap to Capture Signature'}
             </Text>
-            {signatureCaptured && (
-              <Text style={styles.captureButtonSubtext}>Customer has signed</Text>
-            )}
           </TouchableOpacity>
 
-          {signatureCaptured && (
-            <View style={styles.signaturePreviewPlaceholder}>
-              <Text style={styles.previewIcon}>✍️</Text>
-              <Text style={styles.previewText}>Signature Captured</Text>
-              <Text style={styles.previewSubtext}>Ready to submit</Text>
-            </View>
+          {signatureBase64 && (
+            <Image
+              source={{ uri: signatureBase64 }}
+              style={styles.signaturePreview}
+              resizeMode="contain"
+            />
           )}
+        </View>
+
+        {/* QR Code Scan Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>⬛</Text>
+            <View style={styles.sectionHeaderText}>
+              <Text style={styles.sectionTitle}>QR Code Scan</Text>
+              <Text style={styles.sectionOptional}>Optional — alternative POD</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.captureButton, qrScanned && styles.captureButtonSuccess]}
+            onPress={handleScanQrCode}
+            disabled={submitting}
+          >
+            <Text style={styles.captureButtonIcon}>{qrScanned ? '✓' : '⬛'}</Text>
+            <Text style={styles.captureButtonText}>
+              {qrScanned ? 'QR Code Scanned' : 'Scan Delivery QR Code'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Recipient Name */}
@@ -206,20 +219,15 @@ export const DeliveryProofScreen = () => {
             </View>
           </View>
           <TextInput
-            style={[
-              styles.textInput,
-              proof.recipientName.trim() && styles.textInputFilled,
-            ]}
+            style={[styles.textInput, recipientName.trim() && styles.textInputFilled]}
             placeholder="Full name of recipient"
             placeholderTextColor="#64748b"
-            value={proof.recipientName}
-            onChangeText={handleRecipientNameChange}
+            value={recipientName}
+            onChangeText={setRecipientName}
             editable={!submitting}
             maxLength={100}
           />
-          <Text style={styles.inputHint}>
-            {proof.recipientName.length}/100 characters
-          </Text>
+          <Text style={styles.inputHint}>{recipientName.length}/100 characters</Text>
         </View>
 
         {/* Delivery Notes */}
@@ -235,84 +243,45 @@ export const DeliveryProofScreen = () => {
             style={[
               styles.textInput,
               styles.textInputMultiline,
-              proof.notes.trim() && styles.textInputFilled,
+              notes.trim() && styles.textInputFilled,
             ]}
-            placeholder="Any issues, special instructions, or notes about this delivery..."
+            placeholder="Any issues, special instructions, or notes..."
             placeholderTextColor="#64748b"
-            value={proof.notes}
-            onChangeText={handleNotesChange}
+            value={notes}
+            onChangeText={setNotes}
             multiline
             numberOfLines={4}
             editable={!submitting}
             maxLength={500}
           />
-          <Text style={styles.inputHint}>
-            {proof.notes.length}/500 characters
-          </Text>
+          <Text style={styles.inputHint}>{notes.length}/500 characters</Text>
         </View>
 
-        {/* Validation Summary */}
+        {/* Checklist */}
         <View style={styles.validationContainer}>
-          <View style={styles.validationItem}>
-            <Text style={[
-              styles.validationIcon,
-              photoTaken ? styles.validationIconSuccess : styles.validationIconPending,
-            ]}>
-              {photoTaken ? '✓' : '○'}
-            </Text>
-            <Text style={[
-              styles.validationText,
-              photoTaken && styles.validationTextSuccess,
-            ]}>
-              Package Photo
-            </Text>
-          </View>
-          <View style={styles.validationItem}>
-            <Text style={[
-              styles.validationIcon,
-              signatureCaptured ? styles.validationIconSuccess : styles.validationIconPending,
-            ]}>
-              {signatureCaptured ? '✓' : '○'}
-            </Text>
-            <Text style={[
-              styles.validationText,
-              signatureCaptured && styles.validationTextSuccess,
-            ]}>
-              Recipient Signature
-            </Text>
-          </View>
-          <View style={styles.validationItem}>
-            <Text style={[
-              styles.validationIcon,
-              proof.recipientName.trim() ? styles.validationIconSuccess : styles.validationIconPending,
-            ]}>
-              {proof.recipientName.trim() ? '✓' : '○'}
-            </Text>
-            <Text style={[
-              styles.validationText,
-              proof.recipientName.trim() && styles.validationTextSuccess,
-            ]}>
-              Recipient Name
-            </Text>
-          </View>
+          {[
+            { done: !!photoBase64, label: 'Package Photo' },
+            { done: !!signatureBase64, label: 'Recipient Signature' },
+            { done: !!recipientName.trim(), label: 'Recipient Name' },
+            { done: qrScanned, label: 'QR Scan (optional)' },
+          ].map(({ done, label }) => (
+            <View key={label} style={styles.validationItem}>
+              <Text style={[styles.validationIcon, done ? styles.iconSuccess : styles.iconPending]}>
+                {done ? '✓' : '○'}
+              </Text>
+              <Text style={[styles.validationText, done && styles.validationTextSuccess]}>
+                {label}
+              </Text>
+            </View>
+          ))}
         </View>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <View style={styles.actionContainer}>
           <TouchableOpacity
-            style={[
-              styles.submitButton,
-              (!photoTaken || !signatureCaptured || !proof.recipientName.trim()) &&
-                styles.submitButtonDisabled,
-              submitting && styles.submitButtonDisabled,
-            ]}
+            style={[styles.submitButton, (!isReady || submitting) && styles.submitButtonDisabled]}
             onPress={handleSubmitProof}
-            disabled={
-              submitting ||
-              !photoTaken ||
-              !signatureCaptured ||
-              !proof.recipientName.trim()
-            }
+            disabled={!isReady || submitting}
           >
             {submitting ? (
               <ActivityIndicator size="small" color="#ffffff" />
@@ -431,46 +400,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#e2e8f0',
     textAlign: 'center',
-    marginBottom: 4,
   },
-  captureButtonSubtext: {
-    fontSize: 11,
-    color: '#22c55e',
-    fontWeight: '500',
-  },
-  photoPreviewPlaceholder: {
-    backgroundColor: '#2d3748',
+  photoPreview: {
+    width: '100%',
+    height: 180,
     borderRadius: 8,
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 100,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  signaturePreviewPlaceholder: {
     backgroundColor: '#2d3748',
+  },
+  signaturePreview: {
+    width: '100%',
+    height: 100,
     borderRadius: 8,
-    padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 80,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  previewIcon: {
-    fontSize: 28,
-    marginBottom: 6,
-  },
-  previewText: {
-    fontSize: 12,
-    color: '#cbd5e1',
-    fontWeight: '700',
-  },
-  previewSubtext: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
+    backgroundColor: '#fff',
   },
   textInput: {
     backgroundColor: '#2d3748',
@@ -519,10 +460,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
     minWidth: 20,
   },
-  validationIconSuccess: {
+  iconSuccess: {
     color: '#22c55e',
   },
-  validationIconPending: {
+  iconPending: {
     color: '#64748b',
   },
   validationText: {

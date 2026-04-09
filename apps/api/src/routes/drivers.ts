@@ -122,7 +122,7 @@ async function driversRoutes(fastify: FastifyInstance): Promise<void> {
             orderBy: { createdAt: "desc" },
             select: {
               id: true,
-              shopifyOrderNumber: true,
+              externalOrderNumber: true,
               status: true,
               customerName: true,
               addressLine1: true,

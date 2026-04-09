@@ -357,9 +357,9 @@ export default async function shopifyWebhookRoutes(
           // Upsert order
           await (fastify as any).db.order.upsert({
             where: {
-              shopId_shopifyOrderId: {
+              shopId_externalOrderId: {
                 shopId: shop.id,
-                shopifyOrderId: String(payload.id),
+                externalOrderId: String(payload.id),
               },
             },
             update: {
@@ -374,7 +374,7 @@ export default async function shopifyWebhookRoutes(
             },
             create: {
               shopId: shop.id,
-              shopifyOrderId: String(payload.id),
+              externalOrderId: String(payload.id),
               orderNumber: String(payload.order_number || payload.id),
               customerEmail: payload.email || null,
               status: payload.fulfillment_status || "UNFULFILLED",
@@ -425,7 +425,7 @@ export default async function shopifyWebhookRoutes(
           await (fastify as any).db.order.updateMany({
             where: {
               shopId: shop.id,
-              shopifyOrderId: String(payload.id),
+              externalOrderId: String(payload.id),
             },
             data: {
               status: payload.fulfillment_status || "UNFULFILLED",

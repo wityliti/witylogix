@@ -73,10 +73,10 @@ export class RequestLogger {
       "access_token",
       "refresh_token",
       "bearer",
-      "creditCard",
+      "creditcard",
       "cvv",
       "ssn",
-      ...(options.sanitizeFields || []),
+      ...(options.sanitizeFields || []).map((f) => f.toLowerCase()),
     ]);
 
     this.redactValue = options.redactValue ?? "[REDACTED]";

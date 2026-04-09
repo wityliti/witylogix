@@ -143,7 +143,7 @@ describe('PipedriveAdapter', () => {
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({}),
+          json: async () => ({ success: true }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -345,7 +345,7 @@ describe('PipedriveAdapter', () => {
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({}),
+          json: async () => ({ success: true }),
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -426,7 +426,7 @@ describe('PipedriveAdapter', () => {
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({}),
+          json: async () => ({ success: true }),
         })
         .mockResolvedValueOnce({
           ok: true,

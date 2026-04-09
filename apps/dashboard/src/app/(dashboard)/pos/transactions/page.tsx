@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   useTransactions,
-  useTerminals,
   useRefundTransaction,
   useExportTransactions,
   type TransactionStatus,
@@ -20,15 +19,15 @@ import {
  * Search, filter, detail modal, refund/void, export functionality
  */
 
-const txnStatusVariant = (status: TransactionStatus): "success" | "warning" | "info" | "primary" | "default" => {
-  const map: Record<TransactionStatus, "success" | "warning" | "info" | "primary" | "default"> = {
+const txnStatusVariant = (status: TransactionStatus): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<TransactionStatus, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
     completed: "success",
     pending: "info",
     refunded: "warning",
     cancelled: "default",
     failed: "danger",
   };
-  return (map[status] as any) || "default";
+  return map[status] ?? "default";
 };
 
 const paymentMethodIcon: Record<PaymentMethod, string> = {
@@ -49,10 +48,9 @@ export default function TransactionsPage() {
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const { transactions: allTransactions } = useTransactions();
-  const { terminals } = useTerminals();
+  const { items: allTransactions } = useTransactions();
   const { refund, isLoading: refunding } = useRefundTransaction();
-  const { export: exportData, isLoading: exporting } = useExportTransactions();
+  const { export: exportData } = useExportTransactions();
 
   // Apply filters
   const filteredTransactions = useMemo(() => {

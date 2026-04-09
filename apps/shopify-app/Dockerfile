@@ -31,7 +31,11 @@ RUN pnpm --filter @witylogix/db exec tsc
 
 # Copy Prisma-generated JS files into dist/generated/ so dist/index.js can resolve them at runtime
 # (Prisma generates plain JS files in src/generated/; tsc does not copy them to dist/generated/)
-RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated
+RUN cp -r /app/packages/db/src/generated /app/packages/db/dist/generated && \
+    echo '{"type":"commonjs"}' > /app/packages/db/dist/generated/prisma/package.json && \
+    sed -i \
+      's|import { PrismaClient, Prisma } from "./generated/prisma";|import { createRequire as _cr } from "module"; const { PrismaClient, Prisma } = _cr(import.meta.url)("./generated/prisma/index.js");|' \
+      /app/packages/db/dist/index.js
 
 # Build
 WORKDIR /app/apps/shopify-app
@@ -40,6 +44,22 @@ RUN pnpm build
 # Create a clean, symlink-free production deployment directory
 WORKDIR /app
 RUN pnpm deploy --filter @witylogix/shopify-app --prod /standalone
+
+# pnpm deploy --prod with pnpm 9.x creates node_modules/@prisma/client as a hoisted real
+# directory (via public-hoist-pattern in .npmrc). However, Prisma's default generate targets
+# the pnpm virtual store, not the hoisted directory. At runtime, require('@prisma/client')
+# resolves the hoisted copy first — which has no engine binary → silent crash → HTTP 503.
+#
+# Fix: explicitly set output = "../../node_modules/.prisma/client" so Prisma writes the
+# engine into .prisma/client, which @prisma/client auto-forwards to at runtime.
+WORKDIR /standalone
+RUN cp -r /app/packages/db/prisma ./prisma_default && \
+    sed -i '/^\s*output\s*=/d' ./prisma_default/schema/00-config.prisma && \
+    awk '/^generator client \{/ { print; print "  output = \"../../node_modules/.prisma/client\""; next } 1' \
+        ./prisma_default/schema/00-config.prisma > /tmp/schema_00.tmp && \
+    mv /tmp/schema_00.tmp ./prisma_default/schema/00-config.prisma && \
+    /app/packages/db/node_modules/.bin/prisma generate --schema ./prisma_default/schema && \
+    rm -rf ./prisma_default
 
 # ── Production Stage ─────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -54,10 +74,6 @@ COPY --from=builder /standalone/node_modules ./node_modules
 COPY --from=builder /standalone/package.json ./
 # Build output is separate from pnpm deploy output
 COPY --from=builder /app/apps/shopify-app/build ./build
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -q --spider http://localhost:3000/health || exit 1
 
 EXPOSE 3000
 

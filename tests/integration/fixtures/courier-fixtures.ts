@@ -163,7 +163,7 @@ export const mockStuartDelivery = {
     },
   ],
   transport_type: 'bike',
-  estimated_delivery_time: 1710154200000,
+  estimated_delivery_time: 1710168300000, // 2024-03-11T14:45:00Z — 15 min after dropoff scheduled_at
   charged_weight: 1.2,
   pricing: {
     total_price: 850,

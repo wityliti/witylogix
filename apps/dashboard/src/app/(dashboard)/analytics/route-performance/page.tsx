@@ -1,110 +1,165 @@
-'use client';
+"use client";
 
-import { useApiQuery } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useApiQuery } from "@/hooks/use-api";
+import { Header } from "@/components/layout/header";
+import { StatCard } from "@/components/ui/stat-card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { PlannedActualChart } from "./components/planned-actual-chart";
+import { DriverLeaderboard } from "./components/driver-leaderboard";
+import { EfficiencyHeatmap } from "./components/efficiency-heatmap";
+import { CO2Tracker } from "./components/co2-tracker";
+import { SLACompliance } from "./components/sla-compliance";
+import type {
+  RoutePerformanceSummary,
+  PlannedVsActualDataPoint,
+  DriverLeaderboardEntry,
+  EfficiencyHeatmapCell,
+  CO2TrackerData,
+  SLAComplianceData,
+} from "@witylogix/core/analytics";
 
-interface RoutePerformanceData {
-  summary: {
-    totalRoutes: number;
-    avgEfficiency: number;
-    onTimeDeliveries: number;
-    costPerDelivery: number;
-  };
-  metrics: Array<{
-    routeId: string;
-    routeName: string;
-    plannedDistance: number;
-    actualDistance: number;
-    plannedTime: number;
-    actualTime: number;
-    efficiency: number;
-    onTimeRate: number;
-  }>;
+type Period = "24h" | "7d" | "30d";
+
+function getPeriodDays(period: Period): number {
+  return period === "24h" ? 1 : period === "7d" ? 7 : 30;
 }
 
 export default function RoutePerformancePage() {
-  const { data, loading, error } = useApiQuery<RoutePerformanceData>(
-    '/api/v4/analytics?type=route-performance'
+  const [period, setPeriod] = useState<Period>("30d");
+
+  const dateRange = {
+    from: new Date(Date.now() - getPeriodDays(period) * 24 * 60 * 60 * 1000),
+    to: new Date(),
+  };
+
+  const qs = `period=${period}&dateFrom=${dateRange.from.toISOString()}&dateTo=${dateRange.to.toISOString()}`;
+
+  const summaryQ = useApiQuery<RoutePerformanceSummary>(
+    `/api/v4/analytics/route-performance?${qs}`
+  );
+  const pvaQ = useApiQuery<PlannedVsActualDataPoint[]>(
+    `/api/v4/analytics/route-performance/planned-vs-actual?${qs}&granularity=daily`
+  );
+  const driversQ = useApiQuery<DriverLeaderboardEntry[]>(
+    `/api/v4/analytics/route-performance/drivers?${qs}&limit=10`
+  );
+  const heatmapQ = useApiQuery<EfficiencyHeatmapCell[]>(
+    `/api/v4/analytics/route-performance/efficiency?${qs}`
+  );
+  const co2Q = useApiQuery<CO2TrackerData>(
+    `/api/v4/analytics/route-performance/co2?${qs}`
+  );
+  const slaQ = useApiQuery<SLAComplianceData>(
+    `/api/v4/analytics/route-performance/sla-compliance?${qs}`
   );
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState error={error} />;
+  const summary = summaryQ.data;
 
-  const summary = data?.summary;
-  const metrics = data?.metrics || [];
+  const KPI = [
+    {
+      label: "On-Time Rate",
+      value: summary?.onTimePercentage != null ? `${summary.onTimePercentage.toFixed(1)}%` : "—",
+      change: { value: 2.1, label: "improvement" },
+      accentColor: "var(--wl-success-400)",
+    },
+    {
+      label: "Avg Delivery Time",
+      value: summary?.avgDeliveryTime != null ? `${summary.avgDeliveryTime}m` : "—",
+      change: { value: -3.2, label: "faster" },
+      accentColor: "var(--wl-info-400)",
+    },
+    {
+      label: "CO2 Saved",
+      value: summary?.co2Savings != null ? `${summary.co2Savings}kg` : "—",
+      change: { value: 18.5, label: "vs target" },
+      accentColor: "var(--wl-success-500)",
+    },
+    {
+      label: "SLA Compliance",
+      value: summary?.slaCompliance != null ? `${summary.slaCompliance.toFixed(1)}%` : "—",
+      change: { value: 1.8, label: "improvement" },
+      accentColor: "var(--wl-primary-400)",
+    },
+  ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary">
-      <div className="sticky top-0 z-10 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-wl-text-primary">Route Performance</h1>
-          <p className="text-sm text-wl-text-secondary mt-1">Planned vs Actual analytics</p>
+    <>
+      <Header title="Route Performance Analytics" />
+
+      <div className={cn("min-h-screen bg-wl-bg-root")}>
+        <div className={cn("max-w-full px-6 py-6")}>
+          {/* Period selector */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-wl-text-primary">
+              Planned vs Actual Analytics
+            </h2>
+            <div className="flex gap-2">
+              {(["24h", "7d", "30d"] as Period[]).map(p => (
+                <Button
+                  key={p}
+                  variant={period === p ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setPeriod(p)}
+                >
+                  {p}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* KPI Stats Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {KPI.map((kpi, idx) => (
+              <StatCard
+                key={idx}
+                label={kpi.label}
+                value={kpi.value}
+                change={kpi.change}
+                accentColor={kpi.accentColor}
+              />
+            ))}
+          </div>
+
+          {/* Main charts grid */}
+          <div className="space-y-8">
+            {/* Planned vs Actual Chart */}
+            <PlannedActualChart
+              data={pvaQ.data ?? []}
+              dateRange={dateRange}
+              isLoading={pvaQ.loading}
+              error={pvaQ.error?.message}
+            />
+
+            {/* Driver Leaderboard & Efficiency Heatmap */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <DriverLeaderboard
+                data={driversQ.data ?? []}
+                dateRange={dateRange}
+                period={period}
+                onPeriodChange={setPeriod}
+                isLoading={driversQ.loading}
+              />
+              <EfficiencyHeatmap
+                data={heatmapQ.data ?? []}
+                dateRange={dateRange}
+                isLoading={heatmapQ.loading}
+              />
+            </div>
+
+            {/* CO2 & SLA Compliance */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {co2Q.data && (
+                <CO2Tracker data={co2Q.data} dateRange={dateRange} isLoading={co2Q.loading} />
+              )}
+              {slaQ.data && (
+                <SLACompliance data={slaQ.data} dateRange={dateRange} isLoading={slaQ.loading} />
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="flex-1 overflow-auto p-6">
-        <div className="space-y-6 max-w-7xl">
-          {summary && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-                <p className="text-xs font-medium text-wl-text-tertiary uppercase">Total Routes</p>
-                <p className="text-2xl font-bold text-wl-text-primary mt-2">{summary.totalRoutes}</p>
-              </Card>
-              <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-                <p className="text-xs font-medium text-wl-text-tertiary uppercase">Avg Efficiency</p>
-                <p className="text-2xl font-bold text-wl-text-primary mt-2">{Math.round(summary.avgEfficiency)}%</p>
-              </Card>
-              <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-                <p className="text-xs font-medium text-wl-text-tertiary uppercase">On-Time Deliveries</p>
-                <p className="text-2xl font-bold text-wl-success-500 mt-2">{summary.onTimeDeliveries}%</p>
-              </Card>
-              <Card className="p-4 bg-wl-bg-surface border-wl-border-default">
-                <p className="text-xs font-medium text-wl-text-tertiary uppercase">Cost per Delivery</p>
-                <p className="text-2xl font-bold text-wl-text-primary mt-2">${summary.costPerDelivery.toFixed(2)}</p>
-              </Card>
-            </div>
-          )}
-
-          <Card className="p-6 bg-wl-bg-surface border-wl-border-default overflow-hidden">
-            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Route Metrics</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">Route</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Planned</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Actual</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">Efficiency</th>
-                    <th className="text-right px-4 py-3 font-semibold text-wl-text-secondary">On-Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.map((metric) => (
-                    <tr key={metric.routeId} className="border-b border-wl-border-default hover:bg-wl-bg-overlay">
-                      <td className="px-4 py-3 font-medium text-wl-text-primary">{metric.routeName}</td>
-                      <td className="text-right px-4 py-3 text-wl-text-secondary">{metric.plannedDistance}mi</td>
-                      <td className="text-right px-4 py-3 text-wl-text-secondary">{metric.actualDistance}mi</td>
-                      <td className="text-right px-4 py-3">
-                        <Badge variant={metric.efficiency >= 90 ? 'success' : 'warning'}>
-                          {Math.round(metric.efficiency)}%
-                        </Badge>
-                      </td>
-                      <td className="text-right px-4 py-3">
-                        <Badge variant={metric.onTimeRate >= 95 ? 'success' : 'info'}>
-                          {Math.round(metric.onTimeRate)}%
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

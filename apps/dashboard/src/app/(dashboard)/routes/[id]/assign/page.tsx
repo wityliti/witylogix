@@ -82,7 +82,7 @@ export default function RouteAssignPage() {
   if (routeError) {
     return (
       <div className="p-6 min-h-screen bg-[#0a0a0f]">
-        <ErrorState error={routeError} onRetry={refetchRoute} />
+        <ErrorState message={routeError.message} onRetry={refetchRoute} />
       </div>
     );
   }

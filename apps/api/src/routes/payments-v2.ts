@@ -162,6 +162,21 @@ export default async function paymentRoutesV2(
     }
   });
 
+  // Maps ISO 4217 currency codes to gateway region codes for PCI DSS data-residency routing.
+  // region is optional in GatewayRoutingParams; unknown currencies fall through to undefined
+  // so all gateways remain candidates rather than silently mis-routing.
+  const CURRENCY_REGION: Record<string, string> = {
+    USD: 'US',
+    CAD: 'CA',
+    GBP: 'GB',
+    AUD: 'AU',
+    NZD: 'AU',
+    EUR: 'EU',
+    JPY: 'JP',
+    SGD: 'SG',
+    HKD: 'HK',
+  };
+
   // POST /payments — Create payment and route to optimal gateway
   fastify.post<{ Body: CreatePaymentRequest }>(
     '/',
@@ -170,12 +185,17 @@ export default async function paymentRoutesV2(
         const { amount, currency, methodType, orderId, shipmentId, customerId, ...rest } =
           request.body as CreatePaymentRequest;
 
+        // Derive region from payment currency for gateway routing.
+        // request.shopRegion was undefined (never set by middleware); currency
+        // is the correct signal for PCI DSS data-residency scoping.
+        const region = currency ? CURRENCY_REGION[currency.toUpperCase()] : undefined;
+
         // Route payment to optimal gateway
         const routing = router.routePayment({
           method: methodType,
           currency,
           amount: Math.round(amount * 100), // Convert to cents
-          region: request.shopRegion,
+          region,
           customerId,
           metadata: rest,
         } as GatewayRoutingParams);

@@ -5,49 +5,42 @@
  * and provides the `authenticate` object used by route loaders/actions.
  *
  * Architecture:
- *   Shopify App Bridge → session token (JWT) → verified here
- *   → exchanged for a Witylogix API JWT via POST /api/v4/auth/shopify-exchange
- *   → cached in server session for subsequent requests
- *
- * The Shopify session token proves the request is from an authenticated
- * merchant inside the Shopify Admin. We verify it using the Shopify API secret,
- * then call our own API to get a Witylogix JWT that carries shopId, role, etc.
+ *   Shopify App Bridge → session token (JWT) → verified by `authenticate.admin`
+ *   Loaders call the Witylogix API with `Authorization: Bearer <session token>`;
+ *   the API verifies that JWT with `SHOPIFY_API_SECRET` and resolves the shop tenant.
  */
 
 import "@shopify/shopify-app-react-router/adapters/node";
 import {
+  ApiVersion,
   AppDistribution,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
 
-// Prisma session storage stores Shopify OAuth sessions in our database
-// so they survive server restarts. Uses the same @witylogix/db Prisma client.
+// Prisma session storage stores Shopify OAuth sessions in our database.
+// @prisma/client is patched (via patches/@prisma__client.patch) so that
+// .prisma/client/default.js delegates to packages/db/src/generated/prisma.
+// Vite's SSR runner loads @prisma/client as CJS and only exposes module.exports
+// via the default import — destructure PrismaClient from that default.
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
+import _prismaClientPkg from "@prisma/client";
+const { PrismaClient } = _prismaClientPkg as typeof import("@prisma/client");
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY!,
   apiSecretKey: process.env.SHOPIFY_API_SECRET!,
+  apiVersion: ApiVersion.January25,
   scopes: process.env.SHOPIFY_SCOPES?.split(",") ?? [],
-  appUrl: process.env.SHOPIFY_APP_URL ?? "http://localhost:3000",
+  appUrl: process.env.SHOPIFY_APP_URL ?? "https://localhost:9293",
   distribution: AppDistribution.AppStore,
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(
     // PrismaSessionStorage expects a PrismaClient instance.
-    // We pass a lightweight one here — not the tenant-scoped version.
+    // We pass a dedicated client here — not the tenant-scoped version.
     // Session storage is global (not tenant-scoped).
-    await createSessionStorageClient(),
+    new PrismaClient({ datasourceUrl: process.env.DATABASE_URL }),
   ),
-  future: {
-    unstable_newEmbeddedAuthStrategy: true,
-  },
 });
-
-async function createSessionStorageClient() {
-  const { PrismaClient } = await import("@prisma/client");
-  return new PrismaClient({
-    datasourceUrl: process.env.DATABASE_URL,
-  });
-}
 
 /**
  * Authenticate incoming requests from the Shopify Admin.
@@ -62,6 +55,9 @@ async function createSessionStorageClient() {
  * ```
  */
 export const authenticate = shopify.authenticate;
+
+/** CSP + App Bridge preloads for embedded iframes (used by `entry.server.tsx`). */
+export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 
 /**
  * Shopify session management utilities.

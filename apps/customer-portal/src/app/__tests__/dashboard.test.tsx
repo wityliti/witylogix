@@ -18,36 +18,32 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Welcome back, John')).toBeInTheDocument();
   });
 
-  it('renders "Good afternoon" subtitle', () => {
+  it('renders overview subtitle', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Good afternoon')).toBeInTheDocument();
+    expect(screen.getByText(/overview of your deliveries/i)).toBeInTheDocument();
   });
 
-  it('shows 3 stat cards (Active, Delivered, Total Spent)', () => {
+  it('shows 4 stat cards (Total Orders, Active Deliveries, Pending, Delivered)', () => {
     render(<DashboardPage />);
-    const statCards = document.querySelectorAll('.stat-card');
-    expect(statCards).toHaveLength(3);
-
-    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Total Orders')).toBeInTheDocument();
+    expect(screen.getByText('Active Deliveries')).toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
     // "Delivered" appears as stat label and as status badges on order cards
     expect(screen.getAllByText('Delivered').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Total Spent')).toBeInTheDocument();
   });
 
   it('shows numeric stat values', () => {
     render(<DashboardPage />);
 
-    // Active count: 2 upcoming deliveries
-    const statCards = document.querySelectorAll('.stat-card');
-    const activeCard = statCards[0];
-    const activeValue = activeCard.querySelector('.value');
-    expect(activeValue).toHaveTextContent('2');
+    // Total Orders: 4 (2 upcoming + 2 recent)
+    const statGrid = document.querySelector('.grid.grid-cols-2');
+    const statCards = statGrid?.querySelectorAll('.section-card') ?? [];
+    const totalOrdersValue = statCards[0]?.querySelector('p.text-3xl');
+    expect(totalOrdersValue).toHaveTextContent('4');
 
-    // Total Spent should be a dollar amount
-    // 149.99 + 119.96 + 19.99 + 129.98 = 419.92
-    const totalSpentCard = statCards[2];
-    const totalSpentValue = totalSpentCard.querySelector('.value');
-    expect(totalSpentValue).toHaveTextContent('$419.92');
+    // Active Deliveries: 1 (only out-for-delivery status)
+    const activeValue = statCards[1]?.querySelector('p.text-3xl');
+    expect(activeValue).toHaveTextContent('1');
   });
 
   it('shows "Active Deliveries" section heading', () => {
@@ -72,23 +68,24 @@ describe('DashboardPage', () => {
     expect(screen.getByText('ORD-2024-004')).toBeInTheDocument();
   });
 
-  it('"View all" link points to /orders', () => {
+  it('"View all" link in Upcoming Deliveries points to /deliveries', () => {
     render(<DashboardPage />);
     const viewAllLink = screen.getByText('View all');
-    expect(viewAllLink.closest('a')).toHaveAttribute('href', '/orders');
+    expect(viewAllLink.closest('a')).toHaveAttribute('href', '/deliveries');
   });
 
   it('stat values for Delivered count are numeric', () => {
     render(<DashboardPage />);
 
     // 2 delivered orders in recentOrders
-    const statCards = document.querySelectorAll('.stat-card');
-    const deliveredCard = Array.from(statCards).find(
+    const statGrid = document.querySelector('.grid.grid-cols-2');
+    const statCards = Array.from(statGrid?.querySelectorAll('.section-card') ?? []);
+    const deliveredCard = statCards.find(
       (card) => card.textContent?.includes('Delivered')
     );
     expect(deliveredCard).toBeDefined();
     // The value element should contain a number
-    const valueEl = deliveredCard!.querySelector('.value');
+    const valueEl = deliveredCard!.querySelector('p.text-3xl');
     expect(valueEl).toBeDefined();
     expect(Number(valueEl!.textContent)).not.toBeNaN();
   });

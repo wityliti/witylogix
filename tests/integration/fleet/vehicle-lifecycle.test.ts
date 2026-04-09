@@ -56,6 +56,7 @@ class VehicleService {
     const vehicle = this.updateVehicleStatus(vehicleId, 'RETIRED');
     // Unassign driver on retirement
     this.assignments.delete(vehicleId);
+    vehicle.assignedDriverId = undefined;
     return vehicle;
   }
 
@@ -101,8 +102,14 @@ class VehicleService {
       throw new Error('Both vehicles must have assigned drivers for swap');
     }
 
-    this.assignDriver(vehicleId1, driver2);
-    this.assignDriver(vehicleId2, driver1);
+    // Swap directly to avoid conflict check triggering on the existing assignment
+    this.assignments.set(vehicleId1, driver2);
+    this.assignments.set(vehicleId2, driver1);
+
+    const v1 = this.vehicles.get(vehicleId1);
+    const v2 = this.vehicles.get(vehicleId2);
+    if (v1) v1.assignedDriverId = driver2;
+    if (v2) v2.assignedDriverId = driver1;
   }
 
   addMaintenanceRecord(record: MaintenanceRecord): void {

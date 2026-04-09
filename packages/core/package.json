@@ -67,6 +67,7 @@
     "./ai-eta": "./src/ai-eta/index.ts",
     "./ai-eta-v2": "./src/ai-eta-v2/index.ts",
     "./ai-analytics": "./src/ai-analytics/index.ts",
+    "./natural-language-filter": "./src/ai/natural-language-filter.ts",
     "./platform": "./src/platform/index.ts",
     "./config": "./src/config/index.ts",
     "./demand-prediction": "./src/demand-prediction/index.ts",
@@ -85,8 +86,9 @@
     "./returns": "./src/returns/index.ts",
     "./slots": "./src/slots/index.ts",
     "./webhooks": "./src/webhooks/index.ts",
-    "./shipping-profiles": "./src/shipping-profiles/index.ts",
-    "./invoicing": "./src/invoicing/index.ts"
+    "./invoicing": "./src/invoicing/index.ts",
+    "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
+    "./eta-recalculator": "./src/eta-recalculator/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",

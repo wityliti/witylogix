@@ -2,5 +2,8 @@ type = "frontend"
 name = "Witylogix Frontend"
 
 [commands]
-dev = "pnpm react-router dev --port 3000"
+# The Shopify CLI injects PORT and proxies HTTPS (see shopify.app.witylogix.toml localhost-port).
+# `react-router dev` does NOT read process.env.PORT automatically, so we use a
+# small Node.js wrapper that reads PORT and forwards it as --port.
+dev = "node scripts/dev.mjs"
 build = "pnpm react-router build"

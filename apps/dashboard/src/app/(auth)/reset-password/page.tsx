@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Lock, Loader2, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 function ResetPasswordPageInner() {
   const router = useRouter();

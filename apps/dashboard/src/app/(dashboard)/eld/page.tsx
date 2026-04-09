@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
 import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
-import { useApiList } from "@/hooks/use-api";
-import { TableSkeleton } from "@/components/ui/loading-skeleton";
-import { ErrorState } from "@/components/ui/error-state";
+import { useRouter } from "next/navigation";
 import {
   TrendingUp,
   AlertTriangle,
@@ -60,6 +58,15 @@ const dutyStatusIcon: Record<DutyStatus, string> = {
   DRIVING: "🚗",
   ON_DUTY: "📋",
 };
+
+const MOCK_DRIVERS: DriverStatusInfo[] = [
+  { driverId: "drv-1", name: "Carlos Martinez", status: "COMPLIANT", currentDuty: "DRIVING", drivingRemaining: 5.5, breakStatus: "TAKEN", violations: 0, lastUpdate: "2 min ago" },
+  { driverId: "drv-2", name: "Sofia Lindberg", status: "WARNING", currentDuty: "ON_DUTY", drivingRemaining: 2.1, breakStatus: "REQUIRED", violations: 1, lastUpdate: "5 min ago" },
+  { driverId: "drv-3", name: "James Brown", status: "COMPLIANT", currentDuty: "OFF_DUTY", drivingRemaining: 11.0, breakStatus: "TAKEN", violations: 0, lastUpdate: "1 hr ago" },
+  { driverId: "drv-4", name: "Aisha Patel", status: "VIOLATION", currentDuty: "DRIVING", drivingRemaining: 0.5, breakStatus: "REQUIRED", violations: 2, lastUpdate: "1 min ago" },
+  { driverId: "drv-5", name: "Tom Eriksson", status: "OFFLINE", currentDuty: "SLEEPER", drivingRemaining: 11.0, breakStatus: "TAKEN", violations: 0, lastUpdate: "3 hr ago" },
+  { driverId: "drv-6", name: "Maria Gonzalez", status: "COMPLIANT", currentDuty: "DRIVING", drivingRemaining: 7.2, breakStatus: "TAKEN", violations: 0, lastUpdate: "4 min ago" },
+];
 
 const dutyStatusColor = (duty: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {

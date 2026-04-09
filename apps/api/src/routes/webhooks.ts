@@ -28,20 +28,20 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/orders/create", async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = request.body as any;
-    const shopifyOrderId = String(payload.id);
+    const externalOrderId = String(payload.id);
 
     request.log.info(
-      { shopifyOrderId, shopId: request.shopId },
+      { externalOrderId, shopId: request.shopId },
       "Webhook: orders/create",
     );
 
     // Check if order already exists (idempotency)
     const existing = await request.tenantDb.order.findFirst({
-      where: { shopifyOrderId },
+      where: { externalOrderId },
     });
 
     if (existing) {
-      request.log.warn({ shopifyOrderId }, "Order already exists, skipping");
+      request.log.warn({ externalOrderId }, "Order already exists, skipping");
       return { status: "skipped", reason: "duplicate" };
     }
 
@@ -55,8 +55,8 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
     const order = await request.tenantDb.order.create({
       data: {
         shopId: request.shopId,
-        shopifyOrderId,
-        shopifyOrderNumber: payload.order_number ? String(payload.order_number) : null,
+        externalOrderId,
+        externalOrderNumber: payload.order_number ? String(payload.order_number) : null,
         customerName: [payload.customer?.first_name, payload.customer?.last_name]
           .filter(Boolean)
           .join(" ") || null,
@@ -113,7 +113,7 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
             recipientId: order.id,
             recipientAddress: order.customerEmail || '',
             templateData: {
-              orderId: order.shopifyOrderNumber || order.shopifyOrderId,
+              orderId: order.externalOrderNumber || order.externalOrderId,
               customerName: order.customerName,
               totalPrice: order.totalPrice,
               itemCount: order.itemCount,
@@ -125,7 +125,7 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
       { priority: 'high' }
     );
 
-    request.log.info({ orderId: order.id, shopifyOrderId }, "Order created from webhook");
+    request.log.info({ orderId: order.id, externalOrderId }, "Order created from webhook");
     reply.status(201);
     return { status: "created", orderId: order.id };
   });
@@ -134,16 +134,16 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/orders/updated", async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = request.body as any;
-    const shopifyOrderId = String(payload.id);
+    const externalOrderId = String(payload.id);
 
-    request.log.info({ shopifyOrderId }, "Webhook: orders/updated");
+    request.log.info({ externalOrderId }, "Webhook: orders/updated");
 
     const order = await request.tenantDb.order.findFirst({
-      where: { shopifyOrderId },
+      where: { externalOrderId },
     });
 
     if (!order) {
-      request.log.warn({ shopifyOrderId }, "Order not found for update webhook");
+      request.log.warn({ externalOrderId }, "Order not found for update webhook");
       return { status: "skipped", reason: "not_found" };
     }
 
@@ -174,12 +174,12 @@ async function webhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
   fastify.post("/orders/cancelled", async (request: FastifyRequest, reply: FastifyReply) => {
     const payload = request.body as any;
-    const shopifyOrderId = String(payload.id);
+    const externalOrderId = String(payload.id);
 
-    request.log.info({ shopifyOrderId }, "Webhook: orders/cancelled");
+    request.log.info({ externalOrderId }, "Webhook: orders/cancelled");
 
     const order = await request.tenantDb.order.findFirst({
-      where: { shopifyOrderId },
+      where: { externalOrderId },
     });
 
     if (!order) {

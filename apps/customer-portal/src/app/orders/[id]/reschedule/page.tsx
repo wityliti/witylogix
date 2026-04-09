@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { format, addDays } from 'date-fns';
 import { ArrowLeft, Calendar, Clock, CheckCircle } from 'lucide-react';
@@ -22,7 +22,8 @@ const availableDates = Array.from({ length: 7 }, (_, i) =>
   addDays(currentDeliveryDate, i + 1)
 );
 
-export default function ReschedulePage({ params }: { params: { id: string } }) {
+export default function ReschedulePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [step, setStep] = useState<RescheduleStep>('select-date');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -56,7 +57,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link
-          href={`/orders/${params.id}`}
+          href={`/orders/${id}`}
           className="btn btn-ghost p-2"
           aria-label="Back to order"
         >
@@ -216,7 +217,7 @@ export default function ReschedulePage({ params }: { params: { id: string } }) {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href={`/orders/${params.id}`}
+                href={`/orders/${id}`}
                 className="btn btn-primary"
               >
                 Back to Order

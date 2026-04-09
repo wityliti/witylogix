@@ -33,8 +33,8 @@ import {
 // ─── Schemas ────────────────────────────────────────────────
 
 const createOrderSchema = z.object({
-  shopifyOrderId: z.string().min(1),
-  shopifyOrderNumber: z.string().optional(),
+  externalOrderId: z.string().min(1),
+  externalOrderNumber: z.string().optional(),
   customerName: z.string().min(1),
   customerEmail: z.string().email(),
   customerPhone: z.string().min(5),
@@ -129,12 +129,12 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
 
       // Check if order with same Shopify ID already exists
       const existingOrder = await tenantDb.order.findFirst({
-        where: { shopifyOrderId: body.shopifyOrderId },
+        where: { externalOrderId: body.externalOrderId },
       });
 
       if (existingOrder) {
         throw new ConflictError(
-          `Order with Shopify ID ${body.shopifyOrderId} already exists`
+          `Order with Shopify ID ${body.externalOrderId} already exists`
         );
       }
 
@@ -156,8 +156,8 @@ async function workflowOrderRoutes(fastify: FastifyInstance): Promise<void> {
       const workflowInput: CreateDeliveryOrderInput = {
         shopId: tenantId,
         userId,
-        shopifyOrderId: body.shopifyOrderId,
-        shopifyOrderNumber: body.shopifyOrderNumber,
+        externalOrderId: body.externalOrderId,
+        externalOrderNumber: body.externalOrderNumber,
         customerName: body.customerName,
         customerEmail: body.customerEmail,
         customerPhone: body.customerPhone,

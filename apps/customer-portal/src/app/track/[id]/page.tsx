@@ -63,7 +63,7 @@ export default function TrackingPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [routeProgress, setRouteProgress] = useState(0);
 
-  const { driverPosition, deliveryStatus, eta, isConnected } = useDeliveryTracking({
+  const { driverPosition, deliveryStatus, eta, etaConfidence, etaDeltaMinutes, isAIPredicted, isConnected } = useDeliveryTracking({
     orderId,
     token: 'mock-token',
   });
@@ -203,6 +203,9 @@ export default function TrackingPage() {
                   eta={activeData.eta}
                   routeProgress={routeProgress}
                   lastUpdated={activeData.lastUpdated}
+                  etaConfidence={etaConfidence}
+                  etaDeltaMinutes={etaDeltaMinutes}
+                  isAIPredicted={isAIPredicted}
                 />
               </div>
 
@@ -315,6 +318,9 @@ export default function TrackingPage() {
                   eta={activeData.eta}
                   routeProgress={routeProgress}
                   lastUpdated={activeData.lastUpdated}
+                  etaConfidence={etaConfidence}
+                  etaDeltaMinutes={etaDeltaMinutes}
+                  isAIPredicted={isAIPredicted}
                 />
               </div>
 

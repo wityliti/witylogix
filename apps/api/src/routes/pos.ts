@@ -513,6 +513,273 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
     },
   );
 
+  // ── GET /overview (POS overview for dashboard) ──────────────────────
+
+  fastify.get("/overview", async (request: FastifyRequest, reply: FastifyReply) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [todayOrders, todayRevenue, paymentBreakdown] = await Promise.all([
+      (request.tenantDb as any).posOrder.count({
+        where: {
+          posConfig: { shopId: request.shopId },
+          status: "COMPLETED",
+          createdAt: { gte: today },
+        },
+      }),
+      (request.tenantDb as any).posOrder.aggregate({
+        where: {
+          posConfig: { shopId: request.shopId },
+          status: "COMPLETED",
+          createdAt: { gte: today },
+        },
+        _sum: { totalAmount: true },
+      }),
+      // Payment method breakdown from order metadata (best-effort)
+      (request.tenantDb as any).posOrder.findMany({
+        where: {
+          posConfig: { shopId: request.shopId },
+          status: "COMPLETED",
+          createdAt: { gte: today },
+        },
+        select: { totalAmount: true, metadata: true },
+      }),
+    ]);
+
+    const todaysSales = Number(todayRevenue._sum.totalAmount || 0);
+    const transactionCount = todayOrders;
+    const avgTicket = transactionCount > 0 ? todaysSales / transactionCount : 0;
+
+    // Approximate payment breakdown from metadata if available
+    const breakdown = { cash: 0, card: 0, mobile: 0, other: 0 };
+    for (const order of paymentBreakdown) {
+      const method = (order.metadata as any)?.paymentMethod || 'other';
+      const amount = Number(order.totalAmount);
+      if (method === 'cash') breakdown.cash += amount;
+      else if (method === 'card') breakdown.card += amount;
+      else if (method === 'mobile') breakdown.mobile += amount;
+      else breakdown.other += amount;
+    }
+
+    return {
+      data: {
+        todaysSales,
+        transactionCount,
+        avgTicket,
+        paymentBreakdown: breakdown,
+      },
+    };
+  });
+
+  // ── GET /terminals (POS configs as terminals) ────────────────────────
+
+  fastify.get("/terminals", async (request: FastifyRequest, reply: FastifyReply) => {
+    const configs = await (request.tenantDb as any).posConfig.findMany({
+      where: { shopId: request.shopId },
+      include: {
+        _count: { select: { orders: true } },
+      },
+    });
+
+    const terminals = configs.map((cfg: any) => ({
+      id: cfg.id,
+      name: cfg.name,
+      location: cfg.posSystem,
+      status: cfg.enabled ? "online" : "offline",
+      lastActivity: cfg.updatedAt,
+      totalTransactions: cfg._count.orders,
+      totalSales: 0,
+    }));
+
+    return { data: terminals };
+  });
+
+  // ── GET /transactions (POS orders as transactions) ───────────────────
+
+  fastify.get("/transactions", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = request.query as {
+      page?: string;
+      limit?: string;
+      status?: string;
+      search?: string;
+    };
+    const page = parseInt(query.page || "1");
+    const limit = Math.min(parseInt(query.limit || "25"), 100);
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      posConfig: { shopId: request.shopId },
+    };
+    if (query.status && query.status !== "all") {
+      where.status = query.status.toUpperCase();
+    }
+    if (query.search) {
+      where.OR = [
+        { customerName: { contains: query.search, mode: "insensitive" } },
+        { posOrderId: { contains: query.search, mode: "insensitive" } },
+      ];
+    }
+
+    const [orders, total] = await Promise.all([
+      (request.tenantDb as any).posOrder.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: { posConfig: true },
+      }),
+      (request.tenantDb as any).posOrder.count({ where }),
+    ]);
+
+    const statusMap: Record<string, string> = {
+      COMPLETED: "completed",
+      PENDING: "pending",
+      CONFIRMED: "pending",
+      PREPARING: "pending",
+      READY: "pending",
+      PICKED_UP: "completed",
+      CANCELLED: "cancelled",
+    };
+
+    const transactions = orders.map((order: any) => ({
+      id: order.id,
+      transactionId: order.posOrderId,
+      terminalId: order.posConfigId,
+      terminalName: order.posConfig?.name || "Unknown Terminal",
+      timestamp: order.createdAt,
+      status: statusMap[order.status] || "pending",
+      paymentMethod: (order.metadata as any)?.paymentMethod || "other",
+      amount: Number(order.totalAmount),
+      tax: Number(order.tax),
+      discount: 0,
+      subtotal: Number(order.subtotal),
+      items: (order.items as any[])?.map((item: any, i: number) => ({
+        id: `${order.id}-item-${i}`,
+        name: item.name,
+        sku: item.sku || "",
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalPrice: item.price * item.quantity,
+        category: "",
+      })) || [],
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      receiptNumber: order.posOrderId,
+      notes: order.notes,
+    }));
+
+    return {
+      data: transactions,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  });
+
+  // ── POST /transactions/:id/refund ────────────────────────────────────
+
+  fastify.post(
+    "/transactions/:id/refund",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const body = request.body as { reason?: string; amount?: number };
+
+      const order = await (request.tenantDb as any).posOrder.findFirst({
+        where: { id, posConfig: { shopId: request.shopId } },
+      });
+      if (!order) {
+        return reply.status(404).send({ error: "Transaction not found" });
+      }
+
+      const updated = await (request.tenantDb as any).posOrder.update({
+        where: { id },
+        data: {
+          status: "CANCELLED",
+          notes: body.reason ? `Refunded: ${body.reason}` : "Refunded",
+        },
+      });
+
+      return { data: updated };
+    },
+  );
+
+  // ── GET /sales-trends ────────────────────────────────────────────────
+
+  fastify.get("/sales-trends", async (request: FastifyRequest, reply: FastifyReply) => {
+    const days = 7;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const orders = await (request.tenantDb as any).posOrder.findMany({
+      where: {
+        posConfig: { shopId: request.shopId },
+        status: "COMPLETED",
+        createdAt: { gte: since },
+      },
+      select: { createdAt: true, totalAmount: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // Aggregate by day
+    const byDay: Record<string, { amount: number; count: number }> = {};
+    for (const o of orders) {
+      const day = new Date(o.createdAt).toISOString().split("T")[0];
+      if (!byDay[day]) byDay[day] = { amount: 0, count: 0 };
+      byDay[day].amount += Number(o.totalAmount);
+      byDay[day].count += 1;
+    }
+
+    const trends = Object.entries(byDay).map(([date, v]) => ({
+      date,
+      daily: v.amount,
+      weekly: v.amount,
+      monthly: v.amount,
+      transactions: v.count,
+    }));
+
+    return { data: trends };
+  });
+
+  // ── GET /top-items ───────────────────────────────────────────────────
+
+  fastify.get("/top-items", async (request: FastifyRequest, reply: FastifyReply) => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const orders = await (request.tenantDb as any).posOrder.findMany({
+      where: {
+        posConfig: { shopId: request.shopId },
+        status: "COMPLETED",
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: { items: true },
+    });
+
+    // Aggregate item sales from JSON items field
+    const itemMap: Record<string, { name: string; sku: string; units: number; revenue: number }> = {};
+    for (const order of orders) {
+      const items = (order.items as any[]) || [];
+      for (const item of items) {
+        const key = item.sku || item.name;
+        if (!itemMap[key]) {
+          itemMap[key] = { name: item.name, sku: item.sku || "", units: 0, revenue: 0 };
+        }
+        itemMap[key].units += item.quantity;
+        itemMap[key].revenue += item.price * item.quantity;
+      }
+    }
+
+    const topItems = Object.entries(itemMap)
+      .map(([key, v], i) => ({
+        id: key,
+        name: v.name,
+        sku: v.sku,
+        unitsSold: v.units,
+        revenue: v.revenue,
+        category: "",
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 20);
+
+    return { data: topItems };
+  });
+
   // ── GET /stats (POS statistics) ─────────────────────────────────
 
   fastify.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {

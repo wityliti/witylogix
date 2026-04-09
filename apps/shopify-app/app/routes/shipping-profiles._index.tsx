@@ -17,9 +17,24 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link } from "react-router";
-import { useState } from "react";
-import { EmptyState } from "~/components/EmptyState";
-import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
+import { useState, useCallback } from "react";
+import {
+  Page,
+  Card,
+  Text,
+  Badge,
+  Button,
+  InlineStack,
+  BlockStack,
+  Filters,
+  ChoiceList,
+  EmptyState as PolarisEmptyState,
+  Modal,
+  Pagination,
+  Divider,
+  Box,
+} from "@shopify/polaris";
+import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -57,12 +72,12 @@ const DELIVERY_METHODS = [
 
 const RATE_TYPES = ["FLAT", "WEIGHT_BASED", "DISTANCE_BASED", "TIERED"];
 
-const DELIVERY_METHOD_COLORS: Record<string, { bg: string; text: string }> = {
-  LOCAL_DELIVERY: { bg: "#ccf1e2", text: "#005c35" },
-  STORE_PICKUP: { bg: "#e8f0fe", text: "#1a3a6e" },
-  STANDARD_SHIPPING: { bg: "#fce8e6", text: "#a40e0e" },
-  EXPRESS_SHIPPING: { bg: "#fff8dc", text: "#7a6600" },
-  SAME_DAY: { bg: "#f3e5f5", text: "#4a0e4e" },
+const DELIVERY_METHOD_TONE: Record<string, "success" | "info" | "critical" | "warning" | "attention"> = {
+  LOCAL_DELIVERY: "success",
+  STORE_PICKUP: "info",
+  STANDARD_SHIPPING: "critical",
+  EXPRESS_SHIPPING: "warning",
+  SAME_DAY: "attention",
 };
 
 const RATE_TYPE_LABELS: Record<string, string> = {
@@ -76,7 +91,7 @@ const RATE_TYPE_LABELS: Record<string, string> = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") ?? "1");
@@ -128,6 +143,12 @@ export default function ShippingProfilesList() {
     setSearchParams(next);
   }
 
+  const handleFiltersClearAll = useCallback(() => {
+    const next = new URLSearchParams();
+    next.set("page", "1");
+    setSearchParams(next);
+  }, [setSearchParams]);
+
   const formatCurrency = (amount: number, currency: string): string => {
     const symbol = getCurrencySymbol(currency);
     return `${symbol}${amount.toFixed(2)}`;
@@ -145,469 +166,234 @@ export default function ShippingProfilesList() {
     return symbols[code] ?? code;
   };
 
-  return (
-    <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div>
-          <h1 style={headingStyle}>Shipping Profiles</h1>
-          <p style={subtextStyle}>{meta.total} total profiles</p>
-        </div>
-        <Link to="/shipping-profiles/new" style={primaryBtnStyle}>
-          Create Profile
-        </Link>
-      </div>
-
-      {/* Filters */}
-      <div style={filtersStyle}>
-        <select
-          value={currentDeliveryMethod}
-          onChange={(e) => updateFilter("deliveryMethod", e.target.value)}
-          style={selectStyle}
-        >
-          <option value="">All delivery methods</option>
-          {DELIVERY_METHODS.map((m) => (
-            <option key={m} value={m}>
-              {m.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={currentRateType}
-          onChange={(e) => updateFilter("rateType", e.target.value)}
-          style={selectStyle}
-        >
-          <option value="">All rate types</option>
-          {RATE_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {RATE_TYPE_LABELS[t]}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={currentActiveStatus}
-          onChange={(e) => updateFilter("activeStatus", e.target.value)}
-          style={selectStyle}
-        >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-
-      {/* Content */}
-      {profiles.length === 0 ? (
-        <EmptyState
-          title="No shipping profiles found"
-          description={
-            currentDeliveryMethod || currentRateType || currentActiveStatus
-              ? "Try adjusting your filters."
-              : "Create shipping profiles to define rates and delivery methods for your locations."
-          }
-          actionLabel="Create Profile"
-          onAction={() => {
-            /* navigate to create */
-          }}
+  const filters = [
+    {
+      key: "deliveryMethod",
+      label: "Delivery Method",
+      filter: (
+        <ChoiceList
+          title="Delivery Method"
+          titleHidden
+          choices={DELIVERY_METHODS.map((m) => ({
+            label: m.replace(/_/g, " "),
+            value: m,
+          }))}
+          selected={currentDeliveryMethod ? [currentDeliveryMethod] : []}
+          onChange={(value) => updateFilter("deliveryMethod", value[0] ?? "")}
         />
-      ) : (
-        <>
-          {/* Profile List */}
-          <div style={listStyle}>
-            {profiles.map((profile) => (
-              <div key={profile.id} style={listItemStyle}>
-                {/* Left Section */}
-                <div style={listItemLeftStyle}>
-                  <div style={listItemHeaderStyle}>
-                    <h3 style={listItemTitleStyle}>{profile.name}</h3>
-                    <DeliveryMethodBadge method={profile.deliveryMethod} />
-                  </div>
-
-                  {/* Rate Type and Base Rate */}
-                  <div style={listItemRowStyle}>
-                    <div style={listItemColumnStyle}>
-                      <span style={labelStyle}>Rate Type</span>
-                      <span style={valueStyle}>
-                        {RATE_TYPE_LABELS[profile.rateType]}
-                      </span>
-                    </div>
-                    <div style={listItemColumnStyle}>
-                      <span style={labelStyle}>Base Rate</span>
-                      <span style={valueStyle}>
-                        {formatCurrency(profile.baseRate, profile.currency)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Linked Locations Count */}
-                  <div style={listItemRowStyle}>
-                    <div style={listItemColumnStyle}>
-                      <span style={labelStyle}>Linked Locations</span>
-                      <span style={valueStyle}>
-                        {profile.linkedLocationsCount}{" "}
-                        <span style={subtextSmallStyle}>
-                          location{profile.linkedLocationsCount !== 1 ? "s" : ""}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Section - Status & Actions */}
-                <div style={listItemRightStyle}>
-                  {/* Status */}
-                  <div style={statusContainerStyle}>
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        backgroundColor: profile.isActive ? "#34a853" : "#9aa0a6",
-                      }}
-                    />
-                    <span style={cellSubStyle}>
-                      {profile.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div style={listItemActionsStyle}>
-                    <Link
-                      to={`/shipping-profiles/${profile.id}`}
-                      style={secondaryBtnSmallStyle}
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      style={secondaryBtnSmallStyle}
-                      onClick={() => setDuplicatingId(profile.id)}
-                      type="button"
-                    >
-                      Duplicate
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {meta.totalPages > 1 && (
-            <div style={paginationStyle}>
-              <span style={subtextStyle}>
-                Page {currentPage} of {meta.totalPages}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                  style={pageBtnStyle}
-                  type="button"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage >= meta.totalPages}
-                  style={pageBtnStyle}
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Duplicate Confirmation Modal */}
-      {duplicatingId && (
-        <ConfirmModal
-          title="Duplicate Profile?"
-          message="A copy of this profile will be created with all the same settings."
-          actionLabel="Duplicate"
-          onConfirm={() => {
-            // Call duplicate API
-            setDuplicatingId(null);
-          }}
-          onCancel={() => setDuplicatingId(null)}
+      ),
+      shortcut: true,
+    },
+    {
+      key: "rateType",
+      label: "Rate Type",
+      filter: (
+        <ChoiceList
+          title="Rate Type"
+          titleHidden
+          choices={RATE_TYPES.map((t) => ({
+            label: RATE_TYPE_LABELS[t],
+            value: t,
+          }))}
+          selected={currentRateType ? [currentRateType] : []}
+          onChange={(value) => updateFilter("rateType", value[0] ?? "")}
         />
-      )}
-    </div>
-  );
-}
+      ),
+      shortcut: true,
+    },
+    {
+      key: "activeStatus",
+      label: "Status",
+      filter: (
+        <ChoiceList
+          title="Status"
+          titleHidden
+          choices={[
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" },
+          ]}
+          selected={currentActiveStatus ? [currentActiveStatus] : []}
+          onChange={(value) => updateFilter("activeStatus", value[0] ?? "")}
+        />
+      ),
+      shortcut: true,
+    },
+  ];
 
-// ─── Sub-components ────────────────────────────────────────
+  const appliedFilters = [
+    ...(currentDeliveryMethod
+      ? [
+          {
+            key: "deliveryMethod",
+            label: `Method: ${currentDeliveryMethod.replace(/_/g, " ")}`,
+            onRemove: () => updateFilter("deliveryMethod", ""),
+          },
+        ]
+      : []),
+    ...(currentRateType
+      ? [
+          {
+            key: "rateType",
+            label: `Rate: ${RATE_TYPE_LABELS[currentRateType]}`,
+            onRemove: () => updateFilter("rateType", ""),
+          },
+        ]
+      : []),
+    ...(currentActiveStatus
+      ? [
+          {
+            key: "activeStatus",
+            label: `Status: ${currentActiveStatus}`,
+            onRemove: () => updateFilter("activeStatus", ""),
+          },
+        ]
+      : []),
+  ];
 
-function DeliveryMethodBadge({ method }: { method: string }) {
-  const colors = DELIVERY_METHOD_COLORS[method] ?? {
-    bg: "#f1f2f3",
-    text: "#6d7175",
-  };
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "4px 12px",
-        fontSize: 12,
-        fontWeight: 600,
-        borderRadius: 20,
-        backgroundColor: colors.bg,
-        color: colors.text,
-      }}
+    <Page
+      title="Shipping Profiles"
+      subtitle={`${meta.total} total profiles`}
+      primaryAction={{ content: "Create Profile", url: "/shipping-profiles/new" }}
     >
-      {method.replace(/_/g, " ")}
-    </span>
-  );
-}
+      <BlockStack gap="400">
+        <Filters
+          queryValue=""
+          queryPlaceholder=""
+          hideQueryField
+          onQueryChange={() => {}}
+          onQueryClear={() => {}}
+          filters={filters}
+          appliedFilters={appliedFilters}
+          onClearAll={handleFiltersClearAll}
+        />
 
-function ConfirmModal({
-  title,
-  message,
-  actionLabel,
-  onConfirm,
-  onCancel,
-}: {
-  title: string;
-  message: string;
-  actionLabel: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 12px" }}>
-          {title}
-        </h2>
-        <p
-          style={{
-            fontSize: 14,
-            color: "var(--p-color-text-subdued, #6d7175)",
-            margin: "0 0 20px",
+        {profiles.length === 0 ? (
+          <Card>
+            <PolarisEmptyState
+              heading="No shipping profiles found"
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+              action={{ content: "Create Profile", url: "/shipping-profiles/new" }}
+            >
+              <p>
+                {currentDeliveryMethod || currentRateType || currentActiveStatus
+                  ? "Try adjusting your filters."
+                  : "Create shipping profiles to define rates and delivery methods for your locations."}
+              </p>
+            </PolarisEmptyState>
+          </Card>
+        ) : (
+          <>
+            <BlockStack gap="300">
+              {profiles.map((profile) => (
+                <Card key={profile.id}>
+                  <InlineStack align="space-between" blockAlign="start" wrap={false} gap="400">
+                    <BlockStack gap="300">
+                      <InlineStack gap="200" blockAlign="center">
+                        <Text as="h3" variant="headingSm" fontWeight="semibold">
+                          {profile.name}
+                        </Text>
+                        <Badge
+                          tone={DELIVERY_METHOD_TONE[profile.deliveryMethod] ?? "info"}
+                        >
+                          {profile.deliveryMethod.replace(/_/g, " ")}
+                        </Badge>
+                      </InlineStack>
+
+                      <InlineStack gap="800">
+                        <BlockStack gap="100">
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            Rate Type
+                          </Text>
+                          <Text as="span" variant="bodyMd" fontWeight="medium">
+                            {RATE_TYPE_LABELS[profile.rateType]}
+                          </Text>
+                        </BlockStack>
+                        <BlockStack gap="100">
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            Base Rate
+                          </Text>
+                          <Text as="span" variant="bodyMd" fontWeight="medium">
+                            {formatCurrency(profile.baseRate, profile.currency)}
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+
+                      <BlockStack gap="100">
+                        <Text as="span" variant="bodySm" tone="subdued">
+                          Linked Locations
+                        </Text>
+                        <Text as="span" variant="bodyMd" fontWeight="medium">
+                          {profile.linkedLocationsCount}{" "}
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            location{profile.linkedLocationsCount !== 1 ? "s" : ""}
+                          </Text>
+                        </Text>
+                      </BlockStack>
+                    </BlockStack>
+
+                    <BlockStack gap="300" inlineAlign="end">
+                      <Badge tone={profile.isActive ? "success" : undefined}>
+                        {profile.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                      <InlineStack gap="200">
+                        <Button size="slim" url={`/shipping-profiles/${profile.id}`}>
+                          Edit
+                        </Button>
+                        <Button
+                          size="slim"
+                          onClick={() => setDuplicatingId(profile.id)}
+                        >
+                          Duplicate
+                        </Button>
+                      </InlineStack>
+                    </BlockStack>
+                  </InlineStack>
+                </Card>
+              ))}
+            </BlockStack>
+
+            {meta.totalPages > 1 && (
+              <InlineStack align="center">
+                <Pagination
+                  hasPrevious={currentPage > 1}
+                  hasNext={currentPage < meta.totalPages}
+                  onPrevious={() => goToPage(currentPage - 1)}
+                  onNext={() => goToPage(currentPage + 1)}
+                  label={`Page ${currentPage} of ${meta.totalPages}`}
+                />
+              </InlineStack>
+            )}
+          </>
+        )}
+      </BlockStack>
+
+      {duplicatingId && (
+        <Modal
+          open={true}
+          onClose={() => setDuplicatingId(null)}
+          title="Duplicate Profile?"
+          primaryAction={{
+            content: "Duplicate",
+            onAction: () => {
+              // Call duplicate API
+              setDuplicatingId(null);
+            },
           }}
+          secondaryActions={[
+            {
+              content: "Cancel",
+              onAction: () => setDuplicatingId(null),
+            },
+          ]}
         >
-          {message}
-        </p>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" onClick={onCancel} style={secondaryBtnStyle}>
-            Cancel
-          </button>
-          <button type="button" onClick={onConfirm} style={primaryBtnStyle}>
-            {actionLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+          <Modal.Section>
+            <Text as="p">
+              A copy of this profile will be created with all the same settings.
+            </Text>
+          </Modal.Section>
+        </Modal>
+      )}
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "24px 0 16px",
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 600,
-  margin: 0,
-};
-
-const subtextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  margin: "4px 0 0",
-};
-
-const subtextSmallStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  marginLeft: 4,
-};
-
-const filtersStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 12,
-  marginBottom: 24,
-  flexWrap: "wrap",
-};
-
-const selectStyle: React.CSSProperties = {
-  flex: "0 1 auto",
-  minWidth: 200,
-  padding: "8px 12px",
-  fontSize: 14,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  backgroundColor: "white",
-  cursor: "pointer",
-  boxSizing: "border-box" as const,
-};
-
-const listStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-  marginBottom: 24,
-};
-
-const listItemStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  backgroundColor: "white",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  padding: 16,
-  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
-  gap: 16,
-};
-
-const listItemLeftStyle: React.CSSProperties = {
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-};
-
-const listItemHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 12,
-};
-
-const listItemTitleStyle: React.CSSProperties = {
-  fontSize: 15,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-  flex: 1,
-};
-
-const listItemRowStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 24,
-};
-
-const listItemColumnStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-};
-
-const labelStyle: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 500,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-};
-
-const valueStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #202223)",
-};
-
-const cellSubStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const listItemRightStyle: React.CSSProperties = {
-  flex: "0 0 auto",
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-  alignItems: "flex-end",
-};
-
-const statusContainerStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
-};
-
-const listItemActionsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
-};
-
-const primaryBtnStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-block",
-};
-
-const secondaryBtnStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  cursor: "pointer",
-};
-
-const secondaryBtnSmallStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-block",
-  textAlign: "center" as const,
-};
-
-const paginationStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "16px 0",
-};
-
-const pageBtnStyle: React.CSSProperties = {
-  padding: "6px 14px",
-  fontSize: 13,
-  fontWeight: 500,
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 6,
-  backgroundColor: "white",
-  cursor: "pointer",
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  backgroundColor: "rgba(0, 0, 0, 0.4)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 1000,
-};
-
-const modalStyle: React.CSSProperties = {
-  width: 400,
-  backgroundColor: "white",
-  borderRadius: 16,
-  padding: 24,
-  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
-};

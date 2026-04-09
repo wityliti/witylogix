@@ -190,13 +190,15 @@ describe("ConnectionMonitor", () => {
 
   describe("Pool Exhaustion", () => {
     it("should detect pool exhaustion", () => {
+      vi.useFakeTimers();
+
       // Fill all connections
       for (let i = 0; i < 10; i++) {
         monitor.recordCheckout(`conn-${i}`);
       }
 
       monitor.startMonitoring();
-      vi.runAllTimers();
+      vi.advanceTimersByTime(6000); // Advance past monitoring interval
 
       const alerts = monitor.getAlerts();
       const exhaustionAlert = alerts.find((a) => a.type === "exhaustion");
@@ -205,16 +207,19 @@ describe("ConnectionMonitor", () => {
       expect(exhaustionAlert?.severity).toBe("critical");
 
       monitor.stopMonitoring();
+      vi.useRealTimers();
     });
 
     it("should alert on high utilization", () => {
+      vi.useFakeTimers();
+
       // Use 9 out of 10 connections
       for (let i = 0; i < 9; i++) {
         monitor.recordCheckout(`conn-${i}`);
       }
 
       monitor.startMonitoring();
-      vi.runAllTimers();
+      vi.advanceTimersByTime(6000); // Advance past monitoring interval
 
       const alerts = monitor.getAlerts();
       const utilizationAlert = alerts.find((a) => a.type === "high_utilization");
@@ -222,6 +227,7 @@ describe("ConnectionMonitor", () => {
       expect(utilizationAlert).toBeDefined();
 
       monitor.stopMonitoring();
+      vi.useRealTimers();
     });
   });
 
@@ -251,6 +257,9 @@ describe("ConnectionMonitor", () => {
       monitor.recordCheckout("conn-1");
       vi.advanceTimersByTime(65000);
 
+      // Trigger leak detection (which records alerts internally)
+      monitor.getLeaks();
+
       const alerts = monitor.getAlerts();
       expect(alerts.length).toBeGreaterThan(0);
 
@@ -262,6 +271,9 @@ describe("ConnectionMonitor", () => {
 
       monitor.recordCheckout("conn-1");
       vi.advanceTimersByTime(65000);
+
+      // Trigger leak detection to populate alerts
+      monitor.getLeaks();
 
       expect(monitor.getAlerts().length).toBeGreaterThan(0);
 

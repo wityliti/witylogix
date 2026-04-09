@@ -791,6 +791,8 @@ describe("NotificationTriggerEngine", () => {
         customerEmail: "test@example.com",
       });
 
+      await new Promise((r) => setTimeout(r, 50));
+
       expect(deliveredCalled).toBe(true);
     });
   });

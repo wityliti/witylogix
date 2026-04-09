@@ -16,8 +16,23 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
-import { createApiClient, type SingleResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type SingleResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
+import {
+  Page,
+  Layout,
+  Card,
+  DescriptionList,
+  Badge,
+  Button,
+  BlockStack,
+  InlineStack,
+  Text,
+  IndexTable,
+  Box,
+  Divider,
+} from "@shopify/polaris";
+import type { BadgeProps } from "@shopify/polaris";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -78,11 +93,25 @@ interface DriverPageData {
   timeline: Activity[];
 }
 
+const STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
+  ACTIVE: "success",
+  INACTIVE: undefined,
+  ON_DELIVERY: "info",
+  ON_BREAK: "attention",
+};
+
+const STOP_STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
+  COMPLETED: "success",
+  PENDING: "attention",
+  SKIPPED: undefined,
+  FAILED: "critical",
+};
+
 // ─── Loader ────────────────────────────────────────────────
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   // Mock data for driver detail page
   const mockDriver: Driver = {
@@ -227,422 +256,284 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export default function DriverDetailPage() {
   const { driver, todayRoute, recentDeliveries, timeline } = useLoaderData<DriverPageData>();
-  const initials = driver.name.split(" ").map((n) => n[0]).join("").toUpperCase();
-
-  const statusColors: Record<string, string> = {
-    ACTIVE: "#2d7d2d",
-    INACTIVE: "#6d7175",
-    ON_DELIVERY: "#005bd3",
-    ON_BREAK: "#f5a623",
-  };
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link to="/drivers" style={backLinkStyle}>
-            &larr;
-          </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ ...avatarStyle, backgroundColor: statusColors[driver.status] }}>
-              {initials}
-            </div>
-            <div>
-              <h1 style={headingStyle}>{driver.name}</h1>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4 }}>
-                <span style={{ ...badgeStyle, backgroundColor: statusColors[driver.status] }}>
-                  {driver.status.replace(/_/g, " ")}
-                </span>
-                <span style={subtextStyle}>
-                  Hired {new Date(driver.hireDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Two-column layout */}
-      <div style={columnsStyle}>
+    <Page
+      backAction={{ content: "Drivers", url: "/drivers" }}
+      title={driver.name}
+      titleMetadata={
+        <Badge tone={STATUS_BADGE_TONE[driver.status]}>
+          {driver.status.replace(/_/g, " ")}
+        </Badge>
+      }
+      subtitle={`Hired ${new Date(driver.hireDate).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })}`}
+    >
+      <Layout>
         {/* Left Column */}
-        <div style={leftColStyle}>
-          {/* Contact Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Contact Information</h3>
-            <div style={fieldRowStyle}>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Email</span>
-                <a href={`mailto:${driver.email}`} style={linkStyle}>
-                  {driver.email}
-                </a>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Phone</span>
-                <a href={`tel:${driver.phone}`} style={linkStyle}>
-                  {driver.phone}
-                </a>
-              </div>
-              <div style={fieldStyle}>
-                <span style={labelStyle}>Hire Date</span>
-                <span style={valueStyle}>
-                  {new Date(driver.hireDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
-              </div>
-            </div>
-          </div>
+        <Layout.Section>
+          <BlockStack gap="400">
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Contact Information
+                </Text>
+                <DescriptionList
+                  items={[
+                    {
+                      term: "Email",
+                      description: (
+                        <a href={`mailto:${driver.email}`}>
+                          <Text as="span" tone="magic">
+                            {driver.email}
+                          </Text>
+                        </a>
+                      ),
+                    },
+                    {
+                      term: "Phone",
+                      description: (
+                        <a href={`tel:${driver.phone}`}>
+                          <Text as="span" tone="magic">
+                            {driver.phone}
+                          </Text>
+                        </a>
+                      ),
+                    },
+                    {
+                      term: "Hire Date",
+                      description: new Date(driver.hireDate).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric", year: "numeric" },
+                      ),
+                    },
+                  ]}
+                />
+              </BlockStack>
+            </Card>
 
-          {/* Vehicle Card */}
-          {driver.vehicle && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Vehicle Information</h3>
-              <div style={fieldRowStyle}>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Type</span>
-                  <span style={valueStyle}>{driver.vehicle.type}</span>
-                </div>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Plate</span>
-                  <span style={valueStyle}>{driver.vehicle.plate ?? "—"}</span>
-                </div>
-                <div style={fieldStyle}>
-                  <span style={labelStyle}>Model</span>
-                  <span style={valueStyle}>{driver.vehicle.model ?? "—"}</span>
-                </div>
-              </div>
-            </div>
-          )}
+            {driver.vehicle && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Vehicle Information
+                  </Text>
+                  <DescriptionList
+                    items={[
+                      { term: "Type", description: driver.vehicle.type },
+                      {
+                        term: "Plate",
+                        description: driver.vehicle.plate ?? "\u2014",
+                      },
+                      {
+                        term: "Model",
+                        description: driver.vehicle.model ?? "\u2014",
+                      },
+                    ]}
+                  />
+                </BlockStack>
+              </Card>
+            )}
 
-          {/* Assigned Zones Card */}
-          {driver.zones.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Assigned Zones</h3>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {driver.zones.map((zone) => (
-                  <Link
-                    key={zone.id}
-                    to={`/zones/${zone.id}`}
-                    style={{ ...tagStyle, color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none" }}
-                  >
-                    {zone.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+            {driver.zones.length > 0 && (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h3" variant="headingSm">
+                    Assigned Zones
+                  </Text>
+                  <InlineStack gap="200" wrap>
+                    {driver.zones.map((zone) => (
+                      <Link key={zone.id} to={`/zones/${zone.id}`}>
+                        <Badge tone="info">{zone.name}</Badge>
+                      </Link>
+                    ))}
+                  </InlineStack>
+                </BlockStack>
+              </Card>
+            )}
 
-          {/* Performance Metrics Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Performance Metrics</h3>
-            <div style={metricsGridStyle}>
-              <div style={metricBoxStyle}>
-                <div style={metricValueStyle}>{driver.performance.rating.toFixed(1)}</div>
-                <div style={metricLabelStyle}>Rating</div>
-              </div>
-              <div style={metricBoxStyle}>
-                <div style={metricValueStyle}>{driver.performance.onTimePercentage}%</div>
-                <div style={metricLabelStyle}>On-Time</div>
-              </div>
-              <div style={metricBoxStyle}>
-                <div style={metricValueStyle}>{driver.performance.totalDeliveries}</div>
-                <div style={metricLabelStyle}>Total Deliveries</div>
-              </div>
-              <div style={metricBoxStyle}>
-                <div style={metricValueStyle}>{driver.performance.avgDeliveryTime}m</div>
-                <div style={metricLabelStyle}>Avg. Time</div>
-              </div>
-            </div>
-          </div>
-        </div>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h3" variant="headingSm">
+                  Performance Metrics
+                </Text>
+                <InlineStack gap="400" wrap>
+                  <MetricBox
+                    label="Rating"
+                    value={Number(driver.performance.rating).toFixed(1)}
+                  />
+                  <MetricBox
+                    label="On-Time"
+                    value={`${driver.performance.onTimePercentage}%`}
+                  />
+                  <MetricBox
+                    label="Total Deliveries"
+                    value={String(driver.performance.totalDeliveries)}
+                  />
+                  <MetricBox
+                    label="Avg. Time"
+                    value={`${driver.performance.avgDeliveryTime}m`}
+                  />
+                </InlineStack>
+              </BlockStack>
+            </Card>
+          </BlockStack>
+        </Layout.Section>
 
         {/* Right Column */}
-        <div style={rightColStyle}>
-          {/* Actions Card */}
-          <div style={cardStyle}>
-            <h3 style={cardTitleStyle}>Actions</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <a href="#" style={primaryButtonStyle}>
-                Edit Driver
-              </a>
-              <button style={secondaryButtonStyle}>
-                Assign Route
-              </button>
-              <button style={secondaryButtonStyle}>
-                Message
-              </button>
-              {driver.status === "ACTIVE" && (
-                <button style={dangerButtonStyle}>
-                  Deactivate
-                </button>
-              )}
-            </div>
-          </div>
+        <Layout.Section variant="oneThird">
+          <BlockStack gap="400">
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Actions
+                </Text>
+                <Button variant="primary" fullWidth>
+                  Edit Driver
+                </Button>
+                <Button fullWidth>Assign Route</Button>
+                <Button fullWidth>Message</Button>
+                {driver.status === "ACTIVE" && (
+                  <Button fullWidth tone="critical">
+                    Deactivate
+                  </Button>
+                )}
+              </BlockStack>
+            </Card>
 
-          {/* Today's Route Card */}
-          {todayRoute.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Today's Route</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {todayRoute.map((stop, idx) => (
-                  <div key={stop.id} style={stopCardStyle}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--p-color-text-subdued, #6d7175)" }}>
-                          Stop {idx + 1}
-                        </div>
-                        <div style={{ fontSize: 13, fontWeight: 500, marginTop: 2 }}>
+            {todayRoute.length > 0 && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Today's Route
+                  </Text>
+                  {todayRoute.map((stop, idx) => (
+                    <Card key={stop.id}>
+                      <BlockStack gap="100">
+                        <InlineStack align="space-between">
+                          <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                            Stop {idx + 1}
+                          </Text>
+                          <Badge tone={STOP_STATUS_BADGE_TONE[stop.status]} size="small">
+                            {stop.status}
+                          </Badge>
+                        </InlineStack>
+                        <Text as="span" variant="bodyMd" fontWeight="medium">
                           {stop.customerName}
-                        </div>
-                        <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
+                        </Text>
+                        <Text as="span" variant="bodySm" tone="subdued">
                           {stop.address}
-                        </div>
-                        <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
+                        </Text>
+                        <Text as="span" variant="bodySm" tone="subdued">
                           {stop.timeWindow}
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          ...smallBadgeStyle,
-                          backgroundColor:
-                            stop.status === "COMPLETED"
-                              ? "#2d7d2d"
-                              : stop.status === "PENDING"
-                              ? "#f5a623"
-                              : "#d72c0d",
-                        }}
-                      >
-                        {stop.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent Deliveries Card */}
-          {recentDeliveries.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Recent Deliveries</h3>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                <thead>
-                  <tr>
-                    <th style={tableHeaderStyle}>Shipment</th>
-                    <th style={tableHeaderStyle}>Date</th>
-                    <th style={{ ...tableHeaderStyle, textAlign: "center" }}>Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentDeliveries.slice(0, 5).map((delivery) => (
-                    <tr key={delivery.id} style={{ borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)" }}>
-                      <td style={tableCellStyle}>
-                        <Link to={`/shipments/${delivery.shipmentId}`} style={linkStyle}>
-                          {delivery.shipmentId}
-                        </Link>
-                      </td>
-                      <td style={tableCellStyle}>
-                        {new Date(delivery.deliveryDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                      <td style={{ ...tableCellStyle, textAlign: "center" }}>{delivery.duration}m</td>
-                    </tr>
+                        </Text>
+                      </BlockStack>
+                    </Card>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                </BlockStack>
+              </Card>
+            )}
 
-          {/* Activity Timeline Card */}
-          {timeline.length > 0 && (
-            <div style={cardStyle}>
-              <h3 style={cardTitleStyle}>Activity</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {timeline.map((event, idx) => (
-                  <div key={event.id} style={{ display: "flex", gap: 8 }}>
-                    <div style={{ position: "relative" }}>
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-                          borderRadius: "50%",
-                          marginTop: 5,
-                        }}
-                      />
-                      {idx < timeline.length - 1 && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: 3,
-                            top: 16,
-                            width: 2,
-                            height: 40,
-                            backgroundColor: "var(--p-color-border-subdued, #e1e3e5)",
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, color: "var(--p-color-text, #202223)" }}>
+            {recentDeliveries.length > 0 && (
+              <Card padding="0">
+                <Box padding="400" paddingBlockEnd="0">
+                  <Text as="h3" variant="headingSm">
+                    Recent Deliveries
+                  </Text>
+                </Box>
+                <IndexTable
+                  resourceName={{ singular: "delivery", plural: "deliveries" }}
+                  itemCount={recentDeliveries.length}
+                  headings={[
+                    { title: "Shipment" },
+                    { title: "Date" },
+                    { title: "Time", alignment: "center" },
+                  ]}
+                  selectable={false}
+                >
+                  {recentDeliveries.slice(0, 5).map((delivery, index) => (
+                    <IndexTable.Row
+                      id={delivery.id}
+                      key={delivery.id}
+                      position={index}
+                    >
+                      <IndexTable.Cell>
+                        <Link to={`/shipments/${delivery.shipmentId}`}>
+                          <Text as="span" tone="magic" fontWeight="semibold">
+                            {delivery.shipmentId}
+                          </Text>
+                        </Link>
+                      </IndexTable.Cell>
+                      <IndexTable.Cell>
+                        <Text as="span" variant="bodyMd">
+                          {new Date(delivery.deliveryDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" },
+                          )}
+                        </Text>
+                      </IndexTable.Cell>
+                      <IndexTable.Cell>
+                        <Text as="span" variant="bodyMd" alignment="center">
+                          {delivery.duration}m
+                        </Text>
+                      </IndexTable.Cell>
+                    </IndexTable.Row>
+                  ))}
+                </IndexTable>
+              </Card>
+            )}
+
+            {timeline.length > 0 && (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Activity
+                  </Text>
+                  {timeline.map((event) => (
+                    <BlockStack key={event.id} gap="050">
+                      <Text as="span" variant="bodyMd">
                         {event.message}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 2 }}>
+                      </Text>
+                      <Text as="span" variant="bodySm" tone="subdued">
                         {new Date(event.timestamp).toLocaleTimeString("en-US", {
                           month: "short",
                           day: "numeric",
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                      </Text>
+                    </BlockStack>
+                  ))}
+                </BlockStack>
+              </Card>
+            )}
+          </BlockStack>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 }
 
-// ─── Styles ────────────────────────────────────────────────
+// ─── Sub-components ────────────────────────────────────────
 
-const headerStyle: React.CSSProperties = { padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, color: "var(--p-color-text, #202223)", margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)" };
-const backLinkStyle: React.CSSProperties = { fontSize: 20, color: "var(--p-color-text-subdued, #6d7175)", textDecoration: "none", padding: 4 };
-
-const avatarStyle: React.CSSProperties = {
-  width: 56,
-  height: 56,
-  borderRadius: "50%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "white",
-  fontSize: 18,
-  fontWeight: 600,
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 12px",
-  fontSize: 12,
-  fontWeight: 500,
-  color: "white",
-  borderRadius: 12,
-};
-
-const smallBadgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "2px 8px",
-  fontSize: 11,
-  fontWeight: 500,
-  color: "white",
-  borderRadius: 6,
-};
-
-const columnsStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" };
-const leftColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-const rightColStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16 };
-
-const cardStyle: React.CSSProperties = {
-  padding: 20,
-  backgroundColor: "var(--p-color-bg-surface, white)",
-  borderRadius: 12,
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  boxShadow: "var(--p-shadow-sm, 0 1px 0 rgba(0,0,0,.05))",
-};
-
-const cardTitleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, margin: "0 0 12px", color: "var(--p-color-text, #202223)" };
-
-const fieldRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 };
-const fieldStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 2 };
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px" };
-const valueStyle: React.CSSProperties = { fontSize: 14, color: "var(--p-color-text, #202223)" };
-
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", textDecoration: "none", fontWeight: 500 };
-
-const tagStyle: React.CSSProperties = {
-  display: "inline-block",
-  padding: "4px 10px",
-  fontSize: 12,
-  fontWeight: 500,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-};
-
-const metricsGridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 };
-const metricBoxStyle: React.CSSProperties = {
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  textAlign: "center",
-};
-const metricValueStyle: React.CSSProperties = { fontSize: 18, fontWeight: 600, color: "var(--p-color-text, #202223)" };
-const metricLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 500, color: "var(--p-color-text-subdued, #6d7175)", marginTop: 4 };
-
-const stopCardStyle: React.CSSProperties = {
-  padding: 12,
-  backgroundColor: "var(--p-color-bg-surface-hover, #f1f2f3)",
-  borderRadius: 8,
-  fontSize: 13,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer",
-  textDecoration: "none",
-  textAlign: "center" as const,
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text, #303030)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: 8,
-  cursor: "pointer",
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "8px 16px",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "var(--p-color-text-critical, #d72c0d)",
-  backgroundColor: "white",
-  border: "1px solid var(--p-color-border-critical, #d72c0d)",
-  borderRadius: 8,
-  cursor: "pointer",
-};
-
-const tableHeaderStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 0",
-  fontSize: 11,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tableCellStyle: React.CSSProperties = { padding: "8px 0", verticalAlign: "top" };
+function MetricBox({ label, value }: { label: string; value: string }) {
+  return (
+    <Box
+      background="bg-surface-secondary"
+      padding="300"
+      borderRadius="200"
+      minWidth="120px"
+    >
+      <BlockStack gap="100" inlineAlign="center">
+        <Text as="span" variant="headingMd" fontWeight="bold">
+          {value}
+        </Text>
+        <Text as="span" variant="bodySm" tone="subdued">
+          {label}
+        </Text>
+      </BlockStack>
+    </Box>
+  );
+}

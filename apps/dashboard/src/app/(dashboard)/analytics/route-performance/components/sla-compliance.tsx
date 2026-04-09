@@ -165,7 +165,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
                       borderRadius: "var(--wl-radius-md)",
                       color: "var(--wl-text-primary)",
                     }}
-                    formatter={(value: number) => [`${value}%`, ""]}
+                    formatter={(value: unknown) => [`${value}%`, ""] as [string, string]}
                     labelStyle={{ color: "var(--wl-text-primary)" }}
                   />
                   <Bar dataKey="overall" fill="var(--wl-primary-500)" radius={[8, 8, 0, 0]} />

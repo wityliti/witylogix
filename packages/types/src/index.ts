@@ -158,3 +158,45 @@ export interface NotificationPayload {
   recipient: string;
   templateData: Record<string, unknown>;
 }
+
+// ─── Delivery Event Types (WIT-127) ─────────────────────────
+
+export type DeliveryEventStatus = "accepted" | "conflict" | "error";
+
+export type DeliveryEventType =
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "arrived"
+  | "delivered"
+  | "failed_delivery";
+
+export type FailedDeliveryReasonCode =
+  | "NOT_HOME"
+  | "WRONG_ADDRESS"
+  | "REFUSED"
+  | "DAMAGED"
+  | "ACCESS_DENIED"
+  | "BUSINESS_CLOSED";
+
+export interface DeliveryEventInput {
+  id: string;
+  eventType: DeliveryEventType;
+  deliveryId: string;
+  payload: Record<string, unknown>;
+  deviceCapturedAt: string;
+  deviceTimezone: string;
+  gpsLat?: number;
+  gpsLng?: number;
+}
+
+export interface DeliveryEventResult {
+  id: string;
+  status: DeliveryEventStatus;
+  currentDeliveryStatus?: string;
+  message?: string;
+}
+
+export interface BatchDeliveryEventsResponse {
+  results: DeliveryEventResult[];
+}

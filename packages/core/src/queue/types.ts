@@ -13,6 +13,12 @@ export interface OrderWebhookJob {
   shopId: string;
   externalOrderId: string;
   source?: string; // Defaults to "SHOPIFY"
+  /** WooCommerce webhook topic, e.g. "order.created" or "order.updated" (WIT-218) */
+  topic?: string;
+  /** X-WC-Webhook-Delivery header value — idempotency key (WIT-218) */
+  deliveryId?: string;
+  /** WooCommerceConnection.id — needed for idempotency log (WIT-218) */
+  connectionId?: string;
   payload: {
     id: string;
     created_at: string;

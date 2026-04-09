@@ -481,8 +481,8 @@ describe("ShippoClient", () => {
       const mockShipment1 = { object_id: "ship_1", status: "queued", parcels: [] };
       const mockShipment2 = { object_id: "ship_2", status: "queued", parcels: [] };
 
-      const mockRates1 = { results: [{ object_id: "rate_1" }] };
-      const mockRates2 = { results: [{ object_id: "rate_2" }] };
+      const mockRates1 = { results: [{ object_id: "rate_1", carrier: "USPS", servicelevel: { name: "Priority" }, rate: "5.00", currency: "USD", estimated_days: 3 }] };
+      const mockRates2 = { results: [{ object_id: "rate_2", carrier: "USPS", servicelevel: { name: "Priority" }, rate: "6.00", currency: "USD", estimated_days: 3 }] };
 
       const mockTxn1 = {
         object_id: "txn_1",

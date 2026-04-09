@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useReturns, Return } from '@/hooks/use-returns';
-import { Plus, ChevronRight, DollarSign } from 'lucide-react';
+import { Plus, ChevronRight } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
    RETURNS MANAGEMENT PAGE — RMA lifecycle with status pipeline
@@ -111,7 +110,7 @@ const StatusPipeline = ({ returns }: { returns: Return[] }) => {
 
   const countByStatus = statuses.reduce(
     (acc, status) => {
-      acc[status] = returns.filter((r) => normalizeStatus(r.status) === status).length;
+      acc[status] = returns.filter((r) => normalizeStatus(r.status as string) === status).length;
       return acc;
     },
     {} as Record<ReturnStatus, number>
@@ -163,9 +162,10 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
       {/* Table rows */}
       <div className="divide-y divide-white/[0.05]">
         {returns.map((ret) => {
-          const status = normalizeStatus(ret.status);
+          const status = normalizeStatus(ret.status as string);
           const config = statusConfig[status];
           const date = new Date(ret.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const amount = ret.refundAmount ?? ret.totalRefundAmount ?? 0;
 
           return (
             <div key={ret.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
@@ -188,7 +188,9 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
               <div className="col-span-2">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Customer</div>
                 <div className="text-sm text-wl-text-primary">{ret.customerName}</div>
-                <div className="text-xs text-wl-text-tertiary mt-0.5">{ret.customerEmail}</div>
+                {ret.customerEmail && (
+                  <div className="text-xs text-wl-text-tertiary mt-0.5">{ret.customerEmail}</div>
+                )}
               </div>
 
               {/* Reason */}
@@ -206,7 +208,7 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
               {/* Refund amount */}
               <div className="col-span-1">
                 <div className="md:hidden text-xs text-wl-text-tertiary mb-1">Refund</div>
-                <div className="text-sm font-semibold text-wl-success-400">${ret.refundAmount.toFixed(2)}</div>
+                <div className="text-sm font-semibold text-wl-success-400">${Number(amount).toFixed(2)}</div>
               </div>
 
               {/* Date */}
@@ -233,7 +235,8 @@ const ReturnsTable = ({ returns }: { returns: Return[] }) => {
 };
 
 export default function ReturnsPage() {
-  const { items: returnsData = MOCK_RETURNS } = useReturns();
+  const { items: apiReturns } = useReturns();
+  const returnsData = apiReturns.length > 0 ? apiReturns : MOCK_RETURNS;
 
   return (
     <>

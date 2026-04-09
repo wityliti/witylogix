@@ -14,6 +14,21 @@
 
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
+import {
+  Page,
+  Layout,
+  Card,
+  DescriptionList,
+  IndexTable,
+  Badge,
+  Text,
+  BlockStack,
+  InlineStack,
+  InlineGrid,
+  Button,
+  Box,
+  Divider,
+} from "@shopify/polaris";
 import { createApiClient } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
@@ -34,7 +49,7 @@ interface Address {
 
 interface CustomerOrder {
   id: string;
-  shopifyOrderNumber: string | null;
+  externalOrderNumber: string | null;
   createdAt: string;
   status: string;
   totalAmount: number;
@@ -91,373 +106,218 @@ export default function CustomerDetail() {
   const averageOrderValue =
     customer.ordersCount > 0 ? customer.totalSpent / customer.ordersCount : 0;
 
-  const getOrderStatusColor = (status: string) => {
+  const getOrderStatusTone = (status: string): "success" | "info" | "warning" | "critical" | undefined => {
     switch (status.toLowerCase()) {
       case "completed":
-        return "var(--p-color-bg-fill-success, #22c55e)";
+        return "success";
       case "processing":
-        return "var(--p-color-bg-fill-info, #3b82f6)";
+        return "info";
       case "pending":
-        return "var(--p-color-bg-fill-warning, #f59e0b)";
+        return "warning";
       case "cancelled":
-        return "var(--p-color-bg-fill-critical, #ef4444)";
+        return "critical";
       default:
-        return "#8c9196";
+        return undefined;
     }
   };
 
+  const customerInfoItems = [
+    { term: "Email", description: customer.email || "\u2014" },
+    { term: "Phone", description: customer.phone || "\u2014" },
+    { term: "Shopify ID", description: customer.shopifyCustomerId || "\u2014" },
+    {
+      term: "Member Since",
+      description: customer.createdAt
+        ? new Date(customer.createdAt).toLocaleDateString()
+        : "\u2014",
+    },
+  ];
+
+  const orderRows = (customer.orders ?? []).map((order, index) => (
+    <IndexTable.Row id={order.id} key={order.id} position={index}>
+      <IndexTable.Cell>
+        <Link to={`/orders/${order.id}`}>
+          <Text as="span" variant="bodyMd" fontWeight="semibold">
+            {order.externalOrderNumber || order.id}
+          </Text>
+        </Link>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">
+          {order.createdAt
+            ? new Date(order.createdAt).toLocaleDateString()
+            : "\u2014"}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={getOrderStatusTone(order.status)}>{order.status}</Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodySm">{order.itemsCount}</Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" fontWeight="semibold">
+          ${Number(order.totalAmount).toFixed(2)}
+        </Text>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <div style={containerStyle}>
-      {/* Header with Back Link */}
-      <div style={headerStyle}>
-        <div>
-          <Link to="/customers" style={backLinkStyle}>
-            ← Back to Customers
-          </Link>
-          <h1 style={pageHeadingStyle}>
-            {customer.firstName} {customer.lastName}
-          </h1>
-        </div>
-        {customer.shopifyCustomerId && (
-          <a
-            href={`https://admin.shopify.com/store/witylogix/customers/${customer.shopifyCustomerId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={externalLinkButtonStyle}
-          >
-            View in Shopify
-          </a>
+    <Page
+      backAction={{ content: "Customers", url: "/customers" }}
+      title={`${customer.firstName} ${customer.lastName}`}
+      primaryAction={
+        customer.shopifyCustomerId
+          ? {
+              content: "View in Shopify",
+              url: `https://admin.shopify.com/store/witylogix/customers/${customer.shopifyCustomerId}`,
+              external: true,
+            }
+          : undefined
+      }
+    >
+      <Layout>
+        {/* Customer Information */}
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                Customer Information
+              </Text>
+              <DescriptionList items={customerInfoItems} />
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
+        {/* Statistics */}
+        <Layout.Section>
+          <InlineGrid columns={{ xs: 2, sm: 3, md: 5 }} gap="400">
+            <Card>
+              <BlockStack gap="100" inlineAlign="center">
+                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                  {customer.ordersCount}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                  Total Orders
+                </Text>
+              </BlockStack>
+            </Card>
+            <Card>
+              <BlockStack gap="100" inlineAlign="center">
+                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                  ${Number(customer.totalSpent).toFixed(2)}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                  Total Spent
+                </Text>
+              </BlockStack>
+            </Card>
+            <Card>
+              <BlockStack gap="100" inlineAlign="center">
+                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                  ${Number(averageOrderValue).toFixed(2)}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                  Average Order Value
+                </Text>
+              </BlockStack>
+            </Card>
+            <Card>
+              <BlockStack gap="100" inlineAlign="center">
+                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                  {customer.firstOrderDate
+                    ? new Date(customer.firstOrderDate).toLocaleDateString()
+                    : "\u2014"}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                  First Order
+                </Text>
+              </BlockStack>
+            </Card>
+            <Card>
+              <BlockStack gap="100" inlineAlign="center">
+                <Text as="p" variant="headingLg" fontWeight="bold" alignment="center">
+                  {customer.lastOrderDate
+                    ? new Date(customer.lastOrderDate).toLocaleDateString()
+                    : "\u2014"}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued" alignment="center">
+                  Last Order
+                </Text>
+              </BlockStack>
+            </Card>
+          </InlineGrid>
+        </Layout.Section>
+
+        {/* Addresses */}
+        {customer.addresses && customer.addresses.length > 0 && (
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Addresses
+                </Text>
+                <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+                  {customer.addresses.map((address) => (
+                    <Card key={address.id}>
+                      <BlockStack gap="200">
+                        {address.isDefault && (
+                          <Badge tone="info">Default</Badge>
+                        )}
+                        <Text as="p" variant="bodyMd">
+                          {address.firstName} {address.lastName}
+                        </Text>
+                        <Text as="p" variant="bodySm">
+                          {address.addressLine1}
+                        </Text>
+                        {address.addressLine2 && (
+                          <Text as="p" variant="bodySm">
+                            {address.addressLine2}
+                          </Text>
+                        )}
+                        <Text as="p" variant="bodySm">
+                          {address.city}, {address.state} {address.postalCode}
+                        </Text>
+                        <Text as="p" variant="bodySm">
+                          {address.country}
+                        </Text>
+                      </BlockStack>
+                    </Card>
+                  ))}
+                </InlineGrid>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
         )}
-      </div>
 
-      {/* Customer Info Card */}
-      <div style={cardStyle}>
-        <h2 style={cardHeadingStyle}>Customer Information</h2>
-        <div style={infoGridStyle}>
-          <div style={infoPairStyle}>
-            <span style={infoLabelStyle}>Email</span>
-            <span style={infoValueStyle}>{customer.email || "—"}</span>
-          </div>
-          <div style={infoPairStyle}>
-            <span style={infoLabelStyle}>Phone</span>
-            <span style={infoValueStyle}>{customer.phone || "—"}</span>
-          </div>
-          <div style={infoPairStyle}>
-            <span style={infoLabelStyle}>Shopify ID</span>
-            <span style={infoValueStyle}>{customer.shopifyCustomerId || "—"}</span>
-          </div>
-          <div style={infoPairStyle}>
-            <span style={infoLabelStyle}>Member Since</span>
-            <span style={infoValueStyle}>
-              {customer.createdAt
-                ? new Date(customer.createdAt).toLocaleDateString()
-                : "—"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Statistics Row */}
-      <div style={statsRowStyle}>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>{customer.ordersCount}</div>
-          <div style={statLabelStyle}>Total Orders</div>
-        </div>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>${customer.totalSpent.toFixed(2)}</div>
-          <div style={statLabelStyle}>Total Spent</div>
-        </div>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>${averageOrderValue.toFixed(2)}</div>
-          <div style={statLabelStyle}>Average Order Value</div>
-        </div>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>
-            {customer.firstOrderDate
-              ? new Date(customer.firstOrderDate).toLocaleDateString()
-              : "—"}
-          </div>
-          <div style={statLabelStyle}>First Order</div>
-        </div>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>
-            {customer.lastOrderDate
-              ? new Date(customer.lastOrderDate).toLocaleDateString()
-              : "—"}
-          </div>
-          <div style={statLabelStyle}>Last Order</div>
-        </div>
-      </div>
-
-      {/* Addresses */}
-      {customer.addresses && customer.addresses.length > 0 && (
-        <div style={cardStyle}>
-          <h2 style={cardHeadingStyle}>Addresses</h2>
-          <div style={addressListStyle}>
-            {customer.addresses.map((address) => (
-              <div key={address.id} style={addressCardStyle}>
-                {address.isDefault && (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "2px 8px",
-                      backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-                      color: "white",
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Default
-                  </span>
-                )}
-                <div style={addressTextStyle}>
-                  {address.firstName} {address.lastName}
-                </div>
-                <div style={addressTextStyle}>{address.addressLine1}</div>
-                {address.addressLine2 && (
-                  <div style={addressTextStyle}>{address.addressLine2}</div>
-                )}
-                <div style={addressTextStyle}>
-                  {address.city}, {address.state} {address.postalCode}
-                </div>
-                <div style={addressTextStyle}>{address.country}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Order History */}
-      {customer.orders && customer.orders.length > 0 && (
-        <div style={cardStyle}>
-          <h2 style={cardHeadingStyle}>Order History</h2>
-          <div style={tableContainerStyle}>
-            <table style={tableStyle}>
-              <thead>
-                <tr style={trStyle}>
-                  <th style={thStyle}>Order Number</th>
-                  <th style={thStyle}>Date</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Items</th>
-                  <th style={thStyle}>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customer.orders.map((order) => (
-                  <tr key={order.id} style={trStyle}>
-                    <td style={tdStyle}>
-                      <Link
-                        to={`/orders/${order.id}`}
-                        style={orderLinkStyle}
-                      >
-                        {order.shopifyOrderNumber || order.id}
-                      </Link>
-                    </td>
-                    <td style={tdStyle}>
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString()
-                        : "—"}
-                    </td>
-                    <td style={tdStyle}>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "4px 12px",
-                          backgroundColor: getOrderStatusColor(order.status),
-                          color: "white",
-                          borderRadius: 4,
-                          fontSize: 12,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>{order.itemsCount}</td>
-                    <td style={{ ...tdStyle, fontWeight: 600 }}>
-                      ${order.totalAmount.toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Order History */}
+        {customer.orders && customer.orders.length > 0 && (
+          <Layout.Section>
+            <Card padding="0">
+              <Box padding="400" paddingBlockEnd="0">
+                <Text as="h2" variant="headingMd">
+                  Order History
+                </Text>
+              </Box>
+              <IndexTable
+                resourceName={{ singular: "order", plural: "orders" }}
+                itemCount={customer.orders.length}
+                headings={[
+                  { title: "Order Number" },
+                  { title: "Date" },
+                  { title: "Status" },
+                  { title: "Items" },
+                  { title: "Total" },
+                ]}
+                selectable={false}
+              >
+                {orderRows}
+              </IndexTable>
+            </Card>
+          </Layout.Section>
+        )}
+      </Layout>
+    </Page>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const containerStyle: React.CSSProperties = {
-  padding: "32px",
-  backgroundColor: "var(--p-color-bg, #ffffff)",
-  maxWidth: 1200,
-  margin: "0 auto",
-};
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: "32px",
-};
-
-const backLinkStyle: React.CSSProperties = {
-  color: "var(--p-color-text-primary, #005bd3)",
-  textDecoration: "none",
-  fontSize: 14,
-  fontWeight: 500,
-  marginBottom: 8,
-  display: "block",
-};
-
-const pageHeadingStyle: React.CSSProperties = {
-  fontSize: 28,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  margin: 0,
-};
-
-const externalLinkButtonStyle: React.CSSProperties = {
-  padding: "10px 20px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "white",
-  backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)",
-  border: "none",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  cursor: "pointer",
-  textDecoration: "none",
-};
-
-const cardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "24px",
-  marginBottom: "24px",
-};
-
-const cardHeadingStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "var(--p-color-text, #202223)",
-  margin: "0 0 16px",
-};
-
-const infoGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: "16px",
-};
-
-const infoPairStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const infoLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  marginBottom: 4,
-};
-
-const infoValueStyle: React.CSSProperties = {
-  fontSize: 14,
-  color: "var(--p-color-text, #202223)",
-  fontWeight: 500,
-};
-
-const statsRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-  gap: "16px",
-  marginBottom: "24px",
-};
-
-const statCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface, #ffffff)",
-  border: "1px solid var(--p-color-border, #c9cccf)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "16px",
-  textAlign: "center",
-};
-
-const statValueStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: "var(--p-color-text, #202223)",
-  marginBottom: 4,
-};
-
-const statLabelStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  fontWeight: 500,
-};
-
-const addressListStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-  gap: "16px",
-};
-
-const addressCardStyle: React.CSSProperties = {
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  padding: "16px",
-};
-
-const addressTextStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--p-color-text, #202223)",
-  marginBottom: 4,
-  lineHeight: 1.4,
-};
-
-const tableContainerStyle: React.CSSProperties = {
-  overflowX: "auto",
-  borderRadius: "var(--p-border-radius-200, 8px)",
-  border: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: 13,
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--p-color-text-subdued, #6d7175)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-  backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)",
-};
-
-const trStyle: React.CSSProperties = {
-  borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  verticalAlign: "top",
-};
-
-const orderLinkStyle: React.CSSProperties = {
-  color: "var(--p-color-text-primary, #005bd3)",
-  fontWeight: 600,
-  textDecoration: "none",
-};

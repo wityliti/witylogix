@@ -1,11 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useApiMutation } from '@/hooks/use-api';
+import { useApiList, useApiMutation } from '@/hooks/use-api';
+
+interface ApiCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+}
+
+interface ApiProduct {
+  id: string;
+  name: string;
+  sku: string;
+  price: number;
+}
 
 interface LineItem {
   id: string;
@@ -31,6 +43,7 @@ interface DeliveryAddress {
 }
 
 export default function CreateOrderPage() {
+  const router = useRouter();
   const [customer, setCustomer] = useState<Customer>({ name: '', email: '', phone: '' });
   const [isNewCustomer, setIsNewCustomer] = useState(true);
   const [address, setAddress] = useState<DeliveryAddress>({ street: '', city: '', state: '', zip: '' });
@@ -51,31 +64,18 @@ export default function CreateOrderPage() {
     unitPrice: 0
   });
   const [customerSearch, setCustomerSearch] = useState('');
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const mockCustomers = [
-    { id: '1', name: 'Rajesh Kumar', email: 'rajesh.kumar@email.com', phone: '+91-9876543210' },
-    { id: '2', name: 'Priya Singh', email: 'priya.singh@email.com', phone: '+91-9876543211' },
-    { id: '3', name: 'Amit Patel', email: 'amit.patel@email.com', phone: '+91-9876543212' }
-  ];
-
-  const mockProducts = [
-    { name: 'Premium Bluetooth Speaker', sku: 'BS-001', price: 2499 },
-    { name: 'USB-C Charging Cable', sku: 'USB-C-001', price: 499 },
-    { name: 'Wireless Mouse', sku: 'WM-001', price: 1299 },
-    { name: 'Laptop Stand', sku: 'LS-001', price: 1999 }
-  ];
-
-  const filteredCustomers = mockCustomers.filter(c =>
-    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.email.toLowerCase().includes(customerSearch.toLowerCase())
-  );
+  const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
+  const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
+  const { mutate: createOrder, loading: creating } = useApiMutation<{ id: string }>('POST', '/api/v4/orders');
 
   const addLineItem = () => {
     if (!newLineItem.productName || newLineItem.quantity <= 0 || newLineItem.unitPrice <= 0) {
       alert('Please fill all line item fields');
       return;
     }
-
     const lineItem: LineItem = {
       id: Date.now().toString(),
       productName: newLineItem.productName,
@@ -84,7 +84,6 @@ export default function CreateOrderPage() {
       unitPrice: newLineItem.unitPrice,
       total: newLineItem.quantity * newLineItem.unitPrice
     };
-
     setLineItems([...lineItems, lineItem]);
     setNewLineItem({ productName: '', sku: '', quantity: 1, unitPrice: 0 });
   };
@@ -107,17 +106,93 @@ export default function CreateOrderPage() {
     return colors[pri] || '#8888a0';
   };
 
-  const handleCreateOrder = () => {
+  const buildPayload = (shopifyPrefix: string, extraTags: string[] = []) => ({
+    shopifyOrderId: `${shopifyPrefix}-${Date.now()}`,
+    customerName: customer.name,
+    customerEmail: customer.email,
+    customerPhone: customer.phone,
+    addressLine1: address.street,
+    addressCity: address.city,
+    addressState: address.state,
+    addressZip: address.zip,
+    totalPrice: total,
+    deliveryDate: deliveryDate || undefined,
+    deliveryNotes: deliveryNotes || undefined,
+    paymentMethod,
+    priority: priority.toUpperCase(),
+    tags: [...(tags ? tags.split(',').map(t => t.trim()) : []), ...extraTags],
+    lineItems: lineItems.map(item => ({
+      productName: item.productName,
+      sku: item.sku,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+  });
+
+  const handleCreateOrder = async () => {
     if (!customer.name || !customer.email || !address.street || lineItems.length === 0) {
-      alert('Please fill all required fields');
+      alert('Please fill all required fields and add at least one line item');
       return;
     }
-    alert(`Order created successfully! Total: ₹${total}`);
+    setSubmitError(null);
+    try {
+      const result = await createOrder(buildPayload('MANUAL'));
+      if (result?.id) {
+        setSuccessOrderId(result.id);
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to create order');
+    }
   };
 
-  const handleSaveDraft = () => {
-    alert('Order saved as draft');
+  const handleSaveDraft = async () => {
+    if (!customer.name) {
+      alert('Please enter customer name');
+      return;
+    }
+    setSubmitError(null);
+    try {
+      const result = await createOrder(buildPayload('DRAFT', ['draft']));
+      if (result?.id) {
+        setSuccessOrderId(result.id);
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to save draft');
+    }
   };
+
+  if (successOrderId) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] p-6 text-white flex items-center justify-center">
+        <div className="bg-[#12121a] border border-[#1e1e2e] rounded-lg p-8 max-w-md w-full text-center">
+          <div className="text-4xl mb-4">✓</div>
+          <h2 className="text-xl font-bold mb-2">Order Created</h2>
+          <p className="text-gray-400 text-sm mb-6">Order ID: {successOrderId}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push('/orders')}
+              className="flex-1 px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+            >
+              View Orders
+            </button>
+            <button
+              onClick={() => {
+                setSuccessOrderId(null);
+                setCustomer({ name: '', email: '', phone: '' });
+                setAddress({ street: '', city: '', state: '', zip: '' });
+                setLineItems([]);
+                setTags('');
+                setDeliveryNotes('');
+              }}
+              className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+            >
+              Create Another
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] p-6 text-white">
@@ -125,6 +200,12 @@ export default function CreateOrderPage() {
         <h1 className="text-4xl font-bold mb-2">Create Order</h1>
         <p className="text-sm text-gray-400">Create and manage new orders with customer and delivery information</p>
       </div>
+
+      {submitError && (
+        <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded text-red-400 text-sm">
+          {submitError}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-6">
         {/* Customer Section */}
@@ -151,24 +232,28 @@ export default function CreateOrderPage() {
           </div>
 
           {!isNewCustomer ? (
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Search Customer</label>
               <input
                 type="text"
                 className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Search by name or email..."
                 value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
+                onChange={(e) => {
+                  setCustomerSearch(e.target.value);
+                  setCustomerSearchApi(e.target.value);
+                }}
               />
-              {customerSearch && (
-                <div className="absolute bg-[#12121a] border border-[#1e1e2e] rounded mt-1 z-10 max-h-52 overflow-y-auto">
-                  {filteredCustomers.map(c => (
+              {customerSearch && customers.length > 0 && (
+                <div className="absolute bg-[#12121a] border border-[#1e1e2e] rounded mt-1 z-10 max-h-52 overflow-y-auto w-full">
+                  {customers.map(c => (
                     <div
                       key={c.id}
                       className="p-3 cursor-pointer border-b border-[#1e1e2e] hover:bg-[#0a0a0f] text-sm text-gray-300"
                       onClick={() => {
-                        setCustomer(c);
+                        setCustomer({ id: c.id, name: c.name, email: c.email, phone: c.phone });
                         setCustomerSearch('');
+                        setCustomerSearchApi('');
                       }}
                     >
                       <p className="font-medium text-white">{c.name}</p>
@@ -227,7 +312,6 @@ export default function CreateOrderPage() {
               value={address.street}
               onChange={(e) => setAddress({ ...address, street: e.target.value })}
             />
-            <p className="text-xs text-gray-400 mt-1">Address autocomplete placeholder</p>
           </div>
 
           <div className="mb-4">
@@ -344,10 +428,12 @@ export default function CreateOrderPage() {
               ))}
             </div>
             <div className="mt-2.5">
-              <Badge
-                label={priority.charAt(0).toUpperCase() + priority.slice(1)}
-                color={getPriorityColor(priority)}
-              />
+              <span
+                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                style={{ color: getPriorityColor(priority), background: `${getPriorityColor(priority)}22` }}
+              >
+                {priority.charAt(0).toUpperCase() + priority.slice(1)}
+              </span>
             </div>
           </div>
 
@@ -377,19 +463,19 @@ export default function CreateOrderPage() {
               placeholder="Search product..."
               value={newLineItem.productName}
               onChange={(e) => {
-                const product = mockProducts.find(p => p.name === e.target.value);
+                const product = products.find(p => p.name === e.target.value);
                 setNewLineItem({
                   ...newLineItem,
                   productName: e.target.value,
-                  sku: product?.sku || '',
-                  unitPrice: product?.price || 0
+                  sku: product?.sku || newLineItem.sku,
+                  unitPrice: product?.price || newLineItem.unitPrice
                 });
               }}
               list="products"
             />
             <datalist id="products">
-              {mockProducts.map(p => (
-                <option key={p.sku} value={p.name} />
+              {products.map(p => (
+                <option key={p.id} value={p.name} />
               ))}
             </datalist>
           </div>
@@ -401,7 +487,7 @@ export default function CreateOrderPage() {
               className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-400 text-sm box-border"
               placeholder="SKU"
               value={newLineItem.sku}
-              readOnly
+              onChange={(e) => setNewLineItem({ ...newLineItem, sku: e.target.value })}
             />
           </div>
 
@@ -412,7 +498,7 @@ export default function CreateOrderPage() {
               className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="1"
               value={newLineItem.quantity}
-              onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) })}
+              onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) || 1 })}
             />
           </div>
 
@@ -423,7 +509,7 @@ export default function CreateOrderPage() {
               className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="0"
               value={newLineItem.unitPrice}
-              onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) })}
+              onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) || 0 })}
             />
           </div>
 
@@ -487,7 +573,7 @@ export default function CreateOrderPage() {
                 min="0"
                 max="100"
                 value={tax}
-                onChange={(e) => setTax(parseFloat(e.target.value))}
+                onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
               />
             </div>
             <div className="mb-4">
@@ -497,7 +583,7 @@ export default function CreateOrderPage() {
                 className="w-full px-3 py-2.5 bg-[#0a0a0f] border border-[#1e1e2e] rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 min="0"
                 value={discount}
-                onChange={(e) => setDiscount(parseFloat(e.target.value))}
+                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -526,13 +612,18 @@ export default function CreateOrderPage() {
         <div className="flex gap-2.5 mt-5">
           <button
             onClick={handleCreateOrder}
-            className="flex-1 px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+            disabled={creating}
+            className={cn(
+              "flex-1 px-4 py-2.5 rounded font-semibold text-sm transition-all",
+              creating ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+            )}
           >
-            Create Order
+            {creating ? 'Creating...' : 'Create Order'}
           </button>
           <button
             onClick={handleSaveDraft}
-            className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+            disabled={creating}
+            className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white disabled:opacity-50"
           >
             Save as Draft
           </button>

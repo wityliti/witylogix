@@ -300,7 +300,8 @@ export class GeotabClient extends TelematicsAdapter {
     method: string,
     params: Record<string, unknown>,
   ): Promise<T> {
-    if (!this.sessionId) {
+    // Skip auto-auth for the Authenticate method itself to prevent infinite recursion
+    if (!this.sessionId && method !== "Authenticate") {
       await this.authenticate();
     }
 

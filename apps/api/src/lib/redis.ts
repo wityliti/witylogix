@@ -10,6 +10,10 @@
 
 import Redis from "ioredis";
 
+// ─── Constants ──────────────────────────────────────────────
+
+export const IMPERSONATION_SESSION_PREFIX = "impersonation:";
+
 // ─── Singleton Connection ───────────────────────────────────
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
@@ -19,7 +23,11 @@ let _redis: Redis | null = null;
 export function getRedis(): Redis {
   if (!_redis) {
     const opts: any = {
-      maxRetriesPerRequest: 3,
+      // Fail commands immediately (no retry) so Redis errors don't block
+      // HTTP request handlers. Background reconnection still uses retryStrategy.
+      maxRetriesPerRequest: 0,
+      connectTimeout: 5000,
+      commandTimeout: 5000,
       retryStrategy(times: number) {
         const delay = Math.min(times * 200, 5000);
         return delay;

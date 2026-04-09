@@ -14,10 +14,28 @@
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClient, type PaginatedResponse } from "~/lib/api.server";
+import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
+import {
+  Page,
+  Card,
+  IndexTable,
+  Select,
+  TextField,
+  Pagination,
+  Badge,
+  InlineStack,
+  BlockStack,
+  Text,
+  Button,
+  Modal,
+  FormLayout,
+  Banner,
+  useIndexResourceState,
+} from "@shopify/polaris";
+import type { BadgeProps } from "@shopify/polaris";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -46,19 +64,19 @@ interface RoutesPageData {
 
 const ROUTE_STATUSES = ["DRAFT", "OPTIMIZING", "READY", "IN_PROGRESS", "COMPLETED"];
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  DRAFT: { bg: "#f1f2f3", text: "#6d7175" },
-  OPTIMIZING: { bg: "#fff4e6", text: "#7d2e0f" },
-  READY: { bg: "#ccf1e2", text: "#005c35" },
-  IN_PROGRESS: { bg: "#e8f0fe", text: "#1a3a6e" },
-  COMPLETED: { bg: "#e8f5e9", text: "#2e7d32" },
+const STATUS_BADGE_TONE: Record<string, BadgeProps["tone"]> = {
+  DRAFT: undefined,
+  OPTIMIZING: "attention",
+  READY: "success",
+  IN_PROGRESS: "info",
+  COMPLETED: "success",
 };
 
 // ─── Loader ────────────────────────────────────────────────
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
 
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") ?? "1");
@@ -80,7 +98,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
-  const api = createApiClient(session.accessToken!);
+  const api = createApiClientFromRequest(request, session);
   const formData = await request.formData();
   const intent = formData.get("intent");
 
@@ -109,257 +127,250 @@ export default function RoutesList() {
   const { routes, meta } = useLoaderData<RoutesPageData>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedRoutes, setSelectedRoutes] = useState<Set<string>>(new Set());
 
   const currentStatus = searchParams.get("status") ?? "";
   const currentDate = searchParams.get("date") ?? "";
   const currentPage = meta.page;
 
-  function updateFilter(key: string, value: string) {
-    const next = new URLSearchParams(searchParams);
-    if (value) {
-      next.set(key, value);
-    } else {
-      next.delete(key);
-    }
-    next.set("page", "1");
-    setSearchParams(next);
-  }
+  const { selectedResources, allResourcesSelected, handleSelectionChange } =
+    useIndexResourceState(routes);
 
-  function goToPage(page: number) {
-    const next = new URLSearchParams(searchParams);
-    next.set("page", String(page));
-    setSearchParams(next);
-  }
-
-  function toggleRoute(routeId: string) {
-    const next = new Set(selectedRoutes);
-    if (next.has(routeId)) {
-      next.delete(routeId);
-    } else {
-      next.add(routeId);
-    }
-    setSelectedRoutes(next);
-  }
-
-  function toggleAll() {
-    if (selectedRoutes.size === routes.length) {
-      setSelectedRoutes(new Set());
-    } else {
-      setSelectedRoutes(new Set(routes.map((r) => r.id)));
-    }
-  }
-
-  return (
-    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <div style={headerStyle}>
-        <div>
-          <h1 style={headingStyle}>Routes</h1>
-          <p style={subtextStyle}>{meta.total} total routes</p>
-        </div>
-        <button onClick={() => setShowCreateModal(true)} style={primaryBtnStyle} type="button">
-          Create Route
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div style={filtersStyle}>
-        <select
-          value={currentStatus}
-          onChange={(e) => updateFilter("status", e.target.value)}
-          style={selectStyle}
-        >
-          <option value="">All statuses</option>
-          {ROUTE_STATUSES.map((s) => (
-            <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={currentDate}
-          onChange={(e) => updateFilter("date", e.target.value)}
-          style={selectStyle}
-        />
-      </div>
-
-      {/* Bulk Actions */}
-      {selectedRoutes.size > 0 && (
-        <div style={bulkActionsStyle}>
-          <span style={subtextStyle}>{selectedRoutes.size} selected</span>
-          <Form method="post" style={{ display: "flex", gap: 8 }}>
-            <input type="hidden" name="intent" value="optimize" />
-            {Array.from(selectedRoutes).map((id) => (
-              <input key={id} type="hidden" name="routeIds" value={id} />
-            ))}
-            <button type="submit" style={primaryBtnStyle}>
-              Optimize Selected
-            </button>
-          </Form>
-        </div>
-      )}
-
-      {/* Content */}
-      {routes.length === 0 ? (
-        <EmptyState
-          title="No routes found"
-          description={
-            currentStatus || currentDate
-              ? "Try adjusting your filters."
-              : "Create a delivery route to get started."
-          }
-          actionLabel="Create Route"
-          onAction={() => setShowCreateModal(true)}
-        />
-      ) : (
-        <>
-          <div style={tableContainerStyle}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-              <thead>
-                <tr>
-                  <th style={{ ...thStyle, width: 40 }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRoutes.size === routes.length && routes.length > 0}
-                      onChange={toggleAll}
-                    />
-                  </th>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Driver</th>
-                  <th style={thStyle}>Stops</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Distance</th>
-                  <th style={thStyle}>Duration</th>
-                  <th style={thStyle}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {routes.map((route) => (
-                  <tr key={route.id} style={trStyle}>
-                    <td style={{ ...tdStyle, width: 40 }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRoutes.has(route.id)}
-                        onChange={() => toggleRoute(route.id)}
-                      />
-                    </td>
-                    <td style={tdStyle}>
-                      <Link to={`/routes/${route.id}`} style={linkStyle}>
-                        {route.name}
-                      </Link>
-                    </td>
-                    <td style={tdStyle}>
-                      {route.driverName ? (
-                        <Link to={`/drivers/${route.driverId}`} style={linkStyle}>
-                          {route.driverName}
-                        </Link>
-                      ) : (
-                        <span style={cellSubStyle}>Unassigned</span>
-                      )}
-                    </td>
-                    <td style={{ ...tdStyle, textAlign: "center" }}>
-                      {route.stopsCount}
-                    </td>
-                    <td style={tdStyle}>
-                      <RouteStatusBadge status={route.status} />
-                    </td>
-                    <td style={tdStyle}>
-                      {(route.distance / 1000).toFixed(2)} km
-                    </td>
-                    <td style={tdStyle}>
-                      {formatDuration(route.duration)}
-                    </td>
-                    <td style={tdStyle}>
-                      {formatDate(route.date)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div style={paginationStyle}>
-            <span style={subtextStyle}>
-              Page {currentPage} of {meta.totalPages}
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1} style={pageBtnStyle} type="button">
-                Previous
-              </button>
-              <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage >= meta.totalPages} style={pageBtnStyle} type="button">
-                Next
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Create Route Modal */}
-      {showCreateModal && (
-        <RouteCreateModal onClose={() => setShowCreateModal(false)} />
-      )}
-    </div>
+  const updateFilter = useCallback(
+    (key: string, value: string) => {
+      const next = new URLSearchParams(searchParams);
+      if (value) {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      next.set("page", "1");
+      setSearchParams(next);
+    },
+    [searchParams, setSearchParams],
   );
-}
 
-// ─── Sub-components ────────────────────────────────────────
+  const goToPage = useCallback(
+    (page: number) => {
+      const next = new URLSearchParams(searchParams);
+      next.set("page", String(page));
+      setSearchParams(next);
+    },
+    [searchParams, setSearchParams],
+  );
 
-function RouteStatusBadge({ status }: { status: string }) {
-  const colors = STATUS_COLORS[status] ?? { bg: "#f1f2f3", text: "#6d7175" };
+  const statusOptions = [
+    { label: "All statuses", value: "" },
+    ...ROUTE_STATUSES.map((s) => ({
+      label: s.replace(/_/g, " "),
+      value: s,
+    })),
+  ];
+
+  const resourceName = { singular: "route", plural: "routes" };
+
+  const promotedBulkActions = [
+    {
+      content: "Optimize Selected",
+      onAction: () => {
+        // Submit optimize form programmatically
+        const form = document.getElementById("optimize-form") as HTMLFormElement;
+        if (form) {
+          form.submit();
+        }
+      },
+    },
+  ];
+
+  const rowMarkup = routes.map((route, index) => (
+    <IndexTable.Row
+      id={route.id}
+      key={route.id}
+      position={index}
+      selected={selectedResources.includes(route.id)}
+    >
+      <IndexTable.Cell>
+        <Link to={`/routes/${route.id}`}>
+          <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
+            {route.name}
+          </Text>
+        </Link>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        {route.driverName ? (
+          <Link to={`/drivers/${route.driverId}`}>
+            <Text as="span" tone="magic">{route.driverName}</Text>
+          </Link>
+        ) : (
+          <Text as="span" variant="bodyMd" tone="subdued">
+            Unassigned
+          </Text>
+        )}
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd" alignment="center">
+          {route.stopsCount}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge tone={STATUS_BADGE_TONE[route.status]}>
+          {route.status.replace(/_/g, " ")}
+        </Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {(route.distance / 1000).toFixed(2)} km
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {formatDuration(route.duration)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" variant="bodyMd">
+          {formatDate(route.date)}
+        </Text>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
+
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 10px",
-        fontSize: 12,
-        fontWeight: 600,
-        borderRadius: 20,
-        backgroundColor: colors.bg,
-        color: colors.text,
+    <Page
+      title="Routes"
+      subtitle={`${meta.total} total routes`}
+      primaryAction={{
+        content: "Create Route",
+        onAction: () => setShowCreateModal(true),
       }}
     >
-      {status.replace(/_/g, " ")}
-    </span>
-  );
-}
+      <BlockStack gap="400">
+        <Card>
+          <InlineStack gap="300" wrap>
+            <Select
+              label="Status"
+              labelHidden
+              options={statusOptions}
+              value={currentStatus}
+              onChange={(value) => updateFilter("status", value)}
+            />
+            <TextField
+              label="Date"
+              labelHidden
+              type="date"
+              value={currentDate}
+              onChange={(value) => updateFilter("date", value)}
+              autoComplete="off"
+            />
+          </InlineStack>
+        </Card>
 
-function RouteCreateModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Create New Route</h2>
-          <button onClick={onClose} style={closeBtnStyle} type="button">&times;</button>
-        </div>
-        <Form method="post" onSubmit={onClose}>
-          <input type="hidden" name="intent" value="create" />
+        {/* Hidden form for bulk optimize action */}
+        {selectedResources.length > 0 && (
+          <Form method="post" id="optimize-form">
+            <input type="hidden" name="intent" value="optimize" />
+            {selectedResources.map((id) => (
+              <input key={id} type="hidden" name="routeIds" value={id} />
+            ))}
+          </Form>
+        )}
 
-          <div style={formFieldStyle}>
-            <label style={formLabelStyle}>Route Name *</label>
-            <input name="name" required style={formInputStyle} placeholder="e.g., Downtown Morning Run" />
-          </div>
+        {routes.length === 0 ? (
+          <Card>
+            <EmptyState
+              title="No routes found"
+              description={
+                currentStatus || currentDate
+                  ? "Try adjusting your filters."
+                  : "Create a delivery route to get started."
+              }
+              actionLabel="Create Route"
+              onAction={() => setShowCreateModal(true)}
+            />
+          </Card>
+        ) : (
+          <Card padding="0">
+            <IndexTable
+              resourceName={resourceName}
+              itemCount={routes.length}
+              selectedItemsCount={
+                allResourcesSelected ? "All" : selectedResources.length
+              }
+              onSelectionChange={handleSelectionChange}
+              headings={[
+                { title: "Name" },
+                { title: "Driver" },
+                { title: "Stops", alignment: "center" },
+                { title: "Status" },
+                { title: "Distance" },
+                { title: "Duration" },
+                { title: "Date" },
+              ]}
+              promotedBulkActions={promotedBulkActions}
+            >
+              {rowMarkup}
+            </IndexTable>
+          </Card>
+        )}
 
-          <div style={formFieldStyle}>
-            <label style={formLabelStyle}>Date *</label>
-            <input name="date" type="date" required style={formInputStyle} />
-          </div>
+        {meta.totalPages > 1 && (
+          <InlineStack align="center">
+            <Pagination
+              hasPrevious={currentPage > 1}
+              hasNext={currentPage < meta.totalPages}
+              onPrevious={() => goToPage(currentPage - 1)}
+              onNext={() => goToPage(currentPage + 1)}
+              label={`Page ${currentPage} of ${meta.totalPages}`}
+            />
+          </InlineStack>
+        )}
+      </BlockStack>
 
-          <div style={formFieldStyle}>
-            <label style={formLabelStyle}>Driver (Optional)</label>
-            <select name="driverId" style={formInputStyle}>
-              <option value="">Select a driver</option>
-              {/* Options would be populated from API */}
-            </select>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 20 }}>
-            <button type="button" onClick={onClose} style={secondaryBtnStyle}>Cancel</button>
-            <button type="submit" style={primaryBtnStyle}>Create Route</button>
-          </div>
-        </Form>
-      </div>
-    </div>
+      {/* Create Route Modal */}
+      <Modal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Route"
+        primaryAction={{
+          content: "Create Route",
+          submit: true,
+        }}
+        secondaryActions={[
+          { content: "Cancel", onAction: () => setShowCreateModal(false) },
+        ]}
+      >
+        <Modal.Section>
+          <Form method="post" onSubmit={() => setShowCreateModal(false)}>
+            <input type="hidden" name="intent" value="create" />
+            <FormLayout>
+              <TextField
+                label="Route Name"
+                name="name"
+                requiredIndicator
+                autoComplete="off"
+                placeholder="e.g., Downtown Morning Run"
+              />
+              <TextField
+                label="Date"
+                name="date"
+                type="date"
+                requiredIndicator
+                autoComplete="off"
+              />
+              <Select
+                label="Driver (Optional)"
+                name="driverId"
+                options={[{ label: "Select a driver", value: "" }]}
+                value=""
+                onChange={() => {}}
+              />
+              <Button submit variant="primary">
+                Create Route
+              </Button>
+            </FormLayout>
+          </Form>
+        </Modal.Section>
+      </Modal>
+    </Page>
   );
 }
 
@@ -385,34 +396,3 @@ function formatDate(iso: string): string {
     return iso;
   }
 }
-
-// ─── Styles ────────────────────────────────────────────────
-
-const headerStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 0 16px" };
-const headingStyle: React.CSSProperties = { fontSize: 20, fontWeight: 600, margin: 0 };
-const subtextStyle: React.CSSProperties = { fontSize: 13, color: "var(--p-color-text-subdued, #6d7175)", margin: "4px 0 0" };
-const filtersStyle: React.CSSProperties = { display: "flex", gap: 12, marginBottom: 16 };
-const selectStyle: React.CSSProperties = { padding: "8px 12px", fontSize: 14, border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, backgroundColor: "white", cursor: "pointer" };
-
-const bulkActionsStyle: React.CSSProperties = { display: "flex", gap: 16, alignItems: "center", padding: 12, marginBottom: 16, backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)", borderRadius: 8, border: "1px solid var(--p-color-border-subdued, #e1e3e5)" };
-
-const tableContainerStyle: React.CSSProperties = { backgroundColor: "white", borderRadius: 12, border: "1px solid var(--p-color-border-subdued, #e1e3e5)", overflow: "hidden" };
-const thStyle: React.CSSProperties = { textAlign: "left", padding: "12px 16px", fontSize: 12, fontWeight: 600, color: "var(--p-color-text-subdued, #6d7175)", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)", backgroundColor: "var(--p-color-bg-surface-secondary, #f6f6f7)" };
-const trStyle: React.CSSProperties = { borderBottom: "1px solid var(--p-color-border-subdued, #e1e3e5)" };
-const tdStyle: React.CSSProperties = { padding: "12px 16px", verticalAlign: "top" };
-const linkStyle: React.CSSProperties = { color: "var(--p-color-text-primary, #005bd3)", fontWeight: 600, textDecoration: "none" };
-const cellSubStyle: React.CSSProperties = { fontSize: 12, color: "var(--p-color-text-subdued, #6d7175)" };
-
-const paginationStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0" };
-const pageBtnStyle: React.CSSProperties = { padding: "6px 14px", fontSize: 13, fontWeight: 500, border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 6, backgroundColor: "white", cursor: "pointer" };
-
-const primaryBtnStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "white", backgroundColor: "var(--p-color-bg-fill-brand, #005bd3)", border: "none", borderRadius: 8, cursor: "pointer" };
-const secondaryBtnStyle: React.CSSProperties = { padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "var(--p-color-text, #303030)", backgroundColor: "white", border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, cursor: "pointer" };
-
-const overlayStyle: React.CSSProperties = { position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 };
-const modalStyle: React.CSSProperties = { width: 500, maxHeight: "90vh", overflow: "auto", backgroundColor: "white", borderRadius: 16, padding: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" };
-const closeBtnStyle: React.CSSProperties = { fontSize: 24, lineHeight: 1, color: "var(--p-color-text-subdued, #6d7175)", background: "none", border: "none", cursor: "pointer" };
-
-const formFieldStyle: React.CSSProperties = { marginBottom: 12 };
-const formLabelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 500, color: "var(--p-color-text, #202223)", marginBottom: 4 };
-const formInputStyle: React.CSSProperties = { width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid var(--p-color-border, #c9cccf)", borderRadius: 8, boxSizing: "border-box" as const };

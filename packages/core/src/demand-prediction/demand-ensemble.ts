@@ -278,7 +278,7 @@ export class DemandEnsemble {
         trend: 0,
         seasonal_hour: 0,
         seasonal_day: 0,
-      });
+      }, historicalData);
 
       if (patterns.length > 0) {
         const pred = predictFromPatterns(patterns);

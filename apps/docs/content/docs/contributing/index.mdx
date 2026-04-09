@@ -11,8 +11,9 @@ Welcome to the Witylogix project! This guide will help you get up and running as
 
 ### Prerequisites
 
-- **Node.js**: 18.x or later
-- **pnpm**: 8.x or later (we use pnpm workspaces)
+- **Node.js**: 20+ (LTS recommended)
+- **pnpm**: 9+ (we use pnpm workspaces)
+- **Docker**: Latest stable version (for local services via docker-compose)
 - **Git**: Latest stable version
 - Basic familiarity with TypeScript, React, and Node.js
 
@@ -31,7 +32,7 @@ Welcome to the Witylogix project! This guide will help you get up and running as
 
 3. **Add upstream remote**
    ```bash
-   git remote add upstream https://github.com/witylogix/witylogix-platform.git
+   git remote add upstream https://github.com/wityliti/witylogix.git
    ```
 
 4. **Install dependencies**
@@ -143,6 +144,10 @@ We enforce **TypeScript strict mode** across the entire project:
 - Use `unknown` instead of `any` (and avoid `any` entirely if possible)
 - No implicit `any` types
 - Handle `null` and `undefined` explicitly
+- Files must be under 500 lines
+- Functions must be under 50 lines
+- Always use immutable patterns (create new objects, never mutate existing ones)
+- TDD London School (mock-first) preferred for new code
 
 ### ESLint and Prettier
 
@@ -311,7 +316,7 @@ Relates to #456
 - [x] Code follows style guidelines
 - [x] Commits follow conventional format
 - [x] Tests pass (pnpm test)
-- [x] Coverage maintained (80%+ core, 100% API routes)
+- [x] Coverage maintained (80%+ overall)
 - [x] Build succeeds (pnpm build)
 - [x] Documentation updated
 ```
@@ -321,8 +326,9 @@ Relates to #456
 1. **Automated checks** run on every PR:
    - Linting (ESLint)
    - Formatting (Prettier)
-   - Tests (Vitest)
-   - Coverage (80%+ for core modules, 100% for API routes)
+   - Unit and integration tests (Vitest)
+   - E2E tests (Playwright)
+   - Coverage (80%+ overall)
    - Build verification
 
 2. **Code review** by maintainers:
@@ -344,59 +350,27 @@ The Witylogix project uses a monorepo structure with `pnpm` workspaces:
 ```
 witylogix-platform/
 ├── apps/
-│   ├── api/                    # Core API (Fastify)
-│   │   ├── src/
-│   │   │   ├── routes/         # API route handlers
-│   │   │   ├── services/       # Business logic (core modules)
-│   │   │   ├── middleware/     # Express-like middleware
-│   │   │   └── prisma.ts       # Database client
-│   │   └── tests/              # Route tests
-│   │
-│   ├── web/                    # Frontend (Next.js)
-│   │   ├── app/                # App router (new structure)
-│   │   ├── components/         # React components
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── lib/                # Utilities, helpers
-│   │   └── __tests__/          # Component tests
-│   │
-│   └── docs/                   # Documentation site
-│       ├── content/            # MDX files
-│       └── components/         # Doc-specific components
-│
+│   ├── api/                    # Fastify 5 REST API server
+│   ├── dashboard/              # Next.js 15 merchant dashboard
+│   ├── customer-portal/        # Next.js 15 customer-facing portal
+│   ├── shopify-app/            # Embedded Shopify admin app (Remix)
+│   ├── driver-app/             # React Native driver mobile app
+│   ├── tracking-page/          # Real-time delivery tracking page
+│   └── docs/                   # Fumadocs documentation site
+├── extensions/
+│   ├── checkout-ui/            # Shopify checkout extension
+│   └── pos-ui/                 # POS UI extension
 ├── packages/
-│   ├── ui/                     # Shared UI component library
-│   │   ├── src/
-│   │   │   ├── components/     # Reusable components
-│   │   │   └── styles/         # Tailwind/CSS
-│   │   └── __tests__/
-│   │
+│   ├── db/                     # Prisma schema & migrations
+│   ├── core/                   # Business logic (routing, messaging, RBAC)
+│   ├── framework/              # Workflow engine
+│   ├── workflows/              # Core delivery workflows
 │   ├── types/                  # Shared TypeScript types
-│   │   └── src/
-│   │       ├── api/            # API types
-│   │       ├── domain/         # Domain models
-│   │       └── db/             # Database types
-│   │
-│   ├── config/                 # Shared configuration
-│   │   └── src/
-│   │       ├── env.ts          # Environment variables
-│   │       └── constants.ts    # Shared constants
-│   │
-│   └── utils/                  # Shared utilities
-│       └── src/
-│           ├── formatting/     # Date, currency, etc.
-│           ├── validation/     # Input validation
-│           └── errors/         # Error handling
-│
-├── prisma/
-│   ├── schema.prisma           # Database schema
-│   └── migrations/             # Database migrations
-│
-├── .github/
-│   └── workflows/              # CI/CD (GitHub Actions)
-│
-├── pnpm-workspace.yaml         # Workspace configuration
-├── tsconfig.base.json          # Base TypeScript config
-└── package.json                # Root package config
+│   └── validators/             # Zod validation schemas
+├── infra/                      # Docker, Kubernetes, Nginx configs
+├── .github/                    # CI/CD workflows, templates
+├── docker-compose.yml          # Local development services
+└── pnpm-workspace.yaml         # Workspace configuration
 ```
 
 ## Where to Find Things
@@ -453,23 +427,26 @@ These modules contain pure business logic that's testable and reusable.
 
 React components live in two locations:
 
-**Shared components** (`packages/ui/src/components/`):
+**Shared business logic** (`packages/core/`):
 - Used across the entire platform
-- Styled with Tailwind CSS
+- Routing, messaging, RBAC modules
 - Tested and documented
-- Examples: `Button`, `Card`, `Modal`, `Input`, `Badge`
 
-**App-specific components** (`apps/web/components/`):
-- Page-specific or app-specific components
+**Dashboard components** (`apps/dashboard/src/components/`):
+- Merchant-facing UI components
 - Compose shared UI components
-- Examples: `UserProfile`, `OrderList`, `CheckoutFlow`
+- Examples: `OrderList`, `DashboardStats`, `ShipmentTracker`
+
+**Customer portal components** (`apps/customer-portal/src/components/`):
+- Customer-facing UI components
+- Examples: `OrderCard`, `TrackingView`, `AccountSettings`
 
 ### Hooks
 
-Custom React hooks in `apps/web/hooks/`:
+Custom React hooks in `apps/dashboard/src/hooks/`:
 
 ```
-apps/web/hooks/
+apps/dashboard/src/hooks/
 ├── useUser.ts                  # Get current user
 ├── useOrders.ts                # Fetch user orders
 ├── useLocalStorage.ts          # Persist state
@@ -591,24 +568,23 @@ test('creates user', async () => {
 
 ### 6. Environment Variables
 
-Always use the shared config from `@witylogix/config`:
+Use shared packages for types, validation, and database access:
 
 ```typescript
-import { env } from '@witylogix/config';
-
-const apiUrl = env.API_URL;
-const isDev = env.NODE_ENV === 'development';
+import { OrderStatus } from '@witylogix/types';
+import { orderSchema } from '@witylogix/validators';
+import { prisma } from '@witylogix/db';
 ```
 
-Never read from `process.env` directly in application code. The config package handles validation and typing.
+For workflow logic, use `@witylogix/framework` and `@witylogix/workflows`. Never read from `process.env` directly in application code.
 
 ## Getting Help
 
 - **Documentation**: Check `/apps/docs` for guides and API reference
 - **Issues**: Search existing issues before creating a new one
 - **Discussions**: Use GitHub Discussions for questions and ideas
-- **Discord**: Join our community Discord for real-time chat
-- **Email**: reach@witylogix.com for critical issues
+- **Discord**: Join our community Discord at [discord.gg/wityliti](https://discord.gg/wityliti) for real-time chat
+- **Email**: connect@wityliti.io for critical issues
 
 ## License
 

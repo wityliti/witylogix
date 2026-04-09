@@ -3,7 +3,8 @@
 import { cn } from "@/lib/utils";
 import { Check, MapPin, Satellite, Package, Ship, Clipboard, Bell, BarChart3, Calculator, Users, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { OnboardingData, Goal } from "../types";
+import type { OnboardingData } from "../types";
+import { Goal } from "../types";
 
 interface GoalsSelectProps {
   data: OnboardingData;
