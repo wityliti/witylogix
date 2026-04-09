@@ -19,20 +19,18 @@ import { WooCommerceAdapter } from "@witylogix/core/platforms/adapters";
 import { getWCWebhookQueue } from "../lib/queue.js";
 
 /**
- * Find shop by domain or ID from webhook
+ * Find WooCommerceConnection by storeUrl to obtain tenantId and webhookSecret.
+ * Uses the WooCommerceConnection model (not Shop) since webhook secrets are
+ * stored per-connection, not per-shop.
  */
-async function findShopByWebhookSource(
+async function findConnectionByStoreUrl(
   db: any,
-  siteUrl: string
-): Promise<any> {
-  // Try to match by woocommerce site URL
-  return db.shop.findFirst({
-    where: {
-      OR: [
-        { woocommerceSiteUrl: siteUrl },
-        { domain: siteUrl },
-      ],
-    },
+  storeUrl: string,
+): Promise<{ id: string; tenantId: string; webhookSecret: string | null } | null> {
+  if (!storeUrl) return null;
+  return db.wooCommerceConnection.findFirst({
+    where: { storeUrl, status: "active" },
+    select: { id: true, tenantId: true, webhookSecret: true },
   });
 }
 
@@ -84,6 +82,7 @@ export default async function wooCommerceWebhookRoutes(
         const signature = request.headers["x-wc-webhook-signature"] as string;
         const topic = request.headers["x-wc-webhook-topic"] as string;
         const siteUrl = request.headers["x-wc-webhook-source"] as string;
+        const deliveryId = request.headers["x-wc-webhook-delivery"] as string | undefined;
 
         // Validate required headers
         if (!signature || !topic) {
@@ -96,12 +95,12 @@ export default async function wooCommerceWebhookRoutes(
         // Get the raw request body for signature validation
         const rawBody = request.rawBody || JSON.stringify(request.body);
 
-        // Lookup shop to get webhook secret
-        const shop = await findShopByWebhookSource((fastify as any).db, siteUrl);
-        if (!shop || !shop.woocommerceWebhookSecret) {
+        // Lookup WooCommerceConnection by storeUrl to get tenantId and webhookSecret
+        const connection = await findConnectionByStoreUrl((fastify as any).db, siteUrl);
+        if (!connection || !connection.webhookSecret) {
           fastify.log.warn(
             { siteUrl },
-            "WooCommerce webhook from unknown shop or missing webhook secret"
+            "WooCommerce webhook from unknown connection or missing webhook secret"
           );
           return reply.code(200).send({ success: true });
         }
@@ -110,7 +109,7 @@ export default async function wooCommerceWebhookRoutes(
         const isValid = adapter.validateWebhook(
           rawBody,
           signature,
-          shop.woocommerceWebhookSecret
+          connection.webhookSecret
         );
 
         if (!isValid) {
@@ -133,20 +132,30 @@ export default async function wooCommerceWebhookRoutes(
         // Enqueue for async processing via dedicated wc-webhooks BullMQ queue.
         // Jobs that exhaust all retry attempts remain in the "failed" set
         // (DLQ) for 7 days so ops can inspect and replay them.
-        // Per-tenant fairness: shopId is stored on the job; worker concurrency
+        // Per-tenant fairness: tenantId is stored on the job; worker concurrency
         // cap (10) prevents one tenant's burst from starving others.
         await wcQueue.add(
           `${topic}`,
-          { shopId: shop.id, topic, payload: request.body as Record<string, unknown> },
-          // Use shopId-scoped job ID for deduplication of rapid duplicate
-          // deliveries of the same topic+order within a 5-second window.
           {
-            jobId: `${shop.id}:${topic}:${(request.body as any)?.id}:${Math.floor(Date.now() / 5000)}`,
+            shopId: connection.tenantId,
+            topic,
+            connectionId: connection.id,
+            deliveryId,
+            payload: request.body as Record<string, unknown>,
+          },
+          {
+            attempts: 5,
+            backoff: { type: "exponential", delay: 2000 },
+            // Use deliveryId for deduplication when available, otherwise fall back
+            // to tenantId-scoped window deduplication to handle rapid duplicate deliveries.
+            jobId: deliveryId
+              ? `${connection.tenantId}:${deliveryId}`
+              : `${connection.tenantId}:${topic}:${(request.body as any)?.id}:${Math.floor(Date.now() / 5000)}`,
           },
         );
 
         fastify.log.info(
-          { shopId: shop.id, topic, resource, action },
+          { shopId: connection.tenantId, topic, resource, action, deliveryId },
           "WooCommerce webhook enqueued"
         );
 
@@ -162,4 +171,3 @@ export default async function wooCommerceWebhookRoutes(
     }
   );
 }
-

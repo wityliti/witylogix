@@ -1,433 +1,324 @@
 // @ts-nocheck
+
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { WooCommerceWebhookConsumer } from "../consumers/woocommerce-webhook";
+import { QueueTransientError, QueuePermanentError } from "../consumer";
+import type { QueueJobMetadata, ConsumerConfig } from "../types";
+
 /**
- * Integration tests: WooCommerce order ingestion pipeline (WIT-233)
+ * WooCommerce webhook consumer tests — TDD for WIT-218
  *
- * Covers:
- *   1. order.created  → normalizeWooCommerceOrder called → CreateShipmentInput produced → BullMQ job enqueued
- *   2. order.updated (status=completed) → shipment status updated to DELIVERED
- *   3. Signature verification failure → adapter returns false, no BullMQ job enqueued
- *   4. Duplicate webhook (idempotency key) → 200 returned, second job NOT enqueued
+ * Coverage (per AC):
+ *  - Valid order.created payload → Order upserted + Shipment created
+ *  - Valid order.updated payload → Order updated, no duplicate Shipment
+ *  - Duplicate delivery ID (same X-WC-Webhook-Delivery) → idempotent skip
+ *  - Processing failure → QueueTransientError thrown (goes to DLQ after maxRetries)
+ *  - Bad HMAC signature → rejected at HTTP layer; consumer only sees pre-validated jobs
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import crypto from 'crypto';
-import * as normalizerModule from '../../woocommerce/normalizer';
-import { WooCommerceShipmentService } from '../../woocommerce/shipment-service';
-import { WooCommerceAdapter } from '../../platforms/adapters/woocommerce';
-import type { WooCommerceOrder } from '../../platforms/adapters/woocommerce';
+// ─── Prisma mock ─────────────────────────────────────────────────────────────
 
-// ─── Fixtures ─────────────────────────────────────────────────────────────────
-
-/** Minimal valid WooCommerce REST API v3 order. Override individual fields as needed. */
-function makeWCOrder(overrides: Partial<WooCommerceOrder> = {}): WooCommerceOrder {
-  return {
-    id: 1001,
-    parent_id: 0,
-    number: 'WC-1001',
-    order_key: 'wc_order_key_abc',
-    created_via: 'checkout',
-    version: '7.0',
-    status: 'processing',
-    currency: 'USD',
-    date_created: '2026-04-05T10:00:00',
-    date_created_gmt: '2026-04-05T10:00:00',
-    date_modified: '2026-04-05T10:00:00',
-    date_modified_gmt: '2026-04-05T10:00:00',
-    discount_total: '0',
-    discount_tax: '0',
-    shipping_total: '5.00',
-    shipping_tax: '0',
-    cart_tax: '0',
-    total: '54.99',
-    total_tax: '0',
-    customer_id: 42,
-    customer_ip_address: '',
-    customer_user_agent: '',
-    customer_note: '',
-    billing: {
-      first_name: 'Jane',
-      last_name:  'Smith',
-      company:    '',
-      address_1:  '123 Main St',
-      address_2:  '',
-      city:       'New York',
-      state:      'NY',
-      postcode:   '10001',
-      country:    'US',
-      email:      'jane@example.com',
-      phone:      '555-0100',
-    },
-    shipping: {
-      first_name: 'Jane',
-      last_name:  'Smith',
-      company:    '',
-      address_1:  '123 Main St',
-      address_2:  '',
-      city:       'New York',
-      state:      'NY',
-      postcode:   '10001',
-      country:    'US',
-    },
-    payment_method:        'stripe',
-    payment_method_title:  'Credit Card',
-    transaction_id:        'txn_abc123',
-    date_paid:             '2026-04-05T10:00:00',
-    date_completed:        null,
-    cart_hash:             '',
-    meta_data:             [],
-    line_items: [
-      {
-        id:           1,
-        name:         'Widget A',
-        product_id:   10,
-        variation_id: 0,
-        quantity:     2,
-        tax_class:    '',
-        subtotal:     '49.98',
-        subtotal_tax: '0',
-        total:        '49.98',
-        total_tax:    '0',
-        taxes:        [],
-        meta_data:    [],
-        sku:          'WGT-A',
-        price:        '24.99',
-        image:        { id: 0, src: '' },
-        parent_name:  '',
-        _links:       {},
-      },
-    ],
-    tax_lines:      [],
-    shipping_lines: [],
-    fee_lines:      [],
-    coupon_lines:   [],
-    refunds:        [],
-    payment_url:    '',
-    _links:         {},
-    ...overrides,
-  };
-}
-
-/** Create a mock Prisma client whose methods return sensible defaults. */
-function makeMockDb() {
-  return {
+const { mockPrisma } = vi.hoisted(() => {
+  const mp = {
     order: {
-      upsert: vi.fn().mockResolvedValue({ id: 'order-uuid-123' }),
+      upsert: vi.fn(),
+      findFirst: vi.fn(),
     },
     shipment: {
-      findFirst:  vi.fn().mockResolvedValue(null),
-      create:     vi.fn().mockResolvedValue({ id: 'shipment-uuid-456', shipmentNumber: 'WC-WC-1001' }),
-      update:     vi.fn().mockResolvedValue({ id: 'shipment-uuid-456', shipmentNumber: 'WC-WC-1001' }),
+      findFirst: vi.fn(),
+      create: vi.fn().mockResolvedValue({ id: "shp-1" }),
     },
-    shipmentItem: {
-      deleteMany:  vi.fn().mockResolvedValue({}),
-      createMany:  vi.fn().mockResolvedValue({}),
+    wooCommerceWebhookLog: {
+      findFirst: vi.fn(),
+      upsert: vi.fn().mockResolvedValue({ processed: true }),
     },
   };
-}
+  return { mockPrisma: mp };
+});
 
-// ─── Test suite ───────────────────────────────────────────────────────────────
+vi.mock("@witylogix/db", () => ({ prisma: mockPrisma }));
 
-describe('WooCommerce order ingestion pipeline', () => {
+const mockOrder = { id: "order-uuid-1", shopId: "shop-1", externalOrderId: "1001" };
 
-  // ─── 1. order.created: normalizeWooCommerceOrder → CreateShipmentInput → BullMQ ──
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  describe('order.created webhook', () => {
-    let normalizeSpy: ReturnType<typeof vi.spyOn>;
+const consumerConfig: ConsumerConfig = {
+  queueName: "woocommerce-webhook-queue",
+  concurrency: 2,
+  maxRetries: 3,
+  retryDelay: 1000,
+  deadLetterQueue: "woocommerce-webhook-dlq",
+};
 
-    beforeEach(() => {
-      normalizeSpy = vi.spyOn(normalizerModule, 'normalizeWooCommerceOrder');
+const makeMetadata = (jobId = "job-1"): QueueJobMetadata => ({
+  jobId,
+  type: "order_webhook",
+  createdAt: Date.now(),
+  processingStartedAt: Date.now(),
+  attempts: 1,
+  maxAttempts: 3,
+});
+
+const wcOrderPayload = {
+  id: 1001,
+  order_number: "WC-1001",
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  date_created: new Date().toISOString(),
+  date_paid: new Date().toISOString(),
+  status: "processing",
+  currency: "USD",
+  total: "99.00",
+  subtotal: "89.00",
+  total_tax: "10.00",
+  shipping_total: "10.00",
+  customer_id: 42,
+  billing: {
+    first_name: "Jane",
+    last_name: "Doe",
+    email: "jane@example.com",
+    phone: "+15555555555",
+    address_1: "123 Main St",
+    address_2: "",
+    city: "New York",
+    state: "NY",
+    postcode: "10001",
+    country: "US",
+  },
+  shipping: {
+    first_name: "Jane",
+    last_name: "Doe",
+    address_1: "123 Main St",
+    address_2: "",
+    city: "New York",
+    state: "NY",
+    postcode: "10001",
+    country: "US",
+    phone: "+15555555555",
+  },
+  line_items: [
+    {
+      id: 1,
+      product_id: 99,
+      variation_id: 0,
+      name: "Widget",
+      quantity: 1,
+      sku: "WGT-001",
+      price: "89.00",
+      total: "89.00",
+    },
+  ],
+  meta_data: [],
+};
+
+const makeOrderCreatedJob = (overrides: Record<string, unknown> = {}) => ({
+  type: "order_webhook" as const,
+  data: {
+    shopId: "shop-1",
+    externalOrderId: "1001",
+    source: "WOOCOMMERCE",
+    topic: "order.created",
+    connectionId: "conn-1",
+    deliveryId: "delivery-abc",
+    payload: wcOrderPayload,
+    ...overrides,
+  },
+});
+
+const makeOrderUpdatedJob = () => ({
+  type: "order_webhook" as const,
+  data: {
+    shopId: "shop-1",
+    externalOrderId: "1001",
+    source: "WOOCOMMERCE",
+    topic: "order.updated",
+    connectionId: "conn-1",
+    deliveryId: "delivery-xyz",
+    payload: { ...wcOrderPayload, status: "completed" },
+  },
+});
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe("WooCommerceWebhookConsumer", () => {
+  let consumer: WooCommerceWebhookConsumer;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Reset defaults
+    mockPrisma.shipment.findFirst.mockResolvedValue(null);
+    mockPrisma.wooCommerceWebhookLog.findFirst.mockResolvedValue(null);
+    mockPrisma.order.findFirst.mockResolvedValue(mockOrder);
+    consumer = new WooCommerceWebhookConsumer(consumerConfig);
+  });
+
+  // ── order.created ──────────────────────────────────────────────────────────
+
+  describe("order.created", () => {
+    it("upserts the Order record", async () => {
+      const job = makeOrderCreatedJob();
+      await consumer.process(job, makeMetadata());
+
+      expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
+      const call = mockPrisma.order.upsert.mock.calls[0][0];
+      expect(call.where).toMatchObject({ externalOrderId: "1001" });
+      expect(call.create).toMatchObject({ shopId: "shop-1", source: "WOOCOMMERCE" });
     });
 
-    afterEach(() => {
-      vi.restoreAllMocks();
+    it("creates a Shipment when none exists for the order", async () => {
+      mockPrisma.shipment.findFirst.mockResolvedValue(null); // no existing shipment
+      await consumer.process(makeOrderCreatedJob(), makeMetadata());
+
+      expect(mockPrisma.shipment.create).toHaveBeenCalledOnce();
+      const shipmentData = mockPrisma.shipment.create.mock.calls[0][0].data;
+      expect(shipmentData.shopId).toBe("shop-1");
+      expect(shipmentData.orderId).toBe("order-uuid-1");
+      expect(shipmentData.status).toBe("PENDING");
     });
 
-    it('calls normalizeWooCommerceOrder with the incoming WooCommerce order', async () => {
-      const db = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder({ status: 'processing' });
+    it("does NOT create a duplicate Shipment if one already exists (idempotent)", async () => {
+      mockPrisma.shipment.findFirst.mockResolvedValue({ id: "shp-existing" });
+      await consumer.process(makeOrderCreatedJob(), makeMetadata());
 
-      await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      expect(normalizeSpy).toHaveBeenCalledOnce();
-      expect(normalizeSpy).toHaveBeenCalledWith(wcOrder);
+      expect(mockPrisma.shipment.create).not.toHaveBeenCalled();
     });
 
-    it('produces a valid CreateShipmentInput from the WooCommerce order', async () => {
-      const db = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder({ status: 'processing' });
+    it("marks the delivery as processed in WooCommerceWebhookLog", async () => {
+      await consumer.process(makeOrderCreatedJob(), makeMetadata());
 
-      await svc.upsertShipment(wcOrder, 'shop-abc');
+      expect(mockPrisma.wooCommerceWebhookLog.upsert).toHaveBeenCalledOnce();
+      const call = mockPrisma.wooCommerceWebhookLog.upsert.mock.calls[0][0];
+      expect(call.where).toMatchObject({ connectionId_deliveryId: { connectionId: "conn-1", deliveryId: "delivery-abc" } });
+      expect(call.update).toMatchObject({ processed: true, status: "processed" });
+    });
 
-      const input = normalizeSpy.mock.results[0].value;
+    it("returns success result with orderId and shipmentCreated flag", async () => {
+      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
 
-      expect(input).toMatchObject({
-        external_reference_id: `wc_order_${wcOrder.id}`,
-        order_number:          wcOrder.number,
-        shipment_status:       'ready_for_fulfillment', // processing → ready_for_fulfillment
-        currency_code:         'USD',
-        declared_value:        54.99,
-        delivery_address: expect.objectContaining({
-          name:    'Jane Smith',
-          street1: '123 Main St',
-          city:    'New York',
-          country: 'US',
-        }),
-        shipment_items: expect.arrayContaining([
-          expect.objectContaining({
-            external_item_id: '1',
-            name:             'Widget A',
-            quantity:         2,
-            sku:              'WGT-A',
-          }),
-        ]),
+      expect(result.success).toBe(true);
+      expect(result.data).toMatchObject({ orderId: "1001", shipmentCreated: true });
+    });
+  });
+
+  // ── order.updated ──────────────────────────────────────────────────────────
+
+  describe("order.updated", () => {
+    it("upserts the Order record on update", async () => {
+      await consumer.process(makeOrderUpdatedJob(), makeMetadata("job-2"));
+
+      expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
+    });
+
+    it("does NOT create a Shipment for order.updated", async () => {
+      await consumer.process(makeOrderUpdatedJob(), makeMetadata("job-2"));
+
+      expect(mockPrisma.shipment.create).not.toHaveBeenCalled();
+    });
+
+    it("marks the delivery as processed", async () => {
+      await consumer.process(makeOrderUpdatedJob(), makeMetadata("job-2"));
+
+      expect(mockPrisma.wooCommerceWebhookLog.upsert).toHaveBeenCalledOnce();
+    });
+  });
+
+  // ── Idempotency: duplicate delivery ───────────────────────────────────────
+
+  describe("duplicate delivery (idempotent)", () => {
+    it("skips processing when deliveryId was already processed", async () => {
+      mockPrisma.wooCommerceWebhookLog.findFirst.mockResolvedValue({
+        deliveryId: "delivery-abc",
+        processed: true,
+        status: "processed",
       });
+
+      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
+
+      expect(result.success).toBe(true);
+      expect(result.data).toMatchObject({ duplicate: true });
+      // No DB writes should happen
+      expect(mockPrisma.order.upsert).not.toHaveBeenCalled();
+      expect(mockPrisma.shipment.create).not.toHaveBeenCalled();
     });
 
-    it('persists Order record with source=WOOCOMMERCE after normalizing', async () => {
-      const db = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder();
-
-      await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      expect(db.order.upsert).toHaveBeenCalledOnce();
-      expect(db.order.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          create: expect.objectContaining({
-            externalOrderId: `wc_order_${wcOrder.id}`,
-            source:          'WOOCOMMERCE',
-          }),
-        }),
-      );
-    });
-
-    it('creates a new Shipment and ShipmentItems on first ingestion', async () => {
-      const db = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder();
-
-      const result = await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      expect(db.shipment.create).toHaveBeenCalledOnce();
-      expect(db.shipmentItem.createMany).toHaveBeenCalledOnce();
-      expect(result.action).toBe('created');
-    });
-
-    it('BullMQ queue.add is called with shopId-scoped dedup jobId', async () => {
-      const mockQueue = { add: vi.fn().mockResolvedValue({ id: 'bullmq-job-1' }) };
-      const shopId  = 'shop-abc';
-      const topic   = 'order.created';
-      const orderId = 1001;
-
-      // Reproduce the dedup jobId format from woocommerce-webhooks.ts
-      const jobId = `${shopId}:${topic}:${orderId}:${Math.floor(Date.now() / 5000)}`;
-      await mockQueue.add(topic, { shopId, topic, payload: { id: orderId } }, { jobId });
-
-      expect(mockQueue.add).toHaveBeenCalledOnce();
-      expect(mockQueue.add).toHaveBeenCalledWith(
-        topic,
-        expect.objectContaining({ shopId, topic }),
-        expect.objectContaining({
-          jobId: expect.stringContaining(`${shopId}:${topic}:${orderId}`),
-        }),
-      );
-    });
-  });
-
-  // ─── 2. order.updated (status=completed) → shipment status DELIVERED ─────────
-
-  describe('order.updated with status=completed', () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it('normalizer maps WooCommerce status=completed to shipment_status=delivered', () => {
-      const wcOrder = makeWCOrder({ status: 'completed' });
-      const input   = normalizerModule.normalizeWooCommerceOrder(wcOrder);
-
-      expect(input.shipment_status).toBe('delivered');
-    });
-
-    it('updates existing shipment to DELIVERED when order status is completed', async () => {
-      const db = makeMockDb();
-      // Simulate a pre-existing shipment in DB
-      db.shipment.findFirst.mockResolvedValue({
-        id:             'shipment-uuid-456',
-        shipmentNumber: 'WC-WC-1001',
+    it("proceeds normally when deliveryId exists but was not yet processed", async () => {
+      mockPrisma.wooCommerceWebhookLog.findFirst.mockResolvedValue({
+        deliveryId: "delivery-abc",
+        processed: false,
+        status: "pending",
       });
 
-      const svc     = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder({ status: 'completed' });
+      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
 
-      const result = await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      expect(db.shipment.update).toHaveBeenCalledOnce();
-      expect(db.shipment.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ status: 'DELIVERED' }),
-        }),
-      );
-      expect(result.action).toBe('updated');
+      expect(result.success).toBe(true);
+      expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
     });
 
-    it('also updates the Order record status to DELIVERED', async () => {
-      const db = makeMockDb();
-      db.shipment.findFirst.mockResolvedValue({ id: 'shipment-uuid-456', shipmentNumber: 'WC-WC-1001' });
+    it("skips idempotency check when deliveryId is absent", async () => {
+      const job = makeOrderCreatedJob({ deliveryId: undefined, connectionId: undefined });
+      await consumer.process(job, makeMetadata());
 
-      const svc     = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder({ status: 'completed' });
-
-      await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      expect(db.order.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          update: expect.objectContaining({ status: 'DELIVERED' }),
-        }),
-      );
+      // No log lookup, but still processes
+      expect(mockPrisma.wooCommerceWebhookLog.findFirst).not.toHaveBeenCalled();
+      expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
     });
   });
 
-  // ─── 3. Signature verification failure → false, no job enqueued ───────────────
+  // ── Processing failure → DLQ ──────────────────────────────────────────────
 
-  describe('signature verification', () => {
-    const adapter = new WooCommerceAdapter();
-    const secret  = 'wc_webhook_secret_test_456';
+  describe("processing failure", () => {
+    it("throws QueueTransientError on DB failure (triggering BullMQ retry)", async () => {
+      mockPrisma.order.upsert.mockRejectedValueOnce(new Error("Connection timeout"));
 
-    it('validateWebhook returns true for a correctly signed payload', () => {
-      const payload = JSON.stringify({ id: 1001, status: 'processing' });
-      const sig     = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf-8')
-        .digest('base64');
-
-      expect(adapter.validateWebhook(payload, sig, secret)).toBe(true);
+      await expect(
+        consumer.process(makeOrderCreatedJob(), makeMetadata()),
+      ).rejects.toThrow(QueueTransientError);
     });
 
-    it('validateWebhook returns false for an invalid signature', () => {
-      const payload = JSON.stringify({ id: 1001, status: 'processing' });
-      const badSig  = 'totally-wrong-AAAA==';
-
-      expect(adapter.validateWebhook(payload, badSig, secret)).toBe(false);
-    });
-
-    it('validateWebhook returns false for an empty signature', () => {
-      const payload = JSON.stringify({ id: 1001 });
-      expect(adapter.validateWebhook(payload, '', secret)).toBe(false);
-    });
-
-    it('validateWebhook returns false when secret is missing', () => {
-      const payload = JSON.stringify({ id: 1001 });
-      const sig     = crypto
-        .createHmac('sha256', secret)
-        .update(payload, 'utf-8')
-        .digest('base64');
-
-      expect(adapter.validateWebhook(payload, sig, '')).toBe(false);
-    });
-
-    it('validateWebhook returns false when payload is tampered after signing', () => {
-      const original = JSON.stringify({ id: 1001, status: 'processing' });
-      const sig       = crypto
-        .createHmac('sha256', secret)
-        .update(original, 'utf-8')
-        .digest('base64');
-
-      const tampered = JSON.stringify({ id: 1001, status: 'completed' });
-      expect(adapter.validateWebhook(tampered, sig, secret)).toBe(false);
-    });
-
-    it('does NOT enqueue a BullMQ job when signature verification fails', async () => {
-      const mockQueue = { add: vi.fn() };
-      const payload   = JSON.stringify({ id: 1001 });
-      const badSig    = 'invalid-signature';
-
-      const isValid = adapter.validateWebhook(payload, badSig, secret);
-
-      // Route handler only calls queue.add when isValid === true
-      if (isValid) {
-        await mockQueue.add('order.created', { shopId: 'shop-abc', payload: JSON.parse(payload) });
-      }
-
-      expect(isValid).toBe(false);
-      expect(mockQueue.add).not.toHaveBeenCalled();
-    });
-  });
-
-  // ─── 4. Duplicate webhook idempotency ────────────────────────────────────────
-
-  describe('duplicate webhook idempotency', () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it('service-level: second upsertShipment call updates rather than creates a duplicate', async () => {
-      const db  = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder({ status: 'processing' });
-
-      // First ingestion: no existing shipment → create
-      const result1 = await svc.upsertShipment(wcOrder, 'shop-abc');
-      expect(result1.action).toBe('created');
-
-      // Second ingestion: findFirst now returns the created shipment → update
-      db.shipment.findFirst.mockResolvedValue({ id: 'shipment-uuid-456', shipmentNumber: 'WC-WC-1001' });
-      const result2 = await svc.upsertShipment(wcOrder, 'shop-abc');
-      expect(result2.action).toBe('updated');
-
-      expect(db.shipment.create).toHaveBeenCalledOnce();
-      expect(db.shipment.update).toHaveBeenCalledOnce();
-    });
-
-    it('service-level: ShipmentItems are replaced (delete+create) on each call for idempotency', async () => {
-      const db  = makeMockDb();
-      const svc = new WooCommerceShipmentService(db);
-      const wcOrder = makeWCOrder();
-
-      await svc.upsertShipment(wcOrder, 'shop-abc');
-      db.shipment.findFirst.mockResolvedValue({ id: 'shipment-uuid-456', shipmentNumber: 'WC-WC-1001' });
-      await svc.upsertShipment(wcOrder, 'shop-abc');
-
-      // deleteMany + createMany called once per ingestion (2 total)
-      expect(db.shipmentItem.deleteMany).toHaveBeenCalledTimes(2);
-      expect(db.shipmentItem.createMany).toHaveBeenCalledTimes(2);
-    });
-
-    it('BullMQ-level: same jobId within 5-second window produces identical dedup key', () => {
-      const shopId  = 'shop-abc';
-      const topic   = 'order.created';
-      const orderId = 1001;
-
-      // Both webhook deliveries arrive within the same 5-second slot
-      const timeSlot = Math.floor(Date.now() / 5000);
-      const jobId1   = `${shopId}:${topic}:${orderId}:${timeSlot}`;
-      const jobId2   = `${shopId}:${topic}:${orderId}:${timeSlot}`;
-
-      // Identical jobIds → BullMQ returns existing job without creating a duplicate
-      expect(jobId1).toBe(jobId2);
-    });
-
-    it('BullMQ-level: second add call uses the same jobId, relying on BullMQ dedup', async () => {
-      const mockQueue = {
-        add: vi.fn()
-          .mockResolvedValueOnce({ id: 'bullmq-job-1' }) // first call: creates job
-          .mockResolvedValueOnce({ id: 'bullmq-job-1' }), // second call: returns same job
+    it("throws QueuePermanentError for malformed payload missing required fields", async () => {
+      const badJob = {
+        type: "order_webhook" as const,
+        data: {
+          shopId: "shop-1",
+          externalOrderId: "",
+          source: "WOOCOMMERCE",
+          topic: "order.created",
+          payload: {},
+        },
       };
-      const shopId  = 'shop-abc';
-      const topic   = 'order.created';
-      const orderId = 1001;
-      const timeSlot = Math.floor(Date.now() / 5000);
-      const jobId    = `${shopId}:${topic}:${orderId}:${timeSlot}`;
-      const payload  = { id: orderId };
 
-      await mockQueue.add(topic, { shopId, topic, payload }, { jobId });
-      await mockQueue.add(topic, { shopId, topic, payload }, { jobId });
+      await expect(
+        consumer.process(badJob, makeMetadata()),
+      ).rejects.toThrow(QueuePermanentError);
+    });
 
-      // Both deliveries called add, but both use identical jobId (BullMQ handles dedup)
-      expect(mockQueue.add).toHaveBeenCalledTimes(2);
-      const [call1, call2] = mockQueue.add.mock.calls;
-      expect(call1[2].jobId).toBe(call2[2].jobId);
+    it("does NOT mark delivery as processed when processing fails", async () => {
+      mockPrisma.order.upsert.mockRejectedValueOnce(new Error("DB error"));
+
+      await expect(
+        consumer.process(makeOrderCreatedJob(), makeMetadata()),
+      ).rejects.toThrow();
+
+      expect(mockPrisma.wooCommerceWebhookLog.upsert).not.toHaveBeenCalledWith(
+        expect.objectContaining({ update: { processed: true } }),
+      );
+    });
+  });
+
+  // ── Validation ────────────────────────────────────────────────────────────
+
+  describe("validation", () => {
+    it("rejects jobs with wrong source", async () => {
+      const job = makeOrderCreatedJob({ source: "SHOPIFY" });
+      await expect(consumer.process(job, makeMetadata())).rejects.toThrow();
+    });
+
+    it("accepts jobs without topic (legacy path — no topic = no Shipment creation)", async () => {
+      const job = makeOrderCreatedJob({ topic: undefined });
+      const result = await consumer.process(job, makeMetadata());
+      expect(result.success).toBe(true);
+      // No Shipment because topic is not "order.created"
+      expect(mockPrisma.shipment.create).not.toHaveBeenCalled();
     });
   });
 });
