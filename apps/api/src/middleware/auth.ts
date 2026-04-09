@@ -14,6 +14,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "@witylogix/db";
 import { UnauthorizedError, ForbiddenError } from "../lib/errors.js";
 import { getConfig } from "../lib/config.js";
+import { getRedis, IMPERSONATION_SESSION_PREFIX } from "../lib/redis.js";
 import type { AuthContext } from "../types/fastify.js";
 
 // Export AuthContext for external use
@@ -130,31 +131,47 @@ export async function requireAuth(
 
   const token = authHeader.slice(7);
 
+  type JwtPayload = {
+    sub: string;
+    shopId: string;
+    orgId?: string;
+    role: string;
+    orgRole?: string;
+    type: "user" | "driver";
+    shopDomain?: string;
+    impersonatedBy?: string;
+    jti?: string;
+  };
+  let jwtPayload: JwtPayload | null = null;
+
   try {
     // Verify JWT signature using env var JWT_SECRET
-    const payload = await request.jwtVerify<{
-      sub: string;
-      shopId: string;
-      orgId?: string;
-      role: string;
-      orgRole?: string;
-      type: "user" | "driver";
-      shopDomain?: string;
-    }>();
+    jwtPayload = await request.jwtVerify<JwtPayload>();
+  } catch {
+    // Not a Witylogix JWT — try Shopify embedded session token
+  }
+
+  if (jwtPayload) {
+    // If this is an impersonation token, verify the session hasn't been revoked
+    if (jwtPayload.impersonatedBy && jwtPayload.jti) {
+      const redis = getRedis();
+      const sessionExists = await redis.exists(`${IMPERSONATION_SESSION_PREFIX}${jwtPayload.jti}`);
+      if (!sessionExists) {
+        throw new UnauthorizedError("Impersonation session has been revoked or expired");
+      }
+    }
 
     // Attach auth context to request for downstream middleware/routes
     request.auth = {
-      shopId: payload.shopId,
-      orgId: payload.orgId,
-      userId: payload.type === "user" ? payload.sub : undefined,
-      driverId: payload.type === "driver" ? payload.sub : undefined,
-      role: payload.role as AuthContext["role"],
-      orgRole: payload.orgRole as AuthContext["orgRole"],
-      shopDomain: payload.shopDomain,
+      shopId: jwtPayload.shopId,
+      orgId: jwtPayload.orgId,
+      userId: jwtPayload.type === "user" ? jwtPayload.sub : undefined,
+      driverId: jwtPayload.type === "driver" ? jwtPayload.sub : undefined,
+      role: jwtPayload.role as AuthContext["role"],
+      orgRole: jwtPayload.orgRole as AuthContext["orgRole"],
+      shopDomain: jwtPayload.shopDomain,
     };
     return;
-  } catch {
-    // Not a Witylogix JWT — try Shopify embedded session token
   }
 
   const shopifyAuth = await tryAuthFromShopifySessionToken(token);
