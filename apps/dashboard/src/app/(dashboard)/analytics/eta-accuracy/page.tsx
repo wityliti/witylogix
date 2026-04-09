@@ -3,34 +3,41 @@
 import { useState } from 'react';
 import {
   Brain,
-  Activity,
-  TrendingUp,
-  TrendingDown,
   CheckCircle2,
   AlertTriangle,
-  RefreshCw,
   Zap,
   BarChart3,
   Clock,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApiQuery } from '@/hooks/use-api';
 
-// ── Types ────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────
+// Match actual /api/v4/ai/eta-v2/* response shapes
 
-interface ModelMetric {
-  model_name: string;
-  mae_minutes: number;
-  rmse_minutes: number;
-  within_5min_pct: number;
-  within_10min_pct: number;
+interface CalibrationMetrics {
+  mae: number;
+  rmse: number;
+  mape: number;
+  p50_error: number;
+  p90_error: number;
   sample_count: number;
+  accuracy_percentage: number; // % within ±5 min
+}
+
+interface ModelPerformanceMetrics {
+  modelName: string;
+  metrics: CalibrationMetrics;
+  zone_metrics: Record<string, CalibrationMetrics>;
+  hour_metrics: Record<number, CalibrationMetrics>;
   last_updated: string;
+  samples_since_last_update: number;
 }
 
 interface ModelPerformanceResponse {
   success: boolean;
-  metrics: ModelMetric[];
+  metrics: ModelPerformanceMetrics[];
   count: number;
   timestamp: string;
 }
@@ -46,16 +53,22 @@ interface FeatureImportanceResponse {
   timestamp: string;
 }
 
+interface DegradationAlert {
+  model_name: string;
+  metric: string;
+  previous_value: number;
+  current_value: number;
+  change_percentage: number;
+}
+
 interface AccuracyReport {
   period_start: string;
   period_end: string;
-  total_predictions: number;
-  mae_minutes: number;
-  rmse_minutes: number;
-  within_5min_pct: number;
-  within_10min_pct: number;
-  by_zone?: Record<string, { mae_minutes: number; sample_count: number }>;
-  by_vehicle?: Record<string, { mae_minutes: number; sample_count: number }>;
+  overall_metrics: CalibrationMetrics;
+  by_model: Record<string, CalibrationMetrics>;
+  by_zone: Record<string, CalibrationMetrics>;
+  by_hour: Record<number, CalibrationMetrics>;
+  degradation_alerts: DegradationAlert[];
 }
 
 interface AccuracyReportResponse {
@@ -66,48 +79,65 @@ interface AccuracyReportResponse {
 
 interface EtaHealthResponse {
   healthy: boolean;
-  status: 'operational' | 'degraded';
-  models: Record<string, string>;
+  status: 'operational' | 'degraded' | 'error';
+  models: {
+    time_of_day_weight: string;
+    distance_decay_weight: string;
+    historical_similarity_weight: string;
+    traffic_weight: string;
+    weather_weight: string;
+  };
 }
 
-// ── Demo data ────────────────────────────────────────────────────
+// ── Demo data ─────────────────────────────────────────────────────
 
-const DEMO_METRICS: ModelMetric[] = [
-  { model_name: 'time_of_day', mae_minutes: 4.2, rmse_minutes: 6.1, within_5min_pct: 78.4, within_10min_pct: 94.1, sample_count: 1840, last_updated: new Date().toISOString() },
-  { model_name: 'distance_decay', mae_minutes: 5.8, rmse_minutes: 8.3, within_5min_pct: 71.2, within_10min_pct: 88.9, sample_count: 1840, last_updated: new Date().toISOString() },
-  { model_name: 'historical_similarity', mae_minutes: 3.9, rmse_minutes: 5.7, within_5min_pct: 81.1, within_10min_pct: 95.4, sample_count: 1840, last_updated: new Date().toISOString() },
-  { model_name: 'traffic', mae_minutes: 6.4, rmse_minutes: 9.2, within_5min_pct: 68.3, within_10min_pct: 85.2, sample_count: 1840, last_updated: new Date().toISOString() },
-  { model_name: 'weather', mae_minutes: 7.1, rmse_minutes: 10.5, within_5min_pct: 63.7, within_10min_pct: 81.8, sample_count: 1840, last_updated: new Date().toISOString() },
-  { model_name: 'ensemble', mae_minutes: 3.1, rmse_minutes: 4.8, within_5min_pct: 86.7, within_10min_pct: 97.2, sample_count: 1840, last_updated: new Date().toISOString() },
+const mkDemo = (mae: number): CalibrationMetrics => ({
+  mae,
+  rmse: mae * 1.45,
+  mape: mae * 2.1,
+  p50_error: mae * 0.9,
+  p90_error: mae * 2.7,
+  sample_count: 1840,
+  accuracy_percentage: Math.max(60, 95 - mae * 2),
+});
+
+const DEMO_METRICS: ModelPerformanceMetrics[] = [
+  { modelName: 'time_of_day',           metrics: mkDemo(4.2), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
+  { modelName: 'distance_decay',         metrics: mkDemo(5.8), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
+  { modelName: 'historical_similarity',  metrics: mkDemo(3.9), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
+  { modelName: 'traffic',                metrics: mkDemo(6.4), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
+  { modelName: 'weather',                metrics: mkDemo(7.1), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
+  { modelName: 'ensemble',               metrics: mkDemo(3.1), zone_metrics: {}, hour_metrics: {}, last_updated: new Date().toISOString(), samples_since_last_update: 124 },
 ];
 
 const DEMO_FEATURES: FeatureEntry[] = [
-  { feature: 'historical_avg_minutes', importance: 0.31 },
-  { feature: 'distance_km', importance: 0.24 },
-  { feature: 'traffic_multiplier', importance: 0.17 },
-  { feature: 'num_stops_remaining', importance: 0.11 },
-  { feature: 'weather_intensity', importance: 0.08 },
+  { feature: 'historical_avg_minutes',  importance: 0.31 },
+  { feature: 'distance_km',             importance: 0.24 },
+  { feature: 'traffic_multiplier',      importance: 0.17 },
+  { feature: 'num_stops_remaining',     importance: 0.11 },
+  { feature: 'weather_intensity',       importance: 0.08 },
   { feature: 'driver_experience_years', importance: 0.05 },
-  { feature: 'hour_of_day', importance: 0.04 },
+  { feature: 'hour_of_day',             importance: 0.04 },
 ];
 
 const DEMO_REPORT: AccuracyReport = {
   period_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  period_end: new Date().toISOString(),
-  total_predictions: 12884,
-  mae_minutes: 3.1,
-  rmse_minutes: 4.8,
-  within_5min_pct: 86.7,
-  within_10min_pct: 97.2,
-  by_vehicle: {
-    bike: { mae_minutes: 2.8, sample_count: 3240 },
-    car: { mae_minutes: 3.0, sample_count: 6120 },
-    van: { mae_minutes: 3.6, sample_count: 2480 },
-    truck: { mae_minutes: 4.3, sample_count: 1044 },
+  period_end:   new Date().toISOString(),
+  overall_metrics: mkDemo(3.1),
+  by_model: {
+    ensemble:              mkDemo(3.1),
+    time_of_day:           mkDemo(4.2),
+    distance_decay:        mkDemo(5.8),
+    historical_similarity: mkDemo(3.9),
+    traffic:               mkDemo(6.4),
+    weather:               mkDemo(7.1),
   },
+  by_zone:            {},
+  by_hour:            {},
+  degradation_alerts: [],
 };
 
-// ── Subcomponents ────────────────────────────────────────────────
+// ── Subcomponents ─────────────────────────────────────────────────
 
 function MetricCard({
   label,
@@ -115,7 +145,6 @@ function MetricCard({
   suffix,
   icon: Icon,
   accent,
-  trend,
   sub,
 }: {
   label: string;
@@ -123,7 +152,6 @@ function MetricCard({
   suffix?: string;
   icon: typeof Brain;
   accent: string;
-  trend?: 'good' | 'bad' | 'neutral';
   sub?: string;
 }) {
   return (
@@ -179,8 +207,8 @@ function FeatureBar({ feature, importance, max }: { feature: string; importance:
   );
 }
 
-function ModelRow({ m, isEnsemble }: { m: ModelMetric; isEnsemble: boolean }) {
-  const name = m.model_name
+function ModelRow({ modelName, m, isEnsemble }: { modelName: string; m: CalibrationMetrics; isEnsemble: boolean }) {
+  const name = modelName
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -193,7 +221,7 @@ function ModelRow({ m, isEnsemble }: { m: ModelMetric; isEnsemble: boolean }) {
           : 'hover:bg-white/[0.02]',
       )}
     >
-      <div className="w-40 shrink-0">
+      <div className="w-44 shrink-0">
         <p className={cn('text-sm font-medium', isEnsemble ? 'text-indigo-300' : 'text-white/70')}>
           {name}
         </p>
@@ -203,38 +231,36 @@ function ModelRow({ m, isEnsemble }: { m: ModelMetric; isEnsemble: boolean }) {
       </div>
       <div className="flex-1 grid grid-cols-4 gap-4 text-right">
         <div>
-          <p className="text-xs font-mono text-white/60">{m.mae_minutes.toFixed(1)}</p>
+          <p className="text-xs font-mono text-white/60">{m.mae.toFixed(1)}</p>
           <p className="text-[10px] text-white/20">MAE min</p>
         </div>
         <div>
-          <p className="text-xs font-mono text-white/60">{m.rmse_minutes.toFixed(1)}</p>
+          <p className="text-xs font-mono text-white/60">{m.rmse.toFixed(1)}</p>
           <p className="text-[10px] text-white/20">RMSE min</p>
         </div>
         <div>
-          <p className={cn('text-xs font-mono', m.within_5min_pct >= 80 ? 'text-emerald-400' : 'text-amber-400')}>
-            {m.within_5min_pct.toFixed(1)}%
+          <p className={cn('text-xs font-mono', m.accuracy_percentage >= 80 ? 'text-emerald-400' : 'text-amber-400')}>
+            {m.accuracy_percentage.toFixed(1)}%
           </p>
-          <p className="text-[10px] text-white/20">±5 min</p>
+          <p className="text-[10px] text-white/20">±5 min acc.</p>
         </div>
         <div>
-          <p className={cn('text-xs font-mono', m.within_10min_pct >= 90 ? 'text-emerald-400' : 'text-amber-400')}>
-            {m.within_10min_pct.toFixed(1)}%
+          <p className={cn('text-xs font-mono', m.mape <= 12 ? 'text-emerald-400' : 'text-amber-400')}>
+            {m.mape.toFixed(1)}%
           </p>
-          <p className="text-[10px] text-white/20">±10 min</p>
+          <p className="text-[10px] text-white/20">MAPE</p>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────
 
 export default function EtaAccuracyPage() {
   const [period, setPeriod] = useState<'24h' | '7d' | '30d'>('7d');
 
-  const periodStart = new Date(
-    Date.now() - (period === '24h' ? 1 : period === '7d' ? 7 : 30) * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const days = period === '24h' ? 1 : period === '7d' ? 7 : 30;
 
   const { data: perfData, loading: perfLoading } =
     useApiQuery<ModelPerformanceResponse>('/api/v4/ai/eta-v2/model-performance');
@@ -244,23 +270,28 @@ export default function EtaAccuracyPage() {
 
   const { data: reportData, loading: reportLoading } =
     useApiQuery<AccuracyReportResponse>(
-      `/api/v4/ai/eta-v2/accuracy-report?period_start=${encodeURIComponent(periodStart)}`,
+      `/api/v4/ai/eta-v2/accuracy-report?days=${days}`,
     );
 
   const { data: healthData } =
     useApiQuery<EtaHealthResponse>('/api/v4/ai/eta-v2/health');
 
-  const metrics = perfData?.metrics ?? DEMO_METRICS;
+  const metrics  = perfData?.metrics  ?? DEMO_METRICS;
   const features = featData?.features ?? DEMO_FEATURES;
-  const report = reportData?.report ?? DEMO_REPORT;
-  const ensemble = metrics.find((m) => m.model_name === 'ensemble');
-  const subModels = metrics.filter((m) => m.model_name !== 'ensemble');
+  const report   = reportData?.report ?? DEMO_REPORT;
+  const overall  = report.overall_metrics;
   const isHealthy = healthData?.healthy ?? true;
-  const maxImportance = Math.max(...features.map((f) => f.importance));
+  const maxImportance = Math.max(...features.map((f) => f.importance), 0.001);
 
-  const vehicleEntries = report.by_vehicle
-    ? Object.entries(report.by_vehicle).sort(([, a], [, b]) => a.mae_minutes - b.mae_minutes)
-    : [];
+  // Build per-model rows: prefer accuracy report's by_model (richer metrics);
+  // fall back to /model-performance data when report not yet loaded.
+  const byModelEntries: Array<[string, CalibrationMetrics]> =
+    Object.keys(report.by_model).length > 0
+      ? Object.entries(report.by_model)
+      : metrics.map((m) => [m.modelName, m.metrics]);
+
+  const ensembleMetrics = report.by_model['ensemble'] ?? metrics.find((m) => m.modelName === 'ensemble')?.metrics;
+  const subModelEntries = byModelEntries.filter(([name]) => name !== 'ensemble');
 
   return (
     <div className="min-h-screen">
@@ -305,7 +336,7 @@ export default function EtaAccuracyPage() {
                     : 'text-white/30 hover:text-white/50 border border-transparent',
                 )}
               >
-                {p === '24h' ? '24h' : p === '7d' ? '7 Days' : '30 Days'}
+                {p}
               </button>
             ))}
           </div>
@@ -313,40 +344,74 @@ export default function EtaAccuracyPage() {
       </div>
 
       <div className="px-6 lg:px-8 pb-8 space-y-5">
-        {/* KPI row — ensemble-level summary */}
+        {/* KPI tiles — overall accuracy report */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Mean Absolute Error"
-            value={ensemble?.mae_minutes.toFixed(1) ?? report.mae_minutes.toFixed(1)}
+            value={overall.mae.toFixed(1)}
             suffix="min"
             icon={Clock}
             accent="#818cf8"
-            sub={`RMSE ${ensemble?.rmse_minutes.toFixed(1) ?? report.rmse_minutes.toFixed(1)} min`}
+            sub={`RMSE ${overall.rmse.toFixed(1)} min · P90 ${overall.p90_error.toFixed(1)} min`}
           />
           <MetricCard
-            label="Within ±5 min"
-            value={`${ensemble?.within_5min_pct.toFixed(1) ?? report.within_5min_pct.toFixed(1)}`}
+            label="Accuracy (±5 min)"
+            value={overall.accuracy_percentage.toFixed(1)}
+            suffix="%"
+            icon={Target}
+            accent="#34d399"
+            sub={`${overall.sample_count.toLocaleString()} predictions`}
+          />
+          <MetricCard
+            label="MAPE"
+            value={overall.mape.toFixed(1)}
             suffix="%"
             icon={Zap}
-            accent="#34d399"
-          />
-          <MetricCard
-            label="Within ±10 min"
-            value={`${ensemble?.within_10min_pct.toFixed(1) ?? report.within_10min_pct.toFixed(1)}`}
-            suffix="%"
-            icon={CheckCircle2}
             accent="#60a5fa"
+            sub={`P50 error ${overall.p50_error.toFixed(1)} min`}
           />
           <MetricCard
-            label="Predictions"
-            value={report.total_predictions.toLocaleString()}
+            label="Degradation Alerts"
+            value={report.degradation_alerts.length}
             icon={BarChart3}
-            accent="#fbbf24"
-            sub={`${period} window`}
+            accent={report.degradation_alerts.length > 0 ? '#f87171' : '#34d399'}
+            sub={
+              report.degradation_alerts.length > 0
+                ? 'Model drift detected'
+                : `${period} window — all clear`
+            }
           />
         </div>
 
-        {/* Middle row: feature importance + by-vehicle */}
+        {/* Degradation alerts */}
+        {report.degradation_alerts.length > 0 && (
+          <div className="rounded-xl bg-amber-500/[0.06] border border-amber-500/20 p-5">
+            <h3 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Model Degradation Alerts
+            </h3>
+            <div className="space-y-2.5">
+              {report.degradation_alerts.map((a, i) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <div>
+                    <span className="text-white/70 font-medium capitalize">
+                      {a.model_name.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-white/40 mx-2">·</span>
+                    <span className="text-white/50">{a.metric}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-mono">
+                    <span className="text-white/40">{a.previous_value.toFixed(2)}</span>
+                    <span className="text-red-400">→ {a.current_value.toFixed(2)}</span>
+                    <span className="text-red-400/70">+{a.change_percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mid row: feature importance + by-zone breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Feature importance */}
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
@@ -363,16 +428,21 @@ export default function EtaAccuracyPage() {
             ) : (
               <div className="space-y-3">
                 {features.map((f) => (
-                  <FeatureBar key={f.feature} feature={f.feature} importance={f.importance} max={maxImportance} />
+                  <FeatureBar
+                    key={f.feature}
+                    feature={f.feature}
+                    importance={f.importance}
+                    max={maxImportance}
+                  />
                 ))}
               </div>
             )}
           </div>
 
-          {/* By vehicle type */}
+          {/* By zone */}
           <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-semibold text-white/60 tracking-wide">MAE by Vehicle Type</h3>
+              <h3 className="text-sm font-semibold text-white/60 tracking-wide">MAE by Zone Type</h3>
               <span className="text-[11px] text-white/20 font-mono">lower = better</span>
             </div>
             {reportLoading ? (
@@ -381,51 +451,62 @@ export default function EtaAccuracyPage() {
                   <div key={i} className="h-10 bg-white/[0.04] rounded animate-pulse" />
                 ))}
               </div>
-            ) : vehicleEntries.length > 0 ? (
+            ) : Object.keys(report.by_zone).length > 0 ? (
               <div className="space-y-3">
-                {vehicleEntries.map(([type, stats]) => {
-                  const maxMae = Math.max(...vehicleEntries.map(([, s]) => s.mae_minutes));
-                  const barPct = maxMae > 0 ? (stats.mae_minutes / maxMae) * 100 : 0;
-                  const isGood = stats.mae_minutes < 3.5;
-                  return (
-                    <div key={type} className="flex items-center gap-3">
-                      <span className="text-[12px] text-white/50 w-12 capitalize shrink-0">{type}</span>
-                      <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${barPct}%`,
-                            background: isGood
-                              ? 'linear-gradient(90deg, #34d399, #10b981)'
-                              : 'linear-gradient(90deg, #fbbf24, #f59e0b)',
-                          }}
-                        />
+                {Object.entries(report.by_zone)
+                  .sort(([, a], [, b]) => a.mae - b.mae)
+                  .map(([zone, m]) => {
+                    const maxMae = Math.max(...Object.values(report.by_zone).map((z) => z.mae), 1);
+                    const barPct = (m.mae / maxMae) * 100;
+                    const isGood = m.mae < 5;
+                    return (
+                      <div key={zone} className="flex items-center gap-3">
+                        <span className="text-[12px] text-white/50 w-28 capitalize shrink-0 truncate">
+                          {zone.replace(/-/g, ' ')}
+                        </span>
+                        <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${barPct}%`,
+                              background: isGood
+                                ? 'linear-gradient(90deg, #34d399, #10b981)'
+                                : 'linear-gradient(90deg, #fbbf24, #f59e0b)',
+                            }}
+                          />
+                        </div>
+                        <span
+                          className={cn(
+                            'text-[11px] font-mono w-14 text-right shrink-0',
+                            isGood ? 'text-emerald-400' : 'text-amber-400',
+                          )}
+                        >
+                          {m.mae.toFixed(1)} min
+                        </span>
+                        <span className="text-[10px] text-white/20 w-16 text-right shrink-0">
+                          {m.sample_count.toLocaleString()} samples
+                        </span>
                       </div>
-                      <span className={cn('text-[11px] font-mono w-14 text-right shrink-0', isGood ? 'text-emerald-400' : 'text-amber-400')}>
-                        {stats.mae_minutes.toFixed(1)} min
-                      </span>
-                      <span className="text-[10px] text-white/20 w-16 text-right shrink-0">
-                        {stats.sample_count.toLocaleString()} samples
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             ) : (
-              <p className="text-sm text-white/25 text-center py-6">No vehicle breakdown available yet</p>
+              <p className="text-sm text-white/25 text-center py-6">
+                Zone breakdown available after first model retraining
+              </p>
             )}
           </div>
         </div>
 
-        {/* Sub-model performance table */}
+        {/* Per-model breakdown table */}
         <div className="rounded-xl bg-[#111118] border border-white/[0.06] p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-white/60 tracking-wide">Model Breakdown</h3>
-            <div className="flex items-center gap-4 text-[11px] text-white/20">
+            <div className="flex items-center gap-10 pr-3 text-[11px] text-white/20">
               <span>MAE</span>
               <span>RMSE</span>
-              <span>±5 min</span>
-              <span>±10 min</span>
+              <span>Acc %</span>
+              <span>MAPE</span>
             </div>
           </div>
           {perfLoading ? (
@@ -436,13 +517,13 @@ export default function EtaAccuracyPage() {
             </div>
           ) : (
             <div className="space-y-1">
-              {subModels.map((m) => (
-                <ModelRow key={m.model_name} m={m} isEnsemble={false} />
+              {subModelEntries.map(([name, m]) => (
+                <ModelRow key={name} modelName={name} m={m} isEnsemble={false} />
               ))}
-              {ensemble && (
+              {ensembleMetrics && (
                 <>
                   <div className="h-px bg-white/[0.06] my-2" />
-                  <ModelRow m={ensemble} isEnsemble />
+                  <ModelRow modelName="ensemble" m={ensembleMetrics} isEnsemble />
                 </>
               )}
             </div>

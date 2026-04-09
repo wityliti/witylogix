@@ -76,7 +76,7 @@ export class CryptoService {
 
       // Get authentication tag (GCM only)
       const authTag = this.defaultAlgorithm === EncryptionAlgorithm.AES_256_GCM
-        ? cipher.getAuthTag()
+        ? (cipher as any).getAuthTag()
         : Buffer.alloc(0);
 
       return {
@@ -142,11 +142,10 @@ export class CryptoService {
         encryptedPayload.authTag
       ) {
         const authTag = Buffer.from(encryptedPayload.authTag, 'base64');
-        decipher.setAuthTag(authTag);
+        (decipher as any).setAuthTag(authTag);
       }
 
-      // Decrypt
-      let plaintext = decipher.update(ciphertext, 'base64', 'utf8');
+      let plaintext = decipher.update(encryptedPayload.data, 'base64', 'utf8');
       plaintext += decipher.final('utf8');
 
       return plaintext;
