@@ -169,7 +169,7 @@ export class PushNotificationHandler {
    * Handle delivery reminder notification
    */
   private async handleDeliveryReminder(payload: PushPayload): Promise<void> {
-    const { shipmentId, destination } = payload.data;
+    const { destination } = payload.data;
     console.log(`Reminder: Deliver to ${destination}`);
   }
 
@@ -235,7 +235,7 @@ export class PushNotificationHandler {
    * Handle notification action (deep linking)
    */
   handleNotificationAction(action: string, data: Record<string, any>): void {
-    const { type, routeId, shipmentId, stopId, messageId } = data;
+    const { type, routeId, shipmentId, messageId } = data;
 
     let deepLink = '/';
 

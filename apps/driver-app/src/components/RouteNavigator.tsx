@@ -2,7 +2,7 @@
  * RouteNavigator - Turn-by-turn route display with stop management
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 
 export interface DeliveryStop {
   id: string;

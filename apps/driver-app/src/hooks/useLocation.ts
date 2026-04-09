@@ -20,7 +20,7 @@ export const useLocation = () => {
     setError(null);
 
     try {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         // Mock implementation - in production, use react-native-geolocation-service or similar
         const mockLocation: Location = {
           latitude: 37.7749 + (Math.random() - 0.5) * 0.01,

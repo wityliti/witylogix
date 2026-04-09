@@ -271,8 +271,7 @@ function TimeSlotCreateModal({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       title="Create New Time Slot"
       primaryAction={{
-        content: "Create Time Slot",
-        submit: true,
+        content: "Create Time Slot"
       }}
       secondaryActions={[
         {

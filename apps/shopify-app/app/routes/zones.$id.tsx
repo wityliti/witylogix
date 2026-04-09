@@ -179,9 +179,9 @@ function getShipmentBadgeTone(status: string): "info" | undefined {
   return undefined;
 }
 
-function getUtilizationTone(percent: number): "critical" | "warning" | "success" {
+function getUtilizationTone(percent: number): "critical" | "highlight" | "success" {
   if (percent > 80) return "critical";
-  if (percent > 60) return "warning";
+  if (percent > 60) return "highlight";
   return "success";
 }
 

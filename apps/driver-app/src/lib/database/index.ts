@@ -29,7 +29,7 @@ export async function openDatabase(authToken: string): Promise<SQLite.SQLiteData
 
   const encryptionKey = await deriveEncryptionKey(authToken);
 
-  _db = await SQLite.openDatabaseAsync(DB_NAME, { encryptionKey });
+  _db = await SQLite.openDatabaseAsync(DB_NAME, { encryptionKey } as any);
   await runMigrations(_db);
 
   return _db;

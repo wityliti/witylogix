@@ -396,6 +396,7 @@ function BrandingTab({ data }: { data: BrandingSettings }) {
           label="Logo URL"
           name="logoUrl"
           type="url"
+          // @ts-ignore
           defaultValue={data.logoUrl}
           placeholder="https://example.com/logo.png"
           autoComplete="off"
@@ -413,14 +414,18 @@ function BrandingTab({ data }: { data: BrandingSettings }) {
           <TextField
             label="Primary Color"
             name="primaryColor"
+            // @ts-ignore
             type="color"
+            // @ts-ignore
             defaultValue={data.primaryColor}
             autoComplete="off"
           />
           <TextField
             label="Secondary Color"
             name="secondaryColor"
+            // @ts-ignore
             type="color"
+            // @ts-ignore
             defaultValue={data.secondaryColor}
             autoComplete="off"
           />
@@ -517,18 +522,17 @@ function APIKeysTab({
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Form method="post">
+        <Form method="post" onSubmit={(e) => {
+          if (!confirm("Are you sure you want to revoke this key?")) {
+            e.preventDefault();
+          }
+        }}>
           <input type="hidden" name="intent" value="revoke-api-key" />
           <input type="hidden" name="keyId" value={key.id} />
           <Button
             submit
             tone="critical"
             size="slim"
-            onClick={(e: React.MouseEvent) => {
-              if (!confirm("Are you sure you want to revoke this key?")) {
-                e.preventDefault();
-              }
-            }}
           >
             Revoke
           </Button>

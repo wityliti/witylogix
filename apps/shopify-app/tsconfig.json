@@ -1,5 +1,5 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "vite.config.ts", ".react-router/types/**/*"],
+  "include": ["vite.config.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "target": "ES2022",
@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"]
     },

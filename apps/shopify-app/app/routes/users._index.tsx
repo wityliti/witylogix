@@ -194,8 +194,8 @@ export default function UsersList() {
             />
           </Form>
         ) : (
-          <Button
-            variant="plain"
+          <div
+            style={{ cursor: "pointer" }}
             onClick={() =>
               setEditingRole((prev) => ({
                 ...prev,
@@ -206,7 +206,7 @@ export default function UsersList() {
             <Badge tone={ROLE_BADGE_TONE[user.role]}>
               {user.role.replace(/_/g, " ")}
             </Badge>
-          </Button>
+          </div>
         )}
       </IndexTable.Cell>
       <IndexTable.Cell>
@@ -251,8 +251,7 @@ export default function UsersList() {
           onClose={handleModalClose}
           title="Invite User"
           primaryAction={{
-            content: "Invite",
-            submit: true,
+            content: "Invite"
           }}
           secondaryActions={[
             {

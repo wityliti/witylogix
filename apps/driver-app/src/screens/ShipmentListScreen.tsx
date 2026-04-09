@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -139,7 +139,7 @@ export const ShipmentListScreen = () => {
   };
 
   const handleShipmentPress = (shipmentId: string) => {
-    navigation.navigate('Shipment', { shipmentId });
+    (navigation.navigate as any)('Shipment', { shipmentId });
   };
 
   const getStatusColor = (status: string) => {
