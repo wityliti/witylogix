@@ -81,7 +81,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
       const { state } = request.query as { state?: string };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       // INTEGRATION: Get provider config from environment
       let authUrl: string;
@@ -213,7 +213,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     '/accounting/status',
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       const connections = await (prisma as any).accountingConnection.findMany({
         where: { tenantId, isActive: true },
@@ -272,7 +272,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
       const { force, autoRetry } = request.body as { force?: boolean; autoRetry?: boolean };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       // Fetch invoice
       const invoice = await prisma.invoice.findUnique({
@@ -340,7 +340,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         providers?: ('quickbooks' | 'xero')[];
         force?: boolean;
       };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       if (invoiceIds.length === 0) {
         throw new ValidationError('At least one invoice required');
@@ -429,7 +429,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         limit: number;
         offset: number;
       };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       const where: any = { tenantId };
       if (provider) where.provider = provider;
@@ -480,7 +480,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
     { onRequest: [requireAuth, tenantContext] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { provider } = request.params as { provider: 'quickbooks' | 'xero' };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       const connection = await (prisma as any).accountingConnection.findFirst({
         where: { tenantId, provider, isActive: true },
@@ -524,7 +524,7 @@ export async function registerAccountingRoutes(fastify: FastifyInstance): Promis
         fromDate: Date;
         toDate: Date;
       };
-      const tenantId = request.user.tenantId;
+      const tenantId = request.tenantId;
 
       if (fromDate > toDate) {
         throw new ValidationError('fromDate must be before toDate');
