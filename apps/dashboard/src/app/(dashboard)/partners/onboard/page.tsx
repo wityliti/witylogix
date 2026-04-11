@@ -70,7 +70,7 @@ const STEP_CONFIG = [
 
 export default function OnboardPage() {
   const router = useRouter();
-  const { execute: saveOnboarding } = useApiMutation('POST', '/api/v4/partners');
+  const { execute: saveOnboarding } = useApiMutation('POST', '/api/v4/couriers/partners');
   const { addToast } = useToast();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -139,7 +139,21 @@ export default function OnboardPage() {
   const handleComplete = useCallback(async () => {
     if (validateStep()) {
       try {
-        await saveOnboarding(formData);
+        const provider = formData.partnerType === "uber-direct" ? "uber_direct" : formData.partnerType;
+        await saveOnboarding({
+          provider,
+          name: PARTNER_TYPES.find((p) => p.id === formData.partnerType)?.name ?? formData.partnerType,
+          credentials: {
+            apiKey: formData.apiKey,
+            apiSecret: formData.apiSecret,
+            webhookSecret: formData.webhookSecret,
+            baseUrl: formData.baseUrl,
+          },
+          config: {
+            serviceAreas: formData.serviceAreas,
+            ...formData.defaultSettings,
+          },
+        });
         router.push("/dashboard/partners");
       } catch {
         addToast({ type: 'error', title: 'Onboarding failed', message: 'Could not save partner data. Please try again.' });
