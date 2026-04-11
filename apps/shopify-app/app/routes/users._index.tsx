@@ -251,7 +251,8 @@ export default function UsersList() {
           onClose={handleModalClose}
           title="Invite User"
           primaryAction={{
-            content: "Invite"
+            content: "Invite",
+            submit: true,
           }}
           secondaryActions={[
             {
