@@ -20,6 +20,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
@@ -200,8 +202,10 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params.id as string;
 
+  const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isVoiding, setIsVoiding] = useState(false);
 
   const isOverdue = useMemo(() => {
     return (
@@ -257,14 +261,40 @@ export default function InvoiceDetailPage() {
     // TODO: API call
   }, [invoiceId]);
 
-  const handleVoidInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "cancelled",
-    }));
-    setShowDeleteConfirm(false);
-    // TODO: API call
-  }, [invoiceId]);
+  const handleVoidInvoice = useCallback(async () => {
+    if (isVoiding) return;
+    setIsVoiding(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "cancelled",
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "created" as const,
+            timestamp: new Date(),
+            description: "Invoice voided",
+          },
+        ],
+      }));
+      setShowDeleteConfirm(false);
+      addToast({
+        type: 'success',
+        title: 'Invoice voided',
+        message: 'The invoice has been voided successfully.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to void invoice',
+        message: err instanceof Error ? err.message : 'Could not void the invoice. Please try again.',
+      });
+    } finally {
+      setIsVoiding(false);
+    }
+  }, [invoiceId, isVoiding, addToast]);
 
   const handleSendReminder = useCallback(() => {
     setInvoice((prev) => ({
@@ -652,9 +682,10 @@ export default function InvoiceDetailPage() {
               <Button
                 variant="danger"
                 onClick={handleVoidInvoice}
+                disabled={isVoiding}
                 className="flex-1"
               >
-                Void Invoice
+                {isVoiding ? 'Voiding...' : 'Void Invoice'}
               </Button>
             </div>
           </Card>
