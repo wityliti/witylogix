@@ -16,6 +16,8 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { useApiMutation } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -69,6 +71,7 @@ const MOCK_CUSTOMERS: Customer[] = [
 
 export default function CreateInvoicePage() {
   const router = useRouter();
+  const { addToast } = useToast();
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -89,6 +92,8 @@ export default function CreateInvoicePage() {
   const [discountPercentage, setDiscountPercentage] = useState("0");
   const [showPreview, setShowPreview] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
@@ -181,19 +186,77 @@ export default function CreateInvoicePage() {
     setShowCustomerModal(false);
   }, []);
 
-  const handleSaveDraft = useCallback(() => {
-    // TODO: API call
-    router.push("/dashboard/invoices");
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
+  const handleSaveDraft = useCallback(async () => {
+    if (isSavingDraft) return;
+    setIsSavingDraft(true);
+    try {
+      const payload = {
+        status: 'draft',
+        customerId: selectedCustomer?.id,
+        lineItems,
+        dueDate,
+        notes,
+        terms,
+        taxRate: parseFloat(taxRate || '0'),
+        discountPercentage: parseFloat(discountPercentage || '0'),
+      };
+      await api.post('/api/v4/invoices', payload);
+      addToast({
+        type: 'success',
+        title: 'Draft saved',
+        message: 'Your invoice draft has been saved.',
+      });
+      router.push('/dashboard/invoices');
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to save draft',
+        message: err instanceof Error ? err.message : 'Could not save the draft. Please try again.',
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSavingDraft, addToast, router]);
 
-  const handleSendInvoice = useCallback(() => {
+  const handleSendInvoice = useCallback(async () => {
     if (!selectedCustomer || lineItems.length === 0) {
-      alert("Please select a customer and add line items");
+      addToast({
+        type: 'error',
+        title: 'Cannot create invoice',
+        message: 'Please select a customer and add at least one line item.',
+      });
       return;
     }
-    // TODO: API call
-    router.push("/dashboard/invoices");
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      const payload = {
+        status: 'sent',
+        customerId: selectedCustomer.id,
+        lineItems,
+        dueDate,
+        notes,
+        terms,
+        taxRate: parseFloat(taxRate || '0'),
+        discountPercentage: parseFloat(discountPercentage || '0'),
+      };
+      await api.post('/api/v4/invoices', payload);
+      addToast({
+        type: 'success',
+        title: 'Invoice created',
+        message: 'The invoice has been created and sent.',
+      });
+      router.push('/dashboard/invoices');
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to create invoice',
+        message: err instanceof Error ? err.message : 'Could not create the invoice. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSending, addToast, router]);
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
@@ -219,12 +282,12 @@ export default function CreateInvoicePage() {
             <Eye className="w-4 h-4" />
             Preview
           </Button>
-          <Button variant="secondary" size="lg" onClick={handleSaveDraft}>
-            Save Draft
+          <Button variant="secondary" size="lg" onClick={handleSaveDraft} disabled={isSavingDraft || isSending}>
+            {isSavingDraft ? 'Saving...' : 'Save Draft'}
           </Button>
-          <Button variant="primary" size="lg" onClick={handleSendInvoice}>
+          <Button variant="primary" size="lg" onClick={handleSendInvoice} disabled={isSending || isSavingDraft}>
             <Check className="w-4 h-4" />
-            Send
+            {isSending ? 'Creating...' : 'Send'}
           </Button>
         </div>
       </div>
