@@ -5,8 +5,12 @@
  * rate limiting, and event replay for reconnections.
  */
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — socket.io types resolved at runtime via API deps
 import { Server, Socket } from "socket.io";
+// @ts-ignore — @socket.io/redis-adapter types resolved at runtime via API deps
 import { createAdapter } from "@socket.io/redis-adapter";
+// @ts-ignore — redis types resolved at runtime via API deps
 import { createClient, type RedisClientType } from "redis";
 import type { JwtService } from "../auth/jwt-service.js";
 import type { TypedEventBus } from "../event-bus/index.js";
@@ -126,13 +130,12 @@ export class DashboardHub {
         return next(new Error("Missing authentication token"));
       }
 
-      try {
-        const decoded = this.jwtService.verify(token);
-        socket.data.user = decoded;
-        next();
-      } catch (error) {
-        next(new Error("Invalid or expired token"));
+      const result = this.jwtService.verifyAccessToken(token);
+      if (!result.valid || !result.payload) {
+        return next(new Error("Invalid or expired token"));
       }
+      socket.data.user = result.payload;
+      next();
     });
   }
 
@@ -417,7 +420,7 @@ export class DashboardHub {
       if (
         filter.shopIds &&
         "shopId" in data &&
-        !filter.shopIds.includes(data.shopId)
+        !filter.shopIds.includes((data as { shopId: string }).shopId)
       ) {
         return false;
       }

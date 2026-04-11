@@ -24,6 +24,7 @@ const mockRedis = {
   set: vi.fn().mockResolvedValue("OK"),
   get: vi.fn().mockResolvedValue(null),
   del: vi.fn().mockResolvedValue(1),
+  exists: vi.fn().mockResolvedValue(1),
 };
 vi.mock("../../lib/redis.js", () => ({
   getRedis: vi.fn(() => mockRedis),
@@ -61,10 +62,10 @@ describe("Admin Routes", () => {
     };
 
     // Reset Redis mock defaults
-    mockRedisInstance.set.mockResolvedValue("OK");
-    mockRedisInstance.exists.mockResolvedValue(1);
-    mockRedisInstance.get.mockResolvedValue(null);
-    mockRedisInstance.del.mockResolvedValue(1);
+    mockRedis.set.mockResolvedValue("OK");
+    mockRedis.exists.mockResolvedValue(1);
+    mockRedis.get.mockResolvedValue(null);
+    mockRedis.del.mockResolvedValue(1);
   });
 
   afterEach(() => {
