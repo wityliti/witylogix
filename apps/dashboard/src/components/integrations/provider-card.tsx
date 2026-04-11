@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { ProviderCardProps, IntegrationProvider as Provider } from "./types";
+import type { ProviderCardProps, IntegrationConnection as Provider } from "./types";
 
 /**
  * Provider card component

@@ -94,12 +94,9 @@ export default function HOSPage() {
   const [personalConveyance, setPersonalConveyance] = useState(false);
   const [yardMove, setYardMove] = useState(false);
 
-  const { hos, isLoading } = useDriverHOS(selectedDriverId);
-  const { violations, isLoading: violationsLoading } = useViolations(selectedDriverId);
+  const { data: hos, loading: isLoading } = useDriverHOS(selectedDriverId);
+  const { items: violations, loading: violationsLoading } = useViolations({ search: selectedDriverId });
   const { items: data, loading, error, refetch } = useApiList("/api/v4/eld/hos");
-
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const dailyLog = useMemo(() => generateDailyLog(), []);
   const eightDayRecap = useMemo(() => generateEightDayRecap(), []);
@@ -109,6 +106,9 @@ export default function HOSPage() {
     if (!searchQuery) return DRIVER_OPTIONS;
     return DRIVER_OPTIONS.filter((d) => d.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [searchQuery]);
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const getHosStatus = () => {
     if (!hos) return "unknown";

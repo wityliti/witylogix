@@ -124,8 +124,9 @@ export class DashboardHub {
    */
   private setupMiddleware(): void {
     // Authentication middleware
-    this.io.use((socket, next) => {
-      const token = socket.handshake.auth.token as string | undefined;
+    this.io.use((socket: unknown, next: (err?: Error) => void) => {
+      const typedSocket = socket as { handshake: { auth: { token?: string } }; data: Record<string, unknown> };
+      const token = typedSocket.handshake.auth.token;
       if (!token) {
         return next(new Error("Missing authentication token"));
       }
@@ -134,7 +135,7 @@ export class DashboardHub {
       if (!result.valid || !result.payload) {
         return next(new Error("Invalid or expired token"));
       }
-      socket.data.user = result.payload;
+      typedSocket.data.user = result.payload;
       next();
     });
   }

@@ -15,7 +15,7 @@
 
 "use client";
 
-import { forwardRef, SelectHTMLAttributes, useState, useCallback, useEffect } from "react";
+import React, { forwardRef, SelectHTMLAttributes, useState, useCallback, useEffect } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,9 @@ interface SelectOption {
   group?: string;
 }
 
-interface FormSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "value"> {
+export interface FormSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> {
+  /** Label for the select field */
+  label?: string;
   /** Options to display */
   options: SelectOption[];
   /** Selected value(s) */
@@ -182,7 +184,7 @@ export const FormSelect = forwardRef<HTMLSelectElement, FormSelectProps>(
           )}
           aria-invalid={hasError}
           aria-expanded={isOpen}
-          {...props}
+          {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
         >
           {/* Selected Values or Placeholder */}
           <div className="flex items-center gap-1 flex-wrap">

@@ -310,7 +310,7 @@ export default function CreateInvoicePage() {
             </h2>
             <Select
               value={billingRuleType}
-              onChange={(value) => setBillingRuleType(value as BillingRuleType)}
+              onValueChange={(value) => setBillingRuleType(value as BillingRuleType)}
               label="Rule Type"
             >
               <option value="per-delivery">Per Delivery</option>

@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useRef, useEffect, useState, MouseEvent, TouchEvent } from "react";
+import { forwardRef, useRef, useEffect, useState, type MouseEvent, type TouchEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +16,13 @@ interface SignaturePadProps {
   onSave?: (data: { png: string; svg: string }) => void;
   onAdopt?: (signature: string) => void;
   className?: string;
+}
+
+function getEventCoords(e: MouseEvent<HTMLCanvasElement> | TouchEvent<HTMLCanvasElement>): { clientX: number; clientY: number } {
+  if ('touches' in e) {
+    return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+  }
+  return { clientX: e.clientX, clientY: e.clientY };
 }
 
 const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
@@ -69,10 +76,9 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x =
-        (e instanceof TouchEvent ? e.touches[0].clientX : e.clientX) - rect.left;
-      const y =
-        (e instanceof TouchEvent ? e.touches[0].clientY : e.clientY) - rect.top;
+      const coords = getEventCoords(e);
+      const x = coords.clientX - rect.left;
+      const y = coords.clientY - rect.top;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
@@ -91,10 +97,9 @@ const SignaturePad = forwardRef<HTMLCanvasElement, SignaturePadProps>(
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x =
-        (e instanceof TouchEvent ? e.touches[0].clientX : e.clientX) - rect.left;
-      const y =
-        (e instanceof TouchEvent ? e.touches[0].clientY : e.clientY) - rect.top;
+      const coords = getEventCoords(e);
+      const x = coords.clientX - rect.left;
+      const y = coords.clientY - rect.top;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;

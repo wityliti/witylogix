@@ -25,7 +25,7 @@ interface LayoutPreset {
   id: string;
   name: string;
   description: string;
-  icon: React.ComponentType<{ className: string }>;
+  icon: React.ComponentType<{ className?: string; [key: string]: unknown }>;
   color: string;
   keywords: string[];
 }

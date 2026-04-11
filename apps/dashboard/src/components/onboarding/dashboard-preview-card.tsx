@@ -140,14 +140,14 @@ const DASHBOARD_PRESETS: DashboardPresetLayout[] = [
   },
 ];
 
-interface DashboardPreviewCardProps extends HTMLAttributes<HTMLDivElement> {
+interface DashboardPreviewCardProps extends Omit<HTMLAttributes<HTMLButtonElement>, "onSelect"> {
   preset: DashboardPresetLayout;
   selected?: boolean;
-  onSelect?: (id: string) => void;
+  onPresetSelect?: (id: string) => void;
 }
 
-const DashboardPreviewCard = forwardRef<HTMLDivElement, DashboardPreviewCardProps>(
-  ({ preset, selected = false, onSelect, className, ...props }, ref) => {
+const DashboardPreviewCard = forwardRef<HTMLButtonElement, DashboardPreviewCardProps>(
+  ({ preset, selected = false, onPresetSelect, className, ...props }, ref) => {
     return (
       <>
         <style>{`
@@ -168,7 +168,7 @@ const DashboardPreviewCard = forwardRef<HTMLDivElement, DashboardPreviewCardProp
         `}</style>
         <button
         ref={ref}
-        onClick={() => onSelect?.(preset.id)}
+        onClick={() => onPresetSelect?.(preset.id)}
         className={cn(
           "relative flex flex-col gap-3 p-4 rounded-lg border-2 transition-all duration-base ease-default",
           "bg-wl-bg-overlay text-left preview-hover",
@@ -210,13 +210,13 @@ const DashboardPreviewCard = forwardRef<HTMLDivElement, DashboardPreviewCardProp
 
 DashboardPreviewCard.displayName = "DashboardPreviewCard";
 
-interface DashboardPreviewGridProps extends HTMLAttributes<HTMLDivElement> {
+interface DashboardPreviewGridProps extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   selected?: string;
-  onSelect?: (id: string) => void;
+  onPresetSelect?: (id: string) => void;
 }
 
 const DashboardPreviewGrid = forwardRef<HTMLDivElement, DashboardPreviewGridProps>(
-  ({ selected, onSelect, className, ...props }, ref) => {
+  ({ selected, onPresetSelect, className, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -231,7 +231,7 @@ const DashboardPreviewGrid = forwardRef<HTMLDivElement, DashboardPreviewGridProp
             key={preset.id}
             preset={preset}
             selected={selected === preset.id}
-            onSelect={onSelect}
+            onPresetSelect={onPresetSelect}
           />
         ))}
       </div>

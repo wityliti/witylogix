@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 
 type SwitchSize = "sm" | "md";
 
-interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange" | "size"> {
   size?: SwitchSize;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const sizeClasses: Record<SwitchSize, { track: string; thumb: string }> = {
@@ -28,6 +29,7 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
       size = "md",
       checked = false,
       onChange,
+      onCheckedChange,
       disabled = false,
       className,
       ...props
@@ -48,7 +50,7 @@ const Switch = forwardRef<HTMLInputElement, SwitchProps>(
           ref={ref}
           type="checkbox"
           checked={checked}
-          onChange={(e) => onChange?.(e.target.checked)}
+          onChange={(e) => { onChange?.(e.target.checked); onCheckedChange?.(e.target.checked); }}
           disabled={disabled}
           className="hidden"
           {...props}

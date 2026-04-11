@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 type FormFieldVariant = "default" | "inline" | "floating-label";
 
-interface FormFieldProps {
+export interface FormFieldProps {
   /** Field label text */
   label?: string;
   /** Whether field is required */

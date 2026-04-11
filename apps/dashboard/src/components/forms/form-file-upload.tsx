@@ -18,7 +18,7 @@ import { useRef, useState, useCallback } from "react";
 import { Upload, X, Check, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface FormFileUploadProps {
+export interface FormFileUploadProps {
   /** Accepted MIME types */
   acceptedTypes?: string[];
   /** Maximum file size in bytes */

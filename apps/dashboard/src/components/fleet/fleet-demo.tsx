@@ -170,7 +170,7 @@ export function FleetDemo() {
             <VehicleStatusCard
               key={vehicle.id}
               {...vehicle}
-              onClick={setSelectedVehicleId}
+              onCardClick={setSelectedVehicleId}
             />
           ))}
         </div>

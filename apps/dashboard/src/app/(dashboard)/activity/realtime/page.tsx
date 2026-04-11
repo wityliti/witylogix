@@ -29,7 +29,7 @@ export default function RealtimePage() {
   );
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState error={error} />;
+  if (error) return <ErrorState message={error.message} />;
 
   const filtered = selectedType === 'all'
     ? events

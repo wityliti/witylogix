@@ -119,10 +119,10 @@ export function DVIRForm({
       photoUrl?: string;
     }>
   >([]);
-  const [newDefect, setNewDefect] = useState({
+  const [newDefect, setNewDefect] = useState<{ component: string; description: string; severity: "CRITICAL" | "MAJOR" | "MINOR" }>({
     component: "",
     description: "",
-    severity: "MINOR" as const,
+    severity: "MINOR",
   });
   const [showSignature, setShowSignature] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);

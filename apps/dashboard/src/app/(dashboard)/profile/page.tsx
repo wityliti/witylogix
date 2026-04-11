@@ -109,7 +109,7 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = () => {
-    setProfile(editForm);
+    void refetch();
     setIsEditing(false);
   };
 

@@ -22,9 +22,10 @@ const TRANSLATION_PATTERNS = [
 
 async function extractKeysFromFiles(): Promise<ExtractionResult> {
   const srcDir = path.join(process.cwd(), 'src');
-  const tsxFiles = await glob(path.join(srcDir, '**/*.{tsx,ts}'), {
-    ignore: ['**/node_modules/**', '**/.next/**', '**/__tests__/**'],
-  });
+  const allTsxFiles = await glob(path.join(srcDir, '**/*.{tsx,ts}'));
+  const tsxFiles = allTsxFiles.filter((f) =>
+    !f.includes('node_modules') && !f.includes('.next') && !f.includes('__tests__')
+  );
 
   const keysByFile: Record<string, string[]> = {};
   const allKeys = new Set<string>();

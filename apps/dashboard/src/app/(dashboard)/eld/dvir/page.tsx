@@ -66,7 +66,7 @@ const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
 
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: data, loading, error, refetch, pagination } = useApiList("/api/v4/eld/dvir");
+  const { items: data, loading, error, refetch, pagination } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -232,7 +232,7 @@ export default function DVIRPage() {
 
                         <select
                           value={defect.status}
-                          onChange={(e) => updateDefectStatus(defect.id, e.target.value as DefectStatus)}
+                          onChange={(e) => updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })}
                           className="h-8 px-2 text-xs rounded bg-[#1a1a2e] border border-[#1e1e2e] text-white"
                         >
                           <option value="REPORTED">Reported</option>

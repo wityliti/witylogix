@@ -212,7 +212,7 @@ const MaintenanceTimeline = forwardRef<
           )}
 
           {/* Right scroll button */}
-          {scrollOffset < Math.max(0, SVG_WIDTH - containerRef.current?.clientWidth || 0) && (
+          {scrollOffset < Math.max(0, SVG_WIDTH - (containerRef.current?.clientWidth ?? 0)) && (
             <button
               onClick={() => handleScroll("right")}
               className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-wl-bg-elevated rounded-md hover:bg-wl-bg-elevated/80 transition-colors"

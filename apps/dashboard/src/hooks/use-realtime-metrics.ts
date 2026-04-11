@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import type { EventEnvelope, MetricsUpdatedEvent } from "@witylogix/core/realtime/types";
+import type { MetricsUpdatedEvent } from "@witylogix/core/realtime/types";
 import { useRealtime } from "./use-realtime.js";
 
 /**
@@ -69,30 +69,11 @@ export function useRealtimeMetrics(
 
   const roomId = shopId ? (`shop:${shopId}` as const) : (`org:${shopId}` as const);
 
-  // Use realtime hook with required token
-  const realtimeConfig = {
-    url: config?.url,
-    token: config?.token || "",
-    autoReconnect: true,
-  };
-
-  const realtime = useRealtime(
-    roomId,
-    {
-      eventTypes: ["metrics.updated"],
-    },
-    realtimeConfig
-  );
-
   /**
    * Handle metrics updated event.
    */
-  const handleMetricsEvent = useCallback(
-    (envelope: EventEnvelope) => {
-      if (envelope.data.event !== "metrics.updated") return;
-
-      const event = envelope.data as MetricsUpdatedEvent;
-
+  const handleMetricsMessage = useCallback(
+    (event: MetricsUpdatedEvent) => {
       setMetrics((prev) => {
         const updated: RealtimeMetrics = {
           ordersToday: event.ordersToday,
@@ -120,30 +101,16 @@ export function useRealtimeMetrics(
     [config]
   );
 
-  /**
-   * Subscribe to metrics updated events.
-   */
-  useEffect(() => {
-    if (realtime.status === "connected") {
-      // Subscribe to metrics events in this shop/org
-      realtime
-        .subscribe(roomId, { eventTypes: ["metrics.updated"] })
-        .catch((error) => {
-          console.error("[useRealtimeMetrics] Subscribe failed:", error);
-        });
-    }
-  }, [realtime.status, realtime, roomId]);
-
-  /**
-   * Listen for metrics events.
-   */
-  useEffect(() => {
-    realtime.onEvent(handleMetricsEvent);
-
-    return () => {
-      realtime.offEvent(handleMetricsEvent);
-    };
-  }, [realtime, handleMetricsEvent]);
+  // Use realtime hook
+  const realtime = useRealtime({
+    channels: [roomId],
+    onMessage: (msg) => {
+      if (msg.event === 'metrics.updated') {
+        handleMetricsMessage(msg.data as MetricsUpdatedEvent);
+      }
+    },
+    enabled: true,
+  });
 
   /**
    * Mark as loaded once connected.

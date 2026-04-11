@@ -8,7 +8,11 @@ type AvatarSize = "sm" | "md" | "lg";
 interface AvatarProps {
   size?: AvatarSize;
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
+  /** Shorthand: renders initials fallback for given name */
+  name?: string;
+  src?: string;
+  alt?: string;
 }
 
 interface AvatarImageProps {
@@ -29,7 +33,11 @@ const sizeClasses: Record<AvatarSize, string> = {
   lg: "w-14 h-14 text-base",
 };
 
-const Avatar = ({ size = "md", className, children }: AvatarProps) => {
+const Avatar = ({ size = "md", className, children, name, src, alt }: AvatarProps) => {
+  const initials = name
+    ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+    : null;
+
   return (
     <div
       className={cn(
@@ -41,7 +49,11 @@ const Avatar = ({ size = "md", className, children }: AvatarProps) => {
         className
       )}
     >
-      {children}
+      {src && <img src={src} alt={alt ?? name ?? ''} className="w-full h-full object-cover" />}
+      {!src && initials && (
+        <span className="text-wl-text-primary font-medium">{initials}</span>
+      )}
+      {!src && !initials && children}
     </div>
   );
 };

@@ -21,7 +21,7 @@ interface VehicleStatusCardProps extends HTMLAttributes<HTMLDivElement> {
   fuelLevel: number;
   lastUpdate: string;
   diagnosticsCount: number;
-  onClick?: (id: string) => void;
+  onCardClick?: (id: string) => void;
 }
 
 const statusConfig = {
@@ -69,7 +69,7 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
       fuelLevel,
       lastUpdate,
       diagnosticsCount,
-      onClick,
+      onCardClick,
       className,
       ...props
     },
@@ -84,10 +84,10 @@ const VehicleStatusCard = forwardRef<HTMLDivElement, VehicleStatusCardProps>(
         ref={ref}
         className={cn(
           "flex flex-col gap-4 hover:shadow-lg transition-shadow",
-          onClick && "cursor-pointer",
+          onCardClick && "cursor-pointer",
           className
         )}
-        onClick={() => onClick?.(id)}
+        onClick={() => onCardClick?.(id)}
         {...props}
       >
         {/* Header with name and status */}

@@ -11,7 +11,7 @@ import { ConnectionWizard } from "./connection-wizard";
 import { ApiUsageChart } from "./api-usage-chart";
 import { ProviderComparison } from "./provider-comparison";
 import type {
-  IntegrationProvider,
+  IntegrationConnection as IntegrationProvider,
   CredentialConfig,
   WebhookConfig as WebhookConfigType,
   RateLimitInfo,
@@ -331,7 +331,7 @@ export function IntegrationsDemo() {
             nextSyncAt={new Date(Date.now() + 30 * 60000)}
             recordsSynced={2450}
             recordsFailed={8}
-            recordsSkipped="{12}"
+            recordsSkipped={12}
             syncDirection="bidirectional"
             errors={[
               {
@@ -349,8 +349,8 @@ export function IntegrationsDemo() {
             syncStatus="syncing"
             lastSyncAt={new Date(Date.now() - 5 * 60000)}
             recordsSynced={1250}
-            recordsFailed="{2}"
-            recordsSkipped="{5}"
+            recordsFailed={2}
+            recordsSkipped={5}
             syncDirection="inbound"
             onTriggerSync={() => console.log("Sync triggered")}
           />

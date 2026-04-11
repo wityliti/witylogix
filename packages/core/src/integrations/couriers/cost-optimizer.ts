@@ -412,8 +412,8 @@ export class CostOptimizer {
         individualTotal += comparison.cheapest.effectiveCost;
 
         // Select for batch optimization (considering volume)
-        let bestOption = comparison.cheapest;
-        let bestCost = bestOption.effectiveCost;
+        let bestProvider = comparison.cheapest.provider;
+        let bestCost = comparison.cheapest.effectiveCost;
 
         for (const option of result.options) {
           const estimate = this.estimateCost(delivery, option);
@@ -431,18 +431,18 @@ export class CostOptimizer {
 
           if (cost < bestCost) {
             bestCost = cost;
-            bestOption = option;
+            bestProvider = option.provider;
           }
         }
 
         assignments.push({
           deliveryId: id,
-          provider: bestOption.provider,
+          provider: bestProvider,
           estimatedCost: bestCost,
         });
 
         optimizedTotal += bestCost;
-        providerDeliveryCounts.set(bestOption.provider, (providerDeliveryCounts.get(bestOption.provider) || 0) + 1);
+        providerDeliveryCounts.set(bestProvider, (providerDeliveryCounts.get(bestProvider) || 0) + 1);
       }
     }
 

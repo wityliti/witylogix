@@ -125,7 +125,7 @@ export function ConnectDialog({
         <StepCredentials
           provider={provider}
           formData={formData}
-          onFormDataChange={setFormData}
+          onFormDataChange={(data) => setFormData(data as typeof formData)}
           showPassword={showPassword}
           onShowPasswordChange={setShowPassword}
           showApiKey={showApiKey}
@@ -525,4 +525,3 @@ function StepSuccess({ provider, onClose }: StepSuccessProps) {
   );
 }
 
-export type { ConnectDialogProps };

@@ -45,16 +45,21 @@ const mockTracker: FulfillmentTrackerProps = {
 };
 
 const FulfillmentTracker = ({
-  received = mockTracker.received,
-  picked = mockTracker.picked,
-  packed = mockTracker.packed,
-  shipped = mockTracker.shipped,
-  delivered = mockTracker.delivered,
-  slaTotalHours = mockTracker.slaTotalHours,
+  received: receivedProp = mockTracker.received ?? 0,
+  picked: pickedProp = mockTracker.picked ?? 0,
+  packed: packedProp = mockTracker.packed ?? 0,
+  shipped: shippedProp = mockTracker.shipped ?? 0,
+  delivered: deliveredProp = mockTracker.delivered ?? 0,
+  slaTotalHours = mockTracker.slaTotalHours ?? 48,
   slaDueTime = mockTracker.slaDueTime,
   isOverdue = mockTracker.isOverdue,
   className,
 }: FulfillmentTrackerProps) => {
+  const received = receivedProp ?? 0;
+  const picked = pickedProp ?? 0;
+  const packed = packedProp ?? 0;
+  const shipped = shippedProp ?? 0;
+  const delivered = deliveredProp ?? 0;
   const stages: FulfillmentStage[] = [
     {
       id: "received",

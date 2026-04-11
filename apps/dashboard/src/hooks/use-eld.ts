@@ -127,3 +127,20 @@ export const useELDEvents = (filters?: ApiFilters): UseApiListResult<EldEvent> =
 export const useFleetCompliance = (): UseApiQueryResult<FleetCompliance> => {
   return useApiQuery<FleetCompliance>('/api/v4/eld/compliance');
 };
+
+/**
+ * Combined DVIR hook that provides defects list with update capability
+ */
+export const useDVIR = () => {
+  const defectsResult = useApiList<DvirDefect>('/api/v4/eld/defects');
+  const updateMutation = useApiMutation<DvirDefect>('PATCH', '/api/v4/eld/defects/status');
+
+  return {
+    defects: defectsResult.items,
+    isLoading: defectsResult.loading,
+    error: defectsResult.error,
+    pagination: defectsResult.pagination,
+    refetch: defectsResult.refetch,
+    updateDefectStatus: updateMutation.execute,
+  };
+};

@@ -8,7 +8,7 @@ type TextAlign = "left" | "center" | "right";
 
 interface Column<T> {
   key: string;
-  header: string;
+  header: ReactNode;
   render?: (item: T) => ReactNode;
   width?: string | number;
   align?: TextAlign;
@@ -170,7 +170,7 @@ export function Table<T extends { id?: string }>({
               >
                 {columns.map((column) => {
                   const cellValue = row[column.key as keyof T];
-                  const rendered = column.render ? column.render(row) : cellValue;
+                  const rendered: import("react").ReactNode = column.render ? column.render(row) : (cellValue as import("react").ReactNode);
                   const isMonoContent =
                     typeof cellValue === "string" && /^[A-Za-z0-9_-]+$/.test(cellValue);
 
@@ -197,4 +197,25 @@ export function Table<T extends { id?: string }>({
       </table>
     </div>
   );
+}
+
+// Shadcn-compatible sub-components for pages that use composable table API
+export function TableHeader({ children, className }: { children?: ReactNode; className?: string }) {
+  return <thead className={cn("bg-wl-bg-elevated", className)}>{children}</thead>;
+}
+
+export function TableBody({ children, className }: { children?: ReactNode; className?: string }) {
+  return <tbody className={className}>{children}</tbody>;
+}
+
+export function TableRow({ children, className }: { children?: ReactNode; className?: string }) {
+  return <tr className={cn("border-b border-wl-border-subtle hover:bg-wl-bg-overlay", className)}>{children}</tr>;
+}
+
+export function TableHead({ children, className, colSpan }: { children?: ReactNode; className?: string; colSpan?: number }) {
+  return <th colSpan={colSpan} className={cn("px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary", className)}>{children}</th>;
+}
+
+export function TableCell({ children, className, colSpan }: { children?: ReactNode; className?: string; colSpan?: number }) {
+  return <td colSpan={colSpan} className={cn("px-4 py-3 text-sm text-wl-text-primary", className)}>{children}</td>;
 }

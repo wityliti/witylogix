@@ -85,15 +85,7 @@ export default function DeliveryLogPage() {
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     try {
-      const blob = await exportCSV();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `delivery-log-${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await exportCSV();
     } finally {
       setIsExporting(false);
     }
@@ -208,7 +200,7 @@ export default function DeliveryLogPage() {
                       Channel
                     </label>
                     <select
-                      value={filters.channel || ""}
+                      value={(filters.channel as string) || ""}
                       onChange={(e) =>
                         setFilters({
                           ...filters,
@@ -237,7 +229,7 @@ export default function DeliveryLogPage() {
                       Status
                     </label>
                     <select
-                      value={filters.status || ""}
+                      value={(filters.status as string) || ""}
                       onChange={(e) =>
                         setFilters({
                           ...filters,

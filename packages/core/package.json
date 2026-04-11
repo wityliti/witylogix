@@ -88,7 +88,9 @@
     "./webhooks": "./src/webhooks/index.ts",
     "./invoicing": "./src/invoicing/index.ts",
     "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
-    "./eta-recalculator": "./src/eta-recalculator/index.ts"
+    "./eta-recalculator": "./src/eta-recalculator/index.ts",
+    "./realtime/types": "./src/realtime/types.ts",
+    "./integrations/telematics": "./src/integrations/telematics/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",

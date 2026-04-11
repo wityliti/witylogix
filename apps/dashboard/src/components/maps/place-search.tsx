@@ -26,7 +26,7 @@ export function PlaceSearch({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const placeServiceRef = useRef<google?.maps?.places?.PlacesService | null>(null);
+  const placeServiceRef = useRef<google.maps.places.PlacesService | null>(null);
 
   // Initialize PlacesService
   useEffect(() => {
@@ -75,10 +75,11 @@ export function PlaceSearch({
         const searchResults: PlaceSearchResult[] = results
           .slice(0, 10)
           .map((result) => {
+            const gmaps = google as typeof globalThis.google;
             const distance =
-              google.maps.geometry?.spherical?.computeDistanceBetween(
-                new google.maps.LatLng(mapCenter.lat, mapCenter.lng),
-                result.geometry?.location || new google.maps.LatLng(0, 0)
+              gmaps.maps.geometry.spherical.computeDistanceBetween(
+                new gmaps.maps.LatLng(mapCenter.lat, mapCenter.lng),
+                result.geometry?.location || new gmaps.maps.LatLng(0, 0)
               ) || 0;
 
             return {

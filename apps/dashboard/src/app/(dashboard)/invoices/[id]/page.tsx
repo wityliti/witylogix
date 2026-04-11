@@ -450,7 +450,7 @@ export default function InvoiceDetailPage() {
                   key: "rate",
                   header: "Rate",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span>${item.rate.toFixed(2)}</span>
                   ),
                   width: "15%",
@@ -459,7 +459,7 @@ export default function InvoiceDetailPage() {
                   key: "amount",
                   header: "Amount",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span className="font-medium">
                       ${item.amount.toFixed(2)}
                     </span>
