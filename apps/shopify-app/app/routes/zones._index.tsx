@@ -262,7 +262,8 @@ function ZoneCreateModal({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       title="Create New Zone"
       primaryAction={{
-        content: "Create Zone"
+        content: "Create Zone",
+        submit: true,
       }}
       secondaryActions={[
         {

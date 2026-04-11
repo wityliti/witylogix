@@ -14,8 +14,8 @@
  *   - Link to detail/edit: `/locations/:id`
  */
 
-import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Form, useLoaderData, useSearchParams, Link } from "react-router";
 import { useState, useCallback } from "react";
 import {
   Page,
@@ -99,6 +99,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 
   return { locations: response.data, meta: response.meta };
+}
+
+// ─── Action ────────────────────────────────────────────────
+
+export async function action({ request }: ActionFunctionArgs) {
+  const { session } = await authenticate.admin(request);
+  const api = createApiClientFromRequest(request, session);
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "deactivate") {
+    const id = formData.get("id") as string;
+    await api.delete(`/api/v4/locations/${id}`);
+    return { ok: true };
+  }
+
+  return null;
 }
 
 // ─── Component ─────────────────────────────────────────────
@@ -319,10 +336,7 @@ export default function LocationsList() {
           primaryAction={{
             content: "Deactivate",
             destructive: true,
-            onAction: () => {
-              // Call deactivate API
-              setDeactivatingId(null);
-            },
+            submit: true,
           }}
           secondaryActions={[
             {
@@ -332,9 +346,13 @@ export default function LocationsList() {
           ]}
         >
           <Modal.Section>
-            <Text as="p">
-              This location will no longer be available for orders and assignments.
-            </Text>
+            <Form method="post" onSubmit={() => setDeactivatingId(null)}>
+              <input type="hidden" name="intent" value="deactivate" />
+              <input type="hidden" name="id" value={deactivatingId} />
+              <Text as="p">
+                This location will no longer be available for orders and assignments.
+              </Text>
+            </Form>
           </Modal.Section>
         </Modal>
       )}

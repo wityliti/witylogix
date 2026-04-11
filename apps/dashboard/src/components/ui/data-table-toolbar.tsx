@@ -188,7 +188,7 @@ export function DataTableToolbar({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => {}}
+            onClick={() => onExport?.("csv")}
             title="Export data"
           >
             <Download className="w-4 h-4" />
