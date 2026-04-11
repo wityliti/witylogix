@@ -79,6 +79,7 @@ export default function InvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
   const [isSending, setIsSending] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const { addToast } = useToast();
 
   // Get unique customers
@@ -243,9 +244,30 @@ export default function InvoicesPage() {
     }
   }, [selectedInvoices, isSending, addToast, refetch]);
 
-  const handleBulkMarkPaid = useCallback(() => {
-    // TODO: API call for mark paid
-  }, [selectedInvoices]);
+  const handleBulkMarkPaid = useCallback(async () => {
+    if (selectedInvoices.size === 0 || isMarkingPaid) return;
+    setIsMarkingPaid(true);
+    try {
+      await api.post('/api/v4/invoices/bulk-mark-paid', {
+        ids: Array.from(selectedInvoices),
+      });
+      addToast({
+        type: 'success',
+        title: 'Invoices marked as paid',
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} marked as paid.`,
+      });
+      setSelectedInvoices(new Set());
+      await refetch();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Mark paid failed',
+        message: err instanceof Error ? err.message : 'Failed to mark invoices as paid. Please try again.',
+      });
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [selectedInvoices, isMarkingPaid, addToast, refetch]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -355,9 +377,9 @@ export default function InvoicesPage() {
               <Send className="w-4 h-4 mr-2" />
               {isSending ? 'Sending…' : 'Send'}
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid}>
+            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid} disabled={isMarkingPaid}>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Mark Paid
+              {isMarkingPaid ? 'Marking…' : 'Mark Paid'}
             </Button>
           </div>
         </Card>
