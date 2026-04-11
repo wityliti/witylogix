@@ -20,6 +20,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
@@ -200,8 +202,10 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params.id as string;
 
+  const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const isOverdue = useMemo(() => {
     return (
@@ -229,14 +233,31 @@ export default function InvoiceDetailPage() {
     // TODO: Generate and download PDF
   }, [invoiceId]);
 
-  const handleSendInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "sent",
-      sentDate: new Date(),
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleSendInvoice = useCallback(async () => {
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "sent",
+        sentDate: new Date(),
+      }));
+      addToast({
+        type: 'success',
+        title: 'Invoice sent',
+        message: `Invoice ${invoice.number} has been sent to the customer.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Send failed',
+        message: err instanceof Error ? err.message : 'Failed to send invoice. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [invoiceId, invoice.number, isSending, addToast]);
 
   const handleMarkPaid = useCallback(() => {
     setInvoice((prev) => ({
@@ -317,9 +338,10 @@ export default function InvoiceDetailPage() {
               variant="secondary"
               size="lg"
               onClick={handleSendInvoice}
+              disabled={isSending}
             >
               <Send className="w-4 h-4" />
-              Send
+              {isSending ? 'Sending...' : 'Send'}
             </Button>
           )}
           {invoice.status === "sent" && (

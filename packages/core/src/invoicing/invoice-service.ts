@@ -254,6 +254,39 @@ export class InvoiceService {
   }
 
   /**
+   * Mark a finalized invoice as sent to the customer
+   * @param invoiceId - Invoice ID
+   * @param tenantId - Tenant ID
+   * @returns Invoice - Updated invoice with status SENT
+   */
+  async sendInvoice(invoiceId: string, tenantId: string): Promise<Invoice> {
+    const invoice = await this.getInvoice(invoiceId, tenantId);
+
+    if (invoice.status === 'draft') {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    }
+
+    if (invoice.status === 'voided') {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    }
+
+    const updated = await (this.prisma.invoice as any).update({
+      where: { id: invoiceId },
+      data: {
+        status: 'SENT',
+      },
+      include: {
+        lineItems: true,
+        discounts: true,
+        taxes: true,
+        payments: true,
+      },
+    });
+
+    return this.mapDbInvoice(updated);
+  }
+
+  /**
    * Void an invoice and record reason in audit trail
    * @param invoiceId - Invoice ID
    * @param tenantId - Tenant ID

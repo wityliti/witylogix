@@ -7,6 +7,7 @@
  *   GET    /invoices/:id              — Get invoice detail with line items
  *   PUT    /invoices/:id              — Update draft invoice (notes, discounts, due date)
  *   POST   /invoices/:id/finalize     — Finalize invoice and assign number
+ *   POST   /invoices/:id/send         — Mark finalized invoice as sent
  *   POST   /invoices/:id/void         — Void invoice with reason
  *   POST   /invoices/:id/payment      — Record payment
  *   GET    /invoices/:id/pdf          — Download invoice as PDF
@@ -302,6 +303,29 @@ async function invoicesRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.send({
         invoice,
         message: 'Invoice finalized successfully',
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        throw new NotFoundError('Invoice', id);
+      }
+      throw error;
+    }
+  });
+
+  // ── POST /invoices/:id/send ──────────────────────────────────────────
+  /**
+   * Mark a finalized invoice as sent to the customer
+   */
+  fastify.post('/invoices/:id/send', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { tenantId } = request;
+    const { id } = request.params as { id: string };
+
+    try {
+      const invoice = await invoiceService.sendInvoice(id, tenantId);
+
+      return reply.send({
+        invoice,
+        message: 'Invoice sent successfully',
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('not found')) {
