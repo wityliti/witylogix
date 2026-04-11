@@ -13,7 +13,7 @@
  */
 
 import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams } from "react-router";
+import { Form, useLoaderData, useSearchParams } from "react-router";
 import {
   Page,
   Layout,
@@ -71,6 +71,55 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
   const days = url.searchParams.get("days") ?? "30";
+  const intent = url.searchParams.get("intent");
+
+  if (intent === "export") {
+    let overview: AnalyticsOverview;
+    try {
+      overview = await api.get<AnalyticsOverview>("/api/v4/analytics/overview", {
+        days: parseInt(days),
+      });
+    } catch {
+      overview = {
+        dateRange: `Last ${days} days`,
+        totalDeliveries: 0,
+        onTimeRate: 0,
+        averageDeliveryTime: 0,
+        totalRevenue: 0,
+        trend: [],
+        performanceBreakdown: [],
+        zonePerformance: [],
+      };
+    }
+
+    const lines: string[] = [
+      "Report: Delivery Analytics",
+      `Date Range: ${overview.dateRange}`,
+      `Total Deliveries: ${overview.totalDeliveries}`,
+      `On-Time Rate: ${overview.onTimeRate}%`,
+      `Avg Delivery Time: ${overview.averageDeliveryTime} min`,
+      `Total Revenue: $${overview.totalRevenue}`,
+      "",
+      "Performance Breakdown",
+      "Status,Count,Percentage",
+      ...overview.performanceBreakdown.map(
+        (r) => `${r.status},${r.count},${r.percentage}%`,
+      ),
+      "",
+      "Zone Performance",
+      "Zone,Deliveries,On-Time Rate,Avg Time",
+      ...overview.zonePerformance.map(
+        (z) => `${z.zoneName},${z.deliveries},${z.onTimeRate}%,${z.averageTime} min`,
+      ),
+    ];
+
+    return new Response(lines.join("\n"), {
+      headers: {
+        "Content-Type": "text/csv",
+        "Content-Disposition": `attachment; filename="analytics-${days}d.csv"`,
+      },
+    });
+  }
 
   try {
     const response = await api.get<AnalyticsOverview>(
@@ -194,10 +243,15 @@ export default function Analytics() {
     <Page
       title="Analytics"
       subtitle="Delivery metrics and performance overview"
-      primaryAction={{
-        content: "Export Report",
-        onAction: () => {},
-      }}
+      primaryAction={
+        <Form method="get">
+          <input type="hidden" name="intent" value="export" />
+          <input type="hidden" name="days" value={currentDays} />
+          <Button submit variant="primary">
+            Export Report
+          </Button>
+        </Form>
+      }
     >
       <BlockStack gap="400">
         {/* Date Range Selector */}
