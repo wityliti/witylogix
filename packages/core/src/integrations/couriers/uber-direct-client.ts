@@ -13,6 +13,7 @@
  */
 
 import { CourierAdapter, type WebhookInfo } from "./courier-adapter.js";
+import { WebhookEvent } from "./types.js";
 import type {
   CourierConfig,
   QuoteRequest,
@@ -23,7 +24,6 @@ import type {
   DeliveryStatus,
   DriverPosition,
   WebhookRegistration,
-  WebhookEvent,
 } from "./types.js";
 import { DeliveryStatus as DeliveryStatusEnum } from "./types.js";
 

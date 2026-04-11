@@ -36,7 +36,7 @@ export class EventBroadcaster {
   private eventSequence = new Map<string, number>();
 
   /** Debounce timers for metrics aggregation. */
-  private metricsDebounceTimers = new Map<string, NodeJS.Timer>();
+  private metricsDebounceTimers = new Map<string, NodeJS.Timeout>();
 
   /** Accumulated metrics for debouncing. */
   private metricsAccumulator = new Map<
