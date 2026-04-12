@@ -30,12 +30,24 @@ import {
 // ─── SCHEMAS ─────────────────────────────────────────────────────────
 
 const createInvoiceSchema = z.object({
-  customerId: z.string().uuid().optional(),
+  customerId: z.string().optional(),
   deliveryIds: z.array(z.string().uuid()).optional(),
   routeIds: z.array(z.string().uuid()).optional(),
+  manualLineItems: z.array(
+    z.object({
+      description: z.string().min(1),
+      quantity: z.number().positive(),
+      unitPrice: z.number().nonnegative(),
+      taxable: z.boolean().optional(),
+    }),
+  ).optional(),
   dueDate: z.coerce.date().optional(),
   currency: z.string().length(3).default('USD'),
   notes: z.string().optional(),
+  terms: z.string().optional(),
+  status: z.enum(['draft', 'sent']).optional(),
+  taxRate: z.number().min(0).max(100).optional(),
+  discountPercentage: z.number().min(0).max(100).optional(),
   discounts: z.array(
     z.object({
       description: z.string(),

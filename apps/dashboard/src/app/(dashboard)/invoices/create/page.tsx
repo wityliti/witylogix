@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
-import { useApiMutation } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 
@@ -191,12 +190,17 @@ export default function CreateInvoicePage() {
     setIsSavingDraft(true);
     try {
       const payload = {
-        status: 'draft',
+        status: 'draft' as const,
         customerId: selectedCustomer?.id,
-        lineItems,
-        dueDate,
-        notes,
-        terms,
+        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
+          description,
+          quantity,
+          unitPrice: rate,
+          taxable,
+        })),
+        dueDate: dueDate || undefined,
+        notes: notes || undefined,
+        terms: terms || undefined,
         taxRate: parseFloat(taxRate || '0'),
         discountPercentage: parseFloat(discountPercentage || '0'),
       };
@@ -231,12 +235,17 @@ export default function CreateInvoicePage() {
     setIsSending(true);
     try {
       const payload = {
-        status: 'sent',
+        status: 'sent' as const,
         customerId: selectedCustomer.id,
-        lineItems,
-        dueDate,
-        notes,
-        terms,
+        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
+          description,
+          quantity,
+          unitPrice: rate,
+          taxable,
+        })),
+        dueDate: dueDate || undefined,
+        notes: notes || undefined,
+        terms: terms || undefined,
         taxRate: parseFloat(taxRate || '0'),
         discountPercentage: parseFloat(discountPercentage || '0'),
       };
