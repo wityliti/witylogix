@@ -382,16 +382,17 @@ export default function CreateInvoicePage() {
             </h2>
             <Select
               value={billingRuleType}
-              onChange={(value) => setBillingRuleType(value as BillingRuleType)}
+              onChange={(e) => setBillingRuleType(e.target.value as BillingRuleType)}
               label="Rule Type"
-            >
-              <option value="per-delivery">Per Delivery</option>
-              <option value="per-mile">Per Mile</option>
-              <option value="per-hour">Per Hour</option>
-              <option value="flat-rate">Flat Rate</option>
-              <option value="tiered">Tiered Pricing</option>
-              <option value="subscription">Subscription</option>
-            </Select>
+              options={[
+                { value: "per-delivery", label: "Per Delivery" },
+                { value: "per-mile", label: "Per Mile" },
+                { value: "per-hour", label: "Per Hour" },
+                { value: "flat-rate", label: "Flat Rate" },
+                { value: "tiered", label: "Tiered Pricing" },
+                { value: "subscription", label: "Subscription" },
+              ]}
+            />
             <p className="mt-2 text-xs text-gray-400">
               {billingRuleType === "per-delivery" &&
                 "Charge a fixed amount per delivery"}
