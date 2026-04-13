@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useApiList, useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { Header } from '@/components/layout/header';
@@ -49,6 +50,8 @@ export default function TeamPage() {
   const { items: invitations } = useApiList<PendingInvitation>('/api/v4/invitations');
   const { execute: removeMember } = useApiMutation('DELETE', '/api/v4/users/:id');
   const { execute: inviteMember } = useApiMutation('POST', '/api/v4/invitations');
+  const { execute: resendInvite } = useApiMutation('POST', '/api/v4/invitations/:id/resend');
+  const { addToast } = useToast();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member" | "viewer">("member");
@@ -95,8 +98,13 @@ export default function TeamPage() {
     setChangeRoleId(null);
   };
 
-  const resendInvitation = (id: string) => {
-    // TODO: API call to resend invitation
+  const resendInvitation = async (id: string) => {
+    try {
+      await resendInvite({ params: { id } });
+      addToast({ type: 'success', title: 'Invitation resent', message: 'The invitation email has been resent.' });
+    } catch {
+      addToast({ type: 'error', title: 'Failed to resend', message: 'Could not resend the invitation. Please try again.' });
+    }
   };
 
   const revokeInvitation = (id: string) => {
