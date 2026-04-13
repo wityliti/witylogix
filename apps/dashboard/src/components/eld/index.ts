@@ -9,7 +9,4 @@ export { DVIRChecklist } from "./dvir-checklist";
 export { HOSClock } from "./hos-clock";
 export { ViolationTimeline } from "./violation-timeline";
 
-// Types
-export type { HOSGaugeProps } from "./hos-gauge";
-export type { ComplianceBadgeProps } from "./compliance-badge";
-export type { DVIRChecklistProps } from "./dvir-checklist";
+// Note: Props types are not exported from individual modules

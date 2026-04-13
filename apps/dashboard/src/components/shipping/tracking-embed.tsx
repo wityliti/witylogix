@@ -115,8 +115,7 @@ export function TrackingEmbed({
           className="p-4 rounded-md border"
           style={{
             borderColor: 'var(--brand-color)',
-            backgroundColor: `var(--brand-color)`,
-            backgroundOpacity: 0.08,
+            backgroundColor: `color-mix(in srgb, var(--brand-color) 8%, transparent)`,
           }}
         >
           <p className="text-xs text-wl-text-tertiary uppercase font-semibold tracking-wide">

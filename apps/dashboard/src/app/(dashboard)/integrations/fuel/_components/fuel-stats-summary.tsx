@@ -25,31 +25,26 @@ export function FuelStatsSummary({
         label="Active Cards"
         value={activeCards.toString()}
         icon={<TrendingUp className="w-4 h-4" />}
-        variant="info"
       />
       <StatCard
         label="Suspended"
         value={suspendedCards.toString()}
         icon={<AlertTriangle className="w-4 h-4" />}
-        variant="warning"
       />
       <StatCard
         label="Monthly Spend"
         value={`$${monthlySpend.toLocaleString()}`}
         icon={<DollarSign className="w-4 h-4" />}
-        variant="primary"
       />
       <StatCard
         label="Avg Price/Gal"
         value={`$${avgPricePerGallon.toFixed(2)}`}
         icon={<TrendingDown className="w-4 h-4" />}
-        variant="default"
       />
       <StatCard
         label="Fraud Alerts"
         value={fraudAlerts.toString()}
         icon={<AlertTriangle className="w-4 h-4" />}
-        variant="danger"
       />
     </div>
   );

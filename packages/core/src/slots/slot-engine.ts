@@ -71,7 +71,7 @@ export class SlotEngine {
 
     // Count reservations for each slot
     const availability: SlotAvailability[] = await Promise.all(
-      slots.map(async (slot) => {
+      slots.map(async (slot: any) => {
         const reservationCount = await (this.db as any).slotReservation.count({
           where: {
             slotId: slot.id,

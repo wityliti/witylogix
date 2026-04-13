@@ -90,7 +90,7 @@ export function DonutChart({
 
   // Create donut segments
   const segments = useMemo(() => {
-    const segments = [];
+    const segments: { index: number; label: string; value: number; percentage: string; color: string | undefined; path: string; midAngle: number }[] = [];
     let currentAngle = -Math.PI / 2; // Start from top
 
     chartData.forEach((item, index) => {

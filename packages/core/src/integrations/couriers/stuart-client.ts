@@ -107,7 +107,7 @@ export class StuartClient extends CourierAdapter {
       estimatedMinutes: Math.ceil((pricing.duration || 0) / 60),
       distanceKm: (pricing.distance || 0) / 1000,
       provider: this.provider,
-      rawResponse: pricing,
+      rawResponse: pricing as unknown as Record<string, unknown>,
     };
   }
 
@@ -163,7 +163,7 @@ export class StuartClient extends CourierAdapter {
       driverName: job.courier?.name,
       driverPhone: job.courier?.phone,
       estimatedMinutes: Math.ceil((job.duration || 0) / 60),
-      rawResponse: job,
+      rawResponse: job as unknown as Record<string, unknown>,
     };
   }
 
@@ -194,7 +194,7 @@ export class StuartClient extends CourierAdapter {
       driverPhone: job.courier?.phone,
       estimatedArrivalAt: job.estimated_delivery_time ? new Date(job.estimated_delivery_time) : undefined,
       deliveredAt: job.completed_at ? new Date(job.completed_at) : undefined,
-      rawResponse: job,
+      rawResponse: job as unknown as Record<string, unknown>,
     };
   }
 

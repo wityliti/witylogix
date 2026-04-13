@@ -149,8 +149,9 @@ export function FhirResourceBrowser({
 
     const entries = Array.isArray(obj) ? obj.entries() : Object.entries(obj);
 
-    for (const [key, value] of entries) {
-      const isArrayIndex = typeof key === "string" && /^\d+$/.test(key);
+    for (const [rawKey, value] of entries) {
+      const key = String(rawKey);
+      const isArrayIndex = typeof rawKey === "number" || /^\d+$/.test(key);
       const displayKey = isArrayIndex ? `[${key}]` : key;
       const currentPath = parentPath ? `${parentPath}.${displayKey}` : displayKey;
       const isObject = value !== null && typeof value === "object";

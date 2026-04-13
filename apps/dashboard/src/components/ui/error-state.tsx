@@ -6,7 +6,8 @@ import { Button } from "./button";
 
 interface ErrorStateProps {
   title?: string;
-  message: string;
+  message?: string;
+  error?: Error | null;
   icon?: ReactNode;
   onRetry?: () => void;
   onAction?: { label: string; onClick: () => void };
@@ -16,11 +17,13 @@ interface ErrorStateProps {
 export function ErrorState({
   title = "Something went wrong",
   message,
+  error,
   icon,
   onRetry,
   onAction,
   className,
 }: ErrorStateProps) {
+  const displayMessage = message ?? error?.message ?? "An unexpected error occurred.";
   return (
     <div
       className={cn(
@@ -56,7 +59,7 @@ export function ErrorState({
       </h3>
 
       <p className="text-sm text-wl-text-secondary mb-6 max-w-96">
-        {message}
+        {displayMessage}
       </p>
 
       <div className="flex items-center gap-2">

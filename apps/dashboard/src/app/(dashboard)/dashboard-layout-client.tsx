@@ -4,6 +4,7 @@ import { ReactNode, useState, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { NavSidebar } from "@/components/navigation/sidebar";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
+import { ToastProvider } from "@/components/ui/toast";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutProps
   const [collapsed, setCollapsed] = useState(false);
 
   return (
+    <ToastProvider>
     <div className={cn("flex min-h-screen wl-dashboard-bg")}>
       {/* Sidebar */}
       <NavSidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
@@ -99,5 +101,6 @@ export default function DashboardLayoutClient({ children }: DashboardLayoutProps
         </div>
       </main>
     </div>
+    </ToastProvider>
   );
 }

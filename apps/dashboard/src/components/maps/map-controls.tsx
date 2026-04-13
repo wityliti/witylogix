@@ -135,7 +135,7 @@ export function MapControls({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onCenterSelected}
+          onClick={() => onCenterSelected(null)}
           className="w-full justify-start"
           title="Center on selected driver"
         >

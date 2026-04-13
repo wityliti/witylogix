@@ -134,10 +134,10 @@ export class NotificationDispatcher {
         if (fallbackChannel === notification.type) continue;
 
         try {
-          const fallbackNotification: Notification = {
+          const fallbackNotification = {
             ...notification,
             type: fallbackChannel,
-          };
+          } as Notification;
           const fallbackResult = await this.sendToChannel(fallbackNotification);
           result.fallbackResults.push(fallbackResult);
           result.channelAttempts.push({

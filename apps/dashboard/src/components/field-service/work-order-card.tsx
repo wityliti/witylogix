@@ -9,7 +9,7 @@ import {
   Plus,
   Edit2,
   CheckCircle,
-  Tool,
+  Wrench as Tool,
   Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

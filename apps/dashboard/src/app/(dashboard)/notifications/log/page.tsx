@@ -520,7 +520,7 @@ export default function NotificationLogPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <Table>
+              <table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Timestamp</TableHead>
@@ -606,7 +606,7 @@ export default function NotificationLogPage() {
                     ))
                   )}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </CardContent>
         </Card>

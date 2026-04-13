@@ -207,7 +207,7 @@ export class TrimbleClient extends TelematicsAdapter {
 
   constructor(config: TelematicsConfig) {
     super(config);
-    const credentials = config.credentials as TrimbleCredentials;
+    const credentials = config.credentials as unknown as TrimbleCredentials;
     this.apiKey = credentials.apiKey;
     this.oauthToken = credentials.oauthToken;
     this.clientId = credentials.clientId;

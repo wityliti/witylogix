@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "./loading-spinner";
 
-interface VirtualListProps<T> {
+export interface VirtualListProps<T> {
   items: T[];
   itemHeight: number | ((index: number, item: T) => number);
   renderItem: (item: T, index: number) => ReactNode;

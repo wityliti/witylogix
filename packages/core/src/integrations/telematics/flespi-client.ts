@@ -699,17 +699,6 @@ export class FlespiClient extends TelematicsAdapter {
   /**
    * Build request headers with Bearer token
    */
-  private buildHeaders(): HeadersInit {
-    return {
-      Authorization: `Bearer ${this.apiToken}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-  }
-
-  /**
-   * Build headers for HTTP requests
-   */
   protected buildHeaders(): HeadersInit {
     return {
       Authorization: `Bearer ${this.apiToken}`,

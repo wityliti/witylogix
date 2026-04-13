@@ -23,7 +23,7 @@ interface RadioOption {
   disabled?: boolean;
 }
 
-interface FormRadioGroupProps {
+export interface FormRadioGroupProps {
   /** Radio options */
   options: RadioOption[];
   /** Selected value */

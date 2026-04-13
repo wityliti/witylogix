@@ -16,6 +16,8 @@ import {
   useShadowMode,
   type FieldMapping,
   type Migration,
+  type MigrationValidation,
+  type ShadowModeComparison,
 } from '@/hooks/use-migration';
 
 const PROVIDERS = ['Stripe', 'PayPal', 'Square', 'Adyen', 'AWS S3', 'Google Pay'];
@@ -287,7 +289,7 @@ function FieldMappingEditor({
   targetProvider: string;
   mappings: FieldMapping[];
   onMappingsChange: (mappings: FieldMapping[]) => void;
-  validation: Record<string, unknown>;
+  validation: MigrationValidation | null;
 }) {
   const sourceFields = SAMPLE_FIELDS[sourceProvider as keyof typeof SAMPLE_FIELDS] || [];
   const targetFields = SAMPLE_FIELDS[targetProvider as keyof typeof SAMPLE_FIELDS] || [];
@@ -379,7 +381,7 @@ function ShadowModeSettings({
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
   matchPercentage: number;
-  comparisons: Record<string, unknown>[];
+  comparisons: ShadowModeComparison[];
 }) {
   return (
     <Card className="border border-[#1e1e2e] bg-[#0a0a0f] p-6">

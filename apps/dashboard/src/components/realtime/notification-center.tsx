@@ -11,7 +11,7 @@ import {
   AlertTriangle,
   Settings,
   Check,
-  CheckAll,
+  CheckCheck as CheckAll,
   Volume2,
   VolumeX,
   X,

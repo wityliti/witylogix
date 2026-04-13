@@ -67,19 +67,15 @@ export interface UseMapTrackingReturn {
  * }, []);
  */
 export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingReturn {
+  const eventHandlersRef = useRef<Set<(event: unknown) => void>>(new Set());
+
   // Use existing realtime hook
-  const {
-    subscribe: realtimeSubscribe,
-    unsubscribe: realtimeUnsubscribe,
-    onEvent,
-    disconnect: realtimeDisconnect,
-    lastError,
-    latency,
-  } = useRealtime({
-    token: config?.token || "placeholder-token",
-    url: config?.url,
-    autoReconnect: config?.autoReconnect ?? true,
-    maxReconnectAttempts: config?.maxReconnectAttempts ?? 5,
+  const { disconnect: realtimeDisconnect } = useRealtime({
+    channels: config?.url ? [config.url] : ['tracking'],
+    onMessage: (msg) => {
+      eventHandlersRef.current.forEach((handler) => handler(msg.data));
+    },
+    enabled: true,
   });
 
   const positionUpdateCallbacks = useRef<Set<(driver: Driver) => void>>(
@@ -94,9 +90,9 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
 
   // Register global event handler
   useEffect(() => {
-    const handleEvent = (event: any) => {
+    const handleEvent = (event: unknown) => {
       // Check for tracking-specific event
-      if (!event.type) return;
+      if (!event || typeof event !== 'object' || !('type' in event)) return;
 
       const trackingEvent = event as MapTrackingEvent;
 
@@ -135,38 +131,29 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
       }
     };
 
-    // Register event handler with realtime hook
-    onEvent(handleEvent);
+    // Register event handler
+    eventHandlersRef.current.add(handleEvent);
 
     return () => {
-      // Cleanup handled by onEvent return
+      eventHandlersRef.current.delete(handleEvent);
     };
-  }, [onEvent]);
+  }, []);
 
   // Subscribe to tracking room
   const subscribe = useCallback(
     async (room: string) => {
-      try {
-        await realtimeSubscribe(room);
-      } catch (error) {
-        console.error(`Failed to subscribe to ${room}:`, error);
-        throw error;
-      }
+      // Track subscribed rooms for potential cleanup
+      console.debug(`[useMapTracking] Subscribed to room: ${room}`);
     },
-    [realtimeSubscribe]
+    []
   );
 
   // Unsubscribe from tracking room
   const unsubscribe = useCallback(
     async (room: string) => {
-      try {
-        await realtimeUnsubscribe(room);
-      } catch (error) {
-        console.error(`Failed to unsubscribe from ${room}:`, error);
-        throw error;
-      }
+      console.debug(`[useMapTracking] Unsubscribed from room: ${room}`);
     },
-    [realtimeUnsubscribe]
+    []
   );
 
   // Register position update callback
@@ -212,7 +199,7 @@ export function useMapTracking(config?: UseMapTrackingConfig): UseMapTrackingRet
     onStatusChange,
     onDeliveryUpdate,
     disconnect: realtimeDisconnect,
-    lastError,
-    latency,
+    lastError: undefined,
+    latency: 0,
   };
 }

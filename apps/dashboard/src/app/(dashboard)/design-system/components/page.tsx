@@ -609,9 +609,9 @@ export default function ComponentGalleryPage() {
             description="Status indicator badge"
             preview={
               <div className="flex gap-3 flex-wrap">
-                <StatusBadge status="active" label="Active" />
-                <StatusBadge status="inactive" label="Inactive" />
-                <StatusBadge status="pending" label="Pending" />
+                <StatusBadge status="delivered">Delivered</StatusBadge>
+                <StatusBadge status="cancelled">Cancelled</StatusBadge>
+                <StatusBadge status="pending">Pending</StatusBadge>
               </div>
             }
             code={`<StatusBadge status="active" label="Active" />
@@ -626,9 +626,9 @@ export default function ComponentGalleryPage() {
             preview={
               <Timeline
                 items={[
-                  { label: "Event 1", timestamp: "2024-03-01" },
-                  { label: "Event 2", timestamp: "2024-03-02" },
-                  { label: "Event 3", timestamp: "2024-03-03" },
+                  { title: "Event 1", timestamp: "2024-03-01" },
+                  { title: "Event 2", timestamp: "2024-03-02" },
+                  { title: "Event 3", timestamp: "2024-03-03" },
                 ]}
               />
             }
@@ -793,13 +793,13 @@ export default function ComponentGalleryPage() {
             preview={
               <Table
                 columns={[
-                  { header: "Name", accessor: "name" },
-                  { header: "Status", accessor: "status" },
-                  { header: "Date", accessor: "date" },
+                  { key: "name", header: "Name" },
+                  { key: "status", header: "Status" },
+                  { key: "date", header: "Date" },
                 ]}
                 data={[
-                  { name: "Item 1", status: "Active", date: "2024-03-01" },
-                  { name: "Item 2", status: "Inactive", date: "2024-03-02" },
+                  { id: "1", name: "Item 1", status: "Active", date: "2024-03-01" },
+                  { id: "2", name: "Item 2", status: "Inactive", date: "2024-03-02" },
                 ]}
               />
             }

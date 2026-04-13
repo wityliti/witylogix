@@ -16,7 +16,8 @@ import { KPICard } from "./kpi-card";
 import { ComparisonCard } from "./comparison-card";
 import { DataTable } from "./data-table";
 import { DateRangePicker } from "./date-range-picker";
-import type { DateRange, ColumnDefinition } from "./types";
+import type { DateRange } from "./types";
+import type { ColumnDef } from "@/components/ui/data-table";
 
 export function AnalyticsDemoDashboard() {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -119,28 +120,31 @@ export function AnalyticsDemoDashboard() {
     date: string;
   }
 
-  const tableColumns: ColumnDefinition<TableData>[] = [
-    { key: "name", label: "Product", sortable: true },
+  const tableColumns: ColumnDef<TableData>[] = [
+    { id: "name", header: "Product", accessorKey: "name", sortable: true },
     {
-      key: "status",
-      label: "Status",
-      formatter: (value) => (
+      id: "status",
+      header: "Status",
+      accessorKey: "status",
+      cell: (value) => (
         <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
           {value}
         </span>
       ),
     },
     {
-      key: "revenue",
-      label: "Revenue",
+      id: "revenue",
+      header: "Revenue",
+      accessorKey: "revenue",
       align: "right",
-      formatter: (value) => `$${(value / 1000).toFixed(1)}K`,
+      cell: (value) => `$${((value as number) / 1000).toFixed(1)}K`,
     },
     {
-      key: "date",
-      label: "Date",
-      formatter: (value) =>
-        new Date(value).toLocaleDateString(),
+      id: "date",
+      header: "Date",
+      accessorKey: "date",
+      cell: (value) =>
+        new Date(value as string).toLocaleDateString(),
     },
   ];
 
@@ -471,8 +475,7 @@ export function AnalyticsDemoDashboard() {
         <DataTable
           columns={tableColumns}
           data={tableData}
-          pageSize={5}
-          onRowClick={(row) => console.log("Row clicked:", row)}
+          pagination={{ pageSize: 5 }}
         />
       </section>
     </div>

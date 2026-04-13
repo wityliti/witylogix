@@ -55,7 +55,7 @@ const INDUSTRY_LABELS: Record<Industry, string> = {
 interface ReviewSection {
   id: string;
   title: string;
-  icon: React.ComponentType<{ className: string }>;
+  icon: React.ComponentType<{ className?: string; [key: string]: unknown }>;
 }
 
 const REVIEW_SECTIONS: ReviewSection[] = [

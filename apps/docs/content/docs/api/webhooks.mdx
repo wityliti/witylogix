@@ -1,7 +1,73 @@
 ---
 title: Webhooks
-description: Witylogix webhook setup, verification, and event handling
+description: Shopify inbound webhook ingestion and outbound event delivery
 ---
+
+# Webhooks
+
+This page covers two distinct webhook surfaces:
+
+1. **Inbound — Shopify webhook ingestion**: Shopify posts events to Witylogix when orders are created, updated, or cancelled in your store.
+2. **Outbound — Witylogix event delivery**: Witylogix posts events to your configured endpoint when delivery events occur.
+
+---
+
+## Inbound: Shopify webhook ingestion
+
+Witylogix receives webhooks directly from Shopify to keep your delivery orders in sync with your store. All inbound routes are verified using HMAC-SHA256 with your Shopify app secret.
+
+### Base path
+
+```
+/api/v4/shopify/webhooks
+```
+
+<Callout type="info">
+These routes are called by Shopify — you do not call them directly. Register the webhook URLs in your Shopify Partner dashboard or via the Shopify Admin API.
+</Callout>
+
+### HMAC verification
+
+Every inbound webhook is verified using the `X-Shopify-Hmac-Sha256` header. Requests with invalid signatures are rejected with `401 Unauthorized`.
+
+### Supported events
+
+| Shopify topic | Endpoint | Effect |
+|---------------|----------|--------|
+| `orders/create` | `POST /orders/create` | Creates a new order in Witylogix; idempotent (duplicates are skipped) |
+| `orders/updated` | `POST /orders/updated` | Updates customer name, address, price, notes, and tags |
+| `orders/cancelled` | `POST /orders/cancelled` | Sets order status to `CANCELLED` (only if not already `DELIVERED`) |
+| `app/uninstalled` | `POST /app/uninstalled` | Marks the shop as inactive and clears the Shopify access token |
+| `customers/data_request` | `POST /customers/data_request` | GDPR: queues a job to compile and export customer data |
+| `customers/redact` | `POST /customers/redact` | GDPR: anonymises customer name, email, and phone across all orders |
+| `shop/redact` | `POST /shop/redact` | GDPR: queues a full tenant data deletion job (cascades within 48 hours) |
+
+### Order create response
+
+```json
+{ "status": "created", "orderId": "ord_01hx..." }
+```
+
+If the order already exists (duplicate Shopify event):
+
+```json
+{ "status": "skipped", "reason": "duplicate" }
+```
+
+### GDPR compliance
+
+The `customers/redact` endpoint anonymises the following fields across all matching orders:
+
+- `customerName` → `[REDACTED]`
+- `customerEmail` → `null`
+- `customerPhone` → `null`
+- `notes` → `null`
+
+The `shop/redact` endpoint queues a cascading deletion job. All tenant data is deleted within 48 hours as required by Shopify's GDPR policy.
+
+---
+
+## Outbound: Witylogix event delivery
 
 # Webhooks
 

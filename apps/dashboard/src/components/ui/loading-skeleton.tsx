@@ -4,17 +4,21 @@ import { cn } from "@/lib/utils";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "text" | "circle" | "rect" | "card";
+  /** Alias for variant */
+  type?: "text" | "circle" | "rect" | "card" | "list" | "table" | "form";
   width?: string | number;
   height?: string | number;
 }
 
 export function Skeleton({
   variant = "rect",
+  type,
   width,
   height,
   className,
   ...props
 }: SkeletonProps) {
+  const effectiveVariant = variant ?? (type && ["text", "circle", "rect", "card"].includes(type) ? type as "text" | "circle" | "rect" | "card" : "rect");
   const baseClasses = "animate-pulse bg-gradient-to-r from-wl-bg-surface via-wl-bg-elevated to-wl-bg-surface";
 
   const variantClasses = {
@@ -31,10 +35,10 @@ export function Skeleton({
     <div
       className={cn(
         baseClasses,
-        variantClasses[variant],
-        variant !== "circle" && widthClass,
-        variant !== "circle" && heightClass,
-        variant === "circle" && (width || "w-12"),
+        variantClasses[effectiveVariant],
+        effectiveVariant !== "circle" && widthClass,
+        effectiveVariant !== "circle" && heightClass,
+        effectiveVariant === "circle" && (width || "w-12"),
         className
       )}
       {...props}

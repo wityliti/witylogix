@@ -5,11 +5,12 @@ import { Upload, X, File, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
-interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
+export interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
   accept?: string;
   maxSize?: number;
   multiple?: boolean;
   onUpload?: (files: File[]) => void;
+  onFilesSelected?: (files: File[]) => void;
   disabled?: boolean;
   children?: ReactNode;
 }
@@ -21,6 +22,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       maxSize = 5 * 1024 * 1024,
       multiple = false,
       onUpload,
+      onFilesSelected,
       disabled = false,
       className,
       children,
@@ -54,10 +56,12 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       if (!multiple) {
         setUploadedFiles([validFiles[0]]);
         onUpload?.([validFiles[0]]);
+        onFilesSelected?.([validFiles[0]]);
       } else {
         const newFiles = [...uploadedFiles, ...validFiles];
         setUploadedFiles(newFiles);
         onUpload?.(newFiles);
+        onFilesSelected?.(newFiles);
       }
     };
 

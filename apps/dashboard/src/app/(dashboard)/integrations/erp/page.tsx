@@ -225,12 +225,13 @@ function StatusBadge({ status }: { status: OAuthStatus }) {
 }
 
 function SyncStatusBadge({ status }: { status: "SUCCESS" | "FAILED" | "IN_PROGRESS" }) {
-  const variants: Record<typeof status, "success" | "danger" | "info"> = {
+  const variantMap: Record<string, "success" | "danger" | "info"> = {
     SUCCESS: "success",
     FAILED: "danger",
     IN_PROGRESS: "info",
   };
-  return <Badge variant={variants}>{status.replace(/_/g, " ")}</Badge>;
+  const variant = variantMap[status] ?? "info";
+  return <Badge variant={variant}>{status.replace(/_/g, " ")}</Badge>;
 }
 
 export default function ERPPage() {

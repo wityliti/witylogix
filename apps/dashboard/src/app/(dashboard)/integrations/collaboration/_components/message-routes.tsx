@@ -61,7 +61,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
                 {route.conditions.map((condition, idx) => (
                   <Badge
                     key={idx}
-                    variant="secondary"
+                    variant="default"
                     className="bg-[#12121a] text-white font-mono text-xs"
                   >
                     {condition}
@@ -72,7 +72,7 @@ export function MessageRoutes({ routes, onAddRoute }: MessageRoutesProps) {
 
             <div className="flex gap-2">
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
               >
