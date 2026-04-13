@@ -1,230 +1,351 @@
 ---
 title: Authentication
-description: JWT and API key authentication for Witylogix API
+description: JWT authentication flows for dashboard users and drivers
 ---
 
 # Authentication
 
-The Witylogix API uses two authentication methods depending on your use case:
+The Witylogix API uses JWT bearer tokens. Tokens are issued per shop — every login request must include the `shopDomain` to identify which shop the user belongs to.
 
-## JWT Bearer Token Authentication
+## Base path
 
-JWT (JSON Web Token) authentication is recommended for client-side applications and individual user sessions.
-
-### Login Flow
-
-1. **Send credentials** to `/auth/login` endpoint
-2. **Receive access and refresh tokens** in response
-3. **Use access token** in Authorization header for API requests
-4. **Refresh token** when access token expires
-
-### Login Request
-
-```bash
-curl -X POST http://localhost:8000/api/v4/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "your_password"
-  }'
+```
+/api/v4/auth
 ```
 
-### Login Response
+Auth endpoints are public — no `Authorization` header is required to call them.
+
+---
+
+## Dashboard user login
+
+```
+POST /api/v4/auth/login
+```
+
+Authenticates a dashboard user (admin, dispatcher, etc.) using email and password.
+
+### Request body
 
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expires_in": 3600,
-  "token_type": "Bearer"
-}
-```
-
-### Token Details
-
-- **access_token**: JWT token valid for 1 hour. Use in Authorization header.
-- **refresh_token**: JWT token valid for 7 days. Use to obtain new access tokens.
-- **expires_in**: Token expiration time in seconds.
-- **token_type**: Always "Bearer"
-
-### Using Access Token
-
-Include the access token in the `Authorization` header with `Bearer` scheme:
-
-```bash
-curl -X GET http://localhost:8000/api/v4/orders \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-## Token Refresh
-
-When your access token expires, use the refresh token to obtain a new access token without requiring the user to log in again.
-
-### Refresh Request
-
-```bash
-curl -X POST http://localhost:8000/api/v4/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }'
-```
-
-### Refresh Response
-
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expires_in": 3600,
-  "token_type": "Bearer"
-}
-```
-
-### Refresh Token Rotation
-
-The API uses refresh token rotation for enhanced security. Each time you refresh, you receive a new refresh token. Always use the latest refresh token for subsequent requests.
-
-## Token Validation
-
-You can validate your current token and retrieve user information without making a protected resource request.
-
-### Validation Request
-
-```bash
-curl -X POST http://localhost:8000/api/v4/auth/validate \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-### Validation Response
-
-```json
-{
-  "user_id": "user_123",
   "email": "user@example.com",
-  "scopes": ["read:orders", "write:orders", "read:shipments"],
-  "expires_at": 1678886400
+  "password": "your_password",
+  "shopDomain": "my-store.myshopify.com"
 }
 ```
 
-## API Key Authentication
+| Field | Required | Description |
+|-------|----------|-------------|
+| `email` | yes | User's email address |
+| `password` | yes | Minimum 8 characters |
+| `shopDomain` | yes | Shopify domain identifying the shop |
 
-API keys are recommended for server-to-server integrations where you need persistent, non-user-dependent authentication.
+### Response
 
-### Using API Keys
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "a9f3e2b1c4d5...",
+    "expiresIn": "1h",
+    "user": {
+      "id": "usr_01hx...",
+      "name": "Jane Smith",
+      "email": "user@example.com",
+      "role": "ADMIN"
+    },
+    "shop": {
+      "id": "shop_01hx...",
+      "name": "My Store",
+      "domain": "my-store.myshopify.com"
+    },
+    "orgId": "org_01hx...",
+    "orgRole": "OWNER"
+  }
+}
+```
 
-Include the API key in the `X-API-Key` header:
+`orgId` and `orgRole` are only present when the shop belongs to an organisation.
+
+---
+
+## Driver login
+
+```
+POST /api/v4/auth/driver/login
+```
+
+Authenticates a driver using phone number and password. Returns a 7-day access token (drivers use mobile devices with infrequent re-authentication).
+
+### Request body
+
+```json
+{
+  "phone": "+1 555-0010",
+  "password": "driver_password",
+  "shopDomain": "my-store.myshopify.com"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "b7c3d9e2f1a4...",
+    "expiresIn": "7d",
+    "driver": {
+      "id": "drv_01hx...",
+      "name": "Carlos Martinez",
+      "phone": "+1 555-0010"
+    }
+  }
+}
+```
+
+---
+
+## Refresh token
+
+```
+POST /api/v4/auth/refresh
+```
+
+Exchanges a valid refresh token for a new access token. The old refresh token is immediately invalidated (**rotation**) and a new one is returned.
+
+### Request body
+
+```json
+{
+  "refreshToken": "a9f3e2b1c4d5..."
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "x2y7z3w1v4u5...",
+    "expiresIn": "1h"
+  }
+}
+```
+
+<Callout type="warn">
+Always store and use the latest refresh token returned. Previous tokens are invalidated on rotation. Attempting to reuse an old refresh token returns `401 Unauthorized`.
+</Callout>
+
+---
+
+## Logout
+
+```
+POST /api/v4/auth/logout
+```
+
+Revokes the refresh token session. The access token remains valid until it naturally expires. This call always returns `200 OK` for idempotency (safe to call even if already logged out).
+
+### Request body
+
+```json
+{
+  "refreshToken": "a9f3e2b1c4d5..."
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "message": "Logged out"
+  }
+}
+```
+
+---
+
+## Get current user
+
+```
+GET /api/v4/auth/me
+```
+
+**Requires authentication.** Returns the profile of the currently authenticated user or driver.
+
+### Response — user
+
+```json
+{
+  "data": {
+    "id": "usr_01hx...",
+    "name": "Jane Smith",
+    "email": "user@example.com",
+    "role": "ADMIN",
+    "type": "user",
+    "shopId": "shop_01hx...",
+    "orgId": "org_01hx...",
+    "orgRole": "OWNER"
+  }
+}
+```
+
+### Response — driver
+
+```json
+{
+  "data": {
+    "id": "drv_01hx...",
+    "name": "Carlos Martinez",
+    "phone": "+1 555-0010",
+    "role": "DRIVER",
+    "type": "driver",
+    "shopId": "shop_01hx..."
+  }
+}
+```
+
+---
+
+## Forgot password
+
+```
+POST /api/v4/auth/forgot-password
+```
+
+Initiates the password reset flow by sending a reset link to the user's email. Always returns `200 OK` — never reveals whether the email exists in the system.
+
+Reset links expire after **1 hour**.
+
+### Request body
+
+```json
+{
+  "email": "user@example.com",
+  "shopDomain": "my-store.myshopify.com"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "message": "If the email exists, a reset link has been sent"
+  }
+}
+```
+
+---
+
+## Reset password
+
+```
+POST /api/v4/auth/reset-password
+```
+
+Completes the password reset using the token from the reset email. The token is single-use and expires after 1 hour.
+
+### Request body
+
+```json
+{
+  "token": "abc123def456...",
+  "password": "new_secure_password"
+}
+```
+
+Password minimum length: 8 characters.
+
+### Response
+
+```json
+{
+  "data": {
+    "message": "Password reset successfully"
+  }
+}
+```
+
+---
+
+## Using the access token
+
+Include the access token in the `Authorization` header as a Bearer token:
 
 ```bash
 curl -X GET http://localhost:8000/api/v4/orders \
-  -H "X-API-Key: sk_live_xxxxxxxxxxxxx"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
 ```
 
-### API Key Formats
+---
 
-- **Live Keys**: `sk_live_*` - Use in production
-- **Test Keys**: `sk_test_*` - Use in testing and development
+## Token expiry reference
 
-### API Key Management
+| Token type | Expires in |
+|------------|------------|
+| User access token | Configured via `JWT_EXPIRES_IN` env var (default `1h`) |
+| Driver access token | 7 days |
+| User refresh token | 30 days |
+| Driver refresh token | 90 days |
+| Password reset token | 1 hour |
 
-API keys can be created and rotated in the dashboard. Never commit API keys to version control.
+---
 
-## Scopes
+## Roles
 
-JWT tokens include scopes that define what resources can be accessed. Common scopes include:
+The `role` field in the JWT payload controls resource access:
 
-- `read:orders` - Read order data
-- `write:orders` - Create and update orders
-- `read:shipments` - Read shipment tracking
-- `write:shipments` - Update shipments
-- `read:drivers` - Read driver information
-- `write:drivers` - Manage drivers
-- `read:analytics` - Access analytics endpoints
-- `write:settings` - Modify account settings
-- `admin` - Full administrative access
+| Role | Description |
+|------|-------------|
+| `SUPER_ADMIN` | Full access across all resources |
+| `ADMIN` | Full access within their shop |
+| `DISPATCHER` | Create/update orders, assign drivers |
+| `DRIVER` | Update own status, location, and order status |
 
-## Error Responses
+---
 
-### Invalid Credentials
+## Error responses
+
+### Invalid credentials
+
+`401 Unauthorized`
 
 ```json
 {
-  "type": "https://api.witylogix.com/errors/unauthorized",
-  "title": "Unauthorized",
-  "status": 401,
-  "detail": "Invalid email or password",
-  "code": "AUTH_001"
+  "error": "Invalid credentials"
 }
 ```
 
-### Expired Token
+### Expired or invalid refresh token
+
+`401 Unauthorized`
 
 ```json
 {
-  "type": "https://api.witylogix.com/errors/token-expired",
-  "title": "Token Expired",
-  "status": 401,
-  "detail": "Access token has expired. Use refresh token to obtain new token.",
-  "code": "AUTH_002"
+  "error": "Invalid or expired refresh token"
 }
 ```
 
-### Invalid Token
+### Expired or invalid reset token
+
+`422 Unprocessable Entity`
 
 ```json
 {
-  "type": "https://api.witylogix.com/errors/invalid-token",
-  "title": "Invalid Token",
-  "status": 401,
-  "detail": "Token is invalid or malformed",
-  "code": "AUTH_003"
+  "error": "Invalid or expired reset token"
 }
 ```
 
-## Best Practices
+---
 
-1. **Store tokens securely**: Never expose access tokens in client-side code or version control
-2. **Use HTTPS**: Always use HTTPS connections when transmitting tokens
-3. **Implement token refresh**: Refresh tokens before they expire to maintain uninterrupted access
-4. **Handle token expiry gracefully**: Implement logic to refresh tokens and retry failed requests
-5. **Use appropriate authentication**: Use JWT for user sessions, API keys for integrations
-6. **Rotate API keys regularly**: Rotate API keys periodically for security
-7. **Monitor authentication failures**: Track failed login attempts for security auditing
-8. **Use short-lived tokens**: Keep access token TTL short (1-2 hours) for better security
+## Best practices
 
-## TypeScript Example
-
-```typescript
-import { WitylogixClient } from '@witylogix/sdk';
-
-const client = new WitylogixClient({
-  baseUrl: 'https://api.witylogix.com/v4'
-});
-
-// Login
-const auth = await client.auth.login({
-  email: 'user@example.com',
-  password: 'password'
-});
-
-// Store tokens securely (e.g., in secure storage)
-localStorage.setItem('accessToken', auth.accessToken);
-localStorage.setItem('refreshToken', auth.refreshToken);
-
-// Set token for subsequent requests
-client.setAccessToken(auth.accessToken);
-
-// Make authenticated requests
-const orders = await client.orders.list();
-
-// Refresh token when needed
-const newAuth = await client.auth.refresh({
-  refreshToken: auth.refreshToken
-});
-
-client.setAccessToken(newAuth.accessToken);
-```
-
-## Support
-
-For authentication issues or API key problems, contact connect@wityliti.io
+1. **Never store tokens in `localStorage`** for production apps — use `httpOnly` cookies or secure storage
+2. **Implement refresh logic** — detect `401` responses and refresh the access token before retrying
+3. **Logout on uninstall** — call `POST /auth/logout` when the user ends their session to revoke the refresh token
+4. **Use HTTPS** — always in production; tokens in transit must be encrypted
