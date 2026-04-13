@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
@@ -76,6 +78,9 @@ export default function InvoicesPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
+  const [isSending, setIsSending] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const { addToast } = useToast();
 
   // Get unique customers
   const customers = useMemo(() => {
@@ -214,13 +219,55 @@ export default function InvoicesPage() {
     }
   }, [paginatedInvoices, selectedInvoices]);
 
-  const handleBulkSend = useCallback(() => {
-    // TODO: API call for bulk send
-  }, [selectedInvoices]);
+  const handleBulkSend = useCallback(async () => {
+    if (selectedInvoices.size === 0 || isSending) return;
+    setIsSending(true);
+    try {
+      await api.post('/api/v4/invoices/bulk-send', {
+        ids: Array.from(selectedInvoices),
+      });
+      addToast({
+        type: 'success',
+        title: 'Invoices sent',
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} sent successfully.`,
+      });
+      setSelectedInvoices(new Set());
+      await refetch();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Send failed',
+        message: err instanceof Error ? err.message : 'Failed to send invoices. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [selectedInvoices, isSending, addToast, refetch]);
 
-  const handleBulkMarkPaid = useCallback(() => {
-    // TODO: API call for mark paid
-  }, [selectedInvoices]);
+  const handleBulkMarkPaid = useCallback(async () => {
+    if (selectedInvoices.size === 0 || isMarkingPaid) return;
+    setIsMarkingPaid(true);
+    try {
+      await api.post('/api/v4/invoices/bulk-mark-paid', {
+        ids: Array.from(selectedInvoices),
+      });
+      addToast({
+        type: 'success',
+        title: 'Invoices marked as paid',
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} marked as paid.`,
+      });
+      setSelectedInvoices(new Set());
+      await refetch();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Mark paid failed',
+        message: err instanceof Error ? err.message : 'Failed to mark invoices as paid. Please try again.',
+      });
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [selectedInvoices, isMarkingPaid, addToast, refetch]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -326,13 +373,13 @@ export default function InvoicesPage() {
         <Card className="bg-[#12121a] border-[#1e1e2e] flex items-center justify-between gap-4 p-4">
           <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={handleBulkSend}>
+            <Button variant="secondary" size="sm" onClick={handleBulkSend} disabled={isSending}>
               <Send className="w-4 h-4 mr-2" />
-              Send
+              {isSending ? 'Sending…' : 'Send'}
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid}>
+            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid} disabled={isMarkingPaid}>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Mark Paid
+              {isMarkingPaid ? 'Marking…' : 'Mark Paid'}
             </Button>
           </div>
         </Card>

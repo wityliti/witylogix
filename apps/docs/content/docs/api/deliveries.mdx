@@ -1,0 +1,241 @@
+---
+title: Deliveries
+description: Manage last-mile delivery assignments and in-flight customer preferences
+---
+
+# Deliveries
+
+The deliveries API provides dispatch-level control over individual delivery jobs — assigning them to couriers, tracking their status, and allowing customers to update in-flight preferences such as safe-place instructions, reschedule date, or redirect address.
+
+## Base path
+
+```
+/api/v4/deliveries
+```
+
+All endpoints require a Bearer token in the `Authorization` header.
+
+## Delivery status values
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Delivery created, awaiting courier assignment |
+| `assigned` | Assigned to a courier |
+| `picked_up` | Package picked up from origin |
+| `in_transit` | En route to destination |
+| `delivered` | Successfully delivered |
+| `failed` | Delivery attempt failed |
+| `returned` | Package returned to origin |
+
+---
+
+## List deliveries
+
+```
+GET /api/v4/deliveries
+```
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number |
+| `limit` | integer | `50` | Items per page (max 100) |
+| `courierId` | string | — | Filter by courier ID |
+| `status` | string | — | Filter by status |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "del-1",
+      "orderId": "ord-2841",
+      "courierId": "cour-1",
+      "status": "in_transit",
+      "pickup": {
+        "address": "Witylogix Hub, 500 Commerce Drive",
+        "coordinates": { "lat": 40.7282, "lng": -73.9942 },
+        "contactName": "Warehouse Team",
+        "contactPhone": "+1 555-0010"
+      },
+      "dropoff": {
+        "address": "142 Maple Street, Downtown Core",
+        "coordinates": { "lat": 40.7128, "lng": -74.006 },
+        "contactName": "Emma Johnson",
+        "contactPhone": "+1 555-0201"
+      },
+      "package": {
+        "weight": 2.5,
+        "dimensions": { "length": 30, "width": 20, "height": 15 },
+        "fragile": false
+      },
+      "recipient": {
+        "name": "Emma Johnson",
+        "phone": "+1 555-0201",
+        "email": "emma@example.com"
+      },
+      "createdAt": "2026-04-13T09:00:00.000Z",
+      "assignedAt": "2026-04-13T10:00:00.000Z",
+      "pickedUpAt": "2026-04-13T11:00:00.000Z",
+      "estimatedDeliveryTime": "2026-04-13T14:00:00.000Z",
+      "timeline": [
+        { "id": "ev-1", "type": "requested", "timestamp": "2026-04-13T09:00:00.000Z" },
+        { "id": "ev-2", "type": "assigned", "timestamp": "2026-04-13T10:00:00.000Z", "courierName": "Carlos Martinez" },
+        { "id": "ev-3", "type": "pickup", "timestamp": "2026-04-13T11:00:00.000Z" },
+        { "id": "ev-4", "type": "in_transit", "timestamp": "2026-04-13T11:05:00.000Z" }
+      ]
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 3,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+## Get delivery
+
+```
+GET /api/v4/deliveries/:id
+```
+
+Returns the full delivery object including timeline events.
+
+---
+
+## Assign delivery
+
+```
+PATCH /api/v4/deliveries/:id/assign
+```
+
+Assigns the delivery to a courier. Optionally specifies a third-party dispatch partner.
+
+### Request body
+
+```json
+{
+  "courierId": "cour-1",
+  "partner": "onfleet"
+}
+```
+
+`partner` values: `onfleet`, `stuart`, `uber` (optional — omit for internal courier assignment)
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "del-2",
+    "courierId": "cour-1",
+    "status": "assigned",
+    "assignedAt": "2026-04-13T10:30:00.000Z"
+  }
+}
+```
+
+---
+
+## Update delivery status
+
+```
+PATCH /api/v4/deliveries/:id/status
+```
+
+### Request body
+
+```json
+{
+  "status": "picked_up",
+  "notes": "Package collected from warehouse bay 3"
+}
+```
+
+---
+
+## Update delivery preferences
+
+```
+PATCH /api/v4/deliveries/:id/preferences
+```
+
+Allows customers (or dispatchers acting on their behalf) to change in-flight delivery preferences before the driver is close to arrival.
+
+### Business rules
+
+- Preferences cannot be changed once status is `delivered`, `failed`, or `returned`
+- Changes are locked out when the driver is less than 30 minutes from the ETA
+- Redirect addresses must be within 50 km of the dispatch hub
+
+### Request body (all fields optional)
+
+```json
+{
+  "safePlace": "Leave in porch",
+  "instructions": "Ring the bell twice",
+  "rescheduleDate": "2026-04-16",
+  "rescheduleTimeWindow": "afternoon",
+  "redirectAddress": {
+    "line1": "50 Oak Street",
+    "city": "Brooklyn",
+    "postalCode": "11201",
+    "coordinates": { "lat": 40.6928, "lng": -73.9903 }
+  },
+  "deliveryMethod": "door",
+  "phoneNumber": "+1 555-9999"
+}
+```
+
+`rescheduleTimeWindow` values: `morning`, `afternoon`, `evening`, `anytime`
+
+`deliveryMethod` values: `door`, `signature`, `neighbor`
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "del-1",
+    "preferences": {
+      "instructions": "Ring the bell twice",
+      "deliveryMethod": "door",
+      "updatedAt": "2026-04-13T12:00:00.000Z"
+    }
+  },
+  "notification": {
+    "sent": true,
+    "channels": ["email", "sms"],
+    "message": "Your delivery preferences have been updated. The driver has been notified."
+  }
+}
+```
+
+### Error: too close to ETA
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "error": "Preferences can no longer be changed — driver is less than 30 minutes away",
+  "cutoffMinutes": 30,
+  "etaMinutes": 12
+}
+```
+
+### Error: redirect outside zone
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "error": "Redirect address is outside the delivery zone (50 km radius)",
+  "distanceKm": 73
+}
+```

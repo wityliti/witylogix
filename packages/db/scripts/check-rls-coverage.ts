@@ -7,14 +7,15 @@
  */
 
 import { readFileSync, readdirSync, statSync } from "fs";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
-import { join, resolve, dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const PKG_ROOT = resolve(__dirname, "..");
 
-const SCHEMA_DIR = resolve(__dirname, "../prisma/schema");
-const MIGRATIONS_DIR = resolve(__dirname, "../prisma/migrations");
+const SCHEMA_DIR = join(PKG_ROOT, "prisma/schema");
+const MIGRATIONS_DIR = join(PKG_ROOT, "prisma/migrations");
 
 // Tables that are intentionally excluded from direct RLS:
 //   - No direct shop_id/org_id; isolation is transitive via parent FK + parent RLS.

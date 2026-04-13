@@ -1,0 +1,402 @@
+---
+title: Orders
+description: Create, manage, and track orders through their full lifecycle
+---
+
+# Orders
+
+The orders API manages the full delivery lifecycle — from creation through dispatch to proof of delivery. Every order moves through a state machine that enforces valid transitions.
+
+## Base path
+
+```
+/api/v4/orders
+```
+
+All endpoints require a Bearer token in the `Authorization` header unless noted otherwise.
+
+## Order status lifecycle
+
+Orders follow this state machine:
+
+| From | Allowed next statuses |
+|------|-----------------------|
+| `PENDING` | `ACCEPTED`, `CANCELLED` |
+| `ACCEPTED` | `ASSIGNED`, `CANCELLED` |
+| `ASSIGNED` | `PICKED_UP`, `CANCELLED` |
+| `PICKED_UP` | `OUT_FOR_DELIVERY` |
+| `OUT_FOR_DELIVERY` | `ARRIVED`, `FAILED` |
+| `ARRIVED` | `DELIVERED`, `FAILED` |
+| `DELIVERED` | — |
+| `FAILED` | `RETURNED`, `OUT_FOR_DELIVERY` |
+| `RETURNED` | — |
+| `CANCELLED` | — |
+
+---
+
+## List orders
+
+```
+GET /api/v4/orders
+```
+
+**Required role:** any authenticated user
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number |
+| `limit` | integer | `20` | Items per page (max 100) |
+| `status` | string | — | Filter by order status (e.g. `PENDING`) |
+| `driverId` | UUID | — | Filter by assigned driver |
+| `deliveryDate` | date | — | Filter by delivery date (`YYYY-MM-DD`) |
+| `search` | string | — | Full-text search across customer name, email, order number, address |
+| `sortBy` | string | `createdAt` | Sort field: `createdAt`, `deliveryDate`, `status`, `customerName` |
+| `sortOrder` | string | `desc` | `asc` or `desc` |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "ord_01hx...",
+      "externalOrderNumber": "1042",
+      "status": "ASSIGNED",
+      "customerName": "Emma Johnson",
+      "customerEmail": "emma@example.com",
+      "customerPhone": "+1 555-0201",
+      "addressLine1": "142 Maple Street",
+      "city": "New York",
+      "province": "NY",
+      "postalCode": "10001",
+      "country": "US",
+      "deliveryDate": "2026-04-15T00:00:00.000Z",
+      "estimatedArrival": "2026-04-15T14:00:00.000Z",
+      "totalPrice": 49.99,
+      "totalWeight": 2.5,
+      "trackingToken": "a1b2c3d4e5f6g7h8",
+      "driver": {
+        "id": "drv_01hx...",
+        "name": "Carlos Martinez",
+        "phone": "+1 555-0010"
+      },
+      "timeSlot": {
+        "id": "slot_01hx...",
+        "name": "Afternoon",
+        "startTime": "12:00",
+        "endTime": "17:00"
+      },
+      "createdAt": "2026-04-13T09:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+---
+
+## Get order stats
+
+```
+GET /api/v4/orders/stats
+```
+
+Returns a count breakdown of all orders in the current shop by status.
+
+### Response
+
+```json
+{
+  "data": {
+    "total": 540,
+    "byStatus": {
+      "PENDING": 12,
+      "ACCEPTED": 8,
+      "ASSIGNED": 25,
+      "PICKED_UP": 10,
+      "OUT_FOR_DELIVERY": 18,
+      "DELIVERED": 460,
+      "CANCELLED": 7
+    },
+    "pending": 12,
+    "processing": 0,
+    "shipped": 0,
+    "delivered": 460,
+    "cancelled": 7
+  }
+}
+```
+
+---
+
+## Get order
+
+```
+GET /api/v4/orders/:id
+```
+
+Returns the full order object including driver, time slot, proof of delivery, and the last 20 notification log entries.
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ord_01hx...",
+    "externalOrderNumber": "1042",
+    "status": "DELIVERED",
+    "customerName": "Emma Johnson",
+    "customerEmail": "emma@example.com",
+    "customerPhone": "+1 555-0201",
+    "addressLine1": "142 Maple Street",
+    "city": "New York",
+    "trackingToken": "a1b2c3d4e5f6g7h8",
+    "driver": {
+      "id": "drv_01hx...",
+      "name": "Carlos Martinez",
+      "phone": "+1 555-0010",
+      "vehicleType": "VAN"
+    },
+    "proofOfDelivery": {
+      "id": "pod_01hx...",
+      "photoUrls": ["https://cdn.witylogix.com/pod/..."],
+      "deliveredAt": "2026-04-13T14:32:00.000Z"
+    },
+    "notificationLogs": [
+      {
+        "id": "log_01hx...",
+        "channel": "EMAIL",
+        "eventType": "order.created",
+        "status": "SENT",
+        "createdAt": "2026-04-13T09:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Create order
+
+```
+POST /api/v4/orders
+```
+
+**Required role:** `SUPER_ADMIN`, `ADMIN`, or `DISPATCHER`
+
+A tracking token is automatically generated for each new order, enabling the customer-facing tracking page.
+
+### Request body
+
+```json
+{
+  "customerName": "Emma Johnson",
+  "customerEmail": "emma@example.com",
+  "customerPhone": "+1 555-0201",
+  "addressLine1": "142 Maple Street",
+  "addressLine2": "Apt 4B",
+  "city": "New York",
+  "province": "NY",
+  "postalCode": "10001",
+  "country": "US",
+  "latitude": 40.7128,
+  "longitude": -74.006,
+  "deliveryDate": "2026-04-15T00:00:00.000Z",
+  "timeSlotId": "slot_01hx...",
+  "totalPrice": 49.99,
+  "totalWeight": 2.5,
+  "notes": "Leave at front door",
+  "tags": ["fragile", "priority"],
+  "externalOrderNumber": "1042",
+  "metadata": {}
+}
+```
+
+### Response
+
+`201 Created`
+
+```json
+{
+  "data": {
+    "id": "ord_01hx...",
+    "trackingToken": "a1b2c3d4e5f6g7h8",
+    "status": "PENDING",
+    "createdAt": "2026-04-13T09:00:00.000Z"
+  }
+}
+```
+
+---
+
+## Update order
+
+```
+PATCH /api/v4/orders/:id
+```
+
+**Required role:** `SUPER_ADMIN`, `ADMIN`, or `DISPATCHER`
+
+Updates mutable order fields. Does not change status — use `PATCH /:id/status` for that.
+
+### Request body (all fields optional)
+
+```json
+{
+  "customerName": "Emma Johnson",
+  "customerEmail": "emma@example.com",
+  "customerPhone": "+1 555-0201",
+  "addressLine1": "142 Maple Street",
+  "addressLine2": "Apt 4B",
+  "city": "New York",
+  "province": "NY",
+  "postalCode": "10001",
+  "country": "US",
+  "latitude": 40.7128,
+  "longitude": -74.006,
+  "deliveryDate": "2026-04-15T00:00:00.000Z",
+  "timeSlotId": "slot_01hx...",
+  "notes": "Ring the bell",
+  "tags": ["fragile"],
+  "metadata": {}
+}
+```
+
+---
+
+## Update order status
+
+```
+PATCH /api/v4/orders/:id/status
+```
+
+**Required role:** `SUPER_ADMIN`, `ADMIN`, `DISPATCHER`, or `DRIVER`
+
+Transitions the order to a new status. Invalid transitions return `400 Bad Request`. See the [status lifecycle](#order-status-lifecycle) table above.
+
+### Request body
+
+```json
+{
+  "status": "DELIVERED",
+  "notes": "Handed to recipient"
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ord_01hx...",
+    "status": "DELIVERED",
+    "actualDelivery": "2026-04-13T14:32:00.000Z"
+  }
+}
+```
+
+<Callout type="info">
+Setting status to `DELIVERED` automatically sets the `actualDelivery` timestamp.
+</Callout>
+
+---
+
+## Assign order to driver
+
+```
+PATCH /api/v4/orders/:id/assign
+```
+
+**Required role:** `SUPER_ADMIN`, `ADMIN`, or `DISPATCHER`
+
+Assigns the order to a driver. If the order is in `PENDING` or `ACCEPTED` status, it is automatically transitioned to `ASSIGNED`.
+
+### Request body
+
+```json
+{
+  "driverId": "drv_01hx..."
+}
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ord_01hx...",
+    "status": "ASSIGNED",
+    "driverId": "drv_01hx..."
+  }
+}
+```
+
+<Callout type="info">
+Push notifications are sent to the driver (via FCM) and a confirmation email is sent to the customer when assignment occurs.
+</Callout>
+
+---
+
+## Cancel order
+
+```
+DELETE /api/v4/orders/:id
+```
+
+**Required role:** `SUPER_ADMIN` or `ADMIN`
+
+Soft-cancels the order by setting its status to `CANCELLED`. Orders in `DELIVERED` or already `CANCELLED` status cannot be cancelled.
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "ord_01hx...",
+    "status": "CANCELLED"
+  }
+}
+```
+
+---
+
+## Get order timeline
+
+```
+GET /api/v4/orders/:id/timeline
+```
+
+Returns the notification log entries for the order in chronological order. Each entry represents a notification event (email, SMS, push) triggered by a status change.
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "log_01hx...",
+      "channel": "EMAIL",
+      "eventType": "order.created",
+      "status": "SENT",
+      "createdAt": "2026-04-13T09:00:00.000Z",
+      "sentAt": "2026-04-13T09:00:05.000Z"
+    },
+    {
+      "id": "log_02hx...",
+      "channel": "EMAIL",
+      "eventType": "order.status_changed",
+      "status": "SENT",
+      "createdAt": "2026-04-13T13:00:00.000Z",
+      "sentAt": "2026-04-13T13:00:03.000Z"
+    }
+  ]
+}
+```
