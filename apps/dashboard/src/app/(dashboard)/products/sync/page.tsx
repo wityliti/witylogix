@@ -101,7 +101,16 @@ const MOCK_PLATFORMS: ConnectedPlatform[] = [
   },
 ];
 
-const WITYLOGIX_FIELDS = [
+type FieldType = 'string' | 'number' | 'boolean' | 'date';
+interface SyncField {
+  id: string;
+  name: string;
+  type: FieldType;
+  required: boolean;
+  sampleValue?: string;
+}
+
+const WITYLOGIX_FIELDS: SyncField[] = [
   { id: 'wl-id', name: 'Product ID', type: 'string', required: true, sampleValue: 'PROD-12345' },
   { id: 'wl-name', name: 'Product Name', type: 'string', required: true, sampleValue: 'Cardboard Box Medium' },
   { id: 'wl-sku', name: 'SKU', type: 'string', required: true, sampleValue: 'BOX-MED-001' },
@@ -186,7 +195,7 @@ export default function ProductSyncPage() {
     <div className="space-y-6">
       <Header
         title="Product Catalog Sync"
-        description="Configure field mappings and sync schedules for connected platforms"
+        subtitle="Configure field mappings and sync schedules for connected platforms"
       />
 
       {/* Connected Platforms Section */}
@@ -381,11 +390,13 @@ export default function ProductSyncPage() {
               </CardHeader>
 
               <CardContent>
-                <SyncScheduleConfig
-                  schedule={schedule}
-                  onScheduleChange={setSchedule}
-                  platformName={selectedPlatform.name}
-                />
+                {schedule && (
+                  <SyncScheduleConfig
+                    schedule={schedule}
+                    onScheduleChange={(s) => setSchedule({ ...schedule, ...s })}
+                    platformName={selectedPlatform.name}
+                  />
+                )}
               </CardContent>
 
               <CardFooter>

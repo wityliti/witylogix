@@ -16,6 +16,7 @@
     "@react-router/serve": "^7.13.1",
     "@witylogix/core": "workspace:*",
     "@witylogix/db": "workspace:*",
+    "cookie": "^1.0.1",
     "isbot": "^5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

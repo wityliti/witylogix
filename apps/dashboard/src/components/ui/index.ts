@@ -35,6 +35,7 @@ export { Tabs } from "./tabs";
 
 // Toast
 export { ToastProvider, useToast } from "./toast";
+export type { Toast } from "./toast";
 
 // Modal
 export { Modal } from "./modal";

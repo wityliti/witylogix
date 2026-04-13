@@ -25,7 +25,7 @@ interface CheckboxOption {
   disabled?: boolean;
 }
 
-interface FormCheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface FormCheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   /** Checkbox label */
   label?: string;
   /** Indeterminate state (renders minus icon) */
@@ -36,7 +36,7 @@ interface FormCheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   disabled?: boolean;
 }
 
-interface FormCheckboxGroupProps {
+export interface FormCheckboxGroupProps {
   /** Checkbox options */
   options: CheckboxOption[];
   /** Selected values */

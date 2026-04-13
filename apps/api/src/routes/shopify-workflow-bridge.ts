@@ -192,7 +192,7 @@ async function shopifyWorkflowBridgeRoutes(
           { signature: !!signature, shopId: !!shopId },
           "Missing required Shopify headers"
         );
-        return reply.status(400).json({
+        return reply.status(400).send({
           error: "Missing X-Shopify-Hmac-SHA256 or X-Shopify-Shop-Id header",
         });
       }
@@ -207,7 +207,7 @@ async function shopifyWorkflowBridgeRoutes(
 
         if (!isValid) {
           request.log.warn({ shopId }, "Shopify webhook signature invalid");
-          return reply.status(401).json({ error: "Invalid signature" });
+          return reply.status(401).send({ error: "Invalid signature" });
         }
 
         // Parse and validate payload
@@ -219,7 +219,7 @@ async function shopifyWorkflowBridgeRoutes(
             { shopId, errors: validPayload.error.errors },
             "Invalid Shopify order payload"
           );
-          return reply.status(400).json({
+          return reply.status(400).send({
             error: "Invalid payload",
             details: validPayload.error.errors,
           });
@@ -244,7 +244,7 @@ async function shopifyWorkflowBridgeRoutes(
             { externalOrderId: order.id, existingId: existingOrder.id },
             "Order already processed, skipping"
           );
-          return reply.status(200).json({
+          return reply.status(200).send({
             success: true,
             message: "Order already processed",
             orderId: existingOrder.id,
@@ -259,7 +259,7 @@ async function shopifyWorkflowBridgeRoutes(
 
         if (!shop) {
           request.log.warn({ shopId }, "Shop not found");
-          return reply.status(404).json({ error: "Shop not found" });
+          return reply.status(404).send({ error: "Shop not found" });
         }
 
         // Transform Shopify order to Witylogix format
@@ -309,7 +309,7 @@ async function shopifyWorkflowBridgeRoutes(
           },
         });
 
-        return reply.status(202).json({
+        return reply.status(202).send({
           success: true,
           jobId,
           message: "Order processing initiated",
@@ -342,7 +342,7 @@ async function shopifyWorkflowBridgeRoutes(
           // Silently fail webhook logging
         }
 
-        return reply.status(500).json({
+        return reply.status(500).send({
           error: "Failed to process webhook",
           details: error instanceof Error ? error.message : String(error),
         });
@@ -375,7 +375,7 @@ async function shopifyWorkflowBridgeRoutes(
           { signature: !!signature, shopId: !!shopId },
           "Missing required Shopify headers"
         );
-        return reply.status(400).json({
+        return reply.status(400).send({
           error: "Missing X-Shopify-Hmac-SHA256 or X-Shopify-Shop-Id header",
         });
       }
@@ -390,7 +390,7 @@ async function shopifyWorkflowBridgeRoutes(
 
         if (!isValid) {
           request.log.warn({ shopId }, "Shopify webhook signature invalid");
-          return reply.status(401).json({ error: "Invalid signature" });
+          return reply.status(401).send({ error: "Invalid signature" });
         }
 
         // Parse and validate payload
@@ -402,7 +402,7 @@ async function shopifyWorkflowBridgeRoutes(
             { shopId, errors: validPayload.error.errors },
             "Invalid Shopify fulfillment payload"
           );
-          return reply.status(400).json({
+          return reply.status(400).send({
             error: "Invalid payload",
             details: validPayload.error.errors,
           });
@@ -431,7 +431,7 @@ async function shopifyWorkflowBridgeRoutes(
             { externalOrderId: fulfillment.order_id },
             "Order not found for fulfillment"
           );
-          return reply.status(404).json({
+          return reply.status(404).send({
             error: "Associated order not found",
           });
         }
@@ -484,7 +484,7 @@ async function shopifyWorkflowBridgeRoutes(
           },
         });
 
-        return reply.status(202).json({
+        return reply.status(202).send({
           success: true,
           jobId,
           message: "Fulfillment update initiated",
@@ -517,7 +517,7 @@ async function shopifyWorkflowBridgeRoutes(
           // Silently fail webhook logging
         }
 
-        return reply.status(500).json({
+        return reply.status(500).send({
           error: "Failed to process webhook",
           details: error instanceof Error ? error.message : String(error),
         });

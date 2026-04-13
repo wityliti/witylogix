@@ -1,14 +1,15 @@
 "use client";
 
-import { forwardRef, InputHTMLAttributes, ReactNode } from "react";
+import React, { forwardRef, InputHTMLAttributes, ReactNode } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: ReactNode;
   error?: boolean;
   errorMessage?: string;
   indeterminate?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
@@ -21,10 +22,16 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       disabled = false,
       className,
       id,
+      onCheckedChange,
+      onChange,
       ...props
     },
     ref
   ) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e);
+      onCheckedChange?.(e.target.checked);
+    };
     const checkboxId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
 
     return (
@@ -54,6 +61,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               type="checkbox"
               disabled={disabled}
               className="absolute w-full h-full opacity-0 cursor-pointer"
+              onChange={handleChange}
               {...props}
             />
             {(props.checked || indeterminate) && (

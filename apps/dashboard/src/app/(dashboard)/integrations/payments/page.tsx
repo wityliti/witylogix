@@ -74,7 +74,7 @@ interface RefundChargebackCase {
   type: "refund" | "chargeback";
   date: string;
   amount: number;
-  status: "pending" | "processing" | "completed" | "denied";
+  status: "pending" | "processing" | "completed" | "denied" | "investigating";
   reason: string;
   customer: string;
   provider: string;
@@ -714,7 +714,7 @@ export default function PaymentsPage() {
                             <Badge variant="default" className="text-xs font-mono">
                               {txn.provider}
                             </Badge>
-                            <Badge variant="secondary" className={cn("text-xs capitalize", statusColor)}>
+                            <Badge variant="default" className={cn("text-xs capitalize", statusColor)}>
                               {txn.status}
                             </Badge>
                           </div>

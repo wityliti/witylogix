@@ -469,7 +469,7 @@ export default function JobsPage() {
                   Assign Technician
                 </Button>
                 {selectedJobData.status === "in_progress" && (
-                  <Button variant="success" size="sm" className="w-full text-xs">
+                  <Button variant="primary" size="sm" className="w-full text-xs">
                     Mark Complete
                   </Button>
                 )}

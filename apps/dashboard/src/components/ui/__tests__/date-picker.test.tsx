@@ -95,7 +95,7 @@ describe('DatePicker Component', () => {
 
       const dateButton = container.querySelector('button[class*="flex"][class*="items-center"]');
       if (dateButton && dateButton.textContent === '15') {
-        await user.click(dateButton);
+        await user.click(dateButton as HTMLElement);
       }
 
       expect(container.querySelector('[class*="grid-cols-7"]')).toBeTruthy();
@@ -156,7 +156,7 @@ describe('DatePicker Component', () => {
       if (dateButtons.length > 0) {
         for (const btn of dateButtons) {
           if (btn.textContent?.trim() === '15') {
-            await user.click(btn);
+            await user.click(btn as HTMLElement);
             break;
           }
         }

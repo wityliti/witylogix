@@ -253,7 +253,7 @@ export const RevenueChart = memo(function RevenueChart({
             <YAxis
               stroke="var(--wl-text-tertiary)"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => formatCurrency(value, currency).replace(/\.0+K|M/, "")}
+              tickFormatter={(value: number) => formatCurrency(value, currency).replace(/\.0+K|M/, "")}
               axisLine={{ stroke: "var(--wl-border-subtle)" }}
               style={{ color: "var(--wl-text-tertiary)" }}
             />

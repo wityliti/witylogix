@@ -23,8 +23,8 @@ import {
   WebhookConsumer,
 } from "@witylogix/core/integrations/woocommerce";
 import { createCryptoService } from "@witylogix/core/encryption";
-import { requireAuth, requireRole } from "../middleware/auth.js";
-import { tenantContext } from "../middleware/tenant.js";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
 
 function encryptCredential(value: string): string {
   const crypto = createCryptoService(process.env.ENCRYPTION_MASTER_KEY);

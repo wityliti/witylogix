@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { OnboardingStep, OnboardingSubStep } from "../types";
+import { OnboardingStep, OnboardingSubStep } from "../types";
 
 interface OnboardingProgressProps {
   currentStep: OnboardingStep;
@@ -25,19 +25,19 @@ const SUB_STEP_LABELS: Record<OnboardingSubStep, { label: string; order: number 
 };
 
 const MAIN_STEPS: OnboardingStep[] = [
-  "verify-email",
-  "choose-deployment",
-  "configure-workspace",
+  OnboardingStep.VERIFY_EMAIL,
+  OnboardingStep.CHOOSE_DEPLOYMENT,
+  OnboardingStep.CONFIGURE_WORKSPACE,
 ];
 
 const CONFIGURE_SUB_STEPS: OnboardingSubStep[] = [
-  "company-info",
-  "industry",
-  "goals",
-  "integrations",
-  "dashboard-layout",
-  "data-import",
-  "review",
+  OnboardingSubStep.COMPANY_INFO,
+  OnboardingSubStep.INDUSTRY,
+  OnboardingSubStep.GOALS,
+  OnboardingSubStep.INTEGRATIONS,
+  OnboardingSubStep.DASHBOARD_LAYOUT,
+  OnboardingSubStep.DATA_IMPORT,
+  OnboardingSubStep.REVIEW,
 ];
 
 export function OnboardingProgress({

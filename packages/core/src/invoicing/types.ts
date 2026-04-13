@@ -166,14 +166,26 @@ export interface TaxBreakdown {
 
 // ─── CREATION/UPDATE PARAMETERS ────────────────────────────────────
 
+export interface ManualLineItemInput {
+  description: string;
+  quantity: number;
+  unitPrice: number; // rate per unit
+  taxable?: boolean;
+}
+
 export interface CreateInvoiceParams {
   tenantId: string;
   customerId?: string;
   deliveryIds?: string[]; // Create from Order/RouteStop IDs
   routeIds?: string[]; // Create from Route IDs (all stops)
+  manualLineItems?: ManualLineItemInput[]; // Freeform line items (alternative to deliveryIds/routeIds)
   dueDate?: Date; // Default: 30 days from issue
   currency?: string; // Default: USD
   notes?: string;
+  terms?: string; // Payment terms / T&C
+  status?: 'draft' | 'sent'; // Initial status; default: draft
+  taxRate?: number; // Simple tax percentage (alternative to taxConfig)
+  discountPercentage?: number; // Simple discount % (alternative to discounts array)
   discounts?: {
     description: string;
     type: DiscountType;

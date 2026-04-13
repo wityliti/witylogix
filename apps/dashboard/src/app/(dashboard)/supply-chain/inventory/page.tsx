@@ -425,22 +425,22 @@ export default function InventoryPage() {
             {/* Transfer data would come from API */}
             {[].map((transfer: Record<string, unknown>) => (
               <div
-                key={transfer.id}
+                key={String(transfer.id)}
                 className="flex items-start justify-between p-3 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]"
               >
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-white">
-                    {transfer.fromWarehouse} → {transfer.toWarehouse}
+                    {String(transfer.fromWarehouse)} → {String(transfer.toWarehouse)}
                   </h4>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="text-xs text-gray-400">
-                      SKU: {transfer.sku}
+                      SKU: {String(transfer.sku)}
                     </span>
                     <span className="text-xs text-gray-400">
-                      Qty: {transfer.qty}
+                      Qty: {String(transfer.qty)}
                     </span>
                     <span className="text-xs text-gray-400">
-                      Created: {new Date(transfer.createdDate).toLocaleDateString()}
+                      Created: {new Date(String(transfer.createdDate)).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ export default function InventoryPage() {
                       : 'warning'
                   }
                 >
-                  {transfer.status}
+                  {String(transfer.status)}
                 </Badge>
               </div>
             ))}
@@ -470,14 +470,14 @@ export default function InventoryPage() {
           <div className="space-y-3">
             {/* Cycle count data would come from API */}
             {[].map((count: Record<string, unknown>) => (
-              <div key={count.id} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
+              <div key={String(count.id)} className="p-4 rounded-lg hover:bg-[#1a1a2e] border border-[#1e1e2e]">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-medium text-white">
-                      {count.warehouseId}
+                      {String(count.warehouseId)}
                     </h4>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(count.scheduledDate).toLocaleDateString()}
+                      {new Date(String(count.scheduledDate)).toLocaleDateString()}
                     </p>
                   </div>
                   <Badge
@@ -489,7 +489,7 @@ export default function InventoryPage() {
                         : 'warning'
                     }
                   >
-                    {count.status}
+                    {String(count.status)}
                   </Badge>
                 </div>
 
@@ -500,7 +500,7 @@ export default function InventoryPage() {
                         Progress
                       </span>
                       <span className="text-xs font-semibold text-white">
-                        {count.completionRate}%
+                        {String(count.completionRate)}%
                       </span>
                     </div>
                     <div className="w-full bg-[#12121a] rounded-full h-2">
@@ -509,9 +509,9 @@ export default function InventoryPage() {
                         style={{ width: `${count.completionRate}%` }}
                       />
                     </div>
-                    {count.itemsCountedCount && count.totalItems && (
+                    {!!(count.itemsCountedCount && count.totalItems) && (
                       <p className="text-xs text-gray-400 mt-2">
-                        {count.itemsCountedCount} of {count.totalItems} items counted
+                        {String(count.itemsCountedCount)} of {String(count.totalItems)} items counted
                       </p>
                     )}
                   </div>

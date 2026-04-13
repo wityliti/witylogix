@@ -343,7 +343,7 @@ export class SmartRouter {
             compatibilityScore: 0,
           },
           isViable: false,
-          issues: [result.issue],
+          issues: [result.issue ?? 'Unknown issue'],
           rank: 0,
         });
         continue;
@@ -352,8 +352,8 @@ export class SmartRouter {
       const performanceScore = this.performanceCache.get(result.provider) || null;
       const option = this.buildCourierOption(
         result.provider,
-        result.quote,
-        result.availability,
+        result.quote!,
+        result.availability!,
         performanceScore,
         delivery,
       );

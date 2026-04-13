@@ -38,7 +38,7 @@ export const Avatar: Story = {
   ),
 };
 
-export const Card: Story = {
+export const CardSkeleton: Story = {
   render: () => (
     <Card className="max-w-sm">
       <CardHeader>

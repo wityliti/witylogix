@@ -5,7 +5,7 @@ import { cn } from "../../lib/utils";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
-interface Toast {
+export interface Toast {
   id: string;
   type: ToastType;
   title: string;

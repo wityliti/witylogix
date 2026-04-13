@@ -382,9 +382,9 @@ export function DataTable<T extends { id?: string | number }>({
                     {displayColumns.map((column) => {
                       const value =
                         column.accessorKey && row[column.accessorKey];
-                      const rendered = column.cell
+                      const rendered: import("react").ReactNode = column.cell
                         ? column.cell(value, row)
-                        : value;
+                        : (value as import("react").ReactNode);
                       const isEditing =
                         editingCell?.rowId === rowId &&
                         editingCell?.columnId === column.id;

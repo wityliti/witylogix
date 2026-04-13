@@ -128,11 +128,7 @@ export default function ConnectedIntegrationsPage() {
           icon={<Plug className="w-12 h-12" />}
           title="No integrations connected yet"
           description="Browse the marketplace to connect your first third-party provider"
-          action={
-            <Button variant="primary" asChild>
-              <Link href="/integrations/overview">Browse Marketplace</Link>
-            </Button>
-          }
+          action={{ label: "Browse Marketplace", onClick: () => {} }}
         />
       </div>
     );

@@ -17,7 +17,7 @@ import { CapacityManager } from "@witylogix/core/slots";
 import { DeadlineEngine } from "@witylogix/core/slots";
 import { BlackoutManager } from "@witylogix/core/slots";
 import { SlotNotFoundError, SlotFullError, BlackoutDateError } from "@witylogix/core/slots";
-import { NotFoundError, ValidationError } from "../lib/errors.js";
+import { NotFoundError, ValidationError } from "../../lib/errors.js";
 
 // ─── SCHEMAS ────────────────────────────────────────────────────
 

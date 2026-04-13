@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useApiMutation } from '@/hooks/use-api';
+import { useToast } from '@/components/ui/toast';
 
 type PartnerType = "onfleet" | "stuart" | "uber-direct" | "custom";
 
@@ -69,6 +70,8 @@ const STEP_CONFIG = [
 
 export default function OnboardPage() {
   const router = useRouter();
+  const { execute: saveOnboarding } = useApiMutation('POST', '/api/v4/couriers/partners');
+  const { addToast } = useToast();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<OnboardingData>({
@@ -135,10 +138,28 @@ export default function OnboardPage() {
 
   const handleComplete = useCallback(async () => {
     if (validateStep()) {
-      // TODO: API call to save onboarding data
-      router.push("/dashboard/partners");
+      try {
+        const provider = formData.partnerType === "uber-direct" ? "uber_direct" : formData.partnerType;
+        await saveOnboarding({
+          provider,
+          name: PARTNER_TYPES.find((p) => p.id === formData.partnerType)?.name ?? formData.partnerType,
+          credentials: {
+            apiKey: formData.apiKey,
+            apiSecret: formData.apiSecret,
+            webhookSecret: formData.webhookSecret,
+            baseUrl: formData.baseUrl,
+          },
+          config: {
+            serviceAreas: formData.serviceAreas,
+            ...formData.defaultSettings,
+          },
+        });
+        router.push("/dashboard/partners");
+      } catch {
+        addToast({ type: 'error', title: 'Onboarding failed', message: 'Could not save partner data. Please try again.' });
+      }
     }
-  }, [formData, validateStep, router]);
+  }, [formData, validateStep, router, saveOnboarding, addToast]);
 
   const handleAddServiceArea = useCallback(() => {
     if (serviceAreaInput.trim()) {

@@ -28,7 +28,7 @@ import {
   Edit,
   Trash2,
   Plus,
-  Sync,
+  RefreshCw as Sync,
   CheckCircle,
   AlertCircle,
   Clock,
@@ -268,7 +268,7 @@ export default function WhatsAppPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <Table>
+              <table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Template Name</TableHead>
@@ -369,7 +369,7 @@ export default function WhatsAppPage() {
                     ))
                   )}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </CardContent>
         </Card>

@@ -18,7 +18,7 @@ interface ShippingRate {
   signatureRequired?: boolean;
 }
 
-interface RateComparisonCardProps extends HTMLAttributes<HTMLDivElement> {
+interface RateComparisonCardProps extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   /** Shipping rate data */
   rate: ShippingRate;
   /** Whether this rate is selected */

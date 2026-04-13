@@ -79,7 +79,7 @@ const CATEGORIES: { key: Category; label: string; count: number }[] = [
   { key: "ECOMMERCE", label: "E-Commerce", count: 11 },
   { key: "ERP", label: "ERP", count: 5 },
   { key: "COLLABORATION", label: "Collaboration", count: 4 },
-  { key: "FELD", label: "ELD", count: 3 },
+  { key: "ELD", label: "ELD", count: 3 },
   { key: "FUEL", label: "Fuel", count: 4 },
   { key: "POS", label: "POS", count: 5 },
   { key: "LASTMILE", label: "Last-Mile", count: 3 },
@@ -212,9 +212,9 @@ const ALL_PROVIDERS: Provider[] = [
   { id: "collab-4", slug: "mattermost", name: "Mattermost", category: "COLLABORATION", description: "Open-source chat", status: "AVAILABLE", authType: "api_key", popular: false, addedDate: "2025-06-12", connected: false },
 
   // ELD (3)
-  { id: "eld-1", slug: "samsara-eld", name: "Samsara ELD", category: "FELD", description: "Electronic logging device", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
-  { id: "eld-2", slug: "geotab-eld", name: "Geotab ELD", category: "FELD", description: "ELD solution", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-18", connected: false },
-  { id: "eld-3", slug: "keeptruckin", name: "Keeptruckin", category: "FELD", description: "ELD & telematics", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-15", connected: false },
+  { id: "eld-1", slug: "samsara-eld", name: "Samsara ELD", category: "ELD", description: "Electronic logging device", status: "AVAILABLE", authType: "oauth2", popular: true, addedDate: "2025-06-20", connected: false },
+  { id: "eld-2", slug: "geotab-eld", name: "Geotab ELD", category: "ELD", description: "ELD solution", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-18", connected: false },
+  { id: "eld-3", slug: "keeptruckin", name: "Keeptruckin", category: "ELD", description: "ELD & telematics", status: "AVAILABLE", authType: "oauth2", popular: false, addedDate: "2025-06-15", connected: false },
 
   // FUEL (4)
   { id: "fuel-1", slug: "fleet-complete", name: "Fleet Complete", category: "FUEL", description: "Fuel management", status: "AVAILABLE", authType: "api_key", popular: true, addedDate: "2025-06-20", connected: false },

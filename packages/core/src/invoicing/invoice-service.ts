@@ -23,6 +23,7 @@ import type {
   InvoiceTax,
   PaymentRecord,
   CostBreakdown,
+  ManualLineItemInput,
 } from './types.js';
 import {
   InvoiceError,
@@ -51,21 +52,108 @@ export class InvoiceService {
       customerId,
       deliveryIds = [],
       routeIds = [],
+      manualLineItems,
       dueDate,
       currency = 'USD',
       notes,
+      terms,
+      status: requestedStatus,
+      taxRate,
+      discountPercentage,
       discounts = [],
       taxConfig = [],
       rateCardId,
       metadata = {},
     } = params;
 
+    const isManual = manualLineItems != null && manualLineItems.length > 0;
+
     // ─── VALIDATE INPUTS ────────────────────────────────────────────
-    if (deliveryIds.length === 0 && routeIds.length === 0) {
-      throw new InvoiceError('Must provide either deliveryIds or routeIds');
+    if (!isManual && deliveryIds.length === 0 && routeIds.length === 0) {
+      throw new InvoiceError('Must provide either deliveryIds, routeIds, or manualLineItems');
     }
 
-    // ─── GET RATE CARD ──────────────────────────────────────────────
+    // ─── MANUAL LINE ITEMS PATH ─────────────────────────────────────
+    if (isManual) {
+      const lineItems: Omit<InvoiceLineItem, 'id' | 'invoiceId' | 'createdAt'>[] =
+        (manualLineItems as ManualLineItemInput[]).map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          amount: item.quantity * item.unitPrice,
+        }));
+
+      const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+
+      // Normalize simple discountPercentage into discounts array
+      const effectiveDiscounts = discounts.length > 0
+        ? discounts
+        : discountPercentage && discountPercentage > 0
+          ? [{ description: 'Discount', type: 'percentage' as const, value: discountPercentage }]
+          : [];
+
+      const discountItems: Omit<InvoiceDiscount, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+      let discountTotal = 0;
+      for (const discount of effectiveDiscounts) {
+        const amount = discount.type === 'percentage'
+          ? subtotal * (discount.value / 100)
+          : discount.value;
+        discountTotal += amount;
+        discountItems.push({ description: discount.description, type: discount.type, value: discount.value, amount });
+      }
+
+      // Normalize simple taxRate into taxConfig
+      const effectiveTaxConfig: TaxConfig[] = taxConfig.length > 0
+        ? taxConfig
+        : taxRate != null && taxRate > 0
+          ? [{ jurisdiction: 'standard', rate: taxRate }]
+          : [];
+
+      const taxItems: Omit<InvoiceTax, 'id' | 'invoiceId' | 'createdAt'>[] = [];
+      const taxableAmount = subtotal - discountTotal;
+      let taxTotal = 0;
+      for (const tax of effectiveTaxConfig) {
+        const amount = taxableAmount * (tax.rate / 100);
+        taxTotal += amount;
+        taxItems.push({
+          description: tax.description || `Tax (${tax.jurisdiction || 'Standard'})`,
+          rate: tax.rate,
+          amount,
+          jurisdiction: tax.jurisdiction,
+        });
+      }
+
+      const issuedAt = new Date();
+      const dueAtDate = dueDate || new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const dbStatus = requestedStatus === 'sent' ? 'SENT' : 'DRAFT';
+      const notesValue = terms ? `${notes || ''}\n\n${terms}`.trim() : (notes || null);
+
+      const dbInvoice = await (this.prisma.invoice as any).create({
+        data: {
+          tenantId,
+          customerId: customerId || null,
+          invoiceNumber: 'DRAFT-TEMP',
+          status: dbStatus,
+          subtotal,
+          discountTotal,
+          taxTotal,
+          total: subtotal - discountTotal + taxTotal,
+          currency,
+          issuedAt,
+          dueAt: dueAtDate,
+          notes: notesValue,
+          metadata: { ...metadata, createdFrom: 'manual' },
+          lineItems: { create: lineItems },
+          discounts: { create: discountItems },
+          taxes: { create: taxItems },
+        },
+        include: { lineItems: true, discounts: true, taxes: true, payments: true },
+      });
+
+      return this.mapDbInvoice(dbInvoice);
+    }
+
+    // ─── GET RATE CARD (delivery/route path) ────────────────────────
     let rateCard: RateCard | null = null;
     if (rateCardId) {
       const dbRateCard = await (this.prisma.rateCard as any).findUnique({
@@ -241,6 +329,39 @@ export class InvoiceService {
         invoiceNumber: numberResult.invoiceNumber,
         status: 'FINALIZED',
         issuedAt: new Date(),
+      },
+      include: {
+        lineItems: true,
+        discounts: true,
+        taxes: true,
+        payments: true,
+      },
+    });
+
+    return this.mapDbInvoice(updated);
+  }
+
+  /**
+   * Mark a finalized invoice as sent to the customer
+   * @param invoiceId - Invoice ID
+   * @param tenantId - Tenant ID
+   * @returns Invoice - Updated invoice with status SENT
+   */
+  async sendInvoice(invoiceId: string, tenantId: string): Promise<Invoice> {
+    const invoice = await this.getInvoice(invoiceId, tenantId);
+
+    if (invoice.status === 'draft') {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    }
+
+    if (invoice.status === 'voided') {
+      throw new InvalidInvoiceStateError(invoiceId, invoice.status, 'send');
+    }
+
+    const updated = await (this.prisma.invoice as any).update({
+      where: { id: invoiceId },
+      data: {
+        status: 'SENT',
       },
       include: {
         lineItems: true,
