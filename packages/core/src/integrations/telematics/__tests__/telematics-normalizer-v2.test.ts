@@ -3,8 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { TelematicsNormalizerV2, type TenantNormalizationRules } from "../telematics-normalizer-v2.js";
-import type { GeotabLogRecord, GeotabStatusData, GeotabTrip } from "../geotab-sdk-client.js";
+import {
+  TelematicsNormalizerV2,
+  type TenantNormalizationRules,
+} from "../telematics-normalizer-v2.js";
+import type {
+  GeotabLogRecord,
+  GeotabStatusData,
+  GeotabTrip,
+} from "../geotab-sdk-client.js";
 import type { SamsaraLocation, SamsaraStats } from "../types.js";
 
 describe("TelematicsNormalizerV2", () => {
@@ -47,7 +54,10 @@ describe("TelematicsNormalizerV2", () => {
         bearing: 90,
       };
 
-      const position = normalizer.normalizeGeotabPosition(record, "geotab-custom");
+      const position = normalizer.normalizeGeotabPosition(
+        record,
+        "geotab-custom",
+      );
 
       expect(position.provider).toBe("geotab-custom");
     });
@@ -76,17 +86,29 @@ describe("TelematicsNormalizerV2", () => {
 
       expect(diagnostics.vehicleId).toBe("device-1");
       expect(diagnostics.fuelLevel).toBe(75.5);
-      expect(diagnostics.odometer?.value).toBeCloseTo(10500.2, 0);
+      // Odometer is converted from km to miles (default distanceUnit)
+      expect(diagnostics.odometer?.value).toBeCloseTo(6524.5, 0);
     });
 
     it("should handle fault data in diagnostics", () => {
-      const statusData: GeotabStatusData[] = [];
+      const statusData: GeotabStatusData[] = [
+        {
+          id: "status-1",
+          device: { id: "device-1" },
+          diagnostic: { id: "FuelLevel", name: "FuelLevel" },
+          value: 50,
+          dateTime: "2025-01-01T12:00:00Z",
+        },
+      ];
       const faults = [
         { code: "P0101", description: "MAF Sensor Range/Performance" },
         { code: "P0201", description: "Injector Circuit Open Bank 1" },
       ];
 
-      const diagnostics = normalizer.normalizeGeotabDiagnostics(statusData, faults);
+      const diagnostics = normalizer.normalizeGeotabDiagnostics(
+        statusData,
+        faults,
+      );
 
       expect(diagnostics.dtcCodes).toHaveLength(2);
       expect(diagnostics.dtcCodes?.[0].code).toBe("P0101");
@@ -149,11 +171,19 @@ describe("TelematicsNormalizerV2", () => {
         engineState: "Running",
         odometer: { miles: 105000 },
         faultCodes: [
-          { id: "fault-1", spnId: 123, fmiId: 5, description: "Engine coolant temp low" },
+          {
+            id: "fault-1",
+            spnId: 123,
+            fmiId: 5,
+            description: "Engine coolant temp low",
+          },
         ],
       };
 
-      const diagnostics = normalizer.normalizeSamsaraDiagnostics("vehicle-1", stats);
+      const diagnostics = normalizer.normalizeSamsaraDiagnostics(
+        "vehicle-1",
+        stats,
+      );
 
       expect(diagnostics.vehicleId).toBe("vehicle-1");
       expect(diagnostics.odometer?.value).toBeCloseTo(105000, 0);
@@ -279,7 +309,10 @@ describe("TelematicsNormalizerV2", () => {
         },
       ];
 
-      const enriched = normalizer.enrichPositionWithGeofences(position, geofences);
+      const enriched = normalizer.enrichPositionWithGeofences(
+        position,
+        geofences,
+      );
 
       expect(enriched.geofences).toHaveLength(1);
       expect(enriched.geofences[0].name).toBe("Warehouse");
@@ -362,8 +395,8 @@ describe("TelematicsNormalizerV2", () => {
 
       const position = normalizer.normalizeGeotabPosition(record);
 
-      // Speed should still be converted since input is km/h
-      expect(position.speed).toBeCloseTo(49.7, 1);
+      // With speedUnit: "kmh", input km/h stays as km/h (no conversion)
+      expect(position.speed).toBeCloseTo(80, 1);
     });
   });
 
