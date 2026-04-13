@@ -235,7 +235,15 @@ const COLUMN_CONFIG: { status: OrderStatus; title: string }[] = [
 ];
 
 export default function OrderBoardPage() {
-  const { items: orders, loading, error, refetch } = useApiList<Order>('/api/v4/orders?view=board');
+  const { items: apiOrders, loading, error, refetch } = useApiList<Order>('/api/v4/orders?view=board');
+  const [localOrderOverrides, setLocalOrderOverrides] = useState<Record<string, OrderStatus>>({});
+  const orders = useMemo(() => apiOrders.map((o) => localOrderOverrides[o.id] ? { ...o, status: localOrderOverrides[o.id] } : o), [apiOrders, localOrderOverrides]);
+  const setOrders = useCallback((updater: (prev: Order[]) => Order[]) => {
+    const updated = updater(orders);
+    const overrides: Record<string, OrderStatus> = {};
+    updated.forEach((o, i) => { if (o.status !== apiOrders[i]?.status) overrides[o.id] = o.status; });
+    setLocalOrderOverrides(overrides);
+  }, [orders, apiOrders]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);

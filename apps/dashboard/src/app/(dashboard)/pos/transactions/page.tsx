@@ -49,8 +49,8 @@ export default function TransactionsPage() {
   const [refundReason, setRefundReason] = useState("");
 
   const { items: allTransactions } = useTransactions();
-  const { refund, isLoading: refunding } = useRefundTransaction();
-  const { export: exportData } = useExportTransactions();
+  const { refund, loading: refunding } = useRefundTransaction();
+  const { exportTransactions: exportData } = useExportTransactions();
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
@@ -83,14 +83,8 @@ export default function TransactionsPage() {
     ? allTransactions.find((t) => t.id === selectedTxn)
     : null;
 
-  const handleExport = async (format: "csv" | "pdf") => {
-    const blob = await exportData(filteredTransactions, format);
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `transactions.${format}`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const handleExport = async (_format: "csv" | "pdf") => {
+    await exportData();
   };
 
   return (

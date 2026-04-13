@@ -64,7 +64,7 @@ export function DriverBehaviorChart({
   const bars = data.map((day, i) => {
     const x = padding.left + (chartWidth / data.length) * i + barGap / 2;
     let y = padding.top + chartHeight;
-    const barSegments = [];
+    const barSegments: { x: number; y: number; width: number; height: number; color: string; label: string; value: number; date: string }[] = [];
 
     let totalEvents = 0;
     eventTypes.forEach((event) => {

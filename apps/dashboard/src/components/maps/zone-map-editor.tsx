@@ -106,12 +106,12 @@ export function ZoneMapEditor({
       setDrawingManager(manager);
 
       // Handle shape completion
-      google.maps.event.addListener(manager, 'polygoncomplete', (polygon: google.maps.Polygon) => {
-        handlePolygonComplete(polygon);
+      google.maps.event.addListener(manager, 'polygoncomplete', (arg?: unknown) => {
+        handlePolygonComplete(arg as google.maps.Polygon);
       });
 
-      google.maps.event.addListener(manager, 'rectanglecomplete', (rectangle: google.maps.Rectangle) => {
-        handleRectangleComplete(rectangle);
+      google.maps.event.addListener(manager, 'rectanglecomplete', (arg?: unknown) => {
+        handleRectangleComplete(arg as google.maps.Rectangle);
       });
     }
 
@@ -131,6 +131,7 @@ export function ZoneMapEditor({
     if (polygonsRef.current.has(zone.id)) {
       return; // Already drawn
     }
+    if (!google) return;
 
     const polygon = new google.maps.Polygon({
       paths: zone.vertices,
@@ -275,23 +276,25 @@ export function ZoneMapEditor({
 
   // Check if two zones overlap
   const zonesOverlap = (zone1: MapZone, zone2: MapZone): boolean => {
-    if (!google?.maps?.geometry) return false;
+    if (!google?.maps) return false;
+    const gmaps = google.maps;
+    if (!('geometry' in gmaps)) return false;
 
-    const poly1 = new google.maps.Polygon({ paths: zone1.vertices });
-    const poly2 = new google.maps.Polygon({ paths: zone2.vertices });
+    const poly1 = new gmaps.Polygon({ paths: zone1.vertices });
+    const poly2 = new gmaps.Polygon({ paths: zone2.vertices });
 
     // Simple check: see if any vertex of zone1 is inside zone2
     for (const vertex of zone1.vertices) {
-      const point = new google.maps.LatLng(vertex.lat, vertex.lng);
-      if (google.maps.geometry.poly.containsLocation(point, poly2)) {
+      const point = new gmaps.LatLng(vertex.lat, vertex.lng);
+      if (gmaps.geometry.poly.containsLocation(point, poly2)) {
         return true;
       }
     }
 
     // Check if any vertex of zone2 is inside zone1
     for (const vertex of zone2.vertices) {
-      const point = new google.maps.LatLng(vertex.lat, vertex.lng);
-      if (google.maps.geometry.poly.containsLocation(point, poly1)) {
+      const point = new gmaps.LatLng(vertex.lat, vertex.lng);
+      if (gmaps.geometry.poly.containsLocation(point, poly1)) {
         return true;
       }
     }

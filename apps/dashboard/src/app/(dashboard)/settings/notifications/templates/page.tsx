@@ -265,7 +265,7 @@ export default function NotificationTemplatesPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <Table>
+              <table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Event</TableHead>
@@ -365,7 +365,7 @@ export default function NotificationTemplatesPage() {
                     ))
                   )}
                 </TableBody>
-              </Table>
+              </table>
             </div>
           </CardContent>
         </Card>

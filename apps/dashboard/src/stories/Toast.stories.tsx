@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info as InfoIcon } from "lucide-react";
 
 const meta = {
   title: "UI/Toast",
@@ -46,7 +46,7 @@ const ToastDisplay = ({
       bg: "bg-wl-info-bg",
       border: "border-wl-info-400",
       text: "text-wl-info-400",
-      icon: <Info size={20} />,
+      icon: <InfoIcon size={20} />,
     },
   };
 
@@ -97,7 +97,7 @@ export const Warning: Story = {
   ),
 };
 
-export const Info: Story = {
+export const InfoToast: Story = {
   render: () => (
     <ToastDisplay
       type="info"
@@ -119,7 +119,7 @@ export const WithAction: Story = {
   render: () => (
     <div className="flex items-start gap-3 p-4 rounded-md border bg-wl-info-bg border-wl-info-400 max-w-md">
       <div className="flex-shrink-0 text-wl-info-400">
-        <Info size={20} />
+        <InfoIcon size={20} />
       </div>
       <div className="flex-1">
         <h3 className="font-semibold text-sm text-wl-info-400">

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import {
   Smartphone,
   Palette,
@@ -39,6 +41,9 @@ interface NotificationSetting {
 }
 
 export default function MobileConfigPage() {
+  const { addToast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+
   // Branding state
   const [appName, setAppName] = useState("Witylogix Driver");
   const [primaryColor, setPrimaryColor] = useState("#F5A623");
@@ -144,9 +149,38 @@ export default function MobileConfigPage() {
   };
 
   // Handle save
-  const handleSave = () => {
-    // TODO: API call to save configuration
-    alert("Configuration saved successfully!");
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await api.patch('/api/v4/mobile-config', {
+        appName,
+        primaryColor,
+        logoUrl,
+        features,
+        navigationMap,
+        notifications,
+        trackingInterval,
+        batteryMode,
+        backgroundTracking,
+        cacheSize,
+        syncInterval,
+        autoRetry,
+      });
+      addToast({
+        type: 'success',
+        title: 'Configuration saved',
+        message: 'Mobile app configuration has been updated.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to save configuration',
+        message: err instanceof Error ? err.message : 'Could not save configuration. Please try again.',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -155,9 +189,9 @@ export default function MobileConfigPage() {
         title="Mobile App Configuration"
         subtitle="Configure the driver mobile app settings and features"
         actions={
-          <Button variant="primary" size="md" onClick={handleSave}>
+          <Button variant="primary" size="md" onClick={handleSave} disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
-            Save Configuration
+            {isSaving ? 'Saving...' : 'Save Configuration'}
           </Button>
         }
       />
@@ -286,7 +320,7 @@ export default function MobileConfigPage() {
                 </label>
                 <Select
                   value={navigationMap}
-                  onChange={setNavigationMap}
+                  onValueChange={setNavigationMap}
                   options={[
                     { value: "google-maps", label: "Google Maps" },
                     { value: "waze", label: "Waze" },
@@ -353,7 +387,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Tracking Interval"
                 value={trackingInterval}
-                onChange={setTrackingInterval}
+                onValueChange={setTrackingInterval}
                 options={[
                   { value: "15s", label: "15 seconds" },
                   { value: "30s", label: "30 seconds" },
@@ -365,7 +399,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Battery Optimization"
                 value={batteryMode}
-                onChange={setBatteryMode}
+                onValueChange={setBatteryMode}
                 options={[
                   { value: "aggressive", label: "Aggressive" },
                   { value: "balanced", label: "Balanced" },
@@ -406,7 +440,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Max Offline Cache Size"
                 value={cacheSize}
-                onChange={setCacheSize}
+                onValueChange={setCacheSize}
                 options={[
                   { value: "50mb", label: "50 MB" },
                   { value: "100mb", label: "100 MB" },
@@ -418,7 +452,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Sync Interval (Online)"
                 value={syncInterval}
-                onChange={setSyncInterval}
+                onValueChange={setSyncInterval}
                 options={[
                   { value: "1m", label: "1 minute" },
                   { value: "5m", label: "5 minutes" },

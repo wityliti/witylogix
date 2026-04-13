@@ -108,7 +108,7 @@ export function useSyncStatus(config?: UseSyncStatusConfig): UseSyncStatusReturn
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const pollTimeoutRef = useRef<NodeJS.Timer | null>(null);
+  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cacheTimeRef = useRef<number>(0);
 
   const fetchStatus = useCallback(async (skipCache = false) => {

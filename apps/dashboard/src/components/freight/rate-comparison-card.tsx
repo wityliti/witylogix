@@ -12,7 +12,7 @@ interface RateData {
   trendPoints: number[];
 }
 
-interface RateComparisonCardProps {
+export interface RateComparisonCardProps {
   lane: string;
   origin: string;
   destination: string;

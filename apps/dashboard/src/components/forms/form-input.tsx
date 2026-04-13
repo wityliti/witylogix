@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 type InputType = "text" | "email" | "password" | "number" | "tel" | "url" | "search";
 
-interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "prefix"> {
   /** Input type */
   type?: InputType;
   /** Prefix element (icon or text) */

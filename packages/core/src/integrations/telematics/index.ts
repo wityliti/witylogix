@@ -78,5 +78,11 @@ export type {
 // Normalizer
 export { TelematicsNormalizer } from "./telematics-normalizer.js";
 
+// Vehicle tracking types
+export type {
+  WitylogixVehiclePosition,
+  VehicleFeedConfig,
+} from "./telematics-types.js";
+
 // Poller
 export { TelematicsPoller } from "./telematics-poller.js";

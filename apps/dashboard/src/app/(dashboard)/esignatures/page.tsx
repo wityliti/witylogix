@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEnvelopes, useEsigAnalytics } from "@/hooks/use-esignatures";
+import { useEnvelopes, useEsigAnalytics, type Envelope } from "@/hooks/use-esignatures";
 
 /**
  * E-Signatures Page - Professional Dark Theme
@@ -136,7 +136,7 @@ function CompletionRateChart({ rate }: { rate: number }) {
   );
 }
 
-function RecentEnvelopesTable({ envelopes }: { envelopes: Record<string, unknown>[] }) {
+function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
   return (
     <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
@@ -213,7 +213,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Record<string, unknown
   );
 }
 
-function TemplateUsageCard({ templates }: { templates: Record<string, unknown>[] }) {
+function TemplateUsageCard({ templates }: { templates: Array<{ name: string; count: number }> }) {
   return (
     <Card className={cn("bg-[#12121a] border-[#1e1e2e]")}>
       <CardHeader>
@@ -241,8 +241,8 @@ function TemplateUsageCard({ templates }: { templates: Record<string, unknown>[]
 }
 
 export default function ESignaturesPage() {
-  const { envelopes, loading: envelopesLoading } = useEnvelopes();
-  const { analytics, loading: analyticsLoading } = useEsigAnalytics();
+  const { items: envelopes, loading: envelopesLoading } = useEnvelopes();
+  const { data: analytics, loading: analyticsLoading } = useEsigAnalytics();
 
   const mockTemplates = [
     { name: "Service Agreement", count: 12 },

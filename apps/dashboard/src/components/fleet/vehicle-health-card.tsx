@@ -36,7 +36,7 @@ interface VehicleHealthCardProps extends HTMLAttributes<HTMLDivElement> {
   lastServiceDate: string;
   nextServiceDue: string;
   maintenanceHistory?: MaintenanceHistoryEvent[];
-  onClick?: (id: string) => void;
+  onCardClick?: (id: string) => void;
 }
 
 const getHealthColor = (score: number) => {
@@ -124,7 +124,7 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
       lastServiceDate,
       nextServiceDue,
       maintenanceHistory,
-      onClick,
+      onCardClick,
       className,
       ...props
     },
@@ -156,10 +156,10 @@ const VehicleHealthCard = forwardRef<HTMLDivElement, VehicleHealthCardProps>(
         ref={ref}
         className={cn(
           "flex flex-col gap-4 transition-all",
-          onClick && "cursor-pointer hover:shadow-lg",
+          onCardClick && "cursor-pointer hover:shadow-lg",
           className
         )}
-        onClick={() => onClick?.(id)}
+        onClick={() => onCardClick?.(id)}
         {...props}
       >
         {/* Header */}

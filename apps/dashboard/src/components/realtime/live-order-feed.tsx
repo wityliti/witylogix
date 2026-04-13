@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChevronUp,
@@ -27,7 +28,7 @@ interface LiveOrderFeedProps {
   onOrderClick?: (order: Order) => void;
 }
 
-const statusColors: Record<Order["status"], { badge: string; bg: string }> = {
+const statusColors: Record<Order["status"], { badge: BadgeVariant; bg: string }> = {
   pending: { badge: "warning", bg: "bg-wl-warning-bg" },
   assigned: { badge: "info", bg: "bg-wl-info-bg" },
   "in-transit": { badge: "primary", bg: "bg-wl-primary-500/12" },

@@ -29,7 +29,7 @@ export default function CalendarPage() {
   const { items: rules, loading, error } = useApiList<CalendarRule>("/api/v4/calendar-rules");
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState error={error} />;
+  if (error) return <ErrorState message={error.message} />;
 
   const filtered = rules.filter((rule) => {
     if (filterType !== "all" && rule.type !== filterType) return false;
@@ -124,7 +124,7 @@ export default function CalendarPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold text-white">{rule.name}</h3>
                         <Badge variant={getRuleTypeColor(rule.type) as any}>{rule.type}</Badge>
-                        {!rule.isActive && <Badge variant="secondary">Inactive</Badge>}
+                        {!rule.isActive && <Badge variant="default">Inactive</Badge>}
                       </div>
                       <p className="text-sm text-gray-400 mb-3">
                         {new Date(rule.startDate).toLocaleDateString()} to {new Date(rule.endDate).toLocaleDateString()}

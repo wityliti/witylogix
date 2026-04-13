@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
 
@@ -76,6 +78,9 @@ export default function InvoicesPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
+  const [isSending, setIsSending] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const { addToast } = useToast();
 
   // Get unique customers
   const customers = useMemo(() => {
@@ -214,13 +219,55 @@ export default function InvoicesPage() {
     }
   }, [paginatedInvoices, selectedInvoices]);
 
-  const handleBulkSend = useCallback(() => {
-    // TODO: API call for bulk send
-  }, [selectedInvoices]);
+  const handleBulkSend = useCallback(async () => {
+    if (selectedInvoices.size === 0 || isSending) return;
+    setIsSending(true);
+    try {
+      await api.post('/api/v4/invoices/bulk-send', {
+        ids: Array.from(selectedInvoices),
+      });
+      addToast({
+        type: 'success',
+        title: 'Invoices sent',
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} sent successfully.`,
+      });
+      setSelectedInvoices(new Set());
+      await refetch();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Send failed',
+        message: err instanceof Error ? err.message : 'Failed to send invoices. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [selectedInvoices, isSending, addToast, refetch]);
 
-  const handleBulkMarkPaid = useCallback(() => {
-    // TODO: API call for mark paid
-  }, [selectedInvoices]);
+  const handleBulkMarkPaid = useCallback(async () => {
+    if (selectedInvoices.size === 0 || isMarkingPaid) return;
+    setIsMarkingPaid(true);
+    try {
+      await api.post('/api/v4/invoices/bulk-mark-paid', {
+        ids: Array.from(selectedInvoices),
+      });
+      addToast({
+        type: 'success',
+        title: 'Invoices marked as paid',
+        message: `${selectedInvoices.size} invoice${selectedInvoices.size !== 1 ? 's' : ''} marked as paid.`,
+      });
+      setSelectedInvoices(new Set());
+      await refetch();
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Mark paid failed',
+        message: err instanceof Error ? err.message : 'Failed to mark invoices as paid. Please try again.',
+      });
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [selectedInvoices, isMarkingPaid, addToast, refetch]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -326,13 +373,13 @@ export default function InvoicesPage() {
         <Card className="bg-[#12121a] border-[#1e1e2e] flex items-center justify-between gap-4 p-4">
           <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={handleBulkSend}>
+            <Button variant="secondary" size="sm" onClick={handleBulkSend} disabled={isSending}>
               <Send className="w-4 h-4 mr-2" />
-              Send
+              {isSending ? 'Sending…' : 'Send'}
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid}>
+            <Button variant="secondary" size="sm" onClick={handleBulkMarkPaid} disabled={isMarkingPaid}>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Mark Paid
+              {isMarkingPaid ? 'Marking…' : 'Mark Paid'}
             </Button>
           </div>
         </Card>
@@ -357,7 +404,7 @@ export default function InvoicesPage() {
 
             <Select
               value={selectedStatus as string}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 setSelectedStatus((value as InvoiceStatus) || "");
                 setCurrentPage(1);
               }}
@@ -374,7 +421,7 @@ export default function InvoicesPage() {
 
             <Select
               value={selectedCustomer}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 setSelectedCustomer(value);
                 setCurrentPage(1);
               }}
@@ -391,7 +438,7 @@ export default function InvoicesPage() {
 
             <Select
               value={sortBy}
-              onChange={(value) =>
+              onValueChange={(value) =>
                 setSortBy(value as "date" | "amount" | "status" | "due")
               }
               label="Sort By"
@@ -498,7 +545,7 @@ export default function InvoicesPage() {
                       className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
                     />
                   ),
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <input
                       type="checkbox"
                       checked={selectedInvoices.has(item.id)}
@@ -511,7 +558,7 @@ export default function InvoicesPage() {
                 {
                   key: "number",
                   header: "Invoice #",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="font-mono text-sm font-medium text-blue-400">
                       {item.number}
                     </div>
@@ -524,12 +571,12 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: Record<string, unknown>) => <span className="text-gray-300">{item.customerName}</span>,
+                  render: (item: Invoice) => <span className="text-gray-300">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
                   header: "Amount",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="font-medium text-white">
                       ${item.amount.toFixed(2)}
                     </div>
@@ -541,7 +588,7 @@ export default function InvoicesPage() {
                 {
                   key: "status",
                   header: "Status",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <Badge variant={getStatusBadgeVariant(item.status)}>
                       {getStatusLabel(item.status)}
                     </Badge>
@@ -551,7 +598,7 @@ export default function InvoicesPage() {
                 {
                   key: "dueDate",
                   header: "Due Date",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="text-sm text-gray-300">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
@@ -562,7 +609,7 @@ export default function InvoicesPage() {
                 {
                   key: "sentDate",
                   header: "Sent Date",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="text-sm text-gray-400">
                       {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
@@ -572,7 +619,7 @@ export default function InvoicesPage() {
                 {
                   key: "actions",
                   header: "Actions",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -599,7 +646,7 @@ export default function InvoicesPage() {
               </span>
               <Select
                 value={pageSize.toString()}
-                onChange={(value) => {
+                onValueChange={(value) => {
                   setPageSize(parseInt(value));
                   setCurrentPage(1);
                 }}

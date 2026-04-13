@@ -425,7 +425,7 @@ describe('Badge Component', () => {
 
   describe('Edge Cases', () => {
     it('should render with empty children', () => {
-      const { container } = render(<Badge></Badge>);
+      const { container } = render(<Badge>{""}</Badge>);
       const badge = container.querySelector('span');
       expect(badge).toBeTruthy();
     });

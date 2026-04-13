@@ -214,5 +214,3 @@ export const AgingBuckets = forwardRef<HTMLDivElement, AgingBucketsProps>(
 );
 
 AgingBuckets.displayName = "AgingBuckets";
-
-export { AgingBuckets };

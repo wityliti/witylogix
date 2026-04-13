@@ -44,6 +44,7 @@ export { IntegrationMarketplace } from "./integration-marketplace";
 // Existing type exports
 export type {
   IntegrationProvider,
+  IntegrationConnection,
   ConnectionStatus,
   SyncStatus,
   HealthStatus,

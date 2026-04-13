@@ -151,7 +151,11 @@ export function MetricCard({
 export interface StatCardProps {
   label: string;
   value: string | number;
-  change?: { value: number; label: string };
+  change?: { value: number; label: string } | string;
+  /** Alias for change using direction/value format, or simple direction string */
+  trend?: { direction: 'up' | 'down' | 'neutral' | string; value: number } | string;
+  unit?: string;
+  isLoading?: boolean;
   icon?: ReactNode;
   accentColor?: string;
   style?: CSSProperties;
@@ -163,13 +167,17 @@ export function StatCard({
   label,
   value,
   change,
+  trend,
+  unit,
+  isLoading,
   icon,
   accentColor = "var(--wl-primary-500)",
   style,
   className,
   index = 0,
 }: StatCardProps) {
-  const isPositive = change && change.value >= 0;
+  const changeObj = typeof change === 'object' && change !== null && !Array.isArray(change) ? change as { value: number; label: string } : null;
+  const isPositive = changeObj && changeObj.value >= 0;
 
   return (
     <div
@@ -209,7 +217,7 @@ export function StatCard({
         {value}
       </div>
 
-      {change && (
+      {changeObj && (
         <div className="flex items-center gap-1 mt-2">
           <span
             className={cn(
@@ -218,11 +226,16 @@ export function StatCard({
             )}
           >
             {isPositive ? "+" : ""}
-            {change.value}%
+            {changeObj.value}%
           </span>
           <span className="text-xs text-wl-text-tertiary">
-            {change.label}
+            {changeObj.label}
           </span>
+        </div>
+      )}
+      {typeof change === 'string' && (
+        <div className="flex items-center gap-1 mt-2">
+          <span className="text-xs text-wl-text-tertiary">{change}</span>
         </div>
       )}
     </div>

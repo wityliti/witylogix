@@ -10,7 +10,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { useApiList } from '@/hooks/use-api';
 import { FileText, Download, Upload, Filter } from 'lucide-react';
 
-interface Record {
+interface HealthRecord {
   id: string;
   type: string;
   title: string;
@@ -31,14 +31,14 @@ const recordTypeVariants: Record<string, 'success' | 'info' | 'warning' | 'dange
 };
 
 export default function RecordsPage() {
-  const { items: apiRecords, loading, error, refetch } = useApiList<Record>('/api/v4/orders?type=healthcare&view=records');
+  const { items: apiRecords, loading, error, refetch } = useApiList<HealthRecord>('/api/v4/orders?type=healthcare&view=records');
   const [recordTypeFilter, setRecordTypeFilter] = useState<string>('ALL');
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const mockRecords: Record[] = apiRecords.length > 0 ? apiRecords : [
+  const mockRecords: HealthRecord[] = apiRecords.length > 0 ? apiRecords : [
     {
       id: "rec-001",
       type: "PROGRESS_NOTE",

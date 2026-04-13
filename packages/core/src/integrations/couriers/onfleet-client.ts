@@ -14,6 +14,7 @@
  */
 
 import { CourierAdapter, type WebhookInfo } from "./courier-adapter.js";
+import { WebhookEvent, DeliveryStatus as DeliveryStatusEnum } from "./types.js";
 import type {
   CourierConfig,
   QuoteRequest,
@@ -24,9 +25,7 @@ import type {
   DeliveryStatus,
   DriverPosition,
   WebhookRegistration,
-  WebhookEvent,
 } from "./types.js";
-import { DeliveryStatus as DeliveryStatusEnum } from "./types.js";
 
 /**
  * Onfleet API Client
@@ -106,7 +105,7 @@ export class OnfleetClient extends CourierAdapter {
       estimatedMinutes: Math.ceil((estimate.dropoffEstimate?.duration || 0) / 60),
       distanceKm: (estimate.distance || 0) / 1000,
       provider: this.provider,
-      rawResponse: estimate,
+      rawResponse: estimate as unknown as Record<string, unknown>,
     };
   }
 
@@ -173,7 +172,7 @@ export class OnfleetClient extends CourierAdapter {
       driverName: task.worker?.name,
       driverPhone: task.worker?.phone,
       estimatedMinutes: Math.ceil((task.estimatedCompletionTime || 0) / 60 / 1000),
-      rawResponse: task,
+      rawResponse: task as unknown as Record<string, unknown>,
     };
   }
 
@@ -204,7 +203,7 @@ export class OnfleetClient extends CourierAdapter {
         ? new Date(task.estimatedCompletionTime)
         : undefined,
       deliveredAt: task.completionTime ? new Date(task.completionTime) : undefined,
-      rawResponse: task,
+      rawResponse: task as unknown as Record<string, unknown>,
     };
   }
 

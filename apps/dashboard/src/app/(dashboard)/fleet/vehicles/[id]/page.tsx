@@ -75,13 +75,13 @@ export default function VehicleDetailPage() {
     }
   };
 
-  const diagnostics = [];
-  const behaviors = [];
-  const maintenance = [];
+  const diagnostics: unknown[] = [];
+  const behaviors: unknown[] = [];
+  const maintenance: unknown[] = [];
 
   return (
     <>
-      <Header />
+      <Header title="Vehicle Details" />
       <main className="min-h-screen bg-[#0a0a0f] p-8">
         {/* ── BACK BUTTON & HEADER ──────────────────────────── */}
         <div className="mb-8">

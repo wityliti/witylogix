@@ -83,7 +83,7 @@ export function moveFocus(
 ): void {
   const focusables = getFocusableElements(container);
   const currentElement = document.activeElement as HTMLElement | null;
-  const currentIndex = focusables.indexOf(currentElement);
+  const currentIndex = currentElement ? focusables.indexOf(currentElement) : -1;
 
   if (focusables.length === 0) return;
 

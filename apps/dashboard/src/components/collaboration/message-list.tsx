@@ -36,9 +36,8 @@ function groupMessagesBySender(messages: Message[]): (GroupedMessage | Message)[
 
     const lastGroup = grouped[grouped.length - 1];
     const isSameSender =
-      !("isSystem" in lastGroup) &&
       lastGroup &&
-      "userId" in lastGroup &&
+      "messages" in lastGroup &&
       lastGroup.userId === message.userId &&
       new Date(message.createdAt).getTime() -
         new Date(lastGroup.timestamp).getTime() <

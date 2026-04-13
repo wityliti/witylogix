@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
 import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { useRouter } from "next/navigation";
+
+interface ELDRecord {
+  id: string;
+  driverId: string;
+  [key: string]: unknown;
+}
 import {
   TrendingUp,
   AlertTriangle,
@@ -79,15 +88,21 @@ const dutyStatusColor = (duty: DutyStatus): string => {
 };
 
 export default function ELDOverviewPage() {
-  const { items, loading, error, refetch, pagination } = useApiList<ELDRecord>('/api/v4/eld');
+  const { items, loading, error, refetch } = useApiList<ELDRecord>('/api/v4/eld');
+  const complianceResult = useFleetCompliance();
+  const violationsResult = useViolations(undefined);
+  const eventsResult = useELDEvents(undefined);
+  const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+
+  const compliance = complianceResult.data;
+  const complianceLoading = complianceResult.loading;
+  const violations = violationsResult.items;
+  const violationsLoading = violationsResult.loading;
+  const events = eventsResult.items;
+  const eventsLoading = eventsResult.loading;
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const { compliance, isLoading: complianceLoading } = useFleetCompliance();
-  const { violations, isLoading: violationsLoading } = useViolations(undefined, 5);
-  const { events, isLoading: eventsLoading } = useELDEvents(8);
-  const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
 
   const complianceScore = compliance?.compliancePercentage ?? 0;
   const scoreColor =

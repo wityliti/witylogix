@@ -79,7 +79,7 @@ const INDUSTRY_OPTIONS: IndustryOption[] = [
   },
 ];
 
-interface IndustryPickerProps extends HTMLAttributes<HTMLDivElement> {
+interface IndustryPickerProps extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   value?: string;
   onSelect?: (id: string, label: string) => void;
   customValue?: string;
