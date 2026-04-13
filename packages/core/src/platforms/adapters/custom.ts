@@ -38,14 +38,14 @@
  * ```
  */
 
-import * as crypto from 'crypto';
+import * as crypto from "crypto";
 import type {
   CreateOrderInput,
   CreateProductInput,
   CreateCustomerInput,
   PlatformCredentials,
-} from '../types.js';
-import { PlatformSource } from '@witylogix/types';
+} from "../types.js";
+import { PlatformSource } from "@witylogix/types";
 
 /**
  * Custom platform field mapping configuration
@@ -116,7 +116,7 @@ export interface CustomFieldMapping {
  * Supports multiple auth methods for merchant's API.
  */
 export interface CustomAuthConfig {
-  method: 'api_key' | 'hmac' | 'bearer';
+  method: "api_key" | "hmac" | "bearer";
   /**
    * For api_key: header name (e.g., "X-API-Key")
    * For bearer: unused (token goes in Authorization header)
@@ -173,48 +173,48 @@ export interface CustomCredentials extends PlatformCredentials {
  */
 export const DEFAULT_FIELD_MAPPING: CustomFieldMapping = {
   order: {
-    externalOrderId: 'id',
-    externalOrderNumber: 'number',
-    status: 'status',
-    total: 'total',
-    currency: 'currency',
-    customerEmail: 'customer.email',
-    customerName: 'customer.name',
-    customerPhone: 'customer.phone',
-    createdAt: 'created_at',
+    externalOrderId: "id",
+    externalOrderNumber: "number",
+    status: "status",
+    total: "total",
+    currency: "currency",
+    customerEmail: "customer.email",
+    customerName: "customer.name",
+    customerPhone: "customer.phone",
+    createdAt: "created_at",
     shippingAddress: {
-      firstName: 'shipping.first_name',
-      lastName: 'shipping.last_name',
-      line1: 'shipping.address_1',
-      line2: 'shipping.address_2',
-      city: 'shipping.city',
-      state: 'shipping.state',
-      postalCode: 'shipping.postal_code',
-      country: 'shipping.country',
+      firstName: "shipping.first_name",
+      lastName: "shipping.last_name",
+      line1: "shipping.address_1",
+      line2: "shipping.address_2",
+      city: "shipping.city",
+      state: "shipping.state",
+      postalCode: "shipping.postal_code",
+      country: "shipping.country",
     },
     lineItems: {
-      externalProductId: 'product_id',
-      sku: 'sku',
-      quantity: 'quantity',
-      price: 'price',
+      externalProductId: "product_id",
+      sku: "sku",
+      quantity: "quantity",
+      price: "price",
     },
   },
   product: {
-    externalProductId: 'id',
-    title: 'title',
-    description: 'description',
-    sku: 'sku',
-    price: 'price',
-    currency: 'currency',
-    status: 'status',
-    imageUrl: 'image_url',
+    externalProductId: "id",
+    title: "title",
+    description: "description",
+    sku: "sku",
+    price: "price",
+    currency: "currency",
+    status: "status",
+    imageUrl: "image_url",
   },
   customer: {
-    externalCustomerId: 'id',
-    email: 'email',
-    firstName: 'first_name',
-    lastName: 'last_name',
-    phone: 'phone',
+    externalCustomerId: "id",
+    email: "email",
+    firstName: "first_name",
+    lastName: "last_name",
+    phone: "phone",
   },
 };
 
@@ -230,15 +230,15 @@ export const DEFAULT_FIELD_MAPPING: CustomFieldMapping = {
  * // Returns: 'test@example.com'
  */
 function extractField(obj: unknown, path?: string): unknown {
-  if (!path || typeof obj !== 'object' || !obj) {
+  if (!path || typeof obj !== "object" || !obj) {
     return undefined;
   }
 
-  const parts = path.split('.');
+  const parts = path.split(".");
   let current: any = obj;
 
   for (const part of parts) {
-    if (typeof current !== 'object' || !current || !(part in current)) {
+    if (typeof current !== "object" || !current || !(part in current)) {
       return undefined;
     }
     current = current[part];
@@ -281,7 +281,11 @@ export class CustomAdapter {
    * const isValid = adapter.validateWebhook(payload, signature, config);
    * ```
    */
-  validateWebhook(payload: Buffer, signature: string, config?: CustomAuthConfig): boolean {
+  validateWebhook(
+    payload: Buffer,
+    signature: string,
+    config?: CustomAuthConfig,
+  ): boolean {
     if (!config) {
       // No auth configured, skip validation
       return true;
@@ -289,26 +293,26 @@ export class CustomAdapter {
 
     try {
       switch (config.method) {
-        case 'api_key': {
+        case "api_key": {
           // Validate API key matches configured key
           return signature === config.secret;
         }
 
-        case 'hmac': {
+        case "hmac": {
           // Validate HMAC-SHA256 signature
           if (!config.secret) {
             return false;
           }
 
-          const payloadString = payload.toString('utf-8');
+          const payloadString = payload.toString("utf-8");
           const computed = crypto
-            .createHmac('sha256', config.secret)
-            .update(payloadString, 'utf-8')
-            .digest('hex');
+            .createHmac("sha256", config.secret)
+            .update(payloadString, "utf-8")
+            .digest("hex");
 
           // Timing-safe comparison
-          const expectedBuffer = Buffer.from(computed, 'utf-8');
-          const actualBuffer = Buffer.from(signature, 'utf-8');
+          const expectedBuffer = Buffer.from(computed, "utf-8");
+          const actualBuffer = Buffer.from(signature, "utf-8");
 
           if (expectedBuffer.length !== actualBuffer.length) {
             return false;
@@ -317,7 +321,7 @@ export class CustomAdapter {
           return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
         }
 
-        case 'bearer': {
+        case "bearer": {
           // Validate Bearer token
           return signature === `Bearer ${config.secret}`;
         }
@@ -326,7 +330,7 @@ export class CustomAdapter {
           return false;
       }
     } catch (error) {
-      console.error('[CustomAdapter] Error validating webhook:', error);
+      console.error("[CustomAdapter] Error validating webhook:", error);
       return false;
     }
   }
@@ -342,54 +346,91 @@ export class CustomAdapter {
    * @returns Normalized order input
    * @throws Error if required fields are missing
    */
-  mapOrder(externalOrder: unknown, mapping?: CustomFieldMapping): CreateOrderInput {
+  mapOrder(
+    externalOrder: unknown,
+    mapping?: CustomFieldMapping,
+  ): CreateOrderInput {
     const fieldMapping = mapping?.order;
 
     if (!fieldMapping) {
-      throw new Error('Order field mapping not configured');
+      throw new Error("Order field mapping not configured");
     }
 
-    const externalOrderId = String(extractField(externalOrder, fieldMapping.externalOrderId) || '');
+    const externalOrderId = String(
+      extractField(externalOrder, fieldMapping.externalOrderId) || "",
+    );
     if (!externalOrderId) {
-      throw new Error('Unable to extract externalOrderId from order');
+      throw new Error("Unable to extract externalOrderId from order");
     }
 
     const shippingAddress = fieldMapping.shippingAddress
       ? {
-          firstName: String(extractField(externalOrder, fieldMapping.shippingAddress.firstName) || ''),
-          lastName: String(extractField(externalOrder, fieldMapping.shippingAddress.lastName) || ''),
-          line1: String(extractField(externalOrder, fieldMapping.shippingAddress.line1) || ''),
+          firstName: String(
+            extractField(
+              externalOrder,
+              fieldMapping.shippingAddress.firstName,
+            ) || "",
+          ),
+          lastName: String(
+            extractField(
+              externalOrder,
+              fieldMapping.shippingAddress.lastName,
+            ) || "",
+          ),
+          line1: String(
+            extractField(externalOrder, fieldMapping.shippingAddress.line1) ||
+              "",
+          ),
           line2: extractField(externalOrder, fieldMapping.shippingAddress.line2)
-            ? String(extractField(externalOrder, fieldMapping.shippingAddress.line2))
+            ? String(
+                extractField(externalOrder, fieldMapping.shippingAddress.line2),
+              )
             : undefined,
-          city: String(extractField(externalOrder, fieldMapping.shippingAddress.city) || ''),
+          city: String(
+            extractField(externalOrder, fieldMapping.shippingAddress.city) ||
+              "",
+          ),
           state: extractField(externalOrder, fieldMapping.shippingAddress.state)
-            ? String(extractField(externalOrder, fieldMapping.shippingAddress.state))
+            ? String(
+                extractField(externalOrder, fieldMapping.shippingAddress.state),
+              )
             : undefined,
-          postalCode: String(extractField(externalOrder, fieldMapping.shippingAddress.postalCode) || ''),
-          country: String(extractField(externalOrder, fieldMapping.shippingAddress.country) || ''),
+          postalCode: String(
+            extractField(
+              externalOrder,
+              fieldMapping.shippingAddress.postalCode,
+            ) || "",
+          ),
+          country: String(
+            extractField(externalOrder, fieldMapping.shippingAddress.country) ||
+              "",
+          ),
         }
       : undefined;
 
-    const lineItemsPath = fieldMapping.lineItems ? 'line_items' : undefined;
-    let lineItems: Array<{
-      externalProductId: string;
-      sku?: string;
-      quantity: number;
-      price?: string;
-    }> | undefined;
+    const lineItemsPath = fieldMapping.lineItems ? "line_items" : undefined;
+    let lineItems:
+      | Array<{
+          externalProductId: string;
+          sku?: string;
+          quantity: number;
+          price?: string;
+        }>
+      | undefined;
 
     if (fieldMapping.lineItems && lineItemsPath) {
       const rawLineItems = extractField(externalOrder, lineItemsPath) as any[];
       if (Array.isArray(rawLineItems)) {
         lineItems = rawLineItems.map((item) => ({
           externalProductId: String(
-            extractField(item, fieldMapping.lineItems?.externalProductId) || ''
+            extractField(item, fieldMapping.lineItems?.externalProductId) || "",
           ),
           sku: extractField(item, fieldMapping.lineItems?.sku)
             ? String(extractField(item, fieldMapping.lineItems?.sku))
             : undefined,
-          quantity: Number(extractField(item, fieldMapping.lineItems?.quantity) || 1),
+          quantity: Number(
+            extractField(item, fieldMapping.lineItems?.quantity) || 1,
+          ),
           price: extractField(item, fieldMapping.lineItems?.price)
             ? String(extractField(item, fieldMapping.lineItems?.price))
             : undefined,
@@ -407,10 +448,13 @@ export class CustomAdapter {
     }
 
     return {
-      shopId: '', // Will be set by webhook handler
+      shopId: "", // Will be set by webhook handler
       source: PlatformSource.CUSTOM,
       externalOrderId,
-      externalOrderNumber: extractField(externalOrder, fieldMapping.externalOrderNumber)
+      externalOrderNumber: extractField(
+        externalOrder,
+        fieldMapping.externalOrderNumber,
+      )
         ? String(extractField(externalOrder, fieldMapping.externalOrderNumber))
         : undefined,
       status: extractField(externalOrder, fieldMapping.status)
@@ -443,20 +487,25 @@ export class CustomAdapter {
    * @returns Normalized product input
    * @throws Error if required fields are missing
    */
-  mapProduct(externalProduct: unknown, mapping?: CustomFieldMapping): CreateProductInput {
+  mapProduct(
+    externalProduct: unknown,
+    mapping?: CustomFieldMapping,
+  ): CreateProductInput {
     const fieldMapping = mapping?.product;
 
     if (!fieldMapping) {
-      throw new Error('Product field mapping not configured');
+      throw new Error("Product field mapping not configured");
     }
 
-    const externalProductId = String(extractField(externalProduct, fieldMapping.externalProductId) || '');
+    const externalProductId = String(
+      extractField(externalProduct, fieldMapping.externalProductId) || "",
+    );
     if (!externalProductId) {
-      throw new Error('Unable to extract externalProductId from product');
+      throw new Error("Unable to extract externalProductId from product");
     }
 
     return {
-      shopId: '', // Will be set by webhook handler
+      shopId: "", // Will be set by webhook handler
       source: PlatformSource.CUSTOM,
       externalProductId,
       title: extractField(externalProduct, fieldMapping.title)
@@ -492,20 +541,25 @@ export class CustomAdapter {
    * @returns Normalized customer input
    * @throws Error if required fields are missing
    */
-  mapCustomer(externalCustomer: unknown, mapping?: CustomFieldMapping): CreateCustomerInput {
+  mapCustomer(
+    externalCustomer: unknown,
+    mapping?: CustomFieldMapping,
+  ): CreateCustomerInput {
     const fieldMapping = mapping?.customer;
 
     if (!fieldMapping) {
-      throw new Error('Customer field mapping not configured');
+      throw new Error("Customer field mapping not configured");
     }
 
-    const externalCustomerId = String(extractField(externalCustomer, fieldMapping.externalCustomerId) || '');
+    const externalCustomerId = String(
+      extractField(externalCustomer, fieldMapping.externalCustomerId) || "",
+    );
     if (!externalCustomerId) {
-      throw new Error('Unable to extract externalCustomerId from customer');
+      throw new Error("Unable to extract externalCustomerId from customer");
     }
 
     return {
-      shopId: '', // Will be set by webhook handler
+      shopId: "", // Will be set by webhook handler
       source: PlatformSource.CUSTOM,
       externalCustomerId,
       email: extractField(externalCustomer, fieldMapping.email)
@@ -532,51 +586,56 @@ export class CustomAdapter {
    * @returns Raw order from merchant API
    * @throws Error if API call fails
    */
-  async fetchOrder(externalOrderId: string, credentials: CustomCredentials): Promise<unknown> {
+  async fetchOrder(
+    externalOrderId: string,
+    credentials: CustomCredentials,
+  ): Promise<unknown> {
     const { baseUrl, auth } = credentials.data;
 
     if (!baseUrl) {
-      throw new Error('baseUrl not configured in credentials');
+      throw new Error("baseUrl not configured in credentials");
     }
 
     const url = `${baseUrl}/orders/${externalOrderId}`;
 
     try {
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       // Add authentication header
       if (auth) {
         switch (auth.method) {
-          case 'api_key':
+          case "api_key":
             if (auth.headerName && auth.secret) {
               headers[auth.headerName] = auth.secret;
             }
             break;
-          case 'bearer':
+          case "bearer":
             if (auth.secret) {
-              headers['Authorization'] = `Bearer ${auth.secret}`;
+              headers["Authorization"] = `Bearer ${auth.secret}`;
             }
             break;
-          case 'hmac':
+          case "hmac":
             // For HMAC, signature is computed on request body; not applicable for GET
             break;
         }
       }
 
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers,
       });
 
       if (!response.ok) {
-        throw new Error(`Custom API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Custom API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as unknown;
     } catch (error) {
-      console.error('[CustomAdapter] Error fetching order:', error);
+      console.error("[CustomAdapter] Error fetching order:", error);
       throw error;
     }
   }
@@ -591,47 +650,49 @@ export class CustomAdapter {
    */
   async fetchProducts(
     credentials: CustomCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: unknown[]; nextCursor?: string }> {
     const { baseUrl, auth } = credentials.data;
 
     if (!baseUrl) {
-      throw new Error('baseUrl not configured in credentials');
+      throw new Error("baseUrl not configured in credentials");
     }
 
     const url = new URL(`${baseUrl}/products`);
     if (cursor) {
-      url.searchParams.set('cursor', cursor);
+      url.searchParams.set("cursor", cursor);
     }
 
     try {
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       // Add authentication header
       if (auth) {
         switch (auth.method) {
-          case 'api_key':
+          case "api_key":
             if (auth.headerName && auth.secret) {
               headers[auth.headerName] = auth.secret;
             }
             break;
-          case 'bearer':
+          case "bearer":
             if (auth.secret) {
-              headers['Authorization'] = `Bearer ${auth.secret}`;
+              headers["Authorization"] = `Bearer ${auth.secret}`;
             }
             break;
         }
       }
 
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers,
       });
 
       if (!response.ok) {
-        throw new Error(`Custom API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Custom API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -640,7 +701,7 @@ export class CustomAdapter {
 
       return { products, nextCursor };
     } catch (error) {
-      console.error('[CustomAdapter] Error fetching products:', error);
+      console.error("[CustomAdapter] Error fetching products:", error);
       throw error;
     }
   }
@@ -667,15 +728,19 @@ export class CustomAdapter {
   getWebhookEventType(
     payload: unknown,
     eventTypeHeader?: string,
-    webhookConfig?: CustomWebhookConfig
+    webhookConfig?: CustomWebhookConfig,
   ): string | null {
     // First try header value if provided
-    if (eventTypeHeader && typeof eventTypeHeader === 'string') {
+    if (eventTypeHeader && typeof eventTypeHeader === "string") {
       return eventTypeHeader;
     }
 
     // Try configured field path in payload
-    if (webhookConfig?.eventTypeField && typeof payload === 'object' && payload) {
+    if (
+      webhookConfig?.eventTypeField &&
+      typeof payload === "object" &&
+      payload
+    ) {
       const eventType = extractField(payload, webhookConfig.eventTypeField);
       if (eventType) {
         return String(eventType);
@@ -683,9 +748,9 @@ export class CustomAdapter {
     }
 
     // Default: try common field names
-    const commonFields = ['event_type', 'type', 'action', 'event'];
+    const commonFields = ["event_type", "type", "action", "event"];
     for (const field of commonFields) {
-      if (typeof payload === 'object' && payload && field in payload) {
+      if (typeof payload === "object" && payload && field in payload) {
         const value = (payload as any)[field];
         if (value) {
           return String(value);

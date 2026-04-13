@@ -393,6 +393,7 @@ export class ShopifyAdapter {
       ),
       source: this.source,
       status: shopifyOrder.cancelled_at ? "cancelled" : shopifyOrder.status,
+      email: shopifyOrder.customer?.email || shopifyOrder.email || "",
       customerEmail: shopifyOrder.customer?.email || shopifyOrder.email,
       customerName: customerName,
       currency: shopifyOrder.currency,
