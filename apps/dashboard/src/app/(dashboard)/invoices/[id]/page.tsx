@@ -205,6 +205,7 @@ export default function InvoiceDetailPage() {
   const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
 
@@ -321,21 +322,38 @@ export default function InvoiceDetailPage() {
     // TODO: API call
   }, [invoiceId]);
 
-  const handleSendReminder = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      activity: [
-        ...prev.activity,
-        {
-          id: `act-${Date.now()}`,
-          type: "reminder_sent",
-          timestamp: new Date(),
-          description: "Reminder email sent to customer",
-        },
-      ],
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleSendReminder = useCallback(async () => {
+    if (isSendingReminder) return;
+    setIsSendingReminder(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "reminder_sent" as const,
+            timestamp: new Date(),
+            description: "Reminder email sent to customer",
+          },
+        ],
+      }));
+      addToast({
+        type: 'success',
+        title: 'Reminder sent',
+        message: `Payment reminder has been sent to ${invoice.customerEmail}.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Reminder failed',
+        message: err instanceof Error ? err.message : 'Failed to send reminder. Please try again.',
+      });
+    } finally {
+      setIsSendingReminder(false);
+    }
+  }, [invoiceId, invoice.customerEmail, isSendingReminder, addToast]);
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
@@ -384,9 +402,10 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleSendReminder}
+                disabled={isSendingReminder}
               >
                 <Bell className="w-4 h-4" />
-                Send Reminder
+                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
               </Button>
               <Button
                 variant="secondary"
@@ -404,9 +423,10 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleSendReminder}
+                disabled={isSendingReminder}
               >
                 <Bell className="w-4 h-4" />
-                Send Reminder
+                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
               </Button>
               <Button
                 variant="secondary"
