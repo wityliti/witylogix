@@ -20,6 +20,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { useApiQuery } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
@@ -200,8 +202,14 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params.id as string;
 
+  const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isVoiding, setIsVoiding] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const isOverdue = useMemo(() => {
     return (
@@ -225,62 +233,181 @@ export default function InvoiceDetailPage() {
     return invoice.total - amountPaid;
   }, [invoice.total, amountPaid]);
 
-  const handleDownloadPDF = useCallback(() => {
-    // TODO: Generate and download PDF
-  }, [invoiceId]);
+  const handleDownloadPDF = useCallback(async () => {
+    if (isPdfLoading) return;
+    setIsPdfLoading(true);
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find(c => c.startsWith('auth-token='))
+        ?.split('=')[1];
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
+      const res = await fetch(`${apiBase}/api/v4/invoices/${invoiceId}/pdf`, {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${invoice.number}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast({
+        type: 'success',
+        title: 'PDF downloaded',
+        message: `Invoice ${invoice.number} has been downloaded.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Download failed',
+        message: err instanceof Error ? err.message : 'Failed to download PDF. Please try again.',
+      });
+    } finally {
+      setIsPdfLoading(false);
+    }
+  }, [invoiceId, invoice.number, isPdfLoading, addToast]);
 
-  const handleSendInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "sent",
-      sentDate: new Date(),
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleSendInvoice = useCallback(async () => {
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "sent",
+        sentDate: new Date(),
+      }));
+      addToast({
+        type: 'success',
+        title: 'Invoice sent',
+        message: `Invoice ${invoice.number} has been sent to the customer.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Send failed',
+        message: err instanceof Error ? err.message : 'Failed to send invoice. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [invoiceId, invoice.number, isSending, addToast]);
 
-  const handleMarkPaid = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "paid",
-      paidDate: new Date(),
-      payments: [
-        ...prev.payments,
-        {
-          id: `pay-${Date.now()}`,
-          date: new Date(),
-          amount: prev.total,
-          method: "bank_transfer",
-          reference: "MAN-" + Date.now(),
-        },
-      ],
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleMarkPaid = useCallback(async () => {
+    if (isMarkingPaid) return;
+    setIsMarkingPaid(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "paid",
+        paidDate: new Date(),
+        payments: [
+          ...prev.payments,
+          {
+            id: `pay-${Date.now()}`,
+            date: new Date(),
+            amount: prev.total,
+            method: "bank_transfer",
+            reference: "MAN-" + Date.now(),
+          },
+        ],
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "paid" as const,
+            timestamp: new Date(),
+            description: "Invoice marked as paid",
+          },
+        ],
+      }));
+      addToast({
+        type: 'success',
+        title: 'Invoice marked as paid',
+        message: 'The invoice status has been updated to Paid.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to mark as paid',
+        message: err instanceof Error ? err.message : 'Could not update invoice status. Please try again.',
+      });
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [invoiceId, isMarkingPaid, addToast]);
 
-  const handleVoidInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "cancelled",
-    }));
-    setShowDeleteConfirm(false);
-    // TODO: API call
-  }, [invoiceId]);
+  const handleVoidInvoice = useCallback(async () => {
+    if (isVoiding) return;
+    setIsVoiding(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "cancelled",
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "created" as const,
+            timestamp: new Date(),
+            description: "Invoice voided",
+          },
+        ],
+      }));
+      setShowDeleteConfirm(false);
+      addToast({
+        type: 'success',
+        title: 'Invoice voided',
+        message: 'The invoice has been voided successfully.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to void invoice',
+        message: err instanceof Error ? err.message : 'Could not void the invoice. Please try again.',
+      });
+    } finally {
+      setIsVoiding(false);
+    }
+  }, [invoiceId, isVoiding, addToast]);
 
-  const handleSendReminder = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      activity: [
-        ...prev.activity,
-        {
-          id: `act-${Date.now()}`,
-          type: "reminder_sent",
-          timestamp: new Date(),
-          description: "Reminder email sent to customer",
-        },
-      ],
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleSendReminder = useCallback(async () => {
+    if (isSendingReminder) return;
+    setIsSendingReminder(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/send-reminder`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "reminder_sent" as const,
+            timestamp: new Date(),
+            description: "Reminder email sent to customer",
+          },
+        ],
+      }));
+      addToast({
+        type: 'success',
+        title: 'Reminder sent',
+        message: `Payment reminder has been sent to ${invoice.customerEmail}.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Reminder failed',
+        message: err instanceof Error ? err.message : 'Failed to send reminder. Please try again.',
+      });
+    } finally {
+      setIsSendingReminder(false);
+    }
+  }, [invoiceId, invoice.customerEmail, isSendingReminder, addToast]);
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
@@ -317,9 +444,10 @@ export default function InvoiceDetailPage() {
               variant="secondary"
               size="lg"
               onClick={handleSendInvoice}
+              disabled={isSending}
             >
               <Send className="w-4 h-4" />
-              Send
+              {isSending ? 'Sending...' : 'Send'}
             </Button>
           )}
           {invoice.status === "sent" && (
@@ -328,17 +456,19 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleSendReminder}
+                disabled={isSendingReminder}
               >
                 <Bell className="w-4 h-4" />
-                Send Reminder
+                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
               </Button>
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={handleMarkPaid}
+                disabled={isMarkingPaid}
               >
                 <CheckCircle className="w-4 h-4" />
-                Mark Paid
+                {isMarkingPaid ? 'Marking Paid...' : 'Mark Paid'}
               </Button>
             </>
           )}
@@ -348,23 +478,25 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleSendReminder}
+                disabled={isSendingReminder}
               >
                 <Bell className="w-4 h-4" />
-                Send Reminder
+                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
               </Button>
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={handleMarkPaid}
+                disabled={isMarkingPaid}
               >
                 <CheckCircle className="w-4 h-4" />
-                Mark Paid
+                {isMarkingPaid ? 'Marking Paid...' : 'Mark Paid'}
               </Button>
             </>
           )}
-          <Button variant="secondary" size="lg" onClick={handleDownloadPDF}>
+          <Button variant="secondary" size="lg" onClick={handleDownloadPDF} disabled={isPdfLoading}>
             <Download className="w-4 h-4" />
-            PDF
+            {isPdfLoading ? 'Generating…' : 'PDF'}
           </Button>
           <Button
             variant="danger"
@@ -450,7 +582,7 @@ export default function InvoiceDetailPage() {
                   key: "rate",
                   header: "Rate",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span>${item.rate.toFixed(2)}</span>
                   ),
                   width: "15%",
@@ -459,7 +591,7 @@ export default function InvoiceDetailPage() {
                   key: "amount",
                   header: "Amount",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span className="font-medium">
                       ${item.amount.toFixed(2)}
                     </span>
@@ -652,9 +784,10 @@ export default function InvoiceDetailPage() {
               <Button
                 variant="danger"
                 onClick={handleVoidInvoice}
+                disabled={isVoiding}
                 className="flex-1"
               >
-                Void Invoice
+                {isVoiding ? 'Voiding...' : 'Void Invoice'}
               </Button>
             </div>
           </Card>

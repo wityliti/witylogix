@@ -177,7 +177,7 @@ export class VerizonConnectClient extends TelematicsAdapter {
 
   constructor(config: TelematicsConfig) {
     super(config);
-    const credentials = config.credentials as VerizonConnectCredentials;
+    const credentials = config.credentials as unknown as VerizonConnectCredentials;
     this.accessToken = credentials.accessToken;
     this.clientId = credentials.clientId;
     this.clientSecret = credentials.clientSecret;

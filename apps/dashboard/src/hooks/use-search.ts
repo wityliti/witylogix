@@ -258,8 +258,8 @@ export function useSearch(options: UseSearchOptions = {}): UseSearchState {
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < suggestionsToShow.length) {
           const selected = suggestionsToShow[selectedIndex];
-          if ("title" in selected) {
-            selectSuggestion(selected);
+          if ("type" in selected) {
+            selectSuggestion(selected as SearchSuggestion);
           }
         } else if (query.trim()) {
           saveSearch(query);

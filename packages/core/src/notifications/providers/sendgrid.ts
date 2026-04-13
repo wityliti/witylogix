@@ -53,7 +53,11 @@ export class SendGridEmailProvider implements NotificationProvider {
 
       // Validate recipient email
       if (!this.isValidEmail(message.to)) {
-        throw new InvalidRecipientError("sendgrid", message.to, "Invalid email address format");
+        throw new InvalidRecipientError(
+          "sendgrid",
+          message.to,
+          "Invalid email address format",
+        );
       }
 
       // Build SendGrid request payload
@@ -92,7 +96,7 @@ export class SendGridEmailProvider implements NotificationProvider {
       const response = await fetch("https://api.sendgrid.com/v3/scopes", {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${config.apiKey}`,
+          Authorization: `Bearer ${config.apiKey}`,
         },
       });
 
@@ -107,7 +111,10 @@ export class SendGridEmailProvider implements NotificationProvider {
    */
   async getStatus(): Promise<ProviderStatus> {
     // Cache status for 60 seconds to avoid hammering the API
-    if (this.lastStatusCheck && Date.now() - this.lastStatusCheck.timestamp < 60000) {
+    if (
+      this.lastStatusCheck &&
+      Date.now() - this.lastStatusCheck.timestamp < 60000
+    ) {
       return this.lastStatusCheck.status;
     }
 
@@ -118,7 +125,7 @@ export class SendGridEmailProvider implements NotificationProvider {
       const response = await fetch("https://api.sendgrid.com/v3/scopes", {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${this.config.apiKey}`,
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
       });
 
@@ -150,7 +157,9 @@ export class SendGridEmailProvider implements NotificationProvider {
    * Build SendGrid-specific API payload.
    * Maps NotificationMessage to SendGrid personalizations format.
    */
-  private buildSendGridPayload(message: NotificationMessage): Record<string, unknown> {
+  private buildSendGridPayload(
+    message: NotificationMessage,
+  ): Record<string, unknown> {
     return {
       personalizations: [
         {
@@ -198,13 +207,15 @@ export class SendGridEmailProvider implements NotificationProvider {
    * Send HTTP request to SendGrid API.
    * POST to https://api.sendgrid.com/v3/mail/send with Bearer token auth.
    */
-  private async sendRequest(payload: Record<string, unknown>): Promise<{ messageId?: string }> {
+  private async sendRequest(
+    payload: Record<string, unknown>,
+  ): Promise<{ messageId?: string }> {
     const url = "https://api.sendgrid.com/v3/mail/send";
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${this.config.apiKey}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -215,30 +226,37 @@ export class SendGridEmailProvider implements NotificationProvider {
       // Rate limit error — parse Retry-After header
       const retryAfter = response.headers.get("Retry-After");
       const resetAfter = retryAfter ? parseInt(retryAfter, 10) : undefined;
-      throw new RateLimitError(
-        "sendgrid",
-        "Rate limit exceeded",
-        resetAfter,
-      );
+      throw new RateLimitError("sendgrid", "Rate limit exceeded", resetAfter);
     }
 
     if (response.status === 401) {
-      throw new AuthenticationError("sendgrid", "Invalid API key or authentication failed");
+      throw new AuthenticationError(
+        "sendgrid",
+        "Invalid API key or authentication failed",
+      );
     }
 
     if (response.status === 400) {
       // Bad request — likely invalid email
-      const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
-      const errorMessage = (errorData as any)?.errors?.[0]?.message || "Invalid request";
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      const errorMessage =
+        (errorData as any)?.errors?.[0]?.message || "Invalid request";
       throw new InvalidRecipientError(
         "sendgrid",
-        payload?.personalizations?.[0]?.to?.[0]?.email as string || "unknown",
+        ((payload as any)?.personalizations?.[0]?.to?.[0]?.email as string) ||
+          "unknown",
         errorMessage as string,
       );
     }
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+      const errorData = (await response.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
       throw new ProviderError(
         "SEND_ERROR",
         `SendGrid API error: ${response.statusText}`,

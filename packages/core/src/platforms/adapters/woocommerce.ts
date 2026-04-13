@@ -11,7 +11,7 @@
  *   Auth: Basic Auth with consumer_key + consumer_secret
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
 /**
  * WooCommerce order from REST API v3
@@ -154,7 +154,14 @@ export interface WooCommerceProduct {
   categories: Array<{ id: number; name: string; slug: string }>;
   tags: Array<{ id: number; name: string; slug: string }>;
   images: Array<WooCommerceImage>;
-  attributes: Array<{ id: number; name: string; position: number; visible: boolean; variation: boolean; options: string[] }>;
+  attributes: Array<{
+    id: number;
+    name: string;
+    position: number;
+    visible: boolean;
+    variation: boolean;
+    options: string[];
+  }>;
   default_attributes: Array<{ id: number; name: string; option: string }>;
   variations: number[];
   grouped_products: number[];
@@ -198,8 +205,12 @@ export interface WooCommerceCustomer {
  */
 export interface CreateOrderInput {
   externalOrderId: string;
+  externalOrderNumber?: string;
   source: string;
+  status?: string;
   email: string;
+  customerEmail?: string;
+  customerName?: string;
   currency: string;
   totalPrice: number;
   subtotalPrice: number;
@@ -216,7 +227,7 @@ export interface CreateOrderInput {
     price: number;
     sku: string;
   }>;
-  shippingAddress: {
+  shippingAddress?: {
     firstName: string;
     lastName: string;
     address1: string;
@@ -237,6 +248,8 @@ export interface CreateProductInput {
   externalProductId: string;
   source: string;
   title: string;
+  description?: string;
+  imageUrl?: string;
   vendor?: string;
   productType?: string;
   handle?: string;
@@ -295,7 +308,7 @@ export interface WooCommerceCredentials {
  * WooCommerce REST API v3 adapter
  */
 export class WooCommerceAdapter {
-  public readonly source = 'WOOCOMMERCE' as const;
+  public readonly source = "WOOCOMMERCE" as const;
 
   /**
    * Validate WooCommerce webhook signature
@@ -310,7 +323,7 @@ export class WooCommerceAdapter {
   validateWebhook(
     payload: string | Buffer,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
     if (!signature || !secret) {
       return false;
@@ -321,17 +334,18 @@ export class WooCommerceAdapter {
     }
 
     try {
-      const payloadString = typeof payload === 'string' ? payload : payload.toString('utf-8');
+      const payloadString =
+        typeof payload === "string" ? payload : payload.toString("utf-8");
 
       // WooCommerce HMAC is base64(hmac-sha256(payload, secret))
       const computed = crypto
-        .createHmac('sha256', secret)
-        .update(payloadString, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payloadString, "utf-8")
+        .digest("base64");
 
       // Timing-safe comparison
-      const expectedBuffer = Buffer.from(computed, 'utf-8');
-      const actualBuffer = Buffer.from(signature, 'utf-8');
+      const expectedBuffer = Buffer.from(computed, "utf-8");
+      const actualBuffer = Buffer.from(signature, "utf-8");
 
       if (expectedBuffer.length !== actualBuffer.length) {
         return false;
@@ -339,7 +353,7 @@ export class WooCommerceAdapter {
 
       return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
     } catch (error) {
-      console.error('[WooCommerceAdapter] Error validating webhook:', error);
+      console.error("[WooCommerceAdapter] Error validating webhook:", error);
       return false;
     }
   }
@@ -352,30 +366,32 @@ export class WooCommerceAdapter {
    */
   mapOrder(wcOrder: WooCommerceOrder): CreateOrderInput {
     // Determine financial status based on payment and order status
-    let financialStatus = 'pending';
-    if (wcOrder.status === 'refunded') {
-      financialStatus = 'refunded';
-    } else if (wcOrder.status === 'cancelled') {
-      financialStatus = 'voided';
+    let financialStatus = "pending";
+    if (wcOrder.status === "refunded") {
+      financialStatus = "refunded";
+    } else if (wcOrder.status === "cancelled") {
+      financialStatus = "voided";
     } else if (wcOrder.date_paid) {
-      financialStatus = 'paid';
+      financialStatus = "paid";
     }
 
     // Determine fulfillment status
-    let fulfillmentStatus = 'unshipped';
-    if (wcOrder.status === 'completed') {
-      fulfillmentStatus = 'fulfilled';
-    } else if (wcOrder.status === 'processing') {
-      fulfillmentStatus = 'partial';
+    let fulfillmentStatus = "unshipped";
+    if (wcOrder.status === "completed") {
+      fulfillmentStatus = "fulfilled";
+    } else if (wcOrder.status === "processing") {
+      fulfillmentStatus = "partial";
     }
 
     return {
       externalOrderId: String(wcOrder.id),
       source: this.source,
-      email: wcOrder.billing.email || '',
+      email: wcOrder.billing.email || "",
       currency: wcOrder.currency,
       totalPrice: parseFloat(wcOrder.total),
-      subtotalPrice: Math.floor(parseFloat(wcOrder.total) - parseFloat(wcOrder.shipping_total)),
+      subtotalPrice: Math.floor(
+        parseFloat(wcOrder.total) - parseFloat(wcOrder.shipping_total),
+      ),
       totalTax: parseFloat(wcOrder.total_tax),
       totalWeight: 0, // WooCommerce doesn't provide total weight directly
       financialStatus,
@@ -392,8 +408,6 @@ export class WooCommerceAdapter {
       shippingAddress: {
         firstName: wcOrder.shipping.first_name,
         lastName: wcOrder.shipping.last_name,
-        line1: wcOrder.shipping.address_1,
-        line2: wcOrder.shipping.address_2,
         address1: wcOrder.shipping.address_1,
         address2: wcOrder.shipping.address_2 || undefined,
         city: wcOrder.shipping.city,
@@ -421,7 +435,7 @@ export class WooCommerceAdapter {
 
     // Build variants array (for simple products, we create a single variant)
     const variants = [];
-    if (wcProduct.type === 'simple' || wcProduct.type === 'external') {
+    if (wcProduct.type === "simple" || wcProduct.type === "external") {
       variants.push({
         id: String(wcProduct.id),
         sku: wcProduct.sku,
@@ -429,9 +443,9 @@ export class WooCommerceAdapter {
         title: wcProduct.name,
         inventoryQuantity: wcProduct.stock_quantity ?? 0,
         weight: parseFloat(wcProduct.weight) || 0,
-        price: wcProduct.price || '0',
+        price: wcProduct.price || "0",
       });
-    } else if (wcProduct.type === 'variable' && wcProduct.variations?.length) {
+    } else if (wcProduct.type === "variable" && wcProduct.variations?.length) {
       // For variable products, variations would need to be fetched separately
       // For now, create a placeholder
       for (const variationId of wcProduct.variations) {
@@ -442,7 +456,7 @@ export class WooCommerceAdapter {
           title: `${wcProduct.name} - Variant`,
           inventoryQuantity: 0,
           weight: parseFloat(wcProduct.weight) || 0,
-          price: wcProduct.price || '0',
+          price: wcProduct.price || "0",
         });
       }
     }
@@ -460,15 +474,20 @@ export class WooCommerceAdapter {
       productType: wcProduct.type,
       handle: wcProduct.slug,
       tags,
-      variants: variants.length > 0 ? variants : [{
-        id: String(wcProduct.id),
-        sku: wcProduct.sku,
-        barcode: undefined,
-        title: wcProduct.name,
-        inventoryQuantity: wcProduct.stock_quantity ?? 0,
-        weight: parseFloat(wcProduct.weight) || 0,
-        price: wcProduct.price || '0',
-      }],
+      variants:
+        variants.length > 0
+          ? variants
+          : [
+              {
+                id: String(wcProduct.id),
+                sku: wcProduct.sku,
+                barcode: undefined,
+                title: wcProduct.name,
+                inventoryQuantity: wcProduct.stock_quantity ?? 0,
+                weight: parseFloat(wcProduct.weight) || 0,
+                price: wcProduct.price || "0",
+              },
+            ],
       collections,
     };
   }
@@ -481,7 +500,8 @@ export class WooCommerceAdapter {
    */
   mapCustomer(wcCustomer: WooCommerceCustomer): CreateCustomerInput {
     // Try to get phone from direct property, then from billing address
-    const phone = (wcCustomer as any).phone || wcCustomer.billing?.phone || undefined;
+    const phone =
+      (wcCustomer as any).phone || wcCustomer.billing?.phone || undefined;
 
     return {
       externalCustomerId: String(wcCustomer.id),
@@ -490,22 +510,26 @@ export class WooCommerceAdapter {
       firstName: wcCustomer.first_name,
       lastName: wcCustomer.last_name,
       phone: phone,
-      billingAddress: wcCustomer.billing ? {
-        address1: wcCustomer.billing.address_1,
-        address2: wcCustomer.billing.address_2 || undefined,
-        city: wcCustomer.billing.city,
-        province: wcCustomer.billing.state,
-        country: wcCustomer.billing.country,
-        postalCode: wcCustomer.billing.postcode,
-      } : undefined,
-      shippingAddress: wcCustomer.shipping ? {
-        address1: wcCustomer.shipping.address_1,
-        address2: wcCustomer.shipping.address_2 || undefined,
-        city: wcCustomer.shipping.city,
-        province: wcCustomer.shipping.state,
-        country: wcCustomer.shipping.country,
-        postalCode: wcCustomer.shipping.postcode,
-      } : undefined,
+      billingAddress: wcCustomer.billing
+        ? {
+            address1: wcCustomer.billing.address_1,
+            address2: wcCustomer.billing.address_2 || undefined,
+            city: wcCustomer.billing.city,
+            province: wcCustomer.billing.state,
+            country: wcCustomer.billing.country,
+            postalCode: wcCustomer.billing.postcode,
+          }
+        : undefined,
+      shippingAddress: wcCustomer.shipping
+        ? {
+            address1: wcCustomer.shipping.address_1,
+            address2: wcCustomer.shipping.address_2 || undefined,
+            city: wcCustomer.shipping.city,
+            province: wcCustomer.shipping.state,
+            country: wcCustomer.shipping.country,
+            postalCode: wcCustomer.shipping.postcode,
+          }
+        : undefined,
     };
   }
 
@@ -519,34 +543,36 @@ export class WooCommerceAdapter {
    */
   async fetchOrder(
     orderId: string | number,
-    credentials: WooCommerceCredentials
+    credentials: WooCommerceCredentials,
   ): Promise<WooCommerceOrder> {
     const authHeader = this.buildBasicAuthHeader(
       credentials.consumerKey,
-      credentials.consumerSecret
+      credentials.consumerSecret,
     );
 
     const url = new URL(
       `/wp-json/wc/v3/orders/${orderId}`,
-      credentials.siteUrl
+      credentials.siteUrl,
     ).toString();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
+          Authorization: authHeader,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `WooCommerce API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as WooCommerceOrder;
     } catch (error) {
-      console.error('[WooCommerceAdapter] Error fetching order:', error);
+      console.error("[WooCommerceAdapter] Error fetching order:", error);
       throw error;
     }
   }
@@ -563,43 +589,45 @@ export class WooCommerceAdapter {
   async fetchProducts(
     credentials: WooCommerceCredentials,
     cursor?: string | number,
-    perPage: number = 100
+    perPage: number = 100,
   ): Promise<{ products: WooCommerceProduct[]; nextCursor?: string }> {
     const authHeader = this.buildBasicAuthHeader(
       credentials.consumerKey,
-      credentials.consumerSecret
+      credentials.consumerSecret,
     );
 
     const page = cursor ? Number(cursor) : 1;
-    const url = new URL(
-      `/wp-json/wc/v3/products`,
-      credentials.siteUrl
-    );
-    url.searchParams.set('page', String(page));
-    url.searchParams.set('per_page', String(Math.min(perPage, 100)));
+    const url = new URL(`/wp-json/wc/v3/products`, credentials.siteUrl);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("per_page", String(Math.min(perPage, 100)));
 
     try {
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
+          Authorization: authHeader,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `WooCommerce API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const products = (await response.json()) as WooCommerceProduct[];
 
       // Check if there are more pages
-      const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1', 10);
+      const totalPages = parseInt(
+        response.headers.get("X-WP-TotalPages") || "1",
+        10,
+      );
       const nextCursor = page < totalPages ? String(page + 1) : undefined;
 
       return { products, nextCursor };
     } catch (error) {
-      console.error('[WooCommerceAdapter] Error fetching products:', error);
+      console.error("[WooCommerceAdapter] Error fetching products:", error);
       throw error;
     }
   }
@@ -614,34 +642,36 @@ export class WooCommerceAdapter {
    */
   async fetchCustomer(
     customerId: string | number,
-    credentials: WooCommerceCredentials
+    credentials: WooCommerceCredentials,
   ): Promise<WooCommerceCustomer> {
     const authHeader = this.buildBasicAuthHeader(
       credentials.consumerKey,
-      credentials.consumerSecret
+      credentials.consumerSecret,
     );
 
     const url = new URL(
       `/wp-json/wc/v3/customers/${customerId}`,
-      credentials.siteUrl
+      credentials.siteUrl,
     ).toString();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': authHeader,
-          'Content-Type': 'application/json',
+          Authorization: authHeader,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `WooCommerce API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as WooCommerceCustomer;
     } catch (error) {
-      console.error('[WooCommerceAdapter] Error fetching customer:', error);
+      console.error("[WooCommerceAdapter] Error fetching customer:", error);
       throw error;
     }
   }
@@ -653,9 +683,12 @@ export class WooCommerceAdapter {
    * @param consumerSecret WooCommerce consumer secret
    * @returns Authorization header value
    */
-  private buildBasicAuthHeader(consumerKey: string, consumerSecret: string): string {
+  private buildBasicAuthHeader(
+    consumerKey: string,
+    consumerSecret: string,
+  ): string {
     const credentials = `${consumerKey}:${consumerSecret}`;
-    const encoded = Buffer.from(credentials).toString('base64');
+    const encoded = Buffer.from(credentials).toString("base64");
     return `Basic ${encoded}`;
   }
 }

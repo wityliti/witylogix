@@ -1,0 +1,258 @@
+---
+title: Tracking
+description: Public customer-facing tracking endpoints — no authentication required
+---
+
+# Tracking
+
+The tracking API powers the customer-facing tracking page. All endpoints are **public** — no authentication is required. Access is controlled by a short, opaque tracking token that is generated when an order is created and shared with the customer via notification.
+
+## Base path
+
+```
+/api/v4/tracking
+```
+
+<Callout type="info">
+These endpoints do not require an `Authorization` header. They are rate-limited per IP address to protect against abuse.
+</Callout>
+
+---
+
+## Get tracking info
+
+```
+GET /api/v4/tracking/token/:trackingToken
+```
+
+Returns the full delivery status for an order, including driver info and live location (when the driver is en route), proof of delivery, and a status timeline.
+
+Driver location is only returned when the order is in `OUT_FOR_DELIVERY` or `ARRIVED` status. The driver's personal contact information is never exposed.
+
+### Response
+
+```json
+{
+  "data": {
+    "orderNumber": "1042",
+    "status": "OUT_FOR_DELIVERY",
+    "customerName": "Emma Johnson",
+    "deliveryAddress": {
+      "line1": "142 Maple Street",
+      "city": "New York",
+      "province": "NY",
+      "postalCode": "10001"
+    },
+    "deliveryDate": "2026-04-13T00:00:00.000Z",
+    "estimatedArrival": "2026-04-13T14:00:00.000Z",
+    "actualDelivery": null,
+    "timeSlot": {
+      "name": "Afternoon",
+      "startTime": "12:00",
+      "endTime": "17:00"
+    },
+    "driver": {
+      "name": "Carlos Martinez",
+      "vehicleType": "VAN"
+    },
+    "driverLocation": {
+      "latitude": 40.72,
+      "longitude": -74.01,
+      "heading": 180,
+      "updatedAt": "2026-04-13T13:50:00.000Z"
+    },
+    "proofOfDelivery": null,
+    "shop": {
+      "name": "Acme Store",
+      "branding": {
+        "primaryColor": "#FF6B35",
+        "logoUrl": "https://cdn.example.com/logo.png"
+      }
+    },
+    "timeline": [
+      { "status": "PENDING", "label": "Order received", "completed": true, "current": false },
+      { "status": "ACCEPTED", "label": "Order confirmed", "completed": true, "current": false },
+      { "status": "ASSIGNED", "label": "Driver assigned", "completed": true, "current": false },
+      { "status": "PICKED_UP", "label": "Picked up", "completed": true, "current": false },
+      { "status": "OUT_FOR_DELIVERY", "label": "On the way", "completed": true, "current": true },
+      { "status": "ARRIVED", "label": "Driver arrived", "completed": false, "current": false },
+      { "status": "DELIVERED", "label": "Delivered", "completed": false, "current": false }
+    ]
+  }
+}
+```
+
+---
+
+## Get delivery preferences
+
+```
+GET /api/v4/tracking/token/:trackingToken/preferences
+```
+
+Returns the customer's current saved delivery preferences for the order, or `null` if none have been set.
+
+### Response
+
+```json
+{
+  "data": {
+    "instructions": "Leave in porch",
+    "dropoffNote": "Ring the bell twice",
+    "contactPref": "sms",
+    "rescheduledTo": null,
+    "timeSlotId": null
+  }
+}
+```
+
+---
+
+## Update delivery preferences
+
+```
+PATCH /api/v4/tracking/token/:trackingToken/preferences
+```
+
+Allows the customer to update delivery preferences in-flight. Preferences are locked once the driver has arrived.
+
+### Lock-out rules
+
+| Condition | Locked fields |
+|-----------|---------------|
+| Status is `ARRIVED` or `DELIVERED` | All fields |
+| Status is `OUT_FOR_DELIVERY`, `ARRIVED`, or `DELIVERED` | `rescheduledTo` |
+
+### Request body (all fields optional)
+
+```json
+{
+  "instructions": "Leave in porch",
+  "dropoffNote": "Ring the bell",
+  "dropoffLat": 40.7128,
+  "dropoffLng": -74.006,
+  "contactPref": "sms",
+  "rescheduledTo": "2026-04-16T14:00:00.000Z",
+  "timeSlotId": "slot_01hx..."
+}
+```
+
+`contactPref` values: `call`, `sms`, `whatsapp`
+
+### Response
+
+```json
+{
+  "data": {
+    "instructions": "Leave in porch",
+    "dropoffNote": "Ring the bell",
+    "contactPref": "sms",
+    "updatedAt": "2026-04-13T12:30:00.000Z"
+  }
+}
+```
+
+---
+
+## List available reschedule slots
+
+```
+GET /api/v4/tracking/token/:trackingToken/slots
+```
+
+Returns the available time slots for rescheduling. Slots are locked once the driver is en route.
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "slot_01hx...",
+      "name": "Morning",
+      "startTime": "08:00",
+      "endTime": "12:00",
+      "daysOfWeek": [1, 2, 3, 4, 5],
+      "maxCapacity": 20
+    },
+    {
+      "id": "slot_02hx...",
+      "name": "Afternoon",
+      "startTime": "12:00",
+      "endTime": "17:00",
+      "daysOfWeek": [1, 2, 3, 4, 5, 6],
+      "maxCapacity": 30
+    }
+  ],
+  "locked": false
+}
+```
+
+When the order is `OUT_FOR_DELIVERY`, `ARRIVED`, or `DELIVERED`, `data` will be `[]` and `locked` will be `true`.
+
+---
+
+## Get AI-predicted ETA
+
+```
+GET /api/v4/tracking/token/:trackingToken/eta
+```
+
+**Rate limit:** 60 requests per minute per IP. Cached for 5 minutes per tracking token.
+
+Returns the ML-predicted estimated arrival time with a confidence interval. Falls back to the static estimate stored in the database when driver location data is unavailable.
+
+### Response — AI prediction
+
+```json
+{
+  "data": {
+    "estimatedArrival": "2026-04-13T14:12:00.000Z",
+    "confidenceLow": "2026-04-13T13:55:00.000Z",
+    "confidenceHigh": "2026-04-13T14:30:00.000Z",
+    "isAIPredicted": true,
+    "lastUpdated": "2026-04-13T13:50:00.000Z"
+  }
+}
+```
+
+### Response — static fallback
+
+```json
+{
+  "data": {
+    "estimatedArrival": "2026-04-13T14:00:00.000Z",
+    "confidenceLow": "2026-04-13T13:30:00.000Z",
+    "confidenceHigh": "2026-04-13T14:30:00.000Z",
+    "isAIPredicted": false,
+    "lastUpdated": "2026-04-13T13:50:00.000Z"
+  }
+}
+```
+
+---
+
+## Get ETA by tracking code (alternative endpoint)
+
+```
+GET /api/v4/tracking/track/:trackingCode/eta
+```
+
+**Rate limit:** 60 requests per minute per IP. Cached in Redis for 60 seconds.
+
+Returns a simplified ETA response with a confidence score and traffic status. The `trackingCode` parameter is the same value as `trackingToken`.
+
+### Response
+
+```json
+{
+  "data": {
+    "estimatedArrival": "2026-04-13T14:12:00.000Z",
+    "confidenceScore": 0.87,
+    "distanceKm": 3.4,
+    "trafficStatus": "moderate"
+  }
+}
+```
+
+When location data is unavailable, `confidenceScore` is `0` and `trafficStatus` is `"unknown"`.

@@ -104,7 +104,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
                       <p className="font-semibold text-sm text-white">
                         {issue.category}
                       </p>
-                      <Badge variant="secondary" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>
+                      <Badge variant="default" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>
                         {issue.severity}
                       </Badge>
                     </div>
@@ -121,7 +121,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
         {/* Actions */}
         <div className="flex gap-2">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
           >
@@ -129,7 +129,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
             View Report
           </Button>
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
           >

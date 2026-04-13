@@ -55,7 +55,7 @@ export interface FormState<T> {
   values: T;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
-  isDirty: Record<string, boolean>;
+  dirtyFields: Record<string, boolean>;
   isSubmitting: boolean;
   isValidating: boolean;
   isValid: boolean;
@@ -68,7 +68,7 @@ export interface FormInstance<T extends Record<string, unknown>> {
   values: T;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
-  isDirty: Record<string, boolean>;
+  dirtyFields: Record<string, boolean>;
   isSubmitting: boolean;
   isValidating: boolean;
   isValid: boolean;
@@ -307,7 +307,7 @@ export function useForm<T extends Record<string, unknown>>({
     values,
     errors,
     touched,
-    isDirty,
+    dirtyFields: isDirty,
     isSubmitting,
     isValidating,
     isValid,

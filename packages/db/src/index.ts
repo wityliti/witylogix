@@ -19,10 +19,25 @@
  *   const dualDb = forTenantInOrg(shopId, orgId);
  */
 
-import { PrismaClient, Prisma } from "./generated/prisma";
+// Import types only — erased at compile time, keeps IDE intellisense working.
+import type { PrismaClient as PrismaClientType, Prisma as PrismaType, PlanTier as PlanTierType } from "./generated/prisma";
+
+// Use createRequire to load the CJS-generated Prisma client at runtime.
+// A static `import { PrismaClient }` here causes Rollup to follow the
+// ESM→CJS boundary at build time (in apps that externalize @witylogix/db)
+// and fail because it cannot statically detect named exports from the
+// generated CJS file. createRequire defers the resolution to Node.js.
+import { createRequire } from "module";
+const _require = createRequire(import.meta.url);
+const _generatedPrisma = _require("./generated/prisma") as {
+  PrismaClient: typeof PrismaClientType;
+  Prisma: typeof PrismaType;
+};
+const PrismaClient = _generatedPrisma.PrismaClient;
+const Prisma = _generatedPrisma.Prisma;
 
 // Singleton Prisma client
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClientType };
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -42,7 +57,7 @@ export const db = prisma;
 
 // Re-export Prisma types and enums
 export { PrismaClient, Prisma };
-export type { PlanTier } from "./generated/prisma";
+export type { PlanTierType as PlanTier };
 
 /**
  * Shop-scoped Prisma client — sets `app.current_shop_id`.

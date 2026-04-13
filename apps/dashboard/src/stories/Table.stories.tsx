@@ -91,7 +91,7 @@ const columns = [
       const config = statusConfig[item.status];
       return (
         <Badge variant={config.variant}>
-          {config.icon} {item.status}
+          {"icon" in config ? config.icon : null} {item.status}
         </Badge>
       );
     },
@@ -134,7 +134,7 @@ export const WithRowClick: Story = {
   args: {
     columns,
     data: sampleData,
-    onRowClick: (item) => alert(`Clicked: ${item.orderNumber}`),
+    onRowClick: (item: OrderItem) => alert(`Clicked: ${item.orderNumber}`),
   },
 };
 

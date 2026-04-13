@@ -71,7 +71,7 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
           );
         case "idle":
           return (
-            <Badge variant="secondary" dot>
+            <Badge variant="default" dot>
               Idle
             </Badge>
           );
@@ -267,7 +267,7 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
           )}
           <Button
             size="sm"
-            variant="ghost"
+            variant="secondary"
             className="flex-1"
             onClick={() => setIsExpanded(!isExpanded)}
           >
@@ -287,5 +287,3 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
 );
 
 CourierTrackingCard.displayName = "CourierTrackingCard";
-
-export { CourierTrackingCard };

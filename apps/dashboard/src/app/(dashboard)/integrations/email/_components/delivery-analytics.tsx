@@ -63,7 +63,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                       }}
                       title={`Delivered: ${metric.delivered}`}
                     >
-                      {delivered > 15 && `${delivered}%`}
+                      {Number(delivered) > 15 && `${delivered}%`}
                     </div>
                     <div
                       className="bg-cyan-500 flex items-center justify-center text-xs font-bold text-white"
@@ -92,7 +92,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                       }}
                       title={`Bounced: ${metric.bounced}`}
                     >
-                      {bounced > 5 && `${bounced}%`}
+                      {Number(bounced) > 5 && `${bounced}%`}
                     </div>
                   </div>
 

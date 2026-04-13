@@ -23,11 +23,7 @@ export default function ESignaturesLayout({ children }: ESignaturesLayoutProps) 
     <div className={cn("flex-1 flex flex-col min-h-screen")}>
       <PageHeader
         title="E-Signatures"
-        description="Manage digital document signing and envelopes"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/\(dashboard\)" },
-          { label: "E-Signatures" },
-        ]}
+        subtitle="Manage digital document signing and envelopes"
       />
 
       {/* Tab Navigation */}

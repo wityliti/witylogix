@@ -490,7 +490,7 @@ export class TelematicsStream extends EventEmitter {
             unit: before.speed.unit,
           }
         : before.speed,
-      heading: this.interpolateHeading(before.heading, after.heading, ratio),
+      heading: before.heading != null && after.heading != null ? this.interpolateHeading(before.heading, after.heading, ratio) : before.heading,
       timestamp: targetTime,
       interpolated: true,
     };

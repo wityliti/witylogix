@@ -44,7 +44,7 @@ const groupEventsByDate = (
   const groups: Record<string, ActivityEvent[]> = {};
 
   events.forEach((event) => {
-    const date = event.timestamp.toLocaleDateString("en-US", {
+    const date = new Date(event.timestamp).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -133,7 +133,7 @@ export function EventTimeline({
             {groupedEvents[date].map((event, index) => {
               const isSelected = selectedEventId === event.id;
               const isExpanded = expandedEventId === event.id;
-              const isNew = event.timestamp.getTime() > Date.now() - 30000;
+              const isNew = new Date(event.timestamp).getTime() > Date.now() - 30000;
 
               return (
                 <div key={event.id} className="relative pl-16">
@@ -264,7 +264,7 @@ export function EventTimeline({
                       {/* Bottom row: timestamp and expand button */}
                       <div className="flex items-center justify-between pt-2 border-t border-wl-border-subtle">
                         <p className="text-xs text-wl-text-tertiary">
-                          {formatRelativeTime(event.timestamp)}
+                          {formatRelativeTime(new Date(event.timestamp))}
                         </p>
                         {event.metadata && Object.keys(event.metadata).length > 0 && (
                           <button

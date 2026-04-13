@@ -121,7 +121,10 @@ export class WhatsAppProvider implements NotificationProvider {
    */
   async getStatus(): Promise<ProviderStatus> {
     // Cache status for 60 seconds
-    if (this.lastStatusCheck && Date.now() - this.lastStatusCheck.timestamp < 60000) {
+    if (
+      this.lastStatusCheck &&
+      Date.now() - this.lastStatusCheck.timestamp < 60000
+    ) {
       return this.lastStatusCheck.status;
     }
 
@@ -155,14 +158,16 @@ export class WhatsAppProvider implements NotificationProvider {
         return status;
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         quality_rating?: string;
         messaging_limit_mtc?: number;
         messaging_limit_mtc_reset_time?: number;
       };
 
       // Determine health based on quality rating and messaging limits
-      const healthy = data.quality_rating !== "FLAGGED" && !!(data.messaging_limit_mtc ?? 0) > 0;
+      const healthy =
+        data.quality_rating !== "FLAGGED" &&
+        (data.messaging_limit_mtc ?? 0) > 0;
 
       const status: ProviderStatus = {
         healthy,
@@ -188,7 +193,9 @@ export class WhatsAppProvider implements NotificationProvider {
    * Build WhatsApp template message payload.
    * Uses pre-configured templates with variable substitution.
    */
-  private buildTemplatePayload(message: NotificationMessage): Record<string, unknown> {
+  private buildTemplatePayload(
+    message: NotificationMessage,
+  ): Record<string, unknown> {
     return {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -212,7 +219,9 @@ export class WhatsAppProvider implements NotificationProvider {
    * Build WhatsApp text message payload.
    * For direct text content (not using templates).
    */
-  private buildTextPayload(message: NotificationMessage): Record<string, unknown> {
+  private buildTextPayload(
+    message: NotificationMessage,
+  ): Record<string, unknown> {
     // Use plain text body for WhatsApp (strip HTML if present)
     const textBody = message.textBody || this.stripHtml(message.body);
 
@@ -270,24 +279,18 @@ export class WhatsAppProvider implements NotificationProvider {
     });
 
     if (!response.ok) {
-      const errorData = await response.json() as { error?: { code: number; message: string } };
+      const errorData = (await response.json()) as {
+        error?: { code: number; message: string };
+      };
 
       // Handle specific Meta error codes
       if (response.status === 429 || errorData.error?.code === 131047) {
-        throw new RateLimitError(
-          "whatsapp",
-          "Rate limit exceeded",
-          undefined,
-        );
+        throw new RateLimitError("whatsapp", "Rate limit exceeded", undefined);
       }
 
       // Spam limit error
       if (errorData.error?.code === 131048) {
-        throw new RateLimitError(
-          "whatsapp",
-          "Spam limit exceeded",
-          undefined,
-        );
+        throw new RateLimitError("whatsapp", "Spam limit exceeded", undefined);
       }
 
       if (response.status === 401) {
@@ -311,7 +314,7 @@ export class WhatsAppProvider implements NotificationProvider {
       );
     }
 
-    const data = await response.json() as {
+    const data = (await response.json()) as {
       messages?: Array<{ id: string }>;
       contacts?: Array<{ input: string; wa_id: string }>;
     };

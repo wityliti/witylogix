@@ -12,7 +12,7 @@
  * Provides tiered partner classification: Gold, Silver, Bronze, Review
  */
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 
 // ─── Performance Data Types ──────────────────────────────────────
 

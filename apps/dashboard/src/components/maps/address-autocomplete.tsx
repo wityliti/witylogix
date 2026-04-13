@@ -42,9 +42,9 @@ export function AddressAutocomplete({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout>();
-  const autocompleteServiceRef = useRef<google?.maps?.places?.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google?.maps?.places?.PlacesService | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
 
   // Initialize services
   useEffect(() => {
@@ -80,7 +80,7 @@ export function AddressAutocomplete({
           ...typeRestrictions,
         });
 
-        const results: PlacePrediction[] = (response.predictions || []).map((prediction) => ({
+        const results: PlacePrediction[] = (response.predictions || []).map((prediction: google.maps.places.AutocompletePrediction) => ({
           placeId: prediction.place_id,
           description: prediction.description,
           mainText: prediction.structured_formatting?.main_text || prediction.description,
@@ -151,8 +151,8 @@ export function AddressAutocomplete({
                 'viewport',
               ],
             },
-            (place, status) => {
-              if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            (place: google.maps.places.PlaceResult | null, status: string) => {
+              if (status === (typeof google !== 'undefined' ? google.maps.places.PlacesServiceStatus.OK : 'OK') && place) {
                 resolve(place);
               } else {
                 reject(new Error(`Failed to get place details: ${status}`));

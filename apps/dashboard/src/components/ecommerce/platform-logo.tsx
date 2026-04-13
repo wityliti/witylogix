@@ -196,14 +196,12 @@ const PlatformLogo = forwardRef<SVGSVGElement, PlatformLogoProps>(
 
     return (
       <LogoComponent
-        ref={ref}
         className={cn(
           sizeClasses[size],
           config.textColor,
           'transition-all duration-200 ease-default',
           className
         )}
-        title={config.name}
         aria-label={`${config.name} logo`}
         {...props}
       />

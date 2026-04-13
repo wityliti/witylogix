@@ -1,0 +1,285 @@
+---
+title: Deploy to Railway
+description: Step-by-step guide to deploying WityLogix on Railway — API, Dashboard, Customer Portal, and Tracking Page.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## Overview
+
+Railway is the recommended platform for self-hosting WityLogix. Each application in the monorepo is deployed as a separate Railway service and shares managed PostgreSQL and Redis add-ons.
+
+**Services you will deploy:**
+
+| Service | Dockerfile | Internal port |
+|---------|-----------|---------------|
+| API | `Dockerfile.api` | `8000` |
+| Dashboard | `Dockerfile.dashboard` | `3000` |
+| Customer Portal | `Dockerfile.customer-portal` | `3000` |
+| Tracking Page | `Dockerfile.tracking-page` | `3000` |
+
+---
+
+## Quick start
+
+<Steps>
+<Step>
+**Fork the repository** and connect it to a new Railway project.
+</Step>
+
+<Step>
+**Add PostgreSQL and Redis** as Railway add-ons (Plugins → Add Plugin).
+</Step>
+
+<Step>
+**Create four services** (one per app), each pointing to the correct `Dockerfile.*` via the `RAILWAY_DOCKERFILE_PATH` build variable.
+</Step>
+
+<Step>
+**Set environment variables** for each service (see [Environment variables](#environment-variables) below). For Next.js services, also set `NEXT_PUBLIC_API_URL` as a **build variable**.
+</Step>
+
+<Step>
+**Run database migrations** from a one-off Railway command, then trigger your first deploy.
+</Step>
+</Steps>
+
+---
+
+## Prerequisites
+
+- A [Railway](https://railway.app) account
+- A fork or mirror of the `witylogix-platform` repository on GitHub
+- (Optional) A custom domain
+
+---
+
+## Step 1 — Create a Railway project
+
+1. In the Railway dashboard, click **New Project → Deploy from GitHub repo**.
+2. Select your fork.
+3. Railway will detect the root `railway.toml` and create an initial service. You will rename and configure it in the next steps.
+
+---
+
+## Step 2 — Add database and cache plugins
+
+In your Railway project:
+
+1. Click **+ Add Plugin** → select **PostgreSQL**.
+2. Click **+ Add Plugin** → select **Redis**.
+
+Railway automatically injects `DATABASE_URL` and `REDIS_URL` into all services in the same project. You can reference these directly in each service's environment without copying credentials manually.
+
+<Callout type="info">
+WityLogix requires the PostGIS extension for geospatial route optimisation. After provisioning PostgreSQL, run the following once via the Railway Postgres query console or a connected client:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS postgis;
+```
+</Callout>
+
+---
+
+## Step 3 — Configure each service
+
+Railway deploys a monorepo by using different Dockerfiles per service. Set the `RAILWAY_DOCKERFILE_PATH` **build variable** on each service so Railway knows which Dockerfile to use.
+
+Repeat the following for each service:
+
+1. Click **New Service → GitHub Repo** and select the same fork.
+2. Open **Settings → Build** and set the build variable below.
+3. Set the internal port under **Settings → Networking**.
+
+| Service | `RAILWAY_DOCKERFILE_PATH` | Internal port |
+|---------|--------------------------|---------------|
+| API | `Dockerfile.api` | `8000` |
+| Dashboard | `Dockerfile.dashboard` | `3000` |
+| Customer Portal | `Dockerfile.customer-portal` | `3000` |
+| Tracking Page | `Dockerfile.tracking-page` | `3000` |
+
+<Callout type="info">
+The root `railway.toml` sets shared health-check defaults. Each app's own `railway.toml` (for example `apps/api/railway.toml`) overrides these for that service. Railway reads the `railway.toml` at the repo root unless you configure a custom root directory per service.
+</Callout>
+
+---
+
+## Step 4 — Environment variables
+
+Set these variables in the Railway **Variables** panel for each service. Railway's PostgreSQL and Redis plugins automatically provide `DATABASE_URL` and `REDIS_URL` — you do not need to copy them manually.
+
+### API service
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Injected automatically by the PostgreSQL plugin |
+| `REDIS_URL` | Injected automatically by the Redis plugin |
+| `NODE_ENV` | `production` |
+| `JWT_SECRET` | Random string, minimum 32 characters. Generate with `openssl rand -base64 32` |
+| `CORS_ORIGINS` | Comma-separated list of allowed origins, e.g. `https://dashboard.yourdomain.com,https://portal.yourdomain.com` |
+| `NEXT_PUBLIC_API_URL` | Public URL of the API service, e.g. `https://api.yourdomain.com` |
+| `LOG_LEVEL` | `warn` for production; `info` for staging |
+| `SHOPIFY_API_KEY` | Only required if using the Shopify integration |
+| `SHOPIFY_API_SECRET` | Only required if using the Shopify integration |
+
+### Dashboard service
+
+<Callout type="warn">
+`NEXT_PUBLIC_*` variables are baked into the Next.js bundle **at build time**. You must set them as **build variables** (not just runtime variables) in the Railway service settings, otherwise the browser bundle will contain the default value (`https://api.witylogix.com`) instead of your own API URL.
+</Callout>
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Public URL of the API service — **required as a build variable** |
+| `NODE_ENV` | `production` |
+
+### Customer Portal service
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Public URL of the API service — **required as a build variable** |
+| `API_URL` | Server-side API URL (can be the Railway internal URL for lower latency) — **required as a build variable** |
+| `NODE_ENV` | `production` |
+
+### Tracking Page service
+
+| Variable | Description |
+|----------|-------------|
+| `NODE_ENV` | `production` |
+
+The tracking page is a Vite static site served by `serve`. It does not make direct API calls from the build step, so no build-time public vars are needed unless you customise the app.
+
+---
+
+## Step 5 — Database setup
+
+Before the first deploy completes, run Prisma migrations against your Railway PostgreSQL instance.
+
+**Option A — Railway one-off command (recommended)**
+
+In the Railway dashboard, open the API service and navigate to **Settings → Deploy → Start Command**. Temporarily replace the start command with:
+
+```bash
+pnpm exec prisma migrate deploy --schema packages/db/prisma/schema.prisma
+```
+
+Trigger a deploy. After the migration completes, restore the original start command (Railway uses the `CMD` in `Dockerfile.api` by default).
+
+**Option B — Local connection via Railway CLI**
+
+```bash
+# Link to your Railway project
+railway link
+
+# Run migrations against the Railway database
+railway run pnpm exec prisma migrate deploy --schema packages/db/prisma/schema.prisma
+```
+
+**Option C — Seed demo data**
+
+To populate the database with a demo shop and admin user for testing:
+
+```bash
+railway run pnpm exec tsx scripts/seed-demo.ts
+```
+
+Demo credentials created by the seed script:
+
+| Field | Value |
+|-------|-------|
+| Email | `admin@demo.witylogix.io` |
+| Password | `Admin123!` |
+
+<Callout type="warn">
+Change the demo password immediately after your first login. Do not use demo credentials in a production environment.
+</Callout>
+
+---
+
+## Step 6 — Deploy and verify
+
+Trigger a deploy for all four services. Once they are running, verify the deployment:
+
+```bash
+# Replace with your Railway API service URL
+curl -s https://your-api.railway.app/health | jq '{status,database,redis}'
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "database": "connected",
+  "redis": "connected"
+}
+```
+
+If `database` or `redis` is not `"connected"`, check your Railway environment variables and confirm the PostgreSQL and Redis plugins are attached to the project.
+
+For a full post-deploy smoke test checklist, see [Railway post-deploy validation](./railway-validation).
+
+---
+
+## Railway-specific configuration reference
+
+### Health checks
+
+Railway uses the `healthcheckPath` from each service's `railway.toml` to decide when a deploy is healthy. The defaults are:
+
+| Service | Health check path | Timeout |
+|---------|-------------------|---------|
+| API | `/health` | 30 s |
+| Dashboard | `/` | 15 s |
+| Customer Portal | `/` | 15 s |
+| Tracking Page | `/` | 10 s |
+
+If a deploy hangs indefinitely, check that the health check URL is reachable on the internal port and that the service is not crashing on startup.
+
+### Restart policy
+
+All services are configured with `restartPolicyType = "on_failure"` and up to 3–5 retries. If a service exceeds its retry limit, Railway marks the deploy as failed and stops restarting. Check the deploy logs for the root cause before re-triggering.
+
+---
+
+## Troubleshooting
+
+### Dashboard shows blank page or CORS error
+
+`NEXT_PUBLIC_API_URL` is baked into the Next.js bundle at build time. If you see a blank page or CORS errors, the build was likely done without the variable set.
+
+1. Go to the Dashboard service → **Variables** → confirm `NEXT_PUBLIC_API_URL` is set as a **build variable** (not just an environment variable).
+2. Trigger a new deploy to rebuild the bundle.
+
+### API returns `database: "disconnected"`
+
+1. Confirm the PostgreSQL plugin is attached to the same Railway project as the API service.
+2. Verify `DATABASE_URL` is present in the API service variables (it should be injected automatically).
+3. Check that the PostGIS extension is installed (see [Step 2](#step-2--add-database-and-cache-plugins)).
+
+### API returns `redis: "disconnected"`
+
+1. Confirm the Redis plugin is attached to the same Railway project.
+2. Verify `REDIS_URL` is present in the API service variables.
+3. Check API deploy logs for connection errors — Railway Redis is not TLS-enabled by default; ensure `REDIS_URL` uses `redis://` not `rediss://`.
+
+### Migration fails with "table already exists"
+
+Prisma tracks applied migrations in the `_prisma_migrations` table. If you see conflicts:
+
+```bash
+railway run pnpm exec prisma migrate resolve --applied <migration_name> --schema packages/db/prisma/schema.prisma
+```
+
+### Build exceeds Railway memory limit
+
+The Next.js apps use `NODE_OPTIONS='--max-old-space-size=3072'` in their Dockerfiles. If Railway build containers OOM during the Next.js build step, upgrade to a Railway plan with more build memory.
+
+---
+
+## Next steps
+
+- [Railway post-deploy validation](./railway-validation) — smoke test checklist after each deploy
+- [Docker deep dive](./docker) — understand the multi-stage Dockerfile structure
+- [Environment variables reference](./index) — full self-hosting configuration reference

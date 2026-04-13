@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["recharts", "lucide-react", "date-fns"],
   },
+  // Resolve TypeScript ESM .js imports to .ts source files in monorepo packages.
+  // All @witylogix/* packages use `"type": "module"` with .js extensions in imports,
+  // but webpack needs to resolve those to the actual .ts source files.
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ".js": [".ts", ".tsx", ".js", ".jsx"],
+      ".jsx": [".tsx", ".jsx"],
+    };
+    return config;
+  },
 };
 
 export default withSentryConfig(nextConfig, {

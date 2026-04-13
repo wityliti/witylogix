@@ -149,7 +149,7 @@ export default function ActivityPage() {
         severity: severities[Math.floor(Math.random() * severities.length)],
         title: "New Activity Detected",
         description: "Real-time event from system monitoring",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         user: {
           id: "system",
           name: "System",
@@ -183,7 +183,7 @@ export default function ActivityPage() {
         event.severity,
         event.title,
         event.description,
-        event.timestamp.toISOString(),
+        String(event.timestamp),
         event.user?.name || "System",
       ]),
     ]

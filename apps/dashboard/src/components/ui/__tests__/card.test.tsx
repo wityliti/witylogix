@@ -438,12 +438,12 @@ describe('Card Component Family', () => {
 
   describe('Empty States', () => {
     it('should render Card with empty children', () => {
-      const { container } = render(<Card></Card>);
+      const { container } = render(<Card>{""}</Card>);
       expect(container.querySelector('div')).toBeTruthy();
     });
 
     it('should render CardHeader with empty children', () => {
-      const { container } = render(<CardHeader></CardHeader>);
+      const { container } = render(<CardHeader>{""}</CardHeader>);
       expect(container.querySelector('div')).toBeTruthy();
     });
   });

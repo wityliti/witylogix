@@ -22,7 +22,7 @@ interface PackagePreset {
 
 type UnitSystem = 'imperial' | 'metric';
 
-interface PackageSizeSelectorProps extends HTMLAttributes<HTMLDivElement> {
+interface PackageSizeSelectorProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   /** Current package dimensions */
   value: PackageDimensions;
   /** Callback when dimensions change */

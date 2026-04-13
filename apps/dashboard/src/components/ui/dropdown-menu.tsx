@@ -26,9 +26,19 @@ interface DropdownMenuSeparatorProps {
   className?: string;
 }
 
+interface DropdownMenuItem {
+  label: string;
+  onClick?: () => void;
+  icon?: ReactNode;
+  disabled?: boolean;
+  separator?: boolean;
+}
+
 interface DropdownMenuProps {
   trigger: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
+  /** Shorthand items array - renders simple menu items */
+  items?: DropdownMenuItem[];
   align?: "left" | "right" | "center";
   side?: "top" | "bottom";
   className?: string;
@@ -38,6 +48,7 @@ interface DropdownMenuProps {
 export function DropdownMenu({
   trigger,
   children,
+  items,
   align = "right",
   side = "bottom",
   className,
@@ -110,7 +121,20 @@ export function DropdownMenu({
           )}
           role="menu"
         >
-          {children}
+          {items
+            ? items.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { item.onClick?.(); setIsOpen(false); }}
+                  disabled={item.disabled}
+                  className="w-full text-left px-4 py-2 text-sm text-wl-text-primary hover:bg-wl-bg-overlay disabled:opacity-50"
+                  role="menuitem"
+                >
+                  {item.icon && <span className="mr-2">{item.icon}</span>}
+                  {item.label}
+                </button>
+              ))
+            : children}
         </div>
       )}
     </div>

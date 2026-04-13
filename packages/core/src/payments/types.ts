@@ -12,13 +12,18 @@
 // ─── PAYMENT METHODS ──────────────────────────────────────────────────
 
 export type PaymentMethodType =
-  | 'credit_card'
-  | 'debit_card'
-  | 'cod' // Cash on Delivery
-  | 'bank_transfer'
-  | 'wallet'
-  | 'platform_payment' // Generic platform payment (Shopify, WooCommerce, Magento, etc.)
-  | 'other';
+  | "credit_card"
+  | "debit_card"
+  | "card" // Generic card (used by Square, Stripe)
+  | "cod" // Cash on Delivery
+  | "cash" // Cash payment (non-delivery context)
+  | "bank_transfer"
+  | "wallet"
+  | "paypal"
+  | "apple_pay"
+  | "google_pay"
+  | "platform_payment" // Generic platform payment (Shopify, WooCommerce, Magento, etc.)
+  | "other";
 
 export interface PaymentMethod {
   id: string;
@@ -42,14 +47,20 @@ export interface PaymentMethod {
 // ─── PAYMENT STATUS & LIFECYCLE ──────────────────────────────────────
 
 export type PaymentStatus =
-  | 'pending' // Initial state, awaiting authorization
-  | 'authorized' // Authorization successful, ready to capture
-  | 'captured' // Funds captured/settled
-  | 'refunded' // Refunded to customer
-  | 'failed' // Payment failed/declined
-  | 'cancelled'; // Cancelled by user or system
+  | "pending" // Initial state, awaiting authorization
+  | "authorized" // Authorization successful, ready to capture
+  | "captured" // Funds captured/settled
+  | "refunded" // Refunded to customer
+  | "failed" // Payment failed/declined
+  | "cancelled"; // Cancelled by user or system
 
-export type PaymentLifecycle = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'cancelled';
+export type PaymentLifecycle =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "refunded"
+  | "cancelled";
 
 // ─── PAYMENT INTENT ──────────────────────────────────────────────────
 // Represents a customer's intention to pay (not yet committed)
@@ -89,7 +100,7 @@ export interface Transaction {
   amount: number; // In smallest currency unit (cents)
   currency: string;
   status: PaymentLifecycle;
-  type: 'charge' | 'refund' | 'adjustment' | 'cod_collection';
+  type: "charge" | "refund" | "adjustment" | "cod_collection";
   methodType: PaymentMethodType;
   methodId?: string;
   // Provider reference
@@ -116,9 +127,14 @@ export interface RefundRequest {
   shopId: string;
   transactionId: string; // Original transaction being refunded
   amount?: number; // Partial refund amount; if null, full refund
-  reason: 'customer_request' | 'duplicate_charge' | 'order_cancelled' | 'merchant_error' | 'other';
+  reason:
+    | "customer_request"
+    | "duplicate_charge"
+    | "order_cancelled"
+    | "merchant_error"
+    | "other";
   description?: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   providerRefundId?: string;
   errorMessage?: string;
   metadata: Record<string, any>;
@@ -137,7 +153,7 @@ export interface CODCollection {
   currency: string;
   driverId: string; // Driver who collected the cash
   // Collection status
-  status: 'pending' | 'collected' | 'verified' | 'reconciled' | 'failed';
+  status: "pending" | "collected" | "verified" | "reconciled" | "failed";
   collectedAt?: Date;
   verifiedAt?: Date;
   reconciledAt?: Date;
@@ -174,7 +190,7 @@ export interface IdempotencyKey {
   key: string; // Unique request identifier
   shopId: string;
   resultId?: string; // Result of the operation (transactionId, etc.)
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   result?: Record<string, any>;
   error?: {
     code: string;
@@ -187,7 +203,12 @@ export interface IdempotencyKey {
 // ─── WEBHOOK PAYLOAD ──────────────────────────────────────────────────
 
 export interface PaymentWebhookPayload {
-  type: 'payment.authorized' | 'payment.captured' | 'payment.failed' | 'refund.completed' | 'refund.failed';
+  type:
+    | "payment.authorized"
+    | "payment.captured"
+    | "payment.failed"
+    | "refund.completed"
+    | "refund.failed";
   provider: string;
   providerEventId: string;
   timestamp: Date;
@@ -213,7 +234,7 @@ export class PaymentError extends Error {
     public retryable: boolean = false,
   ) {
     super(message);
-    this.name = 'PaymentError';
+    this.name = "PaymentError";
   }
 }
 
@@ -223,7 +244,7 @@ export class IdempotencyError extends Error {
     public existingResult?: any,
   ) {
     super(message);
-    this.name = 'IdempotencyError';
+    this.name = "IdempotencyError";
   }
 }
 
@@ -252,7 +273,12 @@ export interface RefundPaymentRequest {
   shopId: string;
   transactionId: string;
   amount?: number; // Partial refund in cents
-  reason: 'customer_request' | 'duplicate_charge' | 'order_cancelled' | 'merchant_error' | 'other';
+  reason:
+    | "customer_request"
+    | "duplicate_charge"
+    | "order_cancelled"
+    | "merchant_error"
+    | "other";
   description?: string;
   metadata?: Record<string, any>;
   idempotencyKey: string;

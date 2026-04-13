@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Card, Table } from '@/components/ui';
+import { Badge, Card } from '@/components/ui';
 
 export function TablesSection() {
   return (
@@ -14,7 +14,7 @@ export function TablesSection() {
         </p>
 
         <Card className="w-full overflow-hidden">
-          <Table>
+          <table>
             <thead>
               <tr className="border-b border-[#1e1e2e]">
                 <th className="text-left px-4 py-3 font-semibold text-white">
@@ -81,7 +81,7 @@ export function TablesSection() {
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
         </Card>
       </div>
     </div>

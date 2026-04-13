@@ -16,7 +16,7 @@ interface QuarterlyTrend {
   score: number;
 }
 
-interface CarrierScorecardProps {
+export interface CarrierScorecardProps {
   name: string;
   carrierId: string;
   scores: CarrierScore;

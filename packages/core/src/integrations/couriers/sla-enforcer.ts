@@ -9,7 +9,7 @@
  * - Generate compliance reports
  */
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 
 // ─── SLA Data Types ────────────────────────────────────────
 
@@ -313,7 +313,7 @@ export class SLAEnforcer {
         metrics: {
           pickupTime: { compliant: true, targetMinutes: 0 },
           deliveryTime: { compliant: true, targetMinutes: 0 },
-          noticedDamage: { compliant: true, maxRate: 100 },
+          noticedDamage: { compliant: true, maxRate: 100, actualDamaged: false },
           customerRating: { compliant: true, minRating: 0 },
         },
         breaches: [],

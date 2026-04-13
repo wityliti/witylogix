@@ -15,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
-import { useApiMutation } from '@/hooks/use-api';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 type BillingRuleType = "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
 
@@ -69,6 +70,7 @@ const MOCK_CUSTOMERS: Customer[] = [
 
 export default function CreateInvoicePage() {
   const router = useRouter();
+  const { addToast } = useToast();
 
   // Form state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -89,6 +91,8 @@ export default function CreateInvoicePage() {
   const [discountPercentage, setDiscountPercentage] = useState("0");
   const [showPreview, setShowPreview] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Filtered customers for search
   const filteredCustomers = useMemo(() => {
@@ -181,19 +185,87 @@ export default function CreateInvoicePage() {
     setShowCustomerModal(false);
   }, []);
 
-  const handleSaveDraft = useCallback(() => {
-    // TODO: API call
-    router.push("/dashboard/invoices");
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
+  const handleSaveDraft = useCallback(async () => {
+    if (isSavingDraft) return;
+    setIsSavingDraft(true);
+    try {
+      const payload = {
+        status: 'draft' as const,
+        customerId: selectedCustomer?.id,
+        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
+          description,
+          quantity,
+          unitPrice: rate,
+          taxable,
+        })),
+        dueDate: dueDate || undefined,
+        notes: notes || undefined,
+        terms: terms || undefined,
+        taxRate: parseFloat(taxRate || '0'),
+        discountPercentage: parseFloat(discountPercentage || '0'),
+      };
+      await api.post('/api/v4/invoices', payload);
+      addToast({
+        type: 'success',
+        title: 'Draft saved',
+        message: 'Your invoice draft has been saved.',
+      });
+      router.push('/dashboard/invoices');
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to save draft',
+        message: err instanceof Error ? err.message : 'Could not save the draft. Please try again.',
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSavingDraft, addToast, router]);
 
-  const handleSendInvoice = useCallback(() => {
+  const handleSendInvoice = useCallback(async () => {
     if (!selectedCustomer || lineItems.length === 0) {
-      alert("Please select a customer and add line items");
+      addToast({
+        type: 'error',
+        title: 'Cannot create invoice',
+        message: 'Please select a customer and add at least one line item.',
+      });
       return;
     }
-    // TODO: API call
-    router.push("/dashboard/invoices");
-  }, [selectedCustomer, lineItems, dueDate, notes, terms, router]);
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      const payload = {
+        status: 'sent' as const,
+        customerId: selectedCustomer.id,
+        manualLineItems: lineItems.map(({ description, quantity, rate, taxable }) => ({
+          description,
+          quantity,
+          unitPrice: rate,
+          taxable,
+        })),
+        dueDate: dueDate || undefined,
+        notes: notes || undefined,
+        terms: terms || undefined,
+        taxRate: parseFloat(taxRate || '0'),
+        discountPercentage: parseFloat(discountPercentage || '0'),
+      };
+      await api.post('/api/v4/invoices', payload);
+      addToast({
+        type: 'success',
+        title: 'Invoice created',
+        message: 'The invoice has been created and sent.',
+      });
+      router.push('/dashboard/invoices');
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to create invoice',
+        message: err instanceof Error ? err.message : 'Could not create the invoice. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [selectedCustomer, lineItems, dueDate, notes, terms, taxRate, discountPercentage, isSending, addToast, router]);
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-[#0a0a0f] min-h-screen">
@@ -219,12 +291,12 @@ export default function CreateInvoicePage() {
             <Eye className="w-4 h-4" />
             Preview
           </Button>
-          <Button variant="secondary" size="lg" onClick={handleSaveDraft}>
-            Save Draft
+          <Button variant="secondary" size="lg" onClick={handleSaveDraft} disabled={isSavingDraft || isSending}>
+            {isSavingDraft ? 'Saving...' : 'Save Draft'}
           </Button>
-          <Button variant="primary" size="lg" onClick={handleSendInvoice}>
+          <Button variant="primary" size="lg" onClick={handleSendInvoice} disabled={isSending || isSavingDraft}>
             <Check className="w-4 h-4" />
-            Send
+            {isSending ? 'Creating...' : 'Send'}
           </Button>
         </div>
       </div>
@@ -310,16 +382,17 @@ export default function CreateInvoicePage() {
             </h2>
             <Select
               value={billingRuleType}
-              onChange={(value) => setBillingRuleType(value as BillingRuleType)}
+              onChange={(e) => setBillingRuleType(e.target.value as BillingRuleType)}
               label="Rule Type"
-            >
-              <option value="per-delivery">Per Delivery</option>
-              <option value="per-mile">Per Mile</option>
-              <option value="per-hour">Per Hour</option>
-              <option value="flat-rate">Flat Rate</option>
-              <option value="tiered">Tiered Pricing</option>
-              <option value="subscription">Subscription</option>
-            </Select>
+              options={[
+                { value: "per-delivery", label: "Per Delivery" },
+                { value: "per-mile", label: "Per Mile" },
+                { value: "per-hour", label: "Per Hour" },
+                { value: "flat-rate", label: "Flat Rate" },
+                { value: "tiered", label: "Tiered Pricing" },
+                { value: "subscription", label: "Subscription" },
+              ]}
+            />
             <p className="mt-2 text-xs text-gray-400">
               {billingRuleType === "per-delivery" &&
                 "Charge a fixed amount per delivery"}

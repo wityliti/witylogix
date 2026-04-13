@@ -175,13 +175,18 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     // Store refresh token in Redis with TTL (30 days)
-    const redis = getRedis();
-    await redis.set(
-      `refresh:${refreshHash}`,
-      JSON.stringify({ userId: user.id, shopId: shop.id, orgId, role: user.role, orgRole }),
-      "EX",
-      30 * 24 * 60 * 60,
-    );
+    // Non-fatal: if Redis is unavailable the access token still works; refresh just won't persist.
+    try {
+      const redis = getRedis();
+      await redis.set(
+        `refresh:${refreshHash}`,
+        JSON.stringify({ userId: user.id, shopId: shop.id, orgId, role: user.role, orgRole }),
+        "EX",
+        30 * 24 * 60 * 60,
+      );
+    } catch (redisErr) {
+      fastify.log.warn({ err: redisErr }, "Redis unavailable — refresh token not persisted, login proceeds");
+    }
 
     return {
       data: {

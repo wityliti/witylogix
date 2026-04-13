@@ -17,7 +17,9 @@
 import { forwardRef, TextareaHTMLAttributes, useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-interface FormTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface FormTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /** Label for the textarea field */
+  label?: string;
   /** Whether to show character count */
   showCharacterCount?: boolean;
   /** Whether to show word count */

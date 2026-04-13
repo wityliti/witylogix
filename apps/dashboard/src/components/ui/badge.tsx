@@ -19,6 +19,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
   variant?: BadgeVariant;
   dot?: boolean;
+  size?: BadgeSize | string;
   // Status-specific props
   status?: DeliveryStatus;
   statusSize?: BadgeSize;

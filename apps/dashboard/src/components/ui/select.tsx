@@ -12,10 +12,11 @@ interface SelectOption {
 
 interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   label?: string;
-  options: SelectOption[];
+  options?: SelectOption[];
   placeholder?: string;
   error?: string;
   size?: SelectSize;
+  onValueChange?: (value: string) => void;
 }
 
 const sizeClasses: Record<SelectSize, string> = {
@@ -36,6 +37,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       size = "md",
       onFocus,
       onBlur,
+      onValueChange,
+      onChange,
       ...props
     },
     ref
@@ -80,6 +83,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             disabled={disabled}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onChange={(e) => { onChange?.(e); onValueChange?.(e.target.value); }}
             {...props}
           >
             {placeholder && (
@@ -119,3 +123,43 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
 Select.displayName = "Select";
 
 export { Select };
+export type { SelectProps };
+
+// Shadcn-compatible sub-components for pages that expect composable Select API
+import { type ReactNode } from "react";
+
+interface SelectTriggerProps {
+  children?: ReactNode;
+  className?: string;
+}
+
+interface SelectContentProps {
+  children?: ReactNode;
+  className?: string;
+}
+
+interface SelectItemProps {
+  children?: ReactNode;
+  value: string;
+  className?: string;
+}
+
+interface SelectValueProps {
+  placeholder?: string;
+}
+
+export function SelectTrigger({ children, className }: SelectTriggerProps) {
+  return <div className={cn("flex items-center gap-2 cursor-pointer", className)}>{children}</div>;
+}
+
+export function SelectContent({ children, className }: SelectContentProps) {
+  return <div className={cn("bg-wl-bg-elevated border border-wl-border-default rounded-md", className)}>{children}</div>;
+}
+
+export function SelectItem({ children, value: _value, className }: SelectItemProps) {
+  return <div className={cn("px-3 py-2 cursor-pointer hover:bg-wl-bg-overlay", className)}>{children}</div>;
+}
+
+export function SelectValue({ placeholder }: SelectValueProps) {
+  return <span className="text-wl-text-secondary">{placeholder}</span>;
+}

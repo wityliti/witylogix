@@ -68,7 +68,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
       // Validate shopId format
       if (!shopId || typeof shopId !== "string") {
         request.log.warn({ shopId }, "Invalid shop ID");
-        return reply.status(400).json({ error: "Invalid shop ID" });
+        return reply.status(400).send({ error: "Invalid shop ID" });
       }
 
       request.log.info(
@@ -90,7 +90,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!shop) {
           request.log.warn({ shopId }, "Shop not found");
-          return reply.status(404).json({ error: "Shop not found" });
+          return reply.status(404).send({ error: "Shop not found" });
         }
 
         if (shop.platformSource !== "CUSTOM") {
@@ -98,14 +98,14 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
             { shopId, expectedSource: "CUSTOM", actualSource: shop.platformSource },
             "Shop is not a CUSTOM platform"
           );
-          return reply.status(400).json({ error: "Shop is not configured for CUSTOM platform" });
+          return reply.status(400).send({ error: "Shop is not configured for CUSTOM platform" });
         }
 
         // Step 2: Extract webhook configuration from shop settings
         const platformConfig = shop.platformConfig as any;
         if (!platformConfig) {
           request.log.error({ shopId }, "Shop missing platform configuration");
-          return reply.status(400).json({ error: "Shop platform configuration not found" });
+          return reply.status(400).send({ error: "Shop platform configuration not found" });
         }
 
         const fieldMapping = platformConfig.fieldMapping as CustomFieldMapping;
@@ -113,7 +113,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!fieldMapping) {
           request.log.error({ shopId }, "Shop missing field mapping configuration");
-          return reply.status(400).json({ error: "Shop field mapping not configured" });
+          return reply.status(400).send({ error: "Shop field mapping not configured" });
         }
 
         // Step 3: Validate webhook signature/auth
@@ -128,7 +128,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
           if (!isValid) {
             request.log.warn({ shopId }, "Webhook authentication failed");
-            return reply.status(401).json({ error: "Webhook authentication failed" });
+            return reply.status(401).send({ error: "Webhook authentication failed" });
           }
         }
 
@@ -145,7 +145,7 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!eventType) {
           request.log.warn({ shopId }, "Unable to determine webhook event type");
-          return reply.status(400).json({ error: "Unable to determine event type" });
+          return reply.status(400).send({ error: "Unable to determine event type" });
         }
 
         request.log.info({ shopId, eventType }, "Webhook event type detected");
@@ -173,14 +173,14 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
           );
         } else {
           request.log.warn({ shopId, eventType }, "Unknown event type");
-          return reply.status(400).json({ error: `Unknown event type: ${eventType}` });
+          return reply.status(400).send({ error: `Unknown event type: ${eventType}` });
         }
       } catch (error) {
         request.log.error(
           { shopId, error: error instanceof Error ? error.message : String(error) },
           "Error processing custom webhook"
         );
-        return reply.status(500).json({
+        return reply.status(500).send({
           error: "Failed to process webhook",
           details: error instanceof Error ? error.message : String(error),
         });
@@ -216,13 +216,13 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
       const orderIdField = fieldMapping.order?.externalOrderId;
       if (!orderIdField) {
         request.log.error({ shopId }, "Field mapping missing externalOrderId");
-        return reply.status(400).json({ error: "Field mapping not configured for externalOrderId" });
+        return reply.status(400).send({ error: "Field mapping not configured for externalOrderId" });
       }
 
       const externalOrderId = extractField(payload, orderIdField);
       if (!externalOrderId) {
         request.log.warn({ shopId }, "Unable to extract order ID from payload");
-        return reply.status(400).json({ error: "Unable to extract order ID from payload" });
+        return reply.status(400).send({ error: "Unable to extract order ID from payload" });
       }
 
       request.log.info(
@@ -312,13 +312,13 @@ async function customWebhooksRoutes(fastify: FastifyInstance): Promise<void> {
       const productIdField = fieldMapping.product?.externalProductId;
       if (!productIdField) {
         request.log.error({ shopId }, "Field mapping missing externalProductId");
-        return reply.status(400).json({ error: "Field mapping not configured for externalProductId" });
+        return reply.status(400).send({ error: "Field mapping not configured for externalProductId" });
       }
 
       const externalProductId = extractField(payload, productIdField);
       if (!externalProductId) {
         request.log.warn({ shopId }, "Unable to extract product ID from payload");
-        return reply.status(400).json({ error: "Unable to extract product ID from payload" });
+        return reply.status(400).send({ error: "Unable to extract product ID from payload" });
       }
 
       request.log.info(

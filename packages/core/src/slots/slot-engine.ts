@@ -3,7 +3,7 @@
  * Handles getAvailableSlots, checkCapacity, reserveSlot, releaseSlot, getSlotsByDateRange
  */
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 import type {
   Slot,
   SlotAvailability,
@@ -71,7 +71,7 @@ export class SlotEngine {
 
     // Count reservations for each slot
     const availability: SlotAvailability[] = await Promise.all(
-      slots.map(async (slot) => {
+      slots.map(async (slot: any) => {
         const reservationCount = await (this.db as any).slotReservation.count({
           where: {
             slotId: slot.id,

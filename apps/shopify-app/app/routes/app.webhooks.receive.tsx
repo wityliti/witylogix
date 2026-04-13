@@ -631,26 +631,21 @@ async function updateOrderStatusInDatabase(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = await import("@witylogix/db");
-    const prisma = new PrismaClient();
+    const { prisma } = await import("@witylogix/db");
 
-    try {
-      await prisma.order.updateMany({
-        where: {
-          externalOrderId: params.orderId,
-          shopId: params.shopId,
-        },
-        data: {
-          status: mapShopifyStatusToInternal(params.status),
-          lastWebhookId: params.webhookId,
-          lastWebhookAt: new Date(),
-        },
-      });
+    await prisma.order.updateMany({
+      where: {
+        externalOrderId: params.orderId,
+        shopId: params.shopId,
+      },
+      data: {
+        status: mapShopifyStatusToInternal(params.status),
+        lastWebhookId: params.webhookId,
+        lastWebhookAt: new Date(),
+      },
+    });
 
-      console.log("Order status updated", { orderId: params.orderId });
-    } finally {
-      await prisma.$disconnect();
-    }
+    console.log("Order status updated", { orderId: params.orderId });
   } catch (error) {
     console.warn("Direct DB update failed, falling back to API", { error });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
@@ -702,23 +697,18 @@ async function deactivateTenant(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = await import("@witylogix/db");
-    const prisma = new PrismaClient();
+    const { prisma } = await import("@witylogix/db");
 
-    try {
-      await prisma.shop.update({
-        where: { shopifyId: params.shopId },
-        data: {
-          active: false,
-          deactivatedAt: new Date(),
-          lastWebhookId: params.webhookId,
-        },
-      });
+    await prisma.shop.update({
+      where: { shopifyId: params.shopId },
+      data: {
+        active: false,
+        deactivatedAt: new Date(),
+        lastWebhookId: params.webhookId,
+      },
+    });
 
-      console.log("Tenant deactivated", { shopId: params.shopId });
-    } finally {
-      await prisma.$disconnect();
-    }
+    console.log("Tenant deactivated", { shopId: params.shopId });
   } catch (error) {
     console.warn("Direct DB deactivation failed, falling back to API", { error });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
@@ -772,25 +762,20 @@ async function deleteCustomerData(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = await import("@witylogix/db");
-    const prisma = new PrismaClient();
+    const { prisma } = await import("@witylogix/db");
 
-    try {
-      // Delete all customer-related data
-      await prisma.customer.deleteMany({
-        where: {
-          shopifyId: params.customerId,
-          shopId: params.shopId,
-        },
-      });
-
-      console.log("Customer data deleted", {
-        customerId: params.customerId,
+    // Delete all customer-related data
+    await prisma.customer.deleteMany({
+      where: {
+        shopifyId: params.customerId,
         shopId: params.shopId,
-      });
-    } finally {
-      await prisma.$disconnect();
-    }
+      },
+    });
+
+    console.log("Customer data deleted", {
+      customerId: params.customerId,
+      shopId: params.shopId,
+    });
   } catch (error) {
     console.warn("Direct DB customer deletion failed, falling back to API", { error });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
@@ -811,19 +796,14 @@ async function deleteShopData(params: {
   webhookId: string;
 }): Promise<void> {
   try {
-    const { PrismaClient } = await import("@witylogix/db");
-    const prisma = new PrismaClient();
+    const { prisma } = await import("@witylogix/db");
 
-    try {
-      // Delete all shop-related data
-      await prisma.shop.delete({
-        where: { shopifyId: params.shopId },
-      });
+    // Delete all shop-related data
+    await prisma.shop.delete({
+      where: { shopifyId: params.shopId },
+    });
 
-      console.log("Shop data deleted", { shopId: params.shopId });
-    } finally {
-      await prisma.$disconnect();
-    }
+    console.log("Shop data deleted", { shopId: params.shopId });
   } catch (error) {
     console.warn("Direct DB shop deletion failed, falling back to API", { error });
     const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
