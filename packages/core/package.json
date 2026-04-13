@@ -90,7 +90,8 @@
     "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
     "./eta-recalculator": "./src/eta-recalculator/index.ts",
     "./realtime/types": "./src/realtime/types.ts",
-    "./integrations/telematics": "./src/integrations/telematics/index.ts"
+    "./integrations/telematics": "./src/integrations/telematics/index.ts",
+    "./integrations/shipping": "./src/integrations/shipping/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",
