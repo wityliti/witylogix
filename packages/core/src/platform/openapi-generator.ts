@@ -192,7 +192,7 @@ export class OpenAPIGenerator {
     const paths: Record<string, Record<string, any>> = {};
 
     // Extract routes from Fastify
-    const routes = fastifyInstance.routes ?? [];
+    const routes = (fastifyInstance as any).routes ?? [];
 
     for (const route of routes) {
       // Skip internal routes
