@@ -10,13 +10,13 @@
  * - Swagger UI middleware
  */
 
-import type { FastifyInstance } from 'fastify';
-import type { ZodSchema } from 'zod';
+import type { FastifyInstance } from "fastify";
+import type { ZodSchema } from "zod";
 
 // ─── Types ──────────────────────────────────────────────────────
 
 export interface OpenAPIDocument {
-  openapi: '3.1.0';
+  openapi: "3.1.0";
   info: {
     title: string;
     version: string;
@@ -81,11 +81,13 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
   // Basic type inference from Zod schema
   // Zod stores type info in _def.typeName (e.g. "ZodString", "ZodArray")
   const def = (schema as any)._def;
-  const zodType = (schema as any)._type || (def?.typeName ? def.typeName.replace('Zod', '').toLowerCase() : undefined);
+  const zodType =
+    (schema as any)._type ||
+    (def?.typeName ? def.typeName.replace("Zod", "").toLowerCase() : undefined);
 
   switch (zodType) {
-    case 'string':
-      result.type = 'string';
+    case "string":
+      result.type = "string";
       if ((schema as any).minLength !== undefined) {
         result.minLength = (schema as any).minLength;
       }
@@ -94,8 +96,8 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
       }
       break;
 
-    case 'number':
-      result.type = (schema as any).isInt ? 'integer' : 'number';
+    case "number":
+      result.type = (schema as any).isInt ? "integer" : "number";
       if ((schema as any).minValue !== undefined) {
         result.minimum = (schema as any).minValue;
       }
@@ -104,25 +106,28 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
       }
       break;
 
-    case 'boolean':
-      result.type = 'boolean';
+    case "boolean":
+      result.type = "boolean";
       break;
 
-    case 'array':
-      result.type = 'array';
+    case "array":
+      result.type = "array";
       if ((schema as any).element || def?.type) {
-        result.items = zodToJsonSchema(((schema as any).element || def.type) as ZodSchema);
+        result.items = zodToJsonSchema(
+          ((schema as any).element || def.type) as ZodSchema,
+        );
       }
       break;
 
-    case 'object': {
-      result.type = 'object';
+    case "object": {
+      result.type = "object";
       result.properties = {};
       result.required = [];
 
       // Zod stores shape as a function in _def.shape() or as a direct property
       const rawShape = (schema as any).shape;
-      const shape = typeof rawShape === 'function' ? rawShape() : (rawShape ?? {});
+      const shape =
+        typeof rawShape === "function" ? rawShape() : (rawShape ?? {});
       for (const [key, fieldSchema] of Object.entries(shape)) {
         result.properties[key] = zodToJsonSchema(fieldSchema as ZodSchema);
 
@@ -139,27 +144,27 @@ export function zodToJsonSchema(schema: ZodSchema): Record<string, any> {
       break;
     }
 
-    case 'enum':
+    case "enum":
       result.enum = (schema as any).options ?? def?.values ?? [];
       break;
 
-    case 'date':
-      result.type = 'string';
-      result.format = 'date-time';
+    case "date":
+      result.type = "string";
+      result.format = "date-time";
       break;
 
-    case 'null':
-    case 'nativenull':
-      result.type = 'null';
+    case "null":
+    case "nativenull":
+      result.type = "null";
       break;
 
-    case 'undefined':
+    case "undefined":
       // Skip undefined types
       break;
 
     default:
       // Fallback for complex types
-      result.type = 'object';
+      result.type = "object";
       break;
   }
 
@@ -175,7 +180,7 @@ export class OpenAPIGenerator {
 
   constructor(config: OpenAPIGeneratorConfig) {
     this.config = {
-      baseUrl: 'http://localhost:3000',
+      baseUrl: "http://localhost:3000",
       ...config,
     };
   }
@@ -191,14 +196,16 @@ export class OpenAPIGenerator {
 
     for (const route of routes) {
       // Skip internal routes
-      if (route.url.startsWith('/metrics') ||
-          route.url.startsWith('/health') ||
-          route.url.startsWith('/api/docs')) {
+      if (
+        route.url.startsWith("/metrics") ||
+        route.url.startsWith("/health") ||
+        route.url.startsWith("/api/docs")
+      ) {
         continue;
       }
 
       const path = this.normalizePath(route.url);
-      const method = (route.method ?? 'GET').toLowerCase();
+      const method = (route.method ?? "GET").toLowerCase();
       const tag = this.extractTag(route.url);
 
       if (tag) {
@@ -213,20 +220,20 @@ export class OpenAPIGenerator {
     }
 
     const doc: OpenAPIDocument = {
-      openapi: '3.1.0',
+      openapi: "3.1.0",
       info: {
         title: this.config.title,
         version: this.config.version,
         description: this.config.description,
         contact: this.config.contact,
         license: {
-          name: 'Proprietary',
+          name: "Proprietary",
         },
       },
       servers: [
         {
           url: this.config.baseUrl!,
-          description: 'API Server',
+          description: "API Server",
         },
       ],
       paths,
@@ -234,23 +241,21 @@ export class OpenAPIGenerator {
         schemas: Object.fromEntries(this.schemas),
         securitySchemes: {
           bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
-            description: 'JWT token in Authorization header',
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description: "JWT token in Authorization header",
           },
           apiKey: {
-            type: 'apiKey',
-            in: 'header',
-            name: 'X-API-Key',
-            description: 'API key authentication',
+            type: "apiKey",
+            in: "header",
+            name: "X-API-Key",
+            description: "API key authentication",
           },
         },
       },
-      security: [
-        { bearerAuth: [] },
-      ],
-      tags: Array.from(this.tags).map(name => ({
+      security: [{ bearerAuth: [] }],
+      tags: Array.from(this.tags).map((name) => ({
         name,
         description: `Operations related to ${name.toLowerCase()}`,
       })),
@@ -294,12 +299,9 @@ export class OpenAPIGenerator {
   /**
    * Build OpenAPI operation object for a route
    */
-  private buildOperation(
-    route: any,
-    tag?: string
-  ): Record<string, any> {
-    const method = (route.method ?? 'GET').toUpperCase();
-    const pathSegments = route.url.split('/').filter(Boolean);
+  private buildOperation(route: any, tag?: string): Record<string, any> {
+    const method = (route.method ?? "GET").toUpperCase();
+    const pathSegments = route.url.split("/").filter(Boolean);
     const pathParams = this.extractPathParams(route.url);
 
     const operation: Record<string, any> = {
@@ -319,34 +321,34 @@ export class OpenAPIGenerator {
     for (const paramName of pathParams) {
       parameters.push({
         name: paramName,
-        in: 'path',
+        in: "path",
         required: true,
         schema: {
-          type: 'string',
+          type: "string",
         },
       });
     }
 
     // Query parameters (generic, can be overridden per route)
-    if (method === 'GET' && !pathParams.includes('id')) {
+    if (method === "GET" && !pathParams.includes("id")) {
       parameters.push({
-        name: 'limit',
-        in: 'query',
+        name: "limit",
+        in: "query",
         schema: {
-          type: 'integer',
+          type: "integer",
           default: 20,
         },
-        description: 'Number of items to return',
+        description: "Number of items to return",
       });
 
       parameters.push({
-        name: 'offset',
-        in: 'query',
+        name: "offset",
+        in: "query",
         schema: {
-          type: 'integer',
+          type: "integer",
           default: 0,
         },
-        description: 'Number of items to skip',
+        description: "Number of items to skip",
       });
     }
 
@@ -355,13 +357,13 @@ export class OpenAPIGenerator {
     }
 
     // Request body (POST, PUT, PATCH)
-    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+    if (["POST", "PUT", "PATCH"].includes(method)) {
       operation.requestBody = {
         required: true,
         content: {
-          'application/json': {
+          "application/json": {
             schema: {
-              type: 'object',
+              type: "object",
               additionalProperties: true,
             },
           },
@@ -371,27 +373,27 @@ export class OpenAPIGenerator {
 
     // Responses
     operation.responses = {
-      '200': {
-        description: 'Successful response',
+      "200": {
+        description: "Successful response",
         content: {
-          'application/json': {
+          "application/json": {
             schema: {
-              type: 'object',
+              type: "object",
             },
           },
         },
       },
-      '400': {
-        description: 'Bad request',
+      "400": {
+        description: "Bad request",
       },
-      '401': {
-        description: 'Unauthorized',
+      "401": {
+        description: "Unauthorized",
       },
-      '404': {
-        description: 'Not found',
+      "404": {
+        description: "Not found",
       },
-      '500': {
-        description: 'Internal server error',
+      "500": {
+        description: "Internal server error",
       },
     };
 
@@ -418,7 +420,7 @@ export class OpenAPIGenerator {
    * Normalize path for OpenAPI (convert :id to {id})
    */
   private normalizePath(path: string): string {
-    return path.replace(/:(\w+)/g, '{$1}');
+    return path.replace(/:(\w+)/g, "{$1}");
   }
 
   /**
@@ -426,7 +428,7 @@ export class OpenAPIGenerator {
    */
   private extractTag(path: string): string | undefined {
     const match = path.match(/\/(?:api\/)?(\w+)/);
-    if (match && match[1] && match[1] !== 'health' && match[1] !== 'metrics') {
+    if (match && match[1] && match[1] !== "health" && match[1] !== "metrics") {
       return match[1].charAt(0).toUpperCase() + match[1].slice(1);
     }
     return undefined;
@@ -436,9 +438,9 @@ export class OpenAPIGenerator {
    * Generate operation ID from method and path
    */
   private generateOperationId(method: string, path: string): string {
-    const segments = path.split('/').filter(Boolean);
+    const segments = path.split("/").filter(Boolean);
     const verb = this.methodToVerb(method);
-    const resource = segments[segments.length - 1] || segments[0] || 'resource';
+    const resource = segments[segments.length - 1] || segments[0] || "resource";
 
     return `${verb}${resource.charAt(0).toUpperCase()}${resource.slice(1)}`;
   }
@@ -448,11 +450,11 @@ export class OpenAPIGenerator {
    */
   private methodToVerb(method: string): string {
     const verbs: Record<string, string> = {
-      'GET': 'get',
-      'POST': 'create',
-      'PUT': 'update',
-      'PATCH': 'patch',
-      'DELETE': 'delete',
+      GET: "get",
+      POST: "create",
+      PUT: "update",
+      PATCH: "patch",
+      DELETE: "delete",
     };
 
     return verbs[method] || method.toLowerCase();
@@ -462,7 +464,7 @@ export class OpenAPIGenerator {
    * Generate human-readable summary
    */
   private generateSummary(method: string, pathSegments: string[]): string {
-    const resource = pathSegments[pathSegments.length - 1] || 'resource';
+    const resource = pathSegments[pathSegments.length - 1] || "resource";
     const action = this.methodToAction(method);
 
     return `${action} ${resource}`;
@@ -473,11 +475,11 @@ export class OpenAPIGenerator {
    */
   private methodToAction(method: string): string {
     const actions: Record<string, string> = {
-      'GET': 'Retrieve',
-      'POST': 'Create',
-      'PUT': 'Update',
-      'PATCH': 'Modify',
-      'DELETE': 'Delete',
+      GET: "Retrieve",
+      POST: "Create",
+      PUT: "Update",
+      PATCH: "Modify",
+      DELETE: "Delete",
     };
 
     return actions[method] || method;
@@ -488,27 +490,27 @@ export class OpenAPIGenerator {
 
 export async function serveSwaggerUI(
   fastify: FastifyInstance,
-  config: OpenAPIGeneratorConfig
+  config: OpenAPIGeneratorConfig,
 ): Promise<void> {
   const generator = new OpenAPIGenerator(config);
 
   // Lazy-load routes after all are registered
-  fastify.addHook('onReady', async () => {
+  fastify.addHook("onReady", async () => {
     const spec = generator.generateSpec(fastify);
 
     // Serve OpenAPI spec JSON
-    fastify.get('/api/docs/spec', async (request, reply) => {
+    fastify.get("/api/docs/spec", async (request, reply) => {
       return spec;
     });
 
     // Serve Swagger UI HTML
-    fastify.get('/api/docs', async (request, reply) => {
-      const html = generator.generateSwaggerUI('/api/docs/spec');
-      reply.type('text/html').send(html);
+    fastify.get("/api/docs", async (request, reply) => {
+      const html = generator.generateSwaggerUI("/api/docs/spec");
+      reply.type("text/html").send(html);
     });
 
     // Serve ReDoc (alternative documentation UI)
-    fastify.get('/api/docs/redoc', async (request, reply) => {
+    fastify.get("/api/docs/redoc", async (_request, reply) => {
       const html = `<!DOCTYPE html>
 <html>
   <head>
@@ -528,7 +530,7 @@ export async function serveSwaggerUI(
     <script src="https://cdn.jsdelivr.net/npm/redoc@latest/bundles/redoc.standalone.js"> </script>
   </body>
 </html>`;
-      reply.type('text/html').send(html);
+      reply.type("text/html").send(html);
     });
   });
 }
@@ -537,17 +539,17 @@ export async function serveSwaggerUI(
  * Utility function to create a config with defaults
  */
 export function createOpenAPIConfig(
-  overrides?: Partial<OpenAPIGeneratorConfig>
+  overrides?: Partial<OpenAPIGeneratorConfig>,
 ): OpenAPIGeneratorConfig {
   return {
-    title: 'Witylogix Platform API',
-    version: '4.0.0',
-    description: 'Last-mile delivery logistics SaaS platform',
-    baseUrl: process.env.API_URL || 'http://localhost:3000',
+    title: "Witylogix Platform API",
+    version: "4.0.0",
+    description: "Last-mile delivery logistics SaaS platform",
+    baseUrl: process.env.API_URL || "http://localhost:3000",
     contact: {
-      name: 'Witylogix Support',
-      email: 'support@witylogix.com',
-      url: 'https://witylogix.com',
+      name: "Witylogix Support",
+      email: "support@witylogix.com",
+      url: "https://witylogix.com",
     },
     ...overrides,
   };
@@ -559,14 +561,14 @@ export function createOpenAPIConfig(
 export async function exportOpenAPISpec(
   fastify: FastifyInstance,
   config: OpenAPIGeneratorConfig,
-  filePath: string
+  filePath: string,
 ): Promise<void> {
   const generator = new OpenAPIGenerator(config);
   const spec = generator.generateSpec(fastify);
   const json = generator.toJSON(spec);
 
-  const fs = await import('fs').then(m => m.promises);
-  await fs.writeFile(filePath, json, 'utf-8');
+  const fs = await import("fs").then((m) => m.promises);
+  await fs.writeFile(filePath, json, "utf-8");
 }
 
 /**
@@ -576,19 +578,19 @@ export function validateOpenAPISpec(doc: OpenAPIDocument): string[] {
   const errors: string[] = [];
 
   if (!doc.openapi) {
-    errors.push('Missing openapi version');
+    errors.push("Missing openapi version");
   }
 
   if (!doc.info || !doc.info.title || !doc.info.version) {
-    errors.push('Missing required info (title, version)');
+    errors.push("Missing required info (title, version)");
   }
 
   if (!doc.paths || Object.keys(doc.paths).length === 0) {
-    errors.push('No paths defined in specification');
+    errors.push("No paths defined in specification");
   }
 
   for (const [path, methods] of Object.entries(doc.paths)) {
-    if (!path.startsWith('/')) {
+    if (!path.startsWith("/")) {
       errors.push(`Path must start with /: ${path}`);
     }
 

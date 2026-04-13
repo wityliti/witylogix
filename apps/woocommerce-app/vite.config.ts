@@ -68,7 +68,7 @@ export default defineConfig({
     },
   },
   ssr: {
-    external: ["@witylogix/db", "@witylogix/core", "@prisma/client"],
+    external: ["@witylogix/db", "@witylogix/core", "@prisma/client", "set-cookie-parser"],
     optimizeDeps: {
       exclude: ["@prisma/client", "@witylogix/db", "@witylogix/core"],
     },

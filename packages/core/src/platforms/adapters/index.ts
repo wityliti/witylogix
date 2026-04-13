@@ -5,8 +5,14 @@
  * Each adapter implements PlatformAdapter interface for consistent order/product/customer mapping.
  */
 
+import { WooCommerceAdapter } from "./woocommerce.js";
+import { ShopifyAdapter } from "./shopify.js";
+import { MagentoAdapter } from "./magento.js";
+import { CustomAdapter } from "./custom.js";
+
+export { WooCommerceAdapter, ShopifyAdapter, MagentoAdapter, CustomAdapter };
+
 export {
-  WooCommerceAdapter,
   type WooCommerceOrder,
   type WooCommerceAddress,
   type WooCommerceLineItem,
@@ -17,10 +23,9 @@ export {
   type CreateProductInput,
   type CreateCustomerInput,
   type WooCommerceCredentials,
-} from './woocommerce.js';
+} from "./woocommerce.js";
 
 export {
-  ShopifyAdapter,
   type ShopifyOrder,
   type ShopifyAddress,
   type ShopifyCustomer,
@@ -29,44 +34,43 @@ export {
   type ShopifyVariant,
   type ShopifyImage,
   type ShopifyCredentials,
-} from './shopify.js';
+} from "./shopify.js";
 
 export {
-  MagentoAdapter,
   type MagentoOrder,
   type MagentoAddress,
   type MagentoProduct,
   type MagentoCustomer,
   type MagentoOrderItem,
   type MagentoPayment,
-  type CreateOrderInput as MagentoCreateOrderInput,
-  type CreateProductInput as MagentoCreateProductInput,
-  type CreateCustomerInput as MagentoCreateCustomerInput,
   type MagentoCredentials,
-} from './magento.js';
+} from "./magento.js";
 
 export {
-  CustomAdapter,
   type CustomFieldMapping,
   type CustomAuthConfig,
   type CustomWebhookConfig,
   type CustomCredentials,
   DEFAULT_FIELD_MAPPING,
-} from './custom.js';
+} from "./custom.js";
 
 /**
  * Union type of all platform adapters
  */
-export type PlatformAdapter = typeof WooCommerceAdapter | typeof ShopifyAdapter | typeof MagentoAdapter | typeof CustomAdapter;
+export type PlatformAdapter =
+  | typeof WooCommerceAdapter
+  | typeof ShopifyAdapter
+  | typeof MagentoAdapter
+  | typeof CustomAdapter;
 
 /**
  * Platform source enum for normalizing across adapters
  */
 export enum PlatformSource {
-  SHOPIFY = 'SHOPIFY',
-  WOOCOMMERCE = 'WOOCOMMERCE',
-  MAGENTO = 'MAGENTO',
-  CUSTOM = 'CUSTOM',
+  SHOPIFY = "SHOPIFY",
+  WOOCOMMERCE = "WOOCOMMERCE",
+  MAGENTO = "MAGENTO",
+  CUSTOM = "CUSTOM",
 }
 
 /**
@@ -79,7 +83,7 @@ export enum PlatformSource {
  */
 export function getAdapter(
   source: PlatformSource | string,
-  apiVersion?: string
+  apiVersion?: string,
 ): WooCommerceAdapter | ShopifyAdapter | MagentoAdapter | CustomAdapter {
   switch (source.toUpperCase()) {
     case PlatformSource.SHOPIFY:
