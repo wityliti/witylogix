@@ -205,6 +205,7 @@ export default function InvoiceDetailPage() {
   const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
@@ -294,24 +295,50 @@ export default function InvoiceDetailPage() {
     }
   }, [invoiceId, invoice.number, isSending, addToast]);
 
-  const handleMarkPaid = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "paid",
-      paidDate: new Date(),
-      payments: [
-        ...prev.payments,
-        {
-          id: `pay-${Date.now()}`,
-          date: new Date(),
-          amount: prev.total,
-          method: "bank_transfer",
-          reference: "MAN-" + Date.now(),
-        },
-      ],
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleMarkPaid = useCallback(async () => {
+    if (isMarkingPaid) return;
+    setIsMarkingPaid(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/mark-paid`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "paid",
+        paidDate: new Date(),
+        payments: [
+          ...prev.payments,
+          {
+            id: `pay-${Date.now()}`,
+            date: new Date(),
+            amount: prev.total,
+            method: "bank_transfer",
+            reference: "MAN-" + Date.now(),
+          },
+        ],
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "paid" as const,
+            timestamp: new Date(),
+            description: "Invoice marked as paid",
+          },
+        ],
+      }));
+      addToast({
+        type: 'success',
+        title: 'Invoice marked as paid',
+        message: 'The invoice status has been updated to Paid.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to mark as paid',
+        message: err instanceof Error ? err.message : 'Could not update invoice status. Please try again.',
+      });
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [invoiceId, isMarkingPaid, addToast]);
 
   const handleVoidInvoice = useCallback(() => {
     setInvoice((prev) => ({
@@ -411,9 +438,10 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleMarkPaid}
+                disabled={isMarkingPaid}
               >
                 <CheckCircle className="w-4 h-4" />
-                Mark Paid
+                {isMarkingPaid ? 'Marking Paid...' : 'Mark Paid'}
               </Button>
             </>
           )}
@@ -432,9 +460,10 @@ export default function InvoiceDetailPage() {
                 variant="secondary"
                 size="lg"
                 onClick={handleMarkPaid}
+                disabled={isMarkingPaid}
               >
                 <CheckCircle className="w-4 h-4" />
-                Mark Paid
+                {isMarkingPaid ? 'Marking Paid...' : 'Mark Paid'}
               </Button>
             </>
           )}
