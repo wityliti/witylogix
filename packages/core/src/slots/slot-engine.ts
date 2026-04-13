@@ -3,7 +3,7 @@
  * Handles getAvailableSlots, checkCapacity, reserveSlot, releaseSlot, getSlotsByDateRange
  */
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 import type {
   Slot,
   SlotAvailability,

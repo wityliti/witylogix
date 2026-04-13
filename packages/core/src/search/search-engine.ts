@@ -13,7 +13,7 @@
  * Setup: CREATE EXTENSION IF NOT EXISTS pg_trgm;
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@witylogix/db";
 import { TenantContext } from "../tenant/types";
 
 // ─── TYPES ──────────────────────────────────────────────────────────

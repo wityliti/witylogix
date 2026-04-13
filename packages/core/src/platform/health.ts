@@ -10,7 +10,7 @@
  * - Configurable health thresholds
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@witylogix/db';
 import type { Redis } from 'ioredis';
 
 // ─── Types ──────────────────────────────────────────────────────

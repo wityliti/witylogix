@@ -14,7 +14,7 @@
 import { z } from "zod";
 import { TenantContext } from "../tenant/types";
 import { SearchEngine, SearchableEntity, SearchResult } from "./search-engine";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@witylogix/db";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────────
 

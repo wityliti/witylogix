@@ -9,7 +9,7 @@
  * - Generate compliance reports
  */
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 
 // ─── SLA Data Types ────────────────────────────────────────
 
