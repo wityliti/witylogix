@@ -62,6 +62,7 @@ export default defineConfig({
       external: (id: string) =>
         id === "@witylogix/db" ||
         id === "@witylogix/core" ||
+        id === "set-cookie-parser" ||
         id.includes("/packages/db/") ||
         id.includes("/packages/core/"),
     },
