@@ -106,6 +106,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/ioredis": "^5.0.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.4.0",
     "typescript": "^5.7.0",
     "vitest": "^1.0.0"
   }

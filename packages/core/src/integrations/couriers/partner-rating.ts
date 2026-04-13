@@ -17,7 +17,7 @@
  */
 
 import { prisma } from "@witylogix/db";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────
 

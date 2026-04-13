@@ -20,7 +20,10 @@ import {
   PlatformType,
   SyncDirection,
 } from "../../../packages/core/src/sync/sync-types.js";
-import type { PlatformOrder, SyncConfig } from "../../../packages/core/src/sync/sync-types.js";
+import type {
+  PlatformOrder,
+  SyncConfig,
+} from "../../../packages/core/src/sync/sync-types.js";
 
 describe("ConflictResolver", () => {
   let resolver: ConflictResolver;
@@ -43,10 +46,13 @@ describe("ConflictResolver", () => {
       "processing",
       internalTime.toISOString(),
       externalTime.toISOString(),
-      ConflictStrategy.LAST_WRITE_WINS
+      ConflictStrategy.LAST_WRITE_WINS,
     );
 
-    const resolution = resolver.resolve(conflict, ConflictStrategy.LAST_WRITE_WINS);
+    const resolution = resolver.resolve(
+      conflict,
+      ConflictStrategy.LAST_WRITE_WINS,
+    );
     expect(resolution).toBe("EXTERNAL");
   });
 
@@ -61,10 +67,13 @@ describe("ConflictResolver", () => {
       "processing",
       new Date().toISOString(),
       new Date().toISOString(),
-      ConflictStrategy.EXTERNAL_WINS
+      ConflictStrategy.EXTERNAL_WINS,
     );
 
-    const resolution = resolver.resolve(conflict, ConflictStrategy.EXTERNAL_WINS);
+    const resolution = resolver.resolve(
+      conflict,
+      ConflictStrategy.EXTERNAL_WINS,
+    );
     expect(resolution).toBe("EXTERNAL");
   });
 
@@ -79,10 +88,13 @@ describe("ConflictResolver", () => {
       "processing",
       new Date().toISOString(),
       new Date().toISOString(),
-      ConflictStrategy.INTERNAL_WINS
+      ConflictStrategy.INTERNAL_WINS,
     );
 
-    const resolution = resolver.resolve(conflict, ConflictStrategy.INTERNAL_WINS);
+    const resolution = resolver.resolve(
+      conflict,
+      ConflictStrategy.INTERNAL_WINS,
+    );
     expect(resolution).toBe("INTERNAL");
   });
 
@@ -93,18 +105,18 @@ describe("ConflictResolver", () => {
       "SHOPIFY",
       "tenant_1",
       "amount",
-       99.99,
-      100.00,
+      99.99,
+      100.0,
       new Date("2026-01-01T10:00:00Z").toISOString(),
       new Date("2026-01-01T11:00:00Z").toISOString(),
-      ConflictStrategy.MANUAL_REVIEW
+      ConflictStrategy.MANUAL_REVIEW,
     );
 
     expect(conflict.orderId).toBe("order_123");
     expect(conflict.externalOrderId).toBe("ext_456");
     expect(conflict.conflictField).toBe("amount");
     expect(conflict.internalValue).toBe(99.99);
-    expect(conflict.externalValue).toBe(100.00);
+    expect(conflict.externalValue).toBe(100.0);
     expect(conflict.isResolved).toBe(false);
   });
 });
@@ -212,7 +224,11 @@ describe("RetryQueue", () => {
     let shouldMoveToDlq = false;
     for (let i = 0; i < 5; i++) {
       if (entries.length > 0) {
-        shouldMoveToDlq = queue.markRetried(entries[0].retryId, false, "Persistent error");
+        shouldMoveToDlq = queue.markRetried(
+          entries[0].retryId,
+          false,
+          "Persistent error",
+        );
       }
     }
 
@@ -458,7 +474,7 @@ describe("SyncOrchestrator", () => {
       "SHOPIFY",
       SyncDirection.INBOUND,
       orders,
-      mockConfig
+      mockConfig,
     );
 
     expect(result.success).toBeDefined();
@@ -473,7 +489,7 @@ describe("SyncOrchestrator", () => {
       "SHOPIFY",
       SyncDirection.INBOUND,
       orders,
-      mockConfig
+      mockConfig,
     );
 
     // Job should be completed and removed from active
@@ -483,14 +499,24 @@ describe("SyncOrchestrator", () => {
 
   it("should get metrics after sync", async () => {
     const orders: PlatformOrder[] = [];
-    await orchestrator.sync("tenant_1", "SHOPIFY", SyncDirection.INBOUND, orders, mockConfig);
+    await orchestrator.sync(
+      "tenant_1",
+      "SHOPIFY",
+      SyncDirection.INBOUND,
+      orders,
+      mockConfig,
+    );
 
     const metrics = orchestrator.getMetrics("SHOPIFY", "tenant_1");
     expect(metrics?.totalSyncs).toBeGreaterThanOrEqual(0);
   });
 
   it("should resolve conflicts", () => {
-    const resolution = orchestrator.resolveConflict("conflict_123", "INTERNAL", "user_1");
+    const resolution = orchestrator.resolveConflict(
+      "conflict_123",
+      "INTERNAL",
+      "user_1",
+    );
 
     expect(resolution.conflictId).toBe("conflict_123");
     expect(resolution.resolution).toBe("INTERNAL");

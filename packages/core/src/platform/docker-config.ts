@@ -11,7 +11,7 @@
 
 // ─── Types ──────────────────────────────────────────────────────
 
-export type EnvironmentType = 'development' | 'staging' | 'production';
+export type EnvironmentType = "development" | "staging" | "production";
 
 export interface DockerComposeService {
   image?: string;
@@ -49,190 +49,196 @@ export class DockerComposeGenerator {
    * Generate Docker Compose configuration for environment
    */
   public static generateDockerCompose(env: EnvironmentType): string {
-    const isDev = env === 'development';
-    const isProd = env === 'production';
+    const isDev = env === "development";
+    const isProd = env === "production";
 
     const config: DockerComposeConfig = {
-      version: '3.9',
+      version: "3.9",
       services: {
         // Reverse Proxy
         nginx: {
-          image: 'nginx:1.25-alpine',
-          ports: isProd ? ['80:80', '443:443'] : ['80:80'],
+          image: "nginx:1.25-alpine",
+          ports: isProd ? ["80:80", "443:443"] : ["80:80"],
           volumes: [
-            './nginx.conf:/etc/nginx/nginx.conf:ro',
-            ...(isProd ? ['./certs:/etc/nginx/certs:ro'] : []),
-            './logs/nginx:/var/log/nginx',
+            "./nginx.conf:/etc/nginx/nginx.conf:ro",
+            ...(isProd ? ["./certs:/etc/nginx/certs:ro"] : []),
+            "./logs/nginx:/var/log/nginx",
           ],
           depends_on: {
             api: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
-            ...(isProd ? {
-              dashboard: {
-                condition: 'service_healthy',
-              },
-            } : {}),
+            ...(isProd
+              ? {
+                  dashboard: {
+                    condition: "service_healthy",
+                  },
+                }
+              : {}),
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
 
         // API Server
         api: {
           build: {
-            context: '.',
-            dockerfile: 'Dockerfile',
+            context: ".",
+            dockerfile: "Dockerfile",
           },
-          ports: ['3000'],
+          ports: ["3000"],
           environment: {
             NODE_ENV: env,
-            LOG_LEVEL: isDev ? 'debug' : 'info',
-            DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}',
-            REDIS_URL: 'redis://redis:6379',
-            JWT_SECRET: '${JWT_SECRET}',
-            JWT_EXPIRES_IN: '24h',
-            ...( isProd ? {
-              API_URL: 'https://${API_DOMAIN}',
-            } : {
-              API_URL: 'http://localhost:3000',
-            }),
+            LOG_LEVEL: isDev ? "debug" : "info",
+            DATABASE_URL:
+              "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}",
+            REDIS_URL: "redis://redis:6379",
+            JWT_SECRET: "${JWT_SECRET}",
+            JWT_EXPIRES_IN: "24h",
+            ...(isProd
+              ? {
+                  API_URL: "https://${API_DOMAIN}",
+                }
+              : {
+                  API_URL: "http://localhost:3000",
+                }),
           },
           volumes: [
-            './logs/api:/app/logs',
-            ...(isDev ? ['./packages/core/src:/app/packages/core/src'] : []),
+            "./logs/api:/app/logs",
+            ...(isDev ? ["./packages/core/src:/app/packages/core/src"] : []),
           ],
           depends_on: {
             postgres: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
             redis: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
           },
           healthcheck: {
-            test: ['CMD', 'curl', '-f', 'http://localhost:3000/health'],
-            interval: '10s',
-            timeout: '5s',
+            test: ["CMD", "curl", "-f", "http://localhost:3000/health"],
+            interval: "10s",
+            timeout: "5s",
             retries: 3,
-            start_period: '30s',
+            start_period: "30s",
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
 
         // Dashboard
         dashboard: {
           build: {
-            context: './apps/dashboard',
-            dockerfile: 'Dockerfile',
+            context: "./apps/dashboard",
+            dockerfile: "Dockerfile",
           },
-          ports: ['3001'],
+          ports: ["3001"],
           environment: {
             NEXT_PUBLIC_API_URL: isProd
-              ? 'https://${API_DOMAIN}'
-              : 'http://localhost:3000',
+              ? "https://${API_DOMAIN}"
+              : "http://localhost:3000",
           },
           depends_on: {
             api: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
           },
           healthcheck: {
-            test: ['CMD', 'curl', '-f', 'http://localhost:3001/health'],
-            interval: '10s',
-            timeout: '5s',
+            test: ["CMD", "curl", "-f", "http://localhost:3001/health"],
+            interval: "10s",
+            timeout: "5s",
             retries: 3,
-            start_period: '30s',
+            start_period: "30s",
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
 
         // Background Worker
         worker: {
           build: {
-            context: '.',
-            dockerfile: 'Dockerfile',
+            context: ".",
+            dockerfile: "Dockerfile",
           },
-          command: 'node dist/apps/api/src/workers/queue-worker.js',
+          command: "node dist/apps/api/src/workers/queue-worker.js",
           environment: {
             NODE_ENV: env,
-            LOG_LEVEL: isDev ? 'debug' : 'info',
-            DATABASE_URL: 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}',
-            REDIS_URL: 'redis://redis:6379',
-            WORKER_CONCURRENCY: isDev ? '2' : '10',
+            LOG_LEVEL: isDev ? "debug" : "info",
+            DATABASE_URL:
+              "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}",
+            REDIS_URL: "redis://redis:6379",
+            WORKER_CONCURRENCY: isDev ? "2" : "10",
           },
-          volumes: [
-            './logs/worker:/app/logs',
-          ],
+          volumes: ["./logs/worker:/app/logs"],
           depends_on: {
             postgres: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
             redis: {
-              condition: 'service_healthy',
+              condition: "service_healthy",
             },
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
 
         // PostgreSQL Database
         postgres: {
-          image: 'postgres:16-alpine',
-          ports: isDev ? ['5432:5432'] : [],
+          image: "postgres:16-alpine",
+          ports: isDev ? ["5432:5432"] : [],
           environment: {
-            POSTGRES_USER: '${POSTGRES_USER}',
-            POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}',
-            POSTGRES_DB: '${POSTGRES_DB}',
-            POSTGRES_INITDB_ARGS: '-c max_connections=200',
+            POSTGRES_USER: "${POSTGRES_USER}",
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}",
+            POSTGRES_DB: "${POSTGRES_DB}",
+            POSTGRES_INITDB_ARGS: "-c max_connections=200",
           },
           volumes: [
-            'postgres_data:/var/lib/postgresql/data',
-            ...(isDev ? ['./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql'] : []),
+            "postgres_data:/var/lib/postgresql/data",
+            ...(isDev
+              ? [
+                  "./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql",
+                ]
+              : []),
           ],
           healthcheck: {
-            test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}'],
-            interval: '10s',
-            timeout: '5s',
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"],
+            interval: "10s",
+            timeout: "5s",
             retries: 5,
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
 
         // Redis Cache
         redis: {
-          image: 'redis:7-alpine',
-          ports: isDev ? ['6379:6379'] : [],
-          volumes: [
-            'redis_data:/data',
-          ],
-          command: 'redis-server --appendonly yes',
+          image: "redis:7-alpine",
+          ports: isDev ? ["6379:6379"] : [],
+          volumes: ["redis_data:/data"],
+          command: "redis-server --appendonly yes",
           healthcheck: {
-            test: ['CMD', 'redis-cli', 'ping'],
-            interval: '10s',
-            timeout: '5s',
+            test: ["CMD", "redis-cli", "ping"],
+            interval: "10s",
+            timeout: "5s",
             retries: 5,
           },
-          restart: isProd ? 'unless-stopped' : 'on-failure',
-          networks: ['witylogix'],
+          restart: isProd ? "unless-stopped" : "on-failure",
+          networks: ["witylogix"],
         },
       },
 
       volumes: {
         postgres_data: {
-          driver: 'local',
+          driver: "local",
         },
         redis_data: {
-          driver: 'local',
+          driver: "local",
         },
       },
 
       networks: {
         witylogix: {
-          driver: 'bridge',
+          driver: "bridge",
         },
       },
     };
@@ -244,21 +250,21 @@ export class DockerComposeGenerator {
    * Generate environment variables template
    */
   public static generateEnvTemplate(env: EnvironmentType): string {
-    const isDev = env === 'development';
+    const isDev = env === "development";
     const comments: Record<string, string> = {
-      NODE_ENV: 'Environment: development, staging, production',
-      LOG_LEVEL: 'Logging level: debug, info, warn, error',
-      DATABASE_URL: 'PostgreSQL connection string (required)',
-      POSTGRES_USER: 'PostgreSQL username (default: postgres)',
-      POSTGRES_PASSWORD: 'PostgreSQL password (MUST be secure in production)',
-      POSTGRES_DB: 'PostgreSQL database name (default: witylogix)',
-      REDIS_URL: 'Redis connection URL (required)',
-      JWT_SECRET: 'JWT signing secret (32+ characters, must be secure)',
-      JWT_EXPIRES_IN: 'JWT expiration time (default: 24h)',
-      API_DOMAIN: 'API domain for production (e.g., api.witylogix.com)',
-      API_URL: 'Public API URL for CORS and redirects',
-      CORS_ORIGIN: 'Comma-separated CORS origins',
-      WORKER_CONCURRENCY: 'Number of parallel job workers (default: 10)',
+      NODE_ENV: "Environment: development, staging, production",
+      LOG_LEVEL: "Logging level: debug, info, warn, error",
+      DATABASE_URL: "PostgreSQL connection string (required)",
+      POSTGRES_USER: "PostgreSQL username (default: postgres)",
+      POSTGRES_PASSWORD: "PostgreSQL password (MUST be secure in production)",
+      POSTGRES_DB: "PostgreSQL database name (default: witylogix)",
+      REDIS_URL: "Redis connection URL (required)",
+      JWT_SECRET: "JWT signing secret (32+ characters, must be secure)",
+      JWT_EXPIRES_IN: "JWT expiration time (default: 24h)",
+      API_DOMAIN: "API domain for production (e.g., api.witylogix.com)",
+      API_URL: "Public API URL for CORS and redirects",
+      CORS_ORIGIN: "Comma-separated CORS origins",
+      WORKER_CONCURRENCY: "Number of parallel job workers (default: 10)",
     };
 
     const lines: string[] = [];
@@ -267,53 +273,61 @@ export class DockerComposeGenerator {
       lines.push(`# ${comment}`);
 
       switch (key) {
-        case 'NODE_ENV':
+        case "NODE_ENV":
           lines.push(`NODE_ENV=${env}`);
           break;
-        case 'LOG_LEVEL':
-          lines.push(`LOG_LEVEL=${isDev ? 'debug' : 'info'}`);
+        case "LOG_LEVEL":
+          lines.push(`LOG_LEVEL=${isDev ? "debug" : "info"}`);
           break;
-        case 'DATABASE_URL':
+        case "DATABASE_URL":
           lines.push(
-            `DATABASE_URL=postgresql://${isDev ? 'postgres:password' : '${POSTGRES_USER}:${POSTGRES_PASSWORD}'}@postgres:5432/${isDev ? 'witylogix' : '${POSTGRES_DB}'}`
+            `DATABASE_URL=postgresql://${isDev ? "postgres:password" : "${POSTGRES_USER}:${POSTGRES_PASSWORD}"}@postgres:5432/${isDev ? "witylogix" : "${POSTGRES_DB}"}`,
           );
           break;
-        case 'POSTGRES_USER':
-          lines.push(`POSTGRES_USER=${isDev ? 'postgres' : 'change_me'}`);
+        case "POSTGRES_USER":
+          lines.push(`POSTGRES_USER=${isDev ? "postgres" : "change_me"}`);
           break;
-        case 'POSTGRES_PASSWORD':
-          lines.push(`POSTGRES_PASSWORD=${isDev ? 'password' : 'change_me_secure_password_32_chars'}`);
+        case "POSTGRES_PASSWORD":
+          lines.push(
+            `POSTGRES_PASSWORD=${isDev ? "password" : "change_me_secure_password_32_chars"}`,
+          );
           break;
-        case 'POSTGRES_DB':
-          lines.push(`POSTGRES_DB=${isDev ? 'witylogix' : 'witylogix_prod'}`);
+        case "POSTGRES_DB":
+          lines.push(`POSTGRES_DB=${isDev ? "witylogix" : "witylogix_prod"}`);
           break;
-        case 'REDIS_URL':
+        case "REDIS_URL":
           lines.push(`REDIS_URL=redis://redis:6379`);
           break;
-        case 'JWT_SECRET':
-          lines.push(`JWT_SECRET=${isDev ? 'dev-secret-change-me' : 'generate-secure-random-32-character-secret'}`);
+        case "JWT_SECRET":
+          lines.push(
+            `JWT_SECRET=${isDev ? "dev-secret-change-me" : "generate-secure-random-32-character-secret"}`,
+          );
           break;
-        case 'JWT_EXPIRES_IN':
+        case "JWT_EXPIRES_IN":
           lines.push(`JWT_EXPIRES_IN=24h`);
           break;
-        case 'API_DOMAIN':
-          lines.push(`API_DOMAIN=${isDev ? 'localhost' : 'api.witylogix.com'}`);
+        case "API_DOMAIN":
+          lines.push(`API_DOMAIN=${isDev ? "localhost" : "api.witylogix.com"}`);
           break;
-        case 'API_URL':
-          lines.push(`API_URL=${isDev ? 'http://localhost:3000' : 'https://api.witylogix.com'}`);
+        case "API_URL":
+          lines.push(
+            `API_URL=${isDev ? "http://localhost:3000" : "https://api.witylogix.com"}`,
+          );
           break;
-        case 'CORS_ORIGIN':
-          lines.push(`CORS_ORIGIN=${isDev ? 'http://localhost:3001' : 'https://app.witylogix.com'}`);
+        case "CORS_ORIGIN":
+          lines.push(
+            `CORS_ORIGIN=${isDev ? "http://localhost:3001" : "https://app.witylogix.com"}`,
+          );
           break;
-        case 'WORKER_CONCURRENCY':
-          lines.push(`WORKER_CONCURRENCY=${isDev ? '2' : '10'}`);
+        case "WORKER_CONCURRENCY":
+          lines.push(`WORKER_CONCURRENCY=${isDev ? "2" : "10"}`);
           break;
       }
 
-      lines.push('');
+      lines.push("");
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -485,35 +499,37 @@ http {
    * Convert object to YAML format
    */
   private static formatYAML(obj: any, indent: number = 0): string {
-    const spaces = ' '.repeat(indent);
+    const spaces = " ".repeat(indent);
     const lines: string[] = [];
 
     if (Array.isArray(obj)) {
       for (const item of obj) {
-        if (typeof item === 'object' && item !== null) {
+        if (typeof item === "object" && item !== null) {
           lines.push(`${spaces}- ${this.formatYAML(item, indent + 2).trim()}`);
         } else {
           lines.push(`${spaces}- ${item}`);
         }
       }
-    } else if (typeof obj === 'object' && obj !== null) {
+    } else if (typeof obj === "object" && obj !== null) {
       for (const [key, value] of Object.entries(obj)) {
         if (Array.isArray(value)) {
           lines.push(`${spaces}${key}:`);
           for (const item of value) {
-            if (typeof item === 'object' && item !== null) {
-              lines.push(`${spaces}  - ${this.formatYAML(item, indent + 4).trim()}`);
+            if (typeof item === "object" && item !== null) {
+              lines.push(
+                `${spaces}  - ${this.formatYAML(item, indent + 4).trim()}`,
+              );
             } else {
               lines.push(`${spaces}  - ${item}`);
             }
           }
-        } else if (typeof value === 'object' && value !== null) {
+        } else if (typeof value === "object" && value !== null) {
           lines.push(`${spaces}${key}:`);
           lines.push(this.formatYAML(value, indent + 2));
-        } else if (typeof value === 'string' && value.includes('$')) {
+        } else if (typeof value === "string" && value.includes("$")) {
           // Don't quote environment variables
           lines.push(`${spaces}${key}: ${value}`);
-        } else if (typeof value === 'string') {
+        } else if (typeof value === "string") {
           lines.push(`${spaces}${key}: '${value}'`);
         } else {
           lines.push(`${spaces}${key}: ${value}`);
@@ -521,7 +537,7 @@ http {
       }
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -559,8 +575,8 @@ for ((i = 1; i <= MAX_RETRIES; i++)); do
   fi
 
   if [ $i -lt $MAX_RETRIES ]; then
-    echo "✗ Health check failed, retrying in ${RETRY_DELAY}s..."
-    sleep $RETRY_DELAY
+    echo "✗ Health check failed, retrying in \${RETRY_DELAY}s..."
+    sleep \$RETRY_DELAY
   fi
 done
 

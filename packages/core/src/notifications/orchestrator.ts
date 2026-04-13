@@ -44,7 +44,7 @@ export interface NotificationTemplate {
   subject?: string;
   body: string;
   textBody?: string;
-  active: boolean;
+  isActive: boolean;
 }
 
 /**
@@ -149,13 +149,7 @@ export class NotificationOrchestrator {
       );
 
       // Step 5: Log delivery attempt
-      await this.logDelivery(
-        shopId,
-        channel,
-        templateId,
-        to,
-        result,
-      );
+      await this.logDelivery(shopId, channel, templateId, to, result);
 
       return result;
     } catch (error) {
@@ -238,7 +232,7 @@ export class NotificationOrchestrator {
         where: {
           id: templateId,
           channel,
-          active: true,
+          isActive: true,
         },
       });
 
@@ -296,7 +290,9 @@ export class NotificationOrchestrator {
         return {
           ...result,
           providerResponse: {
-            ...(typeof result.providerResponse === 'object' ? result.providerResponse : {}),
+            ...(typeof result.providerResponse === "object"
+              ? result.providerResponse
+              : {}),
             providerName: providerName,
           },
         };
@@ -404,21 +400,26 @@ export class NotificationOrchestrator {
 
       // Extract provider name from result metadata
       let providerName = "";
-      if (result.providerResponse && typeof result.providerResponse === "object") {
-        const providerResponse = result.providerResponse as Record<string, unknown>;
+      if (
+        result.providerResponse &&
+        typeof result.providerResponse === "object"
+      ) {
+        const providerResponse = result.providerResponse as Record<
+          string,
+          unknown
+        >;
         providerName = (providerResponse.providerName as string) || "";
       }
 
       await prisma.notificationLog.create({
         data: {
           shopId,
-          templateId,
+          eventType: templateId,
           channel,
           recipient,
-          providerName,
-          messageId: result.messageId,
+          providerMsgId: result.messageId,
           status: result.success ? "SENT" : "FAILED",
-          error: result.error,
+          errorMessage: result.error,
           sentAt: result.success ? new Date() : undefined,
           createdAt: new Date(),
         },
@@ -444,7 +445,10 @@ export class NotificationOrchestrator {
     let rendered = template;
 
     for (const [key, value] of Object.entries(variables)) {
-      const placeholder = new RegExp(`{{\\s*${this.escapeRegex(key)}\\s*}}`, "g");
+      const placeholder = new RegExp(
+        `{{\\s*${this.escapeRegex(key)}\\s*}}`,
+        "g",
+      );
       const stringValue = this.valueToString(value);
       rendered = rendered.replace(placeholder, stringValue);
     }
@@ -512,10 +516,7 @@ export class NotificationOrchestrator {
    *   attempt 1: 200 + 0-10 = 200-210ms
    *   attempt 2: 400 + 0-10 = 400-410ms
    */
-  private calculateBackoff(
-    attempt: number,
-    opts: RetryOptions,
-  ): number {
+  private calculateBackoff(attempt: number, opts: RetryOptions): number {
     const exponential = opts.baseBackoffMs * Math.pow(2, attempt);
     const jitter = Math.random() * opts.jitterFraction * opts.baseBackoffMs;
     return Math.floor(exponential + jitter);
@@ -579,9 +580,7 @@ export class NotificationOrchestrator {
    * Get health status across all channels for a tenant.
    * Useful for ops dashboards.
    */
-  async getAllChannelHealth(
-    shopId: string,
-  ): Promise<
+  async getAllChannelHealth(shopId: string): Promise<
     Record<
       string,
       Record<
@@ -642,7 +641,9 @@ export function getNotificationOrchestrator(): NotificationOrchestrator {
  * Set custom retry options for orchestrator.
  * Used for testing or tuning behavior.
  */
-export function setOrchestratorRetryOptions(options: Partial<RetryOptions>): void {
+export function setOrchestratorRetryOptions(
+  options: Partial<RetryOptions>,
+): void {
   const orchestrator = getNotificationOrchestrator();
   if (orchestrator) {
     // Access private field via type assertion (for testing only)
