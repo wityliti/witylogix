@@ -9,8 +9,12 @@ application_url = "https://store.witylogix.com"
 embedded = true
 
 # ─── Access Scopes ─────────────────────────────────────────
+# Minimal scope set — Built for Shopify certification (WIT-303)
+# Removed: write_products (app only reads products via webhooks, never writes back)
+# Removed: read_shipping, write_shipping (carrier service registration uses our own DB, no Shopify shipping API calls)
+# Removed: read_inventory, write_inventory (inventory UI uses mock data; no Shopify inventory API calls in core app flow)
 [access_scopes]
-scopes = "read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers"
+scopes = "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_locations,read_customers"
 
 # ─── OAuth ─────────────────────────────────────────────────
 [auth]
