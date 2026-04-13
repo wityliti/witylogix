@@ -2,15 +2,17 @@
  * Dispatch API Routes
  *
  * Endpoints:
- *   GET    /orders    - List unassigned orders for dispatch queue
- *   GET    /drivers   - List available drivers for dispatch
- *   POST   /assign    - Assign an order to a driver
+ *   GET    /orders                   - List unassigned orders for dispatch queue
+ *   GET    /drivers                  - List available drivers for dispatch
+ *   GET    /ai-suggest/:orderId      - AI driver suggestion for an order
+ *   POST   /assign                   - Assign an order to a driver
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { SmartDriverAssignment } from '@witylogix/core/ai/smart-driver-assignment';
 
 const assignSchema = z.object({
   orderId: z.string().uuid(),
@@ -197,6 +199,103 @@ async function dispatchRoutes(fastify: FastifyInstance): Promise<void> {
     return {
       data: { unassigned, inTransit, completedToday, avgDeliveryTime, onTimePercent },
     };
+  });
+
+  // ── AI DRIVER SUGGESTION ─────────────────────────────────
+
+  fastify.get('/ai-suggest/:orderId', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { orderId } = request.params as { orderId: string };
+
+    const order = await request.tenantDb.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        deliveryLocation: true,
+        totalWeight: true,
+        itemCount: true,
+        status: true,
+      },
+    });
+
+    if (!order) {
+      return reply.status(404).send({ success: false, error: { code: 'NOT_FOUND', message: 'Order not found' } });
+    }
+
+    const drivers = await request.tenantDb.driver.findMany({
+      where: { isActive: true, status: { in: ['AVAILABLE', 'ON_ROUTE', 'ON_BREAK'] as const } },
+      select: {
+        id: true,
+        currentLocation: true,
+        maxCapacity: true,
+        maxWeight: true,
+        status: true,
+        _count: { select: { orders: { where: { status: { in: ['ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY'] } } } } },
+      },
+    });
+
+    if (drivers.length === 0) {
+      return reply.status(200).send({
+        data: { suggestedDriverId: null, confidence: 0, reasoning: 'No available drivers' },
+      });
+    }
+
+    const DEFAULT_LOCATION = { latitude: 0, longitude: 0 };
+    const orderDeliveryLoc = (order.deliveryLocation as { latitude?: number; longitude?: number } | null);
+    const deliveryCoord = orderDeliveryLoc?.latitude != null && orderDeliveryLoc?.longitude != null
+      ? { latitude: orderDeliveryLoc.latitude, longitude: orderDeliveryLoc.longitude }
+      : DEFAULT_LOCATION;
+
+    const engine = new SmartDriverAssignment();
+
+    engine.addDrivers(
+      drivers.map((d) => {
+        const loc = d.currentLocation as { latitude?: number; longitude?: number } | null;
+        const maxWeightNum = d.maxWeight ? Number(d.maxWeight) : 100;
+        const usedWeight = 0; // not tracked per-driver in DB; conservative default
+        return {
+          id: d.id,
+          currentLocation: loc?.latitude != null && loc?.longitude != null
+            ? { latitude: loc.latitude, longitude: loc.longitude }
+            : DEFAULT_LOCATION,
+          shiftStartTime: new Date(Date.now() - 4 * 3600000),
+          shiftEndTime: new Date(Date.now() + 4 * 3600000),
+          capacity: { weight: maxWeightNum, volume: d.maxCapacity },
+          usedCapacity: { weight: usedWeight, volume: d._count.orders },
+          completedDeliveries: d._count.orders,
+          maxDeliveriesPerShift: d.maxCapacity,
+          workingHoursRemaining: 240, // 4h default
+        };
+      })
+    );
+
+    engine.addOrders([{
+      id: order.id,
+      pickupLocation: DEFAULT_LOCATION,
+      deliveryLocation: deliveryCoord,
+      weight: order.totalWeight ? Number(order.totalWeight) : 0,
+      estimatedDuration: 30,
+    }]);
+
+    const result = engine.assignOrder({
+      id: order.id,
+      pickupLocation: DEFAULT_LOCATION,
+      deliveryLocation: deliveryCoord,
+      weight: order.totalWeight ? Number(order.totalWeight) : 0,
+      estimatedDuration: 30,
+    });
+
+    if (!result) {
+      return reply.status(200).send({
+        data: { suggestedDriverId: null, confidence: 0, reasoning: 'No available drivers' },
+      });
+    }
+
+    const confidence = Math.round(result.score) / 100;
+    const reasoning = `Driver assigned with ${result.score}% score. ETA pickup: ${result.estimatedPickupTime.toISOString()}, delivery: ${result.estimatedDeliveryTime.toISOString()}.`;
+
+    return reply.status(200).send({
+      data: { suggestedDriverId: result.driverId, confidence, reasoning },
+    });
   });
 
   // ── ASSIGN ORDER TO DRIVER ────────────────────────────────
