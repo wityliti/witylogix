@@ -22,7 +22,7 @@ interface Column {
   header: string;
 }
 
-interface DataTableToolbarProps {
+export interface DataTableToolbarProps {
   columns: Column[];
   visibleColumns: Set<string>;
   onVisibleColumnsChange?: (visible: Set<string>) => void;

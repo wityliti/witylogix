@@ -321,7 +321,7 @@ export class CapacityManager {
 
     // Find slots with highest utilization
     const slotUtilization = await Promise.all(
-      slots.map(async (slot) => {
+      slots.map(async (slot: any) => {
         const reservations = await (this.db as any).slotReservation.count({
           where: {
             slotId: slot.id,

@@ -83,7 +83,7 @@ export function DeliveryMap({
       bearing: 0,
     });
 
-    map.current.on("load", () => {
+    map.current?.on("load", () => {
       setMapLoaded(true);
 
       // Add sources
@@ -249,10 +249,10 @@ export function DeliveryMap({
       });
 
       // Click handlers
-      map.current?.on("click", "driver-markers", (e: MapMouseEvent) => {
+      map.current?.on("click", "driver-markers", (e: mapboxgl.MapMouseEvent) => {
         const feature = e.features?.[0];
         if (feature?.properties) {
-          const driverId = feature.properties.id;
+          const driverId = String(feature.properties.id);
           onDriverSelect(driverId);
 
           // Show popover
@@ -269,18 +269,18 @@ export function DeliveryMap({
         }
       });
 
-      map.current?.on("click", "delivery-pickups", (e: MapMouseEvent) => {
+      map.current?.on("click", "delivery-pickups", (e: mapboxgl.MapMouseEvent) => {
         const feature = e.features?.[0];
         if (feature?.properties) {
-          const deliveryId = feature.properties.id;
+          const deliveryId = String(feature.properties.id);
           onDeliverySelect(deliveryId);
         }
       });
 
-      map.current?.on("click", "delivery-dropoffs", (e: MapMouseEvent) => {
+      map.current?.on("click", "delivery-dropoffs", (e: mapboxgl.MapMouseEvent) => {
         const feature = e.features?.[0];
         if (feature?.properties) {
-          const deliveryId = feature.properties.id;
+          const deliveryId = String(feature.properties.id);
           onDeliverySelect(deliveryId);
         }
       });

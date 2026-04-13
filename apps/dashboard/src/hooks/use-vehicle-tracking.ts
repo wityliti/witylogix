@@ -358,7 +358,3 @@ export function useVehicleTracking(
   };
 }
 
-/**
- * Export named exports
- */
-export type { UseVehicleTrackingState, UseVehicleTrackingReturn };

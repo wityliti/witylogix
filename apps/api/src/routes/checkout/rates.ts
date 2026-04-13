@@ -11,7 +11,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { ZoneRateCalculator } from "@witylogix/core/slots";
-import { ValidationError } from "../lib/errors.js";
+import { ValidationError } from "../../lib/errors.js";
 
 // ─── SCHEMAS ────────────────────────────────────────────────────
 

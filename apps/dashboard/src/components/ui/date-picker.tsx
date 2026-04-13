@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 
 interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   value?: Date | null;
+  /** Alias for value (react-datepicker compatible) */
+  selected?: Date | null;
   onChange: (date: Date | null) => void;
   placeholder?: string;
   minDate?: Date;
@@ -25,6 +27,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
   (
     {
       value,
+      selected,
       onChange,
       placeholder = "Select date",
       minDate,
@@ -36,6 +39,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     },
     ref
   ) => {
+    const effectiveValue = selected ?? value;
     const [isOpen, setIsOpen] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date(2024, 0, 1)); // Start month for calendar
     const containerRef = useRef<HTMLDivElement>(null);
@@ -70,11 +74,11 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
 
     // Check if date matches selected
     const isSelected = (date: Date): boolean => {
-      if (!value) return false;
+      if (!effectiveValue) return false;
       return (
-        date.getDate() === value.getDate() &&
-        date.getMonth() === value.getMonth() &&
-        date.getFullYear() === value.getFullYear()
+        date.getDate() === effectiveValue.getDate() &&
+        date.getMonth() === effectiveValue.getMonth() &&
+        date.getFullYear() === effectiveValue.getFullYear()
       );
     };
 
@@ -180,7 +184,7 @@ const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
           <input
             ref={inputRef}
             type="text"
-            value={formatDate(value)}
+            value={formatDate(effectiveValue)}
             placeholder={placeholder}
             readOnly
             disabled={disabled}

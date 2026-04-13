@@ -5,7 +5,7 @@ import { supportedLocales, defaultLocale } from './config';
  * Localized navigation helpers for Next.js
  * Provides type-safe Link, redirect, usePathname, and useRouter
  */
-export const { Link, redirect, usePathname, useRouter, useTransitionRouter } =
+export const { Link, redirect, usePathname, useRouter } =
   createNavigation({
     locales: supportedLocales,
     defaultLocale,

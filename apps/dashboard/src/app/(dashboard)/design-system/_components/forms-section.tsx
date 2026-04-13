@@ -27,7 +27,7 @@ export function FormsSection() {
               <div className="flex items-center gap-3">
                 <Switch
                   checked={switchEnabled}
-                  onChange={(e) => setSwitchEnabled(e.target.checked)}
+                  onChange={(checked) => setSwitchEnabled(checked)}
                 />
                 <span className="text-sm text-gray-300">
                   {switchEnabled ? "Enabled" : "Disabled"}

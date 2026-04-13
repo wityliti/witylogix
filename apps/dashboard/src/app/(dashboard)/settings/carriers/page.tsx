@@ -120,7 +120,7 @@ export default function CarriersSettingsPage() {
                     {carrier.label}
                   </CardTitle>
                   <Badge
-                    variant="outline"
+                    variant="default"
                     className={
                       carrier.configured
                         ? "border-green-500/40 text-green-400 bg-green-500/10"
@@ -150,7 +150,7 @@ export default function CarriersSettingsPage() {
                         {carrier.meta.services.map((svc) => (
                           <Badge
                             key={svc}
-                            variant="outline"
+                            variant="default"
                             className="text-xs border-white/10 text-gray-400"
                           >
                             {svc}

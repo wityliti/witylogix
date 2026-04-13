@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button, Input, Badge, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui";
+import type { BadgeVariant } from "@/components/ui/badge";
 import type { LineItem, BillingRule } from "./types";
 
 interface InvoiceLineItemsProps {
@@ -14,7 +15,7 @@ interface InvoiceLineItemsProps {
   readOnly?: boolean;
 }
 
-const billingRuleColors: Record<BillingRule, string> = {
+const billingRuleColors: Record<BillingRule, BadgeVariant> = {
   flat: "primary",
   hourly: "info",
   tiered: "warning",
@@ -287,7 +288,7 @@ export function InvoiceLineItems({
 
       {/* Add button */}
       {!readOnly && (
-        <Button size="sm" variant="secondary" onClick={addItem}>
+        <Button size="sm" variant="ghost" onClick={addItem}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>

@@ -16,7 +16,6 @@ export {
   useLongPress,
   usePinchZoom,
   useTouchDetect,
-  type SwipeCallbacks,
 } from "./use-touch";
 
 // Form management hooks
@@ -39,8 +38,6 @@ export {
 // Real-time WebSocket hooks
 export {
   useRealtime,
-  type UseRealtimeConfig,
-  type UseRealtimeReturn,
 } from "./use-realtime";
 
 export {
@@ -81,11 +78,7 @@ export {
 // Financial data hooks
 export {
   useInvoices,
-  useReconciliation,
   useFinancialMetrics,
-  type InvoiceFilters,
-  type InvoiceSortOptions,
-  type InvoicesState,
   type ReconciliationMatch,
   type FinancialMetrics,
 } from "./use-financial-data";
@@ -95,15 +88,10 @@ export {
   useNotifications,
   useNotificationPreferences,
   useDeliveryLog,
-  useNotificationCount,
   type Notification,
   type NotificationPreference,
   type NotificationPreferences,
   type DeliveryLogEntry,
-  type UseNotificationsOptions,
-  type UseNotificationsState,
-  type UseDeliveryLogOptions,
-  type UseDeliveryLogState,
   type NotificationChannel,
   type NotificationCategory,
   type NotificationStatus,

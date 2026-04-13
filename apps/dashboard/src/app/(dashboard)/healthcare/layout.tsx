@@ -23,11 +23,7 @@ export default function HealthcareLayout({ children }: HealthcareLayoutProps) {
     <div className={cn("flex-1 flex flex-col min-h-screen")}>
       <PageHeader
         title="Healthcare"
-        description="Patient management and clinical records"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/\(dashboard\)" },
-          { label: "Healthcare" },
-        ]}
+        subtitle="Patient management and clinical records"
       />
 
       {/* Tab Navigation */}

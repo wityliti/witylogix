@@ -145,8 +145,8 @@ describe('Pagination Component', () => {
       render(
         <Pagination currentPage={1} totalPages={5} onPageChange={mockOnPageChange} />
       );
-      const ellipsis = screen.queryAllByText('...');
-      expect(ellipsis.length).toBe(0);
+      const ellipsis = screen.queryByText('...');
+      expect(ellipsis).toBeNull();
     });
 
     it('should show correct page ranges around current', () => {

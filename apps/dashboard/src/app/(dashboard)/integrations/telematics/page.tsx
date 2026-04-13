@@ -290,12 +290,11 @@ export default function TelematicsPage() {
         </div>
 
         {/* Connection Wizard Modal */}
-        {wizardStep !== "select" && (
-          <Card className={cn("border-blue-400")}>
-            <CardHeader>
-              <CardTitle>Connection Wizard</CardTitle>
-            </CardHeader>
-            <div className={cn("p-4 pt-0")}>
+        <Card className={cn("border-blue-400")}>
+          <CardHeader>
+            <CardTitle>Connection Wizard</CardTitle>
+          </CardHeader>
+          <div className={cn("p-4 pt-0")}>
               {wizardStep === "select" && (
                 <div className={cn("grid grid-cols-2 gap-3")}>
                   {TELEMATICS_PROVIDERS.map((provider) => (
@@ -402,7 +401,6 @@ export default function TelematicsPage() {
               )}
             </div>
           </Card>
-        )}
 
         <div className={cn("grid grid-cols-1 lg:grid-cols-3 gap-6")}>
           {/* Provider Grid */}

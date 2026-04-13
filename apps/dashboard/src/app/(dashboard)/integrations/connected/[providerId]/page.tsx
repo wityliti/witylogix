@@ -571,8 +571,8 @@ export default function IntegrationDetailPage() {
       {/* Disconnect Modal */}
       {showDisconnectModal && (
         <Modal
-          open={showDisconnectModal}
-          onOpenChange={setShowDisconnectModal}
+          isOpen={showDisconnectModal}
+          onClose={() => setShowDisconnectModal(false)}
         >
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-white">

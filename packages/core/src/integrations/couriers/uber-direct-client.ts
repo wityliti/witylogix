@@ -13,6 +13,7 @@
  */
 
 import { CourierAdapter, type WebhookInfo } from "./courier-adapter.js";
+import { WebhookEvent } from "./types.js";
 import type {
   CourierConfig,
   QuoteRequest,
@@ -23,7 +24,6 @@ import type {
   DeliveryStatus,
   DriverPosition,
   WebhookRegistration,
-  WebhookEvent,
 } from "./types.js";
 import { DeliveryStatus as DeliveryStatusEnum } from "./types.js";
 
@@ -110,7 +110,7 @@ export class UberDirectClient extends CourierAdapter {
       estimatedMinutes: Math.ceil((quote.estimated_duration_seconds || 0) / 60),
       distanceKm: (quote.estimated_distance_meters || 0) / 1000,
       provider: this.provider,
-      rawResponse: quote,
+      rawResponse: quote as unknown as Record<string, unknown>,
     };
   }
 
@@ -169,7 +169,7 @@ export class UberDirectClient extends CourierAdapter {
       driverName: delivery.courier?.name,
       driverPhone: delivery.courier?.phone,
       estimatedMinutes: Math.ceil((delivery.estimated_dropoff_time_seconds || 0) / 60),
-      rawResponse: delivery,
+      rawResponse: delivery as unknown as Record<string, unknown>,
     };
   }
 
@@ -204,7 +204,7 @@ export class UberDirectClient extends CourierAdapter {
         ? new Date(Date.now() + delivery.estimated_dropoff_time_seconds * 1000)
         : undefined,
       deliveredAt: delivery.dropoff_time ? new Date(delivery.dropoff_time) : undefined,
-      rawResponse: delivery,
+      rawResponse: delivery as unknown as Record<string, unknown>,
     };
   }
 

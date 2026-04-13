@@ -57,7 +57,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
   );
 }
 
-function ComplianceStatusCard({ compliance }: { compliance: Record<string, unknown> }) {
+function ComplianceStatusCard({ compliance }: { compliance: Compliance }) {
   return (
     <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardHeader>
@@ -103,7 +103,7 @@ function ComplianceStatusCard({ compliance }: { compliance: Record<string, unkno
   );
 }
 
-function RecentRecordsCard({ patients }: { patients: Record<string, unknown>[] }) {
+function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
   return (
     <Card className="bg-[#12121a] border-[#1e1e2e]">
       <CardHeader>
@@ -174,7 +174,7 @@ function ProviderSummaryCard() {
   );
 }
 
-interface Patient {
+interface LocalPatient {
   id: string;
   firstName: string;
   lastName: string;
@@ -194,7 +194,7 @@ interface Compliance {
 }
 
 export default function HealthcarePage() {
-  const { items: patients, loading, error, refetch } = useApiList<Patient>('/api/v4/customers?type=patient');
+  const { items: patients, loading, error, refetch } = useApiList<LocalPatient>('/api/v4/customers?type=patient');
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;

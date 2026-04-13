@@ -46,8 +46,10 @@ interface PendingInvitation {
 }
 
 export default function TeamPage() {
-  const { items: members, loading, error, refetch } = useApiList<TeamMember>('/api/v4/users');
-  const { items: invitations } = useApiList<PendingInvitation>('/api/v4/invitations');
+  const { items: apiMembers, loading, error, refetch } = useApiList<TeamMember>('/api/v4/users');
+  const { items: apiInvitations } = useApiList<PendingInvitation>('/api/v4/invitations');
+  const [members, setMembers] = useState<TeamMember[]>(apiMembers);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>(apiInvitations);
   const { execute: removeMember } = useApiMutation('DELETE', '/api/v4/users/:id');
   const { execute: inviteMember } = useApiMutation('POST', '/api/v4/invitations');
   const { execute: resendInvite } = useApiMutation('POST', '/api/v4/invitations/:id/resend');
@@ -254,7 +256,7 @@ export default function TeamPage() {
                               variant="secondary"
                               onClick={() => {
                                 setChangeRoleId(member.id);
-                                setNewRole(member.role);
+                                if (member.role !== 'owner') setNewRole(member.role);
                               }}
                             >
                               Change Role

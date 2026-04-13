@@ -50,9 +50,6 @@ export type {
   GeoJSONZoneCollection,
 } from './types';
 
-// Route visualization types
-export type { DeliveryStatus } from './delivery-status-pill';
-
 // Delivery tracking types
 export type {
   DriverStatus,

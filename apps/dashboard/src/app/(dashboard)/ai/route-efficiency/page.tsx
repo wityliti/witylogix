@@ -170,7 +170,7 @@ export default function RouteEfficiencyPage() {
   const [selectedRouteId, setSelectedRouteId] = useState<string>(DEMO_ROUTES[0].id);
   const [search, setSearch] = useState('');
 
-  const { data: routesData, loading: routesLoading } = useApiList<RouteListItem>(
+  const { items: routesData, loading: routesLoading } = useApiList<RouteListItem>(
     '/api/v4/routes?status=COMPLETED&limit=20',
   );
 

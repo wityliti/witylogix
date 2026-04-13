@@ -36,10 +36,7 @@ export type {
 } from "./types";
 
 export type { VehicleStatusCardProps } from "./vehicle-status-card";
-export type { FuelConsumptionChartProps } from "./fuel-consumption-chart";
 export type { MaintenanceScheduleProps, MaintenanceItem, MaintenanceStatus } from "./maintenance-schedule";
-export type { SpeedHistoryChartProps } from "./speed-history-chart";
-export type { FleetHealthGaugeProps } from "./fleet-health-gauge";
 export type { VehicleHealthCardProps, MaintenanceHistoryEvent } from "./vehicle-health-card";
 export type { MaintenanceTimelineProps, MaintenanceEvent } from "./maintenance-timeline";
 export type { FuelGaugeChartProps, FuelGaugeDataPoint } from "./fuel-gauge-chart";

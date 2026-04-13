@@ -158,9 +158,9 @@ const MaintenanceSchedule = forwardRef<
               const StatusIcon = statusInfo.icon;
               const daysUntil = getDaysUntil(item.dueDate);
               const isMileageBased =
-                item.mileageThreshold && item.currentMileage;
+                item.mileageThreshold != null && item.currentMileage != null;
               const mileageRemaining = isMileageBased
-                ? item.mileageThreshold - item.currentMileage
+                ? (item.mileageThreshold as number) - (item.currentMileage as number)
                 : null;
               const mileageOverdue =
                 mileageRemaining !== null && mileageRemaining < 0;

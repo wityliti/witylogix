@@ -221,7 +221,7 @@ export function useIntegrationHealth(
   const [error, setError] = useState<string | undefined>();
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-  const pollTimeoutRef = useRef<NodeJS.Timer | null>(null);
+  const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cacheTimeRef = useRef<number>(0);
 
   const fetchHealth = useCallback(async (skipCache = false) => {

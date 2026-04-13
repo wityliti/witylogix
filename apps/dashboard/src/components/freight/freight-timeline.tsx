@@ -12,7 +12,7 @@ interface Milestone {
   isDelayed?: boolean;
 }
 
-interface FreightTimelineProps {
+export interface FreightTimelineProps {
   shipmentId: string;
   currentStatus: Milestone["status"];
   milestones: Milestone[];

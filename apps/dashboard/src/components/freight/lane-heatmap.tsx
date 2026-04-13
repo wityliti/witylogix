@@ -12,7 +12,7 @@ interface LaneData {
   avgRate: number;
 }
 
-interface LaneHeatmapProps {
+export interface LaneHeatmapProps {
   lanes: LaneData[];
   regions: string[];
   className?: string;

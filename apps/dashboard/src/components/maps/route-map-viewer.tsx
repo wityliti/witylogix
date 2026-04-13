@@ -116,19 +116,20 @@ export function RouteMapViewer({
 
     let coordinates: Array<{ lat: number; lng: number }>;
 
-    if (displayActualRoute && 'timestamp' in pathToUse[0]) {
-      // Actual path (with timestamps)
-      coordinates = (
-        pathToUse as Array<{ lat: number; lng: number; timestamp: string }>
-      ).map((point) => ({
+    if (displayActualRoute) {
+      // Actual path (with timestamps) - actualPath is Array<{lat, lng, timestamp}>
+      const actualPath = route.actualPath;
+      if (!actualPath) return;
+      coordinates = actualPath.map((point) => ({
         lat: point.lat,
         lng: point.lng,
       }));
     } else {
       // Planned path (GeoJSON-style)
-      const coords = pathToUse.coordinates;
-      if (pathToUse.type === 'LineString') {
-        coordinates = (coords as Array<[number, number]>).map(([lng, lat]) => ({
+      const plannedPath = pathToUse as typeof route.plannedPath;
+      if (!plannedPath || !('coordinates' in plannedPath)) return;
+      if (plannedPath.type === 'LineString') {
+        coordinates = (plannedPath.coordinates as Array<[number, number]>).map(([lng, lat]) => ({
           lat,
           lng,
         }));
@@ -200,18 +201,7 @@ export function RouteMapViewer({
   };
 
   // Create custom marker icon
-  const createStopIcon = (number: number, status: string): google.maps.Icon => {
-    if (!google?.maps) {
-      return {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: STATUS_COLORS[status],
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeWeight: 2,
-      };
-    }
-
+  const createStopIcon = (_number: number, status: string): google.maps.Icon => {
     const color = STATUS_COLORS[status] || '#3b82f6';
 
     return {

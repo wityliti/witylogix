@@ -389,7 +389,7 @@ function TeamCollaborationPage() {
 interface RightSidebarProps {
   channel: Channel;
   pinnedMessages: Message[];
-  sharedFiles: Record<string, unknown>[];
+  sharedFiles: Array<{ name: string; url: string; [key: string]: unknown }>;
   memberCount: number;
 }
 

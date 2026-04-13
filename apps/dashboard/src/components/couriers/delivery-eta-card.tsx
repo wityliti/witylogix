@@ -271,5 +271,3 @@ export const DeliveryETACard = forwardRef<HTMLDivElement, DeliveryETACardProps>(
 );
 
 DeliveryETACard.displayName = "DeliveryETACard";
-
-export { DeliveryETACard };

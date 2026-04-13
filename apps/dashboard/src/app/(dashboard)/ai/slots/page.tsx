@@ -116,6 +116,7 @@ export default function SlotAIPage() {
   const [hasSearched, setHasSearched] = useState(false);
 
   const { data, loading, execute } = useApiMutation<RecommendResponse>(
+    'POST',
     '/api/v4/ai/slots/recommend',
   );
 

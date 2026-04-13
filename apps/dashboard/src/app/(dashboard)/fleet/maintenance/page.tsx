@@ -47,6 +47,7 @@ interface MaintenanceRecord {
 }
 
 export default function MaintenancePage() {
+  const pageSize = 10;
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [currentPage, setCurrentPage] = useState(1);
   const { items: allMaintenance, loading, error, refetch } = useApiList<MaintenanceRecord>('/api/v4/fleet/maintenance');

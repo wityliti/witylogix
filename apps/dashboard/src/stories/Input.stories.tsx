@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, Search } from "lucide-react";
+import { Mail, Lock, Search as SearchIcon } from "lucide-react";
 
 const meta = {
   title: "UI/Input",
@@ -54,11 +54,11 @@ export const Password: Story = {
   },
 };
 
-export const Search: Story = {
+export const SearchInput: Story = {
   args: {
     type: "search",
     placeholder: "Search...",
-    icon: <Search size={16} />,
+    icon: <SearchIcon size={16} />,
   },
 };
 

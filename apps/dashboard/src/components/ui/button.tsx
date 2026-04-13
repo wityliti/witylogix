@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   asChild?: boolean;
+  href?: string;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -58,24 +60,35 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       size = "md",
       className,
       disabled,
+      href,
       ...props
     },
     ref
   ) => {
+    const baseClassName = cn(
+      "inline-flex items-center justify-center gap-2",
+      "cursor-pointer font-family-sans",
+      "transition-all duration-fast ease-default",
+      "tracking-wider leading-snug whitespace-nowrap",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
+      "disabled:opacity-50 disabled:cursor-not-allowed",
+      variantClasses[variant],
+      sizeClasses[size],
+      className
+    );
+
+    if (href) {
+      return (
+        <Link href={href} className={baseClassName}>
+          {props.children}
+        </Link>
+      );
+    }
+
     return (
       <button
         ref={ref}
-        className={cn(
-          "inline-flex items-center justify-center gap-2",
-          "cursor-pointer font-family-sans",
-          "transition-all duration-fast ease-default",
-          "tracking-wider leading-snug whitespace-nowrap",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          variantClasses[variant],
-          sizeClasses[size],
-          className
-        )}
+        className={baseClassName}
         disabled={disabled}
         {...props}
       />

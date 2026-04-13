@@ -455,7 +455,7 @@ export default function AccountingSettingsPage() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <Table>
+                  <table>
                     <TableHeader>
                       <TableRow className="border-b border-[#1e1e2e]">
                         <TableHead className="text-white">Invoice</TableHead>
@@ -494,7 +494,7 @@ export default function AccountingSettingsPage() {
                         </TableRow>
                       )}
                     </TableBody>
-                  </Table>
+                  </table>
                 </div>
               </CardContent>
             </Card>

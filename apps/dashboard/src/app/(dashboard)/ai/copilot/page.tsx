@@ -263,7 +263,7 @@ export default function AICopilotPage() {
                         const val = row[col];
                         const displayVal =
                           val instanceof Date
-                            ? new Date(val as string).toLocaleDateString()
+                            ? (val instanceof Date ? val : new Date(val as string)).toLocaleDateString()
                             : val !== null && val !== undefined
                             ? String(val)
                             : "—";

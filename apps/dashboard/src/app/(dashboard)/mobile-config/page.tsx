@@ -320,7 +320,7 @@ export default function MobileConfigPage() {
                 </label>
                 <Select
                   value={navigationMap}
-                  onChange={setNavigationMap}
+                  onValueChange={setNavigationMap}
                   options={[
                     { value: "google-maps", label: "Google Maps" },
                     { value: "waze", label: "Waze" },
@@ -387,7 +387,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Tracking Interval"
                 value={trackingInterval}
-                onChange={setTrackingInterval}
+                onValueChange={setTrackingInterval}
                 options={[
                   { value: "15s", label: "15 seconds" },
                   { value: "30s", label: "30 seconds" },
@@ -399,7 +399,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Battery Optimization"
                 value={batteryMode}
-                onChange={setBatteryMode}
+                onValueChange={setBatteryMode}
                 options={[
                   { value: "aggressive", label: "Aggressive" },
                   { value: "balanced", label: "Balanced" },
@@ -440,7 +440,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Max Offline Cache Size"
                 value={cacheSize}
-                onChange={setCacheSize}
+                onValueChange={setCacheSize}
                 options={[
                   { value: "50mb", label: "50 MB" },
                   { value: "100mb", label: "100 MB" },
@@ -452,7 +452,7 @@ export default function MobileConfigPage() {
               <Select
                 label="Sync Interval (Online)"
                 value={syncInterval}
-                onChange={setSyncInterval}
+                onValueChange={setSyncInterval}
                 options={[
                   { value: "1m", label: "1 minute" },
                   { value: "5m", label: "5 minutes" },

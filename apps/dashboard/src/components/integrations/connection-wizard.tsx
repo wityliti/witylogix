@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { CredentialForm } from "./credential-form";
-import type { ConnectionWizardProps, ConnectionWizardConfig, IntegrationProvider } from "./types";
+import type { ConnectionWizardProps, ConnectionWizardConfig, IntegrationConnection as IntegrationProvider } from "./types";
 
 /**
  * Connection wizard component

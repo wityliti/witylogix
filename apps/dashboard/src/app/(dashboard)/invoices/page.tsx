@@ -404,7 +404,7 @@ export default function InvoicesPage() {
 
             <Select
               value={selectedStatus as string}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 setSelectedStatus((value as InvoiceStatus) || "");
                 setCurrentPage(1);
               }}
@@ -421,7 +421,7 @@ export default function InvoicesPage() {
 
             <Select
               value={selectedCustomer}
-              onChange={(value) => {
+              onValueChange={(value) => {
                 setSelectedCustomer(value);
                 setCurrentPage(1);
               }}
@@ -438,7 +438,7 @@ export default function InvoicesPage() {
 
             <Select
               value={sortBy}
-              onChange={(value) =>
+              onValueChange={(value) =>
                 setSortBy(value as "date" | "amount" | "status" | "due")
               }
               label="Sort By"
@@ -545,7 +545,7 @@ export default function InvoicesPage() {
                       className="w-4 h-4 rounded border-[#1e1e2e] bg-[#1a1a2e]"
                     />
                   ),
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <input
                       type="checkbox"
                       checked={selectedInvoices.has(item.id)}
@@ -558,7 +558,7 @@ export default function InvoicesPage() {
                 {
                   key: "number",
                   header: "Invoice #",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="font-mono text-sm font-medium text-blue-400">
                       {item.number}
                     </div>
@@ -571,12 +571,12 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: Record<string, unknown>) => <span className="text-gray-300">{item.customerName}</span>,
+                  render: (item: Invoice) => <span className="text-gray-300">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
                   header: "Amount",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="font-medium text-white">
                       ${item.amount.toFixed(2)}
                     </div>
@@ -588,7 +588,7 @@ export default function InvoicesPage() {
                 {
                   key: "status",
                   header: "Status",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <Badge variant={getStatusBadgeVariant(item.status)}>
                       {getStatusLabel(item.status)}
                     </Badge>
@@ -598,7 +598,7 @@ export default function InvoicesPage() {
                 {
                   key: "dueDate",
                   header: "Due Date",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="text-sm text-gray-300">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
@@ -609,7 +609,7 @@ export default function InvoicesPage() {
                 {
                   key: "sentDate",
                   header: "Sent Date",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <div className="text-sm text-gray-400">
                       {item.sentDate ? new Date(item.sentDate).toLocaleDateString() : '-'}
                     </div>
@@ -619,7 +619,7 @@ export default function InvoicesPage() {
                 {
                   key: "actions",
                   header: "Actions",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: Invoice) => (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -646,7 +646,7 @@ export default function InvoicesPage() {
               </span>
               <Select
                 value={pageSize.toString()}
-                onChange={(value) => {
+                onValueChange={(value) => {
                   setPageSize(parseInt(value));
                   setCurrentPage(1);
                 }}

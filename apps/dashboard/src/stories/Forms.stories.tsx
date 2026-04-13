@@ -163,9 +163,9 @@ export const FormCheckboxBasic: Story = {
 export const FormRadioBasic: Story = {
   render: () => (
     <div className="space-y-3">
-      <FormRadio name="option" label="Option 1" value="1" />
-      <FormRadio name="option" label="Option 2" value="2" />
-      <FormRadio name="option" label="Option 3" value="3" defaultChecked />
+      <FormRadio name="option" option={{ value: "1", label: "Option 1" }} selected={false} onChange={() => {}} />
+      <FormRadio name="option" option={{ value: "2", label: "Option 2" }} selected={false} onChange={() => {}} />
+      <FormRadio name="option" option={{ value: "3", label: "Option 3" }} selected={true} onChange={() => {}} />
     </div>
   ),
 };
