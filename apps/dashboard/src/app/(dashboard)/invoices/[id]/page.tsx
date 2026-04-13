@@ -205,6 +205,7 @@ export default function InvoiceDetailPage() {
   const { addToast } = useToast();
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isVoiding, setIsVoiding] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -340,14 +341,40 @@ export default function InvoiceDetailPage() {
     }
   }, [invoiceId, isMarkingPaid, addToast]);
 
-  const handleVoidInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "cancelled",
-    }));
-    setShowDeleteConfirm(false);
-    // TODO: API call
-  }, [invoiceId]);
+  const handleVoidInvoice = useCallback(async () => {
+    if (isVoiding) return;
+    setIsVoiding(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/void`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "cancelled",
+        activity: [
+          ...prev.activity,
+          {
+            id: `act-${Date.now()}`,
+            type: "created" as const,
+            timestamp: new Date(),
+            description: "Invoice voided",
+          },
+        ],
+      }));
+      setShowDeleteConfirm(false);
+      addToast({
+        type: 'success',
+        title: 'Invoice voided',
+        message: 'The invoice has been voided successfully.',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Failed to void invoice',
+        message: err instanceof Error ? err.message : 'Could not void the invoice. Please try again.',
+      });
+    } finally {
+      setIsVoiding(false);
+    }
+  }, [invoiceId, isVoiding, addToast]);
 
   const handleSendReminder = useCallback(async () => {
     if (isSendingReminder) return;
@@ -757,9 +784,10 @@ export default function InvoiceDetailPage() {
               <Button
                 variant="danger"
                 onClick={handleVoidInvoice}
+                disabled={isVoiding}
                 className="flex-1"
               >
-                Void Invoice
+                {isVoiding ? 'Voiding...' : 'Void Invoice'}
               </Button>
             </div>
           </Card>
