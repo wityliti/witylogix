@@ -11,6 +11,7 @@
 
 import { CourierAdapter } from "./courier-adapter.js";
 import { CourierNormalizer, QuoteComparator, StatusTracker } from "./courier-normalizer.js";
+import { WebhookEvent, DeliveryStatus } from "./types.js";
 import type {
   QuoteRequest,
   CreateDeliveryRequest,
@@ -18,9 +19,9 @@ import type {
   DispatchResult,
   DispatchStrategy,
   CourierQuote,
+  NormalizedQuote,
   CourierDelivery,
   WebhookPayload,
-  WebhookEvent,
 } from "./types.js";
 
 /**
@@ -141,6 +142,7 @@ export class CourierDispatcher {
 
     // Select courier based on strategy
     let selectedCourier: string | undefined;
+    let selectedNormalized: NormalizedQuote | undefined;
     let selectedQuote: CourierQuote | undefined;
 
     if (request.preferredCourier) {
@@ -154,16 +156,17 @@ export class CourierDispatcher {
 
       switch (strategy) {
         case "cheapest":
-          selectedQuote = normalized.cheapest;
+          selectedNormalized = normalized.cheapest;
           break;
         case "fastest":
-          selectedQuote = normalized.fastest;
+          selectedNormalized = normalized.fastest;
           break;
-        case "preferred":
+        case "preferred": {
           // Weighted scoring: 60% price, 40% time
           const scored = this.scoreQuotesForDispatch(quotes, exchangeRates);
           selectedQuote = scored[0]?.quote;
           break;
+        }
         case "auto":
         default:
           // Auto: prefer fastest if within 20% of cheapest price
@@ -173,14 +176,19 @@ export class CourierDispatcher {
             const threshold = cheapestPrice * 1.2;
 
             if (fastestPrice <= threshold) {
-              selectedQuote = normalized.fastest;
+              selectedNormalized = normalized.fastest;
             } else {
-              selectedQuote = normalized.cheapest;
+              selectedNormalized = normalized.cheapest;
             }
           } else {
-            selectedQuote = normalized.cheapest || normalized.fastest;
+            selectedNormalized = normalized.cheapest || normalized.fastest;
           }
           break;
+      }
+
+      if (!selectedQuote && selectedNormalized) {
+        // Convert NormalizedQuote to CourierQuote
+        selectedQuote = quotes.find((q) => q.provider === selectedNormalized!.provider);
       }
 
       if (!selectedQuote) {
@@ -234,7 +242,7 @@ export class CourierDispatcher {
     const webhookPayload = this.parseWebhook(provider, payload as Record<string, unknown>);
 
     // Update delivery status tracker
-    this.statusTracker.trackStatus(webhookPayload.deliveryId, webhookPayload.data.status as unknown);
+    this.statusTracker.trackStatus(webhookPayload.deliveryId, webhookPayload.data.status as DeliveryStatus);
 
     // Call registered handlers for this event type
     const handlers = this.webhookHandlers.get(webhookPayload.event) || [];
@@ -387,7 +395,7 @@ export class CourierDispatcher {
       event: this.mapOnfleetEvent(event),
       deliveryId: taskId,
       providerId: taskId,
-      data: payload.data || {},
+      data: (payload.data as Record<string, unknown>) || {},
       timestamp: new Date(),
     };
   }
@@ -402,7 +410,7 @@ export class CourierDispatcher {
       event: this.mapStuartEvent(payload.event as string),
       deliveryId: jobId,
       providerId: jobId,
-      data: payload.data || {},
+      data: (payload.data as Record<string, unknown>) || {},
       timestamp: new Date(payload.created_at as string),
     };
   }
@@ -417,7 +425,7 @@ export class CourierDispatcher {
       event: this.mapUberEvent(payload.event_type as string),
       deliveryId,
       providerId: deliveryId,
-      data: payload.data || {},
+      data: (payload.data as Record<string, unknown>) || {},
       timestamp: new Date(),
     };
   }
@@ -482,7 +490,9 @@ export class CourierDispatcher {
    */
   private scoreQuotesForDispatch(quotes: CourierQuote[], exchangeRates?: Record<string, number>) {
     const scored = QuoteComparator.scoreQuotes(quotes, 0.6, 0.4, exchangeRates);
-    return scored.sort((a, b) => b.score - a.score).map((q) => ({ quote: q as CourierQuote }));
+    return scored.sort((a, b) => b.score - a.score).map((q) => ({
+      quote: quotes.find((cq) => cq.provider === q.provider) as CourierQuote,
+    }));
   }
 }
 

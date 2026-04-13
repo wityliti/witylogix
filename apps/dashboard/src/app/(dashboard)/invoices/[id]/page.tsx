@@ -206,6 +206,8 @@ export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState<Invoice>(MOCK_INVOICE);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const isOverdue = useMemo(() => {
     return (
@@ -229,18 +231,68 @@ export default function InvoiceDetailPage() {
     return invoice.total - amountPaid;
   }, [invoice.total, amountPaid]);
 
-  const handleDownloadPDF = useCallback(() => {
-    // TODO: Generate and download PDF
-  }, [invoiceId]);
+  const handleDownloadPDF = useCallback(async () => {
+    if (isPdfLoading) return;
+    setIsPdfLoading(true);
+    try {
+      const token = document.cookie
+        .split('; ')
+        .find(c => c.startsWith('auth-token='))
+        ?.split('=')[1];
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
+      const res = await fetch(`${apiBase}/api/v4/invoices/${invoiceId}/pdf`, {
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${invoice.number}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast({
+        type: 'success',
+        title: 'PDF downloaded',
+        message: `Invoice ${invoice.number} has been downloaded.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Download failed',
+        message: err instanceof Error ? err.message : 'Failed to download PDF. Please try again.',
+      });
+    } finally {
+      setIsPdfLoading(false);
+    }
+  }, [invoiceId, invoice.number, isPdfLoading, addToast]);
 
-  const handleSendInvoice = useCallback(() => {
-    setInvoice((prev) => ({
-      ...prev,
-      status: "sent",
-      sentDate: new Date(),
-    }));
-    // TODO: API call
-  }, [invoiceId]);
+  const handleSendInvoice = useCallback(async () => {
+    if (isSending) return;
+    setIsSending(true);
+    try {
+      await api.post(`/api/v4/invoices/${invoiceId}/send`, {});
+      setInvoice((prev) => ({
+        ...prev,
+        status: "sent",
+        sentDate: new Date(),
+      }));
+      addToast({
+        type: 'success',
+        title: 'Invoice sent',
+        message: `Invoice ${invoice.number} has been sent to the customer.`,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Send failed',
+        message: err instanceof Error ? err.message : 'Failed to send invoice. Please try again.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  }, [invoiceId, invoice.number, isSending, addToast]);
 
   const handleMarkPaid = useCallback(() => {
     setInvoice((prev) => ({
@@ -338,9 +390,10 @@ export default function InvoiceDetailPage() {
               variant="secondary"
               size="lg"
               onClick={handleSendInvoice}
+              disabled={isSending}
             >
               <Send className="w-4 h-4" />
-              Send
+              {isSending ? 'Sending...' : 'Send'}
             </Button>
           )}
           {invoice.status === "sent" && (
@@ -385,9 +438,9 @@ export default function InvoiceDetailPage() {
               </Button>
             </>
           )}
-          <Button variant="secondary" size="lg" onClick={handleDownloadPDF}>
+          <Button variant="secondary" size="lg" onClick={handleDownloadPDF} disabled={isPdfLoading}>
             <Download className="w-4 h-4" />
-            PDF
+            {isPdfLoading ? 'Generating…' : 'PDF'}
           </Button>
           <Button
             variant="danger"
@@ -473,7 +526,7 @@ export default function InvoiceDetailPage() {
                   key: "rate",
                   header: "Rate",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span>${item.rate.toFixed(2)}</span>
                   ),
                   width: "15%",
@@ -482,7 +535,7 @@ export default function InvoiceDetailPage() {
                   key: "amount",
                   header: "Amount",
                   align: "right",
-                  render: (item: Record<string, unknown>) => (
+                  render: (item: LineItem) => (
                     <span className="font-medium">
                       ${item.amount.toFixed(2)}
                     </span>

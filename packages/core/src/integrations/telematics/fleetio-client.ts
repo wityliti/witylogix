@@ -227,7 +227,7 @@ export class FleetioClient extends TelematicsAdapter {
 
   constructor(config: TelematicsConfig) {
     super(config);
-    const credentials = config.credentials as FleetioCredentials;
+    const credentials = config.credentials as unknown as FleetioCredentials;
     this.accessToken = credentials.accessToken;
     this.accountToken = credentials.accountToken;
     this.normalizer = new TelematicsNormalizer("samsara");

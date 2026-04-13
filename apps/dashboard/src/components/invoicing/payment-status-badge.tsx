@@ -252,5 +252,3 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
 );
 
 PaymentStatusBadge.displayName = "PaymentStatusBadge";
-
-export { PaymentStatusBadge };

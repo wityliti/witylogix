@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Phone, MapPin, Clock, Zap, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,10 @@ export function DriverPopover({
   delivery,
   position,
   onClose,
+  onReassign,
+  onMessage,
 }: DriverPopoverProps) {
+  const router = useRouter();
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Calculate ETA countdown
@@ -189,8 +193,8 @@ export function DriverPopover({
           size="sm"
           className="flex-1"
           onClick={() => {
-            // TODO: Navigate to driver details
             onClose();
+            router.push(`/dashboard/drivers/${driver.id}`);
           }}
         >
           Details
@@ -200,8 +204,12 @@ export function DriverPopover({
           size="sm"
           className="flex-1"
           onClick={() => {
-            // TODO: Open reassign modal
             onClose();
+            if (onReassign) {
+              onReassign(driver.id);
+            } else {
+              router.push(`/dashboard/drivers/${driver.id}?action=reassign`);
+            }
           }}
         >
           Reassign
@@ -211,8 +219,12 @@ export function DriverPopover({
           size="sm"
           className="flex-1"
           onClick={() => {
-            // TODO: Open messaging panel
             onClose();
+            if (onMessage) {
+              onMessage(driver.id);
+            } else {
+              router.push(`/dashboard/messages?driverId=${driver.id}`);
+            }
           }}
         >
           Message

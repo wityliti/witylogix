@@ -36,7 +36,6 @@ export type {
   Coordinates,
   RouteResult,
   DistanceMatrixResult,
-  GeocodingResult,
   ETAResult,
   RoutingProviderSlug,
   ProviderMeta,

@@ -54,6 +54,8 @@ export interface DriverPopoverProps {
   delivery: Delivery | null;
   position: { x: number; y: number };
   onClose: () => void;
+  onReassign?: (driverId: string) => void;
+  onMessage?: (driverId: string) => void;
 }
 
 export interface MapControlsProps {

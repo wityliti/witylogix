@@ -96,7 +96,7 @@ export interface SyncLog {
   errorMessage?: string;
 }
 
-export interface IntegrationProvider {
+export interface IntegrationConnection {
   id: string;
   name: string;
   provider: IntegrationProvider;
@@ -114,8 +114,11 @@ export interface IntegrationProvider {
   errors?: Array<{ timestamp: Date; message: string; code?: string }>;
 }
 
+/** @deprecated Use IntegrationConnection instead */
+export type IntegrationProviderObject = IntegrationConnection;
+
 export interface ProviderCardProps {
-  provider: IntegrationProvider;
+  provider: IntegrationConnection;
   onConfigure?: (providerId: string) => void;
   onTest?: (providerId: string) => void;
   onDisconnect?: (providerId: string) => void;
@@ -172,7 +175,7 @@ export interface SyncStatusCardProps {
 }
 
 export interface ConnectionWizardProps {
-  providers: IntegrationProvider[];
+  providers: IntegrationConnection[];
   onComplete?: (providerId: string, config: ConnectionWizardConfig) => void;
   onCancel?: () => void;
   className?: string;
@@ -201,7 +204,7 @@ export interface ApiUsageDataPoint {
 }
 
 export interface ProviderComparisonProps {
-  providers: IntegrationProvider[];
+  providers: IntegrationConnection[];
   metrics: 'latency' | 'uptime' | 'cost' | 'features' | 'rate-limits';
   maxCompare?: number;
   className?: string;

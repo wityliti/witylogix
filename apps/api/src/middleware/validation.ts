@@ -26,7 +26,7 @@ export function validateRequest(schema: z.ZodSchema) {
           field: err.path.join('.'),
           message: err.message,
         }));
-        res.status(400).json({
+        res.status(400).send({
           error: 'Validation failed',
           details: errors,
         });
@@ -52,7 +52,7 @@ export function validateQuery(schema: z.ZodSchema) {
           field: err.path.join('.'),
           message: err.message,
         }));
-        res.status(400).json({
+        res.status(400).send({
           error: 'Query validation failed',
           details: errors,
         });
@@ -78,7 +78,7 @@ export function validateParams(schema: z.ZodSchema) {
           field: err.path.join('.'),
           message: err.message,
         }));
-        res.status(400).json({
+        res.status(400).send({
           error: 'Params validation failed',
           details: errors,
         });

@@ -4,9 +4,16 @@ import { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
 interface BreadcrumbProps {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
+  /** Shorthand: render breadcrumbs from items array */
+  items?: BreadcrumbItem[];
 }
 
 interface BreadcrumbItemProps {
@@ -25,7 +32,7 @@ interface BreadcrumbSeparatorProps {
   className?: string;
 }
 
-const Breadcrumb = ({ children, className }: BreadcrumbProps) => {
+const Breadcrumb = ({ children, className, items }: BreadcrumbProps) => {
   return (
     <nav
       className={cn(
@@ -36,7 +43,20 @@ const Breadcrumb = ({ children, className }: BreadcrumbProps) => {
       aria-label="Breadcrumb"
     >
       <ol className="flex items-center gap-2">
-        {children}
+        {items
+          ? items.map((item, idx) => (
+              <li key={idx} className="flex items-center gap-2">
+                {idx > 0 && <ChevronRight className="w-3 h-3 text-wl-text-secondary" />}
+                {item.href ? (
+                  <a href={item.href} className="text-wl-text-secondary hover:text-wl-text-primary">
+                    {item.label}
+                  </a>
+                ) : (
+                  <span className="text-wl-text-primary">{item.label}</span>
+                )}
+              </li>
+            ))
+          : children}
       </ol>
     </nav>
   );

@@ -1,6 +1,5 @@
 // Existing layout components
 export { Header } from "./header";
-export { default as Sidebar } from "./sidebar";
 
 // Responsive navigation
 export {
@@ -34,5 +33,4 @@ export {
   AutoGrid,
   MasonryGrid,
   useGridColumns,
-  type ResponsiveGridProps,
 } from "./responsive-grid";

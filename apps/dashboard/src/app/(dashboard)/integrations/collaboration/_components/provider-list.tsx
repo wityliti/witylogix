@@ -139,7 +139,7 @@ export function ProviderList({
                       {provider.config.channels.map((channel) => (
                         <Badge
                           key={channel}
-                          variant="secondary"
+                          variant="default"
                           className="bg-[#12121a] text-white"
                         >
                           {channel}
@@ -176,7 +176,7 @@ export function ProviderList({
               {provider.status === 'connected' ? (
                 <>
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     className="flex-1 bg-[#12121a] hover:bg-[#1a1a2e]"
                   >

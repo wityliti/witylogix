@@ -117,3 +117,8 @@ const Alert = ({
 };
 
 export { Alert };
+
+// Shadcn-compatible sub-component
+export function AlertDescription({ children, className }: { children?: ReactNode; className?: string }) {
+  return <p className={`text-sm text-wl-text-secondary mt-1 ${className ?? ''}`}>{children}</p>;
+}

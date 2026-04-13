@@ -1,6 +1,7 @@
 'use client';
 
-import { useApiList, useApiQuery, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import { useMemo } from 'react';
+import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
 
 // ─── TYPES ──────────────────────────────────────────────────────────
 
@@ -94,24 +95,87 @@ export function useInventoryItem(id: string | null): UseApiQueryResult<Inventory
   return useApiQuery<InventoryItem>(id ? `/api/v4/supply-chain/inventory/${id}` : null);
 }
 
-export function useOrders(filters?: ApiFilters): UseApiListResult<Order> {
+export function useOrdersList(filters?: ApiFilters): UseApiListResult<Order> {
   return useApiList<Order>('/api/v4/supply-chain/orders', filters);
+}
+
+/** Rich composite hook used by supply-chain orders page */
+export function useOrders(filters?: ApiFilters) {
+  const listResult = useApiList<Order>('/api/v4/supply-chain/orders', filters);
+  const updateMutation = useApiMutation<Order>('PATCH', '/api/v4/supply-chain/orders/:id/status');
+
+  return {
+    orders: listResult.items,
+    loading: listResult.loading,
+    error: listResult.error,
+    pagination: listResult.pagination,
+    refetch: listResult.refetch,
+    setPage: listResult.setPage,
+    setSearch: listResult.setSearch,
+    updateOrderStatus: async (id: string, status: string) => {
+      await updateMutation.execute({ id, status });
+      listResult.refetch();
+    },
+  };
 }
 
 export function useOrderDetail(id: string | null): UseApiQueryResult<Order> {
   return useApiQuery<Order>(id ? `/api/v4/supply-chain/orders/${id}` : null);
 }
 
-export function useFulfillment(filters?: ApiFilters): UseApiListResult<FulfillmentItem> {
+export function useFulfillmentList(filters?: ApiFilters): UseApiListResult<FulfillmentItem> {
   return useApiList<FulfillmentItem>('/api/v4/supply-chain/fulfillment', filters);
+}
+
+/** Rich composite hook that adds pipelineStats computed from items */
+export function useFulfillment(filters?: ApiFilters) {
+  const listResult = useApiList<FulfillmentItem>('/api/v4/supply-chain/fulfillment', filters);
+
+  const pipelineStats = useMemo(() => {
+    const counts = { received: 0, picked: 0, packed: 0, shipped: 0, delivered: 0 };
+    for (const item of listResult.items) {
+      if (item.status in counts) counts[item.status as keyof typeof counts]++;
+    }
+    return counts;
+  }, [listResult.items]);
+
+  return {
+    items: listResult.items,
+    loading: listResult.loading,
+    error: listResult.error,
+    pagination: listResult.pagination,
+    refetch: listResult.refetch,
+    pipelineStats,
+  };
 }
 
 export function useDemandPlanning(filters?: ApiFilters): UseApiListResult<DemandForecast> {
   return useApiList<DemandForecast>('/api/v4/supply-chain/demand-planning', filters);
 }
 
-export function useWarehouseOps(filters?: ApiFilters): UseApiListResult<WarehouseUtilization> {
+export function useWarehouseOpsList(filters?: ApiFilters): UseApiListResult<WarehouseUtilization> {
   return useApiList<WarehouseUtilization>('/api/v4/supply-chain/warehouses', filters);
+}
+
+/** Rich composite hook that adds warehouses alias and highestUtilization computed property */
+export function useWarehouseOps(filters?: ApiFilters) {
+  const listResult = useApiList<WarehouseUtilization>('/api/v4/supply-chain/warehouses', filters);
+
+  const highestUtilization = useMemo(() => {
+    if (listResult.items.length === 0) return { name: 'N/A', utilizationPercentage: 0 };
+    return listResult.items.reduce((max, wh) =>
+      wh.utilizationPercentage > max.utilizationPercentage ? wh : max
+    );
+  }, [listResult.items]);
+
+  return {
+    warehouses: listResult.items,
+    loading: listResult.loading,
+    error: listResult.error,
+    pagination: listResult.pagination,
+    refetch: listResult.refetch,
+    highestUtilization,
+  };
 }
 
 export function useReorderAlerts(filters?: ApiFilters): UseApiListResult<ReorderAlert> {

@@ -368,7 +368,7 @@ export function calculateServiceLevelMetrics(
   dateRange: TimeRange
 ): ServiceLevelMetrics {
   const allStops = routes.flatMap(r => r.stops);
-  const deliverableStops = allStops.filter(s => s.status !== "returned" && s.status !== "cancelled");
+  const deliverableStops = allStops.filter(s => s.status !== "returned");
 
   if (deliverableStops.length === 0) {
     return {

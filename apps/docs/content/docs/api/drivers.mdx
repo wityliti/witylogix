@@ -1,0 +1,319 @@
+---
+title: Drivers
+description: Manage drivers, availability status, and real-time GPS location
+---
+
+# Drivers
+
+The drivers API manages your delivery fleet — creating driver profiles, tracking real-time GPS location, managing availability status, and finding nearby available drivers for dispatch.
+
+## Base path
+
+```
+/api/v4/drivers
+```
+
+All endpoints require a Bearer token in the `Authorization` header.
+
+## Driver status values
+
+| Status | Description |
+|--------|-------------|
+| `OFFLINE` | Driver is not available |
+| `AVAILABLE` | Driver is ready to accept orders |
+| `ON_ROUTE` | Driver is actively delivering |
+| `ON_BREAK` | Driver is on a break |
+
+## Vehicle types
+
+`BICYCLE`, `MOTORCYCLE`, `CAR`, `VAN`, `TRUCK`
+
+---
+
+## List drivers
+
+```
+GET /api/v4/drivers
+```
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number |
+| `limit` | integer | `20` | Items per page (max 100) |
+| `status` | string | — | Filter by status: `OFFLINE`, `AVAILABLE`, `ON_ROUTE`, `ON_BREAK` |
+| `isActive` | string | — | `true` or `false` |
+| `search` | string | — | Search across name, email, phone |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "drv_01hx...",
+      "name": "Carlos Martinez",
+      "email": "carlos@example.com",
+      "phone": "+1 555-0010",
+      "vehicleType": "VAN",
+      "vehiclePlate": "ABC-1234",
+      "maxCapacity": 50,
+      "status": "AVAILABLE",
+      "isActive": true,
+      "lastLocationAt": "2026-04-13T13:45:00.000Z",
+      "heading": 270,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "_count": {
+        "orders": 3
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 12,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+## Find nearby drivers
+
+```
+GET /api/v4/drivers/nearby
+```
+
+**Required role:** `SUPER_ADMIN`, `ADMIN`, or `DISPATCHER`
+
+Returns available drivers within a given radius, ordered by distance. Uses Redis GEO for fast proximity lookup.
+
+### Query parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `latitude` | number | yes | — | Center latitude (-90 to 90) |
+| `longitude` | number | yes | — | Center longitude (-180 to 180) |
+| `radiusKm` | number | no | `10` | Search radius in km (max 100) |
+| `limit` | integer | no | `20` | Max results (max 50) |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "drv_01hx...",
+      "name": "Carlos Martinez",
+      "phone": "+1 555-0010",
+      "vehicleType": "VAN",
+      "maxCapacity": 50,
+      "status": "AVAILABLE",
+      "distanceKm": 1.42,
+      "_count": {
+        "orders": 0
+      }
+    }
+  ]
+}
+```
+
+<Callout type="info">
+Only drivers with `status: AVAILABLE` and `isActive: true` are returned. Driver location must have been updated recently to appear in results.
+</Callout>
+
+---
+
+## Get driver
+
+```
+GET /api/v4/drivers/:id
+```
+
+Returns the driver profile along with their active orders and currently assigned route.
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "drv_01hx...",
+    "name": "Carlos Martinez",
+    "email": "carlos@example.com",
+    "phone": "+1 555-0010",
+    "vehicleType": "VAN",
+    "vehiclePlate": "ABC-1234",
+    "maxCapacity": 50,
+    "status": "ON_ROUTE",
+    "isActive": true,
+    "orders": [
+      {
+        "id": "ord_01hx...",
+        "externalOrderNumber": "1042",
+        "status": "OUT_FOR_DELIVERY",
+        "customerName": "Emma Johnson",
+        "addressLine1": "142 Maple Street",
+        "city": "New York",
+        "estimatedArrival": "2026-04-13T14:00:00.000Z"
+      }
+    ],
+    "routes": [
+      {
+        "id": "route_01hx...",
+        "status": "IN_PROGRESS",
+        "date": "2026-04-13",
+        "stops": [...]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Create driver
+
+```
+POST /api/v4/drivers
+```
+
+**Required role:** `SUPER_ADMIN` or `ADMIN`
+
+### Request body
+
+```json
+{
+  "name": "Carlos Martinez",
+  "email": "carlos@example.com",
+  "phone": "+1 555-0010",
+  "password": "secure_password",
+  "vehicleType": "VAN",
+  "vehiclePlate": "ABC-1234",
+  "maxCapacity": 50,
+  "maxWeight": 500
+}
+```
+
+### Response
+
+`201 Created`
+
+```json
+{
+  "data": {
+    "id": "drv_01hx...",
+    "name": "Carlos Martinez",
+    "status": "OFFLINE",
+    "isActive": true,
+    "createdAt": "2026-04-13T09:00:00.000Z"
+  }
+}
+```
+
+---
+
+## Update driver
+
+```
+PATCH /api/v4/drivers/:id
+```
+
+**Required role:** `SUPER_ADMIN` or `ADMIN`
+
+### Request body (all fields optional)
+
+```json
+{
+  "name": "Carlos Martinez",
+  "email": "carlos@example.com",
+  "phone": "+1 555-0010",
+  "vehicleType": "TRUCK",
+  "vehiclePlate": "XYZ-9999",
+  "maxCapacity": 80,
+  "maxWeight": 800,
+  "fcmToken": "device-push-token"
+}
+```
+
+---
+
+## Update driver status
+
+```
+PATCH /api/v4/drivers/:id/status
+```
+
+Drivers can update their own status. Admins can update any driver.
+
+### Request body
+
+```json
+{
+  "status": "AVAILABLE"
+}
+```
+
+<Callout type="info">
+Setting status to `OFFLINE` removes the driver from the Redis GEO proximity index immediately.
+</Callout>
+
+---
+
+## Update driver location
+
+```
+POST /api/v4/drivers/:id/location
+```
+
+Called by the driver mobile app to report GPS position. Drivers can only update their own location; admins can update any driver.
+
+Location updates are written to two stores in parallel:
+- **PostGIS** — persistent, used for historical analytics and route planning
+- **Redis GEO** — ephemeral, used for fast proximity search
+
+A `driver:location_updated` event is emitted via Socket.io to all connected dashboard clients in the shop.
+
+### Request body
+
+```json
+{
+  "latitude": 40.7128,
+  "longitude": -74.006,
+  "accuracy": 5.0,
+  "heading": 270
+}
+```
+
+### Response
+
+```json
+{
+  "status": "ok"
+}
+```
+
+---
+
+## Deactivate driver
+
+```
+DELETE /api/v4/drivers/:id
+```
+
+**Required role:** `SUPER_ADMIN` or `ADMIN`
+
+Soft-deactivates the driver by setting `isActive: false` and `status: OFFLINE`. The driver record is preserved. The driver is removed from the Redis GEO proximity index.
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "drv_01hx...",
+    "isActive": false,
+    "status": "OFFLINE"
+  }
+}
+```

@@ -177,7 +177,7 @@ export class RouteCache {
   ): void {
     // Evict oldest entry if at capacity
     if (this.localCache.size >= this.localCacheMaxSize) {
-      const oldestKey = this.localCache.keys().next().value;
+      const oldestKey = this.localCache.keys().next().value!;
       this.localCache.delete(oldestKey);
       this.stats.evictions++;
     }

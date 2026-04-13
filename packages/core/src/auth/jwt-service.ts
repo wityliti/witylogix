@@ -125,7 +125,7 @@ export class JwtService {
    */
   verifyAccessToken(token: string): TokenVerificationResult {
     try {
-      const payload = this.verify(token) as AccessTokenPayload;
+      const payload = this.verify(token) as unknown as AccessTokenPayload;
 
       // Additional validation
       if (!payload.userId || !payload.orgId) {
@@ -162,7 +162,7 @@ export class JwtService {
    */
   verifyRefreshToken(token: string): TokenVerificationResult {
     try {
-      const payload = this.verify(token) as RefreshTokenPayload;
+      const payload = this.verify(token) as unknown as RefreshTokenPayload;
 
       // Additional validation
       if (!payload.userId || !payload.sessionId) {
@@ -249,7 +249,7 @@ export class JwtService {
   /**
    * Sign a token using HS256.
    */
-  private sign(payload: Record<string, unknown>): string {
+  private sign(payload: object): string {
     // Simple HS256 implementation
     const header = this.base64UrlEncode(
       JSON.stringify({
@@ -302,7 +302,7 @@ export class JwtService {
 
       const now = Math.floor(Date.now() / 1000);
       if (payload.exp && payload.exp < now) {
-        throw new TokenExpiredError("witylogix", "Token has expired");
+        throw new TokenExpiredError("local", "Token has expired");
       }
 
       return payload;

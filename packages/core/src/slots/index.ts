@@ -7,11 +7,13 @@
 export * from "./types.js";
 
 // Core modules
-export { SlotEngine } from "./slot-engine.js";
-export { CapacityManager } from "./capacity-manager.js";
-export { ZoneRateCalculator } from "./zone-rate-calculator.js";
-export { DeadlineEngine } from "./deadline-engine.js";
-export { BlackoutManager } from "./blackout-manager.js";
+import { SlotEngine } from "./slot-engine.js";
+import { CapacityManager } from "./capacity-manager.js";
+import { ZoneRateCalculator } from "./zone-rate-calculator.js";
+import { DeadlineEngine } from "./deadline-engine.js";
+import { BlackoutManager } from "./blackout-manager.js";
+
+export { SlotEngine, CapacityManager, ZoneRateCalculator, DeadlineEngine, BlackoutManager };
 
 // Factory function for initialization
 export function initializeSlotEngines(db: any) {

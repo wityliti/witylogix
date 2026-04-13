@@ -213,7 +213,7 @@ export default function EventsPage() {
         {loading && data.length === 0 ? (
           <div className="grid grid-cols-1 gap-4 pt-8">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="h-32 bg-[#12121a] animate-pulse" />
+              <Card key={i} className="h-32 bg-[#12121a] animate-pulse">{null}</Card>
             ))}
           </div>
         ) : data.length === 0 ? (

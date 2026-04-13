@@ -68,10 +68,12 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
     }
 
     // Calculate running balance
-    const paymentWithBalance = payments.map((payment, index) => {
-      const previousBalance = index === 0 ? startingBalance : paymentWithBalance[index - 1].balance;
+    type PaymentWithBalance = Payment & { balance: number };
+    const paymentWithBalance: PaymentWithBalance[] = [];
+    payments.forEach((payment, index) => {
+      const previousBalance = index === 0 ? (startingBalance ?? 0) : paymentWithBalance[index - 1].balance;
       const newBalance = previousBalance - (payment.status === "completed" ? payment.amount : 0);
-      return { ...payment, balance: newBalance };
+      paymentWithBalance.push({ ...payment, balance: newBalance });
     });
 
     return (
@@ -216,5 +218,3 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
 );
 
 PaymentTimeline.displayName = "PaymentTimeline";
-
-export { PaymentTimeline };

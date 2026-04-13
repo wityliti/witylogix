@@ -11,7 +11,9 @@ import { cn } from "../../lib/utils";
 type TooltipPosition = "top" | "bottom" | "left" | "right";
 
 interface TooltipProps {
-  content: string | ReactNode;
+  content?: string | ReactNode;
+  /** Alias for content */
+  text?: string | ReactNode;
   children: ReactNode;
   position?: TooltipPosition;
   delay?: number;
@@ -21,12 +23,14 @@ interface TooltipProps {
 
 export function Tooltip({
   content,
+  text,
   children,
   position = "top",
   delay = 200,
   className,
   style,
 }: TooltipProps) {
+  const tooltipContent = content ?? text;
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -101,7 +105,7 @@ export function Tooltip({
                     : "translate(0, -50%)",
           }}
         >
-          {content}
+          {tooltipContent}
 
           <div
             className={cn(
@@ -129,9 +133,11 @@ export function TooltipProvider({ children }: TooltipProviderProps) {
 export function TooltipTrigger({
   children,
   className,
+  asChild: _asChild,
 }: {
   children: ReactNode;
   className?: string;
+  asChild?: boolean;
 }) {
   return <div className={className}>{children}</div>;
 }

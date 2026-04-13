@@ -6,7 +6,7 @@
 
 import { EventEmitter } from "node:events";
 import type {
-  TelematicsAdapter,
+  ITelematicsAdapter as TelematicsAdapter,
   PollingConfig,
   PollingState,
   TelematicsEvent,
@@ -121,18 +121,18 @@ export class TelematicsPoller extends EventEmitter {
 
         if (
           !lastData ||
-          !this.dataEquals(lastData, position, ["timestamp"])
+          !this.dataEquals(lastData, position as unknown as Record<string, unknown>, ["timestamp"])
         ) {
           this.emitEvent({
             id: `${vehicleId}-pos-${Date.now()}`,
             provider: "samsara", // This will be set by adapter
             type: "position",
             vehicleId,
-            data: position,
+            data: position as unknown as Record<string, unknown>,
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, position);
+          this.lastDataCache.set(cacheKey, position as unknown as Record<string, unknown>);
         }
 
         state.lastPositionPoll = new Date();
@@ -162,7 +162,7 @@ export class TelematicsPoller extends EventEmitter {
 
         if (
           !lastData ||
-          !this.dataEquals(lastData, diagnostics, [
+          !this.dataEquals(lastData, diagnostics as unknown as Record<string, unknown>, [
             "timestamp",
             "faultCodes",
           ])
@@ -172,11 +172,11 @@ export class TelematicsPoller extends EventEmitter {
             provider: "samsara",
             type: "diagnostic",
             vehicleId,
-            data: diagnostics,
+            data: diagnostics as unknown as Record<string, unknown>,
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, diagnostics);
+          this.lastDataCache.set(cacheKey, diagnostics as unknown as Record<string, unknown>);
         }
 
         state.lastDiagnosticPoll = new Date();
@@ -204,17 +204,17 @@ export class TelematicsPoller extends EventEmitter {
         const cacheKey = `fuel:${vehicleId}`;
         const lastData = this.lastDataCache.get(cacheKey);
 
-        if (!lastData || !this.dataEquals(lastData, fuel, ["timestamp"])) {
+        if (!lastData || !this.dataEquals(lastData, fuel as unknown as Record<string, unknown>, ["timestamp"])) {
           this.emitEvent({
             id: `${vehicleId}-fuel-${Date.now()}`,
             provider: "samsara",
             type: "fuel",
             vehicleId,
-            data: fuel,
+            data: fuel as unknown as Record<string, unknown>,
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, fuel);
+          this.lastDataCache.set(cacheKey, fuel as unknown as Record<string, unknown>);
         }
 
         state.lastFuelPoll = new Date();

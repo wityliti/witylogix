@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  Download,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════
@@ -879,10 +880,10 @@ export default function FuelIntegrationsPage() {
                 ? (((analytics.totalGallons - previous.totalGallons) /
                     previous.totalGallons) *
                   100).toFixed(1)
-                : 0;
+                : "0";
               const mpgChange = previous
                 ? (analytics.avgMPG - previous.avgMPG).toFixed(2)
-                : 0;
+                : "0";
 
               return (
                 <Card

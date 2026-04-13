@@ -20,13 +20,17 @@ vi.mock("@witylogix/db", () => ({
   forTenantInOrg: vi.fn(() => ({})),
 }));
 
-const mockRedis = {
-  set: vi.fn().mockResolvedValue("OK"),
-  get: vi.fn().mockResolvedValue(null),
-  del: vi.fn().mockResolvedValue(1),
-};
+const { mockRedisInstance } = vi.hoisted(() => ({
+  mockRedisInstance: {
+    set: vi.fn().mockResolvedValue("OK"),
+    exists: vi.fn().mockResolvedValue(1),
+    get: vi.fn().mockResolvedValue(null),
+    del: vi.fn().mockResolvedValue(1),
+  },
+}));
 vi.mock("../../lib/redis.js", () => ({
-  getRedis: vi.fn(() => mockRedis),
+  IMPERSONATION_SESSION_PREFIX: "impersonation:",
+  getRedis: vi.fn(() => mockRedisInstance),
 }));
 
 import { prisma } from "@witylogix/db";
@@ -1112,12 +1116,12 @@ describe("Admin Routes", () => {
       mockRequest.params = { userId: "user-1" };
       mockRequest.body = { jti: "test-jti-uuid" };
       (mockRequest as any).auth = { userId: "admin-123" };
-      mockRedis.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
+      mockRedisInstance.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
 
       await adminRoutes(fastify);
       const result = await getRevokeHandler()(mockRequest, mockReply);
 
-      expect(mockRedis.del).toHaveBeenCalledWith("impersonation:test-jti-uuid");
+      expect(mockRedisInstance.del).toHaveBeenCalledWith("impersonation:test-jti-uuid");
       expect(result.data.revoked).toBe(true);
     });
 
@@ -1125,7 +1129,7 @@ describe("Admin Routes", () => {
       mockRequest.params = { userId: "user-1" };
       mockRequest.body = { jti: "expired-jti" };
       (mockRequest as any).auth = { userId: "admin-123" };
-      mockRedis.get.mockResolvedValueOnce(null);
+      mockRedisInstance.get.mockResolvedValueOnce(null);
 
       await adminRoutes(fastify);
       const result = await getRevokeHandler()(mockRequest, mockReply);
@@ -1138,7 +1142,7 @@ describe("Admin Routes", () => {
       mockRequest.params = { userId: "user-1" };
       mockRequest.body = { jti: "test-jti-uuid" };
       (mockRequest as any).auth = { userId: "other-admin" };
-      mockRedis.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
+      mockRedisInstance.get.mockResolvedValueOnce(JSON.stringify({ adminId: "admin-123", userId: "user-1", shopId: "shop-1", createdAt: new Date().toISOString() }));
 
       await adminRoutes(fastify);
       await expect(getRevokeHandler()(mockRequest, mockReply)).rejects.toThrow(ForbiddenError);

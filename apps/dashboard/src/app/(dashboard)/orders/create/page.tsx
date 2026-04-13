@@ -69,7 +69,7 @@ export default function CreateOrderPage() {
 
   const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
   const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
-  const { mutate: createOrder, loading: creating } = useApiMutation<{ id: string }>('POST', '/api/v4/orders');
+  const { execute: createOrder, loading: creating } = useApiMutation<{ id: string }>('POST', '/api/v4/orders');
 
   const addLineItem = () => {
     if (!newLineItem.productName || newLineItem.quantity <= 0 || newLineItem.unitPrice <= 0) {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Button } from '../button';
 
@@ -58,7 +58,8 @@ describe('Button Component', () => {
 
     it('should not render outline variant (not supported)', () => {
       const { container } = render(
-        <Button variant="outline" as any>Outline</Button>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        <Button variant={"outline" as any}>Outline</Button>
       );
       const button = container.querySelector('button');
       // outline variant should not be applied, should fall back to default or error
@@ -172,7 +173,7 @@ describe('Button Component', () => {
       );
 
       const button = container.querySelector('button');
-      await user.pointer({ target: button, keys: '[MouseEnter]' });
+      if (button) fireEvent.mouseEnter(button);
 
       expect(handleMouseEnter).toHaveBeenCalled();
     });
@@ -202,7 +203,7 @@ describe('Button Component', () => {
   describe('asChild Prop', () => {
     it('should accept asChild prop', () => {
       const { container } = render(
-        <Button asChild as any>
+        <Button asChild>
           <a href="/home">Link Button</a>
         </Button>
       );

@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useDVIR } from "@/hooks/use-eld";
 import { DVIRForm } from "@/components/eld/dvir-form";
-import { useApiList } from "@/hooks/use-api";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import {
@@ -67,6 +68,8 @@ const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
 export default function DVIRPage() {
   const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
   const { items: data, loading, error, refetch, pagination } = useApiList("/api/v4/eld/dvir");
+  const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
+  const { addToast } = useToast();
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -367,8 +370,13 @@ export default function DVIRPage() {
             driverId="drv-1"
             driverName="Carlos Martinez"
             inspectionType={inspectionType}
-            onSubmit={(data) => {
-              // TODO: API call to submit inspection
+            onSubmit={async (data) => {
+              try {
+                await submitInspection(data);
+                addToast({ type: 'success', title: 'Inspection submitted', message: 'DVIR inspection has been recorded.' });
+              } catch {
+                addToast({ type: 'error', title: 'Submission failed', message: 'Could not submit inspection. Please try again.' });
+              }
               setShowForm(false);
             }}
           />

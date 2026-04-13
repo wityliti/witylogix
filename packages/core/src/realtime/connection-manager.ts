@@ -29,7 +29,7 @@ export class ConnectionManager {
   private tenantMetrics = new Map<string, TenantMetrics>();
 
   /** Cleanup interval for expired connections (milliseconds). */
-  private cleanupInterval: NodeJS.Timer | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     // Start cleanup loop

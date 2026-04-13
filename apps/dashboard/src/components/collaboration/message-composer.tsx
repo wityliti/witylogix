@@ -11,13 +11,15 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 
+type Attachment = { id: string; name: string; url: string; size?: number; type?: string };
+
 interface ComposerContextType {
   content: string;
   setContent: (content: string) => void;
-  attachments: Array<{ id: string; name: string; url: string }>;
-  setAttachments: (attachments: any[]) => void;
+  attachments: Attachment[];
+  setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>;
   mentions: string[];
-  setMentions: (mentions: string[]) => void;
+  setMentions: React.Dispatch<React.SetStateAction<string[]>>;
   showEmojiPicker: boolean;
   setShowEmojiPicker: (show: boolean) => void;
   mentionQuery: string;
@@ -39,12 +41,12 @@ function useComposerContext(): ComposerContextType {
 
 interface ComposerRootProps {
   children: ReactNode;
-  onSend: (content: string, attachments: any[], mentions: string[]) => Promise<void>;
+  onSend: (content: string, attachments: Attachment[], mentions: string[]) => Promise<void>;
 }
 
 export function ComposerRoot({ children, onSend }: ComposerRootProps) {
   const [content, setContent] = useState("");
-  const [attachments, setAttachments] = useState<any[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [mentions, setMentions] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
