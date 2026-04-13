@@ -7,15 +7,15 @@
     "dev": "next dev --port ${PORT:-3003}",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "echo 'lint: ESLint migration pending (next lint deprecated in Next.js 16)'",
     "typecheck": "tsc --noEmit",
     "build:prod": "next build",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
-    "@witylogix/core": "workspace:*",
     "@sentry/nextjs": "^8.0.0",
+    "@witylogix/core": "workspace:*",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.469.0",
@@ -33,6 +33,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^16.2.3",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.7.0"
