@@ -30,11 +30,7 @@ import { getRedis } from "../lib/redis.js";
 import { getNotificationQueue } from "../lib/queue.js";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-
-// Password hashing with bcrypt
-// Note: Ensure 'bcrypt' is installed as dependency
-// TODO: Consider adding rate limiting middleware for login endpoints
-// Suggested approach: @fastify/rate-limit per /login route with max 5 attempts per minute
+import { strictRateLimiter } from "../middleware/rate-limiter.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -100,7 +96,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Errors: 401 (invalid credentials), 422 (validation error)
   // Rate limiting: Recommended 5 attempts/minute per IP
 
-  fastify.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post("/login", { preHandler: [strictRateLimiter] }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       var { email, password, shopDomain } = loginSchema.parse(request.body);
     } catch (err) {
@@ -207,7 +203,7 @@ async function authRoutes(fastify: FastifyInstance): Promise<void> {
   // Errors: 401 (invalid credentials), 422 (validation error)
   // Rate limiting: Recommended 5 attempts/minute per IP
 
-  fastify.post("/driver/login", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post("/driver/login", { preHandler: [strictRateLimiter] }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       var { phone, password, shopDomain } = driverLoginSchema.parse(request.body);
     } catch (err) {
