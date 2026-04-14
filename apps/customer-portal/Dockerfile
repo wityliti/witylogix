@@ -50,7 +50,7 @@ ENV NODE_ENV=production \
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ 2>/dev/null || exit 0
+  CMD wget -qO- http://localhost:3000/health 2>/dev/null || exit 0
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "apps/customer-portal/server.js"]
