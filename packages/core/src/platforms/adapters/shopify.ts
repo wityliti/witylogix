@@ -408,13 +408,12 @@ export class ShopifyAdapter {
         ? {
             firstName: shopifyOrder.shipping_address.first_name,
             lastName: shopifyOrder.shipping_address.last_name,
-            address1: shopifyOrder.shipping_address.address1,
-            address2: shopifyOrder.shipping_address.address2,
+            line1: shopifyOrder.shipping_address.address1,
+            line2: shopifyOrder.shipping_address.address2,
             city: shopifyOrder.shipping_address.city,
-            province: shopifyOrder.shipping_address.province,
+            state: shopifyOrder.shipping_address.province,
             country: shopifyOrder.shipping_address.country,
             postalCode: shopifyOrder.shipping_address.zip,
-            phone: shopifyOrder.shipping_address.phone,
           }
         : undefined,
       createdAt: new Date(shopifyOrder.created_at),
@@ -478,20 +477,20 @@ export class ShopifyAdapter {
       phone: shopifyCustomer.phone || undefined,
       billingAddress: shopifyCustomer.default_address
         ? {
-            address1: shopifyCustomer.default_address.address1,
-            address2: shopifyCustomer.default_address.address2 || undefined,
+            line1: shopifyCustomer.default_address.address1,
+            line2: shopifyCustomer.default_address.address2 || undefined,
             city: shopifyCustomer.default_address.city,
-            province: shopifyCustomer.default_address.province,
+            state: shopifyCustomer.default_address.province,
             country: shopifyCustomer.default_address.country,
             postalCode: shopifyCustomer.default_address.zip,
           }
         : undefined,
       shippingAddress: shopifyCustomer.addresses?.[0]
         ? {
-            address1: shopifyCustomer.addresses[0].address1,
-            address2: shopifyCustomer.addresses[0].address2 || undefined,
+            line1: shopifyCustomer.addresses[0].address1,
+            line2: shopifyCustomer.addresses[0].address2 || undefined,
             city: shopifyCustomer.addresses[0].city,
-            province: shopifyCustomer.addresses[0].province,
+            state: shopifyCustomer.addresses[0].province,
             country: shopifyCustomer.addresses[0].country,
             postalCode: shopifyCustomer.addresses[0].zip,
           }

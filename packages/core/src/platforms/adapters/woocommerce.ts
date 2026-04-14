@@ -408,13 +408,12 @@ export class WooCommerceAdapter {
       shippingAddress: {
         firstName: wcOrder.shipping.first_name,
         lastName: wcOrder.shipping.last_name,
-        address1: wcOrder.shipping.address_1,
-        address2: wcOrder.shipping.address_2 || undefined,
+        line1: wcOrder.shipping.address_1,
+        line2: wcOrder.shipping.address_2 || undefined,
         city: wcOrder.shipping.city,
-        province: wcOrder.shipping.state,
+        state: wcOrder.shipping.state,
         country: wcOrder.shipping.country,
         postalCode: wcOrder.shipping.postcode,
-        phone: wcOrder.shipping.phone || undefined,
       },
       createdAt: new Date(wcOrder.date_created),
     };
@@ -512,20 +511,20 @@ export class WooCommerceAdapter {
       phone: phone,
       billingAddress: wcCustomer.billing
         ? {
-            address1: wcCustomer.billing.address_1,
-            address2: wcCustomer.billing.address_2 || undefined,
+            line1: wcCustomer.billing.address_1,
+            line2: wcCustomer.billing.address_2 || undefined,
             city: wcCustomer.billing.city,
-            province: wcCustomer.billing.state,
+            state: wcCustomer.billing.state,
             country: wcCustomer.billing.country,
             postalCode: wcCustomer.billing.postcode,
           }
         : undefined,
       shippingAddress: wcCustomer.shipping
         ? {
-            address1: wcCustomer.shipping.address_1,
-            address2: wcCustomer.shipping.address_2 || undefined,
+            line1: wcCustomer.shipping.address_1,
+            line2: wcCustomer.shipping.address_2 || undefined,
             city: wcCustomer.shipping.city,
-            province: wcCustomer.shipping.state,
+            state: wcCustomer.shipping.state,
             country: wcCustomer.shipping.country,
             postalCode: wcCustomer.shipping.postcode,
           }
