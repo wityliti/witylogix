@@ -664,8 +664,8 @@ describe('ShopifyAdapter', () => {
     it('should extract address fields correctly', () => {
       const result = adapter.mapOrder(MOCK_SHOPIFY_ORDER);
 
-      expect(result.shippingAddress.address1).toBe('123 Main St');
-      expect(result.shippingAddress.address2).toBe('Apt 5');
+      expect(result.shippingAddress.line1).toBe('123 Main St');
+      expect(result.shippingAddress.line2).toBe('Apt 5');
       expect(result.shippingAddress.postalCode).toBe('94102');
       expect(result.shippingAddress.country).toBe('United States');
     });
@@ -812,9 +812,9 @@ describe('ShopifyAdapter', () => {
       expect(result.lastName).toBe('Doe');
       expect(result.phone).toBe('+1-555-0123');
       expect(result.billingAddress).toBeDefined();
-      expect(result.billingAddress?.address1).toBe('456 Billing St');
+      expect(result.billingAddress?.line1).toBe('456 Billing St');
       expect(result.shippingAddress).toBeDefined();
-      expect(result.shippingAddress?.address1).toBe('789 Secondary Ave');
+      expect(result.shippingAddress?.line1).toBe('789 Secondary Ave');
     });
 
     it('should map customer with minimal data', () => {
@@ -861,7 +861,7 @@ describe('ShopifyAdapter', () => {
       const result = adapter.mapCustomer(MOCK_SHOPIFY_CUSTOMER);
 
       expect(result.shippingAddress).toBeDefined();
-      expect(result.shippingAddress?.address1).toBe('789 Secondary Ave');
+      expect(result.shippingAddress?.line1).toBe('789 Secondary Ave');
       expect(result.shippingAddress?.city).toBe('Oakland');
     });
 

@@ -87,8 +87,8 @@ export class SamsaraSdkClient implements TelematicsProvider {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.request("GET", "/fleet/vehicles", { limit: 1 });
-      return response.ok;
+      await this.request("GET", "/fleet/vehicles", { limit: 1 });
+      return true;
     } catch {
       return false;
     }
