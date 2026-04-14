@@ -154,6 +154,10 @@ export class PowerfleetClient implements ITelematicsAdapter {
         throw new Error(`Powerfleet API error: ${response.status} ${response.statusText}`);
       }
 
+      if (response.status === 204 || typeof response.json !== "function") {
+        return undefined as T;
+      }
+
       return (await response.json()) as T;
     });
   }
@@ -419,7 +423,7 @@ export class PowerfleetClient implements ITelematicsAdapter {
    */
   async validateConnection(): Promise<boolean> {
     try {
-      await this.getVehicles({ limit: 1 });
+      await this.request<unknown>("GET", "/assets");
       return true;
     } catch {
       return false;
