@@ -34,4 +34,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
 # migrate deploy is idempotent — safe on every restart/redeploy.
 CMD ["dumb-init", "sh", "-c", \
     "npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma && \
-    cd apps/api && node --import tsx dist/server.js"]
+    node apps/api/dist/server.js"]
