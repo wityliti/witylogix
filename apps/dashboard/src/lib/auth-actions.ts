@@ -73,7 +73,10 @@ async function fetchApi<T>(
   endpoint: string,
   body: unknown,
 ): Promise<{ data?: T; error?: ApiErrorResponse; status: number }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.API_URL ||
+    "http://localhost:8000";
 
   try {
     const response = await fetch(`${apiUrl}/api/v4/auth${endpoint}`, {
