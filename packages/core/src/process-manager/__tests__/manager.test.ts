@@ -378,6 +378,18 @@ describe('ProcessManager', () => {
   });
 
   describe('Signal handling', () => {
+    let exitSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      exitSpy = vi.spyOn(process, 'exit').mockImplementation(((_code?: number) => {
+        return undefined as never;
+      }) as any);
+    });
+
+    afterEach(() => {
+      exitSpy.mockRestore();
+    });
+
     it('should handle SIGTERM gracefully', async () => {
       const factory = () => new MockWorker(prisma, redis, { name: 'mock' });
       manager.registerWorker('mock-worker', factory);
@@ -388,9 +400,8 @@ describe('ProcessManager', () => {
 
       // Simulate SIGTERM
       process.emit('SIGTERM' as any);
+      await new Promise((resolve) => setImmediate(resolve));
 
-      // Note: In real environment, process.exit would be called
-      // Here we're just testing the handler is set up
       expect(stopAllMock).toBeDefined();
     });
 
@@ -402,8 +413,8 @@ describe('ProcessManager', () => {
 
       // Simulate SIGINT
       process.emit('SIGINT' as any);
+      await new Promise((resolve) => setImmediate(resolve));
 
-      // Note: In real environment, process.exit would be called
       expect(true).toBe(true);
     });
   });
