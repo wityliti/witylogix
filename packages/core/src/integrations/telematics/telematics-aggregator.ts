@@ -369,19 +369,18 @@ export class TelematicsAggregator {
    * Get deduplication key for vehicle
    */
   private getVehicleDeduplicationKey(vehicle: NormalizedVehicle): string {
-    const keys: string[] = [];
-
+    // First-match (OR) logic: a vehicle sharing any key field with another is a duplicate
     for (const field of this.deduplicationRules.matchBy) {
       if (field === "vin" && vehicle.vin) {
-        keys.push(`vin:${vehicle.vin}`);
+        return `vin:${vehicle.vin}`;
       } else if (field === "licensePlate" && vehicle.licensePlate) {
-        keys.push(`plate:${vehicle.licensePlate}`);
+        return `plate:${vehicle.licensePlate}`;
       } else if (field === "name") {
-        keys.push(`name:${vehicle.name}`);
+        return `name:${vehicle.name}`;
       }
     }
 
-    return keys.length > 0 ? keys.join("|") : `id:${vehicle.externalVehicleId}`;
+    return `id:${vehicle.externalVehicleId}`;
   }
 
   /**

@@ -15,22 +15,46 @@ const prismaClientBrowserStub = fileURLToPath(
   new URL("./app/stubs/prisma-client.browser-stub.ts", import.meta.url),
 );
 
+const witylogixDbBrowserStub = fileURLToPath(
+  new URL("./app/stubs/witylogix-db.browser-stub.ts", import.meta.url),
+);
+
 function isPrismaClientModuleId(id: string): boolean {
   if (id === "@prisma/client" || id.startsWith("@prisma/client/")) return true;
   // pnpm / Vite often pass absolute paths while pre-bundling dependencies
-  if (id.includes("/@prisma/client/") || id.includes("\\@prisma\\client\\")) return true;
-  if (id.endsWith("/@prisma/client") || id.endsWith("\\@prisma\\client")) return true;
+  if (id.includes("/@prisma/client/") || id.includes("\\@prisma\\client\\"))
+    return true;
+  if (id.endsWith("/@prisma/client") || id.endsWith("\\@prisma\\client"))
+    return true;
   return false;
 }
 
-/** Resolve `@prisma/client` to a no-op stub during client / optimizeDeps scans only. */
-const prismaClientBrowserStubPlugin = {
-  name: "prisma-client-browser-stub",
+function isWitylogixDbModuleId(id: string): boolean {
+  if (id === "@witylogix/db" || id.startsWith("@witylogix/db/")) return true;
+  if (id.includes("/@witylogix/db/") || id.includes("\\@witylogix\\db\\"))
+    return true;
+  if (id.endsWith("/@witylogix/db") || id.endsWith("\\@witylogix\\db"))
+    return true;
+  if (id.includes("packages/db/")) return true;
+  return false;
+}
+
+/**
+ * Resolve `@prisma/client` and `@witylogix/db` to no-op stubs during
+ * client / optimizeDeps scans only. This prevents react-router's
+ * build-client-route plugin from failing when it encounters server-only
+ * imports in route modules.
+ */
+const serverOnlyBrowserStubPlugin = {
+  name: "server-only-browser-stub",
   enforce: "pre" as const,
   resolveId(id: string, _importer?: string, options?: { ssr?: boolean }) {
     if (options?.ssr === true) return null;
     if (isPrismaClientModuleId(id)) {
       return prismaClientBrowserStub;
+    }
+    if (isWitylogixDbModuleId(id)) {
+      return witylogixDbBrowserStub;
     }
     return null;
   },
@@ -56,7 +80,10 @@ const serverExternalsPlugin = {
       return { id, external: true };
     }
     if (id.includes("shopify-app-session-storage-prisma")) {
-      return { id: "@shopify/shopify-app-session-storage-prisma", external: true };
+      return {
+        id: "@shopify/shopify-app-session-storage-prisma",
+        external: true,
+      };
     }
     // Already-resolved file path that belongs to @witylogix/db
     // (matches both /absolute/packages/db/ and ../../packages/db/)
@@ -72,7 +99,7 @@ const serverExternalsPlugin = {
 
 export default defineConfig({
   plugins: [
-    prismaClientBrowserStubPlugin,
+    serverOnlyBrowserStubPlugin,
     serverExternalsPlugin,
     reactRouter(),
     tsconfigPaths({ ignoreConfigErrors: true }),

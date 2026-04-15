@@ -62,7 +62,13 @@ COPY --from=builder /app ./
 ENV NODE_ENV=production
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# Give migrations time to complete before health checks start.
+# Migration typically takes 5-30s; 60s covers slow cold-start scenarios.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["dumb-init", "node", "apps/api/dist/server.js"]
+# Run pending Prisma migrations then start the API server.
+# prisma migrate deploy is idempotent — safe to run on every restart.
+CMD ["dumb-init", "sh", "-c", \
+    "npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma && \
+    node apps/api/dist/server.js"]

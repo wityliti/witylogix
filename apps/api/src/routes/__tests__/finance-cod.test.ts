@@ -5,6 +5,20 @@
 
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+
+// Mock middleware to prevent loading @witylogix/db native binary in test worker
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(),
+  requireRole: vi.fn(() => vi.fn()),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(),
+}));
+vi.mock("../../lib/errors.js", () => ({
+  NotFoundError: class NotFoundError extends Error { constructor(msg: string) { super(msg); this.name = "NotFoundError"; } },
+  ValidationError: class ValidationError extends Error { constructor(msg: string) { super(msg); this.name = "ValidationError"; } },
+}));
+
 import financeCodRoutes from "../finance-cod.js";
 
 // ─── Mock types ──────────────────────────────────────────────

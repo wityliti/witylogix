@@ -292,7 +292,21 @@ export function validateEnv(env: Record<string, unknown>): Env {
 }
 
 /**
- * Validates environment and returns typed object
- * Call this at app startup to fail fast on missing/invalid config
+ * Validates environment and returns typed object.
+ * Lazy-initialized on first access so that test modules can import
+ * `validateEnv` without triggering validation as a side-effect.
  */
-export const env = validateEnv(process.env);
+let _env: Env | undefined;
+export function getEnv(): Env {
+  if (!_env) {
+    _env = validateEnv(process.env);
+  }
+  return _env;
+}
+
+/** @deprecated Use getEnv() — kept for backwards compatibility. */
+export const env: Env = new Proxy({} as Env, {
+  get(_target, prop) {
+    return getEnv()[prop as keyof Env];
+  },
+});

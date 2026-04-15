@@ -11,7 +11,7 @@
  *   Auth: Bearer token (access token)
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 import type {
   WooCommerceOrder,
   WooCommerceProduct,
@@ -23,7 +23,7 @@ import type {
   CreateProductInput,
   CreateCustomerInput,
   WooCommerceCredentials,
-} from './woocommerce.js';
+} from "./woocommerce.js";
 
 /**
  * Shopify order from REST API
@@ -44,12 +44,32 @@ export interface ShopifyOrder {
   total_tax: string;
   total_discounts: string;
   currency: string;
-  financial_status: 'authorized' | 'pending' | 'paid' | 'refunded' | 'voided' | 'partially_paid' | 'partially_refunded' | 'declined';
+  financial_status:
+    | "authorized"
+    | "pending"
+    | "paid"
+    | "refunded"
+    | "voided"
+    | "partially_paid"
+    | "partially_refunded"
+    | "declined";
   confirmed: boolean;
   status: string;
-  fulfillment_status: 'fulfilled' | 'partial' | 'unshipped' | 'unfinished' | 'scheduled' | null;
+  fulfillment_status:
+    | "fulfilled"
+    | "partial"
+    | "unshipped"
+    | "unfinished"
+    | "scheduled"
+    | null;
   fulfillments: Array<unknown>;
-  payment_details: { credit_card_bin: string; avs_result_code: string; cvv_result_code: string; credit_card_number: string; credit_card_company: string };
+  payment_details: {
+    credit_card_bin: string;
+    avs_result_code: string;
+    cvv_result_code: string;
+    credit_card_number: string;
+    credit_card_company: string;
+  };
   billing_address: ShopifyAddress;
   shipping_address: ShopifyAddress;
   customer: ShopifyCustomer;
@@ -83,14 +103,35 @@ export interface ShopifyOrder {
   source_name: string;
   presentment_currency: string;
   total_line_items_price: string;
-  total_line_items_price_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } };
-  total_price_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } };
-  total_shipping_price_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } };
-  total_tax_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } };
-  total_discount_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } };
+  total_line_items_price_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  };
+  total_price_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  };
+  total_shipping_price_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  };
+  total_tax_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  };
+  total_discount_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  };
   total_weight_unit: string;
-  original_total_duties_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } } | null;
-  current_total_duties_set: { shop_money: { amount: string; currency_code: string }; presentment_money: { amount: string; currency_code: string } } | null;
+  original_total_duties_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  } | null;
+  current_total_duties_set: {
+    shop_money: { amount: string; currency_code: string };
+    presentment_money: { amount: string; currency_code: string };
+  } | null;
   total_outstanding: string;
   payment_gateway_names: string[];
   display_fulfillment_status: string;
@@ -196,7 +237,13 @@ export interface ShopifyProduct {
   vendor: string;
   tags: string;
   variants: ShopifyVariant[];
-  options: Array<{ id: number; product_id: number; name: string; position: number; values: string[] }>;
+  options: Array<{
+    id: number;
+    product_id: number;
+    name: string;
+    position: number;
+    values: string[];
+  }>;
   images: ShopifyImage[];
   image: ShopifyImage | null;
   admin_graphql_api_id: string;
@@ -259,8 +306,8 @@ export interface ShopifyCredentials {
  * Shopify REST Admin API adapter
  */
 export class ShopifyAdapter {
-  public readonly source = 'SHOPIFY' as const;
-  private apiVersion = '2024-01';
+  public readonly source = "SHOPIFY" as const;
+  private apiVersion = "2024-01";
 
   constructor(apiVersion?: string) {
     if (apiVersion) {
@@ -281,7 +328,7 @@ export class ShopifyAdapter {
   validateWebhook(
     payload: string | Buffer,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
     if (!signature || !secret) {
       return false;
@@ -292,17 +339,18 @@ export class ShopifyAdapter {
     }
 
     try {
-      const payloadString = typeof payload === 'string' ? payload : payload.toString('utf-8');
+      const payloadString =
+        typeof payload === "string" ? payload : payload.toString("utf-8");
 
       // Shopify HMAC is base64(hmac-sha256(payload, secret))
       const computed = crypto
-        .createHmac('sha256', secret)
-        .update(payloadString, 'utf-8')
-        .digest('base64');
+        .createHmac("sha256", secret)
+        .update(payloadString, "utf-8")
+        .digest("base64");
 
       // Timing-safe comparison
-      const expectedBuffer = Buffer.from(computed, 'utf-8');
-      const actualBuffer = Buffer.from(signature, 'utf-8');
+      const expectedBuffer = Buffer.from(computed, "utf-8");
+      const actualBuffer = Buffer.from(signature, "utf-8");
 
       if (expectedBuffer.length !== actualBuffer.length) {
         return false;
@@ -310,7 +358,7 @@ export class ShopifyAdapter {
 
       return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
     } catch (error) {
-      console.error('[ShopifyAdapter] Error validating webhook:', error);
+      console.error("[ShopifyAdapter] Error validating webhook:", error);
       return false;
     }
   }
@@ -333,16 +381,19 @@ export class ShopifyAdapter {
     }));
 
     const customerName = shopifyOrder.customer
-      ? `${shopifyOrder.customer.first_name || ''} ${shopifyOrder.customer.last_name || ''}`.trim()
+      ? `${shopifyOrder.customer.first_name || ""} ${shopifyOrder.customer.last_name || ""}`.trim()
       : shopifyOrder.billing_address
-        ? `${shopifyOrder.billing_address.first_name || ''} ${shopifyOrder.billing_address.last_name || ''}`.trim()
+        ? `${shopifyOrder.billing_address.first_name || ""} ${shopifyOrder.billing_address.last_name || ""}`.trim()
         : undefined;
 
     return {
       externalOrderId: String(shopifyOrder.id),
-      externalOrderNumber: String(shopifyOrder.number || shopifyOrder.order_number),
+      externalOrderNumber: String(
+        shopifyOrder.number || shopifyOrder.order_number,
+      ),
       source: this.source,
-      status: shopifyOrder.cancelled_at ? 'cancelled' : shopifyOrder.status,
+      status: shopifyOrder.cancelled_at ? "cancelled" : shopifyOrder.status,
+      email: shopifyOrder.customer?.email || shopifyOrder.email || "",
       customerEmail: shopifyOrder.customer?.email || shopifyOrder.email,
       customerName: customerName,
       currency: shopifyOrder.currency,
@@ -351,21 +402,20 @@ export class ShopifyAdapter {
       totalTax: parseFloat(shopifyOrder.total_tax),
       totalWeight: shopifyOrder.total_weight,
       financialStatus: shopifyOrder.financial_status,
-      fulfillmentStatus: shopifyOrder.fulfillment_status || 'unshipped',
+      fulfillmentStatus: shopifyOrder.fulfillment_status || "unshipped",
       lineItems: lineItems,
-      shippingAddress: shopifyOrder.shipping_address ? {
-        firstName: shopifyOrder.shipping_address.first_name,
-        lastName: shopifyOrder.shipping_address.last_name,
-        line1: shopifyOrder.shipping_address.address1,
-        line2: shopifyOrder.shipping_address.address2,
-        address1: shopifyOrder.shipping_address.address1,
-        address2: shopifyOrder.shipping_address.address2,
-        city: shopifyOrder.shipping_address.city,
-        province: shopifyOrder.shipping_address.province,
-        country: shopifyOrder.shipping_address.country,
-        postalCode: shopifyOrder.shipping_address.zip,
-        phone: shopifyOrder.shipping_address.phone,
-      } : undefined,
+      shippingAddress: shopifyOrder.shipping_address
+        ? {
+            firstName: shopifyOrder.shipping_address.first_name,
+            lastName: shopifyOrder.shipping_address.last_name,
+            line1: shopifyOrder.shipping_address.address1,
+            line2: shopifyOrder.shipping_address.address2,
+            city: shopifyOrder.shipping_address.city,
+            state: shopifyOrder.shipping_address.province,
+            country: shopifyOrder.shipping_address.country,
+            postalCode: shopifyOrder.shipping_address.zip,
+          }
+        : undefined,
       createdAt: new Date(shopifyOrder.created_at),
     };
   }
@@ -378,7 +428,9 @@ export class ShopifyAdapter {
    */
   mapProduct(shopifyProduct: ShopifyProduct): CreateProductInput {
     // Extract tags
-    const tags = shopifyProduct.tags ? shopifyProduct.tags.split(',').map((t) => t.trim()) : [];
+    const tags = shopifyProduct.tags
+      ? shopifyProduct.tags.split(",").map((t) => t.trim())
+      : [];
 
     // Map variants from Shopify product
     const variants = (shopifyProduct.variants || []).map((variant) => ({
@@ -392,7 +444,8 @@ export class ShopifyAdapter {
     }));
 
     // Extract first image URL
-    const imageUrl = shopifyProduct.images?.[0]?.src || shopifyProduct.image?.src;
+    const imageUrl =
+      shopifyProduct.images?.[0]?.src || shopifyProduct.image?.src;
 
     return {
       externalProductId: String(shopifyProduct.id),
@@ -422,22 +475,26 @@ export class ShopifyAdapter {
       firstName: shopifyCustomer.first_name,
       lastName: shopifyCustomer.last_name,
       phone: shopifyCustomer.phone || undefined,
-      billingAddress: shopifyCustomer.default_address ? {
-        address1: shopifyCustomer.default_address.address1,
-        address2: shopifyCustomer.default_address.address2 || undefined,
-        city: shopifyCustomer.default_address.city,
-        province: shopifyCustomer.default_address.province,
-        country: shopifyCustomer.default_address.country,
-        postalCode: shopifyCustomer.default_address.zip,
-      } : undefined,
-      shippingAddress: shopifyCustomer.addresses?.[0] ? {
-        address1: shopifyCustomer.addresses[0].address1,
-        address2: shopifyCustomer.addresses[0].address2 || undefined,
-        city: shopifyCustomer.addresses[0].city,
-        province: shopifyCustomer.addresses[0].province,
-        country: shopifyCustomer.addresses[0].country,
-        postalCode: shopifyCustomer.addresses[0].zip,
-      } : undefined,
+      billingAddress: shopifyCustomer.default_address
+        ? {
+            line1: shopifyCustomer.default_address.address1,
+            line2: shopifyCustomer.default_address.address2 || undefined,
+            city: shopifyCustomer.default_address.city,
+            state: shopifyCustomer.default_address.province,
+            country: shopifyCustomer.default_address.country,
+            postalCode: shopifyCustomer.default_address.zip,
+          }
+        : undefined,
+      shippingAddress: shopifyCustomer.addresses?.[0]
+        ? {
+            line1: shopifyCustomer.addresses[0].address1,
+            line2: shopifyCustomer.addresses[0].address2 || undefined,
+            city: shopifyCustomer.addresses[0].city,
+            state: shopifyCustomer.addresses[0].province,
+            country: shopifyCustomer.addresses[0].country,
+            postalCode: shopifyCustomer.addresses[0].zip,
+          }
+        : undefined,
     };
   }
 
@@ -451,30 +508,32 @@ export class ShopifyAdapter {
    */
   async fetchOrder(
     orderId: string | number,
-    credentials: ShopifyCredentials
+    credentials: ShopifyCredentials,
   ): Promise<ShopifyOrder> {
     const url = new URL(
       `/admin/api/${credentials.apiVersion || this.apiVersion}/orders/${orderId}.json`,
-      `https://${credentials.shop}.myshopify.com`
+      `https://${credentials.shop}.myshopify.com`,
     ).toString();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Shopify-Access-Token': credentials.accessToken,
-          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": credentials.accessToken,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Shopify API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { order: ShopifyOrder };
       return data.order;
     } catch (error) {
-      console.error('[ShopifyAdapter] Error fetching order:', error);
+      console.error("[ShopifyAdapter] Error fetching order:", error);
       throw error;
     }
   }
@@ -491,37 +550,39 @@ export class ShopifyAdapter {
   async fetchProducts(
     credentials: ShopifyCredentials,
     cursor?: string,
-    limit: number = 100
+    limit: number = 100,
   ): Promise<{ products: ShopifyProduct[]; nextCursor?: string }> {
     const url = new URL(
       `/admin/api/${credentials.apiVersion || this.apiVersion}/products.json`,
-      `https://${credentials.shop}.myshopify.com`
+      `https://${credentials.shop}.myshopify.com`,
     );
-    url.searchParams.set('limit', String(Math.min(limit, 250)));
+    url.searchParams.set("limit", String(Math.min(limit, 250)));
     if (cursor) {
-      url.searchParams.set('cursor', cursor);
+      url.searchParams.set("cursor", cursor);
     }
 
     try {
       const response = await fetch(url.toString(), {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Shopify-Access-Token': credentials.accessToken,
-          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": credentials.accessToken,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Shopify API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { products: ShopifyProduct[] };
-      const linkHeader = response.headers.get('Link');
+      const linkHeader = response.headers.get("Link");
       const nextCursor = this.extractNextCursor(linkHeader);
 
       return { products: data.products, nextCursor };
     } catch (error) {
-      console.error('[ShopifyAdapter] Error fetching products:', error);
+      console.error("[ShopifyAdapter] Error fetching products:", error);
       throw error;
     }
   }
@@ -536,30 +597,32 @@ export class ShopifyAdapter {
    */
   async fetchCustomer(
     customerId: string | number,
-    credentials: ShopifyCredentials
+    credentials: ShopifyCredentials,
   ): Promise<ShopifyCustomer> {
     const url = new URL(
       `/admin/api/${credentials.apiVersion || this.apiVersion}/customers/${customerId}.json`,
-      `https://${credentials.shop}.myshopify.com`
+      `https://${credentials.shop}.myshopify.com`,
     ).toString();
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Shopify-Access-Token': credentials.accessToken,
-          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": credentials.accessToken,
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Shopify API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { customer: ShopifyCustomer };
       return data.customer;
     } catch (error) {
-      console.error('[ShopifyAdapter] Error fetching customer:', error);
+      console.error("[ShopifyAdapter] Error fetching customer:", error);
       throw error;
     }
   }
@@ -578,7 +641,7 @@ export class ShopifyAdapter {
     if (!nextMatch) return undefined;
 
     const url = new URL(nextMatch[1]);
-    return url.searchParams.get('cursor') || undefined;
+    return url.searchParams.get("cursor") || undefined;
   }
 }
 

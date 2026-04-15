@@ -64,7 +64,7 @@ export interface DegradationEvent {
  */
 export function createProviderHealth(
   providerId: string,
-  overrides?: Partial<ProviderHealth>
+  overrides?: Partial<ProviderHealth>,
 ): ProviderHealth {
   return {
     providerId,
@@ -88,7 +88,7 @@ export function createProviderHealth(
  */
 export function createSLAConfig(
   providerId: string,
-  overrides?: Partial<SLAConfig>
+  overrides?: Partial<SLAConfig>,
 ): SLAConfig {
   return {
     providerId,
@@ -107,7 +107,7 @@ export function createSLAConfig(
 export function createHealthAlert(
   providerId: string,
   type: string,
-  overrides?: Partial<HealthAlert>
+  overrides?: Partial<HealthAlert>,
 ): HealthAlert {
   return {
     id: `alert-${Date.now()}`,
@@ -130,7 +130,7 @@ export function createHealthAlert(
  */
 export function createCriticalAlert(
   providerId: string,
-  message: string
+  message: string,
 ): HealthAlert {
   return createHealthAlert(providerId, "critical_failure", {
     severity: "critical",
@@ -148,7 +148,7 @@ export function createCriticalAlert(
  */
 export function createLatencyData(
   providerId: string,
-  overrides?: Partial<LatencyData>
+  overrides?: Partial<LatencyData>,
 ): LatencyData {
   return {
     providerId,
@@ -169,12 +169,9 @@ export function createLatencyData(
 export function createDegradationEvent(
   providerId: string,
   signal: "latency" | "error_rate" | "availability",
-  overrides?: Partial<DegradationEvent>
+  overrides?: Partial<DegradationEvent>,
 ): DegradationEvent {
-  const configs: Record<
-    string,
-    { baseline: number; current: number }
-  > = {
+  const configs: Record<string, { baseline: number; current: number }> = {
     latency: { baseline: 150, current: 2500 },
     error_rate: { baseline: 0.0001, current: 0.05 },
     availability: { baseline: 0.9999, current: 0.95 },
@@ -240,7 +237,7 @@ export function createMultiSignalAlert(
   signals: Array<{
     type: "latency" | "error_rate" | "availability";
     score: number;
-  }>
+  }>,
 ) {
   return {
     alertId: `multi-signal-${Date.now()}`,
@@ -250,7 +247,7 @@ export function createMultiSignalAlert(
     signals,
     degradationScore: signals.reduce((sum, s) => sum + s.score, 0),
     createdAt: new Date(),
-    acknowledgedBy?: undefined,
+    acknowledgedBy: undefined,
     resolvedAt: undefined,
   };
 }
@@ -260,7 +257,7 @@ export function createMultiSignalAlert(
  */
 export function createPassiveHealthEvent(
   providerId: string,
-  eventType: string
+  eventType: string,
 ) {
   return {
     eventId: `passive-${Date.now()}`,

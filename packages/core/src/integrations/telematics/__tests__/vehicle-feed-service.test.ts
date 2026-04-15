@@ -106,8 +106,9 @@ describe("VehicleFeedService", () => {
       await service.start(["vehicle-1"]);
       const spy = vi.spyOn(mockProvider, "getBatchVehiclePositions");
 
+      // Second start is a no-op since already running, so spy gets 0 new calls
       await service.start(["vehicle-1"]);
-      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(0);
     });
   });
 

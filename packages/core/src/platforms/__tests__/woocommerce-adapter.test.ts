@@ -677,9 +677,9 @@ describe('WooCommerceAdapter', () => {
       expect(result.lastName).toBe('Wilson');
       expect(result.phone).toBe('+1-503-555-0123');
       expect(result.billingAddress).toBeDefined();
-      expect(result.billingAddress?.address1).toBe('123 Main St');
+      expect(result.billingAddress?.line1).toBe('123 Main St');
       expect(result.shippingAddress).toBeDefined();
-      expect(result.shippingAddress?.address1).toBe('456 Oak Ave');
+      expect(result.shippingAddress?.line1).toBe('456 Oak Ave');
     });
 
     it('should map customer with minimal data', () => {

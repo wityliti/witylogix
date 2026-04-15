@@ -62,12 +62,13 @@ export default defineConfig({
       external: (id: string) =>
         id === "@witylogix/db" ||
         id === "@witylogix/core" ||
+        id === "set-cookie-parser" ||
         id.includes("/packages/db/") ||
         id.includes("/packages/core/"),
     },
   },
   ssr: {
-    external: ["@witylogix/db", "@witylogix/core", "@prisma/client"],
+    external: ["@witylogix/db", "@witylogix/core", "@prisma/client", "set-cookie-parser"],
     optimizeDeps: {
       exclude: ["@prisma/client", "@witylogix/db", "@witylogix/core"],
     },
