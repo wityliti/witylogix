@@ -342,18 +342,18 @@ describe("VehicleFeedService", () => {
   });
 
   describe("Error Handling", () => {
-    it("should emit error event on fetch failure", (done) => {
+    it("should emit error event on fetch failure", async () => {
       (mockProvider.getBatchVehiclePositions as any).mockRejectedValue(
         new Error("API error"),
       );
 
-      service.on("error", (event) => {
-        expect(event.type).toBe("error");
-        expect(event.error).toBeDefined();
-        done();
+      const errorEvent = await new Promise<any>((resolve) => {
+        service.on("error", (event) => resolve(event));
+        service.start(["vehicle-1"]);
       });
 
-      service.start(["vehicle-1"]);
+      expect(errorEvent.type).toBe("error");
+      expect(errorEvent.error).toBeDefined();
     });
   });
 
