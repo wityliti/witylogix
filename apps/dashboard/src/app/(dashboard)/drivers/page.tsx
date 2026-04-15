@@ -151,17 +151,8 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
 
 export default function DriversPage() {
   const router = useRouter();
+  const { items: driversData, loading, error, refetch } = useApiList<ApiDriver>('/api/v4/drivers');
   const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
-
-  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
-    useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: dispatchDrivers, loading: dispatchLoading } =
-    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
-
-  const loading = driversLoading;
-  const error = driversError;
 
 function MapLegend() {
   return (
@@ -271,47 +262,10 @@ export default function DriversPage() {
         title="Drivers"
         subtitle={`${driversData.length} driver${driversData.length !== 1 ? 's' : ''}`}
         actions={
-          <div className="flex items-center gap-2">
-            {/* View toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-700 overflow-hidden">
-              <button
-                onClick={() => setViewMode('cards')}
-                aria-pressed={viewMode === 'cards'}
-                className={cn(
-                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
-                  viewMode === 'cards'
-                    ? 'bg-zinc-700 text-white'
-                    : 'bg-transparent text-zinc-400 hover:text-white'
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                Cards
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                aria-pressed={viewMode === 'map'}
-                className={cn(
-                  'px-3 py-1.5 text-sm flex items-center gap-1.5 transition-colors',
-                  viewMode === 'map'
-                    ? 'bg-zinc-700 text-white'
-                    : 'bg-transparent text-zinc-400 hover:text-white'
-                )}
-              >
-                <Map className="w-3.5 h-3.5" />
-                Map
-                {driversWithLocation.length > 0 && (
-                  <span className="text-[10px] bg-blue-500 text-white rounded-full px-1.5 py-0 font-bold">
-                    {driversWithLocation.length}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            <Button variant="primary" size="md" onClick={() => router.push('/drivers/create')}>
-              <Plus className="w-4 h-4" />
-              Add Driver
-            </Button>
-          </div>
+          <Button variant="primary" size="md" onClick={() => router.push('/drivers/create')}>
+            <Plus className="w-4 h-4" />
+            Add Driver
+          </Button>
         }
       />
 
