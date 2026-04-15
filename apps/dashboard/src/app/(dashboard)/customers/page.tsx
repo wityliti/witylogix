@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,7 +47,7 @@ const TIER_DOT: Record<string, string> = {
 };
 
 export default function CustomersPage() {
-  const [view, setView] = useState<'grid' | 'map'>('grid');
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [tierFilter, setTierFilter] = useState<'all' | 'standard' | 'premium' | 'enterprise'>('all');
@@ -120,31 +119,13 @@ export default function CustomersPage() {
             : `${stats?.activeCount ?? 0} active · ${pagination.total} total`
         }
         actions={
-          <div className="flex gap-2">
-            <div className="flex rounded-md border border-wl-border-default overflow-hidden">
-              <button
-                onClick={() => setView('grid')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
-                )}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" /> List
-              </button>
-              <button
-                onClick={() => setView('map')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'map' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white',
-                )}
-              >
-                <MapIcon className="w-3.5 h-3.5" /> Map
-              </button>
-            </div>
-            <Link href="/customers/segments">
-              <Button variant="secondary" size="sm">Segments</Button>
-            </Link>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/customers/create')}
+          >
+            + Add Customer
+          </Button>
         }
       />
 
