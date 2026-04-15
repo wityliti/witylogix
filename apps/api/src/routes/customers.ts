@@ -15,6 +15,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@witylogix/db";
 import { ZodError } from "zod";
 import { paginationSchema, syncCustomersSchema } from "@witylogix/validators";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
@@ -376,7 +377,149 @@ async function customerRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  // ── GET CUSTOMER ORDERS ────────────────────────────────────────────────────
+  // ── SYNC CUSTOMERS (UPSERT) ────────────────────────────────
+
+  fastify.post("/sync", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = syncCustomersSchema.parse(request.body);
+      const { customers: incomingCustomers } = body;
+
+      // Upsert all customers in a transaction
+      const synced = await request.tenantDb.$transaction(async (tx) => {
+        const results = await Promise.all(
+          incomingCustomers.map((customer) =>
+            tx.customer.upsert({
+              where: {
+                // Unique constraint: shopId + shopifyCustomerId
+                shopId_shopifyCustomerId: {
+                  shopId: request.shopId,
+                  shopifyCustomerId: customer.externalId,
+                },
+              },
+              update: {
+                email: customer.email,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                phone: customer.phone,
+                addresses: customer.defaultAddress,
+                ordersCount: customer.orderCount,
+                totalSpent: customer.totalSpent
+                  ? new Prisma.Decimal(customer.totalSpent)
+                  : new Prisma.Decimal(0),
+                lastSyncAt: new Date(),
+              },
+              create: {
+                shopId: request.shopId,
+                shopifyCustomerId: customer.externalId,
+                email: customer.email,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                phone: customer.phone,
+                addresses: customer.defaultAddress,
+                ordersCount: customer.orderCount,
+                totalSpent: customer.totalSpent
+                  ? new Prisma.Decimal(customer.totalSpent)
+                  : new Prisma.Decimal(0),
+              },
+            }),
+          ),
+        );
+        return results;
+      });
+
+      reply.status(200);
+      return {
+        data: synced,
+        message: `Synced ${synced.length} customers`,
+      };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
+        });
+      }
+      throw err;
+    }
+  });
+
+  // ── CREATE CUSTOMER (manual, dashboard) ────────────────────
+  // Shopify customers arrive via POST /sync. Dashboard-entered customers
+  // go through this endpoint, which generates a synthetic shopifyCustomerId
+  // ("manual-<uuid>") to satisfy the shopId+shopifyCustomerId unique key.
+
+  const createCustomerSchema = z.object({
+    firstName: z.string().trim().min(1).max(100).optional(),
+    lastName: z.string().trim().min(1).max(100).optional(),
+    email: z.string().trim().email(),
+    phone: z.string().trim().min(1).max(40).optional(),
+  });
+
+  fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = createCustomerSchema.parse(request.body);
+
+      const created = await request.tenantDb.customer.create({
+        data: {
+          shopId: request.shopId,
+          shopifyCustomerId: `manual-${randomUUID()}`,
+          email: body.email,
+          firstName: body.firstName ?? null,
+          lastName: body.lastName ?? null,
+          phone: body.phone ?? null,
+          ordersCount: 0,
+          totalSpent: new Prisma.Decimal(0),
+          lastSyncAt: new Date(),
+        },
+      });
+
+      await request.tenantRedis?.invalidateGroup?.("customers");
+      reply.status(201);
+      return { data: created };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        reply.status(422);
+        return {
+          statusCode: 422,
+          error: "VALIDATION_ERROR",
+          message: "Request validation failed",
+          details: err.issues.map((i) => ({
+            field: i.path.join("."),
+            message: i.message,
+            code: i.code,
+          })),
+        };
+      }
+      throw err;
+    }
+  });
+
+  // ── DELETE CUSTOMER ────────────────────────────────────────
+
+  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      const customer = await request.tenantDb.customer.findUnique({
+        where: { id },
+      });
+
+      if (!customer) throw new NotFoundError("Customer", id);
+      if (customer.shopId !== request.shopId) {
+        throw new NotFoundError("Customer", id);
+      }
+
+      const deleted = await request.tenantDb.customer.delete({
+        where: { id },
+      });
+
+      return { data: deleted };
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  // ── GET CUSTOMER ORDERS ────────────────────────────────────
 
   fastify.get("/:id/orders", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
