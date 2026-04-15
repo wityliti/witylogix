@@ -82,7 +82,7 @@ describe('InvoiceService', () => {
         service.createInvoice({
           tenantId: 'tenant-1',
         }),
-      ).rejects.toThrow('Must provide either deliveryIds or routeIds');
+      ).rejects.toThrow('Must provide either deliveryIds, routeIds, or manualLineItems');
     });
 
     it('should throw if rate card not found', async () => {

@@ -592,6 +592,7 @@ export interface AccessTokenPayload {
   /** Whether MFA was verified in this session */
   mfaVerified: boolean;
   /** Standard JWT claims */
+  jti?: string; // JWT ID (unique token identifier)
   iat: number; // Issued at
   exp: number; // Expiration (15 minutes from iat)
   sub: string; // Subject (same as userId)
@@ -614,6 +615,7 @@ export interface RefreshTokenPayload {
   /** Refresh token version (for rotation) */
   version: number;
   /** Standard JWT claims */
+  jti?: string; // JWT ID (unique token identifier)
   iat: number;
   exp: number; // Expiration (7 days from iat)
   sub: string;
