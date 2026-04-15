@@ -69,9 +69,9 @@ export class DashboardHub {
     this.eventBus = config.eventBus;
 
     const namespace = config.namespace ?? "/realtime";
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore — namespace option not in socket.io Server typings; preserved for runtime use
-    this.io = new Server(config.httpServer, {
+    // `namespace` is preserved for runtime/downstream use but is not in socket.io
+    // Server typings, so we pass options as `any`.
+    const serverOptions: any = {
       namespace,
       transports: ["websocket", "polling"],
       cors: {
@@ -80,7 +80,8 @@ export class DashboardHub {
       },
       pingInterval: HEARTBEAT_INTERVAL,
       pingTimeout: HEARTBEAT_INTERVAL * 2,
-    });
+    };
+    this.io = new Server(config.httpServer, serverOptions);
 
     this.broadcaster = new EventBroadcaster(
       this.eventBus,
