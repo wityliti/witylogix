@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
@@ -78,6 +79,7 @@ const truncateAddress = (address: string, maxLength: number = 40): string => {
 type OrderDisplay = Order;
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt:desc');
@@ -146,7 +148,11 @@ export default function OrdersPage() {
         title="Orders"
         subtitle={`${pagination.total} total orders`}
         actions={
-          <Button variant="primary" size="md">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/orders/create')}
+          >
             + Create Order
           </Button>
         }

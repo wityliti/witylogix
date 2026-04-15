@@ -55,3 +55,14 @@ packages/*/package-lock.json
 
 # Claude-Flow runtime state
 **/.claude-flow/
+
+# Playwright
+**/playwright-report/
+**/test-results/
+**/blob-report/
+**/.playwright/
+**/*.webm
+**/trace.zip
+
+# TypeScript incremental build cache
+**/*.tsbuildinfo
