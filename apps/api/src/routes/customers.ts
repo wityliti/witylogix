@@ -17,6 +17,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { Prisma } from "@witylogix/db";
 import { ZodError } from "zod";
 import { paginationSchema, syncCustomersSchema } from "@witylogix/validators";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
@@ -170,6 +171,57 @@ async function customerRoutes(fastify: FastifyInstance): Promise<void> {
           success: false,
           error: { code: "VALIDATION_ERROR", message: "Invalid request body", details: err.errors },
         });
+      }
+      throw err;
+    }
+  });
+
+  // ── CREATE CUSTOMER (manual, dashboard) ────────────────────
+  // Shopify customers arrive via POST /sync. Dashboard-entered customers
+  // go through this endpoint, which generates a synthetic shopifyCustomerId
+  // ("manual-<uuid>") to satisfy the shopId+shopifyCustomerId unique key.
+
+  const createCustomerSchema = z.object({
+    firstName: z.string().trim().min(1).max(100).optional(),
+    lastName: z.string().trim().min(1).max(100).optional(),
+    email: z.string().trim().email(),
+    phone: z.string().trim().min(1).max(40).optional(),
+  });
+
+  fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = createCustomerSchema.parse(request.body);
+
+      const created = await request.tenantDb.customer.create({
+        data: {
+          shopId: request.shopId,
+          shopifyCustomerId: `manual-${randomUUID()}`,
+          email: body.email,
+          firstName: body.firstName ?? null,
+          lastName: body.lastName ?? null,
+          phone: body.phone ?? null,
+          ordersCount: 0,
+          totalSpent: new Prisma.Decimal(0),
+          lastSyncAt: new Date(),
+        },
+      });
+
+      await request.tenantRedis?.invalidateGroup?.("customers");
+      reply.status(201);
+      return { data: created };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        reply.status(422);
+        return {
+          statusCode: 422,
+          error: "VALIDATION_ERROR",
+          message: "Request validation failed",
+          details: err.issues.map((i) => ({
+            field: i.path.join("."),
+            message: i.message,
+            code: i.code,
+          })),
+        };
       }
       throw err;
     }
