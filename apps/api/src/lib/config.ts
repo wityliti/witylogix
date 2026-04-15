@@ -28,7 +28,7 @@ const configSchema = z.object({
   SHOPIFY_APP_URL: z.string().url().optional(),
   // Minimal scope set — WIT-303 Built for Shopify certification
   SHOPIFY_SCOPES: z.string().default(
-    "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,read_customers",
+    "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_locations,read_customers",
   ),
 
   // Routing — provider + BYOK mode
