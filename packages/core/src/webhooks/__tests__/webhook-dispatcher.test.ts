@@ -34,7 +34,7 @@ describe("WebhookDispatcher", () => {
 
       expect(response.success).toBe(true);
       expect(response.statusCode).toBe(200);
-      expect(response.duration).toBeGreaterThan(0);
+      expect(response.duration).toBeGreaterThanOrEqual(0);
       expect((global.fetch as any)).toHaveBeenCalledOnce();
     });
 
@@ -254,9 +254,17 @@ describe("WebhookDispatcher", () => {
       const payload = { event: "order.created" };
       const secret = "test_secret";
 
-      // Mock fetch to never resolve (simulate timeout)
+      // Mock fetch to respect the abort signal
       (global.fetch as any).mockImplementation(
-        () => new Promise(() => {}) // Never resolves
+        (_url: string, options: { signal?: AbortSignal }) => {
+          return new Promise((_, reject) => {
+            if (options?.signal) {
+              options.signal.addEventListener("abort", () => {
+                reject(new DOMException("The operation was aborted.", "AbortError"));
+              });
+            }
+          });
+        }
       );
 
       const response = await dispatcher.dispatch(
@@ -266,9 +274,8 @@ describe("WebhookDispatcher", () => {
         { timeout: 100 } // 100ms timeout
       );
 
-      // Due to AbortController timing, this might succeed or fail
-      // depending on timing, but should record duration
-      expect(response.duration).toBeGreaterThan(0);
+      expect(response.success).toBe(false);
+      expect(response.duration).toBeGreaterThanOrEqual(0);
     });
   });
 });

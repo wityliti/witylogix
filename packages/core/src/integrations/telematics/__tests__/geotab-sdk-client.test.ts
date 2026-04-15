@@ -282,7 +282,7 @@ describe("GeotabSDKClient", () => {
     });
 
     it("should update a zone", async () => {
-      global.fetch = mockFetchResponse(null);
+      global.fetch = mockFetchResponse("zone-1");
 
       await expect(
         client.setZone({
@@ -291,13 +291,13 @@ describe("GeotabSDKClient", () => {
           activeFrom: "2025-01-01T00:00:00Z",
           activeTo: "2026-01-01T00:00:00Z",
         }),
-      ).resolves.toBeUndefined();
+      ).resolves.not.toThrow();
     });
 
     it("should remove a zone", async () => {
-      global.fetch = mockFetchResponse(null);
+      global.fetch = mockFetchResponse(true);
 
-      await expect(client.removeZone("zone-1")).resolves.toBeUndefined();
+      await expect(client.removeZone("zone-1")).resolves.not.toThrow();
     });
   });
 

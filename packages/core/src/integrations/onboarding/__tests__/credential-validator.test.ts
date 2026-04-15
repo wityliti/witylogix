@@ -34,7 +34,8 @@ describe('CredentialValidator', () => {
       expect(result.valid).toBe(true);
       expect(result.providerId).toBe('stripe');
       expect(result.timestamp).toBeInstanceOf(Date);
-      expect(result.latencyMs).toBeGreaterThan(0);
+      // Mocked fetch completes instantly; latency may be 0ms
+      expect(result.latencyMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should return invalid result for missing credentials', async () => {

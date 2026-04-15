@@ -27,7 +27,7 @@ import type {
   TelematicsProvider,
   ITelematicsAdapter,
 } from "./fleet-types.js";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@witylogix/db";
 
 /**
  * Fleet Service

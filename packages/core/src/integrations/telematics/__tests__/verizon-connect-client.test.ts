@@ -50,7 +50,9 @@ describe("VerizonConnectClient", () => {
         } as Response),
       );
 
-      await expect(client.authenticate()).rejects.toThrow("authentication failed");
+      await expect(client.authenticate()).rejects.toThrow(
+        "authentication failed",
+      );
     });
   });
 
@@ -199,7 +201,10 @@ describe("VerizonConnectClient", () => {
       const mockDiagnostics = {
         engineRunning: true,
         faultCodes: [
-          { code: "P0101", description: "Mass air flow sensor range/performance" },
+          {
+            code: "P0101",
+            description: "Mass air flow sensor range/performance",
+          },
         ],
       };
 
@@ -258,7 +263,7 @@ describe("VerizonConnectClient", () => {
             driverId: "d1",
             type: "harsh_braking",
             severity: "critical",
-            location: { latitude: 40.7130, longitude: -74.005 },
+            location: { latitude: 40.713, longitude: -74.005 },
             speed: 30,
             timestamp: "2024-01-15T10:05:00Z",
             message: "Harsh braking detected",
@@ -384,7 +389,9 @@ describe("VerizonConnectClient", () => {
         } as Response),
       );
 
-      await expect(client.unsubscribeFromEvents("hook1")).resolves.toBeUndefined();
+      await expect(
+        client.unsubscribeFromEvents("hook1"),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -403,10 +410,7 @@ describe("VerizonConnectClient", () => {
 
     it("should return false on error", async () => {
       global.fetch = vi.fn(() =>
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({}),
-        } as Response),
+        Promise.reject(new Error("Network error")),
       );
 
       const healthy = await client.healthCheck();

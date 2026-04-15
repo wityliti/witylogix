@@ -91,7 +91,8 @@
     "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
     "./eta-recalculator": "./src/eta-recalculator/index.ts",
     "./realtime/types": "./src/realtime/types.ts",
-    "./integrations/telematics": "./src/integrations/telematics/index.ts"
+    "./integrations/telematics": "./src/integrations/telematics/index.ts",
+    "./integrations/shipping": "./src/integrations/shipping/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",
@@ -99,13 +100,23 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "@witylogix/db": "workspace:*",
     "@witylogix/framework": "workspace:*",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
+    "cron-parser": "^4.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^10.4.3",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "undici": "^7.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/ioredis": "^5.0.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.4.0",
     "typescript": "^5.7.0",
     "vitest": "^1.0.0"
   }

@@ -22,8 +22,12 @@
       "@repo/core/*": ["packages/repo-core/src/*"],
       "@repo/db": ["packages/repo-db/src/index.ts"],
       "@repo/db/*": ["packages/repo-db/src/*"],
-      "@witylogix/core/integrations/traffic/index.js": ["packages/core/src/integrations/traffic/index.ts"],
-      "@witylogix/core/integrations/ecommerce/index.js": ["packages/core/src/integrations/ecommerce/index.ts"]
+      "@witylogix/core/integrations/traffic/index.js": [
+        "packages/core/src/integrations/traffic/index.ts"
+      ],
+      "@witylogix/core/integrations/ecommerce/index.js": [
+        "packages/core/src/integrations/ecommerce/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "dist"]

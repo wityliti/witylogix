@@ -12,9 +12,10 @@ import type {
   RefundRequest,
   CODCollection,
   PaymentGatewayConfig,
+  PaymentMethodType,
   PaymentWebhookPayload,
   PaymentError,
-} from './types.js';
+} from "./types.js";
 
 // ─── PAYMENT GATEWAY BASE CLASS ────────────────────────────────────────
 
@@ -68,14 +69,57 @@ export abstract class PaymentGateway {
   /**
    * Get payment status from provider
    */
-  abstract getPaymentStatus(providerTransactionId: string): Promise<Transaction>;
+  abstract getPaymentStatus(
+    providerTransactionId: string,
+  ): Promise<Transaction>;
+
+  /**
+   * Record a COD collection from driver (optional — only COD gateways implement)
+   */
+  async recordCODCollection(
+    _shopId: string,
+    _shipmentId: string,
+    _driverId: string,
+    _amount: number,
+    _currency: string,
+  ): Promise<CODCollection> {
+    throw new Error(`${this.name} does not support COD collections`);
+  }
+
+  /**
+   * Verify a COD collection (optional — only COD gateways implement)
+   */
+  async verifyCODCollection(
+    _shopId: string,
+    _codCollectionId: string,
+  ): Promise<CODCollection> {
+    throw new Error(`${this.name} does not support COD verification`);
+  }
+
+  /**
+   * Reconcile COD collections (optional — only COD gateways implement)
+   */
+  async reconcileCODCollections(
+    _shopId: string,
+    _driverId: string,
+    _depositDate: Date,
+    _totalAmount: number,
+    _codCollectionIds: string[],
+  ): Promise<{
+    reconcilationId: string;
+    status: "completed";
+    totalAmount: number;
+    collectionCount: number;
+  }> {
+    throw new Error(`${this.name} does not support COD reconciliation`);
+  }
 }
 
 // ─── COD (CASH ON DELIVERY) GATEWAY ────────────────────────────────────
 
 export class CODGateway extends PaymentGateway {
-  name = 'Cash on Delivery';
-  code = 'cod';
+  name = "Cash on Delivery";
+  code = "cod";
 
   /**
    * COD doesn't create a remote intent — just a local record
@@ -96,11 +140,11 @@ export class CODGateway extends PaymentGateway {
       shopId,
       amount,
       currency,
-      status: 'pending',
-      methodType: 'cod',
+      status: "pending",
+      methodType: "cod",
       idempotencyKey,
-      providerName: 'cod',
-      description: 'Cash on delivery payment',
+      providerName: "cod",
+      description: "Cash on delivery payment",
       metadata: metadata || {},
       createdAt: now,
       expiresAt: new Date(now.getTime() + 48 * 60 * 60 * 1000), // 48 hours
@@ -113,7 +157,7 @@ export class CODGateway extends PaymentGateway {
    */
   async capturePayment(_paymentIntentId: string): Promise<Transaction> {
     // COD capture happens via recordCODCollection
-    throw new Error('COD payments are captured via recordCODCollection method');
+    throw new Error("COD payments are captured via recordCODCollection method");
   }
 
   /**
@@ -128,11 +172,11 @@ export class CODGateway extends PaymentGateway {
 
     return {
       id: this.generateId(),
-      shopId: '', // Set by processor
+      shopId: "", // Set by processor
       transactionId,
       amount,
-      reason: (reason as any) || 'customer_request',
-      status: 'pending',
+      reason: (reason as any) || "customer_request",
+      status: "pending",
       metadata: { codRefund: true },
       requestedAt: now,
     };
@@ -152,7 +196,7 @@ export class CODGateway extends PaymentGateway {
    * COD doesn't parse webhooks
    */
   async parseWebhookPayload(_payload: any): Promise<PaymentWebhookPayload> {
-    throw new Error('COD gateway does not support webhooks');
+    throw new Error("COD gateway does not support webhooks");
   }
 
   /**
@@ -162,12 +206,13 @@ export class CODGateway extends PaymentGateway {
     // In real implementation, query database
     return {
       id: transactionId,
-      shopId: '',
+      shopId: "",
       amount: 0,
-      currency: 'USD',
-      status: 'pending',
-      type: 'cod_collection',
-      methodType: 'cod',
+      currency: "USD",
+      status: "pending",
+      type: "cod_collection",
+      methodType: "cod",
+      metadata: {},
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -193,7 +238,7 @@ export class CODGateway extends PaymentGateway {
       driverId,
       amount,
       currency,
-      status: 'collected',
+      status: "collected",
       collectedAt: now,
       metadata: {},
       createdAt: now,
@@ -214,10 +259,10 @@ export class CODGateway extends PaymentGateway {
     return {
       id: codCollectionId,
       shopId,
-      driverId: '',
+      driverId: "",
       amount: 0,
-      currency: 'USD',
-      status: 'verified',
+      currency: "USD",
+      status: "verified",
       verifiedAt: now,
       metadata: {},
       createdAt: now,
@@ -237,7 +282,7 @@ export class CODGateway extends PaymentGateway {
     codCollectionIds: string[],
   ): Promise<{
     reconcilationId: string;
-    status: 'completed';
+    status: "completed";
     totalAmount: number;
     collectionCount: number;
   }> {
@@ -245,7 +290,7 @@ export class CODGateway extends PaymentGateway {
 
     return {
       reconcilationId: this.generateId(),
-      status: 'completed',
+      status: "completed",
       totalAmount,
       collectionCount: codCollectionIds.length,
     };
@@ -263,8 +308,8 @@ export class CODGateway extends PaymentGateway {
 
 export function createGateway(config: PaymentGatewayConfig): PaymentGateway {
   switch (config.name.toLowerCase()) {
-    case 'cod':
-    case 'cash_on_delivery':
+    case "cod":
+    case "cash_on_delivery":
       return new CODGateway(config);
 
     // Future gateways: Stripe, PayPal, etc.
@@ -285,8 +330,8 @@ export function getGatewayByName(name: string): PaymentGateway | null {
   const config: PaymentGatewayConfig = {
     name,
     isEnabled: true,
-    isProduction: process.env.NODE_ENV === 'production',
-    supportedMethods: ['cod'],
+    isProduction: process.env.NODE_ENV === "production",
+    supportedMethods: ["cod"] satisfies PaymentMethodType[],
     metadata: {},
     createdAt: new Date(),
     updatedAt: new Date(),

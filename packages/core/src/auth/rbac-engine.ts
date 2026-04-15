@@ -55,43 +55,47 @@ const ROLE_HIERARCHY: Record<string, number> = {
   OWNER: 3,
 };
 
-// Default permissions for each role
+// Default permissions for each role (built incrementally to avoid TDZ)
+const VIEWER_PERMS = [
+  "shipments:read",
+  "routes:read",
+  "drivers:read",
+  "analytics:read",
+  "reports:read",
+];
+
+const MEMBER_PERMS = [
+  ...VIEWER_PERMS,
+  "shipments:create",
+  "shipments:update",
+  "routes:view",
+  "drivers:view",
+];
+
+const ADMIN_PERMS = [
+  ...MEMBER_PERMS,
+  "shipments:*",
+  "routes:*",
+  "drivers:*",
+  "analytics:*",
+  "org:read",
+  "org:update",
+  "users:read",
+];
+
+const OWNER_PERMS = [
+  "*:*",
+  "org:*",
+  "users:*",
+  "billing:*",
+  "settings:*",
+];
+
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
-  VIEWER: [
-    // Read-only access
-    "shipments:read",
-    "routes:read",
-    "drivers:read",
-    "analytics:read",
-    "reports:read",
-  ],
-  MEMBER: [
-    // Viewer perms + write for assigned shops
-    ...DEFAULT_ROLE_PERMISSIONS.VIEWER || [],
-    "shipments:create",
-    "shipments:update",
-    "routes:view",
-    "drivers:view",
-  ],
-  ADMIN: [
-    // Member perms + org management
-    ...DEFAULT_ROLE_PERMISSIONS.MEMBER || [],
-    "shipments:*",
-    "routes:*",
-    "drivers:*",
-    "analytics:*",
-    "org:read",
-    "org:update",
-    "users:read",
-  ],
-  OWNER: [
-    // All permissions
-    "*:*",
-    "org:*",
-    "users:*",
-    "billing:*",
-    "settings:*",
-  ],
+  VIEWER: VIEWER_PERMS,
+  MEMBER: MEMBER_PERMS,
+  ADMIN: ADMIN_PERMS,
+  OWNER: OWNER_PERMS,
 };
 
 // ─── RBAC ENGINE CLASS ──────────────────────────────────────
@@ -124,17 +128,8 @@ export class RbacEngine {
   checkPermission(context: PermissionContext, resource: string, action: string): boolean {
     const permission = `${resource}:${action}`;
 
-    // Check against user's permission set
+    // Check against user's permission set (hasPermission handles audit logging)
     const allowed = this.hasPermission(context, permission);
-
-    // Audit log
-    this.auditLog.push({
-      userId: context.userId,
-      resource,
-      action,
-      allowed,
-      timestamp: new Date(),
-    });
 
     if (!allowed) {
       throw new PermissionDeniedError(resource, action);
@@ -154,25 +149,29 @@ export class RbacEngine {
     // Get user's permission set (with caching)
     const permissions = this.getPermissions(context);
 
-    // Direct match
-    if (permissions.has(permission)) {
-      return true;
-    }
-
-    // Wildcard checks
     const [resource, action] = permission.split(":");
 
-    // Check resource:*
-    if (permissions.has(`${resource}:*`)) {
-      return true;
+    // Direct match
+    let allowed = permissions.has(permission);
+
+    // Wildcard checks
+    if (!allowed && permissions.has(`${resource}:*`)) {
+      allowed = true;
+    }
+    if (!allowed && permissions.has("*:*")) {
+      allowed = true;
     }
 
-    // Check *:*
-    if (permissions.has("*:*")) {
-      return true;
-    }
+    // Audit log
+    this.auditLog.push({
+      userId: context.userId,
+      resource,
+      action,
+      allowed,
+      timestamp: new Date(),
+    });
 
-    return false;
+    return allowed;
   }
 
   /**
@@ -201,15 +200,8 @@ export class RbacEngine {
     // Add explicit permissions from context
     context.permissions.forEach((p) => permissions.add(p));
 
-    // Add inherited permissions from higher roles
-    const hierarchyLevel = ROLE_HIERARCHY[context.role];
-    for (const [roleName, level] of Object.entries(ROLE_HIERARCHY)) {
-      if (level > hierarchyLevel) {
-        // This role is higher in hierarchy - inherit permissions
-        const inheritedPerms = this.getRolePermissions(roleName);
-        inheritedPerms.forEach((p) => permissions.add(p));
-      }
-    }
+    // Role permissions are built incrementally (MEMBER includes VIEWER perms, etc.)
+    // No additional inheritance needed — DEFAULT_ROLE_PERMISSIONS already handles it.
 
     // Cache result
     this.cachePermissions(cacheKey, permissions);

@@ -415,10 +415,10 @@ export class BackupService {
     const delay = incremental ? 100 : 500;
     await new Promise((resolve) => setTimeout(resolve, delay));
 
-    // Simulate backup size
+    // Simulate backup size — incremental is 1-10 MB, full is 50-1000 MB
     backup.size = incremental
-      ? Math.floor(Math.random() * 100 * 1024 * 1024) // 0-100 MB
-      : Math.floor(Math.random() * 1000 * 1024 * 1024); // 0-1 GB
+      ? Math.floor(1 * 1024 * 1024 + Math.random() * 9 * 1024 * 1024) // 1-10 MB
+      : Math.floor(50 * 1024 * 1024 + Math.random() * 950 * 1024 * 1024); // 50-1000 MB
   }
 
   private async simulateRestoreProcess(

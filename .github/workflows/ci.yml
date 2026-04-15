@@ -89,8 +89,10 @@ jobs:
       - name: Build shared packages
         run: |
           pnpm --filter @witylogix/db db:generate
+          pnpm --filter @witylogix/db build
           pnpm --filter @witylogix/types build
           pnpm --filter @witylogix/validators build
+          pnpm --filter @witylogix/core build
           pnpm --filter @witylogix/framework build
 
       - name: Build API

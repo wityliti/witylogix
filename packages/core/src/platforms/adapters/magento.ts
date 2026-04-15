@@ -325,6 +325,7 @@ export interface MagentoProduct {
   name: string;
   attribute_set_id: number;
   price: number;
+  weight?: number;
   status: number;
   visibility: number;
   type_id: string;
@@ -505,7 +506,8 @@ export class MagentoAdapter implements PlatformAdapter {
     }
 
     try {
-      const payloadString = typeof payload === "string" ? payload : payload.toString("utf-8");
+      const payloadString =
+        typeof payload === "string" ? payload : payload.toString("utf-8");
 
       // Magento HMAC is base64(hmac-sha256(payload, secret))
       // Note: We need the webhook secret passed as third parameter in actual usage
@@ -562,11 +564,15 @@ export class MagentoAdapter implements PlatformAdapter {
     const order = externalOrder as MagentoOrder;
 
     if (!order.entity_id || !order.increment_id) {
-      throw new Error("[MagentoAdapter] Order missing required fields: entity_id, increment_id");
+      throw new Error(
+        "[MagentoAdapter] Order missing required fields: entity_id, increment_id",
+      );
     }
 
     // Extract customer name
-    const customerName = [order.customer_firstname, order.customer_lastname].filter(Boolean).join(" ");
+    const customerName = [order.customer_firstname, order.customer_lastname]
+      .filter(Boolean)
+      .join(" ");
 
     // Map line items
     const lineItems = (order.items || []).map((item) => ({
@@ -614,7 +620,8 @@ export class MagentoAdapter implements PlatformAdapter {
       holded: "ON_HOLD",
     };
 
-    const witylogixStatus = statusMap[order.status] || order.status.toUpperCase();
+    const witylogixStatus =
+      statusMap[order.status] || order.status.toUpperCase();
 
     return {
       shopId: "", // Will be set by consumer
@@ -678,11 +685,15 @@ export class MagentoAdapter implements PlatformAdapter {
    * // Returns: { externalProductId: "789", sku: "TEST-SKU", ... }
    * ```
    */
-  public async mapProduct(externalProduct: unknown): Promise<CreateProductInput> {
+  public async mapProduct(
+    externalProduct: unknown,
+  ): Promise<CreateProductInput> {
     const product = externalProduct as MagentoProduct;
 
     if (!product.id || !product.sku) {
-      throw new Error("[MagentoAdapter] Product missing required fields: id, sku");
+      throw new Error(
+        "[MagentoAdapter] Product missing required fields: id, sku",
+      );
     }
 
     // Determine product status
@@ -710,7 +721,8 @@ export class MagentoAdapter implements PlatformAdapter {
 
     // For configurable products, include child products as variants
     if (product.type_id === "configurable") {
-      const childProductIds = product.extension_attributes?.configurable_product_links || [];
+      const childProductIds =
+        product.extension_attributes?.configurable_product_links || [];
       for (const childId of childProductIds) {
         variants.push({
           externalId: String(childId),
@@ -767,7 +779,8 @@ export class MagentoAdapter implements PlatformAdapter {
         attributeSetId: product.attribute_set_id,
         createdAt: product.created_at,
         updatedAt: product.updated_at,
-        configurable: product.extension_attributes?.configurable_product_options,
+        configurable:
+          product.extension_attributes?.configurable_product_options,
       },
       createdAt: new Date(product.created_at),
       updatedAt: new Date(product.updated_at),
@@ -802,18 +815,24 @@ export class MagentoAdapter implements PlatformAdapter {
    * // Returns: { externalCustomerId: "1001", email: "customer@example.com", ... }
    * ```
    */
-  public async mapCustomer(externalCustomer: unknown): Promise<CreateCustomerInput> {
+  public async mapCustomer(
+    externalCustomer: unknown,
+  ): Promise<CreateCustomerInput> {
     const customer = externalCustomer as MagentoCustomer;
 
     if (!customer.id || !customer.email) {
-      throw new Error("[MagentoAdapter] Customer missing required fields: id, email");
+      throw new Error(
+        "[MagentoAdapter] Customer missing required fields: id, email",
+      );
     }
 
     // Get default billing address
     let billingAddress = undefined;
     if (customer.default_billing && customer.addresses) {
       const billingId = Number(customer.default_billing);
-      const billing = customer.addresses.find((addr) => addr.entity_id === billingId);
+      const billing = customer.addresses.find(
+        (addr) => addr.entity_id === billingId,
+      );
       if (billing) {
         billingAddress = {
           firstName: billing.firstname,
@@ -832,7 +851,9 @@ export class MagentoAdapter implements PlatformAdapter {
     let shippingAddress = undefined;
     if (customer.default_shipping && customer.addresses) {
       const shippingId = Number(customer.default_shipping);
-      const shipping = customer.addresses.find((addr) => addr.entity_id === shippingId);
+      const shipping = customer.addresses.find(
+        (addr) => addr.entity_id === shippingId,
+      );
       if (shipping) {
         shippingAddress = {
           firstName: shipping.firstname,
@@ -898,14 +919,23 @@ export class MagentoAdapter implements PlatformAdapter {
    * // Returns: MagentoOrder
    * ```
    */
-  public async fetchOrder(externalOrderId: string, credentials: PlatformCredentials): Promise<unknown> {
+  public async fetchOrder(
+    externalOrderId: string,
+    credentials: PlatformCredentials,
+  ): Promise<unknown> {
     const creds = credentials as unknown as MagentoCredentials;
 
     if (!creds.data.storeUrl || !creds.data.accessToken) {
-      throw new PlatformAuthError(this.source, "Missing storeUrl or accessToken in credentials");
+      throw new PlatformAuthError(
+        this.source,
+        "Missing storeUrl or accessToken in credentials",
+      );
     }
 
-    const url = new URL(`/rest/V1/orders/${externalOrderId}`, creds.data.storeUrl).toString();
+    const url = new URL(
+      `/rest/V1/orders/${externalOrderId}`,
+      creds.data.storeUrl,
+    ).toString();
 
     try {
       const response = await fetch(url, {
@@ -917,7 +947,10 @@ export class MagentoAdapter implements PlatformAdapter {
       });
 
       if (response.status === 401 || response.status === 403) {
-        throw new PlatformAuthError(this.source, `Authentication failed: ${response.statusText}`);
+        throw new PlatformAuthError(
+          this.source,
+          `Authentication failed: ${response.statusText}`,
+        );
       }
 
       if (response.status === 404) {
@@ -926,11 +959,16 @@ export class MagentoAdapter implements PlatformAdapter {
 
       if (response.status === 429) {
         const retryAfter = response.headers.get("Retry-After");
-        throw new PlatformRateLimitError(this.source, retryAfter ? Number(retryAfter) : undefined);
+        throw new PlatformRateLimitError(
+          this.source,
+          retryAfter ? Number(retryAfter) : undefined,
+        );
       }
 
       if (!response.ok) {
-        throw new Error(`Magento API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Magento API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as MagentoOrder;
@@ -975,12 +1013,15 @@ export class MagentoAdapter implements PlatformAdapter {
    */
   public async fetchProducts(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ products: unknown[]; nextCursor?: string }> {
     const creds = credentials as unknown as MagentoCredentials;
 
     if (!creds.data.storeUrl || !creds.data.accessToken) {
-      throw new PlatformAuthError(this.source, "Missing storeUrl or accessToken in credentials");
+      throw new PlatformAuthError(
+        this.source,
+        "Missing storeUrl or accessToken in credentials",
+      );
     }
 
     const pageSize = 100;
@@ -1000,16 +1041,24 @@ export class MagentoAdapter implements PlatformAdapter {
       });
 
       if (response.status === 401 || response.status === 403) {
-        throw new PlatformAuthError(this.source, `Authentication failed: ${response.statusText}`);
+        throw new PlatformAuthError(
+          this.source,
+          `Authentication failed: ${response.statusText}`,
+        );
       }
 
       if (response.status === 429) {
         const retryAfter = response.headers.get("Retry-After");
-        throw new PlatformRateLimitError(this.source, retryAfter ? Number(retryAfter) : undefined);
+        throw new PlatformRateLimitError(
+          this.source,
+          retryAfter ? Number(retryAfter) : undefined,
+        );
       }
 
       if (!response.ok) {
-        throw new Error(`Magento API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Magento API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -1023,12 +1072,16 @@ export class MagentoAdapter implements PlatformAdapter {
 
       // Determine if there are more pages
       const totalPages = Math.ceil(data.total_count / pageSize);
-      const nextCursor = currentPage < totalPages ? String(currentPage + 1) : undefined;
+      const nextCursor =
+        currentPage < totalPages ? String(currentPage + 1) : undefined;
 
       return { products: data.items, nextCursor };
     } catch (error) {
       console.error("[MagentoAdapter] Error fetching products:", error);
-      if (error instanceof PlatformAuthError || error instanceof PlatformRateLimitError) {
+      if (
+        error instanceof PlatformAuthError ||
+        error instanceof PlatformRateLimitError
+      ) {
         throw error;
       }
       throw error;
@@ -1050,12 +1103,15 @@ export class MagentoAdapter implements PlatformAdapter {
    */
   public async fetchOrders(
     credentials: PlatformCredentials,
-    cursor?: string
+    cursor?: string,
   ): Promise<{ orders: unknown[]; nextCursor?: string }> {
     const creds = credentials as unknown as MagentoCredentials;
 
     if (!creds.data.storeUrl || !creds.data.accessToken) {
-      throw new PlatformAuthError(this.source, "Missing storeUrl or accessToken in credentials");
+      throw new PlatformAuthError(
+        this.source,
+        "Missing storeUrl or accessToken in credentials",
+      );
     }
 
     const pageSize = 50;
@@ -1075,11 +1131,16 @@ export class MagentoAdapter implements PlatformAdapter {
       });
 
       if (response.status === 401 || response.status === 403) {
-        throw new PlatformAuthError(this.source, `Authentication failed: ${response.statusText}`);
+        throw new PlatformAuthError(
+          this.source,
+          `Authentication failed: ${response.statusText}`,
+        );
       }
 
       if (!response.ok) {
-        throw new Error(`Magento API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Magento API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as {
@@ -1092,7 +1153,8 @@ export class MagentoAdapter implements PlatformAdapter {
       };
 
       const totalPages = Math.ceil(data.total_count / pageSize);
-      const nextCursor = currentPage < totalPages ? String(currentPage + 1) : undefined;
+      const nextCursor =
+        currentPage < totalPages ? String(currentPage + 1) : undefined;
 
       return { orders: data.items, nextCursor };
     } catch (error) {
@@ -1143,7 +1205,10 @@ export class MagentoAdapter implements PlatformAdapter {
 
       return eventMap[eventType] || eventType;
     } catch (error) {
-      console.error("[MagentoAdapter] Error extracting webhook event type:", error);
+      console.error(
+        "[MagentoAdapter] Error extracting webhook event type:",
+        error,
+      );
       return null;
     }
   }
@@ -1159,7 +1224,10 @@ export class MagentoAdapter implements PlatformAdapter {
    * @param index - Which line to extract (0 or 1)
    * @returns Address line or undefined
    */
-  private extractAddressLine(street: string[] | string | undefined, index: number): string | undefined {
+  private extractAddressLine(
+    street: string[] | string | undefined,
+    index: number,
+  ): string | undefined {
     if (!street) {
       return undefined;
     }

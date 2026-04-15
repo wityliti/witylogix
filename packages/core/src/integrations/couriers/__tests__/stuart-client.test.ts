@@ -56,8 +56,8 @@ describe("StuartClient", () => {
         },
       };
 
-      // INTEGRATION: Mock pricing endpoint
-      await expect(client.getQuote(request)).rejects.toThrow("HTTP integration required");
+      // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
+      await expect(client.getQuote(request)).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should handle different transport types (bike, car, van)", async () => {
@@ -117,8 +117,8 @@ describe("StuartClient", () => {
         orderId: "order_789",
       };
 
-      // INTEGRATION: Mock job creation
-      await expect(client.createDelivery(request)).rejects.toThrow("HTTP integration required");
+      // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
+      await expect(client.createDelivery(request)).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should include order reference in job creation", async () => {
@@ -149,8 +149,8 @@ describe("StuartClient", () => {
 
   describe("getDeliveryStatus", () => {
     it("should return job status with courier information", async () => {
-      // INTEGRATION: Mock job status endpoint
-      await expect(client.getDeliveryStatus("job_123")).rejects.toThrow("HTTP integration required");
+      // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
+      await expect(client.getDeliveryStatus("job_123")).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should map Stuart job statuses to normalized status", async () => {
@@ -175,8 +175,8 @@ describe("StuartClient", () => {
 
   describe("cancelDelivery", () => {
     it("should cancel a job and return updated status", async () => {
-      // INTEGRATION: Mock job cancel endpoint
-      await expect(client.cancelDelivery("job_123")).rejects.toThrow("HTTP integration required");
+      // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
+      await expect(client.cancelDelivery("job_123")).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should fetch status after cancellation", async () => {
@@ -187,8 +187,8 @@ describe("StuartClient", () => {
 
   describe("getDriverLocation", () => {
     it("should return courier location from job data", async () => {
-      // INTEGRATION: Extract location from job endpoint
-      await expect(client.getDriverLocation("job_123")).rejects.toThrow("HTTP integration required");
+      // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
+      await expect(client.getDriverLocation("job_123")).rejects.toThrow("OAuth2 integration required");
     });
 
     it("should throw error if no courier assigned", async () => {

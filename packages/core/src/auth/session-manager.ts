@@ -294,10 +294,14 @@ export class SessionManager {
    * @param userId User ID
    * @param orgId Organization ID
    */
-  async revokeAllSessions(userId: string, orgId: string): Promise<void> {
+  async revokeAllSessions(userId: string, orgId: string, excludeSessionId?: string): Promise<void> {
     try {
+      const where: any = { userId, orgId, isRevoked: false };
+      if (excludeSessionId) {
+        where.NOT = { id: excludeSessionId };
+      }
       await db.authSession.updateMany({
-        where: { userId, orgId, isRevoked: false },
+        where,
         data: {
           isRevoked: true,
           revokedAt: new Date(),
@@ -351,6 +355,44 @@ export class SessionManager {
     } catch (error) {
       throw new Error(`Failed to verify MFA: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  /**
+   * Cleanup expired and revoked sessions beyond retention periods.
+   *
+   * @param expiredRetentionDays Days to retain expired sessions
+   * @param revokedRetentionDays Days to retain revoked sessions
+   */
+  async cleanupExpiredSessions(expiredRetentionDays: number, revokedRetentionDays: number): Promise<void> {
+    const now = new Date();
+    // Delete expired sessions beyond retention
+    await db.authSession.deleteMany({
+      where: {
+        isRevoked: false,
+        expiresAt: { lt: new Date(now.getTime() - expiredRetentionDays * 24 * 60 * 60 * 1000) },
+      },
+    });
+    // Delete revoked sessions beyond retention
+    await db.authSession.deleteMany({
+      where: {
+        isRevoked: true,
+        revokedAt: { lt: new Date(now.getTime() - revokedRetentionDays * 24 * 60 * 60 * 1000) },
+      },
+    });
+  }
+
+  /**
+   * Get session statistics for a user in an organization.
+   *
+   * @param userId User ID
+   * @param orgId Organization ID
+   * @returns Session statistics
+   */
+  async getSessionStats(userId: string, orgId: string): Promise<{ totalSessions: number; activeSessions: number; revokedSessions: number }> {
+    const totalSessions = await db.authSession.count({ where: { userId, orgId } });
+    const activeSessions = await db.authSession.count({ where: { userId, orgId, isRevoked: false } });
+    const revokedSessions = await db.authSession.count({ where: { userId, orgId, isRevoked: true } });
+    return { totalSessions, activeSessions, revokedSessions };
   }
 
   // ─── PRIVATE HELPERS ────────────────────────────────────
@@ -416,4 +458,11 @@ export function getSessionManager(options?: { maxConcurrentSessions?: number; se
  */
 export function createSessionManager(options?: { maxConcurrentSessions?: number; sessionTimeoutMs?: number }): SessionManager {
   return new SessionManager(options);
+}
+
+/**
+ * Reset the singleton instance (for testing).
+ */
+export function resetSessionManager(): void {
+  instance = undefined as unknown as SessionManager;
 }
