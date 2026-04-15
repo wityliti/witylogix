@@ -6,7 +6,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import copilotRoutes from "../ai/copilot.js";
+
+// Mock middleware to prevent loading @witylogix/db native binary in test worker
+vi.mock("../../middleware/auth.js", () => ({
+  requireAuth: vi.fn(),
+}));
+vi.mock("../../middleware/tenant.js", () => ({
+  tenantContext: vi.fn(),
+}));
 
 // Mock the NL filter parser
 vi.mock("@witylogix/core/natural-language-filter", () => ({
@@ -14,6 +21,8 @@ vi.mock("@witylogix/core/natural-language-filter", () => ({
     parse: vi.fn(),
   },
 }));
+
+import copilotRoutes from "../ai/copilot.js";
 
 import { nlFilterParser } from "@witylogix/core/natural-language-filter";
 
