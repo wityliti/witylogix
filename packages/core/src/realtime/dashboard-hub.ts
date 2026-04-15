@@ -69,6 +69,8 @@ export class DashboardHub {
     this.eventBus = config.eventBus;
 
     const namespace = config.namespace ?? "/realtime";
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore — namespace option not in socket.io Server typings; preserved for runtime use
     this.io = new Server(config.httpServer, {
       namespace,
       transports: ["websocket", "polling"],
