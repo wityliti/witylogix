@@ -24,6 +24,7 @@ type RouteSpec = {
 };
 
 const ROUTES: RouteSpec[] = [
+  // Core list pages
   { name: "home", path: "/home", expectText: /orders|drivers|routes|home/i, minButtons: 1 },
   { name: "orders", path: "/orders", expectText: /order|delivery|shipment/i, minButtons: 1 },
   { name: "drivers", path: "/drivers", expectText: /driver|fleet|vehicle/i, minButtons: 1 },
@@ -31,9 +32,25 @@ const ROUTES: RouteSpec[] = [
   { name: "shipments", path: "/shipments", expectText: /shipment|tracking|label/i },
   { name: "zones", path: "/zones", expectText: /zone|area|region/i, minButtons: 1 },
   { name: "time-slots", path: "/time-slots", expectText: /time|slot|schedule/i },
+
+  // Create pages (added in dead-button fix)
+  { name: "drivers-create", path: "/drivers/create", expectText: /add driver|name|phone/i, minButtons: 2 },
+  { name: "customers-create", path: "/customers/create", expectText: /add customer|email/i, minButtons: 2 },
+  { name: "zones-create", path: "/zones/create", expectText: /create zone|base rate/i, minButtons: 2 },
+  { name: "orders-create", path: "/orders/create", expectText: /order|customer|item/i },
+
+  // Analytics / dashboards
+  { name: "analytics", path: "/analytics", expectText: /analytic|dashboard|metric|chart/i },
+  { name: "activity", path: "/activity" },
+  { name: "tracking", path: "/tracking", expectText: /track|shipment|live/i },
+  { name: "tracking-live", path: "/tracking/live", expectText: /live|map|driver/i },
+
+  // Settings
   { name: "settings-general", path: "/settings/general", expectText: /setting|general|preference/i },
   { name: "settings-team", path: "/settings/team", expectText: /team|member|invite/i },
   { name: "settings-profile", path: "/settings/profile", expectText: /profile|name|email/i },
+  { name: "settings-billing", path: "/settings/billing", expectText: /billing|plan|subscription/i },
+  { name: "settings-carriers", path: "/settings/carriers", expectText: /carrier|shipping|rate/i },
 ];
 
 async function countActionableButtons(page: Page): Promise<number> {
