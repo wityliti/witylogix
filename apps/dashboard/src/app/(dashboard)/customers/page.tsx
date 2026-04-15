@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card } from '@/components/ui/card';
@@ -80,6 +79,7 @@ function MapLegend() {
 // ─── Page ─────────────────────────────────────────────────────
 
 export default function CustomersPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'totalSpent' | 'totalOrders'>('name');
@@ -134,34 +134,13 @@ export default function CustomersPage() {
             : `${pagination.total.toLocaleString()} customers`
         }
         actions={
-          <div className="flex items-center gap-2">
-            {/* View Toggle */}
-            <div className="flex items-center bg-[#12121a] border border-[#1e1e2e] rounded-lg p-0.5">
-              <button
-                onClick={() => setView('grid')}
-                className={cn(
-                  'p-1.5 rounded-md transition-all',
-                  view === 'grid' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white',
-                )}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setView('map')}
-                className={cn(
-                  'p-1.5 rounded-md transition-all',
-                  view === 'map' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white',
-                )}
-                aria-label="Map view"
-              >
-                <MapIcon className="w-4 h-4" />
-              </button>
-            </div>
-            <Button variant="primary" size="md">
-              + Sync from Shopify
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/customers/create')}
+          >
+            + Add Customer
+          </Button>
         }
       />
 

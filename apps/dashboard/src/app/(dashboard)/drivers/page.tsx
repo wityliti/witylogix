@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -132,7 +132,10 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
   );
 };
 
-// ── Map Legend ───────────────────────────────────────────────
+export default function DriversPage() {
+  const router = useRouter();
+  const { items: driversData, loading, error, refetch } = useApiList<ApiDriver>('/api/v4/drivers');
+  const [activeTab, setActiveTab] = useState('all');
 
 function MapLegend() {
   return (
@@ -237,34 +240,10 @@ export default function DriversPage() {
         title="Drivers"
         subtitle={`${filteredDrivers.length} of ${driversData.length} drivers`}
         actions={
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={cn(
-                  'p-1.5 rounded transition-colors',
-                  viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
-                )}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={cn(
-                  'p-1.5 rounded transition-colors',
-                  viewMode === 'map' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60',
-                )}
-                aria-label="Map view"
-              >
-                <MapIcon className="w-4 h-4" />
-              </button>
-            </div>
-            <Button variant="primary" size="md">
-              <Plus className="w-4 h-4" />
-              Add Driver
-            </Button>
-          </div>
+          <Button variant="primary" size="md" onClick={() => router.push('/drivers/create')}>
+            <Plus className="w-4 h-4" />
+            Add Driver
+          </Button>
         }
       />
 
