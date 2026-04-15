@@ -27,7 +27,7 @@ const configSchema = z.object({
   SHOPIFY_API_SECRET: z.string().default(""),
   SHOPIFY_APP_URL: z.string().url().optional(),
   SHOPIFY_SCOPES: z.string().default(
-    "read_products,write_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,write_inventory,read_customers",
+    "read_products,read_orders,write_orders,read_fulfillments,write_fulfillments,read_shipping,write_shipping,read_locations,read_inventory,read_customers",
   ),
 
   // Routing — provider + BYOK mode
