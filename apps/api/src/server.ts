@@ -88,13 +88,19 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(rawBodyPlugin);
 
   // 3. CORS — restrictive in production, permissive in dev
+  // CORS_ORIGINS env (comma-separated) takes precedence over the config defaults.
+  const corsEnvOrigins = process.env.CORS_ORIGINS
+    ?.split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const corsProdOrigins =
+    corsEnvOrigins && corsEnvOrigins.length > 0
+      ? corsEnvOrigins
+      : ([config.SHOPIFY_APP_URL, config.TRACKING_PAGE_URL].filter(
+          Boolean,
+        ) as string[]);
   await app.register(cors, {
-    origin: isDev()
-      ? true
-      : [
-          config.SHOPIFY_APP_URL,
-          config.TRACKING_PAGE_URL,
-        ].filter(Boolean) as string[],
+    origin: isDev() ? true : corsProdOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
