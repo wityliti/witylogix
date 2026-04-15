@@ -218,7 +218,7 @@ describe("DeadLetterQueue", () => {
 
       expect(stats.totalEntries).toBe(4);
       expect(stats.byReason.timeout).toBe(3);
-      expect(stats["5xx"]).toBe(1);
+      expect(stats.byReason["5xx"]).toBe(1);
       expect(stats.byTenant.tenant_1).toBe(3);
       expect(stats.byTenant.tenant_2).toBe(1);
       expect(stats.byEventType["order.created"]).toBe(3);

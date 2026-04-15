@@ -553,9 +553,12 @@ describe("Checkout Widget to Delivery E2E Tests", () => {
       const slots: DeliverySlot[] = Array.from(mockSlots.values());
       const slot: DeliverySlot = slots[0];
 
-      // Set slot to 3 hours from now
-      const future: Date = new Date(Date.now() + 3 * 60 * 60 * 1000);
-      slot.date = future;
+      // Set slot to tomorrow at startTime — guarantees >2 hours in future
+      const tomorrow: Date = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(12, 0, 0, 0); // noon tomorrow
+      slot.date = tomorrow;
+      slot.startTime = "12:00";
       mockSlots.set(slot.id, slot);
 
       const session: CheckoutSession = await createCheckoutSession(

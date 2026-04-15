@@ -319,5 +319,3 @@ export function getRateLimiter(options?: RateLimitOptions): SlidingWindowRateLim
 export function resetRateLimiter(): void {
   instance = null;
 }
-
-export { SlidingWindowRateLimiter };

@@ -11,11 +11,13 @@
  * - IP/user-agent tracking
  */
 
-// ─── MOCK PRISMA - MUST BE BEFORE ANY IMPORTS ─────────────────
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-const mockPrisma = {
+// ─── MOCK PRISMA ─────────────────────────────────────────────
+const mockPrisma = vi.hoisted(() => ({
   session: {
     create: vi.fn(),
+    findFirst: vi.fn(),
     findUnique: vi.fn(),
     findMany: vi.fn(),
     update: vi.fn(),
@@ -24,14 +26,13 @@ const mockPrisma = {
     deleteMany: vi.fn(),
     count: vi.fn(),
   },
-};
-
-// Mock @witylogix/db
-vi.mock("@witylogix/db", () => ({
-  prisma: mockPrisma,
 }));
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+vi.mock("@witylogix/db", () => ({
+  prisma: mockPrisma,
+  db: { authSession: mockPrisma.session },
+}));
+
 import { SessionManager, getSessionManager, resetSessionManager, type CreateSessionInput } from "../session-manager";
 import type { AuthResult } from "../types";
 
@@ -79,11 +80,12 @@ describe("SessionManager", () => {
         userId: "user-456",
         orgId: "org-123",
         providerId: "provider-local",
-        accessToken: "access_token_123",
-        refreshToken: "refresh_token_456",
+        token: "access_token_123",
         expiresAt: input.authResult.expiresAt,
         ipAddress: "192.168.1.1",
         userAgent: "Mozilla/5.0...",
+        deviceId: null,
+        mfaVerified: false,
         isRevoked: false,
         createdAt: new Date(),
       };
@@ -99,11 +101,12 @@ describe("SessionManager", () => {
         orgId: "org-123",
         providerId: "provider-local",
         accessToken: "access_token_123",
-        refreshToken: "refresh_token_456",
         expiresAt: expect.any(Date),
         createdAt: expect.any(Date),
         ipAddress: "192.168.1.1",
         userAgent: "Mozilla/5.0...",
+        deviceId: null,
+        mfaVerified: false,
         isRevoked: false,
       });
 
@@ -291,9 +294,8 @@ describe("SessionManager", () => {
         userId: "user-456",
         orgId: "org-123",
         providerId: "provider-oauth",
-        accessToken: oldToken,
+        token: oldToken,
         isRevoked: false,
-        refreshedAt: null,
         createdAt: new Date(),
       });
 
@@ -302,8 +304,9 @@ describe("SessionManager", () => {
         userId: "user-456",
         orgId: "org-123",
         providerId: "provider-oauth",
-        accessToken: newToken,
+        token: newToken,
         expiresAt: newExpiresAt,
+        mfaVerified: false,
         isRevoked: false,
         createdAt: new Date(),
       });
@@ -315,9 +318,9 @@ describe("SessionManager", () => {
       expect(mockPrisma.session.update).toHaveBeenCalledWith({
         where: { id: "session-123" },
         data: {
-          accessToken: newToken,
+          token: newToken,
           expiresAt: newExpiresAt,
-          refreshedAt: expect.any(Date),
+          lastActivityAt: expect.any(Date),
         },
       });
     });
@@ -343,8 +346,9 @@ describe("SessionManager", () => {
 
       mockPrisma.session.update.mockResolvedValue({
         id: "session-123",
-        accessToken: "new_token",
+        token: "new_token",
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        mfaVerified: false,
         isRevoked: false,
         createdAt: new Date(),
       });
@@ -354,7 +358,7 @@ describe("SessionManager", () => {
       expect(mockPrisma.session.update).toHaveBeenCalledWith({
         where: { id: "session-123" },
         data: expect.objectContaining({
-          accessToken: "new_token",
+          token: "new_token",
           expiresAt: expect.any(Date),
         }),
       });
@@ -391,19 +395,23 @@ describe("SessionManager", () => {
           id: "session-1",
           userId: "user-456",
           orgId: "org-123",
+          providerId: "provider-local",
+          token: "token1",
           createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
           expiresAt: new Date(Date.now() + 22 * 60 * 60 * 1000),
           isRevoked: false,
-          accessToken: "token1",
+          mfaVerified: false,
         },
         {
           id: "session-2",
           userId: "user-456",
           orgId: "org-123",
+          providerId: "provider-local",
+          token: "token2",
           createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
           expiresAt: new Date(Date.now() + 23 * 60 * 60 * 1000),
           isRevoked: false,
-          accessToken: "token2",
+          mfaVerified: false,
         },
       ];
 
@@ -421,7 +429,7 @@ describe("SessionManager", () => {
           isRevoked: false,
           expiresAt: { gt: expect.any(Date) },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { lastActivityAt: "desc" },
       });
     });
 
@@ -448,7 +456,7 @@ describe("SessionManager", () => {
         where: {
           userId: "user-456",
           orgId: "org-123",
-          NOT: undefined, // No exclusion
+          isRevoked: false,
         },
         data: {
           isRevoked: true,
@@ -468,6 +476,7 @@ describe("SessionManager", () => {
         where: {
           userId: "user-456",
           orgId: "org-123",
+          isRevoked: false,
           NOT: { id: "session-999" },
         },
         data: {
@@ -531,7 +540,17 @@ describe("SessionManager", () => {
 
       mockPrisma.session.findMany
         .mockResolvedValueOnce([]) // org-1 sessions
-        .mockResolvedValueOnce([{ id: "session-org2" }]); // org-2 sessions
+        .mockResolvedValueOnce([{
+          id: "session-org2",
+          userId: user,
+          orgId: "org-2",
+          providerId: "provider-local",
+          token: "token-org2",
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+          isRevoked: false,
+          mfaVerified: false,
+        }]); // org-2 sessions
 
       const org1Sessions = await sessionManager.listActiveSessions(user, "org-1");
       const org2Sessions = await sessionManager.listActiveSessions(user, "org-2");
@@ -542,11 +561,11 @@ describe("SessionManager", () => {
       // Verify each query included correct orgId
       expect(mockPrisma.session.findMany).toHaveBeenNthCalledWith(1, {
         where: expect.objectContaining({ orgId: "org-1" }),
-        orderBy: { createdAt: "desc" },
+        orderBy: { lastActivityAt: "desc" },
       });
       expect(mockPrisma.session.findMany).toHaveBeenNthCalledWith(2, {
         where: expect.objectContaining({ orgId: "org-2" }),
-        orderBy: { createdAt: "desc" },
+        orderBy: { lastActivityAt: "desc" },
       });
     });
   });

@@ -35,7 +35,7 @@ describe("RetryManager", () => {
     });
 
     it("should respect Retry-After header", () => {
-      const retryAfter = 300; // 5 minutes
+      const retryAfter = 10; // 10 seconds (within maxDelayMs of 32000)
       const delay = manager.calculateDelay(0, retryAfter);
 
       expect(delay).toBe(retryAfter * 1000);

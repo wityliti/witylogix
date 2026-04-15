@@ -118,7 +118,8 @@ describe("EnvelopeEngine", () => {
       expect(result.operationId).toBeDefined();
       expect(result.provider).toBe("docusign");
       expect(result.envelope.envelopeId).toBe("test-envelope-id");
-      expect(result.duration).toBeGreaterThan(0);
+      // Mocked operations complete instantly; duration may be 0ms
+      expect(result.duration).toBeGreaterThanOrEqual(0);
     });
 
     it("should log audit trail for envelope creation", async () => {

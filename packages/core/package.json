@@ -99,10 +99,17 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "@witylogix/db": "workspace:*",
     "@witylogix/framework": "workspace:*",
     "@witylogix/types": "workspace:*",
     "@witylogix/validators": "workspace:*",
+    "cron-parser": "^4.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^10.4.3",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "undici": "^7.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
