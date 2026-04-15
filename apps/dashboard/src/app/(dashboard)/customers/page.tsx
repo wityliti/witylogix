@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card } from '@/components/ui/card';
@@ -27,6 +28,7 @@ const getTierColor = (tier: string): "primary" | "success" | "warning" | "info" 
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'totalSpent' | 'totalOrders' | 'lastOrderDate'>('name');
@@ -79,8 +81,12 @@ export default function CustomersPage() {
         title="Customers"
         subtitle={`${activeCustomers} active · ${pagination.total} total`}
         actions={
-          <Button variant="primary" size="md">
-            + Sync from Shopify
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/customers/create')}
+          >
+            + Add Customer
           </Button>
         }
       />
