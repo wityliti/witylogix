@@ -55,7 +55,7 @@ import {
   syncProductsSchema,
   syncCustomerSchema,
   syncCustomersSchema,
-} from '@witylogix/validators';
+} from '../index';
 
 // - UUID Schema Tests -
 
