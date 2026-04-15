@@ -24,7 +24,7 @@ type RouteSpec = {
 };
 
 const ROUTES: RouteSpec[] = [
-  // Core list pages
+  // ─── Core list pages ───────────────────────────────────────
   { name: "home", path: "/home", expectText: /orders|drivers|routes|home/i, minButtons: 1 },
   { name: "orders", path: "/orders", expectText: /order|delivery|shipment/i, minButtons: 1 },
   { name: "drivers", path: "/drivers", expectText: /driver|fleet|vehicle/i, minButtons: 1 },
@@ -32,25 +32,50 @@ const ROUTES: RouteSpec[] = [
   { name: "shipments", path: "/shipments", expectText: /shipment|tracking|label/i },
   { name: "zones", path: "/zones", expectText: /zone|area|region/i, minButtons: 1 },
   { name: "time-slots", path: "/time-slots", expectText: /time|slot|schedule/i },
+  { name: "products", path: "/products", expectText: /product|sku|catalog/i },
+  { name: "stores", path: "/stores", expectText: /store|shop|location/i },
+  { name: "calendar", path: "/calendar", expectText: /calendar|schedule|event/i },
 
-  // Create pages (added in dead-button fix)
+  // ─── Create pages ──────────────────────────────────────────
   { name: "drivers-create", path: "/drivers/create", expectText: /add driver|name|phone/i, minButtons: 2 },
   { name: "customers-create", path: "/customers/create", expectText: /add customer|email/i, minButtons: 2 },
   { name: "zones-create", path: "/zones/create", expectText: /create zone|base rate/i, minButtons: 2 },
   { name: "orders-create", path: "/orders/create", expectText: /order|customer|item/i },
 
-  // Analytics / dashboards
+  // ─── Analytics / tracking ──────────────────────────────────
   { name: "analytics", path: "/analytics", expectText: /analytic|dashboard|metric|chart/i },
   { name: "activity", path: "/activity" },
   { name: "tracking", path: "/tracking", expectText: /track|shipment|live/i },
   { name: "tracking-live", path: "/tracking/live", expectText: /live|map|driver/i },
 
-  // Settings
+  // ─── Operations ────────────────────────────────────────────
+  { name: "dispatch", path: "/dispatch", expectText: /dispatch|driver|assign/i },
+  { name: "routes", path: "/routes", expectText: /route|stop|driver/i },
+  { name: "field-service", path: "/field-service", expectText: /field|service|job|technician/i },
+  { name: "field-service-jobs", path: "/field-service/jobs" },
+  { name: "field-service-dispatch", path: "/field-service/dispatch" },
+
+  // ─── Supply chain / shipping ───────────────────────────────
+  { name: "supply-chain", path: "/supply-chain", expectText: /supply|chain|inventory|order/i },
+  { name: "supply-chain-inventory", path: "/supply-chain/inventory" },
+  { name: "supply-chain-orders", path: "/supply-chain/orders" },
+  { name: "shipping-profiles", path: "/shipping-profiles", expectText: /shipping|profile|rate/i },
+  { name: "shipping-labels", path: "/shipping/labels", expectText: /label|shipping|carrier/i },
+
+  // ─── eSignatures / Payments ────────────────────────────────
+  { name: "esignatures", path: "/esignatures", expectText: /sign|envelope|template/i },
+  { name: "payments", path: "/payments", expectText: /payment|invoice|charge/i },
+
+  // ─── Settings ──────────────────────────────────────────────
   { name: "settings-general", path: "/settings/general", expectText: /setting|general|preference/i },
   { name: "settings-team", path: "/settings/team", expectText: /team|member|invite/i },
   { name: "settings-profile", path: "/settings/profile", expectText: /profile|name|email/i },
   { name: "settings-billing", path: "/settings/billing", expectText: /billing|plan|subscription/i },
   { name: "settings-carriers", path: "/settings/carriers", expectText: /carrier|shipping|rate/i },
+  { name: "settings-notifications", path: "/settings/notifications" },
+  { name: "settings-webhooks", path: "/settings/webhooks" },
+  { name: "settings-api-keys", path: "/settings/api-keys" },
+  { name: "settings-organization", path: "/settings/organization", expectText: /organization|name/i },
 ];
 
 async function countActionableButtons(page: Page): Promise<number> {
