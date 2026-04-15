@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/app-shell";
 import "@/styles/globals.css";
 
