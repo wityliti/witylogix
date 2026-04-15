@@ -195,7 +195,8 @@ async function customerRoutes(fastify: FastifyInstance): Promise<void> {
       const created = await request.tenantDb.customer.create({
         data: {
           shopId: request.shopId,
-          shopifyCustomerId: `manual-${randomUUID()}`,
+          externalCustomerId: `manual-${randomUUID()}`,
+          source: "MANUAL",
           email: body.email,
           firstName: body.firstName ?? null,
           lastName: body.lastName ?? null,
