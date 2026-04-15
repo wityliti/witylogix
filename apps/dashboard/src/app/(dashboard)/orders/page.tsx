@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { ChevronLeft, ChevronRight, Search, Map, List } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +67,7 @@ function truncate(s: string, max = 40): string {
 type ViewMode = 'list' | 'map';
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt:desc');
@@ -134,38 +135,13 @@ export default function OrdersPage() {
         title="Orders"
         subtitle={`${pagination.total} total orders`}
         actions={
-          <div className="flex items-center gap-2">
-            {/* View toggle */}
-            <div className="flex items-center rounded-lg border border-zinc-700 bg-zinc-900 p-0.5">
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  viewMode === 'list'
-                    ? 'bg-zinc-700 text-white'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                )}
-              >
-                <List className="w-3.5 h-3.5" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
-                  viewMode === 'map'
-                    ? 'bg-zinc-700 text-white'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                )}
-              >
-                <Map className="w-3.5 h-3.5" />
-                Map
-              </button>
-            </div>
-            <Button variant="primary" size="md">
-              + Create Order
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/orders/create')}
+          >
+            + Create Order
+          </Button>
         }
       />
 
