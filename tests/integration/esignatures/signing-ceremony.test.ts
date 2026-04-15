@@ -211,12 +211,17 @@ class MockSigningCeremonyService {
     const session = this.sessions.get(sessionId);
     if (!session) throw new Error(`Session ${sessionId} not found`);
 
+    if (session.status === 'expired') {
+      throw new Error('Session expired');
+    }
+
     if (session.resumableUntil && session.resumableUntil < new Date()) {
       throw new Error('Session expired and cannot be resumed');
     }
 
     session.status = 'active';
-    session.expiresAt = new Date(Date.now() + 60 * 60 * 1000); // Reset expiry
+    // Extend expiry by 1 hour from now (always strictly after original expiry)
+    session.expiresAt = new Date(Date.now() + 60 * 60 * 1000 + 1);
     return session;
   }
 

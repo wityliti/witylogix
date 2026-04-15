@@ -10,7 +10,31 @@
  * - Edge cases (empty, unicode, very long)
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { randomBytes, createHash } from "node:crypto";
+
+vi.mock("@witylogix/db", () => ({
+  db: {},
+}));
+
+// Mock argon2 since it's not installed as a dependency
+vi.mock("argon2", () => {
+  const hashes = new Map<string, string>();
+  return {
+    argon2id: 2,
+    hash: vi.fn(async (password: string) => {
+      const salt = randomBytes(16).toString("hex");
+      const hash = createHash("sha256").update(password + salt).digest("hex");
+      const result = `$argon2id$v=19$m=65536,t=4,p=4$${salt}$${hash}`;
+      hashes.set(result, password);
+      return result;
+    }),
+    verify: vi.fn(async (hash: string, password: string) => {
+      return hashes.get(hash) === password;
+    }),
+  };
+});
+
 import { createPasswordService } from "../password-service.js";
 import type { PasswordService } from "../password-service.js";
 

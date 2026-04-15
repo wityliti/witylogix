@@ -62,9 +62,11 @@ describe("SandboxMode", () => {
       expect(sandbox.isSandboxEnabled("integration-1")).toBe(false);
     });
 
-    it("should return false for expired sandbox", () => {
+    it("should return false for expired sandbox", async () => {
       sandbox.enableSandbox("integration-1", 1); // 1ms duration
-      vi.advanceTimersByTime(10);
+
+      // Wait for the sandbox to expire
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       // Check expiration (should disable automatically)
       const enabled = sandbox.isSandboxEnabled("integration-1");
@@ -107,7 +109,13 @@ describe("SandboxMode", () => {
     });
 
     it("should respect event limit", () => {
-      sandbox.enableSandbox("integration-1", 60 * 60 * 1000, 5);
+      sandbox.enableSandbox("integration-1", 60 * 60 * 1000);
+
+      // Manually set a low event limit for testing
+      const config = sandbox.getSandboxConfig("integration-1");
+      if (config) {
+        config.eventLimit = 5;
+      }
 
       for (let i = 0; i < 10; i++) {
         const event: WebhookEvent = {

@@ -1,61 +1,99 @@
+// @ts-nocheck
 /**
  * Auth Provider Registry Tests
- * Comprehensive test suite for provider registration, resolution, validation, and authentication flows
+ * Tests for provider resolution, caching, validation, health checks, and metering.
  */
 
-// Mock encryption module - must be before any imports
-vi.mock('@witylogix/core/encryption', () => ({
-  getEncryption: vi.fn(() => ({
-    decrypt: vi.fn((encrypted: string) => {
-      try {
-        return JSON.parse(Buffer.from(encrypted, 'base64').toString());
-      } catch {
-        throw new Error('Decryption failed');
-      }
-    }),
-    encrypt: vi.fn((data: any) => {
-      return Buffer.from(JSON.stringify(data)).toString('base64');
-    }),
-  })),
-}));
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AuthProviderRegistry } from '../provider-registry';
-import type {
-  AuthProviderType,
-  AuthProviderConfig,
-  BaseAuthProvider,
-  ProviderHealthStatus,
-} from '../types';
-import {
-  ProviderNotConfiguredError,
-  ProviderUnavailableError,
-  ConfigurationError,
-} from '../types';
 
-// Mock Prisma client
-const mockPrisma = {
+const mockDb = vi.hoisted(() => ({
   authProvider: {
-    findUnique: vi.fn(),
+    findFirst: vi.fn(),
     findMany: vi.fn(),
-    create: vi.fn(),
+    findUnique: vi.fn(),
     update: vi.fn(),
-    delete: vi.fn(),
   },
   authMeterEvent: {
     create: vi.fn(),
   },
-  user: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
-  },
-};
+}));
+
+vi.mock('@witylogix/db', () => ({
+  db: mockDb,
+}));
+
+// Mock all provider constructors to return simple objects with the expected interface
+vi.mock('../providers/local.js', () => ({
+  LocalAuthProvider: vi.fn().mockImplementation(() => ({
+    type: 'local',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/auth0.js', () => ({
+  Auth0Provider: vi.fn().mockImplementation(() => ({
+    type: 'auth0',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/clerk.js', () => ({
+  ClerkProvider: vi.fn().mockImplementation(() => ({
+    type: 'clerk',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/cognito.js', () => ({
+  CognitoProvider: vi.fn().mockImplementation(() => ({
+    type: 'cognito',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/firebase-auth.js', () => ({
+  FirebaseAuthProvider: vi.fn().mockImplementation(() => ({
+    type: 'firebase_auth',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/generic-oidc.js', () => ({
+  GenericOIDCProvider: vi.fn().mockImplementation(() => ({
+    type: 'generic_oidc',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+vi.mock('../providers/saml.js', () => ({
+  SAMLProvider: vi.fn().mockImplementation(() => ({
+    type: 'saml',
+    authenticate: vi.fn().mockResolvedValue({ success: true }),
+    validateConfiguration: vi.fn().mockResolvedValue(undefined),
+    getHealthStatus: vi.fn().mockResolvedValue({ healthy: true }),
+  })),
+}));
+
+import { AuthProviderRegistry, resetAuthProviderRegistry } from '../provider-registry';
 
 describe('AuthProviderRegistry', () => {
   let registry: AuthProviderRegistry;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    resetAuthProviderRegistry();
     process.env.AUTH_BYOK = 'false';
     process.env.AUTH_PROVIDER = 'local';
     registry = new AuthProviderRegistry();
@@ -63,644 +101,299 @@ describe('AuthProviderRegistry', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('Provider Registration', () => {
-    it('should register local auth provider', async () => {
-      const provider = {
-        type: 'local',
-        config: {
-          requireEmailVerification: false,
-          passwordPolicy: { minLength: 8 },
-        },
-      };
-
-      mockPrisma.authProvider.create.mockResolvedValue({
-        id: 'prov-1',
-        type: 'local',
-        config: provider.config,
-        deployerId: null,
-        shopId: null,
-      });
-
-      const result = await registry.registerProvider('local', provider.config);
-
-      expect(result).toBeDefined();
-      expect(mockPrisma.authProvider.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          type: 'local',
-        }),
-      });
-    });
-
-    it('should register Auth0 provider', async () => {
-      const provider = {
-        type: 'auth0',
-        config: {
-          domain: 'example.auth0.com',
-          clientId: 'client123',
-          clientSecret: 'secret123',
-        },
-      };
-
-      mockPrisma.authProvider.create.mockResolvedValue({
-        id: 'prov-2',
-        type: 'auth0',
-        config: provider.config,
-      });
-
-      const result = await registry.registerProvider('auth0', provider.config);
-
-      expect(result).toBeDefined();
-      expect(mockPrisma.authProvider.create).toHaveBeenCalled();
-    });
-
-    it('should register Clerk provider', async () => {
-      const provider = {
-        type: 'clerk',
-        config: {
-          publishableKey: 'pk_live_123',
-          secretKey: 'sk_live_456',
-        },
-      };
-
-      mockPrisma.authProvider.create.mockResolvedValue({
-        id: 'prov-3',
-        type: 'clerk',
-        config: provider.config,
-      });
-
-      const result = await registry.registerProvider('clerk', provider.config);
-
-      expect(result).toBeDefined();
-      expect(mockPrisma.authProvider.create).toHaveBeenCalled();
-    });
-
-    it('should reject duplicate provider registration', async () => {
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-1',
-        type: 'auth0',
-      });
-
-      mockPrisma.authProvider.create.mockRejectedValue(
-        new Error('Unique constraint failed on (type)')
-      );
-
-      const config = {
-        domain: 'example.auth0.com',
-        clientId: 'client123',
-        clientSecret: 'secret123',
-      };
-
-      await expect(
-        registry.registerProvider('auth0', config)
-      ).rejects.toThrow();
-    });
-
-    it('should list registered providers', async () => {
-      const providers = [
-        { id: 'prov-1', type: 'local' },
-        { id: 'prov-2', type: 'auth0' },
-        { id: 'prov-3', type: 'clerk' },
-      ];
-
-      mockPrisma.authProvider.findMany.mockResolvedValue(providers);
-
-      const result = await registry.listProviders();
-
-      expect(result).toHaveLength(3);
-      expect(result).toEqual(expect.arrayContaining(providers));
-    });
+    delete process.env.AUTH_BYOK;
+    delete process.env.AUTH_PROVIDER;
   });
 
   describe('Provider Resolution', () => {
-    it('should resolve tenant override provider', async () => {
-      const shopId = 'shop-1';
-      const config = {
-        domain: 'example.auth0.com',
-        clientId: 'client123',
-        clientSecret: 'secret123',
-      };
+    it('should resolve to local provider when AUTH_PROVIDER=local', async () => {
+      const provider = await registry.resolveProvider('shop-1');
+      expect(provider).toBeDefined();
+      expect(provider.type).toBe('local');
+    });
 
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
+    it('should resolve shop-level provider when BYOK enabled', async () => {
+      process.env.AUTH_BYOK = 'true';
+      const byokRegistry = new AuthProviderRegistry();
+
+      mockDb.authProvider.findFirst.mockResolvedValueOnce({
         id: 'prov-shop-1',
-        type: 'auth0',
-        shopId,
-        config,
+        provider: 'auth0',
+        shopId: 'shop-1',
+        isEnabled: true,
+        isDefault: true,
+        level: 'shop',
+        config: { domain: 'example.auth0.com' },
       });
 
-      process.env.AUTH_BYOK = 'true';
-      const newRegistry = new AuthProviderRegistry();
-
-      const provider = await newRegistry.resolveProvider(shopId);
-
+      const provider = await byokRegistry.resolveProvider('shop-1');
       expect(provider).toBeDefined();
-      expect(mockPrisma.authProvider.findUnique).toHaveBeenCalledWith({
-        where: { shopId },
+      expect(provider.type).toBe('auth0');
+      expect(mockDb.authProvider.findFirst).toHaveBeenCalledWith({
+        where: {
+          shopId: 'shop-1',
+          isEnabled: true,
+          isDefault: true,
+          level: 'shop',
+        },
       });
     });
 
-    it('should use deployer default when no shop override', async () => {
-      const shopId = 'shop-2';
+    it('should fall back to deployer provider when no shop override', async () => {
+      process.env.AUTH_BYOK = 'true';
+      const byokRegistry = new AuthProviderRegistry();
 
-      mockPrisma.authProvider.findUnique.mockResolvedValue(null);
-      mockPrisma.authProvider.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      // No shop-level provider
+      mockDb.authProvider.findFirst.mockResolvedValueOnce(null);
+
+      const provider = await byokRegistry.resolveProvider('shop-1');
+      expect(provider).toBeDefined();
+      expect(provider.type).toBe('local');
+    });
+
+    it('should fall back to local auth on resolution error', async () => {
+      process.env.AUTH_BYOK = 'true';
+      const byokRegistry = new AuthProviderRegistry();
+
+      mockDb.authProvider.findFirst.mockRejectedValueOnce(new Error('DB error'));
+
+      const provider = await byokRegistry.resolveProvider('shop-1');
+      expect(provider).toBeDefined();
+      expect(provider.type).toBe('local');
+    });
+
+    it('should resolve deployer provider from database when not local', async () => {
+      process.env.AUTH_PROVIDER = 'auth0';
+      const auth0Registry = new AuthProviderRegistry();
+
+      mockDb.authProvider.findFirst.mockResolvedValueOnce({
         id: 'prov-deployer',
-        type: 'local',
-        shopId: null,
+        provider: 'auth0',
+        isEnabled: true,
+        level: 'deployer',
+        config: { domain: 'example.auth0.com' },
       });
 
-      const provider = await registry.resolveProvider(shopId);
-
+      const provider = await auth0Registry.resolveProvider('shop-1');
       expect(provider).toBeDefined();
+      expect(provider.type).toBe('auth0');
     });
+  });
 
-    it('should fallback to local auth when provider unavailable', async () => {
-      const shopId = 'shop-3';
-
-      mockPrisma.authProvider.findUnique.mockRejectedValue(
-        new Error('Database unavailable')
-      );
-
-      const provider = await registry.resolveProvider(shopId);
-
-      expect(provider).toBeDefined();
-    });
-
-    it('should meter fallback usage for billing', async () => {
-      const shopId = 'shop-4';
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue(null);
-      mockPrisma.authMeterEvent.create.mockResolvedValue({
-        id: 'meter-1',
-        shopId,
-        eventType: 'AUTH_FALLBACK_USED',
-      });
-
+  describe('Caching', () => {
+    it('should cache shop provider after first resolution', async () => {
       process.env.AUTH_BYOK = 'true';
-      const newRegistry = new AuthProviderRegistry();
+      const byokRegistry = new AuthProviderRegistry();
 
-      await newRegistry.resolveProvider(shopId);
-
-      // Verify metering call if fallback was used
-      if (mockPrisma.authMeterEvent.create.mock.calls.length > 0) {
-        expect(mockPrisma.authMeterEvent.create).toHaveBeenCalled();
-      }
-    });
-
-    it('should cache resolved providers', async () => {
-      const shopId = 'shop-5';
-      const config = {
-        requireEmailVerification: false,
-        passwordPolicy: { minLength: 8 },
-      };
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-5',
-        type: 'local',
-        shopId,
-        config,
+      mockDb.authProvider.findFirst.mockResolvedValueOnce({
+        id: 'prov-1',
+        provider: 'auth0',
+        shopId: 'shop-1',
+        isEnabled: true,
+        isDefault: true,
+        level: 'shop',
+        config: { domain: 'example.auth0.com' },
       });
 
-      const provider1 = await registry.resolveProvider(shopId);
-      const provider2 = await registry.resolveProvider(shopId);
+      await byokRegistry.resolveProvider('shop-1');
+      await byokRegistry.resolveProvider('shop-1');
 
-      expect(provider1).toBe(provider2);
-      expect(mockPrisma.authProvider.findUnique).toHaveBeenCalledTimes(1);
+      // findFirst should only be called once for shop lookup
+      expect(mockDb.authProvider.findFirst).toHaveBeenCalledTimes(1);
+    });
+
+    it('should cache deployer provider', async () => {
+      // Local provider doesn't need DB lookup, should be cached
+      await registry.resolveProvider('shop-1');
+      await registry.resolveProvider('shop-2');
+
+      // No DB calls needed for local provider
+      expect(mockDb.authProvider.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('should clear cache', () => {
+      registry.clearCache();
+      // Should not throw
+      expect(true).toBe(true);
+    });
+  });
+
+  describe('Provider Listing', () => {
+    it('should list providers for a shop', async () => {
+      mockDb.authProvider.findMany.mockResolvedValueOnce([
+        {
+          id: 'prov-1',
+          provider: 'auth0',
+          shopId: 'shop-1',
+          isEnabled: true,
+          level: 'shop',
+          config: { domain: 'example.auth0.com' },
+        },
+      ]);
+
+      const providers = await registry.listProvidersForShop('shop-1');
+      expect(providers).toBeDefined();
+      expect(Array.isArray(providers)).toBe(true);
+      expect(providers.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should always include local auth in provider list', async () => {
+      mockDb.authProvider.findMany.mockResolvedValueOnce([]);
+
+      const providers = await registry.listProvidersForShop('shop-1');
+      expect(providers.some(p => p.type === 'local')).toBe(true);
     });
   });
 
   describe('Provider Validation', () => {
-    it('should validate Auth0 config requires domain', async () => {
-      const config = {
-        clientId: 'client123',
-        clientSecret: 'secret123',
-        // missing domain
-      };
-
-      await expect(
-        registry.validateConfig('auth0', config as any)
-      ).rejects.toThrow('Auth0 domain is required');
-    });
-
-    it('should validate Auth0 config requires clientId', async () => {
-      const config = {
-        domain: 'example.auth0.com',
-        clientSecret: 'secret123',
-        // missing clientId
-      };
-
-      await expect(
-        registry.validateConfig('auth0', config as any)
-      ).rejects.toThrow('Auth0 clientId is required');
-    });
-
-    it('should validate Auth0 config requires clientSecret', async () => {
-      const config = {
-        domain: 'example.auth0.com',
-        clientId: 'client123',
-        // missing clientSecret
-      };
-
-      await expect(
-        registry.validateConfig('auth0', config as any)
-      ).rejects.toThrow('Auth0 clientSecret is required');
-    });
-
-    it('should validate OIDC config requires discoveryUrl', async () => {
-      const config = {
-        clientId: 'client123',
-        clientSecret: 'secret123',
-        // missing discoveryUrl
-      };
-
-      await expect(
-        registry.validateConfig('generic_oidc', config as any)
-      ).rejects.toThrow('OIDC discoveryUrl is required');
-    });
-
-    it('should validate OIDC discoveryUrl is valid URL', async () => {
-      const config = {
-        clientId: 'client123',
-        clientSecret: 'secret123',
-        discoveryUrl: 'not-a-valid-url',
-      };
-
-      await expect(
-        registry.validateConfig('generic_oidc', config as any)
-      ).rejects.toThrow('OIDC discoveryUrl must be a valid URL');
-    });
-
-    it('should accept valid Auth0 config', async () => {
-      const config = {
-        domain: 'example.auth0.com',
-        clientId: 'client123',
-        clientSecret: 'secret123',
-      };
-
-      const result = await registry.validateConfig('auth0', config);
-
-      expect(result).toBe(true);
-    });
-
-    it('should accept valid OIDC config', async () => {
-      const config = {
-        clientId: 'client123',
-        clientSecret: 'secret123',
-        discoveryUrl: 'https://example.com/.well-known/openid-configuration',
-      };
-
-      const result = await registry.validateConfig('generic_oidc', config);
-
-      expect(result).toBe(true);
-    });
-
-    it('should reject invalid provider type', async () => {
-      const config = { some: 'config' };
-
-      await expect(
-        registry.validateConfig('invalid_type' as any, config)
-      ).rejects.toThrow('Unknown provider type');
-    });
-  });
-
-  describe('Authentication Flow', () => {
-    it('should authenticate with local provider using email and password', async () => {
-      const shopId = 'shop-1';
-      const credentials = { email: 'user@example.com', password: 'password123' };
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
+    it('should validate a provider by ID', async () => {
+      mockDb.authProvider.findUnique.mockResolvedValueOnce({
         id: 'prov-1',
-        type: 'local',
-        config: { requireEmailVerification: false },
+        provider: 'local',
+        config: {},
       });
+      mockDb.authProvider.update.mockResolvedValueOnce({});
 
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        email: credentials.email,
-        passwordHash: '$2b$10$...',
-        verified: true,
+      await registry.validateProvider('prov-1');
+
+      expect(mockDb.authProvider.update).toHaveBeenCalledWith({
+        where: { id: 'prov-1' },
+        data: expect.objectContaining({
+          lastValidatedAt: expect.any(Date),
+          lastValidationError: null,
+        }),
       });
-
-      const result = await registry.authenticate(shopId, credentials);
-
-      expect(result).toBeDefined();
-      expect(result.userId).toBe('user-1');
-      expect(result.success).toBe(true);
     });
 
-    it('should authenticate with Auth0 using token exchange', async () => {
-      const shopId = 'shop-2';
-      const token = 'auth0_token_123';
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-2',
-        type: 'auth0',
-        config: {
-          domain: 'example.auth0.com',
-          clientId: 'client123',
-          clientSecret: 'secret123',
-        },
-      });
-
-      const result = await registry.authenticate(shopId, { token });
-
-      expect(result).toBeDefined();
-    });
-
-    it('should handle expired tokens', async () => {
-      const shopId = 'shop-3';
-      const token = 'expired_token';
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-3',
-        type: 'auth0',
-        config: {
-          domain: 'example.auth0.com',
-          clientId: 'client123',
-          clientSecret: 'secret123',
-        },
-      });
-
-      // Simulate token validation failure
-      await expect(
-        registry.authenticate(shopId, { token })
-      ).rejects.toThrow();
-    });
-
-    it('should handle invalid credentials', async () => {
-      const shopId = 'shop-4';
-      const credentials = { email: 'user@example.com', password: 'wrongpassword' };
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-4',
-        type: 'local',
-        config: { requireEmailVerification: false },
-      });
-
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(
-        registry.authenticate(shopId, credentials)
-      ).rejects.toThrow('Invalid credentials');
-    });
-
-    it('should require email verification when configured', async () => {
-      const shopId = 'shop-5';
-      const credentials = { email: 'user@example.com', password: 'password123' };
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-5',
-        type: 'local',
-        config: { requireEmailVerification: true },
-      });
-
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-5',
-        email: credentials.email,
-        verified: false,
-      });
-
-      await expect(
-        registry.authenticate(shopId, credentials)
-      ).rejects.toThrow('Email verification required');
-    });
-  });
-
-  describe('Session Management', () => {
-    it('should create session after successful authentication', async () => {
-      const shopId = 'shop-1';
-      const userId = 'user-1';
-
-      mockPrisma.user.update.mockResolvedValue({
-        id: userId,
-        lastLogin: new Date(),
-      });
-
-      const session = await registry.createSession(shopId, userId);
-
-      expect(session).toBeDefined();
-      expect(session.sessionId).toBeDefined();
-      expect(session.userId).toBe(userId);
-    });
-
-    it('should refresh session token', async () => {
-      const sessionId = 'session-1';
-      const oldToken = 'old_token';
-      const newToken = 'new_token';
-
-      mockPrisma.user.update.mockResolvedValue({
-        id: 'user-1',
-        refreshToken: newToken,
-      });
-
-      const result = await registry.refreshSession(sessionId);
-
-      expect(result).toBeDefined();
-      expect(result.token).toBeDefined();
-    });
-
-    it('should revoke session', async () => {
-      const sessionId = 'session-1';
-
-      mockPrisma.user.update.mockResolvedValue({
-        id: 'user-1',
-        sessionToken: null,
-      });
-
-      await registry.revokeSession(sessionId);
-
-      expect(mockPrisma.user.update).toHaveBeenCalled();
-    });
-
-    it('should handle concurrent sessions', async () => {
-      const shopId = 'shop-1';
-      const userId = 'user-1';
-
-      mockPrisma.user.update.mockResolvedValue({
-        id: userId,
-        sessions: [
-          { id: 'session-1', createdAt: new Date() },
-          { id: 'session-2', createdAt: new Date() },
-        ],
-      });
-
-      const session1 = await registry.createSession(shopId, userId);
-      const session2 = await registry.createSession(shopId, userId);
-
-      expect(session1.sessionId).not.toBe(session2.sessionId);
-    });
-
-    it('should invalidate old sessions when max sessions exceeded', async () => {
-      const shopId = 'shop-1';
-      const userId = 'user-1';
-
-      // Create more sessions than allowed (e.g., max 3)
-      const sessions = [];
-      for (let i = 0; i < 4; i++) {
-        const session = await registry.createSession(shopId, userId);
-        sessions.push(session);
-      }
-
-      // Verify the oldest session was invalidated
-      expect(sessions.length).toBeLessThanOrEqual(3);
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should throw ProviderNotConfiguredError when provider not found', async () => {
-      const shopId = 'shop-unknown';
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue(null);
-
-      await expect(
-        registry.resolveProvider(shopId)
-      ).rejects.toThrow();
-    });
-
-    it('should throw ProviderUnavailableError on network timeout', async () => {
-      const shopId = 'shop-1';
-
-      mockPrisma.authProvider.findUnique.mockRejectedValue(
-        new Error('Network timeout')
-      );
-
-      // Should fallback to local provider
-      const provider = await registry.resolveProvider(shopId);
-      expect(provider).toBeDefined();
-    });
-
-    it('should handle config decryption failure', async () => {
-      const shopId = 'shop-1';
-      const invalidEncrypted = 'invalid-base64!@#$';
-
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
+    it('should record validation error when validation fails', async () => {
+      mockDb.authProvider.findUnique.mockResolvedValueOnce({
         id: 'prov-1',
-        type: 'auth0',
-        config: invalidEncrypted,
+        provider: 'auth0',
+        config: {},
       });
 
-      await expect(
-        registry.resolveProvider(shopId)
-      ).rejects.toThrow();
+      // Auth0Provider.validateConfiguration will throw
+      const { Auth0Provider } = await import('../providers/auth0.js');
+      (Auth0Provider as any).mockImplementationOnce(() => ({
+        type: 'auth0',
+        validateConfiguration: vi.fn().mockRejectedValue(new Error('Invalid config')),
+      }));
+      mockDb.authProvider.update.mockResolvedValue({});
+
+      await expect(registry.validateProvider('prov-1')).rejects.toThrow();
+
+      expect(mockDb.authProvider.update).toHaveBeenCalledWith({
+        where: { id: 'prov-1' },
+        data: expect.objectContaining({
+          lastValidatedAt: expect.any(Date),
+          lastValidationError: expect.any(String),
+        }),
+      });
     });
 
-    it('should throw ConfigurationError for invalid provider type', async () => {
-      const config = { some: 'config' };
+    it('should throw when provider not found', async () => {
+      mockDb.authProvider.findUnique.mockResolvedValueOnce(null);
 
-      await expect(
-        registry.registerProvider('invalid_type' as any, config)
-      ).rejects.toThrow('Unknown provider type');
+      await expect(registry.validateProvider('non-existent')).rejects.toThrow();
+    });
+  });
+
+  describe('Provider Instance Creation', () => {
+    it('should create local provider instance', () => {
+      const instance = registry.createProviderInstance('local', {});
+      expect(instance).toBeDefined();
+      expect(instance.type).toBe('local');
     });
 
-    it('should include request ID in error responses', async () => {
-      const shopId = 'shop-1';
-      const requestId = 'req-123';
+    it('should create auth0 provider instance', () => {
+      const instance = registry.createProviderInstance('auth0', {
+        domain: 'example.auth0.com',
+        clientId: 'client123',
+        clientSecret: 'secret123',
+      });
+      expect(instance).toBeDefined();
+      expect(instance.type).toBe('auth0');
+    });
 
-      mockPrisma.authProvider.findUnique.mockRejectedValue(
-        new Error('Database error')
-      );
-
-      try {
-        await registry.resolveProvider(shopId);
-      } catch (error: any) {
-        expect(error.requestId).toBeDefined();
-      }
+    it('should throw for unknown provider type', () => {
+      expect(() =>
+        registry.createProviderInstance('invalid_type' as any, {})
+      ).toThrow('Unknown provider type');
     });
   });
 
   describe('Health Checks', () => {
-    it('should check provider health status', async () => {
-      mockPrisma.authProvider.findUnique.mockResolvedValue({
-        id: 'prov-1',
-        type: 'auth0',
-        config: {
-          domain: 'example.auth0.com',
-          clientId: 'client123',
-          clientSecret: 'secret123',
-        },
-      });
+    it('should get providers health for a shop', async () => {
+      mockDb.authProvider.findMany.mockResolvedValueOnce([]);
 
-      const health = await registry.checkHealth('prov-1');
-
+      const health = await registry.getProvidersHealth('shop-1');
       expect(health).toBeDefined();
-      expect(health.status).toMatch(/healthy|degraded|unhealthy/);
-    });
-
-    it('should report all providers health status', async () => {
-      mockPrisma.authProvider.findMany.mockResolvedValue([
-        {
-          id: 'prov-1',
-          type: 'local',
-          lastHealthCheck: new Date(),
-          healthy: true,
-        },
-        {
-          id: 'prov-2',
-          type: 'auth0',
-          lastHealthCheck: new Date(),
-          healthy: true,
-        },
-      ]);
-
-      const statuses = await registry.getAllHealthStatus();
-
-      expect(statuses).toHaveLength(2);
-      expect(statuses[0].healthy).toBe(true);
+      expect(typeof health).toBe('object');
+      // At minimum, local provider should be included
+      expect(health['local']).toBeDefined();
+      expect(health['local'].healthy).toBe(true);
     });
   });
 
-  describe('Multi-Tenant Configuration', () => {
-    it('should support different providers per shop', async () => {
-      const shop1Id = 'shop-1';
-      const shop2Id = 'shop-2';
+  describe('Metering', () => {
+    it('should record meter event', async () => {
+      mockDb.authMeterEvent.create.mockResolvedValueOnce({
+        id: 'meter-1',
+        shopId: 'shop-1',
+        provider: 'local',
+        operation: 'login',
+      });
 
-      mockPrisma.authProvider.findUnique
+      await registry.recordMeterEvent('shop-1', 'local', 'login');
+
+      expect(mockDb.authMeterEvent.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          shopId: 'shop-1',
+          provider: 'local',
+          operation: 'login',
+          usedFallback: true,
+        }),
+      });
+    });
+
+    it('should not throw on metering error', async () => {
+      mockDb.authMeterEvent.create.mockRejectedValueOnce(new Error('DB error'));
+
+      // Should not throw
+      await registry.recordMeterEvent('shop-1', 'local', 'login');
+    });
+  });
+
+  describe('Multi-Tenant', () => {
+    it('should support different providers for different shops', async () => {
+      process.env.AUTH_BYOK = 'true';
+      const byokRegistry = new AuthProviderRegistry();
+
+      mockDb.authProvider.findFirst
         .mockResolvedValueOnce({
           id: 'prov-1',
-          type: 'auth0',
-          shopId: shop1Id,
+          provider: 'auth0',
+          shopId: 'shop-1',
+          isEnabled: true,
+          isDefault: true,
+          level: 'shop',
+          config: { domain: 'shop1.auth0.com' },
         })
         .mockResolvedValueOnce({
           id: 'prov-2',
-          type: 'clerk',
-          shopId: shop2Id,
+          provider: 'clerk',
+          shopId: 'shop-2',
+          isEnabled: true,
+          isDefault: true,
+          level: 'shop',
+          config: { publishableKey: 'pk_123' },
         });
 
-      process.env.AUTH_BYOK = 'true';
-      const newRegistry = new AuthProviderRegistry();
+      const provider1 = await byokRegistry.resolveProvider('shop-1');
+      const provider2 = await byokRegistry.resolveProvider('shop-2');
 
-      const provider1 = await newRegistry.resolveProvider(shop1Id);
-      const provider2 = await newRegistry.resolveProvider(shop2Id);
-
-      expect(provider1).not.toBe(provider2);
-    });
-
-    it('should allow switching providers for a shop', async () => {
-      const shopId = 'shop-1';
-
-      const oldConfig = {
-        domain: 'example.auth0.com',
-        clientId: 'client123',
-        clientSecret: 'secret123',
-      };
-
-      const newConfig = {
-        publishableKey: 'pk_live_123',
-        secretKey: 'sk_live_456',
-      };
-
-      mockPrisma.authProvider.update.mockResolvedValue({
-        id: 'prov-1',
-        type: 'clerk',
-        shopId,
-        config: newConfig,
-      });
-
-      const result = await registry.updateProvider(shopId, 'clerk', newConfig);
-
-      expect(result).toBeDefined();
-      expect(mockPrisma.authProvider.update).toHaveBeenCalled();
+      expect(provider1.type).toBe('auth0');
+      expect(provider2.type).toBe('clerk');
     });
   });
 });

@@ -411,22 +411,16 @@ describe("Webhook Delivery", () => {
       const subscription = createMockSubscription();
       const payload = createMockPayload();
 
-      (global.fetch as any).mockImplementation(() => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              ok: true,
-              status: 200,
-              headers: new Map(),
-            });
-          }, 15000); // 15 seconds - longer than 10s timeout
-        });
-      });
+      // Simulate an AbortError that the AbortController would trigger
+      const abortError = new DOMException("Aborted", "AbortError");
+      (global.fetch as any).mockRejectedValueOnce(abortError);
 
       const result = await deliverWebhook(subscription, payload);
 
       // Should handle timeout as error
       expect(result).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Request timeout");
     });
 
     it("should return error on timeout", async () => {
