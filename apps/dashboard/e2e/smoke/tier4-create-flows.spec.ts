@@ -20,6 +20,11 @@ function uniqueSuffix(): string {
   return `e2e-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
 
+// Tier 4 issues real writes and races on shared API state (rate limiter,
+// connection pool, auth). Running it serial inside the file — the other
+// tiers remain parallel and pay the cost of this one small describe.
+test.describe.configure({ mode: "serial" });
+
 test.describe("Tier 4 — end-to-end create flows", () => {
   test("can create a driver via /drivers/create", async ({ authedPage }, testInfo) => {
     const page = authedPage;
