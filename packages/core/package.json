@@ -68,6 +68,7 @@
     "./ai-eta-v2": "./src/ai-eta-v2/index.ts",
     "./ai-analytics": "./src/ai-analytics/index.ts",
     "./natural-language-filter": "./src/ai/natural-language-filter.ts",
+    "./ai/smart-driver-assignment": "./src/ai/smart-driver-assignment.ts",
     "./platform": "./src/platform/index.ts",
     "./config": "./src/config/index.ts",
     "./demand-prediction": "./src/demand-prediction/index.ts",
