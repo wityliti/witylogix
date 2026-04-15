@@ -94,18 +94,21 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
     const body = createDeliveryZoneSchema.parse(request.body);
     const { boundary: boundaryPoints, ...zoneData } = body;
 
-    // Convert coordinate array to WKT polygon
-    // Close the ring if not already closed
-    const points = [...boundaryPoints];
-    const first = points[0];
-    const last = points[points.length - 1];
-    if (first.longitude !== last.longitude || first.latitude !== last.latitude) {
-      points.push(first);
+    // If caller supplied a polygon, convert to a WKT string; otherwise the
+    // zone is created with a null boundary and can be filled in later via
+    // the map picker / PATCH endpoint.
+    let wkt: string | null = null;
+    if (boundaryPoints && boundaryPoints.length >= 3) {
+      const points = [...boundaryPoints];
+      const first = points[0];
+      const last = points[points.length - 1];
+      if (first.longitude !== last.longitude || first.latitude !== last.latitude) {
+        points.push(first);
+      }
+      const wktRing = points.map((p) => `${p.longitude} ${p.latitude}`).join(", ");
+      wkt = `POLYGON((${wktRing}))`;
     }
-    const wktRing = points.map((p) => `${p.longitude} ${p.latitude}`).join(", ");
-    const wkt = `POLYGON((${wktRing}))`;
 
-    // Create zone with PostGIS boundary
     const zone = await request.tenantDb.$transaction(async (tx) => {
       const created = await tx.deliveryZone.create({
         data: {
@@ -114,11 +117,13 @@ async function zonesRoutes(fastify: FastifyInstance): Promise<void> {
         },
       });
 
-      await tx.$executeRaw`
-        UPDATE delivery_zones
-        SET boundary = ST_GeomFromText(${wkt}, 4326)
-        WHERE id = ${created.id}::uuid
-      `;
+      if (wkt) {
+        await tx.$executeRaw`
+          UPDATE delivery_zones
+          SET boundary = ST_GeomFromText(${wkt}, 4326)
+          WHERE id = ${created.id}::uuid
+        `;
+      }
 
       return created;
     });

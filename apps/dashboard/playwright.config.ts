@@ -27,10 +27,14 @@ const apiURL = isStaging
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  // Against staging we can safely run 4 parallel workers — the seed demo
+  // tenant has 25 orders / 8 customers / 5 drivers and Railway's rate limits
+  // sit well above our test traffic. Drop to 1 worker locally if you see
+  // flakiness on a single dev machine.
+  workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : 4,
   reporter: process.env.CI ? "list" : [["list"], ["html", { open: "never" }]],
   timeout: 60000,
 

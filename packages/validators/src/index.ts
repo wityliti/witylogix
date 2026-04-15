@@ -78,7 +78,10 @@ export const updateDriverLocationSchema = z.object({
 
 export const createDeliveryZoneSchema = z.object({
   name: z.string().min(1).max(100),
-  boundary: z.array(coordinatesSchema).min(3), // GeoJSON polygon ring
+  // Polygon ring in lat/lng pairs. Optional — dashboard-created zones may
+  // defer the boundary until a map picker is available; API routes should
+  // only set the PostGIS boundary when this field is present.
+  boundary: z.array(coordinatesSchema).min(3).optional(),
   baseRate: z.number().nonnegative().default(0),
   perKmRate: z.number().nonnegative().default(0),
   minOrder: z.number().nonnegative().default(0),
