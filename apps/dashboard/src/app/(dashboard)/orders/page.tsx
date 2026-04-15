@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, Map, List, MapPin } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -193,35 +192,13 @@ export default function OrdersPage() {
         title="Orders"
         subtitle={`${pagination.total} total orders${orderPins.length > 0 ? ` · ${orderPins.length} on map` : ''}`}
         actions={
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg bg-zinc-800 p-0.5">
-              <button
-                onClick={() => setView('list')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                  view === 'list' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
-                )}
-              >
-                <List className="w-3.5 h-3.5" /> List
-              </button>
-              <button
-                onClick={() => setView('map')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                  view === 'map' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-white',
-                )}
-              >
-                <Map className="w-3.5 h-3.5" /> Map
-              </button>
-            </div>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => router.push('/orders/create')}
-            >
-              + Create Order
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => router.push('/orders/create')}
+          >
+            + Create Order
+          </Button>
         }
       />
 
