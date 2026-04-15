@@ -69,7 +69,9 @@ export class DashboardHub {
     this.eventBus = config.eventBus;
 
     const namespace = config.namespace ?? "/realtime";
-    this.io = new Server(config.httpServer, {
+    // `namespace` is preserved for runtime/downstream use but is not in socket.io
+    // Server typings, so we pass options as `any`.
+    const serverOptions: any = {
       namespace,
       transports: ["websocket", "polling"],
       cors: {
@@ -78,7 +80,8 @@ export class DashboardHub {
       },
       pingInterval: HEARTBEAT_INTERVAL,
       pingTimeout: HEARTBEAT_INTERVAL * 2,
-    });
+    };
+    this.io = new Server(config.httpServer, serverOptions);
 
     this.broadcaster = new EventBroadcaster(
       this.eventBus,
