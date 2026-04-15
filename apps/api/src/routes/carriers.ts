@@ -18,6 +18,7 @@ import { verifyCarrierRequest, requireAuth, requireRole } from "../middleware/au
 import { tenantContext } from "../middleware/tenant.js";
 import { getCachedRate, setCachedRate } from "../lib/redis.js";
 import { ValidationError } from "../lib/errors.js";
+import { p95Tracker } from "../lib/p95-tracker.js";
 
 // ─── Route Plugin ───────────────────────────────────────────
 
@@ -128,7 +129,22 @@ async function carriersRoutes(fastify: FastifyInstance): Promise<void> {
       );
 
       const elapsed = Date.now() - startTime;
-      request.log.info({ elapsed, rateCount: rates.length }, "Carrier rates calculated");
+      p95Tracker.record("carrier_rates", elapsed);
+
+      const latencyStats = p95Tracker.stats("carrier_rates");
+      const p95Warn = latencyStats && latencyStats.p95 > 500;
+      request.log.info(
+        { elapsed, rateCount: rates.length, ...(latencyStats ? { p95: latencyStats.p95, p99: latencyStats.p99, sampleCount: latencyStats.count } : {}) },
+        p95Warn
+          ? "Carrier rates calculated — p95 EXCEEDS 500ms BFS threshold"
+          : "Carrier rates calculated"
+      );
+      if (p95Warn) {
+        request.log.warn(
+          { p95: latencyStats!.p95, threshold: 500 },
+          "BFS p95 SLA breach: carrier_rates p95 > 500ms"
+        );
+      }
 
       return { rates };
     },
