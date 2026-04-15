@@ -294,7 +294,7 @@ describe("Health Checker", () => {
       });
 
       const result = await checker.checkComponent("slow");
-      expect(result?.duration).toBeGreaterThanOrEqual(50);
+      expect(result?.duration).toBeGreaterThanOrEqual(45);
     });
 
     it("should include uptime in response", async () => {

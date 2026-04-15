@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--wl-font-poppins",
+  display: "swap",
+});
 
 const APP_NAME = "Witylogix Dashboard";
 const APP_DESCRIPTION = "Delivery logistics command center. Real-time fleet tracking, route optimization, and delivery management for modern logistics operations.";
@@ -77,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={poppins.variable}>
       <head>
         <meta charSet="utf-8" />
         <meta name="theme-color" content={THEME_COLOR} />

@@ -1216,8 +1216,8 @@ describe("GPSTrackingService", () => {
 
       await service.processUpdate(update);
 
-      const from = new Date();
-      const to = new Date();
+      const from = new Date(Date.now() - 60_000);
+      const to = new Date(Date.now() + 60_000);
 
       const history = service.getLocationHistory("driver-1", from, to);
       expect(history.length).toBeGreaterThan(0);
