@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,6 +127,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
 };
 
 export default function DriversPage() {
+  const router = useRouter();
   const { items: driversData, loading, error, refetch } = useApiList<ApiDriver>('/api/v4/drivers');
   const [activeTab, setActiveTab] = useState('all');
 
@@ -152,7 +154,7 @@ export default function DriversPage() {
         title="Drivers"
         subtitle={`${filteredDrivers.length} drivers`}
         actions={
-          <Button variant="primary" size="md">
+          <Button variant="primary" size="md" onClick={() => router.push('/drivers/create')}>
             <Plus className="w-4 h-4" />
             Add Driver
           </Button>
