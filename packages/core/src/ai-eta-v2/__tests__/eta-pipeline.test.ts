@@ -185,8 +185,7 @@ describe('ETAPipeline', () => {
 
   describe('time-of-day correction', () => {
     it('should increase duration during morning peak hours (7-9 AM)', () => {
-      const peakTime = new Date();
-      peakTime.setHours(8, 0, 0); // 8 AM
+      const peakTime = new Date('2026-04-20T08:00:00'); // Monday 8 AM (weekday)
 
       const result = pipeline.process({
         baseDurationMin: 30,
@@ -198,8 +197,7 @@ describe('ETAPipeline', () => {
     });
 
     it('should increase duration during evening peak hours (5-7 PM)', () => {
-      const peakTime = new Date();
-      peakTime.setHours(18, 0, 0); // 6 PM
+      const peakTime = new Date('2026-04-20T18:00:00'); // Monday 6 PM (weekday)
 
       const result = pipeline.process({
         baseDurationMin: 30,
