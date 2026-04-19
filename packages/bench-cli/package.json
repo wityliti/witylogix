@@ -21,8 +21,8 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "lint": "echo 'lint skipped — ESLint not installed (typecheck-only for now)'"
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts"
   },
   "dependencies": {
     "@witylogix/bench-core": "workspace:*",
