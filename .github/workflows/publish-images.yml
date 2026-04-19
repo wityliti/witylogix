@@ -1,0 +1,118 @@
+name: Publish images
+
+# Publishes one Docker image per Witylogix app to GHCR.
+#
+# Triggers:
+#   - push to main                   → :main-<short-sha>, :latest
+#   - push of tag v*.*.*             → :<semver>, :<major>.<minor>, :<major>, :latest
+#   - workflow_dispatch (manual run) → :manual-<short-sha>, optional tag via input
+#
+# Images produced (one per service):
+#   ghcr.io/wityliti/witylogix-api
+#   ghcr.io/wityliti/witylogix-dashboard
+#   ghcr.io/wityliti/witylogix-customer-portal
+#   ghcr.io/wityliti/witylogix-tracking-page
+#   ghcr.io/wityliti/witylogix-docs
+#
+# These image references match what `@witylogix/bench-provider-docker-compose`
+# generates in compose files — so `bench deploy` resolves images automatically
+# after a successful publish.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      extra_tag:
+        description: "Optional extra tag (e.g. preview-2026-04-19)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: wityliti
+
+jobs:
+  publish:
+    name: ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: api
+            dockerfile: apps/api/Dockerfile
+          - service: dashboard
+            dockerfile: apps/dashboard/Dockerfile
+          - service: customer-portal
+            dockerfile: apps/customer-portal/Dockerfile
+          - service: tracking-page
+            dockerfile: apps/tracking-page/Dockerfile
+          - service: docs
+            dockerfile: infra/docker/Dockerfile.docs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image reference + tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/witylogix-${{ matrix.service }}
+          # Strategy:
+          #   - tag push (v1.2.3)                → :1.2.3, :1.2, :1, :latest
+          #   - main branch push                 → :main-<sha>, :latest
+          #   - workflow_dispatch                → :manual-<sha> (+ optional extra_tag)
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch,prefix=main-,suffix=-{{sha}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=manual-{{sha}},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=${{ inputs.extra_tag }},enable=${{ github.event_name == 'workflow_dispatch' && inputs.extra_tag != '' }}
+          labels: |
+            org.opencontainers.image.title=witylogix-${{ matrix.service }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=AGPL-3.0-only
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: false
+
+      - name: Summary
+        run: |
+          echo "### witylogix-${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.meta.outputs.tags }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
