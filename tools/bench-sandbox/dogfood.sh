@@ -129,12 +129,16 @@ rm -f "$DEPLOY_OUT"
 # ── Exercise: Phase 1b commands ──────────────────────────────────────────
 
 step "bench new-tenant (validation check — tests CLI wiring without needing API)"
-# Intentionally invalid slug to exercise client-side validation
-# (Real POST requires a running Witylogix API which needs published images.)
-if $BENCH new-tenant "Bad-Slug" --owner-email ops@acme.test --owner-name "Ada" 2>&1 | grep -q "not a valid slug"; then
-  ok "new-tenant slug validation"
+# Intentionally invalid slug to exercise client-side validation.
+# Real POST requires a running Witylogix API which needs published images.
+NEW_TENANT_OUT=$($BENCH new-tenant "Bad-Slug" --owner-email ops@acme.test --owner-name "Ada" 2>&1 || true)
+# Strip ANSI color codes before matching
+NEW_TENANT_CLEAN=$(printf '%s' "$NEW_TENANT_OUT" | sed 's/\x1b\[[0-9;]*m//g')
+if echo "$NEW_TENANT_CLEAN" | grep -qi "valid slug"; then
+  ok "new-tenant slug validation (CLI wiring OK)"
 else
-  warn "new-tenant validation didn't match expected output"
+  warn "new-tenant validation unexpected output:"
+  printf "${DIM}%s${NC}\n" "$NEW_TENANT_OUT"
 fi
 
 for cmd in migrate backup; do
