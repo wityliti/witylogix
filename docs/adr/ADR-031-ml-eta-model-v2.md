@@ -1,4 +1,4 @@
-# ADR-029: ML ETA Model v2 — GBDT Ensemble + Holt-Winters Slot Demand Forecasting
+# ADR-031: ML ETA Model v2 — GBDT Ensemble + Holt-Winters Slot Demand Forecasting
 
 **Status**: Accepted  
 **Date**: 2026-04-05  
