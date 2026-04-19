@@ -141,10 +141,18 @@ else
   printf "${DIM}%s${NC}\n" "$NEW_TENANT_OUT"
 fi
 
-for cmd in migrate backup; do
-  step "bench $cmd (should report not-yet-implemented until the task lands)"
-  $BENCH "$cmd" 2>&1 | tail -3 || true
-done
+step "bench migrate --skip-backup (expect admin-API-unreachable until API is running)"
+MIGRATE_OUT=$($BENCH migrate --skip-backup 2>&1 || true)
+MIGRATE_CLEAN=$(printf '%s' "$MIGRATE_OUT" | sed 's/\x1b\[[0-9;]*m//g')
+if echo "$MIGRATE_CLEAN" | grep -qiE "(ECONNREFUSED|fetch failed|admin API|BENCH_SERVICE_TOKEN|ENOTFOUND)"; then
+  ok "bench migrate reaches admin-API client (CLI wiring OK)"
+else
+  warn "bench migrate unexpected output:"
+  printf "${DIM}%s${NC}\n" "$MIGRATE_OUT"
+fi
+
+step "bench backup (not yet implemented — T13)"
+$BENCH backup 2>&1 | tail -3 || true
 
 step "bench restore <dummy> (should fail on missing archive — exercises CLI wiring)"
 $BENCH restore /tmp/nonexistent.wbak 2>&1 | tail -3 || true
