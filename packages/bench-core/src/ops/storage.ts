@@ -30,10 +30,10 @@ export async function createStorageClient(
       return new LocalStorageClient(config.path);
     }
     case 's3':
-    case 'r2': {
-      const { S3StorageClient } = await import('./storage-s3.js');
-      return new S3StorageClient(config);
-    }
+    case 'r2':
+      throw new Error(
+        `storage backend "${config.backend}" not yet implemented — Task 5 of Phase 1b adds it`,
+      );
     case 'gcs':
       throw new Error('GCS storage backend is planned for Phase 1c');
     default:
