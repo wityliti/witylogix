@@ -7,8 +7,11 @@ import type {
   Context,
   DeployResult,
   DestroyConfirmation,
+  ExecOptions,
+  ExecResult,
   LogLine,
   LogOptions,
+  OneShotOptions,
   Plan,
   PreflightResult,
   ProvisionResult,
@@ -20,7 +23,9 @@ import { ProviderNotImplementedError } from '@witylogix/bench-core';
 import { generateCompose } from './compose.js';
 import {
   checkDockerAvailable,
+  execComposeService,
   runCompose,
+  runOneShotFromService,
   streamComposeLogs,
 } from './compose-bin.js';
 
@@ -193,6 +198,48 @@ export class DockerComposeProvider implements Provider {
         version: r.Image,
       })),
     };
+  }
+
+  async execInService(
+    ctx: Context,
+    service: string,
+    cmd: string[],
+    opts: ExecOptions = {},
+  ): Promise<ExecResult> {
+    if (ctx.dryRun) {
+      ctx.logger.info(`[dry-run] would exec in ${service}: ${cmd.join(' ')}`);
+      return { stdout: '', stderr: '', exitCode: 0 };
+    }
+    const r = await execComposeService({
+      composeFile: composeFilePath(ctx),
+      cwd: ctx.cwd,
+      service,
+      cmd,
+      env: opts.env,
+      timeoutMs: opts.timeoutMs,
+    });
+    return { stdout: r.stdout, stderr: r.stderr, exitCode: r.exitCode };
+  }
+
+  async runOneShot(
+    ctx: Context,
+    fromService: string,
+    cmd: string[],
+    opts: OneShotOptions = {},
+  ): Promise<ExecResult> {
+    if (ctx.dryRun) {
+      ctx.logger.info(`[dry-run] would run one-shot from ${fromService}: ${cmd.join(' ')}`);
+      return { stdout: '', stderr: '', exitCode: 0 };
+    }
+    const r = await runOneShotFromService({
+      composeFile: composeFilePath(ctx),
+      cwd: ctx.cwd,
+      fromService,
+      cmd,
+      env: opts.env,
+      timeoutMs: opts.timeoutMs,
+    });
+    return { stdout: r.stdout, stderr: r.stderr, exitCode: r.exitCode };
   }
 
   async backup(_ctx: Context, _target: BackupTarget): Promise<BackupResult> {
