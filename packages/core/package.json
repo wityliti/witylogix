@@ -88,11 +88,14 @@
     "./slots": "./src/slots/index.ts",
     "./webhooks": "./src/webhooks/index.ts",
     "./invoicing": "./src/invoicing/index.ts",
+    "./oauth": "./src/oauth/index.ts",
+    "./operations": "./src/operations/index.ts",
     "./woocommerce/normalize": "./src/woocommerce/normalize.ts",
     "./eta-recalculator": "./src/eta-recalculator/index.ts",
     "./realtime/types": "./src/realtime/types.ts",
     "./integrations/telematics": "./src/integrations/telematics/index.ts",
-    "./integrations/shipping": "./src/integrations/shipping/index.ts"
+    "./integrations/shipping": "./src/integrations/shipping/index.ts",
+    "./onboarding": "./src/onboarding/index.ts"
   },
   "scripts": {
     "build": "echo build-ok",
