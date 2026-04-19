@@ -14,6 +14,7 @@ export * as tenants from './ops/tenants.js';
 export * as audit from './ops/audit.js';
 export * as migrate from './ops/migrate.js';
 export * as backup from './ops/backup.js';
+export * as restore from './ops/restore.js';
 export {
   benchConfigSchema,
   loadConfig,
