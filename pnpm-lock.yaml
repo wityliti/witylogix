@@ -708,6 +708,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.600.0
         version: 3.1032.0
+      tar:
+        specifier: '>=7.5.11'
+        version: 7.5.13
       yaml:
         specifier: ^2.5.0
         version: 2.8.3
@@ -715,6 +718,9 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
+      '@types/tar':
+        specifier: ^6.1.13
+        version: 6.1.13
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(@swc/core@1.15.18)(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.3)
@@ -5032,6 +5038,9 @@ packages:
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
+
+  '@types/tar@6.1.13':
+    resolution: {integrity: sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw==}
 
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
@@ -15795,6 +15804,11 @@ snapshots:
   '@types/shimmer@1.2.0': {}
 
   '@types/stack-utils@2.0.3': {}
+
+  '@types/tar@6.1.13':
+    dependencies:
+      '@types/node': 22.19.15
+      minipass: 4.2.8
 
   '@types/tedious@4.0.14':
     dependencies:
