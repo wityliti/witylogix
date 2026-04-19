@@ -28,11 +28,13 @@ import {
   ShoppingCart,
 } from "lucide-react";
 
+type TabGroup = "main" | "categories" | "tools";
+
 interface IntegrationTab {
   href: string;
   label: string;
   icon: React.ReactNode;
-  group?: "main" | "categories" | "tools";
+  group: TabGroup;
 }
 
 const INTEGRATION_TABS: IntegrationTab[] = [
@@ -56,8 +58,14 @@ const INTEGRATION_TABS: IntegrationTab[] = [
   { href: "/integrations/docs", label: "Docs", icon: <BookOpen className="w-4 h-4" />, group: "tools" },
 ];
 
+const GROUP_LABEL: Record<TabGroup, string> = {
+  main: "Overview",
+  categories: "By category",
+  tools: "Tools",
+};
+
 function getBreadcrumbLabel(pathname: string): string {
-  const match = pathname.match(/\/integrations\/([^\/]+)/);
+  const match = pathname.match(/\/integrations\/([^/]+)/);
   if (!match) return "Integrations";
 
   const segment = match[1];
@@ -66,6 +74,63 @@ function getBreadcrumbLabel(pathname: string): string {
   )?.label;
 
   return tabLabel || segment.charAt(0).toUpperCase() + segment.slice(1);
+}
+
+function isTabActive(tab: IntegrationTab, pathname: string): boolean {
+  if (tab.href === "/integrations") {
+    return pathname === "/integrations";
+  }
+  return pathname === tab.href || pathname.startsWith(tab.href + "/");
+}
+
+interface TabLinkProps {
+  tab: IntegrationTab;
+  active: boolean;
+}
+
+function TabLink({ tab, active }: TabLinkProps) {
+  return (
+    <Link
+      href={tab.href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-colors whitespace-nowrap text-sm font-medium",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-wl-bg-root rounded-t-sm",
+        active
+          ? "border-wl-primary-500 text-wl-primary-400"
+          : "border-transparent text-wl-text-tertiary hover:text-wl-text-secondary"
+      )}
+    >
+      {tab.icon}
+      {tab.label}
+    </Link>
+  );
+}
+
+interface TabGroupProps {
+  group: TabGroup;
+  tabs: IntegrationTab[];
+  pathname: string;
+}
+
+function TabGroupSection({ group, tabs, pathname }: TabGroupProps) {
+  return (
+    <div
+      className="flex items-center gap-1 shrink-0"
+      role="group"
+      aria-label={GROUP_LABEL[group]}
+    >
+      <span
+        className="hidden md:inline-flex items-center px-2 text-[10px] font-semibold uppercase tracking-wider text-wl-text-tertiary select-none"
+        aria-hidden="true"
+      >
+        {GROUP_LABEL[group]}
+      </span>
+      {tabs.map((tab) => (
+        <TabLink key={tab.href} tab={tab} active={isTabActive(tab, pathname)} />
+      ))}
+    </div>
+  );
 }
 
 export default function IntegrationsLayout({
@@ -82,10 +147,7 @@ export default function IntegrationsLayout({
 
   return (
     <>
-      <Header
-        title="Integrations"
-        subtitle="Manage your third-party integrations and connections"
-      />
+      <Header title="Integrations" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
@@ -103,79 +165,17 @@ export default function IntegrationsLayout({
           </BreadcrumbItem>
         </Breadcrumb>
 
-        {/* Tab Navigation — grouped */}
-        <div className="flex items-center gap-1 mb-8 border-b border-white/[0.06] overflow-x-auto scrollbar-none">
-          {/* Main */}
-          {mainTabs.map((tab) => {
-            const isActive =
-              (tab.href === "/integrations" && pathname === "/integrations") ||
-              (tab.href !== "/integrations" && (pathname === tab.href || pathname.startsWith(tab.href + "/")));
-
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
-                  isActive
-                    ? "border-amber-500 text-amber-400"
-                    : "border-transparent text-white/35 hover:text-white/60"
-                )}
-              >
-                {tab.icon}
-                {tab.label}
-              </Link>
-            );
-          })}
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-white/[0.08] mx-1.5 shrink-0" />
-
-          {/* Categories */}
-          {categoryTabs.map((tab) => {
-            const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
-
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
-                  isActive
-                    ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-white/35 hover:text-white/60"
-                )}
-              >
-                {tab.icon}
-                {tab.label}
-              </Link>
-            );
-          })}
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-white/[0.08] mx-1.5 shrink-0" />
-
-          {/* Tools */}
-          {toolsTabs.map((tab) => {
-            const isActive = pathname === tab.href || pathname.startsWith(tab.href + "/");
-
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-2.5 border-b-2 transition-all whitespace-nowrap text-sm font-medium",
-                  isActive
-                    ? "border-violet-500 text-violet-400"
-                    : "border-transparent text-white/35 hover:text-white/60"
-                )}
-              >
-                {tab.icon}
-                {tab.label}
-              </Link>
-            );
-          })}
-        </div>
+        {/* Tab Navigation — grouped, single accent */}
+        <nav
+          aria-label="Integrations sections"
+          className="flex items-center gap-1 mb-8 border-b border-wl-border-subtle overflow-x-auto scrollbar-none"
+        >
+          <TabGroupSection group="main" tabs={mainTabs} pathname={pathname} />
+          <div className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0" aria-hidden="true" />
+          <TabGroupSection group="categories" tabs={categoryTabs} pathname={pathname} />
+          <div className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0" aria-hidden="true" />
+          <TabGroupSection group="tools" tabs={toolsTabs} pathname={pathname} />
+        </nav>
 
         {/* Page Content */}
         {children}
