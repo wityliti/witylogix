@@ -40,7 +40,8 @@ REMOTE
 pack() {
   log "pack bench packages → $TARBALL"
   cd "$REPO_ROOT"
-  tar -czf "$TARBALL" \
+  # --no-xattrs: strip macOS metadata that GNU tar on Linux warns about
+  tar --no-xattrs -czf "$TARBALL" \
     --exclude='node_modules' \
     --exclude='dist' \
     --exclude='.turbo' \
