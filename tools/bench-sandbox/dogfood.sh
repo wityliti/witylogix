@@ -58,12 +58,13 @@ ok "dependencies installed"
 # ── Locate bench CLI ────────────────────────────────────────────────────────
 
 step "locate bench CLI (source via tsx)"
-TSX_CLI=$(find node_modules/.pnpm -path '*/tsx@*/node_modules/tsx/dist/cli.mjs' -type f 2>/dev/null | head -1)
-[ -n "$TSX_CLI" ] || { fail "tsx not installed"; exit 3; }
+TSX_REL=$(find node_modules/.pnpm -path '*/tsx@*/node_modules/tsx/dist/cli.mjs' -type f 2>/dev/null | head -1)
+[ -n "$TSX_REL" ] || { fail "tsx not installed"; exit 3; }
+TSX_CLI="$WORKSPACE_DIR/$TSX_REL"
 BENCH_ENTRY="$WORKSPACE_DIR/packages/bench-cli/src/index.ts"
 [ -f "$BENCH_ENTRY" ] || { fail "bench CLI entry missing at $BENCH_ENTRY"; exit 3; }
 BENCH="node $TSX_CLI $BENCH_ENTRY"
-ok "bench = $BENCH"
+ok "bench ready"
 
 # ── Exercise: init ──────────────────────────────────────────────────────────
 
