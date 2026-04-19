@@ -1,0 +1,149 @@
+// ─── OAUTH2 APP PLATFORM ─────────────────────────────────────
+// See docs/adr/ADR-029-oauth-app-platform.md for rationale.
+//
+// Developer-registered applications (`OAuthClient`) can be installed
+// by tenants (`AppInstallation`). Installations are granted scoped,
+// revocable access via opaque access + refresh tokens. PKCE is
+// required on the authorization code flow.
+//
+// This is intentionally separate from `ApiKey` in 60-auth.prisma:
+// API keys are tenant-owned integration keys, OAuth tokens are
+// app-owned install-scoped credentials.
+
+// ─── OAUTH CLIENTS (developer apps) ──────────────────────────
+
+model OAuthClient {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  description      String?
+  logoUrl          String?           @map("logo_url")
+  homepageUrl      String?           @map("homepage_url")
+  redirectUris     String[]          @default([]) @map("redirect_uris")
+  allowedScopes    String[]          @default([]) @map("allowed_scopes") // fine-grained, e.g. "shipments:read"
+  clientType       OAuthClientType   @default(CONFIDENTIAL) @map("client_type")
+  clientSecretHash String?           @map("client_secret_hash") // null for PUBLIC clients (PKCE only)
+  secretPrefix     String?           @map("secret_prefix") // first 8 chars for rotation UI
+  ownerUserId      String            @map("owner_user_id") @db.Uuid
+  status           OAuthClientStatus @default(ACTIVE)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  owner         User              @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  installations AppInstallation[]
+
+  @@index([ownerUserId])
+  @@index([status])
+  @@map("oauth_clients")
+}
+
+// ─── APP INSTALLATIONS (tenant ↔ app) ────────────────────────
+
+model AppInstallation {
+  id            String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  oauthClientId String                @map("oauth_client_id") @db.Uuid
+  orgId         String                @map("org_id") @db.Uuid
+  shopId        String?               @map("shop_id") @db.Uuid // optional: scope install to one shop
+  scopes        String[]              @default([]) // granted scopes (intersection with client.allowedScopes)
+  status        AppInstallationStatus @default(ACTIVE)
+  webhookUrl    String?               @map("webhook_url")
+  installedBy   String                @map("installed_by") @db.Uuid // user who consented
+  installedAt   DateTime              @default(now()) @map("installed_at")
+  revokedAt     DateTime?             @map("revoked_at")
+  metadata      Json?
+
+  client           OAuthClient              @relation(fields: [oauthClientId], references: [id], onDelete: Cascade)
+  organization     Organization             @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  installedByUser  User                     @relation("AppInstallationInstaller", fields: [installedBy], references: [id], onDelete: Restrict)
+  codes            OAuthAuthorizationCode[]
+  accessTokens     OAuthAccessToken[]
+  refreshTokens    OAuthRefreshToken[]
+  webhookEndpoints WebhookEndpoint[]
+
+  @@unique([oauthClientId, orgId, shopId])
+  @@index([orgId])
+  @@index([shopId])
+  @@index([status])
+  @@map("app_installations")
+}
+
+// ─── AUTHORIZATION CODES (single-use, short-lived) ───────────
+
+model OAuthAuthorizationCode {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codeHash            String    @unique @map("code_hash") // sha256 of the raw code
+  installationId      String    @map("installation_id") @db.Uuid
+  redirectUri         String    @map("redirect_uri")
+  scopes              String[]  @default([])
+  codeChallenge       String    @map("code_challenge") // PKCE S256
+  codeChallengeMethod String    @default("S256") @map("code_challenge_method")
+  expiresAt           DateTime  @map("expires_at")
+  consumedAt          DateTime? @map("consumed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  installation AppInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([expiresAt])
+  @@map("oauth_authorization_codes")
+}
+
+// ─── ACCESS TOKENS (opaque, hashed at rest) ──────────────────
+
+model OAuthAccessToken {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash      String    @unique @map("token_hash") // sha256 hex
+  prefix         String    @map("prefix") // first 8 chars for prefix lookup, e.g. "wit_oat_"
+  installationId String    @map("installation_id") @db.Uuid
+  scopes         String[]  @default([])
+  expiresAt      DateTime  @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  lastUsedAt     DateTime? @map("last_used_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  installation AppInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([prefix])
+  @@index([installationId])
+  @@index([expiresAt])
+  @@map("oauth_access_tokens")
+}
+
+// ─── REFRESH TOKENS (rotating) ───────────────────────────────
+
+model OAuthRefreshToken {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash      String    @unique @map("token_hash")
+  prefix         String    @map("prefix") // "wit_ort_"
+  installationId String    @map("installation_id") @db.Uuid
+  scopes         String[]  @default([])
+  rotatedFromId  String?   @map("rotated_from_id") @db.Uuid // parent in rotation chain
+  expiresAt      DateTime  @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  installation AppInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([prefix])
+  @@index([installationId])
+  @@index([expiresAt])
+  @@map("oauth_refresh_tokens")
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────
+
+enum OAuthClientType {
+  CONFIDENTIAL // server-side app with a client secret
+  PUBLIC // SPA / mobile — PKCE only, no secret
+}
+
+enum OAuthClientStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AppInstallationStatus {
+  ACTIVE
+  REVOKED
+  SUSPENDED
+}
