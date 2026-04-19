@@ -73,6 +73,28 @@ const checks: Check[] = [
       };
     },
   },
+  {
+    id: 'bench-service-token',
+    name: 'BENCH_SERVICE_TOKEN generated',
+    run: () => {
+      const path = resolve(process.cwd(), 'secrets', 'bench-service-token');
+      return {
+        ok: existsSync(path),
+        detail: existsSync(path) ? path : 'missing — re-run `bench init` or generate with `openssl rand -base64 32`',
+      };
+    },
+  },
+  {
+    id: 'env-file',
+    name: '.env file present',
+    run: () => {
+      const path = resolve(process.cwd(), '.env');
+      return {
+        ok: existsSync(path),
+        detail: existsSync(path) ? path : 'missing — re-run `bench init` to generate',
+      };
+    },
+  },
 ];
 
 export function registerDoctorCommand(program: Command): void {
