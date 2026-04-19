@@ -1,0 +1,13 @@
+{
+  "name": "witylogix-oauth-app-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal reference implementation of a third-party OAuth app for Witylogix (see docs/guides/oauth-app-developer-guide.md).",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.mjs"
+  }
+}
