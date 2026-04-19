@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# Runs ON the Hetzner VM.
-# - Git mode: $WORKSPACE_DIR is set to /opt/bench-sandbox/repo (checked out by cycle.sh)
-# - Dirty mode: $WORKSPACE_DIR is set to /opt/bench-sandbox/workspace-dirty (tar-extracted)
-# If $WORKSPACE_DIR is unset, falls back to extracting /tmp/bench-packages.tgz.
+# Runs ON the Hetzner VM. Executed via `ssh Hetzner_Server 'bash -s' < dogfood.sh`.
+# Expects a tarball at /tmp/bench-packages.tgz staged by cycle.sh.
 set -euo pipefail
 
 SANDBOX_DIR="/opt/bench-sandbox"
-WORKSPACE_DIR="${WORKSPACE_DIR:-${SANDBOX_DIR}/workspace}"
+WORKSPACE_DIR="${SANDBOX_DIR}/workspace"
 INSTALL_DIR="${SANDBOX_DIR}/demo"
 TARBALL="/tmp/bench-packages.tgz"
 
@@ -31,26 +29,21 @@ command -v docker >/dev/null || { fail "docker missing"; exit 2; }
 docker compose version >/dev/null 2>&1 || { fail "docker compose plugin missing"; exit 2; }
 command -v node >/dev/null || { fail "node missing"; exit 2; }
 command -v pnpm >/dev/null || { fail "pnpm missing"; exit 2; }
+[ -f "$TARBALL" ] || { fail "tarball missing at $TARBALL — run cycle.sh from project root"; exit 2; }
 ok "tooling: $(docker --version) | node $(node --version) | pnpm $(pnpm --version)"
 
-# ── Resolve workspace ───────────────────────────────────────────────────────
+# ── Extract ─────────────────────────────────────────────────────────────────
 
-if [ -d "$WORKSPACE_DIR/packages/bench-cli" ]; then
-  ok "workspace already prepared → $WORKSPACE_DIR"
-elif [ -f "$TARBALL" ]; then
-  step "extract bench packages (fallback: tarball)"
-  mkdir -p "$WORKSPACE_DIR"
-  cd "$WORKSPACE_DIR"
-  find . -maxdepth 1 -mindepth 1 \
-    ! -name 'node_modules' \
-    ! -name '.pnpm-store' \
-    -exec rm -rf {} +
-  tar -xzf "$TARBALL"
-  ok "extracted → $WORKSPACE_DIR"
-else
-  fail "no workspace at $WORKSPACE_DIR and no tarball at $TARBALL"
-  exit 2
-fi
+step "extract bench packages"
+mkdir -p "$WORKSPACE_DIR"
+cd "$WORKSPACE_DIR"
+# Preserve node_modules across cycles for fast re-install
+find . -maxdepth 1 -mindepth 1 \
+  ! -name 'node_modules' \
+  ! -name '.pnpm-store' \
+  -exec rm -rf {} +
+tar -xzf "$TARBALL"
+ok "extracted → $WORKSPACE_DIR"
 
 # ── Install ─────────────────────────────────────────────────────────────────
 
@@ -65,13 +58,12 @@ ok "dependencies installed"
 # ── Locate bench CLI ────────────────────────────────────────────────────────
 
 step "locate bench CLI (source via tsx)"
-TSX_REL=$(find node_modules/.pnpm -path '*/tsx@*/node_modules/tsx/dist/cli.mjs' -type f 2>/dev/null | head -1)
-[ -n "$TSX_REL" ] || { fail "tsx not installed"; exit 3; }
-TSX_CLI="$WORKSPACE_DIR/$TSX_REL"
+TSX_CLI=$(find node_modules/.pnpm -path '*/tsx@*/node_modules/tsx/dist/cli.mjs' -type f 2>/dev/null | head -1)
+[ -n "$TSX_CLI" ] || { fail "tsx not installed"; exit 3; }
 BENCH_ENTRY="$WORKSPACE_DIR/packages/bench-cli/src/index.ts"
 [ -f "$BENCH_ENTRY" ] || { fail "bench CLI entry missing at $BENCH_ENTRY"; exit 3; }
 BENCH="node $TSX_CLI $BENCH_ENTRY"
-ok "bench ready"
+ok "bench = $BENCH"
 
 # ── Exercise: init ──────────────────────────────────────────────────────────
 
@@ -126,44 +118,12 @@ else
 fi
 rm -f "$DEPLOY_OUT"
 
-# ── Exercise: Phase 1b commands ──────────────────────────────────────────
+# ── Exercise: stub Phase 1b commands (report not-yet-implemented cleanly) ──
 
-step "bench new-tenant (validation check — tests CLI wiring without needing API)"
-# Intentionally invalid slug to exercise client-side validation.
-# Real POST requires a running Witylogix API which needs published images.
-NEW_TENANT_OUT=$($BENCH new-tenant "Bad-Slug" --owner-email ops@acme.test --owner-name "Ada" 2>&1 || true)
-# Strip ANSI color codes before matching
-NEW_TENANT_CLEAN=$(printf '%s' "$NEW_TENANT_OUT" | sed 's/\x1b\[[0-9;]*m//g')
-if echo "$NEW_TENANT_CLEAN" | grep -qi "valid slug"; then
-  ok "new-tenant slug validation (CLI wiring OK)"
-else
-  warn "new-tenant validation unexpected output:"
-  printf "${DIM}%s${NC}\n" "$NEW_TENANT_OUT"
-fi
-
-step "bench migrate --skip-backup (expect admin-API-unreachable until API is running)"
-MIGRATE_OUT=$($BENCH migrate --skip-backup 2>&1 || true)
-MIGRATE_CLEAN=$(printf '%s' "$MIGRATE_OUT" | sed 's/\x1b\[[0-9;]*m//g')
-if echo "$MIGRATE_CLEAN" | grep -qiE "(ECONNREFUSED|fetch failed|admin API|BENCH_SERVICE_TOKEN|ENOTFOUND)"; then
-  ok "bench migrate reaches admin-API client (CLI wiring OK)"
-else
-  warn "bench migrate unexpected output:"
-  printf "${DIM}%s${NC}\n" "$MIGRATE_OUT"
-fi
-
-step "bench backup (expect pg_dump failure until postgres container is running)"
-BACKUP_OUT=$($BENCH backup --to /tmp/smoke.wbak 2>&1 || true)
-BACKUP_CLEAN=$(printf '%s' "$BACKUP_OUT" | sed 's/\x1b\[[0-9;]*m//g')
-if echo "$BACKUP_CLEAN" | grep -qiE "(pg_dump failed|postgres|service.*not running|ECONNREFUSED)"; then
-  ok "bench backup reaches provider + postgres (CLI wiring OK)"
-else
-  warn "bench backup unexpected output:"
-  printf "${DIM}%s${NC}\n" "$BACKUP_OUT"
-fi
-rm -f /tmp/smoke.wbak
-
-step "bench restore <dummy> (should fail on missing archive — exercises CLI wiring)"
-$BENCH restore /tmp/nonexistent.wbak 2>&1 | tail -3 || true
+for cmd in migrate new-tenant backup restore; do
+  step "bench $cmd (should report not-yet-implemented until the task lands)"
+  $BENCH "$cmd" ${cmd:+$([ "$cmd" = new-tenant ] && echo acme-test || echo)} 2>&1 | tail -3 || true
+done
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
