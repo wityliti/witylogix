@@ -5,8 +5,11 @@ import type {
   Context,
   DeployResult,
   DestroyConfirmation,
+  ExecOptions,
+  ExecResult,
   LogLine,
   LogOptions,
+  OneShotOptions,
   Plan,
   PreflightResult,
   ProvisionResult,
@@ -23,6 +26,18 @@ export interface Provider {
   start(ctx: Context, service?: string): Promise<void>;
   stop(ctx: Context, service?: string): Promise<void>;
   restart(ctx: Context, service?: string): Promise<void>;
+  execInService(
+    ctx: Context,
+    service: string,
+    cmd: string[],
+    opts?: ExecOptions,
+  ): Promise<ExecResult>;
+  runOneShot(
+    ctx: Context,
+    fromService: string,
+    cmd: string[],
+    opts?: OneShotOptions,
+  ): Promise<ExecResult>;
   logs(ctx: Context, service: string, opts: LogOptions): AsyncIterable<LogLine>;
   status(ctx: Context): Promise<StatusReport>;
   backup(ctx: Context, target: BackupTarget): Promise<BackupResult>;
