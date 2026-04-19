@@ -13,6 +13,10 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "@witylogix/db";
+import {
+  tenantProvisioner,
+  TenantAlreadyExistsError,
+} from "@witylogix/core/onboarding";
 import { benchAuth } from "../../middleware/bench-auth.js";
 
 type DrainMode = "read-only" | "offline";
@@ -99,5 +103,38 @@ export default async function benchAdminRoutes(
   app.post("/undrain", async () => {
     drainState = { mode: null };
     return { state: "active" };
+  });
+
+  const tenantBody = z.object({
+    slug: z
+      .string()
+      .regex(/^[a-z0-9][a-z0-9-]{1,62}$/, "slug must match /^[a-z0-9][a-z0-9-]{1,62}$/"),
+    ownerEmail: z.string().email(),
+    ownerName: z.string().min(1).max(200),
+    plan: z.enum(["starter", "pro", "enterprise"]).optional(),
+    features: z.record(z.unknown()).optional(),
+    limits: z.record(z.unknown()).optional(),
+  });
+
+  app.post("/tenants", async (req, reply) => {
+    const parsed = tenantBody.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        code: "invalid_body",
+        message: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+      });
+    }
+    try {
+      const result = await tenantProvisioner.createTenant(parsed.data);
+      return reply.code(201).send(result);
+    } catch (err) {
+      if (err instanceof TenantAlreadyExistsError) {
+        return reply.code(409).send({
+          code: `${err.field}_taken`,
+          message: err.message,
+        });
+      }
+      throw err;
+    }
   });
 }
