@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Runs ON the Hetzner VM. Executed via `ssh Hetzner_Server 'bash -s' < dogfood.sh`.
-# Expects a tarball at /tmp/bench-packages.tgz staged by cycle.sh.
+# Runs ON the Hetzner VM.
+# - Git mode: $WORKSPACE_DIR is set to /opt/bench-sandbox/repo (checked out by cycle.sh)
+# - Dirty mode: $WORKSPACE_DIR is set to /opt/bench-sandbox/workspace-dirty (tar-extracted)
+# If $WORKSPACE_DIR is unset, falls back to extracting /tmp/bench-packages.tgz.
 set -euo pipefail
 
 SANDBOX_DIR="/opt/bench-sandbox"
-WORKSPACE_DIR="${SANDBOX_DIR}/workspace"
+WORKSPACE_DIR="${WORKSPACE_DIR:-${SANDBOX_DIR}/workspace}"
 INSTALL_DIR="${SANDBOX_DIR}/demo"
 TARBALL="/tmp/bench-packages.tgz"
 
@@ -29,21 +31,26 @@ command -v docker >/dev/null || { fail "docker missing"; exit 2; }
 docker compose version >/dev/null 2>&1 || { fail "docker compose plugin missing"; exit 2; }
 command -v node >/dev/null || { fail "node missing"; exit 2; }
 command -v pnpm >/dev/null || { fail "pnpm missing"; exit 2; }
-[ -f "$TARBALL" ] || { fail "tarball missing at $TARBALL — run cycle.sh from project root"; exit 2; }
 ok "tooling: $(docker --version) | node $(node --version) | pnpm $(pnpm --version)"
 
-# ── Extract ─────────────────────────────────────────────────────────────────
+# ── Resolve workspace ───────────────────────────────────────────────────────
 
-step "extract bench packages"
-mkdir -p "$WORKSPACE_DIR"
-cd "$WORKSPACE_DIR"
-# Preserve node_modules across cycles for fast re-install
-find . -maxdepth 1 -mindepth 1 \
-  ! -name 'node_modules' \
-  ! -name '.pnpm-store' \
-  -exec rm -rf {} +
-tar -xzf "$TARBALL"
-ok "extracted → $WORKSPACE_DIR"
+if [ -d "$WORKSPACE_DIR/packages/bench-cli" ]; then
+  ok "workspace already prepared → $WORKSPACE_DIR"
+elif [ -f "$TARBALL" ]; then
+  step "extract bench packages (fallback: tarball)"
+  mkdir -p "$WORKSPACE_DIR"
+  cd "$WORKSPACE_DIR"
+  find . -maxdepth 1 -mindepth 1 \
+    ! -name 'node_modules' \
+    ! -name '.pnpm-store' \
+    -exec rm -rf {} +
+  tar -xzf "$TARBALL"
+  ok "extracted → $WORKSPACE_DIR"
+else
+  fail "no workspace at $WORKSPACE_DIR and no tarball at $TARBALL"
+  exit 2
+fi
 
 # ── Install ─────────────────────────────────────────────────────────────────
 
