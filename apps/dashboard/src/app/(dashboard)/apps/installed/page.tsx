@@ -44,8 +44,6 @@ export default function InstalledAppsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
-  const [revokeError, setRevokeError] = useState<string | null>(null);
-  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
 
   const fetchInstallations = useCallback(async () => {
     try {
@@ -65,13 +63,19 @@ export default function InstalledAppsPage() {
   }, [fetchInstallations]);
 
   const handleRevoke = async (installation: InstalledApp) => {
+    if (
+      !confirm(
+        `Uninstall ${installation.client.name}? Its access tokens will be revoked immediately and any webhooks it registered will stop firing.`,
+      )
+    ) {
+      return;
+    }
     setRevokingId(installation.id);
     try {
       await api.delete(`/api/v4/oauth/installations/${installation.id}`);
-      setRevokeError(null);
       await fetchInstallations();
     } catch (err) {
-      setRevokeError(err instanceof Error ? err.message : 'Failed to uninstall app');
+      alert(err instanceof Error ? err.message : 'Failed to uninstall app');
     } finally {
       setRevokingId(null);
     }
@@ -87,11 +91,6 @@ export default function InstalledAppsPage() {
       <div className="p-6 space-y-6">
         {loading && <TableSkeleton rows={3} />}
         {error && <ErrorState message={error.message} onRetry={fetchInstallations} />}
-        {revokeError && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
-            {revokeError}
-          </div>
-        )}
 
         {!loading && !error && installations.length === 0 && (
           <EmptyState
@@ -161,42 +160,16 @@ export default function InstalledAppsPage() {
                       day: 'numeric',
                     })}
                   </div>
-                  {confirmRevokeId === installation.id ? (
-                    <div className="space-y-2">
-                      <p className="text-xs text-wl-text-secondary">
-                        Uninstall <strong>{client.name}</strong>? Access tokens will be revoked and webhooks will stop.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => setConfirmRevokeId(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          className="flex-1"
-                          disabled={isRevoking}
-                          onClick={() => { setConfirmRevokeId(null); handleRevoke(installation); }}
-                        >
-                          {isRevoking ? 'Uninstalling…' : 'Confirm'}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setConfirmRevokeId(installation.id)}
-                      className="w-full"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Uninstall
-                    </Button>
-                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleRevoke(installation)}
+                    disabled={isRevoking}
+                    className="w-full"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {isRevoking ? 'Uninstalling…' : 'Uninstall'}
+                  </Button>
                 </CardContent>
               </Card>
             );
