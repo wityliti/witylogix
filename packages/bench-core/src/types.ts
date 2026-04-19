@@ -107,6 +107,23 @@ export interface DestroyConfirmation {
   acknowledged: true;
 }
 
+export interface ExecResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+export interface ExecOptions {
+  stdin?: NodeJS.ReadableStream;
+  env?: Record<string, string>;
+  timeoutMs?: number;
+}
+
+export interface OneShotOptions {
+  env?: Record<string, string>;
+  timeoutMs?: number;
+}
+
 export type {
   BenchConfig,
   BenchConfigMeta,
