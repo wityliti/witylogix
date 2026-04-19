@@ -8,18 +8,29 @@ import type { OnboardingData } from "../types";
 
 interface VerifyEmailProps {
   data: OnboardingData;
+  /** Shown in copy; prefer progress email, else auth user email */
+  displayEmail: string;
+  token: string | null;
+  /** Base URL including `/api/v4` */
+  apiBaseUrl: string;
   onVerified: (data: OnboardingData) => void;
 }
 
-export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
+export function VerifyEmail ({
+  data,
+  displayEmail,
+  token,
+  apiBaseUrl,
+  onVerified,
+}: VerifyEmailProps) {
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [verified, setVerified] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Timer for resend button
   useEffect(() => {
     if (resendTimer <= 0) return;
 
@@ -30,7 +41,6 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
-  // Focus management
   const handleCodeChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
 
@@ -39,7 +49,6 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
     setCode(newCode);
     setError("");
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -60,45 +69,97 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
       setError("Please enter all 6 digits");
       return;
     }
+    if (!token) {
+      setError("Session expired. Please sign in again.");
+      return;
+    }
 
     setLoading(true);
     setError("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await fetch(`${apiBaseUrl}/onboarding/verify-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: fullCode }),
+      });
 
-    // In real app, verify code with backend
-    if (fullCode === "123456") {
+      const json = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        setError(
+          json.message ||
+            json.error ||
+            "Invalid or expired code. Request a new code or try again."
+        );
+        setCode(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+        return;
+      }
+
       setVerified(true);
-      setCode(["1", "2", "3", "4", "5", "6"]);
-
-      // Auto-advance after 1.5s
       setTimeout(() => {
         onVerified({
           ...data,
           verificationCode: fullCode,
           emailVerified: true,
         });
-      }, 1500);
-    } else {
-      setError("Invalid verification code. Try 123456 for demo.");
-      setCode(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      }, 800);
+    } catch {
+      setError("Network error. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  const handleResend = () => {
-    setResendTimer(60);
+  const handleResend = async () => {
+    if (!token || resendTimer > 0 || resending) return;
+
+    setResending(true);
     setError("");
-    setCode(["", "", "", "", "", ""]);
-    inputRefs.current[0]?.focus();
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/onboarding/resend-verification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: "{}",
+      });
+
+      const json = (await res.json().catch(() => ({}))) as {
+        message?: string;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        setError(
+          json.message ||
+            json.error ||
+            "Could not resend verification email. Try again later."
+        );
+        return;
+      }
+
+      setResendTimer(60);
+      setCode(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } catch {
+      setError("Network error. Check your connection and try again.");
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
     <div className="flex flex-col gap-8 py-4">
-      {/* Header */}
       <div className="flex flex-col gap-3">
         <div
           className={cn(
@@ -117,15 +178,14 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
             Verify your email
           </h2>
           <p className="text-sm text-wl-text-secondary mt-1 m-0">
-            We've sent a 6-digit code to{" "}
+            We&apos;ve sent a 6-digit code to{" "}
             <span className="font-semibold text-wl-text-primary">
-              {data.email || "your email"}
+              {displayEmail || "your email"}
             </span>
           </p>
         </div>
       </div>
 
-      {/* Code Input */}
       {!verified && (
         <div className="flex flex-col gap-6">
           <div className="flex gap-2 justify-center">
@@ -141,7 +201,7 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
                 value={digit}
                 onChange={(e) => handleCodeChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                disabled={loading}
+                disabled={loading || resending}
                 className={cn(
                   "w-12 h-14 rounded-lg text-center text-xl font-bold",
                   "border-2 transition-all duration-200",
@@ -158,7 +218,6 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
             ))}
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-wl-danger-bg border border-wl-danger-400/30">
               <AlertCircle className="w-4 h-4 text-wl-danger-400 flex-shrink-0" />
@@ -166,12 +225,11 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
             </div>
           )}
 
-          {/* Verify Button */}
           <Button
             variant="primary"
             size="lg"
             onClick={handleVerify}
-            disabled={loading || code.join("").length !== 6}
+            disabled={loading || resending || code.join("").length !== 6}
             className="w-full"
           >
             {loading ? (
@@ -184,30 +242,31 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
             )}
           </Button>
 
-          {/* Resend Section */}
           <div className="flex flex-col items-center gap-3">
             <span className="text-sm text-wl-text-tertiary">
-              Didn't receive the code?
+              Didn&apos;t receive the code?
             </span>
             <button
+              type="button"
               onClick={handleResend}
-              disabled={resendTimer > 0}
+              disabled={resendTimer > 0 || resending || loading}
               className={cn(
                 "text-sm font-semibold transition-all",
-                resendTimer > 0
+                resendTimer > 0 || resending
                   ? "text-wl-text-tertiary cursor-not-allowed"
                   : "text-wl-primary-500 hover:text-wl-primary-400 cursor-pointer"
               )}
             >
-              {resendTimer > 0
-                ? `Resend code in ${resendTimer}s`
-                : "Resend code"}
+              {resending
+                ? "Sending..."
+                : resendTimer > 0
+                  ? `Resend code in ${resendTimer}s`
+                  : "Resend code"}
             </button>
           </div>
         </div>
       )}
 
-      {/* Verified State */}
       {verified && (
         <div className="flex flex-col items-center gap-4 py-6">
           <div className="relative w-20 h-20 rounded-full bg-wl-success-500/20 flex items-center justify-center">
@@ -230,11 +289,10 @@ export function VerifyEmail({ data, onVerified }: VerifyEmailProps) {
         </div>
       )}
 
-      {/* Info Box */}
       <div className="p-4 rounded-lg bg-wl-primary-500/10 border border-wl-primary-500/20">
         <p className="text-xs text-wl-text-secondary leading-relaxed m-0">
-          Make sure to check your spam folder if you don't see the email within
-          a few seconds. You can request a new code if needed.
+          Check your spam folder if you don&apos;t see the email within a few
+          minutes. You can request a new verification code above.
         </p>
       </div>
     </div>
