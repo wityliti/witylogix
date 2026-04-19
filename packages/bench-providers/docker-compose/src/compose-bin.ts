@@ -122,6 +122,53 @@ export class ComposeError extends Error {
   }
 }
 
+export interface ComposeExecOptions {
+  composeFile: string;
+  cwd: string;
+  service: string;
+  cmd: string[];
+  stdin?: NodeJS.ReadableStream;
+  env?: Record<string, string>;
+  timeoutMs?: number;
+}
+
+export async function execComposeService(
+  opts: ComposeExecOptions,
+): Promise<ComposeRunResult> {
+  const envFlags: string[] = [];
+  for (const [k, v] of Object.entries(opts.env ?? {})) {
+    envFlags.push('-e', `${k}=${v}`);
+  }
+  const args = ['exec', '-T', ...envFlags, opts.service, ...opts.cmd];
+  return runCompose(
+    { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
+    true,
+  );
+}
+
+export interface ComposeOneShotOptions {
+  composeFile: string;
+  cwd: string;
+  fromService: string;
+  cmd: string[];
+  env?: Record<string, string>;
+  timeoutMs?: number;
+}
+
+export async function runOneShotFromService(
+  opts: ComposeOneShotOptions,
+): Promise<ComposeRunResult> {
+  const envFlags: string[] = [];
+  for (const [k, v] of Object.entries(opts.env ?? {})) {
+    envFlags.push('-e', `${k}=${v}`);
+  }
+  const args = ['run', '--rm', '--no-deps', ...envFlags, opts.fromService, ...opts.cmd];
+  return runCompose(
+    { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
+    true,
+  );
+}
+
 export async function checkDockerAvailable(): Promise<{
   docker: boolean;
   compose: boolean;
