@@ -7,6 +7,15 @@ export { OnboardingService, onboardingService } from "./onboarding-service.js";
 export { WorkspaceProvisioner, workspaceProvisioner } from "./workspace-provisioner.js";
 export { EmailVerificationService, emailVerificationService } from "./email-verification-service.js";
 export { InvitationService, invitationService } from "./invitation-service.js";
+export {
+  TenantProvisioner,
+  tenantProvisioner,
+  TenantAlreadyExistsError,
+} from "./tenant-provisioner.js";
+export type {
+  CreateTenantInput,
+  CreateTenantResult,
+} from "./tenant-provisioner.js";
 
 // Types
 export type {
