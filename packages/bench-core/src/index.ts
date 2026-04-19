@@ -12,6 +12,7 @@ export * from './runner.js';
 export * from './http-client.js';
 export * as tenants from './ops/tenants.js';
 export * as audit from './ops/audit.js';
+export * as migrate from './ops/migrate.js';
 export {
   benchConfigSchema,
   loadConfig,
