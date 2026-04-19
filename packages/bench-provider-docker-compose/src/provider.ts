@@ -215,6 +215,7 @@ export class DockerComposeProvider implements Provider {
       cwd: ctx.cwd,
       service,
       cmd,
+      stdin: opts.stdin,
       env: opts.env,
       timeoutMs: opts.timeoutMs,
     });

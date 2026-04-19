@@ -156,6 +156,35 @@ export async function execComposeService(
     envFlags.push('-e', `${k}=${v}`);
   }
   const args = ['exec', '-T', ...envFlags, opts.service, ...opts.cmd];
+
+  // When stdin is supplied we need `spawn` so we can pipe it; otherwise the
+  // simpler `execFile`-based `runCompose` path is fine.
+  if (opts.stdin) {
+    return new Promise((resolvePromise) => {
+      const child = spawn('docker', ['compose', '-f', opts.composeFile, ...args], {
+        cwd: opts.cwd,
+        env: process.env,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      let stdout = '';
+      let stderr = '';
+      child.stdout.on('data', (chunk: Buffer) => {
+        stdout += chunk.toString('binary');
+      });
+      child.stderr.on('data', (chunk: Buffer) => {
+        stderr += chunk.toString('utf8');
+      });
+      child.on('close', (code) => {
+        resolvePromise({
+          stdout,
+          stderr,
+          exitCode: typeof code === 'number' ? code : 1,
+        });
+      });
+      opts.stdin!.pipe(child.stdin);
+    });
+  }
+
   return runCompose(
     { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
     true,
