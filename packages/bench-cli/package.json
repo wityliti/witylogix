@@ -1,0 +1,41 @@
+{
+  "name": "@witylogix/bench",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Witylogix Bench — provision and operate Witylogix installations on any infrastructure.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "bench": "./dist/index.mjs",
+    "witylogix-bench": "./dist/index.mjs"
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@witylogix/bench-core": "workspace:*",
+    "@witylogix/bench-provider-docker-compose": "workspace:*",
+    "commander": "^12.1.0",
+    "picocolors": "^1.1.0",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^1.0.0"
+  }
+}

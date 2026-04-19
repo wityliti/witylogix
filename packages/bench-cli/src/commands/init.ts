@@ -1,0 +1,126 @@
+import type { Command } from 'commander';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { resolve, join, basename, relative } from 'node:path';
+import pc from 'picocolors';
+import { DEFAULT_CONFIG_FILENAME } from '@witylogix/bench-core';
+
+const VALID_NAME = /^[a-z0-9][a-z0-9-_]*$/;
+
+const TEMPLATE = (name: string): string => `apiVersion: bench.witylogix.io/v1
+kind: Installation
+metadata:
+  name: ${name}
+
+witylogix:
+  version: null   # null = latest stable
+  channel: stable
+
+provider:
+  type: docker-compose
+  config:
+    project: ${name}
+
+services:
+  api:
+    replicas: 1
+  dashboard:
+    replicas: 1
+  customer-portal:
+    replicas: 1
+  tracking-page:
+    replicas: 1
+
+database:
+  provider: postgres-self-hosted
+  version: "16"
+  isolation: rls
+
+redis:
+  provider: redis-self-hosted
+  version: "7"
+
+secrets:
+  backend: file
+  path: ./secrets/
+
+observability:
+  traces:
+    enabled: false
+  logs:
+    sink: stdout
+`;
+
+const GITIGNORE = `secrets/
+*.log
+.bench/
+`;
+
+const README = (name: string): string => `# ${name}
+
+Witylogix installation managed by [Witylogix Bench](https://github.com/wityliti/witylogix-platform).
+
+## Quick start
+
+\`\`\`bash
+bench doctor       # verify prerequisites
+bench start        # bring services up
+bench status       # check health
+bench logs api -f  # tail API logs
+\`\`\`
+
+See \`${DEFAULT_CONFIG_FILENAME}\` for the full configuration.
+`;
+
+export function registerInitCommand(program: Command): void {
+  program
+    .command('init <name>')
+    .description('Scaffold a new Witylogix installation directory')
+    .option('--force', 'overwrite an existing directory', false)
+    .action((pathArg: string, opts: { force: boolean }) => {
+      const target = resolve(process.cwd(), pathArg);
+      const installationName = basename(target);
+
+      if (!VALID_NAME.test(installationName)) {
+        process.stderr.write(
+          pc.red(
+            `bench init: "${installationName}" is not a valid installation name. ` +
+              'Use lowercase letters, digits, "-" or "_" (must start with a letter or digit).\n',
+          ),
+        );
+        process.exit(1);
+      }
+
+      if (existsSync(target) && !opts.force) {
+        process.stderr.write(
+          pc.red(
+            `bench init: directory "${pathArg}" already exists. Use --force to overwrite.\n`,
+          ),
+        );
+        process.exit(1);
+      }
+
+      mkdirSync(target, { recursive: true });
+      mkdirSync(join(target, 'secrets'), { recursive: true });
+
+      writeFileSync(
+        join(target, DEFAULT_CONFIG_FILENAME),
+        TEMPLATE(installationName),
+      );
+      writeFileSync(join(target, '.gitignore'), GITIGNORE);
+      writeFileSync(join(target, 'README.md'), README(installationName));
+
+      const displayPath = relative(process.cwd(), target) || '.';
+
+      process.stdout.write(
+        [
+          pc.green(`✓ Initialized Witylogix installation "${installationName}" at ${displayPath}`),
+          '',
+          '  Next steps:',
+          pc.dim(`    cd ${displayPath}`),
+          pc.dim('    bench doctor'),
+          pc.dim('    bench start'),
+          '',
+        ].join('\n'),
+      );
+    });
+}
