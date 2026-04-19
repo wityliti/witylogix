@@ -151,8 +151,16 @@ else
   printf "${DIM}%s${NC}\n" "$MIGRATE_OUT"
 fi
 
-step "bench backup (not yet implemented — T13)"
-$BENCH backup 2>&1 | tail -3 || true
+step "bench backup (expect pg_dump failure until postgres container is running)"
+BACKUP_OUT=$($BENCH backup --to /tmp/smoke.wbak 2>&1 || true)
+BACKUP_CLEAN=$(printf '%s' "$BACKUP_OUT" | sed 's/\x1b\[[0-9;]*m//g')
+if echo "$BACKUP_CLEAN" | grep -qiE "(pg_dump failed|postgres|service.*not running|ECONNREFUSED)"; then
+  ok "bench backup reaches provider + postgres (CLI wiring OK)"
+else
+  warn "bench backup unexpected output:"
+  printf "${DIM}%s${NC}\n" "$BACKUP_OUT"
+fi
+rm -f /tmp/smoke.wbak
 
 step "bench restore <dummy> (should fail on missing archive — exercises CLI wiring)"
 $BENCH restore /tmp/nonexistent.wbak 2>&1 | tail -3 || true
