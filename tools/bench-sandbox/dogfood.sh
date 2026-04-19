@@ -126,12 +126,24 @@ else
 fi
 rm -f "$DEPLOY_OUT"
 
-# ── Exercise: stub Phase 1b commands (report not-yet-implemented cleanly) ──
+# ── Exercise: Phase 1b commands ──────────────────────────────────────────
 
-for cmd in migrate new-tenant backup restore; do
+step "bench new-tenant (validation check — tests CLI wiring without needing API)"
+# Intentionally invalid slug to exercise client-side validation
+# (Real POST requires a running Witylogix API which needs published images.)
+if $BENCH new-tenant "Bad-Slug" --owner-email ops@acme.test --owner-name "Ada" 2>&1 | grep -q "not a valid slug"; then
+  ok "new-tenant slug validation"
+else
+  warn "new-tenant validation didn't match expected output"
+fi
+
+for cmd in migrate backup; do
   step "bench $cmd (should report not-yet-implemented until the task lands)"
-  $BENCH "$cmd" ${cmd:+$([ "$cmd" = new-tenant ] && echo acme-test || echo)} 2>&1 | tail -3 || true
+  $BENCH "$cmd" 2>&1 | tail -3 || true
 done
+
+step "bench restore <dummy> (should fail on missing archive — exercises CLI wiring)"
+$BENCH restore /tmp/nonexistent.wbak 2>&1 | tail -3 || true
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 
