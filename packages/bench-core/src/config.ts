@@ -92,6 +92,17 @@ const observabilitySchema = z
   })
   .default({});
 
+const storageSchema = z
+  .object({
+    backend: z.enum(['s3', 'r2', 'gcs', 'local']).default('local'),
+    bucket: z.string().optional(),
+    region: z.string().optional(),
+    endpoint: z.string().nullable().default(null),
+    path: z.string().optional(),
+    credentials_ref: z.string().optional(),
+  })
+  .default({ backend: 'local', endpoint: null });
+
 const cloudSchema = z
   .object({
     plan: z.enum(['managed', 'dedicated']),
@@ -111,6 +122,7 @@ export const benchConfigSchema = z.object({
   redis: redisSchema.default({}),
   secrets: secretsSchema.default({ backend: 'file' }),
   observability: observabilitySchema,
+  storage: storageSchema,
   cloud: cloudSchema,
 });
 
@@ -119,6 +131,7 @@ export type BenchConfigMeta = BenchConfig['metadata'];
 export type BenchConfigProvider = BenchConfig['provider'];
 export type BenchConfigDatabase = BenchConfig['database'];
 export type BenchConfigServices = BenchConfig['services'];
+export type BenchConfigStorage = BenchConfig['storage'];
 
 export const DEFAULT_CONFIG_FILENAME = 'bench.config.yaml';
 
