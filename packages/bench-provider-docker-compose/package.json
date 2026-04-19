@@ -14,7 +14,7 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "echo 'lint skipped — ESLint not installed (typecheck-only for now)'"
+    "lint": "eslint src --ext .ts"
   },
   "dependencies": {
     "@witylogix/bench-core": "workspace:*",

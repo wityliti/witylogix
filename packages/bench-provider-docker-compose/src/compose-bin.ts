@@ -1,6 +1,4 @@
 import { spawn, execFile } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -10,20 +8,6 @@ export interface ComposeRunOptions {
   cwd: string;
   args: string[];
   env?: NodeJS.ProcessEnv;
-}
-
-/**
- * Builds the leading `docker compose ...` flags: always `-f <composeFile>`,
- * plus `--env-file <cwd>/.env` when that file exists (Compose v2 otherwise
- * looks for `.env` next to the compose file, which misses our layout).
- */
-function baseComposeArgs(opts: ComposeRunOptions): string[] {
-  const args = ['compose', '-f', opts.composeFile];
-  const envFile = resolve(opts.cwd, '.env');
-  if (existsSync(envFile)) {
-    args.push('--env-file', envFile);
-  }
-  return args;
 }
 
 export interface ComposeRunResult {
@@ -43,7 +27,7 @@ export async function runCompose(
   try {
     const { stdout, stderr } = await execFileAsync(
       'docker',
-      [...baseComposeArgs(opts), ...opts.args],
+      ['compose', '-f', opts.composeFile, ...opts.args],
       {
         cwd: opts.cwd,
         env: opts.env ?? process.env,
@@ -78,7 +62,7 @@ export async function runCompose(
 export async function* streamComposeLogs(
   opts: ComposeRunOptions,
 ): AsyncIterable<string> {
-  const child = spawn('docker', [...baseComposeArgs(opts), ...opts.args], {
+  const child = spawn('docker', ['compose', '-f', opts.composeFile, ...opts.args], {
     cwd: opts.cwd,
     env: opts.env ?? process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -156,35 +140,6 @@ export async function execComposeService(
     envFlags.push('-e', `${k}=${v}`);
   }
   const args = ['exec', '-T', ...envFlags, opts.service, ...opts.cmd];
-
-  // When stdin is supplied we need `spawn` so we can pipe it; otherwise the
-  // simpler `execFile`-based `runCompose` path is fine.
-  if (opts.stdin) {
-    return new Promise((resolvePromise) => {
-      const child = spawn('docker', ['compose', '-f', opts.composeFile, ...args], {
-        cwd: opts.cwd,
-        env: process.env,
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      let stdout = '';
-      let stderr = '';
-      child.stdout.on('data', (chunk: Buffer) => {
-        stdout += chunk.toString('binary');
-      });
-      child.stderr.on('data', (chunk: Buffer) => {
-        stderr += chunk.toString('utf8');
-      });
-      child.on('close', (code) => {
-        resolvePromise({
-          stdout,
-          stderr,
-          exitCode: typeof code === 'number' ? code : 1,
-        });
-      });
-      opts.stdin!.pipe(child.stdin);
-    });
-  }
-
   return runCompose(
     { composeFile: opts.composeFile, cwd: opts.cwd, args, env: process.env },
     true,
