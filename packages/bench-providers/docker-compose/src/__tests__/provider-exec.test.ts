@@ -11,7 +11,9 @@ const ctx: Context = {
 };
 
 describe('DockerComposeProvider exec primitives', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('execInService respects dry-run and returns zero exit', async () => {
     const p = createDockerComposeProvider();
