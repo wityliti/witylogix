@@ -10,6 +10,7 @@ export * from './types.js';
 export * from './provider.js';
 export * from './runner.js';
 export * from './http-client.js';
+export * as tenants from './ops/tenants.js';
 export {
   benchConfigSchema,
   loadConfig,
