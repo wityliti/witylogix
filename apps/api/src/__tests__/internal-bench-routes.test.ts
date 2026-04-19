@@ -8,15 +8,6 @@ vi.mock("@witylogix/db", () => ({
   },
 }));
 
-vi.mock("@witylogix/core/onboarding", () => ({
-  tenantProvisioner: { createTenant: vi.fn() },
-  TenantAlreadyExistsError: class extends Error {
-    constructor(public field: "slug" | "email") {
-      super("exists");
-    }
-  },
-}));
-
 async function buildApp() {
   process.env.BENCH_SERVICE_TOKEN = "tok";
   process.env.BENCH_ALLOWED_CIDRS = "127.0.0.1/32";
