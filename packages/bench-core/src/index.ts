@@ -9,6 +9,7 @@
 export * from './types.js';
 export * from './provider.js';
 export * from './runner.js';
+export * from './http-client.js';
 export {
   benchConfigSchema,
   loadConfig,
