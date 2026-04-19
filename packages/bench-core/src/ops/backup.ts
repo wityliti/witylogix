@@ -202,66 +202,79 @@ async function runWithProvider(
   archivePath: string,
   startedAt: number,
 ): Promise<BackupResult> {
-  // Input is kept for future knobs (retention, compression level). Silenced.
-  void input;
+  {
 
-  // ── Snapshot config ──────────────────────────────────────────────────
-  const configSrc = resolve(ctx.cwd, "bench.config.yaml");
-  const configDest = join(scratch, "config", "bench.config.yaml");
-  await copyFile(configSrc, configDest);
+    // ── Snapshot config ──────────────────────────────────────────────────
+    const configSrc = resolve(ctx.cwd, "bench.config.yaml");
+    const configDest = join(scratch, "config", "bench.config.yaml");
+    await copyFile(configSrc, configDest);
 
-  const composeSrc = resolve(ctx.cwd, ".bench", "compose.yaml");
-  if (await fileExists(composeSrc)) {
-    await copyFile(composeSrc, join(scratch, "config", "compose.yaml"));
+    const composeSrc = resolve(ctx.cwd, ".bench", "compose.yaml");
+    if (await fileExists(composeSrc)) {
+      await copyFile(composeSrc, join(scratch, "config", "compose.yaml"));
+    }
+
+    // ── Dump DB ──────────────────────────────────────────────────────────
+    const dbGz = await dumpDatabase(ctx, provider, scratch);
+
+    // ── Counts for manifest ──────────────────────────────────────────────
+    const counts = await countRows(ctx, provider);
+
+    // ── Checksums ────────────────────────────────────────────────────────
+    const checksums: Record<string, string> = {};
+    checksums["db.sql.gz"] = await sha256OfFile(dbGz);
+    checksums["config/bench.config.yaml"] = await sha256OfFile(configDest);
+
+    // ── Manifest (written LAST) ──────────────────────────────────────────
+    // NOTE: `includes.blobs` is `false` here even when the caller passed
+    // `includeBlobs: true`. Actual blob snapshotting is T15; until then we
+    // refuse to lie in the manifest about what's actually in the archive.
+    // The CLI emits a warning when the user requests blobs in this phase.
+    const manifest: Manifest = {
+      version: 1,
+      benchVersion: BENCH_VERSION,
+      witylogixVersion: ctx.config.witylogix.version ?? "latest",
+      installationName: ctx.config.metadata.name,
+      createdAt: new Date().toISOString(),
+      includes: {
+        db: true,
+        config: true,
+        blobs: false,
+      },
+      counts,
+      checksums,
+    };
+    await writeFile(
+      join(scratch, "manifest.json"),
+      JSON.stringify(manifest, null, 2),
+    );
+
+    // ── Tar + gzip ───────────────────────────────────────────────────────
+    await mkdir(dirname(archivePath), { recursive: true });
+    const tarFiles = ["manifest.json", "db.sql.gz", "config"];
+    await createTar(
+      { gzip: true, file: archivePath, cwd: scratch },
+      tarFiles,
+    );
+
+    const sz = (await stat(archivePath)).size;
+    const durationMs = Date.now() - startedAt;
+
+    emitAudit(ctx, "bench.backup.completed", {
+      archive: archivePath,
+      sizeBytes: sz,
+      blobCount: 0,
+      includes: manifest.includes,
+      counts,
+      durationMs,
+    });
+
+    return {
+      ok: true,
+      archive: archivePath,
+      sizeBytes: sz,
+      manifest,
+      durationMs,
+    };
   }
-
-  // ── Dump DB ──────────────────────────────────────────────────────────
-  const dbGz = await dumpDatabase(ctx, provider, scratch);
-
-  // ── Counts for manifest ──────────────────────────────────────────────
-  const counts = await countRows(ctx, provider);
-
-  // ── Checksums ────────────────────────────────────────────────────────
-  const checksums: Record<string, string> = {};
-  checksums["db.sql.gz"] = await sha256OfFile(dbGz);
-  checksums["config/bench.config.yaml"] = await sha256OfFile(configDest);
-
-  // ── Manifest (written LAST) ──────────────────────────────────────────
-  // NOTE: `includes.blobs` is `false` here even when the caller passed
-  // `includeBlobs: true`. Actual blob snapshotting is T15; until then we
-  // refuse to lie in the manifest about what's actually in the archive.
-  // The CLI emits a warning when the user requests blobs in this phase.
-  const manifest: Manifest = {
-    version: 1,
-    benchVersion: BENCH_VERSION,
-    witylogixVersion: ctx.config.witylogix.version ?? "latest",
-    installationName: ctx.config.metadata.name,
-    createdAt: new Date().toISOString(),
-    includes: { db: true, config: true, blobs: false },
-    counts,
-    checksums,
-  };
-  await writeFile(
-    join(scratch, "manifest.json"),
-    JSON.stringify(manifest, null, 2),
-  );
-
-  // ── Tar + gzip ───────────────────────────────────────────────────────
-  await mkdir(dirname(archivePath), { recursive: true });
-  const tarFiles = ["manifest.json", "db.sql.gz", "config"];
-  await createTar({ gzip: true, file: archivePath, cwd: scratch }, tarFiles);
-
-  const sz = (await stat(archivePath)).size;
-  const durationMs = Date.now() - startedAt;
-
-  emitAudit(ctx, "bench.backup.completed", {
-    archive: archivePath,
-    sizeBytes: sz,
-    blobCount: 0,
-    includes: manifest.includes,
-    counts,
-    durationMs,
-  });
-
-  return { ok: true, archive: archivePath, sizeBytes: sz, manifest, durationMs };
 }
