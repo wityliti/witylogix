@@ -43,6 +43,10 @@ secrets:
   backend: file
   path: ./secrets/
 
+storage:
+  backend: local
+  path: ./storage/uploads
+
 observability:
   traces:
     enabled: false
