@@ -234,6 +234,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/shops.js"), { prefix: "/api/v4/shops" });
   await safeRegister(import("./routes/orgs.js"), { prefix: "/api/v4/orgs" });
   await safeRegister(import("./routes/auth.js"), { prefix: "/api/v4/auth" });
+  // Legacy alias — same handlers (older docs / envs used /api/v1/auth/*).
+  await safeRegister(import("./routes/auth.js"), { prefix: "/api/v1/auth" });
+  await safeRegister(import("./routes/onboarding.js"), { prefix: "/api/v4/onboarding" });
   await safeRegister(import("./routes/admin.js"), { prefix: "/api/v4/admin" });
   await safeRegister(import("./routes/auth-providers.js"), { prefix: "/api/v4/auth-providers" });
   await safeRegister(import("./routes/users.js"), { prefix: "/api/v4/users" });
