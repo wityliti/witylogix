@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { WLMap } from '@/components/map/wl-map';
 import { DrawLayer } from '@/components/map/draw-layer';
 import { LegacyNotice } from '@/components/zones/legacy-notice';
+import { track } from '@/lib/track';
 import type { ZoneShape } from '@witylogix/validators';
 
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65];
@@ -48,6 +49,11 @@ export default function NewZonePage() {
       return;
     }
     const body = (await res.json()) as { data: { id: string } };
+    track('zones.created', {
+      shape: shape.type,
+      baseRate: Number(baseRate),
+      perKmRate: Number(perKmRate),
+    });
     router.push(`/zones/${body.data.id}`);
   }
 
