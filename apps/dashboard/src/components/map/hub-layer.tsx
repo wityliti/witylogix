@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useWLMap } from './wl-map-context';
+import { mapTokens } from './resolve-token';
 
 export interface Hub {
   id: string;
@@ -19,6 +20,7 @@ export function HubLayer({ hubs }: HubLayerProps) {
 
   useEffect(() => {
     const setup = () => {
+      const t = mapTokens();
       if (map.getSource('hubs')) return;
       map.addSource('hubs', {
         type: 'geojson',
@@ -37,8 +39,8 @@ export function HubLayer({ hubs }: HubLayerProps) {
         source: 'hubs',
         paint: {
           'circle-radius': 7,
-          'circle-color': '#f5a623',
-          'circle-stroke-color': '#0a0a0c',
+          'circle-color': t.hubFill,
+          'circle-stroke-color': t.labelHalo,
           'circle-stroke-width': 2,
         },
       });
@@ -54,8 +56,8 @@ export function HubLayer({ hubs }: HubLayerProps) {
           'text-font': ['DM Sans Regular', 'Open Sans Regular'],
         },
         paint: {
-          'text-color': '#d5d5dd',
-          'text-halo-color': '#0a0a0c',
+          'text-color': t.label,
+          'text-halo-color': t.labelHalo,
           'text-halo-width': 1,
         },
       });
