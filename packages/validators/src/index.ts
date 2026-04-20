@@ -91,16 +91,29 @@ export const updateDriverLocationSchema = z.object({
 
 export const createDeliveryZoneSchema = z.object({
   name: z.string().min(1).max(100),
-  // Polygon ring in lat/lng pairs. Optional — dashboard-created zones may
-  // defer the boundary until a map picker is available; API routes should
-  // only set the PostGIS boundary when this field is present.
+  // Legacy: array of lat/lng points. Kept for one release cycle.
   boundary: z.array(coordinatesSchema).min(3).optional(),
+  // Preferred: discriminated shape (polygon | circle).
+  shape: zoneShapeSchema.optional(),
   baseRate: z.number().nonnegative().default(0),
   perKmRate: z.number().nonnegative().default(0),
   minOrder: z.number().nonnegative().default(0),
   freeAbove: z.number().nonnegative().optional(),
   priority: z.number().int().default(0),
 });
+
+export const updateDeliveryZoneSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  boundary: z.array(coordinatesSchema).min(3).optional(),
+  shape: zoneShapeSchema.optional(),
+  baseRate: z.number().nonnegative().optional(),
+  perKmRate: z.number().nonnegative().optional(),
+  minOrder: z.number().nonnegative().optional(),
+  freeAbove: z.number().nonnegative().nullable().optional(),
+  priority: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateDeliveryZone = z.infer<typeof updateDeliveryZoneSchema>;
 
 // - Carrier Service -
 
