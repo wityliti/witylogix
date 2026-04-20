@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import type { GeoJSONSource } from 'maplibre-gl';
 import { useWLMap } from './wl-map-context';
-import { mapTokens } from './resolve-token';
 
 export type PinStatus = 'open' | 'assigned' | 'in_transit' | 'delayed';
 
@@ -18,18 +17,18 @@ export interface PinLayerProps {
   pins: Pin[];
 }
 
+const COLOR_BY_STATUS: Record<PinStatus, string> = {
+  open: '#60a5fa',
+  assigned: '#f5a623',
+  in_transit: '#10b981',
+  delayed: '#ef4444',
+};
+
 export function PinLayer({ pins }: PinLayerProps) {
   const map = useWLMap();
 
   useEffect(() => {
     const setup = () => {
-      const t = mapTokens();
-      const colorByStatus = {
-        open: t.pinOpen,
-        assigned: t.pinAssigned,
-        in_transit: t.pinInTransit,
-        delayed: t.pinDelayed,
-      };
       if (map.getSource('pins')) return;
       map.addSource('pins', {
         type: 'geojson',
@@ -51,13 +50,13 @@ export function PinLayer({ pins }: PinLayerProps) {
           'circle-color': [
             'match',
             ['get', 'status'],
-            'open', colorByStatus.open,
-            'assigned', colorByStatus.assigned,
-            'in_transit', colorByStatus.in_transit,
-            'delayed', colorByStatus.delayed,
+            'open', COLOR_BY_STATUS.open,
+            'assigned', COLOR_BY_STATUS.assigned,
+            'in_transit', COLOR_BY_STATUS.in_transit,
+            'delayed', COLOR_BY_STATUS.delayed,
             '#8585a0',
           ],
-          'circle-stroke-color': t.labelHalo,
+          'circle-stroke-color': '#0a0a0c',
           'circle-stroke-width': 2,
         },
       });
