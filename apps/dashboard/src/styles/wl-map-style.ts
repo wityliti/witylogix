@@ -6,15 +6,13 @@ export interface BuildMapStyleOpts {
 }
 
 export function buildMapStyle({ maptilerKey, basemap = 'dark' }: BuildMapStyleOpts): StyleSpecification {
-  const basemapUrl =
-    basemap === 'backdrop'
-      ? `https://api.maptiler.com/maps/backdrop-dark/style.json?key=${maptilerKey}`
-      : `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${maptilerKey}`;
+  const mapId = basemap === 'backdrop' ? 'backdrop-dark' : 'dataviz-dark';
+  const basemapUrl = `https://api.maptiler.com/maps/${mapId}/tiles.json?key=${maptilerKey}`;
 
   return {
     version: 8,
     sources: {
-      basemap: { type: 'raster', url: basemapUrl, tileSize: 256 } as unknown as StyleSpecification['sources'][string],
+      basemap: { type: 'raster', url: basemapUrl, tileSize: 256 },
       zones: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
       heatmap: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
       pins: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
@@ -25,7 +23,7 @@ export function buildMapStyle({ maptilerKey, basemap = 'dark' }: BuildMapStyleOp
         id: 'basemap',
         type: 'raster',
         source: 'basemap',
-      } as unknown as StyleSpecification['layers'][number],
+      },
     ],
-  } as StyleSpecification;
+  };
 }
