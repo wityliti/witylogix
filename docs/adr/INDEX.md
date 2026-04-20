@@ -267,6 +267,17 @@ ADRs follow the [RFC 3986](https://adr.github.io/) format with:
   - EtaLog and SlotDemandForecast Prisma models for accuracy tracking
   - Feature importance surfaced for operator insights
 
+### [ADR-032: MapLibre GL JS + mapbox-gl-draw Map Stack](./ADR-032-maplibre-map-stack.md)
+- **Date**: 2026-04-19
+- **Status**: Accepted
+- **Summary**: Adopt MapLibre GL JS with `@mapbox/mapbox-gl-draw` and `@turf/turf` as the dashboard map stack, starting with MapTiler tiles in dev/staging and planning self-hosted PMTiles for production.
+- **Key Decisions**:
+  - MapLibre GL JS (free, token-free) for dashboard interactive maps
+  - `@mapbox/mapbox-gl-draw` + `@turf/turf` for polygon and circle drawing
+  - MapTiler `dataviz-dark` tiles in dev/staging; self-hosted PMTiles planned for production
+  - Tracking-page keeps Leaflet for now; convergence deferred
+  - Map components consume design-system tokens at runtime via `resolveToken`
+
 ## Navigation by Category
 
 ### Monorepo & Developer Experience
