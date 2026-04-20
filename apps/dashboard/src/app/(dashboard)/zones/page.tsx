@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { ZoneSearch } from '@/components/zones/zone-search';
 import { KpiStrip } from '@/components/zones/kpi-strip';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
 import { LegacyNotice } from '@/components/zones/legacy-notice';
+import { track } from '@/lib/track';
 import { useZonesGeoJson } from '@/hooks/use-zones-geojson';
 import { useZoneOverlays } from '@/hooks/use-zone-overlays';
 
@@ -70,6 +71,17 @@ export default function ZonesPage() {
     slipping: overlaysData?.zones.filter((z) => z.health === 'slipping').length ?? 0,
   };
 
+  useEffect(() => {
+    track('zones.viewed', {
+      mode,
+      overlays: (Object.keys(overlays) as (keyof OverlayState)[]).filter(
+        (k) => overlays[k] === true,
+      ),
+    });
+    // snapshot initial values — fire once per mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <Header
@@ -95,6 +107,10 @@ export default function ZonesPage() {
               value={null}
               onChange={async (shape) => {
                 if (!shape || shape.type !== 'polygon') return;
+                track('zones.geometry_edited', {
+                  zoneId: selectedZone.id,
+                  type: shape.type,
+                });
                 await fetch(`/api/v4/zones/${selectedZone.id}`, {
                   method: 'PATCH',
                   headers: { 'content-type': 'application/json' },
