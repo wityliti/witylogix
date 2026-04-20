@@ -1,6 +1,16 @@
 // Existing layout components
 export { Header } from "./header";
 
+// Page shell (shared header + KPI slot for section pages)
+export { PageShell, type PageShellProps } from "./page-shell";
+export {
+  KpiRow,
+  KpiCard,
+  type KpiRowProps,
+  type KpiCardProps,
+  type KpiTone,
+} from "./kpi-row";
+
 // Responsive navigation
 export {
   ResponsiveNav,
