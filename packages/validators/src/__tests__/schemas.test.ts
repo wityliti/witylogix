@@ -1280,3 +1280,46 @@ describe('zoneShapeSchema', () => {
     expect(() => zoneShapeSchema.parse({ type: 'square', ring: polygon.ring })).toThrow();
   });
 });
+
+describe('createDeliveryZoneSchema — with shape', () => {
+  const base = { name: 'Downtown', baseRate: 5, perKmRate: 0.5 };
+
+  it('accepts legacy boundary array (unchanged)', () => {
+    const parsed = createDeliveryZoneSchema.parse({
+      ...base,
+      boundary: [
+        { latitude: 28.65, longitude: 77.12 },
+        { latitude: 28.66, longitude: 77.13 },
+        { latitude: 28.64, longitude: 77.15 },
+      ],
+    });
+    expect(parsed.boundary).toBeDefined();
+  });
+
+  it('accepts a new polygon shape', () => {
+    const parsed = createDeliveryZoneSchema.parse({
+      ...base,
+      shape: {
+        type: 'polygon',
+        ring: [
+          { latitude: 28.65, longitude: 77.12 },
+          { latitude: 28.66, longitude: 77.13 },
+          { latitude: 28.64, longitude: 77.15 },
+        ],
+      },
+    });
+    expect(parsed.shape?.type).toBe('polygon');
+  });
+
+  it('accepts a circle shape', () => {
+    const parsed = createDeliveryZoneSchema.parse({
+      ...base,
+      shape: { type: 'circle', center: { latitude: 28.65, longitude: 77.12 }, radiusMeters: 1500 },
+    });
+    expect(parsed.shape?.type).toBe('circle');
+  });
+
+  it('allows creating a zone with neither boundary nor shape', () => {
+    expect(() => createDeliveryZoneSchema.parse(base)).not.toThrow();
+  });
+});

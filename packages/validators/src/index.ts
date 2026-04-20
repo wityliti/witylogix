@@ -91,10 +91,10 @@ export const updateDriverLocationSchema = z.object({
 
 export const createDeliveryZoneSchema = z.object({
   name: z.string().min(1).max(100),
-  // Polygon ring in lat/lng pairs. Optional — dashboard-created zones may
-  // defer the boundary until a map picker is available; API routes should
-  // only set the PostGIS boundary when this field is present.
+  // Legacy: array of lat/lng points. Kept for one release cycle.
   boundary: z.array(coordinatesSchema).min(3).optional(),
+  // Preferred: discriminated shape (polygon | circle).
+  shape: zoneShapeSchema.optional(),
   baseRate: z.number().nonnegative().default(0),
   perKmRate: z.number().nonnegative().default(0),
   minOrder: z.number().nonnegative().default(0),
