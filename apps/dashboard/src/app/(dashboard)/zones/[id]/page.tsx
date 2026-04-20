@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { WLMap } from '@/components/map/wl-map';
 import { ZoneLayer } from '@/components/map/zone-layer';
 import { ZoneInspector } from '@/components/zones/zone-inspector';
+import { LegacyNotice } from '@/components/zones/legacy-notice';
 import type { FeatureCollection } from 'geojson';
 
 export default function ZoneDetailPage({
@@ -12,6 +13,7 @@ export default function ZoneDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  if (process.env.NEXT_PUBLIC_FEATURE_ZONES_MAP !== '1') return <LegacyNotice />;
   const { id } = use(params);
   const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
   const [geojson, setGeojson] = useState<FeatureCollection | null>(null);
