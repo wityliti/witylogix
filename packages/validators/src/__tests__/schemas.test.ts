@@ -1154,7 +1154,7 @@ describe('Edge Cases', () => {
       name: 'Large Zone',
       boundary: largeArray,
     });
-    expect(zone.boundary.length).toBe(100);
+    expect(zone.boundary).toHaveLength(100);
   });
 });
 
