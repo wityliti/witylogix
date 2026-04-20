@@ -545,6 +545,15 @@ declare module '@testing-library/react' {
   export function waitFor<T>(callback: () => T | Promise<T>, options?: { timeout?: number; interval?: number; onTimeout?: (error: Error) => Error }): Promise<T>;
   export function act(callback: () => void | Promise<void>): Promise<void>;
   export function cleanup(): void;
+  export interface RenderHookResult<Result, Props> {
+    rerender: (props?: Props) => void;
+    result: { current: Result };
+    unmount: () => void;
+  }
+  export function renderHook<Result, Props = unknown>(
+    render: (initialProps: Props) => Result,
+    options?: { initialProps?: Props; wrapper?: unknown }
+  ): RenderHookResult<Result, Props>;
 }
 
 
