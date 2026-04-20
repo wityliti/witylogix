@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import type { FeatureCollection } from 'geojson';
 import type { GeoJSONSource } from 'maplibre-gl';
 import { useWLMap } from './wl-map-context';
-import { mapTokens } from './resolve-token';
 
 export interface ZoneLayerProps {
   zones: FeatureCollection;
@@ -16,7 +15,6 @@ export function ZoneLayer({ zones, selectedId, onSelect }: ZoneLayerProps) {
 
   useEffect(() => {
     const setup = () => {
-      const t = mapTokens();
       if (map.getSource('zones')) return;
       map.addSource('zones', { type: 'geojson', data: zones });
       map.addLayer({
@@ -26,9 +24,9 @@ export function ZoneLayer({ zones, selectedId, onSelect }: ZoneLayerProps) {
         paint: {
           'fill-color': [
             'case',
-            ['==', ['get', 'health'], 'slipping'], t.fillSlipping,
-            ['==', ['get', 'health'], 'watch'], t.fillWatch,
-            t.fillGood,
+            ['==', ['get', 'health'], 'slipping'], '#ef4444',
+            ['==', ['get', 'health'], 'watch'], '#f59e0b',
+            '#10b981',
           ],
           'fill-opacity': [
             'case',
@@ -44,8 +42,8 @@ export function ZoneLayer({ zones, selectedId, onSelect }: ZoneLayerProps) {
         paint: {
           'line-color': [
             'case',
-            ['==', ['get', 'id'], ['literal', selectedId ?? '']], t.strokeSelected,
-            t.strokeDefault,
+            ['==', ['get', 'id'], ['literal', selectedId ?? '']], '#f5a623',
+            '#35354a',
           ],
           'line-width': 2,
         },
@@ -74,11 +72,10 @@ export function ZoneLayer({ zones, selectedId, onSelect }: ZoneLayerProps) {
 
   useEffect(() => {
     if (!map.getLayer('zones-stroke')) return;
-    const t = mapTokens();
     map.setPaintProperty('zones-stroke', 'line-color', [
       'case',
-      ['==', ['get', 'id'], ['literal', selectedId ?? '']], t.strokeSelected,
-      t.strokeDefault,
+      ['==', ['get', 'id'], ['literal', selectedId ?? '']], '#f5a623',
+      '#35354a',
     ]);
     map.setPaintProperty('zones-fill', 'fill-opacity', [
       'case',
