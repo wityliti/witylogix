@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { api } from '@/lib/api';
 
 export interface ZoneOverlay {
   id: string;
@@ -38,7 +37,9 @@ export function useZoneOverlays(window: OverlayWindow): UseZoneOverlaysResult {
 
   const fetchOverlays = useCallback(async () => {
     try {
-      const body = await api.get<OverlaysPayload>(`/api/v4/zones/overlays?window=${window}`);
+      const res = await fetch(`/api/v4/zones/overlays?window=${window}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body = (await res.json()) as OverlaysPayload;
       setData(body);
       setError(null);
     } catch (e) {
