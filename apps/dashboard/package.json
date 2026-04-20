@@ -18,6 +18,7 @@
     "@sentry/nextjs": "^8.0.0",
     "@turf/turf": "^7.3.5",
     "@witylogix/core": "workspace:*",
+    "@witylogix/validators": "workspace:*",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",

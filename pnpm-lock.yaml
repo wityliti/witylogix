@@ -297,6 +297,9 @@ importers:
       '@witylogix/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@witylogix/validators':
+        specifier: workspace:*
+        version: link:../../packages/validators
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
