@@ -6,11 +6,13 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { WLMap } from '@/components/map/wl-map';
 import { DrawLayer } from '@/components/map/draw-layer';
+import { LegacyNotice } from '@/components/zones/legacy-notice';
 import type { ZoneShape } from '@witylogix/validators';
 
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65];
 
 export default function NewZonePage() {
+  if (process.env.NEXT_PUBLIC_FEATURE_ZONES_MAP !== '1') return <LegacyNotice />;
   const router = useRouter();
   const maptilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
   const [tool, setTool] = useState<'polygon' | 'circle'>('polygon');
