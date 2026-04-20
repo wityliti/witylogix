@@ -18,6 +18,19 @@ export const coordinatesSchema = z.object({
   longitude: z.number().min(-180).max(180),
 });
 
+// ─── Zone shape (polygon ring OR circle descriptor) ──────────
+const polygonShape = z.object({
+  type: z.literal("polygon"),
+  ring: z.array(coordinatesSchema).min(3),
+});
+const circleShape = z.object({
+  type: z.literal("circle"),
+  center: coordinatesSchema,
+  radiusMeters: z.number().positive().max(100_000),
+});
+export const zoneShapeSchema = z.discriminatedUnion("type", [polygonShape, circleShape]);
+export type ZoneShape = z.infer<typeof zoneShapeSchema>;
+
 // - Orders -
 
 export const createOrderSchema = z.object({

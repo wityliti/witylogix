@@ -25,6 +25,7 @@ import {
   updateDriverLocationSchema,
   // Delivery Zones
   createDeliveryZoneSchema,
+  zoneShapeSchema,
   // Carrier Service
   carrierRateRequestSchema,
   // Route Optimization
@@ -1154,5 +1155,45 @@ describe('Edge Cases', () => {
       boundary: largeArray,
     });
     expect(zone.boundary.length).toBe(100);
+  });
+});
+
+describe('zoneShapeSchema', () => {
+  const polygon = {
+    type: 'polygon',
+    ring: [
+      { latitude: 28.65, longitude: 77.12 },
+      { latitude: 28.66, longitude: 77.13 },
+      { latitude: 28.64, longitude: 77.15 },
+    ],
+  };
+  const circle = {
+    type: 'circle',
+    center: { latitude: 28.65, longitude: 77.12 },
+    radiusMeters: 1500,
+  };
+
+  it('accepts a polygon with >= 3 points', () => {
+    expect(() => zoneShapeSchema.parse(polygon)).not.toThrow();
+  });
+
+  it('rejects a polygon with < 3 points', () => {
+    expect(() => zoneShapeSchema.parse({ ...polygon, ring: polygon.ring.slice(0, 2) })).toThrow();
+  });
+
+  it('accepts a circle with positive radius', () => {
+    expect(() => zoneShapeSchema.parse(circle)).not.toThrow();
+  });
+
+  it('rejects a circle with non-positive radius', () => {
+    expect(() => zoneShapeSchema.parse({ ...circle, radiusMeters: 0 })).toThrow();
+  });
+
+  it('rejects a circle with radius > 100000 meters', () => {
+    expect(() => zoneShapeSchema.parse({ ...circle, radiusMeters: 100_001 })).toThrow();
+  });
+
+  it('rejects unknown shape types', () => {
+    expect(() => zoneShapeSchema.parse({ type: 'square', ring: polygon.ring })).toThrow();
   });
 });
