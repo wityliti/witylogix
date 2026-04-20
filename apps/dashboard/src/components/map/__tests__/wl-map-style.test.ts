@@ -19,4 +19,17 @@ describe('buildMapStyle', () => {
     expect(style.sources).toHaveProperty('pins');
     expect(style.sources).toHaveProperty('hubs');
   });
+
+  it('uses the backdrop-dark map when basemap is "backdrop"', () => {
+    const style = buildMapStyle({ maptilerKey: 'k', basemap: 'backdrop' });
+    const basemap = style.sources.basemap as { url: string };
+    expect(basemap.url).toContain('backdrop-dark');
+    expect(basemap.url).toContain('tiles.json');
+  });
+
+  it('defaults to dataviz-dark map when basemap is omitted', () => {
+    const style = buildMapStyle({ maptilerKey: 'k' });
+    const basemap = style.sources.basemap as { url: string };
+    expect(basemap.url).toContain('dataviz-dark');
+  });
 });
