@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/zones/create", destination: "/zones/new", permanent: true },
+    ];
+  },
   // Optimize bundle size by tree-shaking heavy libraries
   experimental: {
     optimizePackageImports: ["recharts", "lucide-react", "date-fns"],
