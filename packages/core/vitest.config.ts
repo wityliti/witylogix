@@ -9,6 +9,7 @@ export default defineConfig({
       forks: {
         minForks: 1,
         maxForks: 2,
+        execArgv: ['--max-old-space-size=4096'],
       },
     },
     include: [

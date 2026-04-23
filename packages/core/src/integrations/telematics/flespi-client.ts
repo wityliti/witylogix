@@ -513,7 +513,9 @@ export class FlespiClient extends TelematicsAdapter {
             headers: this.buildHeaders(),
           },
         );
-        return response.ok;
+        if (!response.ok) {
+          throw new Error(`Health check failed with status ${response.status}`);
+        }
       });
       return true;
     } catch {
