@@ -171,7 +171,7 @@ export class BillingRuleEngine {
     return {
       id: this.generateLineItemId(),
       invoiceId: '', // Will be set by invoice service
-      description: rule.name || `Delivery Charge`,
+      description: rule.description || `${rule.name || 'Delivery Charge'} (${rule.type})`,
       deliveryId: context.deliveryId,
       quantity: 1,
       unitPrice: amount,
@@ -192,17 +192,20 @@ export class BillingRuleEngine {
    */
   private calculatePerMile(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
     const distance = context.distance!;
-    let unitRate = rule.unitRate ?? 0;
+    const unitRate = rule.unitRate ?? 0;
 
-    // Apply tiered pricing if available
+    // Apply cumulative tiered pricing if available
+    let amount: number;
     if (rule.tiers && rule.tiers.length > 0) {
-      const tier = rule.tiers.find(t => distance >= t.min && (t.max === null || distance < t.max));
-      if (tier) {
-        unitRate = tier.rate;
+      amount = 0;
+      for (const tier of rule.tiers) {
+        if (distance <= tier.min) break;
+        const segmentEnd = tier.max === null ? distance : Math.min(distance, tier.max);
+        amount += (segmentEnd - tier.min) * tier.rate;
       }
+    } else {
+      amount = distance * unitRate;
     }
-
-    let amount = distance * unitRate;
     const baseAmount = amount;
 
     // Apply surcharges
@@ -278,7 +281,18 @@ export class BillingRuleEngine {
     const weight = context.weight!;
     const unitRate = rule.unitRate ?? 0;
 
-    let amount = weight * unitRate;
+    // Apply cumulative tiered pricing if available
+    let amount: number;
+    if (rule.tiers && rule.tiers.length > 0) {
+      amount = 0;
+      for (const tier of rule.tiers) {
+        if (weight <= tier.min) break;
+        const segmentEnd = tier.max === null ? weight : Math.min(weight, tier.max);
+        amount += (segmentEnd - tier.min) * tier.rate;
+      }
+    } else {
+      amount = weight * unitRate;
+    }
     const baseAmount = amount;
 
     // Apply surcharges
