@@ -161,11 +161,7 @@ const renderPreview = (text: string) => {
   });
 };
 
-export default function TemplateEditorPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function TemplateEditorPage() {
   const router = useRouter();
   const [content, setContent] = useState<TemplateContent>(INITIAL_TEMPLATE);
   const [activeChannel, setActiveChannel] = useState<Channel>("email");
