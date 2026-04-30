@@ -86,6 +86,73 @@ function billStatusColor(s: string) {
   return "#6C63FF";
 }
 
+const mockActivityLog: ActivityLog[] = [
+  {
+    id: "act_001",
+    timestamp: "2026-03-06 14:32:10",
+    action: "Order processed",
+    details: "Order #78945 completed successfully",
+    user: "System",
+    severity: "info",
+  },
+  {
+    id: "act_002",
+    timestamp: "2026-03-06 13:54:22",
+    action: "Shipment created",
+    details: "245 items shipped via FedEx",
+    user: "Sarah Anderson",
+    severity: "info",
+  },
+  {
+    id: "act_003",
+    timestamp: "2026-03-06 13:12:08",
+    action: "API call",
+    details: "Bulk inventory sync - 1250 products",
+    user: "System",
+    severity: "info",
+  },
+  {
+    id: "act_004",
+    timestamp: "2026-03-06 12:45:33",
+    action: "Settings updated",
+    details: "Shipping zones configuration modified",
+    user: "Sarah Anderson",
+    severity: "info",
+  },
+  {
+    id: "act_005",
+    timestamp: "2026-03-05 22:18:55",
+    action: "Payment processed",
+    details: "Monthly subscription fee charged",
+    user: "System",
+    severity: "info",
+  },
+  {
+    id: "act_006",
+    timestamp: "2026-03-05 20:17:42",
+    action: "API threshold warning",
+    details: "API calls usage at 75% of monthly limit",
+    user: "System",
+    severity: "warning",
+  },
+  {
+    id: "act_007",
+    timestamp: "2026-03-04 18:56:44",
+    action: "Team member added",
+    details: "john.doe@elegantboutique.com added as Manager",
+    user: "Sarah Anderson",
+    severity: "info",
+  },
+  {
+    id: "act_008",
+    timestamp: "2026-03-03 16:45:50",
+    action: "Backup created",
+    details: "Automatic daily backup completed",
+    user: "System",
+    severity: "info",
+  },
+];
+
 export default function AdminShopDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
