@@ -1,0 +1,119 @@
+---
+title: Delivery Zones
+description: Define geographic service areas, set delivery pricing, manage capacity slots, and monitor operational health — all from the map-first Zones dashboard.
+---
+
+# Delivery Zones
+
+A **Delivery Zone** (`DeliveryZone`) is a named geographic area that controls where and how you deliver. Zones let you:
+
+- Define **polygonal or circular** service boundaries on a map
+- Set **pricing rules** (base rate, per-km rate, free-delivery threshold)
+- Attach **time slots** that control available delivery windows
+- Monitor **live operational health** — open orders, active drivers, SLA adherence
+
+Zones can be scoped to an organisation (shared across all shops) or to a specific shop.
+
+---
+
+## Zone structure
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | Human-readable label shown to customers and dispatchers |
+| `boundary` | `GeoJSON` | Polygon or circle geometry stored as JSON (PostGIS `geometry` when enabled) |
+| `baseRate` | `Decimal` | Flat delivery fee applied to every order in this zone |
+| `perKmRate` | `Decimal` | Additional fee per kilometre from the hub to the delivery address |
+| `minOrder` | `Decimal` | Minimum order value required to deliver into this zone |
+| `freeAbove` | `Decimal?` | Order value above which delivery is free (overrides `baseRate`) |
+| `isActive` | `boolean` | Inactive zones are hidden from customer checkout |
+| `priority` | `int` | When a delivery address falls inside multiple zones, the highest-priority zone wins |
+
+---
+
+## Creating zones
+
+Zones are created from the **Zones dashboard** (`/zones/new`).
+
+### Drawing tools
+
+The `/zones/new` page offers two drawing modes powered by [MapLibre GL JS](https://maplibre.org/) and `@mapbox/mapbox-gl-draw`:
+
+- **Polygon** — click to place vertices; double-click to close the shape
+- **Circle** — click a centre point and drag to set the radius
+
+After drawing, name the zone and configure its pricing before saving.
+
+### Feature flag
+
+The map-first Zones UI is gated behind `NEXT_PUBLIC_FEATURE_ZONES_MAP=1`. When the flag is off, the legacy list view is shown instead.
+
+---
+
+## Monitoring zones
+
+The `/zones` page shows a **map-first monitor view** with optional overlays:
+
+| Overlay | What it shows |
+|---|---|
+| **Heatmap** | Demand density based on orders in the selected time window (`24h`, `7d`, `30d`) |
+| **SLA** | Colour-coded zone health: green (good), amber (watch), red (slipping) |
+| **Open orders** | Count of undelivered orders inside each zone boundary |
+| **Hubs** | Depot/hub locations as reference markers |
+
+Click any zone on the map to open the **Zone Inspector** panel, which shows:
+
+- Live KPIs: open orders, active drivers, SLA percentage
+- Health status: `good` / `watch` / `slipping`
+- Editable pricing fields (in **Configure** mode)
+- A shortcut to re-draw the geometry
+
+---
+
+## Time slots
+
+Each zone can have multiple `TimeSlot` records that gate when customers can book deliveries:
+
+| Field | Description |
+|---|---|
+| `startTime` / `endTime` | Slot window in `HH:MM` format |
+| `daysOfWeek` | Array of ISO day numbers (0 = Sunday … 6 = Saturday) |
+| `maxCapacity` | Maximum bookings allowed per slot |
+| `cutoffMinutes` | How many minutes before slot start a customer can still book |
+| `surcharge` | Optional additional fee for this slot (e.g. express slots) |
+
+Slot capacity is tracked in `DeliverySlot` records. Orders reference a slot via `timeSlotId`.
+
+---
+
+## Zone assignment
+
+When an order is placed, the platform resolves which zone covers the delivery address:
+
+1. All active zones for the shop are loaded (indexed on `shopId + isActive`).
+2. The delivery address point is tested against each zone's `boundary`.
+3. If multiple zones match, the one with the highest `priority` wins.
+4. If no zone matches, checkout is blocked or falls through to a catch-all zone (if configured).
+
+---
+
+## Telemetry events
+
+The following analytics events are emitted automatically:
+
+| Event | Fired when |
+|---|---|
+| `zones.viewed` | User opens the `/zones` monitor page |
+| `zones.created` | A new zone is saved |
+| `zones.geometry_edited` | Zone boundary is redrawn and saved |
+
+Use these events in the **AI Hub** or custom webhook subscribers to build capacity alerts or demand reports.
+
+---
+
+## Related
+
+- [ADR-032: MapLibre GL JS Map Stack](/docs/adrs#adr-032) — why MapLibre was chosen over Mapbox GL JS and Leaflet
+- [ADR-027: AI Demand Prediction](/docs/adrs#adr-027) — slot demand forecasting per zone
+- [Time Slots guide](/docs/guides/billing) — billing and capacity management
+- [Routes](/docs/core-concepts/routes) — how zones relate to route optimisation
