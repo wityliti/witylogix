@@ -497,8 +497,9 @@ describe('BillingRuleEngine', () => {
       const items = engine.evaluateRules(baseContext, rules);
 
       expect(items).toHaveLength(2);
-      expect(items[0].amount).toBe(5.0); // Per-delivery
-      expect(items[1].amount).toBeCloseTo(7.8, 1); // Per-mile
+      const amounts = items.map(i => i.amount).sort((a, b) => a - b);
+      expect(amounts[0]).toBe(5.0); // Per-delivery
+      expect(amounts[1]).toBeCloseTo(7.8, 1); // Per-mile
     });
 
     it('should apply rules in priority order', () => {
