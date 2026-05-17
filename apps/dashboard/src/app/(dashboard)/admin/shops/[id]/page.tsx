@@ -86,17 +86,7 @@ function billStatusColor(s: string) {
   return "#6C63FF";
 }
 
-function severityColor(s: string) {
-  if (s === "warning") return "#f59e0b";
-  if (s === "error") return "#ef4444";
-  return "#6C63FF";
-}
-
 export default function AdminShopDetail() {
-  const params = useParams();
-  const shopId = params.id as string;
-  const { data: shop, loading, error, refetch } = useApiQuery<ShopDetail>(`/api/v4/admin/stores/${shopId}`);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
 
