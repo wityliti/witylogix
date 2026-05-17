@@ -76,20 +76,8 @@ const PLAN_COLOR: Record<string, string> = {
   ENTERPRISE: "#ec4899",
 };
 
-const BILLING_STATUS_COLOR: Record<string, string> = {
-  paid: "#22c55e",
-  pending: "#f59e0b",
-  failed: "#ef4444",
-};
-
-const SEVERITY_COLOR: Record<string, string> = {
-  info: "#6C63FF",
-  warning: "#f59e0b",
-  error: "#ef4444",
-};
-
 export default function AdminShopDetail() {
-  const { id } = useParams<{ id: string }>();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
