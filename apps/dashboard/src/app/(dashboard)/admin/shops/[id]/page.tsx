@@ -62,10 +62,14 @@ interface ActivityItem {
   shopName?: string;
 }
 
-export default function AdminShopDetail() {
-  const params = useParams();
-  const shopId = params.id as string;
 
+interface ShopApiResponse {
+  shop: ShopDetail;
+  billingHistory: BillingRecord[];
+  activityLog: ActivityLog[];
+}
+
+export default function AdminShopDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
