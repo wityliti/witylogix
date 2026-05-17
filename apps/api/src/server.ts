@@ -28,6 +28,7 @@ import rawBodyPlugin from "./plugins/raw-body.js";
 import securityHeadersPlugin from "./middleware/security-headers.js";
 import { shutdownQueues } from "./lib/queue.js";
 import { p95Tracker } from "./lib/p95-tracker.js";
+import { requireAuth, requireRole } from "./middleware/auth.js";
 // Workers are started lazily to avoid @witylogix/core import failures
 const startNotificationWorker = async () => { try { const m = await import("./workers/notification-worker.js"); return m.startNotificationWorker(); } catch { console.warn("[Worker] Notification worker unavailable"); } };
 const startOptimizationWorker = async () => { try { const m = await import("./workers/optimization-worker.js"); return m.startOptimizationWorker(); } catch { console.warn("[Worker] Optimization worker unavailable"); } };
@@ -210,7 +211,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   // ─── Latency Percentile Metrics (p95 dashboard) ─────────────
   // Exposes rolling p50/p95/p99 for BFS-certified endpoints.
   // carrier_rates p95 must stay ≤ 500ms per BFS SLA.
-  app.get("/metrics/p95", async (_request, reply) => {
+  app.get("/metrics/p95", { preHandler: [requireAuth, requireRole("admin")] }, async (_request, reply) => {
     const stats = p95Tracker.allStats();
     const bfsSla = {
       carrier_rates: { threshold_ms: 500, status: "no_data" as "no_data" | "pass" | "fail" },
