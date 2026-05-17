@@ -47,10 +47,10 @@ function getCorsOrigins(): string[] {
     "*.myshopify.com",
   ];
 
-  // In production, require explicit configuration
+  // In production, require explicit CORS configuration — do not fall back to localhost origins.
   if (NODE_ENV === "production") {
-    console.warn(
-      "CORS_ORIGINS not set in production. Using permissive defaults. Set CORS_ORIGINS env var.",
+    throw new Error(
+      "CORS_ORIGINS env var must be set in production. Example: CORS_ORIGINS=https://app.example.com,https://admin.example.com",
     );
   }
 
