@@ -347,11 +347,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
   );
 }
 
-export default function WorkflowExecutionDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function WorkflowExecutionDetailPage() {
   const router = useRouter();
   const execution = MOCK_EXECUTION;
 
