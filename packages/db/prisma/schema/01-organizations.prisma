@@ -43,6 +43,7 @@ model Organization {
   onboardingProgresses      OnboardingProgress[]
   workspaces                Workspace[]
   invitations               Invitation[]
+  appInstallations          AppInstallation[]
 
   @@map("organizations")
 }
