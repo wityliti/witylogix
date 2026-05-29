@@ -331,7 +331,7 @@ describe("Billing Routes", () => {
 
       mockRequest.body = { planId: "GROWTH" };
 
-      const now = new Date();
+      const now = new Date("2026-04-15T12:00:00");
       const daysRemaining = Math.ceil(
         (new Date(now.getFullYear(), now.getMonth() + 1, 0).getTime() -
           now.getTime()) /
@@ -470,7 +470,7 @@ describe("Billing Routes", () => {
     });
 
     it("should set effective cancellation date to end of billing cycle", async () => {
-      const now = new Date();
+      const now = new Date("2026-04-15T12:00:00");
       const effectiveDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
       expect(effectiveDate).toBeTruthy();
@@ -615,7 +615,7 @@ describe("Billing Routes", () => {
     });
 
     it("should include days remaining in billing period", async () => {
-      const now = new Date();
+      const now = new Date("2026-04-15T12:00:00");
       const billingPeriodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       const daysRemaining = Math.ceil(
         (billingPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
