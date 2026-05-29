@@ -70,6 +70,7 @@ model Shop {
   coldChainAlerts             ColdChainAlert[]
   deliveryOTPs                DeliveryOTP[]
   deliveryAuditLogs           DeliveryAuditLog[]
+  activityFlows               ActivityFlow[]
 
   @@index([orgId])
   @@map("shops")
