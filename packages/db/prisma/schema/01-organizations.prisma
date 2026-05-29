@@ -44,10 +44,6 @@ model Organization {
   workspaces                Workspace[]
   invitations               Invitation[]
   appInstallations          AppInstallation[]
-  eldHosRecords             EldHosRecord[]
-  dvirInspections           DvirInspection[]
-  dvirDefects               DvirDefect[]
-  eldEvents                 EldEvent[]
 
   @@map("organizations")
 }
