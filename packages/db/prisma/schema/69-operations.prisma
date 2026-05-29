@@ -1,0 +1,62 @@
+// ─── OPERATIONS (Activity Flows) ─────────────────────────────
+// See docs/adr/ADR-030-operations-activity-flow.md for rationale.
+//
+// Tenants define their own state machine ("activity flow") for
+// Shipments and Orders instead of being locked to hard-coded
+// STATUS_TRANSITIONS. A flow is a directed graph of stages; the
+// engine validates transitions and emits domain events.
+//
+// This is distinct from `packages/workflows` (BullMQ jobs):
+//   - ActivityFlow   = what an entity *is* (state machine)
+//   - workflows      = what the system *does* (side-effect jobs)
+
+model ActivityFlow {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String             @map("shop_id") @db.Uuid
+  entityType  ActivityEntityType @map("entity_type")
+  key         String // tenant-scoped slug, e.g. "default-delivery"
+  name        String
+  description String?
+  isDefault   Boolean            @default(false) @map("is_default")
+  status      ActivityFlowStatus @default(DRAFT)
+  version     Int                @default(1)
+
+  // Graph of stages + transitions. Shape:
+  //   {
+  //     stages: [
+  //       {
+  //         key: "pending",
+  //         label: "Pending",
+  //         isInitial?: boolean,
+  //         isTerminal?: boolean,
+  //         color?: string,
+  //         transitions: [
+  //           { to: "processing", label?: string, requiredScope?: string }
+  //         ]
+  //       }
+  //     ]
+  //   }
+  graph Json @default("{\"stages\":[]}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop      Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shipments Shipment[]
+  orders    Order[]
+
+  @@unique([shopId, entityType, key])
+  @@index([shopId, entityType, status])
+  @@map("activity_flows")
+}
+
+enum ActivityEntityType {
+  SHIPMENT
+  ORDER
+}
+
+enum ActivityFlowStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}

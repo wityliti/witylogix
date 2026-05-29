@@ -256,6 +256,28 @@ ADRs follow the [RFC 3986](https://adr.github.io/) format with:
   - Weekly forecasting with confidence intervals
   - Manual override capability with feedback loop
 
+### [ADR-029: ML ETA Model v2 — GBDT + Holt-Winters](./ADR-029-ml-eta-model-v2.md)
+- **Date**: 2026-04-05
+- **Status**: Accepted
+- **Summary**: Pure TypeScript Gradient Boosted Decision Trees for ETA prediction integrated into the 6-model ensemble, plus Holt-Winters triple exponential smoothing for 7-day slot demand forecasting.
+- **Key Decisions**:
+  - GBDT model: 60 trees, 17 features, no external ML dependencies
+  - Holt-Winters: additive seasonality with m=7 (weekly period)
+  - 60/40 blend of Holt-Winters + historical regression for demand
+  - EtaLog and SlotDemandForecast Prisma models for accuracy tracking
+  - Feature importance surfaced for operator insights
+
+### [ADR-032: MapLibre GL JS + mapbox-gl-draw Map Stack](./ADR-032-maplibre-map-stack.md)
+- **Date**: 2026-04-19
+- **Status**: Accepted
+- **Summary**: Adopt MapLibre GL JS with `@mapbox/mapbox-gl-draw` and `@turf/turf` as the dashboard map stack, starting with MapTiler tiles in dev/staging and planning self-hosted PMTiles for production.
+- **Key Decisions**:
+  - MapLibre GL JS (free, token-free) for dashboard interactive maps
+  - `@mapbox/mapbox-gl-draw` + `@turf/turf` for polygon and circle drawing
+  - MapTiler `dataviz-dark` tiles in dev/staging; self-hosted PMTiles planned for production
+  - Tracking-page keeps Leaflet for now; convergence deferred
+  - Map components consume design-system tokens at runtime via `resolveToken`
+
 ## Navigation by Category
 
 ### Monorepo & Developer Experience
@@ -292,6 +314,7 @@ ADRs follow the [RFC 3986](https://adr.github.io/) format with:
 - ADR-025: Route Analytics
 - ADR-026: Telematics Gateway
 - ADR-027: AI Demand Prediction
+- ADR-032: MapLibre Map Stack
 
 ## Decision History
 

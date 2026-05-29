@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { VerifyEmail } from "./steps/verify-email";
 import { ChooseDeployment } from "./steps/choose-deployment";
@@ -14,14 +15,7 @@ import { DashboardLayout } from "./steps/dashboard-layout";
 import { DataImport } from "./steps/data-import";
 import { ReviewSummary } from "./steps/review-summary";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
-import type {
-  OnboardingData,
-  OnboardingStep,
-  OnboardingSubStep,
-  DeploymentType,
-  Industry,
-  Goal,
-} from "./types";
+import type { OnboardingData } from "./types";
 
 type MainStep = "verify-email" | "choose-deployment" | "configure-workspace";
 type SubStep =
@@ -70,12 +64,111 @@ const initialData: OnboardingData = {
 export default function OnboardingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { token, user } = useAuth();
 
   const [currentMainStep, setCurrentMainStep] = useState<MainStep>("verify-email");
   const [currentSubStep, setCurrentSubStep] = useState<SubStep>("company-info");
   const [data, setData] = useState<OnboardingData>(initialData);
+  const [progressHydrated, setProgressHydrated] = useState(false);
 
-  // Initialize from URL params
+  const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "") + "/api/v4";
+
+  // Load saved progress from backend; then allow debounced PUT persistence
+  useEffect(() => {
+    if (!token) {
+      setProgressHydrated(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProgress = async () => {
+      try {
+        const res = await fetch(`${API_URL}/onboarding/progress`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          const body = (await res.json()) as {
+            data: Record<string, unknown> | null;
+            completed?: boolean;
+          };
+          const progress = body.data;
+          if (body.completed) {
+            router.push("/");
+            return;
+          }
+          if (progress && typeof progress === "object") {
+            const step = progress.currentStep as MainStep;
+            const sub = progress.currentSubStep as SubStep;
+            if (step && mainSteps.some((s) => s.id === step)) {
+              setCurrentMainStep(step);
+            }
+            if (sub && subSteps.some((s) => s.id === sub)) {
+              setCurrentSubStep(sub);
+            }
+            if (progress.data && typeof progress.data === "object") {
+              setData((prev) => ({
+                ...prev,
+                ...(progress.data as Partial<OnboardingData>),
+              }));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load onboarding progress:", err);
+      } finally {
+        if (!cancelled) setProgressHydrated(true);
+      }
+    };
+
+    void loadProgress();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, API_URL, router]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    setData((prev) => {
+      if (prev.email) return prev;
+      return { ...prev, email: user.email };
+    });
+  }, [user?.email]);
+
+  // Debounced persist of step + form data (after initial GET)
+  useEffect(() => {
+    if (!token || !progressHydrated) return;
+
+    const handle = setTimeout(() => {
+      void fetch(`${API_URL}/onboarding/progress`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentStep: currentMainStep,
+          currentSubStep:
+            currentMainStep === "configure-workspace" ? currentSubStep : undefined,
+          data,
+        }),
+      }).catch((err) => {
+        console.warn("Failed to persist onboarding progress:", err);
+      });
+    }, 1000);
+
+    return () => clearTimeout(handle);
+  }, [
+    token,
+    API_URL,
+    currentMainStep,
+    currentSubStep,
+    data,
+    progressHydrated,
+  ]);
+
+  // Initialize from URL params (override backend state if URL has params)
   useEffect(() => {
     const step = searchParams.get("step") as MainStep;
     const sub = searchParams.get("sub") as SubStep;
@@ -159,9 +252,39 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleComplete = () => {
-    // In real app, send data to backend
-    router.push("/");
+  const handleComplete = async () => {
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/onboarding/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workspaceName: data.companyName || "default-workspace",
+          deploymentType: data.deploymentType === "cloud" ? "CLOUD" : "SELF_MANAGED",
+          industry: data.industry,
+          goals: data.goals,
+          selectedIntegrations: data.integrations,
+          dashboardLayout: data.dashboardLayout ? { type: data.dashboardLayout } : undefined,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        }),
+      });
+
+      if (res.ok) {
+        router.push("/");
+      } else {
+        console.error("Failed to complete onboarding:", await res.text());
+      }
+    } catch (err) {
+      console.error("Failed to complete onboarding:", err);
+      // Fallback: redirect anyway
+      router.push("/");
+    }
   };
 
   const isMainStepValid = (): boolean => {
@@ -286,7 +409,14 @@ export default function OnboardingPage() {
         {currentMainStep === "verify-email" && (
           <VerifyEmail
             data={data}
-            onVerified={(updatedData) => setData(updatedData)}
+            displayEmail={data.email || user?.email || ""}
+            token={token}
+            apiBaseUrl={API_URL}
+            onVerified={(updatedData) => {
+              setData(updatedData);
+              setCurrentMainStep("choose-deployment");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           />
         )}
 

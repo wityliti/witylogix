@@ -154,6 +154,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   // 6. Structured error handler (maps AppError, ZodError, Prisma errors)
   await app.register(errorHandlerPlugin);
 
+  // Bench Admin API — only enabled when BENCH_SERVICE_TOKEN is set
+  // (see apps/api/src/routes/internal/bench.ts, docs/bench/ARCHITECTURE.md §3)
+  if (process.env.BENCH_SERVICE_TOKEN) {
+    const benchAdminRoutes = (
+      await import("./routes/internal/bench.js")
+    ).default;
+    await app.register(benchAdminRoutes, { prefix: "/internal/bench" });
+    app.log.info("bench admin API registered at /internal/bench");
+  }
+
   // Workflow integration (auto-trigger workflows from API operations)
   await safeRegister(import("./plugins/workflow-integration.js"));
 
@@ -224,6 +234,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/shops.js"), { prefix: "/api/v4/shops" });
   await safeRegister(import("./routes/orgs.js"), { prefix: "/api/v4/orgs" });
   await safeRegister(import("./routes/auth.js"), { prefix: "/api/v4/auth" });
+  // Legacy alias — same handlers (older docs / envs used /api/v1/auth/*).
+  await safeRegister(import("./routes/auth.js"), { prefix: "/api/v1/auth" });
+  await safeRegister(import("./routes/onboarding.js"), { prefix: "/api/v4/onboarding" });
   await safeRegister(import("./routes/admin.js"), { prefix: "/api/v4/admin" });
   await safeRegister(import("./routes/auth-providers.js"), { prefix: "/api/v4/auth-providers" });
   await safeRegister(import("./routes/users.js"), { prefix: "/api/v4/users" });
@@ -269,6 +282,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   await safeRegister(import("./routes/notification-preferences.js"), { prefix: "/api/v4/notification-preferences" });
   await safeRegister(import("./routes/notifications-v2.js"), { prefix: "/api/v4/notifications" });
   await safeRegister(import("./routes/outbound-webhooks.js"), { prefix: "/api/v4/outbound-webhooks" });
+  await safeRegister(import("./routes/oauth.js"), { prefix: "/api/v4/oauth" });
+  await safeRegister(import("./routes/operations.js"), { prefix: "/api/v4/operations" });
   await safeRegister(import("./routes/payments-v2.js"), { prefix: "/api/v4/payments/v2" });
   await safeRegister(import("./routes/pod.js"), { prefix: "/api/v4/pod" });
   await safeRegister(import("./routes/returns.js"), { prefix: "/api/v4/returns" });

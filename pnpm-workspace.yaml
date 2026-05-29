@@ -1,5 +1,6 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "packages/bench-providers/*"
   - "extensions/*"
   - "!extensions/woocommerce-block"

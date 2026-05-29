@@ -705,6 +705,33 @@ When updating design tokens:
 
 ---
 
+## Map
+
+Witylogix maps are rendered with **MapLibre GL JS** and styled from the same `--wl-*` tokens as the rest of the UI.
+
+### Tokens used on the map
+
+| Use | Token |
+| --- | --- |
+| Zone fill (good SLA) | `--wl-success-500` @ 25% opacity |
+| Zone fill (watch)    | `--wl-warning-500` @ 25% opacity |
+| Zone fill (slipping) | `--wl-danger-500`  @ 25% opacity |
+| Zone stroke (default)| `--wl-neutral-700` |
+| Zone stroke (selected)| `--wl-primary-500` |
+| Pin fills            | status-driven (see `pin-layer.tsx`) |
+| Hub fill             | `--wl-primary-500` |
+| Label text           | `--wl-neutral-200` |
+| Label halo           | `--wl-bg-root` |
+
+### Rules
+
+1. Never hard-code hex values in map code. Read tokens with `resolveToken('--wl-*')` at runtime (see `apps/dashboard/src/components/map/resolve-token.ts`).
+2. Map components live in `apps/dashboard/src/components/map/`. Keep each ≤ ~150 LOC.
+3. The `<WLMap>` component is always `"use client"`. Consumers can stay RSC where possible.
+4. Tile style is MapTiler `dataviz-dark` in dev/staging; self-hosted PMTiles are planned for production (see ADR-032).
+
+---
+
 ## Resources
 
 - **Component Catalog**: `/design-system` — Interactive showcase of all components
