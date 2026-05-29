@@ -20,9 +20,13 @@ model WebhookEndpoint {
   shop       Shop              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   deliveries WebhookDelivery[]
 
+  appInstallationId String?          @map("app_installation_id") @db.Uuid
+  appInstallation   AppInstallation? @relation(fields: [appInstallationId], references: [id], onDelete: Cascade)
+
   @@index([tenantId])
   @@index([active])
   @@index([circuitBreakerOpen])
+  @@index([appInstallationId])
   @@map("webhook_endpoints")
 }
 
