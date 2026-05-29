@@ -26,6 +26,8 @@ model User {
   loginAttempts        LoginAttempt[]
   apiKeys              ApiKey[]
   onboardingProgress   OnboardingProgress?
+  oauthClients         OAuthClient[]
+  appInstallations     AppInstallation[]     @relation("AppInstallationInstaller")
 
   @@unique([shopId, email])
   @@index([shopId])
