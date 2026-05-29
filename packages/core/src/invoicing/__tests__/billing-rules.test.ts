@@ -108,11 +108,12 @@ describe('BillingRuleEngine', () => {
 
       const items = engine.evaluateRules(context, [rule]);
 
-      // 10 miles falls in the 5-20 tier at $2.5/mile
-      expect(items[0].amount).toBe(25); // 10 * 2.5
+      // Cumulative (tax-bracket) tiered pricing across 10 miles:
+      // (5 - 0) * $3.0 + (10 - 5) * $2.5 = 15 + 12.5 = 27.5
+      expect(items[0].amount).toBe(27.5);
       expect(items[0].metadata).toEqual(expect.objectContaining({
         distance: 10,
-        unitRate: 2.5,
+        unitRate: 0, // tiered rule has no flat unitRate
       }));
     });
 
