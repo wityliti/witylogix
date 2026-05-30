@@ -8,6 +8,15 @@ import { createHmac } from "node:crypto";
 import type {
   IECommerceAdapter,
   ECommerceAdapterConfig,
+  ECommerceOrder,
+  ECommerceProduct,
+  ECommerceCustomer,
+  ECommerceInventory,
+  ECommerceWebhookEvent,
+  FulfillmentRequest,
+  FulfillmentResponse,
+  InventoryUpdateRequest,
+  SyncOptions,
   RateLimiterConfig,
   CircuitBreakerConfig,
   RetryConfig,
@@ -181,10 +190,10 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   protected requestLogs: RequestLog[] = [];
   protected maxLogs = 1000;
   protected logger = {
-    error: (...args: unknown[]) => console.error(...args),
-    warn: (...args: unknown[]) => console.warn(...args),
-    info: (...args: unknown[]) => console.info(...args),
-    debug: (...args: unknown[]) => console.debug(...args),
+    error: (msg: string, ...args: unknown[]) => console.error(msg, ...args),
+    warn: (msg: string, ...args: unknown[]) => console.warn(msg, ...args),
+    info: (msg: string, ...args: unknown[]) => console.info(msg, ...args),
+    debug: (msg: string, ...args: unknown[]) => console.debug(msg, ...args),
   };
 
   constructor(config: ECommerceAdapterConfig) {
@@ -218,7 +227,7 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
   /**
    * Parse webhook event - must be implemented by subclasses
    */
-  abstract parseWebhookEvent(payload: unknown): Promise<any>;
+  abstract parseWebhookEvent(payload: unknown): ECommerceWebhookEvent;
 
   /**
    * Health check - must be implemented by subclasses
@@ -230,61 +239,75 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
    */
   abstract validateConnection(): Promise<boolean>;
 
-  // Stub implementations for abstract methods from IECommerceAdapter
-  // Subclasses will override these with actual implementations
-  async getOrders() {
+  // Stub implementations for IECommerceAdapter methods.
+  // Subclasses override these with actual implementations.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getOrders(_options?: SyncOptions): Promise<ECommerceOrder[]> {
     throw new Error("Not implemented");
   }
 
-  async getOrderById() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getOrderById(_orderId: string): Promise<ECommerceOrder> {
     throw new Error("Not implemented");
   }
 
-  async updateOrder() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateOrder(_orderId: string, _data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
     throw new Error("Not implemented");
   }
 
-  async getProducts() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getProducts(_options?: SyncOptions): Promise<ECommerceProduct[]> {
     throw new Error("Not implemented");
   }
 
-  async getProductById() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getProductById(_productId: string): Promise<ECommerceProduct> {
     throw new Error("Not implemented");
   }
 
-  async createProduct() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createProduct(_product: ECommerceProduct): Promise<ECommerceProduct> {
     throw new Error("Not implemented");
   }
 
-  async updateProduct() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateProduct(_productId: string, _data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
     throw new Error("Not implemented");
   }
 
-  async getCustomers() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getCustomers(_options?: SyncOptions): Promise<ECommerceCustomer[]> {
     throw new Error("Not implemented");
   }
 
-  async getCustomerById() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getCustomerById(_customerId: string): Promise<ECommerceCustomer> {
     throw new Error("Not implemented");
   }
 
-  async updateCustomer() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateCustomer(_customerId: string, _data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
     throw new Error("Not implemented");
   }
 
-  async createFulfillment() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createFulfillment(_orderId: string, _request: FulfillmentRequest): Promise<FulfillmentResponse> {
     throw new Error("Not implemented");
   }
 
-  async updateFulfillment() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateFulfillment(_orderId: string, _fulfillmentId: string, _data: Partial<FulfillmentResponse>): Promise<FulfillmentResponse> {
     throw new Error("Not implemented");
   }
 
-  async updateInventory() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateInventory(_request: InventoryUpdateRequest): Promise<ECommerceInventory> {
     throw new Error("Not implemented");
   }
 
-  async getInventory() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getInventory(_variantId: string): Promise<ECommerceInventory> {
     throw new Error("Not implemented");
   }
 
@@ -315,24 +338,33 @@ export abstract class ECommerceAdapterBase implements IECommerceAdapter {
             ...options.headers,
           };
 
+          const controller = new AbortController();
+          const timeoutMs = options.timeout || 30000;
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
           const fetchOptions: RequestInit = {
             method,
             headers,
-            timeout: options.timeout || 30000,
+            signal: controller.signal,
           };
 
           if (options.body && (method === "POST" || method === "PUT" || method === "PATCH")) {
             fetchOptions.body = JSON.stringify(options.body);
           }
 
-          const response = await fetch(url, fetchOptions);
+          let response: Response;
+          try {
+            response = await fetch(url, fetchOptions);
+          } finally {
+            clearTimeout(timeoutId);
+          }
 
           if (!response.ok) {
             const errorData = (await response.json().catch(() => ({}))) as unknown;
             const error = new Error(
               `HTTP ${response.status}: ${JSON.stringify(errorData)}`,
             ) as Error & { statusCode: number };
-            (error as any).statusCode = response.status;
+            error.statusCode = response.status;
             throw error;
           }
 

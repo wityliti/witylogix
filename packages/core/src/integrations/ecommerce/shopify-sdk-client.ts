@@ -227,6 +227,58 @@ interface PaginationCursor {
   limit: number;
 }
 
+/** Shopify REST API response wrappers */
+interface ShopifyOAuthTokenResponse {
+  access_token: string;
+  scope?: string;
+}
+
+interface ShopifyOrdersListResponse {
+  orders: ShopifyOrderResponse[];
+  pagination?: { after?: string };
+}
+
+interface ShopifyOrderWrapResponse {
+  order: ShopifyOrderResponse;
+}
+
+interface ShopifyProductsListResponse {
+  products: ShopifyProductResponse[];
+  pagination?: { after?: string };
+}
+
+interface ShopifyProductWrapResponse {
+  product: ShopifyProductResponse;
+}
+
+interface ShopifyFulfillmentWrapResponse {
+  fulfillment: ShopifyFulfillment;
+}
+
+interface ShopifyInventoryLevelsResponse {
+  inventory_levels: ShopifyInventoryLevel[];
+}
+
+interface ShopifyLocationsResponse {
+  locations: Array<{ id: number; name: string }>;
+}
+
+interface ShopifyWebhookWrapResponse {
+  webhook: ShopifyWebhookResponse;
+}
+
+interface ShopifyWebhooksListResponse {
+  webhooks: ShopifyWebhookResponse[];
+}
+
+interface ShopifyMetafieldsResponse {
+  metafields: ShopifyMetafield[];
+}
+
+interface ShopifyMetafieldWrapResponse {
+  metafield: ShopifyMetafield;
+}
+
 /**
  * Shopify SDK Client
  */
@@ -267,7 +319,7 @@ export class ShopifyClient {
   ): Promise<{ accessToken: string; scope: string[] }> {
     const url = `https://${shopName}.myshopify.com/oauth/access_token`;
 
-    const response = await this.request("POST", url, {
+    const response = await this.request<ShopifyOAuthTokenResponse>("POST", url, {
       client_id: config.apiKey,
       client_secret: config.apiSecret,
       code,
@@ -298,7 +350,7 @@ export class ShopifyClient {
       params.append("cursor", options.cursor);
     }
 
-    const response = await this.request(
+    const response = await this.request<ShopifyOrdersListResponse>(
       "GET",
       `${this.baseUrl}/orders.json?${params}`,
     );
@@ -317,7 +369,7 @@ export class ShopifyClient {
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request(
+    const response = await this.request<ShopifyOrderWrapResponse>(
       "GET",
       `${this.baseUrl}/orders/${orderId}.json`,
     );
@@ -334,7 +386,7 @@ export class ShopifyClient {
     billing_address?: Record<string, unknown>;
     shipping_address?: Record<string, unknown>;
   }): Promise<ECommerceOrder> {
-    const response = await this.request("POST", `${this.baseUrl}/orders.json`, {
+    const response = await this.request<ShopifyOrderWrapResponse>("POST", `${this.baseUrl}/orders.json`, {
       order: data,
     });
     return this.mapShopifyOrderToECommerce(response.order);
@@ -347,7 +399,7 @@ export class ShopifyClient {
     orderId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceOrder> {
-    const response = await this.request(
+    const response = await this.request<ShopifyOrderWrapResponse>(
       "PUT",
       `${this.baseUrl}/orders/${orderId}.json`,
       { order: data },
@@ -381,7 +433,7 @@ export class ShopifyClient {
       notify_customer: request.notifyCustomer !== false,
     };
 
-    const response = await this.request(
+    const response = await this.request<ShopifyFulfillmentWrapResponse>(
       "POST",
       `${this.baseUrl}/fulfillments.json`,
       { fulfillment: fulfillmentData },
@@ -398,7 +450,7 @@ export class ShopifyClient {
     fulfillmentId: string,
     data: { tracking_number?: string; tracking_company?: string },
   ): Promise<FulfillmentResponse> {
-    const response = await this.request(
+    const response = await this.request<ShopifyFulfillmentWrapResponse>(
       "PATCH",
       `${this.baseUrl}/fulfillments/${fulfillmentId}.json`,
       { fulfillment: data },
@@ -434,7 +486,7 @@ export class ShopifyClient {
       params.append("cursor", options.cursor);
     }
 
-    const response = await this.request(
+    const response = await this.request<ShopifyProductsListResponse>(
       "GET",
       `${this.baseUrl}/products.json?${params}`,
     );
@@ -453,7 +505,7 @@ export class ShopifyClient {
    * Get product by ID
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request(
+    const response = await this.request<ShopifyProductWrapResponse>(
       "GET",
       `${this.baseUrl}/products/${productId}.json`,
     );
@@ -470,7 +522,7 @@ export class ShopifyClient {
     product_type?: string;
     variants?: Array<{ price: string; sku?: string }>;
   }): Promise<ECommerceProduct> {
-    const response = await this.request(
+    const response = await this.request<ShopifyProductWrapResponse>(
       "POST",
       `${this.baseUrl}/products.json`,
       { product: data },
@@ -485,7 +537,7 @@ export class ShopifyClient {
     productId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceProduct> {
-    const response = await this.request(
+    const response = await this.request<ShopifyProductWrapResponse>(
       "PUT",
       `${this.baseUrl}/products/${productId}.json`,
       { product: data },
@@ -506,8 +558,8 @@ export class ShopifyClient {
   async createVariant(
     productId: string,
     data: { price: string; sku?: string; title?: string },
-  ): Promise<unknown> {
-    const response = await this.request(
+  ): Promise<ShopifyVariant> {
+    const response = await this.request<{ variant: ShopifyVariant }>(
       "POST",
       `${this.baseUrl}/products/${productId}/variants.json`,
       { variant: data },
@@ -518,8 +570,8 @@ export class ShopifyClient {
   /**
    * Update product variant
    */
-  async updateVariant(variantId: string, data: Record<string, unknown>): Promise<unknown> {
-    const response = await this.request(
+  async updateVariant(variantId: string, data: Record<string, unknown>): Promise<ShopifyVariant> {
+    const response = await this.request<{ variant: ShopifyVariant }>(
       "PUT",
       `${this.baseUrl}/variants/${variantId}.json`,
       { variant: data },
@@ -541,7 +593,7 @@ export class ShopifyClient {
    * Get inventory levels for a location
    */
   async getInventoryLevels(locationId: string): Promise<ECommerceInventory[]> {
-    const response = await this.request(
+    const response = await this.request<ShopifyInventoryLevelsResponse>(
       "GET",
       `${this.baseUrl}/inventory_levels.json?location_id=${locationId}`,
     );
@@ -561,7 +613,7 @@ export class ShopifyClient {
   async adjustInventory(
     request: InventoryUpdateRequest,
   ): Promise<ECommerceInventory> {
-    const response = await this.request(
+    const response = await this.request<ShopifyInventoryLevelsResponse>(
       "POST",
       `${this.baseUrl}/inventory_levels/adjust.json`,
       {
@@ -595,7 +647,7 @@ export class ShopifyClient {
     quantity: number,
     locationId: string,
   ): Promise<ECommerceInventory> {
-    const response = await this.request(
+    const response = await this.request<ShopifyInventoryLevelsResponse>(
       "POST",
       `${this.baseUrl}/inventory_levels/set.json`,
       {
@@ -620,7 +672,7 @@ export class ShopifyClient {
    * List inventory locations
    */
   async listLocations(): Promise<Array<{ id: string; name: string }>> {
-    const response = await this.request(
+    const response = await this.request<ShopifyLocationsResponse>(
       "GET",
       `${this.baseUrl}/locations.json`,
     );
@@ -637,7 +689,7 @@ export class ShopifyClient {
     topic: string,
     callbackUrl: string,
   ): Promise<ShopifyWebhookResponse> {
-    const response = await this.request(
+    const response = await this.request<ShopifyWebhookWrapResponse>(
       "POST",
       `${this.baseUrl}/webhooks.json`,
       {
@@ -655,7 +707,7 @@ export class ShopifyClient {
    * List webhooks
    */
   async listWebhooks(): Promise<ShopifyWebhookResponse[]> {
-    const response = await this.request(
+    const response = await this.request<ShopifyWebhooksListResponse>(
       "GET",
       `${this.baseUrl}/webhooks.json`,
     );
@@ -699,7 +751,7 @@ export class ShopifyClient {
     resourceType: string,
     resourceId: string,
   ): Promise<ShopifyMetafield[]> {
-    const response = await this.request(
+    const response = await this.request<ShopifyMetafieldsResponse>(
       "GET",
       `${this.baseUrl}/${resourceType}/${resourceId}/metafields.json`,
     );
@@ -714,7 +766,7 @@ export class ShopifyClient {
     resourceId: string,
     data: { key: string; value: unknown; type: string },
   ): Promise<ShopifyMetafield> {
-    const response = await this.request(
+    const response = await this.request<ShopifyMetafieldWrapResponse>(
       "POST",
       `${this.baseUrl}/${resourceType}/${resourceId}/metafields.json`,
       { metafield: data },
@@ -729,7 +781,7 @@ export class ShopifyClient {
     metafieldId: string,
     data: { value: unknown },
   ): Promise<ShopifyMetafield> {
-    const response = await this.request(
+    const response = await this.request<ShopifyMetafieldWrapResponse>(
       "PUT",
       `${this.baseUrl}/metafields/${metafieldId}.json`,
       { metafield: data },
@@ -740,11 +792,11 @@ export class ShopifyClient {
   /**
    * Make HTTP request with rate limit handling
    */
-  private async request(
+  private async request<T = unknown>(
     method: string,
     url: string,
     body?: unknown,
-  ): Promise<unknown> {
+  ): Promise<T> {
     // Wait if needed for rate limiting
     await this.handleRateLimit();
 
@@ -761,7 +813,8 @@ export class ShopifyClient {
     }
 
     let response = await fetch(url, options);
-    let data = await response.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any = await response.json();
 
     // Handle rate limiting with exponential backoff
     if (response.status === 429) {
@@ -788,7 +841,7 @@ export class ShopifyClient {
       );
     }
 
-    return data;
+    return data as T;
   }
 
   /**
