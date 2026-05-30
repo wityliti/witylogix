@@ -190,11 +190,11 @@ export class VroomClient extends RoutingAdapter {
 
     if (Date.now() - cached.timestamp > this.cacheTtl) {
       this.cache.delete(key);
-      this.metrics.cacheMisses++;
+      this.metrics.cacheMisses = (this.metrics.cacheMisses ?? 0) + 1;
       return null;
     }
 
-    this.metrics.cacheHits++;
+    this.metrics.cacheHits = (this.metrics.cacheHits ?? 0) + 1;
     return cached.data;
   }
 
