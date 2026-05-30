@@ -7,16 +7,16 @@
 import { useApiQuery, UseApiQueryResult } from './use-api';
 
 /**
- * Dashboard statistics
+ * Dashboard statistics — matches GET /api/v4/dashboard/stats response
  */
 export interface DashboardStats {
-  totalOrdersToday: number;
+  totalOrders: number;
+  totalDrivers: number;
+  totalCustomers: number;
+  pendingOrders: number;
   activeDrivers: number;
-  pendingDeliveries: number;
-  totalRevenueToday: number;
-  averageDeliveryTime: number;
-  completionRate: number;
-  lastUpdated: string;
+  deliveredToday: number;
+  revenue: number;
 }
 
 /**
