@@ -827,7 +827,7 @@ export class ShippoSDKClient {
         );
       }
 
-      return response.json();
+      return response.json() as Promise<T>;
     } finally {
       clearTimeout(timeout);
     }

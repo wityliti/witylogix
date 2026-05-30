@@ -19,7 +19,7 @@ export type {
   UberDirectWebhookPayload,
   NormalizedDeliveryEvent,
   WebhookProcessResult,
-  WebhookVerificationResult,
+  CourierWebhookVerificationResult,
   WebhookSignatureVerification,
   OnfleetSignatureVerification,
   StuartSignatureVerification,

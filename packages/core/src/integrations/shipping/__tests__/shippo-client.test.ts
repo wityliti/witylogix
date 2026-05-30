@@ -2,9 +2,10 @@
  * Shippo Client Tests
  *
  * Tests for:
- * - Shipment creation and rate shopping
- * - Label purchase and download
- * - Tracking information retrieval
+ * - Rate shopping (getRates)
+ * - Label purchase and download (createShipment)
+ * - Label retrieval (getLabel)
+ * - Tracking information retrieval (track)
  * - Address validation and standardization
  * - Batch label creation
  * - Webhook event handling
@@ -13,7 +14,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { ShippoClient } from "../shippo-client.js";
-import type { ShippingConfig, ShipmentRequest, ShippingAddress } from "../types.js";
+import type { ShippingConfig, ShipmentRequest, ShippingAddress, ShippingWebhookEvent } from "../types.js";
 
 describe("ShippoClient", () => {
   let client: ShippoClient;
@@ -41,44 +42,18 @@ describe("ShippoClient", () => {
     });
   });
 
-  describe("shipment creation and rates", () => {
+  describe("shipment creation and rates (getRates)", () => {
     beforeEach(() => {
       vi.spyOn(global, "fetch").mockClear();
     });
 
-    it("should create shipment and get rates", async () => {
+    it("should get rates for a shipment", async () => {
       const mockShipment = {
         object_id: "shipment_123",
         status: "queued",
-        address_from: {
-          object_id: "addr_from_1",
-          name: "John Sender",
-          street1: "123 Main St",
-          city: "San Francisco",
-          state: "CA",
-          zip: "94105",
-          country: "US",
-        },
-        address_to: {
-          object_id: "addr_to_1",
-          name: "Jane Receiver",
-          street1: "456 Oak Ave",
-          city: "Los Angeles",
-          state: "CA",
-          zip: "90001",
-          country: "US",
-        },
-        parcels: [
-          {
-            object_id: "parcel_1",
-            weight: "2.5",
-            width: "10",
-            height: "8",
-            length: "6",
-            distance_unit: "cm",
-            weight_unit: "kg",
-          },
-        ],
+        address_from: {},
+        address_to: {},
+        parcels: [],
         shipment_date: "2026-03-12T00:00:00Z",
       };
 
@@ -130,7 +105,8 @@ describe("ShippoClient", () => {
         );
 
       const shipment: ShipmentRequest = {
-        fromAddress: {
+        shipmentId: "order_123",
+        from: {
           name: "John Sender",
           street1: "123 Main St",
           city: "San Francisco",
@@ -138,7 +114,7 @@ describe("ShippoClient", () => {
           zip: "94105",
           country: "US",
         },
-        toAddress: {
+        to: {
           name: "Jane Receiver",
           street1: "456 Oak Ave",
           city: "Los Angeles",
@@ -146,21 +122,17 @@ describe("ShippoClient", () => {
           zip: "90001",
           country: "US",
         },
-        parcels: [
-          {
-            weight: { value: 5.5, unit: "lb" },
-            dimensions: { length: 6, width: 10, height: 8 },
-          },
-        ],
+        weight: { value: 5.5, unit: "lb" },
+        dimensions: { length: 6, width: 10, height: 8 },
       };
 
-      const rates = await client.createShipment(shipment);
+      const rates = await client.getRates(shipment);
 
       expect(rates).toHaveLength(2);
-      expect(rates[0].carrier).toBe("usps");
-      expect(rates[0].service).toBe("Priority Mail");
-      expect(parseFloat(rates[0].rate.toString())).toBe(15.5);
-      expect(rates[1].carrier).toBe("ups");
+      expect(rates[0].carrier).toBe("USPS");
+      expect(rates[0].rateId).toBe("rate_123");
+      expect(rates[0].price).toBe(1550); // 15.50 * 100 cents
+      expect(rates[1].carrier).toBe("UPS");
     });
 
     it("should include metadata in shipment creation", async () => {
@@ -181,7 +153,8 @@ describe("ShippoClient", () => {
         );
 
       const shipment: ShipmentRequest = {
-        fromAddress: {
+        shipmentId: "order_meta",
+        from: {
           name: "Sender",
           street1: "123 Main",
           city: "SF",
@@ -189,7 +162,7 @@ describe("ShippoClient", () => {
           zip: "94105",
           country: "US",
         },
-        toAddress: {
+        to: {
           name: "Receiver",
           street1: "456 Oak",
           city: "LA",
@@ -197,20 +170,41 @@ describe("ShippoClient", () => {
           zip: "90001",
           country: "US",
         },
-        parcels: [],
+        weight: { value: 1, unit: "lb" },
         metadata: { orderId: "order_123", reference: "REF123" },
       };
 
-      const rates = await client.createShipment(shipment);
+      const rates = await client.getRates(shipment);
 
       expect(rates).toBeDefined();
     });
   });
 
-  describe("label purchase", () => {
+  describe("label purchase (createShipment)", () => {
     beforeEach(() => {
       vi.spyOn(global, "fetch").mockClear();
     });
+
+    const baseRequest: ShipmentRequest = {
+      shipmentId: "order_label_test",
+      from: {
+        name: "Sender",
+        street1: "123 Main",
+        city: "SF",
+        state: "CA",
+        zip: "94105",
+        country: "US",
+      },
+      to: {
+        name: "Receiver",
+        street1: "456 Oak",
+        city: "LA",
+        state: "CA",
+        zip: "90001",
+        country: "US",
+      },
+      weight: { value: 1, unit: "lb" },
+    };
 
     it("should purchase label and return tracking number", async () => {
       const mockTransaction = {
@@ -235,15 +229,15 @@ describe("ShippoClient", () => {
         new Response(JSON.stringify(mockTransaction), { status: 201 })
       );
 
-      const label = await client.purchaseLabel("rate_123", "PDF");
+      const label = await client.createShipment(baseRequest, "rate_123");
 
-      expect(label.id).toBe("transaction_123");
+      expect(label.labelId).toBe("transaction_123");
       expect(label.trackingNumber).toBe("1234567890");
-      expect(label.label).toContain("shippo-delivery");
-      expect(label.labelFormat).toBe("PDF");
+      expect(label.labelUrl).toContain("shippo-delivery");
+      expect(label.format).toBe("PDF");
     });
 
-    it("should support different label formats", async () => {
+    it("should return a label with correct rateId", async () => {
       const mockTransaction = {
         object_id: "txn_zpl",
         tracking_number: "9876543210",
@@ -264,9 +258,9 @@ describe("ShippoClient", () => {
         new Response(JSON.stringify(mockTransaction), { status: 201 })
       );
 
-      const labelZPL = await client.purchaseLabel("rate_123", "ZPL");
+      const label = await client.createShipment(baseRequest, "rate_123");
 
-      expect(labelZPL.labelFormat).toBe("ZPL");
+      expect(label.rateId).toBe("rate_123");
     });
 
     it("should throw error if label download fails", async () => {
@@ -286,13 +280,13 @@ describe("ShippoClient", () => {
         new Response(JSON.stringify(mockTransaction), { status: 201 })
       );
 
-      await expect(client.purchaseLabel("rate_123")).rejects.toThrow(
-        "Failed to generate label"
+      await expect(client.createShipment(baseRequest, "rate_123")).rejects.toThrow(
+        "Shippo failed to generate label"
       );
     });
   });
 
-  describe("tracking", () => {
+  describe("tracking (track)", () => {
     beforeEach(() => {
       vi.spyOn(global, "fetch").mockClear();
     });
@@ -349,11 +343,11 @@ describe("ShippoClient", () => {
         new Response(JSON.stringify(mockTrack), { status: 200 })
       );
 
-      const tracking = await client.getTracking("usps", "9400111111111111111111");
+      const tracking = await client.track("9400111111111111111111", "USPS");
 
       expect(tracking.trackingNumber).toBe("9400111111111111111111");
       expect(tracking.status).toBe("delivered");
-      expect(tracking.carrier).toBe("usps");
+      expect(tracking.carrier).toBe("USPS");
       expect(tracking.events).toHaveLength(2);
       expect(tracking.events[0].status).toBe("delivered");
     });
@@ -385,7 +379,7 @@ describe("ShippoClient", () => {
         new Response(JSON.stringify(mockTrack), { status: 200 })
       );
 
-      const tracking = await client.getTracking("fedex", "794643794398");
+      const tracking = await client.track("794643794398", "FEDEX");
 
       expect(tracking.status).toBe("in_transit");
     });
@@ -434,7 +428,7 @@ describe("ShippoClient", () => {
       expect(result.address).toBeDefined();
     });
 
-    it("should return validation errors for invalid address", async () => {
+    it("should return validation messages for invalid address", async () => {
       const mockValidated = {
         object_id: "addr_invalid",
         name: "Bad Address",
@@ -468,7 +462,7 @@ describe("ShippoClient", () => {
       const result = await client.validateAddress(address);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toHaveLength(1);
+      expect(result.messages).toHaveLength(1);
     });
   });
 
@@ -487,37 +481,26 @@ describe("ShippoClient", () => {
       const mockTxn1 = {
         object_id: "txn_1",
         tracking_number: "1111111111",
-        label_download: { pdf: "https://example.com/1.pdf" },
+        label_download: { pdf: "https://example.com/1.pdf", png: "", zpl: "" },
       };
       const mockTxn2 = {
         object_id: "txn_2",
         tracking_number: "2222222222",
-        label_download: { pdf: "https://example.com/2.pdf" },
+        label_download: { pdf: "https://example.com/2.pdf", png: "", zpl: "" },
       };
 
       vi.spyOn(global, "fetch")
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockShipment1), { status: 201 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockRates1), { status: 200 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockTxn1), { status: 201 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockShipment2), { status: 201 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockRates2), { status: 200 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockTxn2), { status: 201 })
-        );
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockShipment1), { status: 201 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockRates1), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockTxn1), { status: 201 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockShipment2), { status: 201 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockRates2), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify(mockTxn2), { status: 201 }));
 
       const shipments: ShipmentRequest[] = [
         {
-          fromAddress: {
+          shipmentId: "order_1",
+          from: {
             name: "From 1",
             street1: "123 Main",
             city: "SF",
@@ -525,7 +508,7 @@ describe("ShippoClient", () => {
             zip: "94105",
             country: "US",
           },
-          toAddress: {
+          to: {
             name: "To 1",
             street1: "456 Oak",
             city: "LA",
@@ -533,10 +516,11 @@ describe("ShippoClient", () => {
             zip: "90001",
             country: "US",
           },
-          parcels: [{ weight: { value: 1, unit: "lb" } }],
+          weight: { value: 1, unit: "lb" },
         },
         {
-          fromAddress: {
+          shipmentId: "order_2",
+          from: {
             name: "From 2",
             street1: "789 Pine",
             city: "SF",
@@ -544,7 +528,7 @@ describe("ShippoClient", () => {
             zip: "94105",
             country: "US",
           },
-          toAddress: {
+          to: {
             name: "To 2",
             street1: "321 Elm",
             city: "SD",
@@ -552,7 +536,7 @@ describe("ShippoClient", () => {
             zip: "92101",
             country: "US",
           },
-          parcels: [{ weight: { value: 2, unit: "lb" } }],
+          weight: { value: 2, unit: "lb" },
         },
       ];
 
@@ -566,24 +550,26 @@ describe("ShippoClient", () => {
 
   describe("webhooks", () => {
     it("should handle tracking update webhook", async () => {
-      const event = {
-        type: "track_updated" as const,
-        data: {
-          tracking_number: "9400111111111111111111",
-          status: "delivered",
-        },
+      const event: ShippingWebhookEvent = {
+        eventType: "track_updated",
+        resourceId: "9400111111111111111111",
+        carrier: "USPS",
+        trackingNumber: "9400111111111111111111",
+        data: { status: "delivered" },
+        timestamp: new Date(),
       };
 
       await expect(client.handleWebhook(event)).resolves.not.toThrow();
     });
 
     it("should handle transaction webhook", async () => {
-      const event = {
-        type: "transaction_created" as const,
-        data: {
-          tracking_number: "1234567890",
-          label_download: { pdf: "https://example.com/label.pdf" },
-        },
+      const event: ShippingWebhookEvent = {
+        eventType: "transaction_created",
+        resourceId: "transaction_123",
+        carrier: "USPS",
+        trackingNumber: "1234567890",
+        data: { label_download: { pdf: "https://example.com/label.pdf" } },
+        timestamp: new Date(),
       };
 
       await expect(client.handleWebhook(event)).resolves.not.toThrow();

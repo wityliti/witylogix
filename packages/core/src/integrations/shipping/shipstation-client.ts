@@ -99,7 +99,6 @@ interface ShipStationShipment {
   warehouseId: number;
   labelId: number;
   outboundSort: string;
-  internationalOptions: unknown;
   advancedOptions: unknown;
   weight: {
     value: number;
