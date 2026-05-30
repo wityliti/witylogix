@@ -161,7 +161,8 @@ class OAuth2TokenManager {
   }
 
   async getAccessToken(): Promise<string> {
-    const { credentials, expiresAt } = this.connection;
+    const { credentials } = this.connection;
+    const expiresAt = credentials.expiresAt;
 
     if (!credentials.accessToken) {
       throw this.createError('No access token available', 'MISSING_ACCESS_TOKEN');
@@ -190,7 +191,7 @@ class OAuth2TokenManager {
   }
 
   updateExpiry(expiresInSeconds: number): void {
-    this.connection.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+    this.connection.credentials.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
   }
 
   private createError(message: string, code: string): Error {
@@ -400,7 +401,13 @@ export abstract class AbstractERPAdapter {
     entityType: SyncEntityType,
   ): Promise<ERPBatchResult<T>> {
     const startTime = Date.now();
-    const results = [];
+    const results: Array<{
+      recordId: string;
+      externalId?: string;
+      status: 'success' | 'failed' | 'skipped';
+      data?: T;
+      error?: string;
+    }> = [];
     let successful = 0;
     let failed = 0;
 
@@ -408,18 +415,18 @@ export abstract class AbstractERPAdapter {
       try {
         const result = await this.createEntity(entity, entityType);
         results.push({
-          recordId: entity.id || '',
-          externalId: (result as any).id,
+          recordId: (entity.id as string) || '',
+          externalId: (result as { id?: string }).id,
           status: 'success',
           data: result,
         });
         successful += 1;
-      } catch (error: any) {
+      } catch (error: unknown) {
         failed += 1;
         results.push({
-          recordId: entity.id || '',
+          recordId: (entity.id as string) || '',
           status: 'failed',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -521,7 +528,7 @@ export abstract class AbstractERPAdapter {
   /**
    * Check connection health
    */
-  abstract async checkHealth(): Promise<boolean>;
+  abstract checkHealth(): Promise<boolean>;
 
   /**
    * Get connection details

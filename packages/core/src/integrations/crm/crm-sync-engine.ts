@@ -307,7 +307,7 @@ ${delivery.signature ? `Signature: Captured` : ''}
         });
         crmRecords = contactsResult.data.map((contact: CRMContact) => ({
           id: contact.id,
-          data: contact,
+          data: contact as unknown as Record<string, unknown>,
         }));
       } else if (crmRecordType === 'account') {
         const accountsResult = await this.adapter.getAccounts({
@@ -315,7 +315,7 @@ ${delivery.signature ? `Signature: Captured` : ''}
         });
         crmRecords = accountsResult.data.map((account) => ({
           id: account.id,
-          data: account,
+          data: account as unknown as Record<string, unknown>,
         }));
       }
     } catch (error: unknown) {
@@ -352,7 +352,7 @@ ${delivery.signature ? `Signature: Captured` : ''}
       } catch (error: unknown) {
         results.push({
           id: record.id,
-          recordType: record.type,
+          recordType: (record.type === 'delivery' || record.type === 'customer' ? 'contact' : record.type) as import('./types.js').CRMRecordType,
           recordId: record.id,
           provider: this.connection.provider,
           status: 'failed',

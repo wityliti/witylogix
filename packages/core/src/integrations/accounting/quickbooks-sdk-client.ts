@@ -684,7 +684,7 @@ export class QuickBooksSDKClient {
       customer
     );
 
-    return response.Customer || response;
+    return (response.Customer ?? response) as QBCustomer;
   }
 
   /**
@@ -701,7 +701,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.Customer || response;
+    return (response.Customer ?? response) as QBCustomer;
   }
 
   /**
@@ -728,7 +728,7 @@ export class QuickBooksSDKClient {
       customer
     );
 
-    return response.Customer || response;
+    return (response.Customer ?? response) as QBCustomer;
   }
 
   /**
@@ -745,7 +745,8 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return (response.QueryResponse?.Customer || []) as QBCustomer[];
+    const qr = response.QueryResponse as { Customer?: QBCustomer[] } | undefined;
+    return (qr?.Customer ?? []) as QBCustomer[];
   }
 
   // ─── ITEM OPERATIONS ────────────────────────────────────────────
@@ -765,7 +766,7 @@ export class QuickBooksSDKClient {
       item
     );
 
-    return response.Item || response;
+    return (response.Item ?? response) as QBItem;
   }
 
   /**
@@ -782,7 +783,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.Item || response;
+    return (response.Item ?? response) as QBItem;
   }
 
   /**
@@ -809,7 +810,7 @@ export class QuickBooksSDKClient {
       item
     );
 
-    return response.Item || response;
+    return (response.Item ?? response) as QBItem;
   }
 
   // ─── ACCOUNT OPERATIONS ─────────────────────────────────────────
@@ -828,7 +829,8 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return (response.QueryResponse?.Account || []) as QBAccount[];
+    const qr = response.QueryResponse as { Account?: QBAccount[] } | undefined;
+    return (qr?.Account ?? []) as QBAccount[];
   }
 
   /**
@@ -845,7 +847,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.Account || response;
+    return (response.Account ?? response) as QBAccount;
   }
 
   // ─── BILL OPERATIONS ────────────────────────────────────────────
@@ -865,7 +867,7 @@ export class QuickBooksSDKClient {
       bill
     );
 
-    return response.Bill || response;
+    return (response.Bill ?? response) as QBBill;
   }
 
   /**
@@ -882,7 +884,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.Bill || response;
+    return (response.Bill ?? response) as QBBill;
   }
 
   /**
@@ -909,7 +911,7 @@ export class QuickBooksSDKClient {
       bill
     );
 
-    return response.Bill || response;
+    return (response.Bill ?? response) as QBBill;
   }
 
   /**
@@ -956,7 +958,7 @@ export class QuickBooksSDKClient {
       estimate
     );
 
-    return response.Estimate || response;
+    return (response.Estimate ?? response) as QBEstimate;
   }
 
   /**
@@ -1009,7 +1011,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.CompanyInfo || response;
+    return (response.CompanyInfo ?? response) as QBCompanyInfo;
   }
 
   /**
@@ -1025,7 +1027,7 @@ export class QuickBooksSDKClient {
       accessToken
     );
 
-    return response.Preferences || response;
+    return (response.Preferences ?? response) as Record<string, unknown>;
   }
 
   // ─── REPORTS ────────────────────────────────────────────────────
@@ -1117,13 +1119,17 @@ export class QuickBooksSDKClient {
   ): Promise<Record<string, unknown>> {
     const url = `${this.apiBaseUrl}${endpoint}${endpoint.includes('?') ? '&' : '?'}minorversion=${this.minorVersion}`;
 
+    const requestHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Accept': 'application/json',
+    };
+    if (body !== undefined) {
+      requestHeaders['Content-Type'] = 'application/json';
+    }
+
     const response = await this.request(method, url, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Accept': 'application/json',
-        ...(body && { 'Content-Type': 'application/json' }),
-      },
-      ...(body && { body: JSON.stringify(body) }),
+      headers: requestHeaders,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
 
     // Update rate limit info from response headers (if available)

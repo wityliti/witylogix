@@ -751,11 +751,13 @@ export class SquarePOSV2SDKClient extends POSAdapter {
   /**
    * Get kitchen display status (placeholder)
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<string> {
+  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const order = await this.getOrder(locationId, orderId);
-        return order.status;
+        const s = order.status;
+        const mapped: import('./types').KitchenOrderStatus = s === 'completed' ? 'completed' : s === 'in_progress' ? 'in_progress' : s === 'open' ? 'new' : 'received';
+        return mapped;
       });
     });
   }
@@ -886,7 +888,7 @@ export class SquarePOSV2SDKClient extends POSAdapter {
       }
 
       const response = await fetch(`${this.baseUrl}${path}`, options);
-      const data = await response.json();
+      const data = await response.json() as Record<string, unknown>;
 
       // Handle Retry-After header
       if (response.headers.has('Retry-After')) {
@@ -900,9 +902,10 @@ export class SquarePOSV2SDKClient extends POSAdapter {
       }
 
       if (!response.ok && response.status >= 400) {
+        const errors = data.errors as Array<{ code?: string; detail?: string }> | undefined;
         throw this.createError(
-          data.errors?.[0]?.code || 'API_ERROR',
-          data.errors?.[0]?.detail || response.statusText,
+          errors?.[0]?.code ?? 'API_ERROR',
+          errors?.[0]?.detail ?? response.statusText,
           { statusCode: response.status }
         );
       }
