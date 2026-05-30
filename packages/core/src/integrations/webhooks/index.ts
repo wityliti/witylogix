@@ -17,7 +17,7 @@ export type {
   WebhookConfig,
   RetryPolicy,
   FanOutConfig,
-  DeliveryAnalytics,
+  DeliveryAnalytics as DeliveryAnalyticsShape,
   EndpointHealth,
   DeliveryAttempt,
 } from './webhook-types.js';

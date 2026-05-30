@@ -5,14 +5,14 @@
  * validation, and progress tracking throughout the migration lifecycle.
  */
 
-import {
+import type {
   DataMapper,
   FieldMapping,
   MigrationEvent,
   MigrationMetrics,
   MigrationReport,
   MigrationStatus,
-  MigrationTracker,
+  MigrationTracker as MigrationTrackerShape,
   PostMigrationValidation,
   PreMigrationValidation,
   ProviderMapping,
@@ -986,7 +986,7 @@ export class MigrationValidator {
  * Tracks migration state machine, progress metrics, events, and duration.
  */
 export class MigrationTracker {
-  private tracker: MigrationTracker | null = null;
+  private tracker: MigrationTrackerShape | null = null;
 
   /**
    * Initialize migration tracker.
@@ -997,8 +997,8 @@ export class MigrationTracker {
   initializeTracker(
     migrationId: string,
     providerMapping: ProviderMapping
-  ): MigrationTracker {
-    const tracker: MigrationTracker = {
+  ): MigrationTrackerShape {
+    const tracker: MigrationTrackerShape = {
       migrationId,
       status: "PLANNED",
       providerMapping,
@@ -1090,7 +1090,7 @@ export class MigrationTracker {
    * Get current migration tracker state.
    * @returns Tracker state
    */
-  getTracker(): MigrationTracker | null {
+  getTracker(): MigrationTrackerShape | null {
     if (!this.tracker) return null;
 
     const now = new Date();
@@ -1161,7 +1161,7 @@ export class MigrationTracker {
     return Array.from(issues);
   }
 
-  private generateRecommendations(tracker: MigrationTracker): string[] {
+  private generateRecommendations(tracker: MigrationTrackerShape): string[] {
     const recommendations: string[] = [];
 
     if (tracker.metrics.errorRate > 5) {

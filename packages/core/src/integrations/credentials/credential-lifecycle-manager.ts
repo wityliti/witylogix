@@ -29,7 +29,7 @@ import type { IVaultAdapter } from './vault-adapters.js';
 
 export class RotationScheduler extends EventEmitter {
   private rotationPolicies: Map<string, RotationPolicy> = new Map();
-  private rotationJobs: Map<string, NodeJS.Timer> = new Map();
+  private rotationJobs: Map<string, ReturnType<typeof setTimeout>> = new Map();
   private activeRotations: Map<string, RotationResult> = new Map();
 
   constructor(private vault: IVaultAdapter) {
@@ -124,7 +124,7 @@ export class RotationScheduler extends EventEmitter {
       this.scheduleRotation(policy);
     }, msUntilRotation);
 
-    this.rotationJobs.set(policy.credentialId, timeoutId as unknown as NodeJS.Timer);
+    this.rotationJobs.set(policy.credentialId, timeoutId);
 
     if (policy.rotationSchedule) {
       policy.rotationSchedule.nextRotationAt = nextRotation;
@@ -250,7 +250,7 @@ export class RotationScheduler extends EventEmitter {
 
 export class SecretScanner extends EventEmitter {
   private patterns: Map<string, ScanPattern> = new Map();
-  private scanJobs: Map<string, NodeJS.Timer> = new Map();
+  private scanJobs: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   constructor() {
     super();
@@ -333,7 +333,7 @@ export class SecretScanner extends EventEmitter {
       this.emit('periodic_scan_executed', { jobId });
     }, intervalMs);
 
-    this.scanJobs.set(jobId, job as unknown as NodeJS.Timer);
+    this.scanJobs.set(jobId, job);
     return jobId;
   }
 
