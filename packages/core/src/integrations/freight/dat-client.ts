@@ -409,7 +409,7 @@ export class DATClient extends FreightAdapter {
     destination: string,
     days: number = 30
   ): Promise<Record<string, unknown>> {
-    const trends = await this.apiRequest(
+    const trends = await this.apiRequest<Record<string, unknown>>(
       `/rates/trends?origin=${origin}&destination=${destination}&days=${days}`
     );
 
@@ -424,7 +424,7 @@ export class DATClient extends FreightAdapter {
    * @returns Volume data
    */
   async getLaneVolume(origin: string, destination: string): Promise<Record<string, unknown>> {
-    const volume = await this.apiRequest(
+    const volume = await this.apiRequest<Record<string, unknown>>(
       `/rates/volume?origin=${origin}&destination=${destination}`
     );
 
@@ -484,7 +484,7 @@ export class DATClient extends FreightAdapter {
     carrierId: string,
     tmsData: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
-    const result = await this.apiRequest(
+    const result = await this.apiRequest<Record<string, unknown>>(
       `/carriers/${carrierId}/tms-integration`,
       "POST",
       tmsData

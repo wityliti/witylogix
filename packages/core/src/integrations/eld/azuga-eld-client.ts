@@ -567,7 +567,7 @@ export class AzugaELDClient extends ELDAdapter {
       );
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**

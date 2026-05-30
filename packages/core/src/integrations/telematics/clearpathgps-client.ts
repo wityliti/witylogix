@@ -4,7 +4,7 @@
  * API key authentication
  */
 
-import type { NormalizedVehicle, NormalizedPosition, NormalizedDiagnostic, TelematicsConnection } from './types.js';
+import type { NormalizedVehicle, NormalizedPosition, NormalizedDiagnostic } from './types.js';
 
 interface ClearPathGPSVehicleData {
   id: string;

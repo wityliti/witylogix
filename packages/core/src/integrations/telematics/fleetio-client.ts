@@ -833,7 +833,7 @@ export class FleetioClient extends TelematicsAdapter {
   /**
    * Build request headers
    */
-  protected buildHeaders(): HeadersInit {
+  protected buildHeaders(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.accessToken}`,
       "Account-Token": this.accountToken,

@@ -553,7 +553,7 @@ export class OmnitrocsELDClient extends ELDAdapter {
       );
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**

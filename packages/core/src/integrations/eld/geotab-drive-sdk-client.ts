@@ -191,7 +191,7 @@ export class GeotabDriveClient extends ELDAdapter {
     this.baseUrl = config.baseUrl || "https://mygeotab.geotab.com/apiv1";
     this.userName = config.apiKey || "";
     this.password = config.apiSecret || "";
-    this.database = config.database;
+    this.database = config.providerConfig?.database as string | undefined;
   }
 
   /**
@@ -530,12 +530,17 @@ export class GeotabDriveClient extends ELDAdapter {
   async getFeed(
     feedToken?: string
   ): Promise<{ feed: Array<unknown>; token: string; version: string }> {
-    return this.executeWithRetry(() =>
+    const result = await this.executeWithRetry(() =>
       this.jsonRpcCall<GeotabFeedToken>("GetFeed", {
         feedToken: feedToken || "0",
         typeName: "DutyStatusLog",
       })
     );
+    return {
+      feed: result.feed ?? [],
+      token: result.token ?? "",
+      version: result.version ?? "",
+    };
   }
 
   /**
@@ -762,13 +767,13 @@ export class GeotabDriveClient extends ELDAdapter {
   /**
    * Map severity to Geotab format.
    */
-  private mapSeverityToGeotab(severity: string): string {
-    const map: Record<string, string> = {
+  private mapSeverityToGeotab(severity: string): "1" | "2" | "3" {
+    const map: Record<string, "1" | "2" | "3"> = {
       minor: "1",
       major: "2",
       critical: "3",
     };
-    return map[severity] || "1";
+    return map[severity] ?? "1";
   }
 
   /**

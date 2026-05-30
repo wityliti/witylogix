@@ -707,7 +707,7 @@ export class VerizonConnectClient extends TelematicsAdapter {
   /**
    * Build request headers with Bearer token
    */
-  protected buildHeaders(): HeadersInit {
+  protected buildHeaders(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.accessToken}`,
       "Content-Type": "application/json",

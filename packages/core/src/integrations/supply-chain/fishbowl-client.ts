@@ -48,7 +48,7 @@ export class FishbowlClient extends SupplyChainAdapter {
         const result = await fetch(`${this.config.baseUrl}/api/v1/account`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         return result.ok;
       });
@@ -73,7 +73,7 @@ export class FishbowlClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/locations/${warehouseId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to get warehouse: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -110,7 +110,7 @@ export class FishbowlClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/locations`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list warehouses: ${response.statusText}`);
         const data = (await response.json()) as { locations?: any[] };
@@ -158,7 +158,7 @@ export class FishbowlClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to update warehouse: ${response.statusText}`);
       });
@@ -185,7 +185,7 @@ export class FishbowlClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const response = await fetch(
           `${this.config.baseUrl}/api/v1/parts/${sku}/inventory?locationId=${warehouseId}`,
-          { method: 'GET', headers, timeout: this.config.timeout }
+          { method: 'GET', headers, signal: AbortSignal.timeout(this.config.timeout ?? 30000) }
         );
         if (!response.ok) throw new Error(`Failed to get inventory: ${response.statusText}`);
         return response.json() as Promise<any>;
@@ -229,7 +229,7 @@ export class FishbowlClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v1/inventory?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to list inventory: ${response.statusText}`);
         const data = (await response.json()) as { inventory?: any[] };
@@ -298,7 +298,7 @@ export class FishbowlClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to adjust inventory: ${response.statusText}`);
       });
@@ -337,7 +337,7 @@ export class FishbowlClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         if (!response.ok) throw new Error(`Failed to move inventory: ${response.statusText}`);
       });
@@ -495,7 +495,7 @@ export class FishbowlClient extends SupplyChainAdapter {
           username: this.config.apiKey,
           password: this.config.clientSecret,
         }),
-        timeout: this.config.timeout,
+        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
       });
 
       if (!response.ok) throw new Error('Token authentication failed');

@@ -680,7 +680,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
       );
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**
