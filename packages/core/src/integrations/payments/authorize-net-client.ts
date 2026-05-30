@@ -18,6 +18,22 @@ interface AuthorizeNetConfig {
 }
 
 /**
+ * Authorize.Net customer profile (returned by getCustomerProfileRequest)
+ */
+interface AuthorizeNetCustomerProfile {
+  paymentProfiles?: Array<{
+    customerPaymentProfileId: string;
+    defaultPaymentProfile?: boolean;
+    payment?: {
+      creditCard?: {
+        cardNumber?: string;
+        expirationDate?: string;
+      };
+    };
+  }>;
+}
+
+/**
  * Authorize.Net response
  */
 interface AuthorizeNetResponse {
@@ -28,6 +44,10 @@ interface AuthorizeNetResponse {
   customerPaymentProfileId?: string;
   customerShippingAddressId?: string;
   validationDirectResponse?: string;
+  /** Returned by getCustomerProfileRequest */
+  profile?: AuthorizeNetCustomerProfile;
+  /** Returned by ARBCreateSubscriptionRequest */
+  subscriptionId?: string;
   errors?: Array<{ code: string; text: string }>;
 }
 
@@ -341,9 +361,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
         throw new Error(`Authorize.Net customer creation failed: ${errorMsg}`);
       }
 
+      const profileId = response.customerProfileId ?? '';
       return {
-        id: response.customerProfileId,
-        externalId: response.customerProfileId,
+        id: profileId,
+        externalId: profileId,
       };
     });
   }
@@ -421,9 +442,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
         throw new Error(`Authorize.Net payment method creation failed: ${errorMsg}`);
       }
 
+      const paymentProfileId = response.customerPaymentProfileId ?? '';
       return {
-        id: response.customerPaymentProfileId,
-        externalId: response.customerPaymentProfileId,
+        id: paymentProfileId,
+        externalId: paymentProfileId,
         providerId: 'authorize-net',
         type: 'card',
         customerId,
@@ -598,9 +620,10 @@ export class AuthorizeNetClient extends PaymentAdapter {
         throw new Error(`Authorize.Net recurring billing creation failed: ${errorMsg}`);
       }
 
+      const subscriptionId = response.subscriptionId ?? '';
       return {
-        id: response.subscriptionId,
-        externalId: response.subscriptionId,
+        id: subscriptionId,
+        externalId: subscriptionId,
       };
     });
   }
@@ -685,16 +708,27 @@ export class AuthorizeNetClient extends PaymentAdapter {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const raw = (await response.json()) as {
+        messages?: { resultCode?: string; message?: Array<{ code: string; text: string }> };
+        transactionResponse?: unknown;
+        customerProfileId?: string;
+        customerPaymentProfileId?: string;
+        customerShippingAddressId?: string;
+        validationDirectResponse?: string;
+        subscriptionId?: string;
+        profile?: AuthorizeNetCustomerProfile;
+      };
 
       return {
-        resultCode: data.messages?.resultCode || (response.ok ? 'Ok' : 'Error'),
-        messages: data.messages?.message || [],
-        transactionResponse: data.transactionResponse,
-        customerProfileId: data.customerProfileId,
-        customerPaymentProfileId: data.customerPaymentProfileId,
-        validationDirectResponse: data.validationDirectResponse,
-        subscriptionId: data.subscriptionId,
+        resultCode: (raw.messages?.resultCode as 'Ok' | 'Error') ?? (response.ok ? 'Ok' : 'Error'),
+        messages: raw.messages?.message ?? [],
+        transactionResponse: raw.transactionResponse,
+        customerProfileId: raw.customerProfileId,
+        customerPaymentProfileId: raw.customerPaymentProfileId,
+        customerShippingAddressId: raw.customerShippingAddressId,
+        validationDirectResponse: raw.validationDirectResponse,
+        subscriptionId: raw.subscriptionId,
+        profile: raw.profile,
       };
     } catch (error) {
       throw new Error(`Authorize.Net API error: ${(error as Error).message}`);
@@ -705,12 +739,13 @@ export class AuthorizeNetClient extends PaymentAdapter {
    * Map Authorize.Net transaction to standardized format
    */
   private mapAuthorizeNetTransaction(tr: any): PaymentTransaction {
+    // Authorize.Net response codes: 1=approved, 2=declined, 3=error, 4=held for review
+    // TransactionStatus does not include 'declined' or 'held'; map to nearest equivalents.
     const statusMap: Record<string, TransactionStatus> = {
       1: 'authorized',
-      2: 'declined',
+      2: 'failed',    // declined → failed (nearest equivalent)
       3: 'failed',
-      4: 'held',
-      '4': 'held',
+      4: 'authorized', // held for review → authorized (funds reserved, not yet captured)
       captureOnlyTransaction: 'captured',
       authOnlyTransaction: 'authorized',
       authCaptureTransaction: 'captured',

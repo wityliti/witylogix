@@ -123,9 +123,10 @@ export class AdyenClient extends PaymentAdapter {
 
       // Handle 3DS challenge if needed
       if (response.action) {
+        const pspRef = response.pspReference ?? '';
         return {
-          id: response.pspReference,
-          externalId: response.pspReference,
+          id: pspRef,
+          externalId: pspRef,
           providerId: 'adyen',
           amount,
           currency,
@@ -271,9 +272,10 @@ export class AdyenClient extends PaymentAdapter {
         throw new Error(`Adyen refund failed: ${response.refusalReason || response.message}`);
       }
 
+      const refundRef = response.pspReference ?? '';
       return {
-        id: response.pspReference,
-        externalId: response.pspReference,
+        id: refundRef,
+        externalId: refundRef,
         providerId: 'adyen',
         transactionId,
         amount: amount || 0,
@@ -322,9 +324,10 @@ export class AdyenClient extends PaymentAdapter {
         throw new Error(`Adyen payment method creation failed: ${response.refusalReason}`);
       }
 
+      const pmRef = response.pspReference ?? '';
       return {
-        id: response.pspReference,
-        externalId: response.pspReference,
+        id: pmRef,
+        externalId: pmRef,
         providerId: 'adyen',
         type: 'card',
         customerId,
@@ -573,7 +576,12 @@ export class AdyenClient extends PaymentAdapter {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as AdyenResponse & {
+        transactionId?: string;
+        authentication?: unknown;
+        action?: unknown;
+        paymentMethods?: unknown[];
+      };
 
       return {
         resultCode: data.resultCode,

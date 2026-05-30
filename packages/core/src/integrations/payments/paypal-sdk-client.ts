@@ -114,21 +114,28 @@ export class PayPalClient {
     const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
 
     try {
-      const response = await fetch(`${this.apiBaseUrl}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-        timeout: this.timeout,
-      });
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), this.timeout);
+      let response: Response;
+      try {
+        response = await fetch(`${this.apiBaseUrl}/v1/oauth2/token`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'grant_type=client_credentials',
+          signal: abortController.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
-        const error = await response.json();
+        const errorBody = (await response.json()) as PayPalErrorResponse;
         throw new PayPalPaymentError(
-          error.message || 'Failed to obtain access token',
+          errorBody.message || 'Failed to obtain access token',
           'oauth_error',
           response.status,
           response.status >= 500
@@ -599,17 +606,25 @@ export class PayPalClient {
 
     while (attempt < this.maxRetries) {
       try {
+        const abortCtrl = new AbortController();
+        const timeoutId = setTimeout(() => abortCtrl.abort(), this.timeout);
+
         const fetchOptions: RequestInit = {
           method,
           headers,
-          timeout: this.timeout,
+          signal: abortCtrl.signal,
         };
 
         if (method !== 'GET' && method !== 'DELETE' && payload) {
           fetchOptions.body = JSON.stringify(payload);
         }
 
-        const response = await fetch(url, fetchOptions);
+        let response: Response;
+        try {
+          response = await fetch(url, fetchOptions);
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -737,8 +752,9 @@ export class PayPalClient {
    * Map PayPal subscription to unified format
    */
   private mapPayPalSubscription(paypalSub: any): Subscription {
+    // PayPal 'SETUP' = subscription created but not yet active (nearest: 'suspended')
     const statusMap: Record<string, SubscriptionStatus> = {
-      SETUP: 'pending',
+      SETUP: 'suspended',
       ACTIVE: 'active',
       SUSPENDED: 'suspended',
       CANCELLED: 'canceled',
