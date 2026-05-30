@@ -129,7 +129,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const result = await fetch(`${this.config.baseUrl}/api/v2/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
         return result.ok;
       });
@@ -159,7 +159,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses/${warehouseId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -204,7 +204,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -263,7 +263,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -316,7 +316,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -355,7 +355,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -421,7 +421,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/inventory?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -516,7 +516,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -568,7 +568,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -604,7 +604,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/inbound/${shipmentId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -651,7 +651,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/inbound?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -701,7 +701,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -757,7 +757,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -803,7 +803,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -851,7 +851,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/orders/${orderId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -900,7 +900,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/orders?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -952,7 +952,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1005,7 +1005,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1041,7 +1041,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1079,7 +1079,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1134,7 +1134,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1193,7 +1193,7 @@ export class ManhattanClient extends SupplyChainAdapter {
             method: 'PUT',
             headers,
             body: JSON.stringify(payload),
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1230,7 +1230,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/waves/${waveId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1276,7 +1276,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/waves?${params}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1333,7 +1333,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1379,7 +1379,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1414,7 +1414,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1450,7 +1450,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/pick-tasks/${taskId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1495,7 +1495,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1553,7 +1553,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1589,7 +1589,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/pack-stations/${stationId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1632,7 +1632,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1692,7 +1692,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1751,7 +1751,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1792,7 +1792,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1845,7 +1845,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'PUT',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1883,7 +1883,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/purchase-orders/${poId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -1931,7 +1931,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -1987,7 +1987,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -2034,7 +2034,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(`${this.config.baseUrl}/api/v2/transfer-orders/${toId}`, {
           method: 'GET',
           headers,
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -2081,7 +2081,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           {
             method: 'GET',
             headers,
-            timeout: this.config.timeout,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
           }
         );
 
@@ -2136,7 +2136,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          timeout: this.config.timeout,
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
@@ -2185,7 +2185,7 @@ export class ManhattanClient extends SupplyChainAdapter {
           client_id: this.config.apiKey || '',
           client_secret: this.config.clientSecret || '',
         }).toString(),
-        timeout: this.config.timeout,
+        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
       });
 
       if (!response.ok) {

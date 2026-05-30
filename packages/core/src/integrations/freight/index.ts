@@ -21,10 +21,6 @@ export type {
   ComplianceDocument,
   Location,
   Contact,
-  EquipmentType,
-  ShipmentStatus,
-  CarrierRatingFactor,
-  ComplianceDocumentType,
 } from "./types";
 
 export {

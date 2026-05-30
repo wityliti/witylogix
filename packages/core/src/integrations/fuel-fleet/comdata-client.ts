@@ -9,6 +9,7 @@
 const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
+import { FuelCardProduct } from "./types";
 import type {
   FuelFleetConfig,
   FuelCard,
@@ -429,7 +430,7 @@ export class ComdataClient extends FuelFleetAdapter {
    * @returns Check code details
    */
   async getCheckCode(checkCode: string): Promise<Record<string, unknown>> {
-    const details = await this.apiRequest(
+    const details = await this.apiRequest<Record<string, unknown>>(
       `/api/check-codes/${checkCode}`
     );
 
@@ -447,7 +448,7 @@ export class ComdataClient extends FuelFleetAdapter {
     cardId: string,
     advanceData: Record<string, unknown>
   ): Promise<Record<string, unknown>> {
-    const result = await this.apiRequest(
+    const result = await this.apiRequest<Record<string, unknown>>(
       `/api/cards/${cardId}/advance`,
       "POST",
       advanceData
@@ -472,7 +473,7 @@ export class ComdataClient extends FuelFleetAdapter {
     });
 
     const endpoint = `/api/analytics?${params.toString()}`;
-    const analytics = await this.apiRequest(endpoint);
+    const analytics = await this.apiRequest<Record<string, unknown>>(endpoint);
 
     return analytics;
   }
@@ -486,7 +487,7 @@ export class ComdataClient extends FuelFleetAdapter {
   private mapComdataCardToFuelCard(response: ComdataCardResponse): FuelCard {
     return {
       cardId: response.cardId,
-      product: "comdata" as const,
+      product: FuelCardProduct.COMDATA,
       cardNumber: response.cardNumber,
       last4: response.last4,
       cardholderName: response.holderName,

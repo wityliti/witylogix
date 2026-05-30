@@ -429,6 +429,6 @@ export class TelematicsNormalizerV2 {
    * Update tenant rules
    */
   updateTenantRules(rules: Partial<TenantNormalizationRules>): void {
-    this.tenantRules = { ...this.tenantRules, ...rules };
+    this.tenantRules = { ...this.defaultRules, ...this.tenantRules, ...rules };
   }
 }

@@ -162,7 +162,7 @@ export class Fleetcorv2SDKClient {
             ...this.config.customHeaders,
           },
           body: body ? JSON.stringify(body) : undefined,
-          timeout: this.config.timeout || 30000,
+          signal: AbortSignal.timeout(this.config.timeout || 30000),
         })) as Response;
 
         this.updateRateLimitInfo(response);

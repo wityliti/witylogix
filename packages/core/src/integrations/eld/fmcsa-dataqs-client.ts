@@ -422,7 +422,7 @@ export class FMCSADataQsClient {
 
     this.trackRateLimit();
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   private trackRateLimit(): void {

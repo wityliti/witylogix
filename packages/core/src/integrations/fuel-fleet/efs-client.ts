@@ -9,6 +9,7 @@
 const nodeFetch = globalThis.fetch;
 
 import { FuelFleetAdapter } from "./fuel-fleet-adapter";
+import { FuelCardProduct } from "./types";
 import type {
   FuelFleetConfig,
   FuelCard,
@@ -574,7 +575,7 @@ export class EFSClient extends FuelFleetAdapter {
   private mapEFSCardToFuelCard(response: EFSCardResponse): FuelCard {
     return {
       cardId: response.cardId,
-      product: "efs" as const,
+      product: FuelCardProduct.EFS,
       cardNumber: response.panMasked,
       last4: response.last4,
       cardholderName: response.cardholderName,
