@@ -410,6 +410,7 @@ export class SAPClient extends AbstractERPAdapter {
       );
 
       return {
+        itemId: response.ItemCode,
         itemCode: response.ItemCode,
         quantity: response.QuantityOnStock || 0,
       };

@@ -59,8 +59,7 @@ interface ZohoBulkOperation {
 export class ZohoCRMAdapter extends CRMAdapterBase {
   private config: ZohoCRMConfig;
   private baseUrl: string;
-  private paginationHandler: PaginationHandler;
-  private fieldMappingEngine: FieldMappingEngine;
+  private zohoFieldMappingEngine: FieldMappingEngine;
 
   constructor(
     config: ZohoCRMConfig,
@@ -70,8 +69,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     super(connection, fieldMappings);
     this.config = config;
     this.baseUrl = this.getBaseUrl();
-    this.paginationHandler = new PaginationHandler('offset');
-    this.fieldMappingEngine = new FieldMappingEngine(fieldMappings);
+    this.zohoFieldMappingEngine = new FieldMappingEngine(fieldMappings);
   }
 
   private getBaseUrl(): string {
@@ -90,10 +88,19 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     return this.config.apiVersion || 'v6';
   }
 
-  private async ensureValidToken(): Promise<void> {
+  /**
+   * Implement abstract refreshToken from CRMAdapterBase
+   */
+  async refreshToken(): Promise<string> {
+    await this.refreshAccessToken();
+    return this.connection.accessToken;
+  }
+
+  protected override async ensureValidToken(): Promise<string> {
     if (this.connection.expiresAt && new Date() > this.connection.expiresAt) {
       await this.refreshAccessToken();
     }
+    return this.connection.accessToken;
   }
 
   private async refreshAccessToken(): Promise<void> {
@@ -121,7 +128,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     this.connection.expiresAt = data.expiresAt;
   }
 
-  private async makeRequest<T>(
+  private async zohoRequest<T>(
     method: string,
     endpoint: string,
     body?: Record<string, unknown> | null
@@ -129,7 +136,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     await this.ensureValidToken();
 
     const url = `${this.baseUrl}/crm/${this.getApiVersion()}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Authorization: `Bearer ${this.connection.accessToken}`,
       'Content-Type': 'application/json',
     };
@@ -170,7 +177,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
       coql += ` OFFSET ${pagination.offset}`;
     }
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/Contacts?fields=*&limit=${limit}&offset=${pagination?.offset || 0}`);
@@ -183,7 +190,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async getContact(id: string): Promise<CRMContact> {
-    const response = await this.makeRequest<{ data: ZohoCRMRecord[] }>(
+    const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
       'GET',
       `/Contacts/${id}`
     );
@@ -191,9 +198,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('contact', contact as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', contact as unknown as Record<string, unknown>);
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Contacts', { data: [zohoData] });
 
@@ -205,9 +212,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     id: string,
     updates: Partial<CRMContact>
   ): Promise<CRMContact> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('contact', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', updates as unknown as Record<string, unknown>);
 
-    await this.makeRequest('PUT', `/Contacts/${id}`, { data: [zohoData] });
+    await this.zohoRequest('PUT', `/Contacts/${id}`, { data: [zohoData] });
     return this.getContact(id);
   }
 
@@ -220,7 +227,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/Accounts?fields=*&limit=${limit}&offset=${offset}`);
@@ -233,7 +240,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async getAccount(id: string): Promise<CRMAccount> {
-    const response = await this.makeRequest<{ data: ZohoCRMRecord[] }>(
+    const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
       'GET',
       `/Accounts/${id}`
     );
@@ -241,9 +248,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('account', account as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('account', account as unknown as Record<string, unknown>);
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Accounts', { data: [zohoData] });
 
@@ -255,9 +262,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     id: string,
     updates: Partial<CRMAccount>
   ): Promise<CRMAccount> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('account', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('account', updates as unknown as Record<string, unknown>);
 
-    await this.makeRequest('PUT', `/Accounts/${id}`, { data: [zohoData] });
+    await this.zohoRequest('PUT', `/Accounts/${id}`, { data: [zohoData] });
     return this.getAccount(id);
   }
 
@@ -270,7 +277,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/Deals?fields=*&limit=${limit}&offset=${offset}`);
@@ -283,7 +290,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async getDeal(id: string): Promise<CRMDeal> {
-    const response = await this.makeRequest<{ data: ZohoCRMRecord[] }>(
+    const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
       'GET',
       `/Deals/${id}`
     );
@@ -291,9 +298,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createDeal(deal: Omit<CRMDeal, 'id' | 'lastModifiedAt'>): Promise<CRMDeal> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('deal', deal as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('deal', deal as unknown as Record<string, unknown>);
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Deals', { data: [zohoData] });
 
@@ -302,9 +309,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async updateDeal(id: string, updates: Partial<CRMDeal>): Promise<CRMDeal> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('deal', updates as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('deal', updates as unknown as Record<string, unknown>);
 
-    await this.makeRequest('PUT', `/Deals/${id}`, { data: [zohoData] });
+    await this.zohoRequest('PUT', `/Deals/${id}`, { data: [zohoData] });
     return this.getDeal(id);
   }
 
@@ -316,7 +323,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/Leads?fields=*&limit=${limit}&offset=${offset}`);
@@ -329,7 +336,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async getLead(id: string): Promise<CRMLead> {
-    const response = await this.makeRequest<{ data: ZohoCRMRecord[] }>(
+    const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
       'GET',
       `/Leads/${id}`
     );
@@ -337,9 +344,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createLead(lead: Omit<CRMLead, 'id' | 'lastModifiedAt'>): Promise<CRMLead> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('lead', lead as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('lead', lead as unknown as Record<string, unknown>);
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Leads', { data: [zohoData] });
 
@@ -356,7 +363,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     const limit = pagination?.limit || 200;
     const offset = pagination?.offset || 0;
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/Activities?fields=*&limit=${limit}&offset=${offset}`);
@@ -369,9 +376,9 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
-    const zohoData = this.fieldMappingEngine.mapWitylogixToCRM('activity', activity as unknown as Record<string, unknown>);
+    const zohoData = this.zohoFieldMappingEngine.mapWitylogixToCRM('activity', activity as unknown as Record<string, unknown>);
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Activities', { data: [zohoData] });
 
@@ -383,10 +390,10 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
 
   async bulkCreateContacts(contacts: Omit<CRMContact, 'id' | 'lastModifiedAt'>[]): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) =>
-      this.fieldMappingEngine.mapWitylogixToCRM('contact', c as unknown as Record<string, unknown>)
+      this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c as unknown as Record<string, unknown>)
     );
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Contacts', { data: zohoData });
 
@@ -404,10 +411,10 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   async bulkUpdateContacts(contacts: Array<{ id: string; data: Partial<CRMContact> }>): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       id: c.id,
-      ...this.fieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
+      ...this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
     }));
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('PUT', '/Contacts', { data: zohoData });
 
@@ -429,10 +436,10 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   ): Promise<CRMSyncResult[]> {
     const zohoData = contacts.map((c) => ({
       ...(c.externalId && { id: c.externalId }),
-      ...this.fieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
+      ...this.zohoFieldMappingEngine.mapWitylogixToCRM('contact', c.data as unknown as Record<string, unknown>),
     }));
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string; message: string }>;
     }>('POST', '/Contacts/upsert', { data: zohoData });
 
@@ -457,7 +464,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   ): Promise<CRMPagedResult<unknown>> {
     const limit = pagination?.limit || 200;
 
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
       info: { count: number; more_records: boolean };
     }>('GET', `/${recordType}?search_text=${encodeURIComponent(query)}&limit=${limit}`);
@@ -472,7 +479,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   // ─── NOTES OPERATIONS ───────────────────────────────────────────────
 
   async getNotes(recordId: string): Promise<Array<Record<string, unknown>>> {
-    const response = await this.makeRequest<{ data: ZohoCRMRecord[] }>(
+    const response = await this.zohoRequest<{ data: ZohoCRMRecord[] }>(
       'GET',
       `/Notes?record_id=${recordId}`
     );
@@ -484,7 +491,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
     title: string,
     content: string
   ): Promise<Record<string, unknown>> {
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: Array<{ id: string }>;
     }>('POST', '/Notes', {
       data: [
@@ -502,7 +509,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   // ─── COQL QUERY OPERATIONS ──────────────────────────────────────────
 
   async executeCOQL(coql: string): Promise<Array<Record<string, unknown>>> {
-    const response = await this.makeRequest<{
+    const response = await this.zohoRequest<{
       data: ZohoCRMRecord[];
     }>('POST', '/coql', { select_query: coql });
 
@@ -544,10 +551,11 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
   }
 
   private transformZohoToDeal(record: ZohoCRMRecord): CRMDeal {
+    const accountNameRef = record.Account_Name as { id?: string } | undefined;
     return {
       id: record.id as string,
       name: (record.Deal_Name || '') as string,
-      companyId: (record.Account_Name?.id || '') as string,
+      companyId: accountNameRef?.id ?? '',
       amount: (record.Amount || 0) as number,
       currency: (record.Currency || 'USD') as string,
       closeDate: record.Closing_Date ? new Date(record.Closing_Date as string) : undefined,
@@ -584,7 +592,7 @@ export class ZohoCRMAdapter extends CRMAdapterBase {
       description: (record.Description || '') as string,
       recordType: 'contact',
       recordId: (record.record_id || '') as string,
-      owner: (record.Owner?.name || '') as string,
+      owner: ((record.Owner as { name?: string } | undefined)?.name ?? '') as string,
       dueDate: record.Due_Date ? new Date(record.Due_Date as string) : undefined,
       completedAt: record.Completed_Time ? new Date(record.Completed_Time as string) : undefined,
       lastModifiedAt: new Date(record.Modified_Time as string),

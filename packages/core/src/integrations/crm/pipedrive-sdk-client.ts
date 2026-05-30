@@ -293,7 +293,7 @@ export class PipedriveCRMSDKClient {
       url.searchParams.set('api_token', this.apiToken);
     }
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 

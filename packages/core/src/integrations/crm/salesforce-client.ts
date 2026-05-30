@@ -9,6 +9,7 @@ import type {
   CRMAccount,
   CRMOpportunity,
   CRMActivity,
+  CRMSyncResult,
   CRMPagedResult,
   CRMContactFilter,
   CRMAccountFilter,
@@ -697,22 +698,31 @@ export class SalesforceAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Sync activities to Salesforce
    */
-  async syncActivities(activities: CRMActivity[]): Promise<Array<{ id: string; status: string; message: string }>> {
-    const results: Array<{ id: string; status: string; message: string }> = [];
+  async syncActivities(activities: CRMActivity[]): Promise<CRMSyncResult[]> {
+    const results: CRMSyncResult[] = [];
 
     for (const activity of activities) {
       try {
         const created: CRMActivity = await this.createActivity(activity);
         results.push({
           id: created.id,
+          recordType: 'activity',
+          recordId: activity.id,
+          externalId: created.id,
+          provider: this.connection.provider,
           status: 'synced',
           message: 'Activity created successfully',
+          timestamp: new Date(),
         });
       } catch (error: unknown) {
         results.push({
           id: activity.id,
+          recordType: 'activity',
+          recordId: activity.id,
+          provider: this.connection.provider,
           status: 'failed',
           message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date(),
         });
       }
     }

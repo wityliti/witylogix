@@ -3,7 +3,7 @@
  * Provides location/terminal awareness, rate limiting, and menu sync helpers
  */
 
-import { type POSAdapterInterface, type POSLocation, type POSMenuItem, type POSOrder, type POSPayment, type POSWebhookEvent, type MenuSyncOptions, type OrderFilters, type POSModifier } from './types';
+import { type POSAdapterInterface, type POSLocation, type POSMenuItem, type POSOrder, type POSPayment, type POSWebhookEvent, type MenuSyncOptions, type OrderFilters, type POSModifier, type KitchenOrderStatus } from './types';
 import { createHmac } from 'crypto';
 
 /**
@@ -297,7 +297,7 @@ export abstract class POSAdapter implements POSAdapterInterface {
 
   abstract sendToKitchen(locationId: string, orderId: string): Promise<void>;
 
-  abstract getKitchenDisplayStatus(locationId: string, orderId: string): Promise<string>;
+  abstract getKitchenDisplayStatus(locationId: string, orderId: string): Promise<KitchenOrderStatus>;
 
   abstract listEmployees(locationId: string): Promise<any[]>;
 

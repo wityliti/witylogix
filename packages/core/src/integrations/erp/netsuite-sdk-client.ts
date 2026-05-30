@@ -876,7 +876,7 @@ export class NetSuiteSdkClient {
         const authHeader = OAuth1SignatureBuilder.generateAuthHeader({
           ...oauthParams,
           oauth_signature: signature,
-        });
+        } as OAuth1Signature);
 
         const headers: Record<string, string> = {
           Authorization: authHeader,
@@ -957,7 +957,7 @@ export class NetSuiteSdkClient {
     const authHeader = OAuth1SignatureBuilder.generateAuthHeader({
       ...oauthParams,
       oauth_signature: signature,
-    });
+    } as OAuth1Signature);
 
     return fetch(url, {
       method,

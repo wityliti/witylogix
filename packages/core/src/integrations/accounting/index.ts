@@ -48,7 +48,7 @@ export type {
 export { XeroSDKClient, XeroError } from './xero-sdk-client.js';
 
 export type {
-  XeroInvoice,
+  XeroInvoice as XeroSDKInvoice,
   XeroContact,
   XeroPayment,
   XeroBankTransaction,
