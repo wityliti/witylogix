@@ -114,7 +114,7 @@ export class RoutingEngine {
     routific?: { apiKey: string };
     optimoroute?: { apiKey: string };
   }): void {
-    if (config.valhalla !== false) {
+    if (config.valhalla !== undefined) {
       this.registerProvider('valhalla', new ValhallaClient(config.valhalla), {
         type: 'open-source',
         capabilities: ['route', 'matrix', 'isochrone', 'map-match'],
@@ -122,7 +122,7 @@ export class RoutingEngine {
       });
     }
 
-    if (config.vroom !== false) {
+    if (config.vroom !== undefined) {
       this.registerProvider('vroom', new VroomClient(config.vroom), {
         type: 'open-source',
         capabilities: ['optimize', 'matrix'],

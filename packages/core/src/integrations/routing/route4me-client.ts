@@ -230,6 +230,19 @@ export class Route4MeClient {
   }
 
   /**
+   * Fetch with timeout using AbortController
+   */
+  private async fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), this.timeout);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
+  /**
    * Normalize coordinate to LatLng format
    */
   private normalizeCoordinate(coord: [number, number] | { lat: number; lng: number }): { lat: number; lng: number } {
@@ -291,9 +304,8 @@ export class Route4MeClient {
       };
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/api.v4/optimization_problem.php?${params.toString()}`, {
+        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/optimization_problem.php?${params.toString()}`, {
           method: 'POST',
-          timeout: this.timeout,
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -311,7 +323,7 @@ export class Route4MeClient {
       const routes = (data.routes || []).map((route) => ({
         vehicle: request.vehicles.findIndex((v) => v.id === route.vehicle_alias),
         steps: route.addresses.map((addr) => ({
-          type: addr.is_depot ? 'start' : 'job' as const,
+          type: (addr.is_depot ? 'start' : 'job') as 'start' | 'job' | 'end',
           location: { lat: addr.lat, lng: addr.lng },
           arrival_time: 0,
           departure_time: 0,
@@ -363,9 +375,8 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/api.v4/address.php?${params.toString()}`, {
+        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/address.php?${params.toString()}`, {
           method: 'POST',
-          timeout: this.timeout,
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -410,12 +421,9 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/api.v4/route.php?${params.toString()}`, {
+        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/route.php?${params.toString()}`, {
           method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
+          headers: { 'Accept': 'application/json' },
         });
       });
 
@@ -455,9 +463,8 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/api.v4/territory.php?${params.toString()}`, {
+        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/territory.php?${params.toString()}`, {
           method: 'POST',
-          timeout: this.timeout,
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -497,12 +504,9 @@ export class Route4MeClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/api.v4/activity_feed.php?${params.toString()}`, {
+        return this.fetchWithTimeout(`${this.baseUrl}/api.v4/activity_feed.php?${params.toString()}`, {
           method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
+          headers: { 'Accept': 'application/json' },
         });
       });
 

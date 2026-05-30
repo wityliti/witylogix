@@ -307,7 +307,9 @@ export class TomTomTrafficClient {
           current_speed_kmh: segment.currentFlow.speed,
           free_flow_speed_kmh: segment.currentFlow.freeFlowSpeed,
           confidence: segment.currentFlow.confidence || 0.8,
-          location: segment.coordinates[0] || { lat: 0, lng: 0 },
+          location: segment.coordinates[0]
+            ? { lat: segment.coordinates[0].latitude, lng: segment.coordinates[0].longitude }
+            : { lat: 0, lng: 0 },
         })),
         incidents: [],
       };

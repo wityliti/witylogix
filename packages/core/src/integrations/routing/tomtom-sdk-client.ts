@@ -151,13 +151,15 @@ interface TomTomMatrixResponse {
     totalRoutes: number;
   };
   matrix: Array<Array<{
-    response: {
-      routeSummary: {
-        lengthInMeters: number;
-        travelTimeInSeconds: number;
-        trafficDelayInSeconds?: number;
-      };
-    };
+    response:
+      | {
+          routeSummary: {
+            lengthInMeters: number;
+            travelTimeInSeconds: number;
+            trafficDelayInSeconds?: number;
+          };
+        }
+      | string; // API may return a string status like 'UNREACHABLE'
   } | string>>;
 }
 
@@ -193,6 +195,19 @@ export class TomTomSDKClient extends RoutingAdapter {
   }
 
   /**
+   * Fetch with timeout using AbortController
+   */
+  private async fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), this.config.timeout ?? 30000);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
+  /**
    * Fuzzy search: query → POI results
    */
   async fuzzySearch(query: string, options?: { limit?: number; position?: Coordinate }): Promise<
@@ -216,13 +231,12 @@ export class TomTomSDKClient extends RoutingAdapter {
         params.append('position', `${coord.lat},${coord.lng}`);
       }
 
-      const response = await fetch(
+      const response = await this.fetchWithTimeout(
         `${this.baseUrlSearch}/search/fuzzy.json?${params.toString()}`,
-        { timeout: this.config.timeout },
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { errorText?: string };
         throw new Error(
           `TomTom fuzzy search error: ${error.errorText || response.statusText}`,
         );
@@ -261,13 +275,12 @@ export class TomTomSDKClient extends RoutingAdapter {
         limit: '5',
       });
 
-      const response = await fetch(
+      const response = await this.fetchWithTimeout(
         `${this.baseUrlSearch}/geocode/${encodeURIComponent(address)}.json?${params.toString()}`,
-        { timeout: this.config.timeout },
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { errorText?: string };
         throw new Error(`TomTom geocode error: ${error.errorText || response.statusText}`);
       }
 
@@ -299,13 +312,12 @@ export class TomTomSDKClient extends RoutingAdapter {
         key: this.apiKey,
       });
 
-      const response = await fetch(
+      const response = await this.fetchWithTimeout(
         `${this.baseUrlSearch}/reverseGeocode/${lat},${lng}.json?${params.toString()}`,
-        { timeout: this.config.timeout },
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { errorText?: string };
         throw new Error(
           `TomTom reverse geocode error: ${error.errorText || response.statusText}`,
         );
@@ -354,9 +366,8 @@ export class TomTomSDKClient extends RoutingAdapter {
         params.append('position', `${coord.lat},${coord.lng}`);
       }
 
-      const response = await fetch(
+      const response = await this.fetchWithTimeout(
         `${this.baseUrlSearch}/search/autocomplete.json?${params.toString()}`,
-        { timeout: this.config.timeout },
       );
 
       if (!response.ok) {
@@ -408,12 +419,10 @@ export class TomTomSDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes/${waypoints}/json?${params.toString()}`;
-      const response = await fetch(url, {
-        timeout: this.config.timeout,
-      });
+      const response = await this.fetchWithTimeout(url);
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { errorText?: string };
         throw new Error(`TomTom routing error: ${error.errorText || response.statusText}`);
       }
 
@@ -497,9 +506,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes/${origin.lat},${origin.lng}:${destination.lat},${destination.lng}/json?${params.toString()}`;
-      const response = await fetch(url, {
-        timeout: this.config.timeout,
-      });
+      const response = await this.fetchWithTimeout(url);
 
       if (!response.ok) {
         throw new Error(`TomTom traffic-aware routing error: ${response.statusText}`);
@@ -563,9 +570,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       }
 
       const url = `${this.baseUrlRouting}/routes/${origin.lat},${origin.lng}:${destination.lat},${destination.lng}/json?${params.toString()}`;
-      const response = await fetch(url, {
-        timeout: this.config.timeout,
-      });
+      const response = await this.fetchWithTimeout(url);
 
       if (!response.ok) {
         throw new Error(`TomTom truck routing error: ${response.statusText}`);
@@ -635,13 +640,12 @@ export class TomTomSDKClient extends RoutingAdapter {
         },
       };
 
-      const response = await fetch(
+      const response = await this.fetchWithTimeout(
         `${this.baseUrlRouting}/matrix/json?${params.toString()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
-          timeout: this.config.timeout,
         },
       );
 
@@ -674,7 +678,8 @@ export class TomTomSDKClient extends RoutingAdapter {
               duration_s: 0,
               status: 'NO_ROUTE',
             };
-          } else if (cell.response === 'UNREACHABLE') {
+          } else if (typeof cell.response === 'string') {
+            // API returned a string status (e.g., 'UNREACHABLE') instead of a routeSummary object
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,

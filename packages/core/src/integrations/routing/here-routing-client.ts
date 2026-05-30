@@ -327,13 +327,17 @@ export class HERERoutingClient {
       if (options?.avoidFerries) params.append('avoid[ferries]', 'true');
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/routes?${routePoints}&${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/routes?${routePoints}&${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -413,15 +417,21 @@ export class HERERoutingClient {
       };
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/matrix?${params.toString()}`, {
-          method: 'POST',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/matrix?${params.toString()}`, {
+            method: 'POST',
+            signal: controller.signal,
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -477,13 +487,17 @@ export class HERERoutingClient {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/isoline?${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/isoline?${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
