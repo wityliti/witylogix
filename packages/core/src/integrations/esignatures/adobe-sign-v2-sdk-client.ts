@@ -15,12 +15,12 @@
  * - Full error handling and validation
  */
 
-import { fetch } from "undici";
 import { createHmac } from "crypto";
 import { v4 as uuid } from "uuid";
 
 import type {
   NormalizedEnvelope,
+  NormalizedEnvelopeStatus,
   NormalizedTemplate,
   NormalizedSigner,
   NormalizedField,
@@ -185,7 +185,7 @@ export class AdobeSignV2SDKClient {
           method,
           headers,
           body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
-          timeout: this.config.requestTimeout || 30000,
+          signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
@@ -363,7 +363,7 @@ export class AdobeSignV2SDKClient {
 
     return {
       items: agreements,
-      total: data.page?.totalResults as number,
+      total: ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
       offset: options?.offset || 0,
       limit: options?.limit || 25,
       hasMore: agreements.length === (options?.limit || 25),
@@ -485,7 +485,7 @@ export class AdobeSignV2SDKClient {
 
     return {
       items: templates,
-      total: data.page?.totalResults as number,
+      total: ((data.page as Record<string, unknown>)?.totalResults as number) ?? 0,
       offset: options?.offset || 0,
       limit: options?.limit || 25,
       hasMore: templates.length === (options?.limit || 25),
@@ -707,8 +707,8 @@ export class AdobeSignV2SDKClient {
     };
   }
 
-  private normalizeStatus(status: string): string {
-    const statusMap: Record<string, string> = {
+  private normalizeStatus(status: string): NormalizedEnvelopeStatus {
+    const statusMap: Record<string, NormalizedEnvelopeStatus> = {
       DRAFT: "created",
       OUT_FOR_SIGNATURE: "sent",
       OUT_FOR_APPROVAL: "sent",
@@ -721,11 +721,11 @@ export class AdobeSignV2SDKClient {
       WIDGET_PARTIAL: "sent",
       WIDGET_SIGNED: "signed",
     };
-    return statusMap[status.toUpperCase()] || status;
+    return statusMap[status.toUpperCase()] ?? "sent";
   }
 
-  private normalizeEventType(eventType: string): string {
-    const eventMap: Record<string, string> = {
+  private normalizeEventType(eventType: string): WebhookEvent["eventType"] {
+    const eventMap: Record<string, WebhookEvent["eventType"]> = {
       AGREEMENT_CREATED: "envelope_created",
       AGREEMENT_SENT: "envelope_sent",
       AGREEMENT_SIGNED: "envelope_signed",
@@ -736,6 +736,6 @@ export class AdobeSignV2SDKClient {
       RECIPIENT_SIGNED: "signer_signed",
       RECIPIENT_DECLINED: "signer_declined",
     };
-    return eventMap[eventType.toUpperCase()] || eventType;
+    return eventMap[eventType.toUpperCase()] ?? "envelope_sent";
   }
 }

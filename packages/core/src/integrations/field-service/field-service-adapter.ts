@@ -274,7 +274,7 @@ class OAuth2TokenManager {
    * Update token expiry time
    */
   updateExpiry(expiresInSeconds: number): void {
-    this.connection.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+    this.connection.credentials.expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
   }
 
   private createError(message: string, code: string): Error {

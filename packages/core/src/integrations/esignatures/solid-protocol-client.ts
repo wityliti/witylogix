@@ -69,6 +69,28 @@ interface SolidACL {
 }
 
 /**
+ * Internal storage shape for a Solid-backed envelope.
+ * Extends the normalized Envelope with Solid-specific fields.
+ */
+interface SolidEnvelope extends Envelope {
+  /** Solid document ID the envelope wraps */
+  documentId?: string;
+  /** Signing fields associated with this envelope */
+  signingFields?: SigningField[];
+  /** Recipients (for Solid, managed externally via ACL) */
+  recipients?: string[];
+  /** ISO string tracking last mutation in the pod */
+  updatedAt?: string;
+  /** Signatures collected so far */
+  signatures?: Array<{
+    fieldId: string;
+    signatureData: string;
+    signedByWebId: string;
+    signedAt: string;
+  }>;
+}
+
+/**
  * Solid Protocol E-Signature Client.
  */
 export class SolidProtocolClient {
@@ -78,8 +100,8 @@ export class SolidProtocolClient {
   private dpopKey?: any;
 
   constructor(config: ESignatureConfig) {
-    this.webId = (config.metadata?.webId as string) || "";
-    this.podUrl = (config.metadata?.podUrl as string) || "";
+    this.webId = (config.providerSettings?.webId as string) || "";
+    this.podUrl = (config.providerSettings?.podUrl as string) || "";
   }
 
   // ─── Authentication (WebID + DPoP) ──────────────────────────────────────
@@ -395,15 +417,20 @@ export class SolidProtocolClient {
    * Create envelope in Solid pod.
    */
   async createEnvelope(document: Document, signingFields: SigningField[]): Promise<Envelope> {
-    const envelope: Envelope = {
+    const envelope: SolidEnvelope = {
       id: `envelope-${Date.now()}`,
+      name: document.name,
       status: "created",
       documentId: document.id,
       documents: [document],
+      signers: [],
+      fields: signingFields,
       signingFields,
       recipients: [],
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
       updatedAt: new Date().toISOString(),
+      workflowMode: "sequential",
+      createdBy: this.webId,
       metadata: {
         provider: "solid",
       },
@@ -421,14 +448,14 @@ export class SolidProtocolClient {
    */
   async getEnvelope(envelopeId: string): Promise<Envelope> {
     const envelopePath = `/envelopes/${envelopeId}.json`;
-    return (await this.getPodResource(envelopePath)) as Envelope;
+    return (await this.getPodResource(envelopePath)) as SolidEnvelope;
   }
 
   /**
    * Update envelope status.
    */
   async updateEnvelopeStatus(envelopeId: string, status: EnvelopeStatus): Promise<Envelope> {
-    const envelope = await this.getEnvelope(envelopeId);
+    const envelope = (await this.getPodResource(`/envelopes/${envelopeId}.json`)) as SolidEnvelope;
     envelope.status = status;
     envelope.updatedAt = new Date().toISOString();
 
@@ -447,7 +474,7 @@ export class SolidProtocolClient {
     signatureData: string,
     signedByWebId: string
   ): Promise<void> {
-    const envelope = await this.getEnvelope(envelopeId);
+    const envelope = (await this.getPodResource(`/envelopes/${envelopeId}.json`)) as SolidEnvelope;
 
     const signature = {
       fieldId: signingFieldId,
@@ -463,8 +490,8 @@ export class SolidProtocolClient {
     envelope.signatures.push(signature);
 
     // Check if all required fields are signed
-    const allFieldsSigned = envelope.signingFields.every((field) =>
-      envelope.signatures?.some((sig) => sig.fieldId === field.id)
+    const allFieldsSigned = (envelope.signingFields ?? []).every((field: SigningField) =>
+      envelope.signatures?.some((sig: { fieldId: string }) => sig.fieldId === field.id)
     );
 
     if (allFieldsSigned) {
@@ -484,7 +511,7 @@ export class SolidProtocolClient {
     try {
       const response = await this.getPodResource(envelopesPath);
       // INTEGRATION: Parse directory listing RDF
-      return (response as Envelope[]) || [];
+      return (response as SolidEnvelope[]) || [];
     } catch {
       return [];
     }

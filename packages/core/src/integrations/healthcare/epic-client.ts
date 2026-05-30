@@ -262,8 +262,7 @@ export class EpicClient extends HealthcareAdapter {
     const result = await this.request("GET", "/Slot", {
       query: {
         "schedule.actor": `Practitioner/${providerId}`,
-        start: `ge${startDate}`,
-        "start": `le${endDate}`,
+        "start": `ge${startDate}&le${endDate}`,
         "status": "free",
       },
     });
@@ -400,8 +399,8 @@ export class EpicClient extends HealthcareAdapter {
       dateTime: consent.validFrom,
     };
 
-    const result = await this.create<ConsentRecord>("Consent" as any, resource as any);
-    return result;
+    const result = await this.create<FHIRResource>("Consent", resource as Omit<FHIRResource, "id">);
+    return result as unknown as ConsentRecord;
   }
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {
@@ -578,7 +577,7 @@ export class EpicClient extends HealthcareAdapter {
     return {
       accessToken: response.access_token,
       expiresIn: response.expires_in,
-      context: response.patient ? { patientId: response.patient } : undefined,
+      context: response.patient ? { patientId: String(response.patient), scope: [] } : undefined,
     };
   }
 
@@ -603,14 +602,45 @@ export class EpicClient extends HealthcareAdapter {
   /**
    * Parse an HL7 v2 message string into a structured object.
    */
-  parseHL7Message(hl7: string): { messageType: string; messageControlId: string; [key: string]: string } {
-    const mshLine = hl7.split("\n")[0];
+  parseHL7Message(hl7: string): HL7Message {
+    const lines = hl7.split("\n");
+    const mshLine = lines[0] ?? "";
     const fields = mshLine.split("|");
+    const fieldSep = "|";
+    const encodingChars = fields[1] ?? "^~\\&";
+    const componentSep = encodingChars[0] ?? "^";
+    const repetitionSep = encodingChars[1] ?? "~";
+    const escapeCh = encodingChars[2] ?? "\\";
+    const subcompSep = encodingChars[3] ?? "&";
+
+    const segments: import("./types.js").HL7Segment[] = lines
+      .filter((line) => line.trim().length > 0)
+      .map((line) => {
+        const segFields = line.split(fieldSep);
+        return {
+          id: segFields[0] ?? "",
+          fields: segFields.slice(1).map((f) => [f]),
+          encoding: {
+            fieldSeparator: fieldSep,
+            componentSeparator: componentSep,
+            repetitionSeparator: repetitionSep,
+            escapeCharacter: escapeCh,
+            subcomponentSeparator: subcompSep,
+          },
+        };
+      });
+
     return {
       messageType: fields[8] ?? "",
       messageControlId: fields[9] ?? "",
-      processingId: fields[10] ?? "",
-      versionId: fields[11]?.trim() ?? "",
+      processingId: fields[10] ?? "P",
+      versionId: fields[11]?.trim() ?? "2.5",
+      timestamp: fields[6] ?? "",
+      sendingApplication: fields[2],
+      sendingFacility: fields[3],
+      receivingApplication: fields[4],
+      receivingFacility: fields[5],
+      segments,
     };
   }
 

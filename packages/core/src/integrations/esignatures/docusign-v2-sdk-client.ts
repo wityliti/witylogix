@@ -14,12 +14,12 @@
  * - Full error handling and validation
  */
 
-import { fetch } from "undici";
 import { createHmac, sign, randomBytes } from "crypto";
 import { v4 as uuid } from "uuid";
 
 import type {
   NormalizedEnvelope,
+  NormalizedEnvelopeStatus,
   NormalizedTemplate,
   NormalizedSigner,
   NormalizedField,
@@ -184,7 +184,7 @@ export class DocuSignV2SDKClient {
           method,
           headers,
           body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
-          timeout: this.config.requestTimeout || 30000,
+          signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
@@ -784,8 +784,8 @@ export class DocuSignV2SDKClient {
     };
   }
 
-  private normalizeStatus(status: string): string {
-    const statusMap: Record<string, string> = {
+  private normalizeStatus(status: string): NormalizedEnvelopeStatus {
+    const statusMap: Record<string, NormalizedEnvelopeStatus> = {
       created: "created",
       sent: "sent",
       delivered: "delivered",
@@ -794,11 +794,11 @@ export class DocuSignV2SDKClient {
       voided: "voided",
       declined: "declined",
     };
-    return statusMap[status.toLowerCase()] || status;
+    return statusMap[status.toLowerCase()] ?? "sent";
   }
 
-  private normalizeEventType(eventType: string): string {
-    const eventMap: Record<string, string> = {
+  private normalizeEventType(eventType: string): WebhookEvent["eventType"] {
+    const eventMap: Record<string, WebhookEvent["eventType"]> = {
       envelope_created: "envelope_created",
       envelope_sent: "envelope_sent",
       envelope_delivered: "envelope_delivered",
@@ -810,6 +810,6 @@ export class DocuSignV2SDKClient {
       recipient_signed: "signer_signed",
       recipient_declined: "signer_declined",
     };
-    return eventMap[eventType.toLowerCase()] || eventType;
+    return eventMap[eventType.toLowerCase()] ?? "envelope_sent";
   }
 }

@@ -12,7 +12,6 @@
  */
 
 import { fetch } from "undici";
-
 import { ESignatureAdapter } from "./esignature-adapter.js";
 import type {
   Envelope,
@@ -332,7 +331,7 @@ export class PandaDocClient extends ESignatureAdapter {
         declinedAt: r.declined_at ? new Date(r.declined_at) : undefined,
       }));
 
-      const completedSigners = signerStatuses.filter((s) => s.status === "completed").length;
+      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "completed").length;
       const totalSigners = signerStatuses.length;
 
       return {

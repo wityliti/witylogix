@@ -162,7 +162,7 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
       60000
     );
 
-    if (config.authType === "oauth2" && !config.refreshToken && !config.accessToken) {
+    if (config.authType === "oauth2" && !config.refreshToken && !config.clientSecret) {
       throw new Error(`${this.providerName}: OAuth2 requires clientId, clientSecret, and refreshToken`);
     }
 
