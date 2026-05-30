@@ -29,6 +29,8 @@ import type {
   ShippingAddress,
   LabelFormat,
   ShippingWebhookEvent,
+  CarrierType,
+  ServiceLevel,
 } from "./types.js";
 
 // ─── Shippo API Types ───────────────────────────────────────
@@ -154,127 +156,161 @@ export class ShippoClient implements IShippingAdapter {
   }
 
   /**
-   * Create a shipment and get rates.
+   * Validate API credentials by making a lightweight test request.
    */
-  async createShipment(request: ShipmentRequest): Promise<ShipmentRate[]> {
-    // Create shipment
-    const shipment = await this.makeRequest<ShippoShipment>(
-      "POST",
-      "/shipments",
-      {
-        address_from: this.normalizeAddress(request.fromAddress),
-        address_to: this.normalizeAddress(request.toAddress),
-        parcels: request.parcels.map((p) => ({
-          weight: (p.weight.value * (p.weight.unit === "lb" ? 0.453592 : 1)).toString(),
-          width: (p.dimensions?.width || 0).toString(),
-          height: (p.dimensions?.height || 0).toString(),
-          length: (p.dimensions?.length || 0).toString(),
+  async validateConfig(): Promise<void> {
+    await this.makeRequest<{ results: ShippoAddress[] }>("GET", "/addresses?results=1");
+  }
+
+  /**
+   * Get available shipping rates for a shipment.
+   */
+  async getRates(request: ShipmentRequest): Promise<ShipmentRate[]> {
+    const weightKg =
+      request.weight.unit === "lb"
+        ? request.weight.value * 0.453592
+        : request.weight.value;
+
+    const shipment = await this.makeRequest<ShippoShipment>("POST", "/shipments", {
+      address_from: this.normalizeAddress(request.from),
+      address_to: this.normalizeAddress(request.to),
+      parcels: [
+        {
+          weight: weightKg.toString(),
+          width: (request.dimensions?.width ?? 0).toString(),
+          height: (request.dimensions?.height ?? 0).toString(),
+          length: (request.dimensions?.length ?? 0).toString(),
           distance_unit: "cm",
           weight_unit: "kg",
-        })),
-        metadata: request.metadata ? JSON.stringify(request.metadata) : undefined,
-      }
-    );
+        },
+      ],
+      metadata: request.metadata ? JSON.stringify(request.metadata) : undefined,
+    });
 
-    // Get rates for this shipment
-    const rates = await this.makeRequest<{ results: ShippoRate[] }>(
+    const ratesResponse = await this.makeRequest<{ results: ShippoRate[] }>(
       "GET",
       `/shipments/${shipment.object_id}/rates`
     );
 
-    return rates.results.map((r) => ({
-      id: r.object_id,
-      carrier: r.carrier,
-      service: r.servicelevel.name,
-      rate: parseFloat(r.rate),
-      currency: r.currency,
-      estimatedDays: r.estimated_days,
-      estimatedDelivery: r.arrives_by ? new Date(r.arrives_by) : undefined,
-      metadata: { shipment_id: shipment.object_id },
-    }));
+    return ratesResponse.results.map(
+      (r): ShipmentRate => ({
+        rateId: r.object_id,
+        carrier: this.mapCarrier(r.carrier),
+        service: this.mapService(r.servicelevel.name),
+        price: Math.round(parseFloat(r.rate) * 100), // convert to cents
+        currency: r.currency,
+        estimatedDays: r.estimated_days,
+        insurable: true,
+        rawResponse: r,
+      })
+    );
   }
 
   /**
-   * Purchase a shipment label.
+   * Create a shipping label by purchasing a rate.
    */
-  async purchaseLabel(
-    rateId: string,
-    format: LabelFormat = "PDF"
+  async createShipment(
+    request: ShipmentRequest,
+    rateId: string
   ): Promise<ShipmentLabel> {
-    const transaction = await this.makeRequest<ShippoTransaction>(
-      "POST",
-      "/transactions",
-      {
-        rate: rateId,
-        label_file_type: this.mapLabelFormat(format),
-      }
-    );
+    const format: LabelFormat = "PDF";
+    const transaction = await this.makeRequest<ShippoTransaction>("POST", "/transactions", {
+      rate: rateId,
+      label_file_type: this.mapLabelFormat(format),
+    });
 
     if (!transaction.label_download) {
-      throw new Error("Failed to generate label");
+      throw new Error("Shippo failed to generate label for rate " + rateId);
     }
 
-    const labelUrl = this.getLabelUrl(transaction, format);
-
     return {
-      id: transaction.object_id,
+      labelId: transaction.object_id,
       trackingNumber: transaction.tracking_number,
-      carrier: "shippo", // Will be overridden by specific carrier
-      label: labelUrl,
-      labelFormat: format,
+      carrier: this.mapCarrier("shippo"),
+      service: "STANDARD",
+      labelUrl: this.getLabelUrl(transaction, format),
+      format,
+      rateId,
       createdAt: new Date(),
+      rawResponse: transaction,
     };
   }
 
   /**
-   * Get tracking information.
+   * Retrieve a previously created label by its transaction ID.
    */
-  async getTracking(
-    carrier: string,
-    trackingNumber: string
-  ): Promise<TrackingResult> {
-    const track = await this.makeRequest<ShippoTrack>("GET", `/tracks/${carrier}/${trackingNumber}`);
+  async getLabel(labelId: string): Promise<ShipmentLabel> {
+    const transaction = await this.makeRequest<ShippoTransaction>(
+      "GET",
+      `/transactions/${labelId}`
+    );
+
+    return {
+      labelId: transaction.object_id,
+      trackingNumber: transaction.tracking_number,
+      carrier: this.mapCarrier("shippo"),
+      service: "STANDARD",
+      labelUrl: this.getLabelUrl(transaction, "PDF"),
+      format: "PDF",
+      createdAt: new Date(),
+      rawResponse: transaction,
+    };
+  }
+
+  /**
+   * Get tracking information for a shipment.
+   */
+  async track(trackingNumber: string, carrier?: CarrierType): Promise<TrackingResult> {
+    const carrierCode = carrier?.toLowerCase() ?? "shippo";
+    const track = await this.makeRequest<ShippoTrack>(
+      "GET",
+      `/tracks/${carrierCode}/${trackingNumber}`
+    );
 
     return {
       trackingNumber,
+      carrier: this.mapCarrier(track.carrier),
       status: this.mapTrackingStatus(track.status),
-      carrier,
-      events: track.tracking_history.map((e, idx) => ({
-        sequence: idx,
-        status: this.mapTrackingStatus(e.status),
-        timestamp: new Date(e.status_date),
-        location: {
-          city: e.location.city,
-          state: e.location.state,
-          zip: e.location.zip,
-          country: e.location.country,
-        },
-        message: e.status_details,
-      })),
-      estimatedDelivery: track.eta ? new Date(track.eta) : undefined,
-      lastUpdate: track.tracking_history[0]
-        ? new Date(track.tracking_history[0].status_date)
-        : undefined,
+      estimatedDeliveryDate: track.eta ? new Date(track.eta) : undefined,
+      events: track.tracking_history.map(
+        (e): TrackingEvent => ({
+          timestamp: new Date(e.status_date),
+          status: this.mapTrackingStatus(e.status),
+          message: e.status_details,
+          location: e.location
+            ? `${e.location.city}, ${e.location.state} ${e.location.zip}`
+            : undefined,
+          rawResponse: e,
+        })
+      ),
+      rawResponse: track,
     };
   }
 
   /**
-   * Validate address.
+   * Cancel a shipment/label (refund transaction).
+   */
+  async cancelShipment(labelId: string): Promise<boolean> {
+    try {
+      await this.makeRequest("POST", `/refunds`, { transaction: labelId });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Validate a shipping address.
    */
   async validateAddress(address: ShippingAddress): Promise<AddressValidationResult> {
-    const shippoAddress = this.normalizeAddress(address);
-
     const validated = await this.makeRequest<ShippoAddress>(
       "POST",
       "/addresses",
-      shippoAddress
+      this.normalizeAddress(address)
     );
 
     if (!validated.validation_results) {
-      return {
-        valid: true,
-        address: address,
-      };
+      return { valid: true, address };
     }
 
     return {
@@ -282,20 +318,20 @@ export class ShippoClient implements IShippingAdapter {
       address: {
         name: validated.name,
         street1: validated.street1,
-        street2: validated.street2,
+        street2: validated.street2 || undefined,
         city: validated.city,
         state: validated.state,
         zip: validated.zip,
         country: validated.country,
-        phone: validated.phone,
-        email: validated.email,
+        phone: validated.phone || undefined,
+        email: validated.email || undefined,
       },
-      errors: validated.validation_results.messages?.map((m) => m.text),
+      messages: validated.validation_results.messages?.map((m) => m.text),
     };
   }
 
   /**
-   * Create batch labels for multiple shipments.
+   * Create batch labels for multiple shipments (Shippo extension method).
    */
   async createBatchLabels(
     shipmentRequests: ShipmentRequest[],
@@ -305,13 +341,15 @@ export class ShippoClient implements IShippingAdapter {
 
     for (const request of shipmentRequests) {
       try {
-        const rates = await this.createShipment(request);
+        const rates = await this.getRates(request);
         if (rates.length > 0) {
-          const label = await this.purchaseLabel(rates[0].id, format);
+          const label = await this.createShipment(request, rates[0].rateId);
           labels.push(label);
         }
       } catch (error) {
-        console.error(`Failed to create label for shipment:`, error);
+        // Log and continue — batch should not abort on a single failure
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error(`[Shippo] Failed to create batch label: ${msg}`);
       }
     }
 
@@ -319,30 +357,29 @@ export class ShippoClient implements IShippingAdapter {
   }
 
   /**
-   * Handle webhook event.
+   * Handle a Shippo webhook event (extension method — not part of IShippingAdapter).
    */
   async handleWebhook(
     payload: ShippingWebhookEvent,
     signature?: string
   ): Promise<void> {
-    // Verify webhook signature if provided
     if (signature && !this.verifyWebhookSignature(JSON.stringify(payload), signature)) {
-      throw new Error("Invalid webhook signature");
+      throw new Error("Invalid Shippo webhook signature");
     }
 
-    // Process event
-    switch (payload.type) {
+    // Route by eventType (ShippingWebhookEvent.eventType is the canonical field)
+    switch (payload.eventType) {
       case "track_updated":
-        console.log(`Tracking update: ${payload.data?.tracking_number}`);
+        console.log(`[Shippo] Tracking update for resource: ${payload.resourceId}`);
         break;
       case "shipment_created":
-        console.log(`Shipment created: ${payload.data?.shipment_id}`);
+        console.log(`[Shippo] Shipment created: ${payload.resourceId}`);
         break;
       case "transaction_created":
-        console.log(`Label created: ${payload.data?.tracking_number}`);
+        console.log(`[Shippo] Label created: ${payload.trackingNumber ?? payload.resourceId}`);
         break;
       default:
-        console.log(`Unhandled webhook: ${payload.type}`);
+        console.log(`[Shippo] Unhandled webhook event type: ${payload.eventType}`);
     }
   }
 
@@ -385,7 +422,7 @@ export class ShippoClient implements IShippingAdapter {
       );
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**
@@ -443,7 +480,38 @@ export class ShippoClient implements IShippingAdapter {
       failure: "failed",
       cancelled: "cancelled",
     };
-    return map[status] || "unknown";
+    return map[status] ?? "unknown";
+  }
+
+  /**
+   * Map a carrier name string to the CarrierType union.
+   * Falls back to "USPS" when the carrier is unrecognised.
+   */
+  private mapCarrier(carrier: string): CarrierType {
+    const map: Record<string, CarrierType> = {
+      fedex: "FEDEX",
+      ups: "UPS",
+      usps: "USPS",
+      dhl: "DHL",
+      dhl_express: "DHL",
+      ontrac: "ONTRAC",
+      shippo: "USPS", // Shippo rates come from underlying carriers; default to USPS
+    };
+    return map[carrier.toLowerCase()] ?? "USPS";
+  }
+
+  /**
+   * Map a Shippo service-level name to the ServiceLevel union.
+   */
+  private mapService(name: string): ServiceLevel {
+    const lower = name.toLowerCase();
+    if (lower.includes("overnight") || lower.includes("next_day")) return "OVERNIGHT";
+    if (lower.includes("express") || lower.includes("2_day")) return "EXPRESS";
+    if (lower.includes("priority")) return "PRIORITY";
+    if (lower.includes("economy")) return "ECONOMY";
+    if (lower.includes("international")) return "INTERNATIONAL";
+    if (lower.includes("ground")) return "GROUND";
+    return "STANDARD";
   }
 
   /**
