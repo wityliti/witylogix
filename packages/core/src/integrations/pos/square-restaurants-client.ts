@@ -22,17 +22,19 @@ interface SquareConfig {
  */
 interface SquareResponse {
   id?: string;
-  order?: any;
-  orders?: any[];
-  catalog_object?: any;
-  objects?: any[];
-  location?: any;
-  locations?: any[];
-  employee?: any;
-  employees?: any[];
-  shift?: any;
-  shifts?: any[];
+  order?: Record<string, unknown>;
+  orders?: unknown[];
+  catalog_object?: Record<string, unknown>;
+  objects?: unknown[];
+  location?: Record<string, unknown>;
+  locations?: unknown[];
+  employee?: Record<string, unknown>;
+  employees?: unknown[];
+  shift?: Record<string, unknown>;
+  shifts?: unknown[];
+  payment?: { id?: string; created_at?: string; [key: string]: unknown };
   errors?: Array<{ code: string; detail: string }>;
+  [key: string]: unknown;
 }
 
 /**
@@ -62,27 +64,28 @@ export class SquareRestaurantsClient extends POSAdapter {
         throw new Error('Location not found');
       }
 
-      const loc = response.location;
+      const loc = response.location as Record<string, unknown>;
+      const addr = loc.address as Record<string, string | undefined> | undefined;
 
       return {
-        id: loc.id,
-        externalId: loc.id,
+        id: (loc.id as string) ?? locationId,
+        externalId: (loc.id as string) ?? locationId,
         providerId: 'square-restaurants',
-        name: loc.name,
+        name: (loc.name as string) ?? '',
         address: {
-          street1: loc.address?.address_line_1 || '',
-          street2: loc.address?.address_line_2,
-          city: loc.address?.locality || '',
-          state: loc.address?.administrative_district_level_1 || '',
-          postalCode: loc.address?.postal_code || '',
-          country: loc.address?.country || 'US',
+          street1: addr?.address_line_1 ?? '',
+          street2: addr?.address_line_2,
+          city: addr?.locality ?? '',
+          state: addr?.administrative_district_level_1 ?? '',
+          postalCode: addr?.postal_code ?? '',
+          country: addr?.country ?? 'US',
         },
-        phone: loc.phone_number,
-        email: loc.business_email,
-        timezone: loc.timezone,
+        phone: loc.phone_number as string | undefined,
+        email: loc.business_email as string | undefined,
+        timezone: (loc.timezone as string) ?? 'UTC',
         isActive: !loc.status || loc.status === 'ACTIVE',
-        createdAt: new Date(loc.created_at || Date.now()),
-        updatedAt: new Date(loc.updated_at || Date.now()),
+        createdAt: new Date((loc.created_at as string) ?? Date.now()),
+        updatedAt: new Date((loc.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -237,23 +240,24 @@ export class SquareRestaurantsClient extends POSAdapter {
       };
 
       const response = await this.makeRequest('/v2/orders', 'POST', payload);
+      const sqOrder = (response.order ?? {}) as Record<string, unknown>;
 
       return {
-        id: response.order.id,
-        externalId: response.order.id,
+        id: (sqOrder.id as string) ?? '',
+        externalId: (sqOrder.id as string) ?? '',
         providerId: 'square-restaurants',
         locationId,
-        orderNumber: response.order.reference_id,
-        status: 'open',
-        orderType: order.orderType || 'takeout',
-        lineItems: order.lineItems || [],
-        discounts: order.discounts || [],
+        orderNumber: (sqOrder.reference_id as string) ?? '',
+        status: 'open' as const,
+        orderType: (order.orderType ?? 'takeout') as import('./types').OrderType,
+        lineItems: order.lineItems ?? [],
+        discounts: order.discounts ?? [],
         payments: [],
         subtotal: totals.subtotal,
         tax: totals.tax,
         total: totals.total,
-        createdAt: new Date(response.order.created_at || Date.now()),
-        updatedAt: new Date(response.order.updated_at || Date.now()),
+        createdAt: new Date((sqOrder.created_at as string) ?? Date.now()),
+        updatedAt: new Date((sqOrder.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -264,42 +268,60 @@ export class SquareRestaurantsClient extends POSAdapter {
   async getOrder(locationId: string, orderId: string): Promise<POSOrder> {
     return this.executeWithRetries(async () => {
       const response = await this.makeRequest(`/v2/orders/${orderId}`, 'GET');
-
-      const order = response.order;
+      const sqOrder = (response.order ?? {}) as Record<string, unknown>;
+      const lineItemsRaw = (sqOrder.line_items ?? []) as unknown[];
+      const discountsRaw = (sqOrder.discounts ?? []) as unknown[];
+      const taxMoney = sqOrder.total_tax_money as Record<string, number> | undefined;
       const totals = this.calculateOrderTotals({
-        lineItems: order.line_items || [],
-        discounts: order.discounts || [],
-        tax: order.total_tax_money?.amount || 0,
+        lineItems: lineItemsRaw.map((li: unknown) => {
+          const item = li as Record<string, unknown>;
+          const money = item.gross_sales_money as Record<string, number> | undefined;
+          return { quantity: parseInt((item.quantity as string) ?? '1'), price: money?.amount ?? 0 };
+        }),
+        discounts: discountsRaw.map((d: unknown) => {
+          const disc = d as Record<string, unknown>;
+          return { type: (disc.type as string) ?? 'fixed', amount: 0 };
+        }),
+        tax: taxMoney?.amount ?? 0,
       });
+      const fulfillment = sqOrder.fulfillment as Record<string, unknown> | undefined;
 
       return {
-        id: order.id,
-        externalId: order.id,
+        id: (sqOrder.id as string) ?? orderId,
+        externalId: (sqOrder.id as string) ?? orderId,
         providerId: 'square-restaurants',
         locationId,
-        orderNumber: order.reference_id,
-        status: order.state === 'COMPLETED' ? 'completed' : 'open',
-        orderType: order.fulfillment?.type === 'PICKUP' ? 'takeout' : 'dine-in',
-        lineItems: (order.line_items || []).map((li: any) => ({
-          id: li.uid,
-          menuItemId: li.catalog_object_id,
-          quantity: li.quantity ? parseInt(li.quantity) : 0,
-          price: li.gross_sales_money?.amount || 0,
-          subtotal: li.gross_sales_money?.amount || 0,
-        })),
-        discounts: order.discounts || [],
-        payments: order.payments?.map((p: any) => ({
-          id: p.id,
-          method: 'card',
-          amount: p.amount_money?.amount || 0,
-          currency: p.amount_money?.currency || 'USD',
-          createdAt: new Date(p.created_at || Date.now()),
-        })) || [],
-        subtotal: order.subtotal_money?.amount || totals.subtotal,
-        tax: order.total_tax_money?.amount || totals.tax,
-        total: order.total_money?.amount || totals.total,
-        createdAt: new Date(order.created_at || Date.now()),
-        updatedAt: new Date(order.updated_at || Date.now()),
+        orderNumber: (sqOrder.reference_id as string) ?? '',
+        status: sqOrder.state === 'COMPLETED' ? 'completed' as const : 'open' as const,
+        orderType: fulfillment?.type === 'PICKUP' ? 'takeout' as const : 'dine-in' as const,
+        lineItems: lineItemsRaw.map((li: unknown) => {
+          const item = li as Record<string, unknown>;
+          const money = item.gross_sales_money as Record<string, number> | undefined;
+          return {
+            id: (item.uid as string) ?? '',
+            menuItemId: (item.catalog_object_id as string) ?? '',
+            quantity: parseInt((item.quantity as string) ?? '1'),
+            price: money?.amount ?? 0,
+            subtotal: money?.amount ?? 0,
+          };
+        }),
+        discounts: discountsRaw as import('./types').POSDiscount[],
+        payments: ((sqOrder.payments ?? []) as unknown[]).map((p: unknown) => {
+          const pay = p as Record<string, unknown>;
+          const moneyObj = pay.amount_money as Record<string, unknown> | undefined;
+          return {
+            id: (pay.id as string) ?? '',
+            method: 'card' as const,
+            amount: (moneyObj?.amount as number) ?? 0,
+            currency: (moneyObj?.currency as string) ?? 'USD',
+            createdAt: new Date((pay.created_at as string) ?? Date.now()),
+          };
+        }),
+        subtotal: (sqOrder.subtotal_money as Record<string, number> | undefined)?.amount ?? totals.subtotal,
+        tax: taxMoney?.amount ?? totals.tax,
+        total: (sqOrder.total_money as Record<string, number> | undefined)?.amount ?? totals.total,
+        createdAt: new Date((sqOrder.created_at as string) ?? Date.now()),
+        updatedAt: new Date((sqOrder.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -423,12 +445,12 @@ export class SquareRestaurantsClient extends POSAdapter {
       const response = await this.makeRequest('/v2/payments', 'POST', payload);
 
       return {
-        id: response.payment?.id,
-        method: payment.method || 'cash',
-        amount: payment.amount || 0,
-        currency: payment.currency || 'USD',
+        id: response.payment?.id ?? '',
+        method: (payment.method ?? 'cash') as import('./types').POSPaymentMethod,
+        amount: payment.amount ?? 0,
+        currency: payment.currency ?? 'USD',
         tip: payment.tip,
-        createdAt: new Date(response.payment?.created_at || Date.now()),
+        createdAt: new Date(response.payment?.created_at ?? Date.now()),
       };
     });
   }
@@ -469,10 +491,12 @@ export class SquareRestaurantsClient extends POSAdapter {
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<string> {
+  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
     return this.executeWithRetries(async () => {
       const order = await this.getOrder(locationId, orderId);
-      return order.status || 'received';
+      const validStatuses: import('./types').KitchenOrderStatus[] = ['new', 'received', 'in_progress', 'ready', 'completed'];
+      const mapped = order.status === 'completed' ? 'completed' as const : 'received' as const;
+      return mapped;
     });
   }
 
@@ -515,17 +539,18 @@ export class SquareRestaurantsClient extends POSAdapter {
       };
 
       const response = await this.makeRequest('/v2/labor/shifts', 'POST', payload);
+      const createdShift = (response.shift ?? {}) as Record<string, unknown>;
 
       return {
-        id: response.shift.id,
-        externalId: response.shift.id,
+        id: (createdShift.id as string) ?? '',
+        externalId: (createdShift.id as string) ?? '',
         providerId: 'square-restaurants',
         locationId,
-        employeeId: shift.employeeId,
-        startTime: new Date(shift.startTime || Date.now()),
-        status: 'open',
-        createdAt: new Date(response.shift.created_at || Date.now()),
-        updatedAt: new Date(response.shift.updated_at || Date.now()),
+        employeeId: shift.employeeId ?? '',
+        startTime: new Date(shift.startTime ?? Date.now()),
+        status: 'open' as const,
+        createdAt: new Date((createdShift.created_at as string) ?? Date.now()),
+        updatedAt: new Date((createdShift.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -536,7 +561,7 @@ export class SquareRestaurantsClient extends POSAdapter {
   async closeShift(locationId: string, shiftId: string): Promise<POSShift> {
     return this.executeWithRetries(async () => {
       const response = await this.makeRequest(`/v2/labor/shifts/${shiftId}`, 'GET');
-      const shift = response.shift;
+      const shift = (response.shift ?? {}) as Record<string, unknown>;
 
       const payload = {
         shift: {
@@ -546,18 +571,19 @@ export class SquareRestaurantsClient extends POSAdapter {
       };
 
       const updateResponse = await this.makeRequest(`/v2/labor/shifts/${shiftId}`, 'PUT', payload);
+      const updatedShift = (updateResponse.shift ?? {}) as Record<string, unknown>;
 
       return {
-        id: updateResponse.shift.id,
-        externalId: updateResponse.shift.id,
+        id: (updatedShift.id as string) ?? shiftId,
+        externalId: (updatedShift.id as string) ?? shiftId,
         providerId: 'square-restaurants',
         locationId,
-        employeeId: shift.employee_id,
-        startTime: new Date(shift.start_at || Date.now()),
-        endTime: new Date(updateResponse.shift.end_at || Date.now()),
-        status: 'closed',
-        createdAt: new Date(shift.created_at || Date.now()),
-        updatedAt: new Date(updateResponse.shift.updated_at || Date.now()),
+        employeeId: (shift.employee_id as string) ?? '',
+        startTime: new Date((shift.start_at as string) ?? Date.now()),
+        endTime: new Date((updatedShift.end_at as string) ?? Date.now()),
+        status: 'closed' as const,
+        createdAt: new Date((shift.created_at as string) ?? Date.now()),
+        updatedAt: new Date((updatedShift.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -571,17 +597,18 @@ export class SquareRestaurantsClient extends POSAdapter {
         `/v2/catalog/${revenueCenterId}`,
         'GET'
       );
+      const co = (response.catalog_object ?? {}) as Record<string, unknown>;
 
       return {
-        id: response.catalog_object.id,
-        externalId: response.catalog_object.id,
+        id: (co.id as string) ?? revenueCenterId,
+        externalId: (co.id as string) ?? revenueCenterId,
         providerId: 'square-restaurants',
         locationId,
-        name: response.catalog_object.name,
-        type: 'dining_room',
-        isActive: !response.catalog_object.is_deleted,
-        createdAt: new Date(response.catalog_object.created_at || Date.now()),
-        updatedAt: new Date(response.catalog_object.updated_at || Date.now()),
+        name: (co.name as string) ?? '',
+        type: 'dining_room' as const,
+        isActive: !co.is_deleted,
+        createdAt: new Date((co.created_at as string) ?? Date.now()),
+        updatedAt: new Date((co.updated_at as string) ?? Date.now()),
       };
     });
   }
@@ -678,12 +705,11 @@ export class SquareRestaurantsClient extends POSAdapter {
       }
 
       const response = await fetch(`${this.apiUrl}${path}`, options);
-      const data = await response.json();
+      const data = await response.json() as SquareResponse;
 
       if (!response.ok && response.status >= 400) {
         const errorMsg =
           data.errors?.[0]?.detail ||
-          data.errors?.[0]?.message ||
           response.statusText;
         throw new Error(`Square API error: ${errorMsg}`);
       }

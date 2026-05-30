@@ -288,7 +288,7 @@ export class CRMSyncEngine {
 
         case 'source_priority':
           // Use data from the source of truth
-          if (resolution.sourceOfTruth === 'witylogix') {
+          if ((resolution.sourceOfTruth as string) === 'witylogix') {
             // Update CRM with local data
           } else {
             // Update local with CRM data
@@ -473,7 +473,7 @@ export class CRMSyncEngine {
   // ─── HEALTH CHECK ─────────────────────────────────────────────────
 
   async healthCheck(): Promise<Record<CRMProvider, boolean>> {
-    const health: Record<CRMProvider, boolean> = {};
+    const health = {} as Record<CRMProvider, boolean>;
 
     for (const [provider] of this.adapters.entries()) {
       try {

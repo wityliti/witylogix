@@ -741,12 +741,12 @@ export class HubSpotSDKClient {
     }
 
     const response = await this.makeRequest(url.toString(), { method: 'GET' });
-    const data = await response.json();
+    const data = await response.json() as Record<string, unknown>;
 
     return {
       id: data.id,
       ...data,
-    };
+    } as T;
   }
 
   /**
@@ -762,11 +762,11 @@ export class HubSpotSDKClient {
       body: JSON.stringify(data),
     });
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, unknown>;
     return {
       id: result.id,
       ...result,
-    };
+    } as T;
   }
 
   /**
@@ -876,7 +876,7 @@ export class HubSpotSDKClient {
       body: JSON.stringify(body),
     });
 
-    return response.json();
+    return response.json() as Promise<SearchResult<T>>;
   }
 
   /**
@@ -916,7 +916,7 @@ export class HubSpotSDKClient {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/${objectId}/associations/${associationType}`;
 
     const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json();
+    const data = await response.json() as { results?: Array<{ id: string; type: string }> };
 
     return data.results || [];
   }
@@ -948,7 +948,7 @@ export class HubSpotSDKClient {
     const url = `${this.baseUrl}/crm/v3/properties/${objectType}`;
 
     const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json();
+    const data = await response.json() as { results?: Array<{ name: string; label: string; type: string; [key: string]: unknown }> };
 
     return data.results || [];
   }
@@ -968,7 +968,7 @@ export class HubSpotSDKClient {
       body: JSON.stringify(validated),
     });
 
-    return response.json();
+    return response.json() as Promise<Record<string, unknown>>;
   }
 
   /**
@@ -978,7 +978,7 @@ export class HubSpotSDKClient {
     const url = `${this.baseUrl}/crm/v3/pipelines/deals`;
 
     const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json();
+    const data = await response.json() as { results?: Array<z.infer<typeof PipelineSchema>> };
 
     return data.results || [];
   }
@@ -990,7 +990,7 @@ export class HubSpotSDKClient {
     const url = `${this.baseUrl}/crm/v3/pipelines/tickets`;
 
     const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json();
+    const data = await response.json() as { results?: Array<z.infer<typeof PipelineSchema>> };
 
     return data.results || [];
   }
@@ -1061,7 +1061,7 @@ export class HubSpotSDKClient {
       body: JSON.stringify({ inputs }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as { results?: T[] };
     return data.results || [];
   }
 
@@ -1083,7 +1083,7 @@ export class HubSpotSDKClient {
       body: JSON.stringify({ inputs }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as { results?: T[] };
     return data.results || [];
   }
 
@@ -1136,22 +1136,21 @@ export class HubSpotSDKClient {
    */
   private async makeRequest(
     url: string,
-    options: RequestInit & {
-      headers?: Record<string, string>;
-    } = {}
+    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
   ): Promise<Response> {
     if (!this.accessToken) {
       throw new Error('Not authenticated');
     }
 
+    const { headers: extraHeaders, ...restOptions } = options;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...extraHeaders,
     };
 
     const response = await fetch(url, {
-      ...options,
+      ...restOptions,
       headers,
     });
 

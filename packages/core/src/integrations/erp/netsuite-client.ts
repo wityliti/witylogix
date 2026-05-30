@@ -541,7 +541,7 @@ export class NetSuiteClient extends AbstractERPAdapter {
    * Generate OAuth 1.0 Authorization header
    */
   private generateOAuth1Header(method: string, url: string, body?: string): string {
-    const oauth = {
+    const oauth: Record<string, string> = {
       oauth_consumer_key: this.config.consumerKey,
       oauth_token: this.config.tokenId,
       oauth_signature_method: 'HMAC-SHA256',

@@ -342,7 +342,7 @@ export class ZohoCRMSDKClient {
     await this.ensureValidToken();
 
     const url = `${this.apiDomainMap[this.config.domain]}/crm/${this.config.apiVersion}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
     };

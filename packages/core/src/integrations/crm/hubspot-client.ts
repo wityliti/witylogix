@@ -10,6 +10,7 @@ import type {
   CRMOpportunity,
   CRMDeal,
   CRMActivity,
+  CRMSyncResult,
   CRMPagedResult,
   CRMContactFilter,
   CRMAccountFilter,
@@ -173,13 +174,13 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       code: authCode,
     });
 
-    const response: HSAuthResponse = await fetch(this.tokenBaseUrl, {
+    const response = await fetch(this.tokenBaseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
-    }).then((res) => res.json());
+    }).then((res) => res.json()) as HSAuthResponse;
 
     const expiresAt: Date = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + response.expires_in);
@@ -212,13 +213,13 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       refresh_token: this.connection.refreshToken,
     });
 
-    const response: HSAuthResponse = await fetch(this.tokenBaseUrl, {
+    const response = await fetch(this.tokenBaseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
-    }).then((res) => res.json());
+    }).then((res) => res.json()) as HSAuthResponse;
 
     this.connection.accessToken = response.access_token;
     this.connection.refreshToken = response.refresh_token;
@@ -770,22 +771,31 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Sync multiple activities
    */
-  async syncActivities(activities: CRMActivity[]): Promise<Array<{ id: string; status: string; message: string }>> {
-    const results: Array<{ id: string; status: string; message: string }> = [];
+  async syncActivities(activities: CRMActivity[]): Promise<CRMSyncResult[]> {
+    const results: CRMSyncResult[] = [];
 
     for (const activity of activities) {
       try {
         const created: CRMActivity = await this.createActivity(activity);
         results.push({
           id: created.id,
+          recordType: 'activity',
+          recordId: activity.id,
+          externalId: created.id,
+          provider: this.connection.provider,
           status: 'synced',
           message: 'Activity created successfully',
+          timestamp: new Date(),
         });
       } catch (error: unknown) {
         results.push({
           id: activity.id,
+          recordType: 'activity',
+          recordId: activity.id,
+          provider: this.connection.provider,
           status: 'failed',
           message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date(),
         });
       }
     }

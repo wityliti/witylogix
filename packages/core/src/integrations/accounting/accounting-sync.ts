@@ -4,8 +4,23 @@
  * Supports QuickBooks and Xero with provider registry pattern
  */
 
-import { PrismaClient } from '@witylogix/db';
 import type { Invoice, PaymentRecord } from '../../invoicing/types.js';
+
+/** Minimal subset of PrismaClient used by AccountingSyncService */
+type PrismaClient = {
+  accountingSyncRecord: {
+    findMany: (args: Record<string, unknown>) => Promise<unknown[]>;
+    findFirst: (args: Record<string, unknown>) => Promise<unknown | null>;
+    create: (args: Record<string, unknown>) => Promise<unknown>;
+    update: (args: Record<string, unknown>) => Promise<unknown>;
+  };
+  accountingConnection: {
+    findFirst: (args: Record<string, unknown>) => Promise<unknown | null>;
+  };
+  invoice: {
+    findUnique: (args: Record<string, unknown>) => Promise<unknown | null>;
+  };
+};
 import { QuickBooksAdapter } from './quickbooks-adapter.js';
 import { XeroAdapter } from './xero-adapter.js';
 import type {
@@ -224,12 +239,12 @@ export class AccountingSyncService {
 
     const result: ReconciliationResult = {
       totalInvoices: syncRecords.length,
-      syncedInvoices: syncRecords.filter(r => r.syncStatus === 'synced').length,
-      failedSyncs: syncRecords.filter(r => r.syncStatus === 'failed').length,
+      syncedInvoices: syncRecords.filter((r: { syncStatus: string }) => r.syncStatus === 'synced').length,
+      failedSyncs: syncRecords.filter((r: { syncStatus: string }) => r.syncStatus === 'failed').length,
       reconciliationDate: new Date(),
-      details: syncRecords.map(record => ({
+      details: syncRecords.map((record: { invoiceId: string; syncStatus: string; errorMessage?: string }) => ({
         invoiceId: record.invoiceId,
-        status: record.syncStatus,
+        status: record.syncStatus as 'synced' | 'failed' | 'pending',
         errorMessage: record.errorMessage,
       })),
     };
@@ -251,11 +266,19 @@ export class AccountingSyncService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return syncRecords.map(record => ({
+    return syncRecords.map((record: {
+      invoiceId: string;
+      externalId?: string;
+      provider: AccountingProvider;
+      syncStatus: string;
+      syncedAt?: Date;
+      metadata?: { lastRetryAt?: Date; retryCount?: number };
+      errorMessage?: string;
+    }) => ({
       invoiceId: record.invoiceId,
       externalId: record.externalId,
       provider: record.provider,
-      status: record.syncStatus,
+      status: record.syncStatus as AccountingSyncStatus['status'],
       lastSyncAt: record.syncedAt,
       nextRetryAt: record.metadata?.lastRetryAt
         ? new Date(record.metadata.lastRetryAt.getTime() + 5000)

@@ -122,6 +122,7 @@ export class WaveClient {
       customerName: inv.customer.name,
       total: inv.total,
       status: inv.status,
+      lineItems: [],
     };
   }
 
@@ -156,6 +157,7 @@ export class WaveClient {
       customerName: inv.customer.name,
       total: inv.total,
       status: inv.status,
+      lineItems: [],
     };
   }
 

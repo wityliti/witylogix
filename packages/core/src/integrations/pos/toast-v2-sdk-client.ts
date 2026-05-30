@@ -827,7 +827,7 @@ export class ToastV2SDKClient extends POSAdapter {
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<string> {
+  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
     return this.enqueueRequest(async () => {
       return this.executeWithRetries(async () => {
         const response = await this.makeRequest(`/checks/${orderId}/kdsStatus`, 'GET');
@@ -1002,7 +1002,7 @@ export class ToastV2SDKClient extends POSAdapter {
       }
 
       const response = await fetch(`${this.baseUrl}${path}`, options);
-      const data = await response.json();
+      const data = await response.json() as Record<string, unknown>;
 
       // Update rate limit info
       if (response.headers.has('X-RateLimit-Remaining')) {
@@ -1014,8 +1014,8 @@ export class ToastV2SDKClient extends POSAdapter {
 
       if (!response.ok && response.status >= 400) {
         throw this.createError(
-          data.code || 'API_ERROR',
-          data.message || response.statusText,
+          (data.code as string) ?? 'API_ERROR',
+          (data.message as string) ?? response.statusText,
           { statusCode: response.status }
         );
       }

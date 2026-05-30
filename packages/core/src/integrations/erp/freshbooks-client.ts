@@ -94,6 +94,7 @@ export class FreshBooksClient {
       customerId: response.invoice.clientid,
       total: response.invoice.amount,
       status: response.invoice.status,
+      lineItems: [],
     };
   }
 
@@ -112,6 +113,7 @@ export class FreshBooksClient {
       customerId: inv.clientid,
       total: inv.amount,
       status: inv.status,
+      lineItems: [],
     };
   }
 
@@ -129,6 +131,7 @@ export class FreshBooksClient {
       customerId: inv.clientid,
       total: inv.amount,
       status: inv.status,
+      lineItems: [],
     }));
   }
 

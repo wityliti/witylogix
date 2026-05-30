@@ -49,8 +49,7 @@ interface DynamicsBatchResult {
 
 export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   private config: MicrosoftDynamicsConfig;
-  private paginationHandler: PaginationHandler;
-  private fieldMappingEngine: FieldMappingEngine;
+  private dynamicsFieldMappingEngine: FieldMappingEngine;
   private tokenCache: { accessToken: string; expiresAt: Date } | null = null;
 
   constructor(
@@ -60,19 +59,28 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   ) {
     super(connection, fieldMappings);
     this.config = config;
-    this.paginationHandler = new PaginationHandler('skip');
-    this.fieldMappingEngine = new FieldMappingEngine(fieldMappings);
+    this.dynamicsFieldMappingEngine = new FieldMappingEngine(fieldMappings);
   }
 
-  private async ensureValidToken(): Promise<void> {
+  /**
+   * Implement abstract refreshToken from CRMAdapterBase
+   */
+  async refreshToken(): Promise<string> {
+    await this.refreshAccessToken();
+    return this.connection.accessToken;
+  }
+
+  protected override async ensureValidToken(): Promise<string> {
     if (this.tokenCache && new Date() < this.tokenCache.expiresAt) {
       this.connection.accessToken = this.tokenCache.accessToken;
-      return;
+      return this.connection.accessToken;
     }
 
     if (this.connection.expiresAt && new Date() > this.connection.expiresAt) {
       await this.refreshAccessToken();
     }
+
+    return this.connection.accessToken;
   }
 
   private async refreshAccessToken(): Promise<void> {
@@ -137,7 +145,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     return queryParts.length > 0 ? '?' + queryParts.join('&') : '';
   }
 
-  private async makeRequest<T>(
+  private async dynamicsRequest<T>(
     method: string,
     endpoint: string,
     body?: Record<string, unknown> | null
@@ -145,7 +153,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     await this.ensureValidToken();
 
     const url = `${this.config.organizationUrl}/api/data/v${this.config.apiVersion || '9.2'}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Authorization: `Bearer ${this.connection.accessToken}`,
       'Content-Type': 'application/json',
       'OData-MaxVersion': '4.0',
@@ -191,7 +199,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     }
 
     const endpoint = `/contacts${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
+    const response = await this.dynamicsRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
       'GET',
       endpoint
     );
@@ -209,12 +217,12 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     };
 
     const endpoint = `/contacts(${id})${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<DynamicsEntity>('GET', endpoint);
+    const response = await this.dynamicsRequest<DynamicsEntity>('GET', endpoint);
     return this.transformDynamicsToContact(response);
   }
 
   async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(contact as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('contact', contact as unknown as Record<string, unknown>);
     const transformedData = {
       firstname: contact.firstName,
       lastname: contact.lastName,
@@ -223,12 +231,12 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    const response = await this.makeRequest<{ id: string }>('POST', '/contacts', transformedData);
+    const response = await this.dynamicsRequest<{ id: string }>('POST', '/contacts', transformedData);
     return this.getContact(response.id);
   }
 
   async updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('contact', updates as unknown as Record<string, unknown>);
     const transformedData = {
       ...(updates.firstName && { firstname: updates.firstName }),
       ...(updates.lastName && { lastname: updates.lastName }),
@@ -237,7 +245,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    await this.makeRequest('PATCH', `/contacts(${id})`, transformedData);
+    await this.dynamicsRequest('PATCH', `/contacts(${id})`, transformedData);
     return this.getContact(id);
   }
 
@@ -258,7 +266,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     }
 
     const endpoint = `/accounts${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
+    const response = await this.dynamicsRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
       'GET',
       endpoint
     );
@@ -276,12 +284,12 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     };
 
     const endpoint = `/accounts(${id})${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<DynamicsEntity>('GET', endpoint);
+    const response = await this.dynamicsRequest<DynamicsEntity>('GET', endpoint);
     return this.transformDynamicsToAccount(response);
   }
 
   async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(account as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('account', account as unknown as Record<string, unknown>);
     const transformedData = {
       name: account.name,
       websiteurl: account.website,
@@ -290,12 +298,12 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    const response = await this.makeRequest<{ id: string }>('POST', '/accounts', transformedData);
+    const response = await this.dynamicsRequest<{ id: string }>('POST', '/accounts', transformedData);
     return this.getAccount(response.id);
   }
 
   async updateAccount(id: string, updates: Partial<CRMAccount>): Promise<CRMAccount> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('account', updates as unknown as Record<string, unknown>);
     const transformedData = {
       ...(updates.name && { name: updates.name }),
       ...(updates.website && { websiteurl: updates.website }),
@@ -304,7 +312,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    await this.makeRequest('PATCH', `/accounts(${id})`, transformedData);
+    await this.dynamicsRequest('PATCH', `/accounts(${id})`, transformedData);
     return this.getAccount(id);
   }
 
@@ -334,7 +342,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     }
 
     const endpoint = `/opportunities${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
+    const response = await this.dynamicsRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
       'GET',
       endpoint
     );
@@ -361,12 +369,12 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     };
 
     const endpoint = `/opportunities(${id})${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<DynamicsEntity>('GET', endpoint);
+    const response = await this.dynamicsRequest<DynamicsEntity>('GET', endpoint);
     return this.transformDynamicsToOpportunity(response);
   }
 
   async updateDeal(id: string, updates: Partial<CRMDeal>): Promise<CRMDeal> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(updates as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('opportunity', updates as unknown as Record<string, unknown>);
     const transformedData = {
       ...(updates.name && { name: updates.name }),
       ...(updates.amount && { estimatedvalue: updates.amount }),
@@ -374,7 +382,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    await this.makeRequest('PATCH', `/opportunities(${id})`, transformedData);
+    await this.dynamicsRequest('PATCH', `/opportunities(${id})`, transformedData);
     return this.getOpportunity(id);
   }
 
@@ -399,7 +407,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     };
 
     const endpoint = `/activities${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
+    const response = await this.dynamicsRequest<{ value: DynamicsEntity[]; '@odata.count': number }>(
       'GET',
       endpoint
     );
@@ -412,7 +420,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   }
 
   async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
-    const dynamicsData = this.fieldMappingEngine.mapWitylogixToExternal(activity as unknown as Record<string, unknown>);
+    const dynamicsData = this.dynamicsFieldMappingEngine.mapWitylogixToCRM('activity', activity as unknown as Record<string, unknown>);
 
     const typeMap: Record<string, string> = {
       call: 'phonecall',
@@ -432,7 +440,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       ...dynamicsData,
     };
 
-    const response = await this.makeRequest<{ id: string }>('POST', '/activities', transformedData);
+    const response = await this.dynamicsRequest<{ id: string }>('POST', '/activities', transformedData);
     return (await this.getActivities('', { limit: 1 })).data[0] as CRMActivity;
   }
 
@@ -451,7 +459,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       },
     }));
 
-    const response = await this.makeRequest<DynamicsBatchResult>(
+    const response = await this.dynamicsRequest<DynamicsBatchResult>(
       'POST',
       '/$batch',
       { requests: operations } as unknown as Record<string, unknown>
@@ -471,7 +479,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   // ─── WORKFLOW OPERATIONS ────────────────────────────────────────────
 
   async triggerWorkflow(workflowId: string, recordId: string, entityName: string): Promise<void> {
-    await this.makeRequest('POST', `/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`, {
+    await this.dynamicsRequest('POST', `/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`, {
       EntityId: recordId,
     });
   }
@@ -484,7 +492,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
     };
 
     const endpoint = `/businessprocessflows${this.buildODataQuery(query)}`;
-    const response = await this.makeRequest<{ value: DynamicsEntity[] }>('GET', endpoint);
+    const response = await this.dynamicsRequest<{ value: DynamicsEntity[] }>('GET', endpoint);
     return response.value;
   }
 
@@ -497,7 +505,7 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   ): Promise<DynamicsEntity | null> {
     const endpoint = `/${entityName}(${alternateKey}='${encodeURIComponent(value)}')`;
     try {
-      const response = await this.makeRequest<DynamicsEntity>('GET', endpoint);
+      const response = await this.dynamicsRequest<DynamicsEntity>('GET', endpoint);
       return response;
     } catch {
       return null;
@@ -507,13 +515,14 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   // ─── TRANSFORMATION HELPERS ─────────────────────────────────────────
 
   private transformDynamicsToContact(entity: DynamicsEntity): CRMContact {
+    const parentRef = entity.parentcustomerid as { name?: string } | undefined;
     return {
       id: (entity.contactid || entity['@odata.id']) as string,
       firstName: (entity.firstname || '') as string,
       lastName: (entity.lastname || '') as string,
       email: (entity.emailaddress1 || '') as string,
       phone: (entity.telephone1 || '') as string,
-      company: (entity.parentcustomerid?.name || '') as string,
+      company: parentRef?.name ?? '',
       lastModifiedAt: entity.modifiedon ? new Date(entity.modifiedon as string) : undefined,
       customFields: Object.fromEntries(
         Object.entries(entity).filter(
@@ -540,12 +549,14 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
   }
 
   private transformDynamicsToOpportunity(entity: DynamicsEntity): CRMDeal {
+    const customerId = entity.customerid as { id?: string } | undefined;
+    const currencyRef = entity.transactioncurrencyid as { name?: string } | undefined;
     return {
       id: (entity.opportunityid || entity['@odata.id']) as string,
       name: (entity.name || '') as string,
-      companyId: (entity.customerid?.id || '') as string,
+      companyId: customerId?.id ?? '',
       amount: (entity.estimatedvalue || 0) as number,
-      currency: (entity.transactioncurrencyid?.name || 'USD') as string,
+      currency: currencyRef?.name ?? 'USD',
       closeDate: entity.estimatedclosedate ? new Date(entity.estimatedclosedate as string) : undefined,
       description: (entity.description || '') as string,
       lastModifiedAt: entity.modifiedon ? new Date(entity.modifiedon as string) : undefined,
@@ -566,14 +577,17 @@ export class MicrosoftDynamicsAdapter extends CRMAdapterBase {
       note: 'note',
     };
 
+    const regardingRef = entity.regardingobjectid as { id?: string } | undefined;
+    const ownerRef = entity.ownerid as { name?: string } | undefined;
+
     return {
       id: (entity.activityid || entity['@odata.id']) as string,
       type: typeMap[(entity['@odata.type'] as string)?.split('.')?.pop() || 'task'] || 'task',
       subject: (entity.subject || '') as string,
       description: (entity.description || '') as string,
       recordType: 'contact',
-      recordId: (entity.regardingobjectid?.id || '') as string,
-      owner: (entity.ownerid?.name || '') as string,
+      recordId: regardingRef?.id ?? '',
+      owner: ownerRef?.name ?? '',
       dueDate: entity.scheduledend ? new Date(entity.scheduledend as string) : undefined,
       completedAt: entity.actualend ? new Date(entity.actualend as string) : undefined,
       lastModifiedAt: entity.modifiedon ? new Date(entity.modifiedon as string) : undefined,

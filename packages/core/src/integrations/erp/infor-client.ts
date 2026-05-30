@@ -281,6 +281,7 @@ export class InforClient {
       customerId: response.customerId,
       total: response.total,
       status: response.status,
+      lineItems: [],
     };
   }
 
@@ -297,6 +298,7 @@ export class InforClient {
       customerId: response.customerId,
       total: response.total,
       status: response.status,
+      lineItems: [],
     };
   }
 
@@ -342,6 +344,7 @@ export class InforClient {
       customerId: response.customerId,
       total: response.total,
       status: response.status,
+      lineItems: [],
     };
   }
 
@@ -359,6 +362,7 @@ export class InforClient {
       customerId: response.customerId,
       total: response.total,
       status: response.status,
+      lineItems: [],
     };
   }
 
@@ -399,6 +403,7 @@ export class InforClient {
       referenceNumber: response.referenceNumber,
       transactionDate: new Date(response.transactionDate),
       status: response.status,
+      lines: [],
     };
   }
 
@@ -413,6 +418,7 @@ export class InforClient {
       referenceNumber: response.referenceNumber,
       transactionDate: new Date(response.transactionDate),
       status: response.status,
+      lines: [],
     };
   }
 

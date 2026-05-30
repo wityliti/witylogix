@@ -48,8 +48,7 @@ const SOQLQuerySchema = z.object({
 
 const SObjectSchema = z.object({
   Id: z.string(),
-  [z.string()]: z.unknown(),
-});
+}).catchall(z.unknown());
 
 const CompositeRequestSchema = z.object({
   allOrNone: z.boolean().default(false),
@@ -381,7 +380,7 @@ export class SalesforceSDKClient {
    * ```
    */
   getAuthorizationUrl(options: { state?: string } = {}): string {
-    const baseUrl = this.baseUrls[this.config.environment];
+    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
@@ -409,7 +408,7 @@ export class SalesforceSDKClient {
   async handleOAuthCallback(code: string): Promise<SalesforceTokenResponse> {
     const validated = SalesforceOAuthCodeSchema.parse({ code });
 
-    const baseUrl = this.baseUrls[this.config.environment];
+    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: this.config.clientId,
@@ -455,7 +454,7 @@ export class SalesforceSDKClient {
       throw new Error('No refresh token available');
     }
 
-    const baseUrl = this.baseUrls[this.config.environment];
+    const baseUrl = this.baseUrls[this.config.environment as 'sandbox' | 'production'];
     const params = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: this.config.clientId,
@@ -572,7 +571,7 @@ export class SalesforceSDKClient {
     url.searchParams.set('q', query);
 
     const response = await this.makeRequest(url.toString(), { method: 'GET' });
-    return response.json();
+    return response.json() as Promise<SOQLResult>;
   }
 
   /**
@@ -852,7 +851,7 @@ export class SalesforceSDKClient {
   ): Promise<T> {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/${id}`;
     const response = await this.makeRequest(url, { method: 'GET' });
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   /**
@@ -868,7 +867,7 @@ export class SalesforceSDKClient {
       body: JSON.stringify(data),
     });
 
-    const result = await response.json();
+    const result = await response.json() as { id: string };
     return result.id;
   }
 
@@ -936,7 +935,7 @@ export class SalesforceSDKClient {
       body: JSON.stringify(validated),
     });
 
-    return response.json();
+    return response.json() as Promise<CompositeResponse>;
   }
 
   /**
@@ -965,7 +964,7 @@ export class SalesforceSDKClient {
       body: JSON.stringify(validated),
     });
 
-    return response.json();
+    return response.json() as Promise<BulkJob>;
   }
 
   /**
@@ -993,7 +992,7 @@ export class SalesforceSDKClient {
       body: JSON.stringify({ state: 'UploadComplete' }),
     });
 
-    return response.json();
+    return response.json() as Promise<BulkJob>;
   }
 
   /**
@@ -1003,7 +1002,7 @@ export class SalesforceSDKClient {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/jobs/ingest/${jobId}`;
     const response = await this.makeRequest(url, { method: 'GET' });
 
-    return response.json();
+    return response.json() as Promise<BulkJob>;
   }
 
   /**
@@ -1062,7 +1061,7 @@ export class SalesforceSDKClient {
     const url = `${this.instanceUrl}/services/data/${this.config.apiVersion}/sobjects/${sobject}/describe`;
     const response = await this.makeRequest(url, { method: 'GET' });
 
-    return response.json();
+    return response.json() as Promise<Record<string, unknown>>;
   }
 
   /**
@@ -1096,22 +1095,21 @@ export class SalesforceSDKClient {
    */
   private async makeRequest(
     url: string,
-    options: RequestInit & {
-      headers?: Record<string, string>;
-    } = {}
+    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
   ): Promise<Response> {
     if (!this.accessToken || !this.instanceUrl) {
       throw new Error('Not authenticated');
     }
 
+    const { headers: extraHeaders, ...restOptions } = options;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...extraHeaders,
     };
 
     const response = await fetch(url, {
-      ...options,
+      ...restOptions,
       headers,
     });
 
