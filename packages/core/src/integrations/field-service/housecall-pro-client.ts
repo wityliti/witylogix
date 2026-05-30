@@ -328,7 +328,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
-      const job = await this.updateJob(workOrderId, updates);
+      const job = await this.updateJob(workOrderId, updates as Partial<Job>);
       return {
         id: job.id,
         externalId: job.externalId,
@@ -953,7 +953,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       status: (data.estimate_status.toLowerCase() as any) || 'draft',
       issueDate: new Date(data.created_date),
       expiryDate: data.expiration_date ? new Date(data.expiration_date) : undefined,
-      lineItems: data.line_items || [],
+      lineItems: (data.line_items || []).map((item) => ({ ...item, unitPrice: item.unit_price, total: item.quantity * item.unit_price })),
       subtotal: data.total_price * 0.9,
       total: data.total_price,
       notes: data.notes,
@@ -976,7 +976,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       status: (data.invoice_status.toLowerCase() as any) || 'draft',
       invoiceDate: new Date(data.created_date),
       dueDate: new Date(data.due_date),
-      lineItems: data.line_items || [],
+      lineItems: (data.line_items || []).map((item) => ({ ...item, unitPrice: item.unit_price, total: item.quantity * item.unit_price })),
       subtotal: data.total_price * 0.9,
       total: data.total_price,
       amountPaid: data.amount_paid,

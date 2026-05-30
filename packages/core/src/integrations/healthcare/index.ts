@@ -29,7 +29,6 @@ export {
   type TerminologyMapping,
   type CodeSystem,
   type BulkExportParams,
-  type BulkExportResult,
   type SMARTLaunchParams,
   type SMARTContext,
 } from "./types.js";

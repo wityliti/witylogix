@@ -9,6 +9,7 @@ import type {
   Job,
   WorkOrder,
   Technician,
+  TechnicianCertification,
   Estimate,
   Invoice,
   CustomerRecord,
@@ -18,6 +19,7 @@ import type {
   FieldServiceConnection,
   PaginationParams,
   PaginatedResult,
+  PriorityLevel,
   FieldServiceBatchResult,
 } from './types.js';
 
@@ -377,18 +379,22 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   async listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>> {
     return this.executeWithRetry(async () => {
       const result = await this.listJobs(params);
+      const workOrders: WorkOrder[] = result.items.map((job) => ({
+        id: job.id,
+        externalId: job.externalId,
+        workOrderNumber: job.jobNumber,
+        jobId: job.customerId,
+        status: 'in_progress' as const,
+        description: job.description ?? '',
+        priority: job.priority,
+        createdAt: job.createdAt,
+      }));
       return {
-        ...result,
-        items: result.items.map((job) => ({
-          id: job.id,
-          externalId: job.externalId,
-          workOrderNumber: job.jobNumber,
-          jobId: job.customerId,
-          status: 'in_progress' as const,
-          description: job.description,
-          priority: job.priority,
-          createdAt: job.createdAt,
-        })),
+        items: workOrders,
+        total: result.total,
+        hasMore: result.hasMore,
+        nextOffset: result.nextOffset,
+        pageToken: result.pageToken,
       };
     });
   }
@@ -1010,7 +1016,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       mobile: data.mobile,
       status: (data.status.toLowerCase() as any) || 'available',
       skills: data.skillIds || [],
-      certifications: data.certifications || [],
+      certifications: (data.certifications || []).map((c: { name: string; expiryDate?: string }): TechnicianCertification => ({
+        name: c.name,
+        expiryDate: c.expiryDate ? new Date(c.expiryDate) : undefined,
+      })),
       currentLocation: data.currentLocationLatitude && data.currentLocationLongitude
         ? {
             latitude: data.currentLocationLatitude,
@@ -1040,7 +1049,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       status: (data.status.toLowerCase() as any) || 'draft',
       issueDate: new Date(data.issueDate),
       expiryDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
-      lineItems: data.lineItems || [],
+      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
       subtotal: data.total * 0.9,
       total: data.total,
       notes: data.notes,
@@ -1061,7 +1070,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       status: (data.status.toLowerCase() as any) || 'draft',
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: data.lineItems || [],
+      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,
@@ -1073,13 +1082,13 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Reverse map priority from ServiceTitan number
    */
-  private unmapPriority(priority: number): string {
-    const map: Record<number, string> = {
+  private unmapPriority(priority: number): PriorityLevel {
+    const map: Record<number, PriorityLevel> = {
       0: 'urgent',
       1: 'high',
       2: 'medium',
       3: 'low',
     };
-    return map[priority] || 'medium';
+    return map[priority] ?? 'medium';
   }
 }

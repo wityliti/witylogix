@@ -7,7 +7,9 @@
 import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
 import type {
   Job,
+  JobStatus,
   WorkOrder,
+  WorkOrderStatus,
   Technician,
   Equipment,
   Invoice,
@@ -18,6 +20,20 @@ import type {
   PaginatedResult,
   FieldServiceBatchResult,
 } from './types.js';
+
+/** Map FieldEdge WorkOrderStatus to the normalized JobStatus. */
+function workOrderStatusToJobStatus(status: WorkOrderStatus | undefined): JobStatus | undefined {
+  if (status === undefined) return undefined;
+  const map: Record<WorkOrderStatus, JobStatus> = {
+    open: 'scheduled',
+    assigned: 'scheduled',
+    in_progress: 'in_progress',
+    completed: 'completed',
+    closed: 'completed',
+    cancelled: 'cancelled',
+  };
+  return map[status] ?? 'scheduled';
+}
 
 interface FieldEdgeWorkOrderData {
   id: string;
@@ -191,7 +207,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       const workOrder = await this.createWorkOrder({
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: job.status,
+        status: 'open' as WorkOrderStatus,
         description: job.title,
         priority: job.priority,
         scheduledStart: job.scheduledStart,
@@ -205,7 +221,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrder.status,
+        status: workOrderStatusToJobStatus(workOrder.status) ?? 'scheduled',
         priority: workOrder.priority,
         scheduledStart: workOrder.scheduledStart,
         location: { address: '', city: '', postalCode: '', country: '' },
@@ -227,7 +243,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrder.status,
+        status: workOrderStatusToJobStatus(workOrder.status) ?? 'scheduled',
         priority: workOrder.priority,
         scheduledStart: workOrder.scheduledStart,
         location: { address: '', city: '', postalCode: '', country: '' },
@@ -242,7 +258,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   async updateJob(jobId: string, updates: Partial<Job>): Promise<Job> {
     return this.executeWithRetry(async () => {
       const workOrder = await this.updateWorkOrder(jobId, {
-        status: updates.status,
+        status: 'in_progress' as WorkOrderStatus,
         description: updates.title,
         priority: updates.priority,
       });
@@ -254,7 +270,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrder.status,
+        status: workOrderStatusToJobStatus(workOrder.status) ?? 'in_progress',
         priority: workOrder.priority,
         location: { address: '', city: '', postalCode: '', country: '' },
         createdAt: workOrder.createdAt,
@@ -286,7 +302,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
           customerId: wo.jobId,
           title: wo.description,
           description: wo.description,
-          status: wo.status,
+          status: workOrderStatusToJobStatus(wo.status) ?? 'scheduled',
           priority: wo.priority,
           scheduledStart: wo.scheduledStart,
           location: { address: '', city: '', postalCode: '', country: '' },
@@ -960,7 +976,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       status: (data.status.toLowerCase() as any) || 'draft',
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: data.lineItems || [],
+      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,

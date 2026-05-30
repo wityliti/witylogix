@@ -99,8 +99,8 @@ interface AzureADToken {
  * Supports both service principal and master user authentication.
  */
 export class PowerBIClient extends AnalyticsAdapter {
-  private accessToken: string | null = null;
-  private refreshToken: string | null = null;
+  private accessToken: string = '';
+  private refreshToken: string = '';
   private tokenExpiresAt: number = 0;
   private groupId: string = '';
 

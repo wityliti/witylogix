@@ -15,12 +15,12 @@
  * - Full error handling and validation
  */
 
-import { fetch } from "undici";
 import { createHmac } from "crypto";
 import { v4 as uuid } from "uuid";
 
 import type {
   NormalizedEnvelope,
+  NormalizedEnvelopeStatus,
   NormalizedTemplate,
   NormalizedSigner,
   NormalizedField,
@@ -189,7 +189,7 @@ export class PandaDocV2SDKClient {
           method,
           headers,
           body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
-          timeout: this.config.requestTimeout || 30000,
+          signal: AbortSignal.timeout(this.config.requestTimeout || 30000),
         });
 
         if (response.status === 429) {
@@ -701,8 +701,8 @@ export class PandaDocV2SDKClient {
     };
   }
 
-  private normalizeStatus(status: string): string {
-    const statusMap: Record<string, string> = {
+  private normalizeStatus(status: string): NormalizedEnvelopeStatus {
+    const statusMap: Record<string, NormalizedEnvelopeStatus> = {
       draft: "created",
       sent: "sent",
       viewed: "delivered",
@@ -712,11 +712,11 @@ export class PandaDocV2SDKClient {
       voided: "voided",
       expired: "expired",
     };
-    return statusMap[status.toLowerCase()] || status;
+    return statusMap[status.toLowerCase()] ?? "sent";
   }
 
-  private normalizeEventType(eventType: string): string {
-    const eventMap: Record<string, string> = {
+  private normalizeEventType(eventType: string): WebhookEvent["eventType"] {
+    const eventMap: Record<string, WebhookEvent["eventType"]> = {
       document_created: "envelope_created",
       document_sent: "envelope_sent",
       document_viewed: "envelope_viewed",
@@ -727,6 +727,6 @@ export class PandaDocV2SDKClient {
       recipient_signed: "signer_signed",
       recipient_declined: "signer_declined",
     };
-    return eventMap[eventType.toLowerCase()] || eventType;
+    return eventMap[eventType.toLowerCase()] ?? "envelope_sent";
   }
 }
