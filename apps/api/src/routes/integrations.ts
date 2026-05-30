@@ -546,57 +546,327 @@ export default async function integrationRoutes(app: FastifyInstance): Promise<v
     },
   );
 
-  // ── GET /:id/stats — Integration usage stats ────────────────
+  // ── GET /connections — List installed integrations as connections ──
+
+  app.get("/connections", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const shopId = request.shopId;
+
+      const installed = await prisma.integration.findMany({
+        where: { shopId },
+        include: { app: true },
+        orderBy: { installedAt: "desc" },
+      });
+
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const eventCounts = await prisma.integrationEvent.groupBy({
+        by: ["integrationId", "eventType"],
+        where: {
+          shopId,
+          integrationId: { in: installed.map((i) => i.id) },
+          timestamp: { gte: thirtyDaysAgo },
+        },
+        _count: { id: true },
+      });
+
+      const countMap = new Map<string, { api: number; errors: number }>();
+      for (const row of eventCounts) {
+        if (!row.integrationId) continue;
+        const existing = countMap.get(row.integrationId) ?? { api: 0, errors: 0 };
+        if (row.eventType === "METER" || row.eventType === "SYNC") {
+          existing.api += row._count.id;
+        }
+        countMap.set(row.integrationId, existing);
+      }
+
+      const connections = installed.map((integration) => {
+        const counts = countMap.get(integration.id) ?? { api: 0, errors: 0 };
+
+        let status: "connected" | "disconnected" | "error" | "pending";
+        if (!integration.isEnabled) {
+          status = "disconnected";
+        } else if (integration.healthStatus === "ERROR") {
+          status = "error";
+        } else if (integration.healthStatus === "UNKNOWN") {
+          status = "pending";
+        } else {
+          status = "connected";
+        }
+
+        const uptime =
+          integration.healthStatus === "DEGRADED"
+            ? 95
+            : integration.healthStatus === "ERROR"
+              ? 0
+              : 100;
+
+        return {
+          id: integration.appSlug,
+          providerId: integration.appSlug,
+          providerName: integration.app.name,
+          status,
+          lastSyncTime: integration.lastSyncAt?.toISOString(),
+          apiCallsCount: counts.api,
+          errorCount: counts.errors,
+          uptime,
+          category: integration.app.category.toLowerCase(),
+          icon: integration.app.logoUrl ?? integration.appSlug,
+        };
+      });
+
+      return reply.send({ connections });
+    } catch (err) {
+      throw err;
+    }
+  });
+
+  // ── DELETE /connections/:connectionId — Disconnect by slug ──
+
+  app.delete<{ Params: { connectionId: string } }>(
+    "/connections/:connectionId",
+    { preHandler: [requireRole("ADMIN")] },
+    async (request, reply) => {
+      try {
+        const { connectionId } = request.params;
+        const shopId = request.shopId;
+
+        const existing = await prisma.integration.findUnique({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+        });
+        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+
+        await prisma.integrationEvent.create({
+          data: {
+            shopId,
+            appSlug: connectionId,
+            integrationId: existing.id,
+            eventType: "UNINSTALL",
+            metadata: {},
+          },
+        });
+        await prisma.integration.delete({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+        });
+
+        return reply.send({ message: `${connectionId} disconnected successfully` });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── POST /connections/:connectionId/pause ───────────────────
+
+  app.post<{ Params: { connectionId: string } }>(
+    "/connections/:connectionId/pause",
+    async (request, reply) => {
+      try {
+        const { connectionId } = request.params;
+        const shopId = request.shopId;
+
+        const existing = await prisma.integration.findUnique({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+        });
+        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+
+        await prisma.integration.update({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+          data: { isEnabled: false },
+        });
+
+        return reply.send({ message: "Sync paused" });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── POST /connections/:connectionId/resume ──────────────────
+
+  app.post<{ Params: { connectionId: string } }>(
+    "/connections/:connectionId/resume",
+    async (request, reply) => {
+      try {
+        const { connectionId } = request.params;
+        const shopId = request.shopId;
+
+        const existing = await prisma.integration.findUnique({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+        });
+        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+
+        await prisma.integration.update({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+          data: { isEnabled: true },
+        });
+
+        return reply.send({ message: "Sync resumed" });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── POST /connections/:connectionId/force-sync ──────────────
+
+  app.post<{ Params: { connectionId: string } }>(
+    "/connections/:connectionId/force-sync",
+    async (request, reply) => {
+      try {
+        const { connectionId } = request.params;
+        const shopId = request.shopId;
+
+        const existing = await prisma.integration.findUnique({
+          where: { shopId_appSlug: { shopId, appSlug: connectionId } },
+        });
+        if (!existing) return reply.status(404).send({ error: "Integration not found" });
+
+        await prisma.integration.update({
+          where: { id: existing.id },
+          data: { lastSyncAt: new Date() },
+        });
+        await prisma.integrationEvent.create({
+          data: {
+            shopId,
+            appSlug: connectionId,
+            integrationId: existing.id,
+            eventType: "SYNC",
+            metadata: { forced: true },
+          },
+        });
+
+        return reply.send({ message: "Sync triggered" });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── GET /:slug/usage — Usage metrics grouped by period ──────
 
   app.get(
-    "/:id/stats",
+    "/:slug/usage",
     async (
-      request: FastifyRequest<{ Params: { id: string } }>,
+      request: FastifyRequest<{ Params: { slug: string } }>,
       reply: FastifyReply,
     ) => {
       try {
-        const { id } = request.params;
+        const { slug } = request.params;
         const shopId = request.shopId;
 
-        // Look up recent events for this integration
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const integration = await prisma.integration.findUnique({
+          where: { shopId_appSlug: { shopId, appSlug: slug } },
+        });
+        if (!integration) return reply.status(404).send({ error: "Integration not found" });
 
-        const [allTimeEvents, monthEvents, weekEvents, todayEvents, recentEvents] = await Promise.all([
-          prisma.integrationEvent.count({ where: { shopId, appSlug: id } }),
-          prisma.integrationEvent.count({ where: { shopId, appSlug: id, timestamp: { gte: thirtyDaysAgo } } }),
-          prisma.integrationEvent.count({ where: { shopId, appSlug: id, timestamp: { gte: weekStart } } }),
-          prisma.integrationEvent.count({ where: { shopId, appSlug: id, timestamp: { gte: todayStart } } }),
-          prisma.integrationEvent.findMany({
-            where: { shopId, appSlug: id },
-            orderBy: { timestamp: "desc" },
-            take: 10,
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        const [apiToday, apiWeek, apiMonth, webhooksToday] = await Promise.all([
+          prisma.integrationEvent.count({
+            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfToday } },
+          }),
+          prisma.integrationEvent.count({
+            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfWeek } },
+          }),
+          prisma.integrationEvent.count({
+            where: { integrationId: integration.id, eventType: "METER", timestamp: { gte: startOfMonth } },
+          }),
+          prisma.integrationEvent.count({
+            where: { integrationId: integration.id, eventType: "WEBHOOK", timestamp: { gte: startOfToday } },
           }),
         ]);
 
-        const usageMetrics = [
-          { label: "API Calls", value: todayEvents, unit: "calls", period: "today" },
-          { label: "API Calls", value: weekEvents, unit: "calls", period: "week" },
-          { label: "API Calls", value: monthEvents, unit: "calls", period: "month" },
-        ];
-
-        const activityLog = recentEvents.map((event) => ({
-          id: event.id,
-          type: event.eventType,
-          description: `${event.eventType.replace(/_/g, " ").toLowerCase()} event`,
-          timestamp: event.timestamp.toISOString(),
-          status: "success" as const,
-        }));
-
         return reply.send({
-          data: {
-            usageMetrics,
-            activityLog,
-            errors: [],
-          },
+          usage: [
+            { label: "API Calls", value: apiToday, unit: "calls", period: "today" },
+            { label: "API Calls", value: apiWeek, unit: "calls", period: "week" },
+            { label: "API Calls", value: apiMonth, unit: "calls", period: "month" },
+            { label: "Data Synced", value: 0, unit: "GB", period: "month" },
+            { label: "Webhooks", value: webhooksToday, unit: "events", period: "today" },
+          ],
         });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── GET /:slug/activity — Recent activity events ─────────────
+
+  app.get(
+    "/:slug/activity",
+    async (
+      request: FastifyRequest<{ Params: { slug: string } }>,
+      reply: FastifyReply,
+    ) => {
+      try {
+        const { slug } = request.params;
+        const shopId = request.shopId;
+
+        const events = await prisma.integrationEvent.findMany({
+          where: { shopId, appSlug: slug },
+          orderBy: { timestamp: "desc" },
+          take: 20,
+        });
+
+        const activity = events.map((event) => {
+          const meta = event.metadata as Record<string, unknown>;
+          const isError = event.eventType === "HEALTH_CHECK" && meta?.healthy === false;
+          return {
+            id: event.id,
+            type: event.eventType.toLowerCase(),
+            description: describeEvent(event.eventType, event.operation, meta),
+            timestamp: event.timestamp.toISOString(),
+            status: isError ? "error" : "success",
+          };
+        });
+
+        return reply.send({ activity });
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
+
+  // ── GET /:slug/errors — Recent error events ──────────────────
+
+  app.get(
+    "/:slug/errors",
+    async (
+      request: FastifyRequest<{ Params: { slug: string } }>,
+      reply: FastifyReply,
+    ) => {
+      try {
+        const { slug } = request.params;
+        const shopId = request.shopId;
+
+        const errorEvents = await prisma.integrationEvent.findMany({
+          where: { shopId, appSlug: slug, eventType: "HEALTH_CHECK" },
+          orderBy: { timestamp: "desc" },
+          take: 20,
+        });
+
+        const errors = errorEvents
+          .filter((event) => {
+            const meta = event.metadata as Record<string, unknown>;
+            return meta?.healthy === false;
+          })
+          .map((event) => {
+            const meta = event.metadata as Record<string, unknown>;
+            return {
+              id: event.id,
+              timestamp: event.timestamp.toISOString(),
+              error: (meta?.error as string) ?? "Connection error",
+              stackTrace: (meta?.stackTrace as string) ?? "",
+              context: (meta?.context as string) ?? "",
+            };
+          });
+
+        return reply.send({ errors });
       } catch (err) {
         throw err;
       }
