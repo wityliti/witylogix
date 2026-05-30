@@ -1,260 +1,144 @@
 import { useState, useEffect } from 'react'
-import type { AIEtaData } from '../lib/api'
 
 export interface ETADisplayProps {
+  /** ISO datetime string — either estimatedArrival or actualDelivery from the API */
   estimatedDelivery: string
+  /** Time slot name from the API (e.g. "Morning 8am–12pm") */
   timeSlot?: string
   isLive: boolean
-  aiEta?: AIEtaData | null
+  /** When true, shows "Delivered on …" wording instead of countdown */
+  isDelivered?: boolean
 }
 
 const BRAND_BLUE = '#005bd3'
 const BRAND_GREEN = '#008060'
+const LIGHT_TEXT = '#6b7280'
+const DARK_TEXT = '#1f2937'
 
-export function ETADisplay({
-  estimatedDelivery,
-  timeSlot,
-  isLive,
-  aiEta,
-}: ETADisplayProps) {
-  const [countdown, setCountdown] = useState<string>('')
-  const [isToday, setIsToday] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+function formatDeliveryDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function formatTimeString(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+}
+
+function isDateToday(iso: string): boolean {
+  const d = new Date(iso)
+  const now = new Date()
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  )
+}
+
+function computeCountdown(iso: string): string {
+  const diff = Math.max(0, new Date(iso).getTime() - Date.now())
+  if (diff === 0) return ''
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  return hours > 0 ? `${hours}h ${minutes}m` : `${Math.max(minutes, 1)}m`
+}
+
+export function ETADisplay({ estimatedDelivery, timeSlot, isLive, isDelivered = false }: ETADisplayProps) {
+  const [countdown, setCountdown] = useState(() => computeCountdown(estimatedDelivery))
+  const today = isDateToday(estimatedDelivery)
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  useEffect(() => {
-    const calculateCountdown = () => {
-      const eta = new Date(displayEta).getTime()
-      const now = Date.now()
-      const diff = eta - now
-
-      // Check if delivery is today
-      const etaDate = new Date(displayEta)
-      const todayDate = new Date()
-      const isDeliveryToday =
-        etaDate.getFullYear() === todayDate.getFullYear() &&
-        etaDate.getMonth() === todayDate.getMonth() &&
-        etaDate.getDate() === todayDate.getDate()
-
-      setIsToday(isDeliveryToday && diff > 0)
-
-      if (isDeliveryToday && diff > 0) {
-        const hours = Math.floor(diff / (1000 * 60 * 60))
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-        if (hours > 0) {
-          setCountdown(`${hours}h ${minutes}m`)
-        } else {
-          setCountdown(`${Math.max(minutes, 1)}m`)
-        }
-      } else {
-        setCountdown('')
-      }
-    }
-
-    calculateCountdown()
-    const interval = setInterval(calculateCountdown, 60000) // Update every minute
-
-    return () => clearInterval(interval)
+    setCountdown(computeCountdown(estimatedDelivery))
+    const id = setInterval(() => setCountdown(computeCountdown(estimatedDelivery)), 60_000)
+    return () => clearInterval(id)
   }, [estimatedDelivery])
 
-  const formatDeliveryDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    }
-    return date.toLocaleDateString('en-US', options)
-  }
-
-  const formatTimeSlot = (slot?: string) => {
-    if (!slot) return null
-    return `Expected between ${slot}`
-  }
-
-  const formatTime = (iso: string) => {
-    return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-  }
-
-  // Use AI ETA as primary source when available
-  const displayEta = aiEta ? aiEta.estimatedArrival : estimatedDelivery
+  const label = isDelivered ? 'Delivered On' : 'Estimated Delivery'
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-      }}
-    >
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <p
-            style={{
-              fontSize: '12px',
-              color: '#6b7280',
-              margin: '0',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Estimated Delivery
-          </p>
-          {aiEta?.isAIPredicted && (
-            <span
-              style={{
-                fontSize: '10px',
-                fontWeight: '600',
-                color: '#7c3aed',
-                backgroundColor: '#f5f3ff',
-                border: '1px solid #ddd6fe',
-                borderRadius: '4px',
-                padding: '1px 6px',
-                letterSpacing: '0.3px',
-              }}
-            >
-              Powered by AI
-            </span>
-          )}
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <p
+        style={{
+          fontSize: '11px',
+          color: LIGHT_TEXT,
+          margin: 0,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          fontWeight: '600',
+        }}
+      >
+        {label}
+      </p>
 
-        {/* Countdown Timer (if today) */}
-        {isToday && countdown && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginBottom: '12px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: isMobile ? '28px' : '36px',
-                fontWeight: '700',
-                color: BRAND_GREEN,
-              }}
-            >
-              {countdown}
-            </div>
-            <div>
-              <p
-                style={{
-                  fontSize: isMobile ? '13px' : '14px',
-                  color: '#6b7280',
-                  margin: '0',
-                }}
-              >
-                until delivery
-              </p>
-              {isLive && (
-                <div
+      {/* Countdown (today, not yet delivered) */}
+      {today && countdown && !isDelivered && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ fontSize: '32px', fontWeight: '800', color: BRAND_GREEN, letterSpacing: '-1px' }}>
+            {countdown}
+          </div>
+          <div>
+            <p style={{ fontSize: '13px', color: LIGHT_TEXT, margin: 0 }}>until delivery</p>
+            {isLive && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '4px' }}>
+                <span
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    marginTop: '4px',
+                    width: '7px', height: '7px', borderRadius: '50%',
+                    backgroundColor: BRAND_GREEN, display: 'inline-block',
+                    animation: 'eta-pulse 2s ease-in-out infinite',
                   }}
-                >
-                  <div
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      backgroundColor: BRAND_GREEN,
-                      borderRadius: '50%',
-                      animation: 'pulse 2s ease-in-out infinite',
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      color: BRAND_GREEN,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Live Tracking
-                  </span>
-                </div>
-              )}
-            </div>
+                />
+                <span style={{ fontSize: '11px', color: BRAND_GREEN, fontWeight: '600' }}>Live</span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Time Slot Display */}
-        {timeSlot && (
-          <div
-            style={{
-              backgroundColor: '#f0f9ff',
-              border: `1px solid #bfdbfe`,
-              borderRadius: '8px',
-              padding: '12px',
-              marginBottom: '12px',
-            }}
-          >
-            <p
-              style={{
-                fontSize: '14px',
-                color: '#1e40af',
-                margin: '0',
-                fontWeight: '500',
-              }}
-            >
-              {formatTimeSlot(timeSlot)}
-            </p>
-          </div>
-        )}
-
-        {/* Date Display (if not today or no countdown) */}
-        {!isToday || !countdown ? (
-          <div
-            style={{
-              backgroundColor: '#f3f4f6',
-              padding: '12px',
-              borderRadius: '8px',
-              borderLeft: `4px solid ${BRAND_BLUE}`,
-            }}
-          >
-            <p
-              style={{
-                fontSize: isMobile ? '14px' : '15px',
-                fontWeight: '600',
-                color: '#1f2937',
-                margin: '0',
-              }}
-            >
-              {formatDeliveryDate(displayEta)}
-            </p>
-          </div>
-        ) : null}
-
-        {/* AI Confidence Range */}
-        {aiEta?.isAIPredicted && (
-          <p
-            style={{
-              fontSize: '12px',
-              color: '#6b7280',
-              margin: '4px 0 0 0',
-            }}
-          >
-            between {formatTime(aiEta.confidenceLow)} and {formatTime(aiEta.confidenceHigh)}
+      {/* Time slot */}
+      {timeSlot && (
+        <div
+          style={{
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: '8px',
+            padding: '10px 12px',
+          }}
+        >
+          <p style={{ fontSize: '13px', color: '#1e40af', margin: 0, fontWeight: '500' }}>
+            {timeSlot}
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
-      <style>
-        {`@keyframes pulse {
+      {/* Full date */}
+      {(!today || isDelivered || !countdown) && (
+        <div
+          style={{
+            backgroundColor: '#f3f4f6',
+            padding: '11px 14px',
+            borderRadius: '8px',
+            borderLeft: `4px solid ${isDelivered ? BRAND_GREEN : BRAND_BLUE}`,
+          }}
+        >
+          <p style={{ fontSize: '15px', fontWeight: '600', color: DARK_TEXT, margin: 0 }}>
+            {formatDeliveryDate(estimatedDelivery)}
+            {today && isDelivered && (
+              <span style={{ color: LIGHT_TEXT, fontWeight: '400', fontSize: '13px' }}>
+                {' '}at {formatTimeString(estimatedDelivery)}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes eta-pulse {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }`}
-      </style>
+          50% { opacity: 0.45; }
+        }
+      `}</style>
     </div>
   )
 }
