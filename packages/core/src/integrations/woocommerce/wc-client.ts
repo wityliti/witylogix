@@ -189,7 +189,7 @@ export class WooCommerceClient {
     const options: RequestInit = {
       method,
       headers,
-      timeout: this.config.timeout,
+      signal: this.config.timeout ? AbortSignal.timeout(this.config.timeout) : undefined,
     };
 
     if (body && (method === "POST" || method === "PUT")) {

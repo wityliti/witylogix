@@ -4,8 +4,8 @@
  */
 
 export {
-  WooCommerceClient,
-  createWooCommerceClient,
+  WooCommerceClient as WCRestApiClient,
+  createWooCommerceClient as createWCRestApiClient,
 } from "./wc-client.js";
 
 export {

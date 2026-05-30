@@ -805,7 +805,7 @@ export class UberDirectClient extends LastMileAdapter {
   /**
    * Get organization information
    */
-  async getOrganizationInfo(): Promise<Record<string, any>> {
+  async getOrganizationInfo(): Promise<Record<string, unknown>> {
     return this.executeWithCircuitBreaker(async () => {
       await this.checkRateLimit('uber-org-info');
 
@@ -826,7 +826,7 @@ export class UberDirectClient extends LastMileAdapter {
           throw new Error(`Uber Direct API error: ${response.statusText}`);
         }
 
-        return await response.json();
+        return (await response.json()) as Record<string, unknown>;
       } catch (error) {
         throw new Error(
           `Failed to get Uber Direct org info: ${error instanceof Error ? error.message : String(error)}`

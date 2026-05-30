@@ -3,13 +3,15 @@
  * Converts platform-specific data formats to unified Witylogix schema
  */
 
+import {
+  PlatformSource,
+} from './types.js';
 import type {
   UnifiedOrder,
   UnifiedProduct,
   UnifiedCustomer,
   UnifiedLineItem,
   UnifiedAddress,
-  PlatformSource,
   NormalizationResult,
   NormalizationError,
 } from './types.js';
@@ -34,11 +36,11 @@ export class DataNormalizer {
   ): NormalizationResult<UnifiedOrder> {
     try {
       switch (source) {
-        case 'woocommerce':
+        case PlatformSource.WOOCOMMERCE:
           return this.normalizeWooCommerceOrder(rawOrder as WCOrder);
-        case 'shopify':
+        case PlatformSource.SHOPIFY:
           return this.normalizeShopifyOrder(rawOrder as any);
-        case 'magento':
+        case PlatformSource.MAGENTO:
           return this.normalizeMagentoOrder(rawOrder as any);
         default:
           return {
@@ -75,11 +77,11 @@ export class DataNormalizer {
   ): NormalizationResult<UnifiedProduct> {
     try {
       switch (source) {
-        case 'woocommerce':
+        case PlatformSource.WOOCOMMERCE:
           return this.normalizeWooCommerceProduct(rawProduct as WCProduct);
-        case 'shopify':
+        case PlatformSource.SHOPIFY:
           return this.normalizeShopifyProduct(rawProduct as any);
-        case 'magento':
+        case PlatformSource.MAGENTO:
           return this.normalizeMagentoProduct(rawProduct as any);
         default:
           return {
@@ -116,11 +118,11 @@ export class DataNormalizer {
   ): NormalizationResult<UnifiedCustomer> {
     try {
       switch (source) {
-        case 'woocommerce':
+        case PlatformSource.WOOCOMMERCE:
           return this.normalizeWooCommerceCustomer(rawCustomer as WCCustomer);
-        case 'shopify':
+        case PlatformSource.SHOPIFY:
           return this.normalizeShopifyCustomer(rawCustomer as any);
-        case 'magento':
+        case PlatformSource.MAGENTO:
           return this.normalizeMagentoCustomer(rawCustomer as any);
         default:
           return {
@@ -158,7 +160,7 @@ export class DataNormalizer {
       const normalizedOrder: UnifiedOrder = {
         id: `wc-order-${order.id}`,
         externalId: order.id.toString(),
-        platform: 'woocommerce',
+        platform: PlatformSource.WOOCOMMERCE,
         number: order.number || order.id.toString(),
         status: this.mapWooCommerceOrderStatus(order.status),
         currency: order.currency,
@@ -167,7 +169,7 @@ export class DataNormalizer {
         customer: {
           id: `wc-customer-${order.customer_id}`,
           externalId: order.customer_id.toString(),
-          platform: 'woocommerce',
+          platform: PlatformSource.WOOCOMMERCE,
           email: order.billing.email || '',
           firstName: order.billing.first_name,
           lastName: order.billing.last_name,
@@ -175,6 +177,7 @@ export class DataNormalizer {
           isVerified: order.customer_id > 0,
           totalOrders: 0,
           totalSpent: 0,
+          shippingAddresses: [],
           createdAt: new Date(order.date_created),
           modifiedAt: new Date(order.date_modified),
           metadata: {},
@@ -223,7 +226,7 @@ export class DataNormalizer {
       const normalizedProduct: UnifiedProduct = {
         id: `wc-product-${product.id}`,
         externalId: product.id.toString(),
-        platform: 'woocommerce',
+        platform: PlatformSource.WOOCOMMERCE,
         name: product.name,
         description: product.description,
         sku: product.sku,
@@ -288,7 +291,7 @@ export class DataNormalizer {
       const normalizedCustomer: UnifiedCustomer = {
         id: `wc-customer-${customer.id}`,
         externalId: customer.id.toString(),
-        platform: 'woocommerce',
+        platform: PlatformSource.WOOCOMMERCE,
         email: customer.email,
         firstName: customer.first_name,
         lastName: customer.last_name,

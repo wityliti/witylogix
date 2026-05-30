@@ -90,7 +90,7 @@ export class ProductSyncService {
       status: (wlProduct.status as string) === "active" ? "publish" : "draft",
       stock_quantity: inventory?.quantity ? parseInt(inventory.quantity.toString()) : 0,
       manage_stock: inventory?.managed as boolean || false,
-      stock_status: (inventory?.status as string) || "instock",
+      stock_status: ((inventory?.status as string) || "instock") as "instock" | "outofstock" | "onbackorder",
     };
   }
 

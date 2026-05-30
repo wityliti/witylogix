@@ -99,7 +99,7 @@ export class GoogleMapsService {
       throw new Error(`Google Maps API Error [${response.status}]: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as { status: string; error_message?: string };
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       throw new Error(`Google Maps API Error: ${data.status} - ${data.error_message || 'Unknown error'}`);
@@ -112,7 +112,7 @@ export class GoogleMapsService {
     // Cache result
     this.cache.set(cacheKey, { data, timestamp: Date.now() });
 
-    return data;
+    return data as T;
   }
 
   /**
@@ -289,8 +289,9 @@ export class GoogleMapsService {
       if (lat > Math.min(p1y, p2y)) {
         if (lat <= Math.max(p1y, p2y)) {
           if (lng <= Math.max(p1x, p2x)) {
+            let xinters = 0;
             if (p1y !== p2y) {
-              const xinters = ((lat - p1y) * (p2x - p1x)) / (p2y - p1y) + p1x;
+              xinters = ((lat - p1y) * (p2x - p1x)) / (p2y - p1y) + p1x;
             }
             if (p1x === p2x || lng <= xinters) {
               inside = !inside;
