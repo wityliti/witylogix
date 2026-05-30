@@ -469,7 +469,6 @@ export class BraintreeClient extends PaymentAdapter {
       'transaction.voided': 'voided',
       'transaction.submitted_for_settlement': 'captured',
       'transaction.failed': 'failed',
-      'transaction.voided': 'voided',
       'payment_method_customer_data_updated': 'payment_method_updated',
       'subscription_charged_successfully': 'subscription_charged',
       'subscription_charging_failed': 'subscription_failed',
@@ -590,7 +589,7 @@ export class BraintreeClient extends PaymentAdapter {
 
     try {
       const response = await fetch(`${this.apiUrl}/merchants/${this.config.merchantId}${path}`, options);
-      const data = await response.json();
+      const data = (await response.json()) as Record<string, unknown>;
 
       if (!response.ok && response.status >= 400) {
         return { success: false, errors: data };

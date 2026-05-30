@@ -681,10 +681,13 @@ export class StripeClient {
 
     while (attempt < this.maxNetworkRetries) {
       try {
+        const abortCtrl = new AbortController();
+        const timeoutId = setTimeout(() => abortCtrl.abort(), this.timeout);
+
         const fetchOptions: RequestInit = {
           method,
           headers,
-          timeout: this.timeout,
+          signal: abortCtrl.signal,
         };
 
         if (method !== 'GET' && payload) {
@@ -694,7 +697,12 @@ export class StripeClient {
           headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
 
-        const response = await fetch(url, fetchOptions);
+        let response: Response;
+        try {
+          response = await fetch(url, fetchOptions);
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         // Extract rate limit info from headers
         const rateLimitHeader = response.headers.get('stripe-limit-remaining');
@@ -710,8 +718,8 @@ export class StripeClient {
         }
 
         if (!response.ok) {
-          const errorData = await response.json();
-          const stripeError = errorData.error || {};
+          const errorData = (await response.json()) as { error?: StripeErrorResponse };
+          const stripeError = errorData.error ?? ({} as StripeErrorResponse);
 
           const isRetryable =
             response.status >= 500 ||
