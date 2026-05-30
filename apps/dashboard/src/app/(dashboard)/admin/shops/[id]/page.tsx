@@ -62,84 +62,23 @@ interface ActivityItem {
   shopName?: string;
 }
 
-
-interface ShopApiResponse {
-  shop: ShopDetail;
-  billingHistory: BillingRecord[];
-  activityLog: ActivityLog[];
-}
-
-const mockActivityLog: ActivityLog[] = [
-  {
-    id: "act_001",
-    timestamp: "2026-03-06 14:32:10",
-    action: "Order processed",
-    details: "Order #78945 completed successfully",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_002",
-    timestamp: "2026-03-06 13:54:22",
-    action: "Shipment created",
-    details: "245 items shipped via FedEx",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_003",
-    timestamp: "2026-03-06 13:12:08",
-    action: "API call",
-    details: "Bulk inventory sync - 1250 products",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_004",
-    timestamp: "2026-03-06 12:45:33",
-    action: "Settings updated",
-    details: "Shipping zones configuration modified",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_005",
-    timestamp: "2026-03-05 22:18:55",
-    action: "Payment processed",
-    details: "Monthly subscription fee charged",
-    user: "System",
-    severity: "info",
-  },
-  {
-    id: "act_006",
-    timestamp: "2026-03-05 20:17:42",
-    action: "API threshold warning",
-    details: "API calls usage at 75% of monthly limit",
-    user: "System",
-    severity: "warning",
-  },
-  {
-    id: "act_007",
-    timestamp: "2026-03-04 18:56:44",
-    action: "Team member added",
-    details: "john.doe@elegantboutique.com added as Manager",
-    user: "Sarah Anderson",
-    severity: "info",
-  },
-  {
-    id: "act_008",
-    timestamp: "2026-03-03 16:45:50",
-    action: "Backup created",
-    details: "Automatic daily backup completed",
-    user: "System",
-    severity: "info",
-  },
-];
-
 export default function AdminShopDetail() {
+  const params = useParams();
+  const shopId = params.id as string;
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
+    shopId ? `/api/v4/admin/stores/${shopId}` : null,
+  );
+
+  const { items: activityLogs, loading: activityLoading } = useApiList<ActivityItem>(
+    shopId ? `/api/v4/admin/activity?limit=20` : null,
+  );
+
+  const shop = shopData?.data;
 
   const { data: shopData, loading, error, refetch } = useApiQuery<{ data: ShopApiData }>(
     shopId ? `/api/v4/admin/stores/${shopId}` : null,
@@ -224,7 +163,7 @@ export default function AdminShopDetail() {
   return (
     <div className="bg-wl-bg-root-root">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-wl-border-default flex gap-4 items-center justify-between">
+      <div className="px-6 py-6 border-b border-[#1e1e2e] flex gap-4 items-center justify-between">
         <Link
           href="/admin"
           className="text-blue-600 no-underline flex items-center gap-2 hover:opacity-80"
@@ -284,7 +223,7 @@ export default function AdminShopDetail() {
             </div>
 
             {/* Store Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-[#1e1e2e]">
               <div>
                 <p className="text-gray-400 mb-1 text-xs">Store ID</p>
                 <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
@@ -495,7 +434,7 @@ export default function AdminShopDetail() {
                 {activityLogs.map((log, index) => (
                   <div
                     key={log.id}
-                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
+                    className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-[#1e1e2e]")}
                   >
                     <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
                     <div className="flex-1 min-w-0">
