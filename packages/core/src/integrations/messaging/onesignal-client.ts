@@ -99,12 +99,13 @@ export class OneSignalClient extends MessagingAdapter {
         string,
         unknown
       >;
+      const responseBody = response.body as Record<string, unknown> | undefined;
 
-      if (response.body?.success) {
-        this.trackDelivery(String(response.body.id), "sent");
+      if (responseBody?.success) {
+        this.trackDelivery(String(responseBody.id), "sent");
         return {
           success: true,
-          messageId: String(response.body.id),
+          messageId: String(responseBody.id),
           timestamp: new Date(),
           metadata: { recipient: message.to },
         };
@@ -147,15 +148,16 @@ export class OneSignalClient extends MessagingAdapter {
         string,
         unknown
       >;
+      const responseBody = response.body as Record<string, unknown> | undefined;
 
-      if (response.body?.id) {
-        this.trackDelivery(String(response.body.id), "sent");
+      if (responseBody?.id) {
+        this.trackDelivery(String(responseBody.id), "sent");
         return {
           success: true,
-          messageId: String(response.body.id),
+          messageId: String(responseBody.id),
           timestamp: new Date(),
           metadata: {
-            deviceCount: response.body.recipients,
+            deviceCount: responseBody.recipients,
           },
         };
       }
@@ -193,10 +195,11 @@ export class OneSignalClient extends MessagingAdapter {
         unknown
       >;
 
-      if (response.body?.id) {
+      const respBodyInApp = response.body as Record<string, unknown> | undefined;
+      if (respBodyInApp?.id) {
         return {
           success: true,
-          messageId: String(response.body.id),
+          messageId: String(respBodyInApp.id),
           timestamp: new Date(),
           metadata: { type: "in-app" },
         };
@@ -230,10 +233,11 @@ export class OneSignalClient extends MessagingAdapter {
         unknown
       >;
 
-      if (response.body?.id) {
+      const respBodyTemplate = response.body as Record<string, unknown> | undefined;
+      if (respBodyTemplate?.id) {
         return {
           success: true,
-          messageId: String(response.body.id),
+          messageId: String(respBodyTemplate.id),
           timestamp: new Date(),
           metadata: { templateId },
         };
@@ -280,10 +284,11 @@ export class OneSignalClient extends MessagingAdapter {
         unknown
       >;
 
-      if (response.body?.id) {
+      const respBodyAB = response.body as Record<string, unknown> | undefined;
+      if (respBodyAB?.id) {
         return {
           success: true,
-          messageId: String(response.body.id),
+          messageId: String(respBodyAB.id),
           timestamp: new Date(),
           metadata: { abTest: true },
         };
@@ -315,7 +320,7 @@ export class OneSignalClient extends MessagingAdapter {
       return {
         id: String(response.id),
         name,
-        filters: filters || [],
+        filters: (filters as OneSignalSegment['filters']) || [],
         createdAt: new Date(),
       };
     });
@@ -334,7 +339,7 @@ export class OneSignalClient extends MessagingAdapter {
       return {
         id: String(response.id),
         name: String(response.name),
-        filters: (response.filters as Array<Record<string, unknown>>) || [],
+        filters: (response.filters as OneSignalSegment['filters']) || [],
         createdAt: new Date(String(response.created_at)),
       };
     });

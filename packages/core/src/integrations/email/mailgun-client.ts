@@ -271,7 +271,7 @@ export class MailgunClient extends EmailAdapter {
     if (request.htmlBody) {
       form.html = request.htmlBody;
       if (request.trackClicks) {
-        form.html = this.injectClickTracking(form.html, `batch_${Date.now()}`);
+        form.html = this.injectClickTracking(form.html as string, `batch_${Date.now()}`);
       }
     }
     if (request.textBody) {

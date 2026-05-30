@@ -174,7 +174,7 @@ export class VonageSDKClient {
 
     const sign = createSign('RSA-SHA256');
     sign.update(signatureInput);
-    const signature = this.base64UrlEncode(sign.sign(this.privateKey));
+    const signature = this.base64UrlEncode(sign.sign(this.privateKey, 'base64'));
 
     return `${signatureInput}.${signature}`;
   }
@@ -208,9 +208,10 @@ export class VonageSDKClient {
       };
 
       const response = await this.makeRequest('POST', '/sms/json', payload);
+      const messages = response.messages as Array<Record<string, unknown>> | undefined;
 
-      if (response.messages && Array.isArray(response.messages) && response.messages.length > 0) {
-        const msg = response.messages[0];
+      if (messages && messages.length > 0) {
+        const msg = messages[0];
         if (msg.status === '0') {
           return {
             messageId: msg['message-id'] as string,
@@ -224,7 +225,7 @@ export class VonageSDKClient {
         }
       }
 
-      throw new Error(`SMS send failed: ${response.messages?.[0]?.['error-text'] || 'Unknown error'}`);
+      throw new Error(`SMS send failed: ${(messages?.[0]?.['error-text'] as string | undefined) || 'Unknown error'}`);
     });
   }
 
@@ -261,7 +262,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`MMS send failed: ${response.error?.message || 'Unknown error'}`);
+      throw new Error(`MMS send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
     });
   }
 
@@ -336,7 +337,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`WhatsApp send failed: ${response.error?.message || 'Unknown error'}`);
+      throw new Error(`WhatsApp send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
     });
   }
 
@@ -384,7 +385,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`Viber send failed: ${response.error?.message || 'Unknown error'}`);
+      throw new Error(`Viber send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
     });
   }
 
@@ -450,7 +451,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`Messenger send failed: ${response.error?.message || 'Unknown error'}`);
+      throw new Error(`Messenger send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
     });
   }
 
@@ -484,7 +485,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`Dispatch send failed: ${response.error?.message || 'Unknown error'}`);
+      throw new Error(`Dispatch send failed: ${((response.error as Record<string, unknown> | undefined)?.message as string | undefined) ?? 'Unknown error'}`);
     });
   }
 
@@ -511,7 +512,7 @@ export class VonageSDKClient {
         };
       }
 
-      throw new Error(`Verify send failed: ${response.error_text || 'Unknown error'}`);
+      throw new Error(`Verify send failed: ${(response.error_text as string | undefined) || 'Unknown error'}`);
     });
   }
 
@@ -619,7 +620,6 @@ export class VonageSDKClient {
     const options: RequestInit = {
       method,
       headers,
-      timeout: this.timeout,
     };
 
     if (body && method !== 'GET') {
