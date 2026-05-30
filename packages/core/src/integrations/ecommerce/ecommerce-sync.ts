@@ -136,7 +136,7 @@ export class SyncEngine {
       }
 
       this.completeJob(jobId, result);
-      this.updateSyncStatus(platform, "idle", null, result.startedAt);
+      this.updateSyncStatus(platform, "idle", undefined, result.startedAt);
 
       return result;
     } catch (error) {
@@ -207,7 +207,7 @@ export class SyncEngine {
       }
 
       this.completeJob(jobId, result);
-      this.updateSyncStatus(platform, "idle", null, result.startedAt);
+      this.updateSyncStatus(platform, "idle", undefined, result.startedAt);
 
       return result;
     } catch (error) {
@@ -278,7 +278,7 @@ export class SyncEngine {
       }
 
       this.completeJob(jobId, result);
-      this.updateSyncStatus(platform, "idle", null, result.startedAt);
+      this.updateSyncStatus(platform, "idle", undefined, result.startedAt);
 
       return result;
     } catch (error) {
