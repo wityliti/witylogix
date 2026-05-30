@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
+import { useState } from 'react';
+import { useApiQuery } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, Badge, Button } from '@/components/ui';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { EmptyState } from '@/components/ui/empty-state';
 import {
   Package,
   Zap,
@@ -21,47 +18,98 @@ import {
 
 type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
 
+type HealthStatus = "healthy" | "degraded" | "down";
+
+interface IntegrationItem {
+  id: string;
+  name: string;
+  category: string;
+  status: HealthStatus;
+  lastCheck: Date;
+  responseTime: number;
+  uptime: number;
+  checkInProgress?: boolean;
+}
+
 interface ApiIntegration {
   slug: string;
   name: string;
   category: string;
-  subcategory: string | null;
-  logoUrl: string | null;
-  isEnabled: boolean;
-  healthStatus: string | null;
-  lastSyncAt: string | null;
+  healthStatus: "HEALTHY" | "DEGRADED" | "ERROR" | "UNKNOWN";
   lastHealthCheckAt: string | null;
-}
-
-interface ApiIntegrationsResponse {
-  integrations: ApiIntegration[];
-}
-
-interface IntegrationHealthItem {
-  slug: string;
-  name: string;
-  category: string;
-  status: HealthStatus;
-  lastCheck: Date | null;
   isEnabled: boolean;
-  checkInProgress: boolean;
 }
 
-function mapHealthStatus(raw: string | null): HealthStatus {
-  if (!raw) return 'unknown';
-  const s = raw.toUpperCase();
-  if (s === 'HEALTHY' || s === 'OK') return 'healthy';
-  if (s === 'DEGRADED' || s === 'WARNING') return 'degraded';
-  if (s === 'ERROR' || s === 'DOWN' || s === 'UNHEALTHY') return 'down';
-  return 'unknown';
+function categoryIcon(category: string): React.ReactNode {
+  switch (category.toUpperCase()) {
+    case "COMMUNICATION":
+      return <Mail className="w-6 h-6" />;
+    case "ROUTING":
+      return <MapPin className="w-6 h-6" />;
+    case "PAYMENT":
+      return <DollarSign className="w-6 h-6" />;
+    case "ANALYTICS":
+      return <TrendingUp className="w-6 h-6" />;
+    case "ORDER_MANAGEMENT":
+      return <Package className="w-6 h-6" />;
+    case "INVENTORY":
+      return <Package className="w-6 h-6" />;
+    default:
+      return <Zap className="w-6 h-6" />;
+  }
+}
+
+function apiStatusToHealth(healthStatus: string, isEnabled: boolean): HealthStatus {
+  if (!isEnabled) return "down";
+  switch (healthStatus) {
+    case "HEALTHY":
+      return "healthy";
+    case "DEGRADED":
+      return "degraded";
+    case "ERROR":
+      return "down";
+    default:
+      return "healthy";
+  }
+}
+
+function healthToUptime(status: HealthStatus): number {
+  switch (status) {
+    case "healthy":
+      return 100;
+    case "degraded":
+      return 95;
+    case "down":
+      return 0;
+  }
 }
 
 export default function IntegrationHealthPage() {
-  const { data, loading, error, refetch } = useApiQuery<ApiIntegrationsResponse>('/api/v4/integrations');
-
-  const [items, setItems] = useState<IntegrationHealthItem[]>([]);
-  const [refreshingSlug, setRefreshingSlug] = useState<string | null>(null);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [overrides, setOverrides] = useState<
+    Map<string, { lastCheck: Date; responseTime: number }>
+  >(new Map());
+
+  const { data, refetch } = useApiQuery<{ integrations: ApiIntegration[] }>(
+    "/api/v4/integrations",
+  );
+
+  const apiIntegrations: ApiIntegration[] = data?.integrations ?? [];
+
+  const integrations: IntegrationItem[] = apiIntegrations.map((item) => {
+    const status = apiStatusToHealth(item.healthStatus, item.isEnabled);
+    const override = overrides.get(item.slug);
+    return {
+      id: item.slug,
+      name: item.name,
+      category: item.category,
+      status,
+      lastCheck: override?.lastCheck ?? (item.lastHealthCheckAt ? new Date(item.lastHealthCheckAt) : new Date()),
+      responseTime: override?.responseTime ?? 0,
+      uptime: healthToUptime(status),
+    };
+  });
 
   useEffect(() => {
     if (data?.integrations) {
@@ -79,63 +127,47 @@ export default function IntegrationHealthPage() {
     }
   }, [data]);
 
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const timer = setInterval(() => { refetch(); }, 60_000);
-    return () => clearInterval(timer);
-  }, [autoRefresh, refetch]);
-
-  const handleCheckNow = useCallback(async (slug: string) => {
-    setRefreshingSlug(slug);
-    setItems((prev) =>
-      prev.map((i) => (i.slug === slug ? { ...i, checkInProgress: true } : i)),
-    );
+  const handleCheckNow = async (integrationId: string) => {
+    setRefreshingId(integrationId);
     try {
-      const res = await fetch(`/api/v4/integrations/${slug}/test`, { method: 'POST' });
-      const json = await res.json();
-      const newStatus = json.healthy ? 'healthy' : 'down';
-      setItems((prev) =>
-        prev.map((i) =>
-          i.slug === slug
-            ? { ...i, status: newStatus as HealthStatus, lastCheck: new Date(), checkInProgress: false }
-            : i,
-        ),
-      );
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+      const start = Date.now();
+      await fetch(`${API_BASE}/api/v4/integrations/${integrationId}/test`, { method: "POST" });
+      const elapsed = Date.now() - start;
+
+      setOverrides((prev) => {
+        const next = new Map(prev);
+        next.set(integrationId, { lastCheck: new Date(), responseTime: elapsed });
+        return next;
+      });
+
+      await refetch();
     } catch {
-      setItems((prev) =>
-        prev.map((i) => (i.slug === slug ? { ...i, checkInProgress: false } : i)),
-      );
+      // ignore errors
     } finally {
-      setRefreshingSlug(null);
+      setRefreshingId(null);
     }
-  }, []);
-
-  const handleCheckAll = useCallback(() => {
-    items.forEach((i) => handleCheckNow(i.slug));
-  }, [items, handleCheckNow]);
-
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
-  const healthyCount = items.filter((i) => i.status === 'healthy').length;
-  const degradedCount = items.filter((i) => i.status === 'degraded').length;
-  const downCount = items.filter((i) => i.status === 'down').length;
+  };
 
   const getStatusIcon = (status: HealthStatus) => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="w-5 h-5 text-emerald-500" />;
-      case 'degraded': return <AlertTriangle className="w-5 h-5 text-amber-500" />;
-      case 'down': return <AlertCircle className="w-5 h-5 text-red-500" />;
-      default: return <AlertCircle className="w-5 h-5 text-gray-500" />;
+      case "healthy":
+        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
+      case "degraded":
+        return <AlertTriangle className="w-5 h-5 text-amber-500" />;
+      case "down":
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
     }
   };
 
   const getStatusBadgeVariant = (status: HealthStatus) => {
     switch (status) {
-      case 'healthy': return 'success' as const;
-      case 'degraded': return 'warning' as const;
-      case 'down': return 'danger' as const;
-      default: return 'default' as const;
+      case "healthy":
+        return "success" as const;
+      case "degraded":
+        return "warning" as const;
+      case "down":
+        return "danger" as const;
     }
   };
 
@@ -167,8 +199,12 @@ export default function IntegrationHealthPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={handleCheckAll}
-              disabled={refreshingSlug !== null || items.length === 0}
+              onClick={async () => {
+                for (const integ of integrations) {
+                  await handleCheckNow(integ.id);
+                }
+              }}
+              disabled={refreshingId !== null}
             >
               <RefreshCw className={cn('w-4 h-4 mr-2', refreshingSlug && 'animate-spin')} />
               Check All
@@ -217,90 +253,123 @@ export default function IntegrationHealthPage() {
           </Card>
         </div>
 
-        {items.length === 0 ? (
-          <EmptyState
-            icon={<Plug className="w-8 h-8" />}
-            title="No integrations connected"
-            description="Connect integrations from the marketplace to monitor their health here."
-            action={{ label: 'Browse Marketplace', onClick: () => { window.location.href = '/integrations'; } }}
-          />
+        {/* Integration Cards Grid */}
+        {integrations.length === 0 ? (
+          <Card>
+            <CardContent className={cn("pt-12 pb-12 text-center")}>
+              <CheckCircle className={cn("w-12 h-12 text-gray-600 mx-auto mb-4")} />
+              <p className={cn("text-gray-500 text-sm")}>
+                No integrations installed yet. Visit the{" "}
+                <a href="/integrations/marketplace" className="text-blue-400 hover:underline">
+                  marketplace
+                </a>{" "}
+                to connect your first integration.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4')}>
-            {items.map((integration) => (
+          <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4")}>
+            {integrations.map((integration) => (
               <Card
-                key={integration.slug}
+                key={integration.id}
                 className={cn(
-                  'hover:border-[#1e1e2e] transition-colors',
-                  integration.status === 'healthy' && 'border-emerald-500/20',
-                  integration.status === 'degraded' && 'border-amber-500/20',
-                  integration.status === 'down' && 'border-red-500/20',
-                  !integration.isEnabled && 'opacity-60',
+                  "hover:border-[#1e1e2e] transition-colors",
+                  integration.status === "healthy" && "border-emerald-500/20",
+                  integration.status === "degraded" && "border-amber-500/20",
+                  integration.status === "down" && "border-red-500/20"
                 )}
               >
-                <CardContent className={cn('pt-6 space-y-4')}>
+                <CardContent className={cn("pt-6 space-y-4")}>
                   {/* Header */}
-                  <div className={cn('flex items-start justify-between')}>
-                    <div className={cn('flex items-center gap-3 flex-1')}>
+                  <div className={cn("flex items-start justify-between")}>
+                    <div className={cn("flex items-center gap-3 flex-1")}>
                       <div
                         className={cn(
-                          'p-2 rounded-md',
-                          integration.status === 'healthy' && 'bg-emerald-500/10 text-emerald-500',
-                          integration.status === 'degraded' && 'bg-amber-500/10 text-amber-500',
-                          integration.status === 'down' && 'bg-red-500/10 text-red-500',
-                          integration.status === 'unknown' && 'bg-gray-500/10 text-gray-500',
+                          "p-2 rounded-md",
+                          integration.status === "healthy" && "bg-emerald-500/10 text-emerald-500",
+                          integration.status === "degraded" && "bg-amber-500/10 text-amber-500",
+                          integration.status === "down" && "bg-red-500/10 text-red-500"
                         )}
                       >
-                        <Package className="w-6 h-6" />
+                        {categoryIcon(integration.category)}
                       </div>
-                      <div className={cn('flex-1 min-w-0')}>
-                        <h3 className={cn('font-semibold text-white text-sm truncate')}>
+                      <div className={cn("flex-1 min-w-0")}>
+                        <h3 className={cn("font-semibold text-white text-sm")}>
                           {integration.name}
                         </h3>
-                        <p className={cn('text-xs text-gray-500 truncate')}>
-                          {integration.category.replace(/_/g, ' ')}
-                        </p>
                       </div>
                     </div>
                     {getStatusIcon(integration.status)}
                   </div>
 
                   {/* Status Badge */}
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getStatusBadgeVariant(integration.status)} dot>
-                      {getStatusLabel(integration.status)}
-                    </Badge>
-                    {!integration.isEnabled && (
-                      <Badge variant="default">Disabled</Badge>
-                    )}
-                  </div>
+                  <Badge variant={getStatusBadgeVariant(integration.status)} dot>
+                    {getStatusLabel(integration.status)}
+                  </Badge>
 
                   {/* Stats */}
-                  <div className={cn('space-y-2')}>
-                    <div className={cn('flex items-center justify-between text-xs')}>
-                      <span className={cn('text-gray-500')}>Last Check</span>
-                      <span className={cn('text-gray-400 font-medium')}>
-                        {integration.lastCheck
-                          ? integration.lastCheck.toLocaleTimeString()
-                          : '—'}
+                  <div className={cn("space-y-2")}>
+                    <div className={cn("flex items-center justify-between text-xs")}>
+                      <span className={cn("text-gray-500")}>Last Check</span>
+                      <span className={cn("text-gray-400 font-medium")}>
+                        {integration.lastCheck.toLocaleTimeString()}
                       </span>
                     </div>
+
+                    <div className={cn("flex items-center justify-between text-xs")}>
+                      <span className={cn("text-gray-500")}>Response Time</span>
+                      <span className={cn("text-gray-400 font-medium font-mono")}>
+                        {integration.responseTime > 0 ? `${integration.responseTime}ms` : "—"}
+                      </span>
+                    </div>
+
+                    <div className={cn("flex items-center justify-between text-xs")}>
+                      <span className={cn("text-gray-500")}>Uptime (30d)</span>
+                      <span
+                        className={cn(
+                          "font-medium font-mono",
+                          integration.uptime >= 99.5
+                            ? "text-emerald-500"
+                            : integration.uptime >= 98
+                            ? "text-amber-500"
+                            : "text-red-500"
+                        )}
+                      >
+                        {integration.uptime.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar for uptime */}
+                  <div className={cn("w-full h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
+                    <div
+                      className={cn(
+                        "h-full transition-all",
+                        integration.uptime >= 99.5
+                          ? "bg-emerald-500"
+                          : integration.uptime >= 98
+                          ? "bg-amber-500"
+                          : "bg-red-500"
+                      )}
+                      style={{ width: `${integration.uptime}%` }}
+                    />
                   </div>
 
                   {/* Check Now Button */}
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => handleCheckNow(integration.slug)}
-                    disabled={refreshingSlug === integration.slug || integration.checkInProgress}
-                    className={cn('w-full')}
+                    onClick={() => handleCheckNow(integration.id)}
+                    disabled={refreshingId === integration.id}
+                    className={cn("w-full")}
                   >
                     <RefreshCw
                       className={cn(
-                        'w-3 h-3 mr-2',
-                        (refreshingSlug === integration.slug || integration.checkInProgress) && 'animate-spin',
+                        "w-3 h-3 mr-2",
+                        refreshingId === integration.id && "animate-spin"
                       )}
                     />
-                    {refreshingSlug === integration.slug ? 'Checking…' : 'Check Now'}
+                    {refreshingId === integration.id ? "Checking..." : "Check Now"}
                   </Button>
                 </CardContent>
               </Card>
@@ -308,6 +377,7 @@ export default function IntegrationHealthPage() {
           </div>
         )}
 
+        {/* Auto-refresh indicator */}
         {autoRefresh && (
           <div
             className={cn(

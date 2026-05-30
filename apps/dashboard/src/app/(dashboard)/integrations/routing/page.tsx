@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
@@ -79,21 +80,9 @@ export default function RoutingPage() {
     setLoading(true);
     setError(null);
 
-    api.get<MarketplaceResponse>('/api/v4/integrations/marketplace?category=ROUTING')
-      .then((res) => {
-        if (!cancelled) {
-          setProviders(Array.isArray(res?.apps) ? res.apps : []);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, []);
+  const [comparisonResults, setComparisonResults] = useState<
+    Record<string, { distance: string; duration: string; eta: string }> | null
+  >(null);
 
   const selected = providers.find((p) => p.slug === selectedSlug) ?? null;
   const installed = providers.filter((p) => p.installed);
@@ -324,38 +313,110 @@ export default function RoutingPage() {
           </div>
         </div>
 
-        {/* Installed Providers Chain */}
-        {!loading && installed.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Installed Providers</CardTitle>
-            </CardHeader>
-            <div className={cn('p-4 pt-0')}>
-              <p className={cn('text-sm text-gray-300 mb-4')}>
-                Currently installed routing providers for this account.
-              </p>
-              <div className={cn('space-y-2')}>
-                {installed.map((provider, idx) => (
-                  <div
-                    key={provider.slug}
-                    className={cn('flex items-center gap-3 p-3 bg-wl-bg-surface rounded border border-wl-border-default')}
-                  >
-                    <div className={cn('flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold')}>
-                      {idx + 1}
-                    </div>
-                    <div className={cn('flex-1')}>
-                      <p className={cn('font-semibold text-white')}>{provider.name}</p>
-                      <p className={cn('text-xs text-gray-400')}>
-                        {provider.healthStatus ?? (provider.isEnabled ? 'Enabled' : 'Disabled')}
-                      </p>
-                    </div>
-                    <StatusBadge p={provider} />
-                  </div>
-                ))}
+        {/* Route Comparison */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Route Comparison Tool</CardTitle>
+          </CardHeader>
+          <div className={cn("p-4 pt-0")}>
+            <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4 mb-4")}>
+              <div>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                  Origin
+                </label>
+                <input
+                  type="text"
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  className={cn(
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                  )}
+                />
+              </div>
+              <div>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                  Destination
+                </label>
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className={cn(
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                  )}
+                />
               </div>
             </div>
-          </Card>
-        )}
+
+            <div className={cn("flex gap-2 mb-4 flex-wrap items-center justify-between")}>
+              <div className={cn("flex gap-2 flex-wrap")}>
+                {["mapbox", "osrm", "valhalla", "google"].map((pid) => (
+                  <label key={pid} className={cn("flex items-center gap-2")}>
+                    <input
+                      type="checkbox"
+                      checked={compareProviders.includes(pid)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCompareProviders([...compareProviders, pid]);
+                        } else {
+                          setCompareProviders(compareProviders.filter((p) => p !== pid));
+                        }
+                      }}
+                      className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
+                    />
+                    <span className={cn("text-sm text-white")}>
+                      {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setComparisonResults(null)}
+                disabled
+              >
+                Compare Routes
+              </Button>
+            </div>
+
+            {comparisonResults ? (
+              <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
+                {compareProviders.map((pid) => {
+                  const provider = ROUTING_PROVIDERS.find((p) => p.id === pid);
+                  const comparison = comparisonResults[pid];
+                  if (!provider || !comparison) return null;
+
+                  return (
+                    <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+                      <div className={cn("p-3")}>
+                        <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
+                        <div className={cn("space-y-2 text-sm")}>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Distance</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.distance}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Duration</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.duration}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>ETA</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.eta}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={cn("py-8 text-center text-gray-500 text-sm bg-[#12121a] rounded border border-[#1e1e2e]")}>
+                Select providers above and click Compare Routes to see results.
+              </div>
+            )}
+          </div>
+        </Card>
 
         {!loading && installed.length === 0 && !error && (
           <Card>
