@@ -1,84 +1,326 @@
-# Dashboard Production Readiness
+# Dashboard Production-Readiness Tracker
 
-Source of truth for sprint progress. One section per PR, marked ✅ when merged green.
+Tracks the elimination of all mock/dummy/placeholder/hardcoded data from `apps/dashboard`.
+Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --include="*.tsx" | grep -v "placeholder=|__tests__|\.test\."`.
 
-## Legend
-- ✅ Done (merged, green CI)
-- 🔄 In progress
-- ⬜ Pending
-
-| WIT | Section | Pages | Map Views | Endpoints Wired/Added | Mock Before→After | Notes |
-|-----|---------|-------|-----------|-----------------------|-------------------|-------|
-| WIT-340 | Analytics + Orders | analytics/, analytics/eta-accuracy, orders/board | ZoneAnalyticsMap (zone-heat-layer + WLMap) | /api/v4/analytics/*, /api/v4/orders | many → 0 | Introduced WLMap (keyless CARTO/Leaflet) |
-| WIT-341 | Zones + Payments + Billing | zones/, payments/, billing/ | ZonePolygonLayer on zones page (polygon + circle fallback, auto-fit) | /api/v4/zones (existing), /api/v4/payments (normalized), /api/v4/billing/quotas (new), /api/v4/billing/plans (shape fix), /api/v4/billing/invoices (shape fix), /api/v4/billing/subscription (wired), /api/v4/payment-methods/payment-methods (wired) | ZONES const + MOCK_PAYMENTS + MONTHLY_REVENUE + mock plan/quota/invoice fallbacks → 0 | |
-| WIT-342 | Drivers + Delivery | drivers/, drivers/[id], drivers/performance, delivery/ | DriverLocationLayer (status-coloured circle markers, popup, auto-fit, map/grid toggle), DeliveryMarkerLayer (delivery-point circles, status colors) | /api/v4/drivers/locations (new PostGIS + JSON fallback), /api/v4/driver-scoring/leaderboard (fixed URL), /api/v4/driver-scoring/:id (shape fixed), /api/v4/drivers/:id (profile wired), /api/v4/shipments (existing) | DEMO_SCORE_RESPONSE + DEMO_HISTORY → 0 | drivers/page: grid/map toggle; drivers/[id]: real scoring + history + profile; performance: leaderboard fixed; delivery: two-panel + DeliveryMarkerLayer |
-| WIT-343 | Customers | customers/, customers/[id], customers/segments | CustomerDensityLayer (log-scaled bubbles by city, 60+ city lookup, auto-fit, popup, map/grid toggle on list page) | /api/v4/customers (shape fixed, shopifyCustomerId→externalCustomerId bug fixed), /api/v4/customers/stats (new), /api/v4/customers/density (new, groups orders by city), /api/v4/customers/:id (normalized + order history), /api/v4/customers/:id/orders (wired) | hardcoded StatCard changes (5.2%/12.8%/2.3%/15.1%), wrong field names (totalOrders vs ordersCount, status/tier not in schema) → 0 | customers/: grid+map toggle, real stats, loading skeletons, error/empty states; customers/[id]: profile + order history + addresses; customers/segments: tier cards + progress bars + top spenders + density map |
-| WIT-344 | Returns + Finance/Invoices | returns/, invoices/[id], invoices/create | None (no geographic data) | /api/v4/returns (rewritten, real Prisma), /api/v4/returns/stats (real Prisma), /api/v4/returns/:id (wired), /api/v4/invoices/:id (wired via useApiQuery), /api/v4/customers (reused for customer picker) | MOCK_RETURNS (4 items) + MOCK_INVOICE + MOCK_CUSTOMERS (5) → 0 | ReturnRequest+ReturnRequestItem Prisma models added (schema + migration + RLS); returns page: status pipeline + filter tabs driven by real /stats; invoices/[id]: normalizeApiInvoice() + loading skeleton + error state; invoices/create: real customer picker with loading skeleton |
-| WIT-345 | Campaigns | campaigns/, campaigns/[id] | CampaignReachLayer (orange log-scaled bubbles by city, map/grid toggle on list page, audience reach panel on detail page) | /api/v4/campaigns (rewritten with Prisma, fixed snake_case→camelCase bug), /api/v4/campaigns/stats (new, groupBy status + aggregate counts), /api/v4/campaigns/:id/geo (new, customer city distribution for reach map) | raw SQL snake_case field mismatch (recipient_count/delivered_count vs Prisma camelCase) → 0; wrong column names → fixed | campaigns/: map/grid toggle + filter by type+status + real stats + links to detail; campaigns/[id]: engagement funnel + reach map; PAUSED/FAILED/CANCELLED statuses added |
-| WIT-346 | Field Service | field-service/, field-service/dispatch, field-service/jobs | DriverLocationLayer on dispatch page (live driver GPS, status-coloured markers, click-to-select, empty/loading/error states) | /api/v4/drivers (technician list + status counts), /api/v4/drivers/locations (GPS for map), /api/v4/orders (job queue + schedule + completions, normalizeOrder()) | const schedule=[] + const technicians=[] + const allTechs=[] + hardcoded slaMetrics (92%/85%/12/8/2/45) → 0; ?type=field-service&view=* params removed | field-service/page: real KPIs (activeJobs/completionRate/overdue/onTime) from live data; dispatch: split-pane WLMap + driver list + status filter + active/pending jobs; jobs: normalizeOrder() maps PENDING→created etc., priority from deliveryDate proximity |
-| WIT-347 | Demand | demand/, demand/anomalies, demand/scheduler, demand/models, demand/capacity | ZoneHeatLayer on demand page (city-level order intensity bubbles, data/map toggle) | /api/v4/analytics/demand (existing), /api/v4/analytics/demand-anomalies (existing), /api/v4/analytics/demand-scheduler (existing), /api/v4/analytics/demand-models (existing), /api/v4/analytics/demand-capacity (existing), /api/v4/analytics/demand-heatmap (new, orders by city with coord lookup) | capacity page wrong URL (/analytics?type=capacity→/analytics/demand-capacity), models/anomalies useApiList→useApiQuery (API returns {items,total} not array), scheduler table hours 0-5→8-20, KPI display operator precedence fix | demand/: data/map toggle + ZoneHeatLayer (city demand bubbles, empty state); demand/capacity: URL fixed; demand/models: hook fixed; demand/anomalies: hook fixed; demand/scheduler: hours fixed |
-| WIT-348 | Notifications | notifications/, notifications/log/, notifications/delivery-log/, notifications/preferences/ | None (no geographic data) | /api/v4/notifications (rewritten — inbox from NotificationLog, read/delete state in Shop.settings.notificationInbox), /api/v4/notifications/:id/read (new), /api/v4/notifications/:id/unread (new), /api/v4/notifications/mark-all-read (new), /api/v4/notifications/delete-bulk (new), /api/v4/notifications/delivery-log (new, real NotificationLog Prisma), /api/v4/notifications/delivery-log/export (stub returns URL), /api/v4/notifications/test (new), /api/v4/notification-preferences (rewritten — GET+PATCH from Shop.settings.notificationPreferences) | NOTIFICATION_LOGS (7 hardcoded items in log/page.tsx) + fake setTimeout in test notification → 0 | notifications/: error state + Mark All Read button wired; log/: full rewrite using useDeliveryLog hook (loading/empty/error/detail modal); delivery-log/: already used hook (endpoint now real); preferences/: loading skeleton (was "Coming soon…"), test notification wired to real endpoint, useSendTestNotification hook added; useNotifications: fixed :id URL-interpolation bug |
-| WIT-349 | Products + Healthcare | products/sync, healthcare/records | None (no geographic data) | /api/v4/integrations (real e-commerce platform connections for sync config), /api/v4/healthcare/records (new, derives from orders with healthcare metadata) | MOCK_PLATFORMS (3 hardcoded e-commerce platforms with fake latency/productCount) + mockRecords (3 hardcoded clinical records as fallback) → 0 | products/sync: loads real connected ECOMMERCE integrations, loading skeleton, error state, empty state with link to /integrations; static PLATFORM_FIELDS map per slug; healthcare/records: removes mock fallback, adds empty state row |
-| WIT-350 | AI | ai/driver-insights, ai/route-efficiency, ai/slots | None (no geographic data) | /api/v4/ai/analytics/leaderboard (existing, now registered), /api/v4/ai/analytics/route-efficiency/:id (existing, now registered), /api/v4/ai/slots/recommend (existing, now registered), /api/v4/routes (existing, used for completed route list), /api/v4/zones (existing, used for zone select) | DEMO_ENTRIES (8 drivers) + DEMO_ROUTES (5 routes) + DEMO_SCORE + DEMO_ZONES (5 zones) + DEMO_SLOTS (5 slots) → 0; server.ts missing registrations for ai/analytics + ai/slots routes fixed | driver-insights: leaderboard on real API with period switcher; route-efficiency: route list from /api/v4/routes, score panel null-guarded with empty state; slots: zone select from real /api/v4/zones, always calls recommend API, empty state when no slots |
-| WIT-351 | Supply Chain + Admin Audit | supply-chain/orders, admin/audit | None (no geographic data) | /api/v4/supply-chain/waves (new, groups orders by day → wave summaries), /api/v4/supply-chain/batches (new, active orders as batch picking tasks), /api/v4/returns (existing, reused for returns queue tab) | WAVE_PLANS (3 items) + BATCH_PICKING (4 items) + RETURN_QUEUE (3 items) + DEMO_DATA (12 audit entries) + makeDemo() factory → 0 | supply-chain/orders: waves/batches/returns tabs all on real API with loading skeletons + empty states; admin/audit: DEMO_DATA removed, shows empty state when no audit entries returned |
-| WIT-352 | Admin + Supply Chain dashboard + Freight | admin/activity, admin/users, admin/workflows, admin/queues, admin/integrations, freight/, supply-chain/ | None (no geographic data) | /api/v4/admin/queues (new, BullMQ stats for all 8 queues), /api/v4/admin/queues/jobs (new, recent active/waiting/failed jobs), /api/v4/admin/queues/scheduled (new, repeatable jobs), /api/v4/admin/queues/dlq (new, DLQ items from failed-delivery/wc-webhooks/notifications) | mockActivities (9 items, dead code) + mockUsers (8 items, dead code) + WORKFLOW_EXECUTIONS (12 items) + mockQueues/mockJobs/mockScheduledJobs/mockDLQ (4 constants) + mockIntegrations (5 items) + const totalSavings=15000 + KPI_METRICS (4 items) + INVENTORY_DISTRIBUTION (3 items) + demandSupplyData (3 hardcoded weeks) → 0 | admin/activity: dead mockActivities removed (real hook already present); admin/users: dead mockUsers removed (real hook already present); admin/workflows: WORKFLOW_EXECUTIONS → useApiQuery(/api/v4/workflow/executions), non-standard {executions,[]} shape; admin/queues: full rewrite → 4 new BullMQ admin endpoints, 4 useApiList hooks, loading/empty states; admin/integrations: mockIntegrations → useApiQuery(/api/v4/integrations) + mapIntegration(); freight: totalSavings → computed totalSpend from shipment rates; supply-chain/page: KPI_METRICS/INVENTORY_DISTRIBUTION → useMemo from real inventory.items, demandSupplyData → demand.items.map() |
-| WIT-353 | CRM + Partners + POS (tracker audit) | crm/, partners/, pos/ | None | None new — all three sections already wired to real API hooks before this sprint | None — no MOCK_/DEMO_ constants found; CRM/Partners use useApiQuery(/api/v4/integrations), POS uses custom use-pos hooks | Tracker updated to reflect reality: ⬜ CRM/Partners/POS → ✅; all dashboard pages now production-ready |
-| WIT-354 | Home + ELD + Returns + ESignatures (regression fixes) | home/, eld/, returns/, esignatures/ | None (no geographic data on these pages) | /api/v4/eld/compliance (new, Driver-derived), /api/v4/eld/violations (new), /api/v4/eld/events (new), /api/v4/eld/drivers/:id/hos (new); /api/v4/returns (rewritten — uses real ReturnRequest Prisma model); /api/v4/signing-templates (pre-existing hook now used) | home: mock recentOrders(5) + mockDrivers(8) → 0; eld: MOCK_DRIVERS(6) → 0; returns: MOCK_RETURNS(4 fallback) → 0; esig: mockTemplates(3) → 0 | ReturnRequest+ReturnRequestItem Prisma schema added (67-returns.prisma); migration 20260615_returns_table with RLS; ELD routes new file (eld.ts); all prisma as any hacks in returns.ts replaced with typed calls; RLS 61/61 ✅ |
-| WIT-355 | Admin sub-pages + ELD DVIR + Invoices + Settings | admin/system, admin/shops/[id], admin/customers, admin/workflows/[id], eld/dvir, invoices/[id], invoices/create, settings/auth-providers, activity, settings/billing, settings/payments | None | GET /api/v4/admin/system/health (Node.js os+Prisma+Redis); GET /api/v4/eld/dvir + /dvir/inspections (Driver-derived); GET/PATCH/DELETE /api/v4/payments/gateways (Shop.settings JSON); GET /api/v4/billing/subscription + /billing/invoices (fixed URL); admin/stores/:id enhanced with billingHistory+activityLog | admin/system: 6 mock services + fake metrics → 0; admin/shops/[id]: mockShopDetail+mockBillingHistory+mockActivityLog → 0; admin/customers: mockCustomers(8) → 0 + wrong URL fixed; admin/workflows/[id]: MOCK_EXECUTION → 0; eld/dvir: MOCK_INSPECTION_HISTORY(2) → 0; invoices/[id]: MOCK_INVOICE → 0; invoices/create: MOCK_CUSTOMERS(5) → 0; settings/auth-providers: mockProviders(6) → 0 + real test connection; activity: generateMockEvents dead fn + fake setInterval → 0; settings/billing: /billing 404 fixed + mock fallback invoices/usageMetrics → 0; settings/payments: mockGatewayConfigs(4) → 0 | Build ✅ · Typecheck ✅ · PR #355 |
-
-## ALREADY DONE (pre-sprint, on main)
-- ✅ customer-portal — full app
-- ✅ tracking-page — full app
-- ✅ dashboard auth (login, register, forgot-password)
-- ✅ dashboard home
-- ✅ dashboard admin (system, users, shops, queues, activity, api-docs, integrations, workflows)
-- ✅ dashboard ELD (trips, dvir, driver-scoring)
-- ✅ dashboard integrations (connected, health, routing)
-- ✅ dashboard settings (general, billing, payments, webhooks, auth-providers)
-- ✅ dispatch (with placeholder map container)
-- ✅ routes (list, detail, plan, create, edit, assign)
-- ✅ shipments
-- ✅ fleet (vehicles, fuel, maintenance)
+**Total pages**: ~204 (excluding design-system, stories)
+**Total mock signals (baseline)**: ~486
 
 ---
 
-Sections not yet in tracker (activity, collaboration done in WIT-354). Remaining uncovered sections (no mock data found in survey): collections/, events/, inventory/, esignatures/, support/ (FAQs are static documentation content, tickets on real API). No mock data blocking production.
+## Status Legend
+- ✅ **Done** — 0 mock signals, real API wired
+- 🔄 **In-Progress** — current sprint
+- ⬜ **Pending** — not started
+- ⚙️ **No-API-Key** — gated behind missing env key (Stripe/Twilio/maps)
 
-| Section | Pages | Geographic? | Notes |
-|---------|-------|-------------|-------|
-| ⬜ Admin Shops Detail | admin/shops/[id] | No | 36 mock refs — mockShopDetail, mockBillingHistory, mockActivityLog |
-| ⬜ Admin System (done WIT-355) | admin/system | No | ✅ Done |
-| ⬜ Integrations Connected | integrations/connected/[providerId] | No | 7 mock vars — mockUsageMetrics, mockActivityLog, mockErrors |
-| ⬜ ELD HOS | eld/hos | No | Uses real API already; may need shape normalization |
-| ⬜ Finance Invoices List | finance/invoices | No | Check for any remaining mock/hardcoded data |
-| ⬜ Analytics Route Performance | analytics/route-performance | ✅ Yes | Already on real API; add route map layer |
-| ⬜ Analytics Reports | analytics/reports | No | Already on real API; verify shapes |
-| ⬜ Analytics Dashboards | analytics/dashboards | No | Already on real API |
-| ⬜ Settings Auth Providers | settings/auth-providers | No | mockProviders (2 refs) |
-| ⬜ Settings Billing | settings/billing | No | mockInvoices fallback |
-| ⬜ Settings Payments | settings/payments | No | mockGatewayConfigs fallback |
-| ⬜ Admin Workflows Detail | admin/workflows/[id] | No | MOCK_EXECUTION |
-| ⬜ Tracking (main page) | tracking/ | No | Check for mocks |
-| ⬜ Collections | collections/ | No | 1 mock ref |
-| ⬜ Notifications Stats Widget | components/notifications | No | MOCK_DAILY_STATS, MOCK_CHANNEL_BREAKDOWN, MOCK_FAILED_TEMPLATES |
-| ⬜ Realtime Components | components/realtime/ | No | mockDrivers, mockDeliveries, mockOrders, mockNotifications, mockMetrics (active-delivery-map, live-order-feed, notification-center, live-kpi-counters) |
-| ⬜ Analytics Widget | components/analytics/analytics-widget | No | mockMetricData, mockChartData, mockPieData, mockTableData |
+---
 
-### WIT-400 · Orders cluster — `feat/WIT-400-dashboard-orders-map`
-**Status:** 🔄 In progress  
-**Branch:** `feat/WIT-400-dashboard-orders-map`
+## Auth (0 mock signals)
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Login | `/login` | 0 | 0 | ✅ |
+| Register | `/register` | 0 | 0 | ✅ |
+| Forgot Password | `/forgot-password` | 0 | 0 | ✅ |
+| Magic Link | `/magic-link` | 0 | 0 | ✅ |
+| Reset Password | `/reset-password` | 0 | 0 | ✅ |
 
-- `apps/dashboard/src/components/map/wl-map.tsx` — keyless Leaflet + CARTO dark basemap, no API key (WIT-355)
-- `apps/dashboard/src/components/map/delivery-marker-layer.tsx` — status-coloured delivery dot markers, popup, auto-fit bounds (WIT-355)
+---
 
-**Infrastructure added:**
-- `apps/dashboard/src/components/map/wl-map.tsx` — keyless CARTO map foundation using Leaflet
-- `apps/dashboard/src/components/map/use-fit-bounds.ts` — auto-fit bounds hook
-- `apps/dashboard/src/components/map/use-geocoder.ts` — Nominatim geocoder with in-memory cache
-- `apps/dashboard/src/components/map/order-layer.tsx` — status-coloured order markers on map
+## Home / Dashboard Overview (3 → 0 mock signals)
+| Page | Route | Mock Before | Mock After | Status | PR |
+|------|-------|------------|-----------|--------|----|
+| Dashboard Home | `/home` | 3 | 0 | 🔄 WIT-462 | #TBD |
+| Activity Feed | `/activity` | 2 | — | ⬜ | — |
+| Realtime Activity | `/activity/realtime` | 0 | — | ⬜ | — |
 
-| Check | Status |
-|-------|--------|
-| `pnpm --filter @witylogix/dashboard build` | ✅ |
-| `pnpm --filter @witylogix/dashboard typecheck` | ✅ |
-| `pnpm lint` | ✅ |
+**Endpoints used**: `GET /api/v4/dashboard/stats`, `GET /api/v4/orders?limit=5`, `GET /api/v4/drivers?limit=8`
+
+---
+
+## Orders (1 mock signal — 8 pages total)
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Order List | `/orders` | 0 | 0 | ✅ |
+| Order Detail | `/orders/[id]` | 2 | — | ⬜ |
+| Order Board | `/orders/board` | 1 | — | ⬜ |
+| Order Import | `/orders/import` | 3 | — | ⬜ |
+| Order Create | `/orders/create` | 0 | — | ⬜ |
+| Order Bulk | `/orders/bulk` | 0 | — | ⬜ |
+| Order Conflicts | `/orders/conflicts` | 0 | — | ⬜ |
+| Order Local | `/orders/local` | 0 | — | ⬜ |
+
+---
+
+## Shipments (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Shipment List | `/shipments` | 0 | ✅ |
+| Shipment Detail | `/shipments/[id]` | 0 | ✅ |
+
+---
+
+## Delivery (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Delivery Overview | `/delivery` | 0 | ✅ |
+| Standard Delivery | `/delivery/standard` | 0 | ✅ |
+
+---
+
+## Customers (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Customer List | `/customers` | 0 | ✅ |
+| Customer Create | `/customers/create` | 0 | ✅ |
+
+---
+
+## Drivers (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Driver List | `/drivers` | 0 | ✅ |
+| Driver Detail | `/drivers/[id]` | 0 | ✅ |
+| Driver Create | `/drivers/create` | 0 | ✅ |
+| Driver Performance | `/drivers/performance` | 0 | ✅ |
+
+---
+
+## Routes (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Routes List | `/routes` | 0 | ✅ |
+| Route Detail | `/routes/[id]` | 0 | ✅ |
+| Route Plan | `/routes/plan` | 0 | ✅ |
+| Route Create | `/routes/create` | 0 | ✅ |
+| Route Assign | `/routes/[id]/assign` | 0 | ✅ |
+| Route Edit | `/routes/[id]/edit` | 0 | ✅ |
+
+---
+
+## Dispatch (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Dispatch | `/dispatch` | 0 | ✅ |
+| Couriers | `/dispatch/couriers` | 0 | ✅ |
+
+---
+
+## Fleet (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Fleet Overview | `/fleet` | 0 | ✅ |
+| Vehicles | `/fleet/vehicles` | 0 | ✅ |
+| Vehicle Detail | `/fleet/vehicles/[id]` | 0 | ✅ |
+| Fuel | `/fleet/fuel` | 0 | ✅ |
+| Maintenance | `/fleet/maintenance` | 0 | ✅ |
+
+---
+
+## Analytics (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Analytics Overview | `/analytics` | 0 | ✅ |
+| Dashboards | `/analytics/dashboards` | 0 | ✅ |
+| ETA Accuracy | `/analytics/eta-accuracy` | 0 | ✅ |
+| Reports | `/analytics/reports` | 0 | ✅ |
+| Route Performance | `/analytics/route-performance` | 0 | ✅ |
+
+---
+
+## AI Features (9 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| AI Overview | `/ai` | 0 | ✅ |
+| Route Efficiency | `/ai/route-efficiency` | 9 | ⬜ |
+| Copilot | `/ai/copilot` | 0 | ✅ |
+| Driver Insights | `/ai/driver-insights` | 0 | ✅ |
+| Slot Optimizer | `/ai/slots` | 0 | ✅ |
+
+---
+
+## Invoices / Finance (5 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Invoice List | `/invoices` | 0 | ✅ |
+| Invoice Detail | `/invoices/[id]` | 2 | ⬜ |
+| Invoice Create | `/invoices/create` | 3 | ⬜ |
+| Finance Overview | `/finance` | 0 | ✅ |
+| COD | `/finance/cod` | 0 | ✅ |
+| Finance Invoices | `/finance/invoices` | 0 | ✅ |
+| Reconciliation | `/finance/reconciliation` | 0 | ✅ |
+
+---
+
+## Billing / Payments (1 mock signal)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Billing | `/billing` | 0 | ✅ |
+| Payments | `/payments` | 1 | ⬜ |
+
+---
+
+## Settings (8 mock signals — 16 pages total)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Settings Overview | `/settings` | 0 | ✅ |
+| General | `/settings/general` | 0 | ✅ |
+| Team | `/settings/team` | 0 | ✅ |
+| Profile | `/settings/profile` | 0 | ✅ |
+| Organization | `/settings/organization` | 0 | ✅ |
+| Notifications | `/settings/notifications` | 0 | ✅ |
+| Notifications Config | `/settings/notifications-config` | 0 | ✅ |
+| Notification Templates | `/settings/notifications/templates` | 0 | ✅ |
+| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | ✅ |
+| Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | ✅ |
+| Auth Providers | `/settings/auth-providers` | 2 | ⬜ |
+| Payments | `/settings/payments` | 3 | ⬜ |
+| Billing | `/settings/billing` | 2 | ⬜ |
+| Carriers | `/settings/carriers` | 0 | ✅ |
+| API Keys | `/settings/api-keys` | 0 | ✅ |
+| Accounting | `/settings/accounting` | 0 | ✅ |
+| Branding | `/settings/branding` | 0 | ✅ |
+| Maps | `/settings/maps` | 0 | ⚙️ |
+| Preferences | `/settings/preferences` | 0 | ✅ |
+| Webhooks | `/settings/webhooks` | 1 | ⬜ |
+| Webhooks Test | `/settings/webhooks/test` | 0 | ✅ |
+
+---
+
+## Integrations (11 mock signals — 25 pages total)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Integrations Overview | `/integrations` | 0 | ✅ |
+| Overview | `/integrations/overview` | 0 | ✅ |
+| Catalog | `/integrations/catalog` | 0 | ✅ |
+| Marketplace | `/integrations/marketplace` | 0 | ✅ |
+| Marketplace Provider | `/integrations/marketplace/[providerId]` | 0 | ✅ |
+| Connected | `/integrations/connected` | 0 | ✅ |
+| **Connected Provider** | `/integrations/connected/[providerId]` | **8** | ⬜ |
+| Routing | `/integrations/routing` | 2 | ⬜ |
+| Health | `/integrations/health` | 1 | ⬜ |
+| Credentials | `/integrations/credentials` | 0 | ✅ |
+| Ecommerce | `/integrations/ecommerce` | 0 | ✅ |
+| Payments | `/integrations/payments` | 0 | ✅ |
+| Shipping | `/integrations/shipping` | 0 | ✅ |
+| Analytics | `/integrations/analytics` | 0 | ✅ |
+| CRM | `/integrations/crm` | 0 | ✅ |
+| ERP | `/integrations/erp` | 0 | ✅ |
+| Messaging | `/integrations/messaging` | 0 | ✅ |
+| Webhooks | `/integrations/webhooks` | 0 | ✅ |
+| Others | all others | 0 | ✅ |
+
+---
+
+## ELD (9 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| ELD Overview | `/eld` | 7 | ⬜ |
+| DVIR | `/eld/dvir` | 2 | ⬜ |
+| HOS | `/eld/hos` | 0 | ✅ |
+
+---
+
+## Activity / Events (2 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Activity | `/activity` | 2 | ⬜ |
+| Realtime | `/activity/realtime` | 0 | ✅ |
+| Events | `/events` | 0 | ✅ |
+
+---
+
+## Products (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Product List | `/products` | 0 | ✅ |
+| Product Sync | `/products/sync` | 3 | ⬜ |
+
+---
+
+## Returns (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Returns | `/returns` | 3 | ⬜ |
+
+---
+
+## Supply Chain (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Supply Chain Overview | `/supply-chain` | 0 | ✅ |
+| SC Inventory | `/supply-chain/inventory` | 2 | ⬜ |
+| SC Orders | `/supply-chain/orders` | 1 | ⬜ |
+
+---
+
+## Healthcare (6 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Healthcare Overview | `/healthcare` | 0 | ✅ |
+| Patients | `/healthcare/patients` | 0 | ✅ |
+| Records | `/healthcare/records` | 6 | ⬜ |
+
+---
+
+## Admin (105 mock signals — highest priority after home)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Admin Overview | `/admin` | 0 | ✅ |
+| **Shops Detail** | `/admin/shops/[id]` | **36** | ⬜ |
+| **Test Dashboard** | `/admin/test-dashboard` | **23** | ⬜ |
+| **Queue Monitor** | `/admin/queues` | **16** | ⬜ |
+| **Integrations** | `/admin/integrations` | **9** | ⬜ |
+| System | `/admin/system` | 8 | ⬜ |
+| API Docs | `/admin/api-docs` | 6 | ⬜ |
+| Users | `/admin/users` | 2 | ⬜ |
+| Customers | `/admin/customers` | 2 | ⬜ |
+| Activity | `/admin/activity` | 0 | ✅ |
+| Audit | `/admin/audit` | 0 | ✅ |
+| Workflows | `/admin/workflows` | 0 | ✅ |
+| Workflows Detail | `/admin/workflows/[id]` | 2 | ⬜ |
+| Design System | `/admin/design-system` | 0 | ✅ |
+
+---
+
+## Misc / No-API-Key Gated
+| Section | Pages | Status |
+|---------|-------|--------|
+| Map | `/map` | ⚙️ (requires maps key) |
+| Campaigns | `/campaigns` | ✅ |
+| Notifications | `/notifications` | ✅ |
+| CRM | `/crm` | ✅ |
+| Collaboration | `/collaboration` | ✅ |
+| POS | `/pos` | ✅ |
+| Locations | `/locations` | ✅ |
+| Zones | `/zones` | ✅ |
+| Profile | `/profile` | ✅ |
+| Stores | `/stores` | ✅ |
+| Partners | `/partners` | ✅ |
+
+---
+
+## Sprint Log
+
+| Sprint | Branch | Section | Pages Wired | Endpoints Added | Mock Before→After | PR |
+|--------|--------|---------|-------------|-----------------|-------------------|----|
+| WIT-462 | `feat/WIT-462-dashboard-home-production` | Home / Dashboard | `home/page.tsx` | none (existing endpoints) | 3→0 | #TBD |
+
+---
+
+## Summary by Priority
+
+| Priority | Section | Mock Signals | Complexity |
+|----------|---------|-------------|-----------|
+| 1 | **Home (this sprint)** | 3→0 | Low |
+| 2 | Admin (shops/[id], test-dashboard, queues) | 105 | High |
+| 3 | ELD (overview + DVIR) | 9 | Medium |
+| 4 | AI route-efficiency | 9 | Medium |
+| 5 | Integrations (connected provider, routing) | 11 | Medium |
+| 6 | Healthcare records | 6 | Low |
+| 7 | Invoices (detail + create) | 5 | Low |
+| 8 | Settings (auth-providers, payments, billing, webhooks) | 8 | Low |
+| 9 | Returns, Products sync | 6 | Low |
+| 10 | Supply-chain | 3 | Low |
+| 11 | Activity feed | 2 | Low |
+| 12 | Orders (detail, board, import) | 6 | Medium |
