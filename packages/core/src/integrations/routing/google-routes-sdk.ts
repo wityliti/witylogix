@@ -108,30 +108,32 @@ interface GoogleRoutesConfig extends RoutingAdapterConfig {
  * Google Routes API SDK
  */
 export class GoogleRoutesSDK extends RoutingAdapter {
-  private config: GoogleRoutesConfig;
-  private baseUrl: string = 'https://routes.googleapis.com/directions/v2';
+  private googleBaseUrl: string = 'https://routes.googleapis.com/directions/v2';
   private rateLimitInfo: RateLimitInfo = {
     remaining: 100,
     limit: 100,
     resetAt: new Date(),
   };
 
+  /** Narrowed accessor for Google-specific config fields */
+  private get googleConfig(): GoogleRoutesConfig {
+    return this.config as GoogleRoutesConfig;
+  }
+
   constructor(config: GoogleRoutesConfig) {
-    super(config);
+    super({
+      timeout: 30000,
+      retries: 2,
+      rateLimit: 50, // Conservative default: 50 req/sec
+      ...config,
+    });
 
     if (!config.apiKey) {
       throw new Error('Google Routes API requires apiKey');
     }
 
-    this.config = {
-      timeout: 30000,
-      retries: 2,
-      rateLimit: 50, // Conservative default: 50 req/sec
-      ...config,
-    };
-
     if (config.baseUrl) {
-      this.baseUrl = config.baseUrl;
+      this.googleBaseUrl = config.baseUrl;
     }
   }
 
@@ -209,6 +211,14 @@ export class GoogleRoutesSDK extends RoutingAdapter {
   }
 
   /**
+   * Google Routes does not expose a VRP optimization endpoint.
+   * Throws to allow the routing engine to fall back to a dedicated optimizer.
+   */
+  async optimize(_request: import('./types.js').OptimizationRequest): Promise<import('./types.js').OptimizationResponse> {
+    throw new Error('Google Routes SDK does not support VRP optimization — use a dedicated optimizer provider');
+  }
+
+  /**
    * Map internal costing model to Google travel mode
    */
   private mapTravelMode(costing: string): string {
@@ -237,13 +247,13 @@ export class GoogleRoutesSDK extends RoutingAdapter {
    * Call Google Routes API
    */
   private async callGoogleAPI<T>(endpoint: string, body: unknown): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}?key=${this.config.apiKey}`;
+    const url = `${this.googleBaseUrl}${endpoint}?key=${this.googleConfig.apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': this.config.user_agent || 'Witylogix/1.0',
+        'User-Agent': this.googleConfig.user_agent || 'Witylogix/1.0',
       },
       body: JSON.stringify(body),
     });
@@ -252,7 +262,7 @@ export class GoogleRoutesSDK extends RoutingAdapter {
     this.updateRateLimitInfo(response.headers);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData: Record<string, unknown> = await response.json().catch(() => ({})) as Record<string, unknown>;
       throw this.createRoutingError(
         response.status.toString(),
         this.extractErrorMessage(errorData),

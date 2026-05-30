@@ -150,14 +150,13 @@ interface HEREPlaceDetail extends HEREPlaceResult {
  * HERE Maps API Client
  */
 export class HEREMapsClient extends MapsAdapter {
-  private baseUrl = 'https://geocode.search.hereapi.com/v1';
   private discoverUrl = 'https://discover.search.hereapi.com/v1';
   private browseUrl = 'https://browse.search.hereapi.com/v1';
   private tileUrl = 'https://2.vector.maps.hereapi.com/v2/vectortiles';
 
   constructor(config: MapsAdapterConfig) {
     super(config);
-    this.baseUrl = config.baseUrl || this.baseUrl;
+    this.baseUrl = config.baseUrl || 'https://geocode.search.hereapi.com/v1';
   }
 
   /**
@@ -190,13 +189,17 @@ export class HEREMapsClient extends MapsAdapter {
       }
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/geocode?${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/geocode?${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -276,13 +279,17 @@ export class HEREMapsClient extends MapsAdapter {
       }
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/revgeocode?${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/revgeocode?${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -373,13 +380,17 @@ export class HEREMapsClient extends MapsAdapter {
       }
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.baseUrl}/autosuggest?${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.baseUrl}/autosuggest?${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -456,13 +467,17 @@ export class HEREMapsClient extends MapsAdapter {
       }
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.discoverUrl}/discover?${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.discoverUrl}/discover?${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {
@@ -531,13 +546,17 @@ export class HEREMapsClient extends MapsAdapter {
       });
 
       const response = await this.circuitBreaker.call(async () => {
-        return fetch(`${this.discoverUrl}/discover?at=${placeId}&${params.toString()}`, {
-          method: 'GET',
-          timeout: this.timeout,
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), this.timeout);
+        try {
+          return await fetch(`${this.discoverUrl}/discover?at=${placeId}&${params.toString()}`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+          });
+        } finally {
+          clearTimeout(id);
+        }
       });
 
       if (!response.ok) {

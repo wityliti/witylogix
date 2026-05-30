@@ -195,11 +195,11 @@ export class ValhallaClient extends RoutingAdapter {
 
     if (Date.now() - cached.timestamp > this.cacheTtl) {
       this.cache.delete(key);
-      this.metrics.cacheMisses++;
+      this.metrics.cacheMisses = (this.metrics.cacheMisses ?? 0) + 1;
       return null;
     }
 
-    this.metrics.cacheHits++;
+    this.metrics.cacheHits = (this.metrics.cacheHits ?? 0) + 1;
     return cached.data;
   }
 
@@ -268,10 +268,9 @@ export class ValhallaClient extends RoutingAdapter {
         costing: request.costing || 'auto',
         costing_options: {
           [request.costing || 'auto']: {
-            use_toll: request.options?.exclude_toll ? 0 : 1,
-            use_motorway: request.options?.exclude_motorway ? 0 : 1,
+            toll_cost: request.options?.exclude_toll ? 9999 : 0,
             use_ferry: request.options?.exclude_ferry ? 0 : 1,
-          },
+          } satisfies ValhallaCostingOptions,
         },
         alternatives: request.options?.alternatives ?? false,
         steps: true,
@@ -473,9 +472,16 @@ export class ValhallaClient extends RoutingAdapter {
         payload,
       );
 
+      const matched_points = (response.matched_points || []).map((pt) => ({
+        edge_index: pt.edge_index,
+        lat: pt.lat,
+        lng: pt.lon,
+        type: (pt.type as 'matched' | 'interpolated' | 'unmatched') || ('matched' as const),
+      }));
+
       return {
         shape: response.trip.shape,
-        matched_points: response.matched_points || [],
+        matched_points,
         edges: [],
         raw_shape: response.trip.shape,
         confidence_score: response.trip.confidence_score ?? 0.8,
