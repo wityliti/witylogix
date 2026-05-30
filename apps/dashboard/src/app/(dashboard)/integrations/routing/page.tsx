@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useApiList } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
@@ -273,14 +273,9 @@ export default function RoutingPage() {
   const selected = selectedProvider ? ROUTING_PROVIDERS.find((p) => p.id === selectedProvider) : null;
   const sortedByPriority = ROUTING_PROVIDERS.sort((a, b) => a.fallbackPriority - b.fallbackPriority);
 
-  const mockRouteComparison = useMemo(() => {
-    return {
-      mapbox: { distance: "2.3 km", duration: "8 mins", eta: "2:45 PM", polyline: "encoded_polyline_mapbox" },
-      osrm: { distance: "2.3 km", duration: "8 mins", eta: "2:46 PM", polyline: "encoded_polyline_osrm" },
-      valhalla: { distance: "2.25 km", duration: "7 mins", eta: "2:44 PM", polyline: "encoded_polyline_valhalla" },
-      google: { distance: "2.32 km", duration: "9 mins", eta: "2:47 PM", polyline: "encoded_polyline_google" },
-    };
-  }, []);
+  const [comparisonResults, setComparisonResults] = useState<
+    Record<string, { distance: string; duration: string; eta: string }> | null
+  >(null);
 
   return (
     <>
@@ -533,57 +528,73 @@ export default function RoutingPage() {
               </div>
             </div>
 
-            <div className={cn("flex gap-2 mb-4")}>
-              {["mapbox", "osrm", "valhalla", "google"].map((pid) => (
-                <label key={pid} className={cn("flex items-center gap-2")}>
-                  <input
-                    type="checkbox"
-                    checked={compareProviders.includes(pid)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setCompareProviders([...compareProviders, pid]);
-                      } else {
-                        setCompareProviders(compareProviders.filter((p) => p !== pid));
-                      }
-                    }}
-                    className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
-                  />
-                  <span className={cn("text-sm text-white")}>
-                    {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
-                  </span>
-                </label>
-              ))}
+            <div className={cn("flex gap-2 mb-4 flex-wrap items-center justify-between")}>
+              <div className={cn("flex gap-2 flex-wrap")}>
+                {["mapbox", "osrm", "valhalla", "google"].map((pid) => (
+                  <label key={pid} className={cn("flex items-center gap-2")}>
+                    <input
+                      type="checkbox"
+                      checked={compareProviders.includes(pid)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCompareProviders([...compareProviders, pid]);
+                        } else {
+                          setCompareProviders(compareProviders.filter((p) => p !== pid));
+                        }
+                      }}
+                      className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
+                    />
+                    <span className={cn("text-sm text-white")}>
+                      {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setComparisonResults(null)}
+                disabled
+              >
+                Compare Routes
+              </Button>
             </div>
 
-            <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
-              {compareProviders.map((pid) => {
-                const provider = ROUTING_PROVIDERS.find((p) => p.id === pid);
-                const comparison = mockRouteComparison[pid as keyof typeof mockRouteComparison];
-                if (!provider || !comparison) return null;
+            {comparisonResults ? (
+              <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
+                {compareProviders.map((pid) => {
+                  const provider = ROUTING_PROVIDERS.find((p) => p.id === pid);
+                  const comparison = comparisonResults[pid];
+                  if (!provider || !comparison) return null;
 
-                return (
-                  <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
-                    <div className={cn("p-3")}>
-                      <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
-                      <div className={cn("space-y-2 text-sm")}>
-                        <div>
-                          <p className={cn("text-xs text-gray-300")}>Distance</p>
-                          <p className={cn("font-semibold text-white")}>{comparison.distance}</p>
-                        </div>
-                        <div>
-                          <p className={cn("text-xs text-gray-300")}>Duration</p>
-                          <p className={cn("font-semibold text-white")}>{comparison.duration}</p>
-                        </div>
-                        <div>
-                          <p className={cn("text-xs text-gray-300")}>ETA</p>
-                          <p className={cn("font-semibold text-white")}>{comparison.eta}</p>
+                  return (
+                    <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+                      <div className={cn("p-3")}>
+                        <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
+                        <div className={cn("space-y-2 text-sm")}>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Distance</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.distance}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Duration</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.duration}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>ETA</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.eta}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={cn("py-8 text-center text-gray-500 text-sm bg-[#12121a] rounded border border-[#1e1e2e]")}>
+                Select providers above and click Compare Routes to see results.
+              </div>
+            )}
           </div>
         </Card>
 

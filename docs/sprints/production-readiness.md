@@ -128,11 +128,11 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## AI Features (9 mock signals)
+## AI Features (0 mock signals) ✅
 | Page | Route | Mock Before | Status |
 |------|-------|------------|--------|
 | AI Overview | `/ai` | 0 | ✅ |
-| Route Efficiency | `/ai/route-efficiency` | 9 | ⬜ |
+| Route Efficiency | `/ai/route-efficiency` | 0 | ✅ |
 | Copilot | `/ai/copilot` | 0 | ✅ |
 | Driver Insights | `/ai/driver-insights` | 0 | ✅ |
 | Slot Optimizer | `/ai/slots` | 0 | ✅ |
@@ -187,28 +187,30 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Integrations (11 mock signals — 25 pages total)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Integrations Overview | `/integrations` | 0 | ✅ |
-| Overview | `/integrations/overview` | 0 | ✅ |
-| Catalog | `/integrations/catalog` | 0 | ✅ |
-| Marketplace | `/integrations/marketplace` | 0 | ✅ |
-| Marketplace Provider | `/integrations/marketplace/[providerId]` | 0 | ✅ |
-| Connected | `/integrations/connected` | 0 | ✅ |
-| **Connected Provider** | `/integrations/connected/[providerId]` | **8** | ⬜ |
-| Routing | `/integrations/routing` | 2 | ⬜ |
-| Health | `/integrations/health` | 1 | ⬜ |
-| Credentials | `/integrations/credentials` | 0 | ✅ |
-| Ecommerce | `/integrations/ecommerce` | 0 | ✅ |
-| Payments | `/integrations/payments` | 0 | ✅ |
-| Shipping | `/integrations/shipping` | 0 | ✅ |
-| Analytics | `/integrations/analytics` | 0 | ✅ |
-| CRM | `/integrations/crm` | 0 | ✅ |
-| ERP | `/integrations/erp` | 0 | ✅ |
-| Messaging | `/integrations/messaging` | 0 | ✅ |
-| Webhooks | `/integrations/webhooks` | 0 | ✅ |
-| Others | all others | 0 | ✅ |
+## Integrations (11 → 0 mock signals) ✅ WIT-503
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Integrations Overview | `/integrations` | 0 | 0 | ✅ |
+| Overview | `/integrations/overview` | 0 | 0 | ✅ |
+| Catalog | `/integrations/catalog` | 0 | 0 | ✅ |
+| Marketplace | `/integrations/marketplace` | 0 | 0 | ✅ |
+| Marketplace Provider | `/integrations/marketplace/[providerId]` | 0 | 0 | ✅ |
+| Connected | `/integrations/connected` | 0 | 0 | ✅ |
+| Connected Provider | `/integrations/connected/[providerId]` | 8 | 0 | ✅ |
+| Routing | `/integrations/routing` | 2 | 0 | ✅ |
+| Health | `/integrations/health` | 1 | 0 | ✅ |
+| Credentials | `/integrations/credentials` | 0 | 0 | ✅ |
+| Ecommerce | `/integrations/ecommerce` | 0 | 0 | ✅ |
+| Payments | `/integrations/payments` | 0 | 0 | ✅ |
+| Shipping | `/integrations/shipping` | 0 | 0 | ✅ |
+| Analytics | `/integrations/analytics` | 0 | 0 | ✅ |
+| CRM | `/integrations/crm` | 0 | 0 | ✅ |
+| ERP | `/integrations/erp` | 0 | 0 | ✅ |
+| Messaging | `/integrations/messaging` | 0 | 0 | ✅ |
+| Webhooks | `/integrations/webhooks` | 0 | 0 | ✅ |
+| Others | all others | 0 | 0 | ✅ |
+
+**New endpoints**: `GET /api/v4/integrations/connections`, `DELETE /api/v4/integrations/connections/:id`, `POST /api/v4/integrations/connections/:id/pause`, `POST /api/v4/integrations/connections/:id/resume`, `POST /api/v4/integrations/connections/:id/force-sync`, `GET /api/v4/integrations/:slug/usage`, `GET /api/v4/integrations/:slug/activity`, `GET /api/v4/integrations/:slug/errors`
 
 ---
 
@@ -311,6 +313,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | WIT-462 | `feat/WIT-462-dashboard-home-production` | Home / Dashboard | `home/page.tsx` | none (existing endpoints) | 3→0 | #TBD |
 | WIT-501 | `feat/WIT-501-dashboard-admin-production` | Admin (all pages) | 14 pages | GET /admin/activity, /admin/queues, /admin/queues/:name/jobs, /admin/system, /admin/integrations, /admin/test-stats | 105→0 | pending |
 | WIT-502 | `feat/WIT-502-dashboard-eld-production` | ELD (overview + DVIR) | `eld/page.tsx`, `eld/dvir/page.tsx` | 10 new ELD endpoints + 4 Prisma models | 9→0 | pending |
+| WIT-503 | `feat/WIT-503-dashboard-integrations-production` | Integrations (connected, routing, health) | 3 pages | 8 new /integrations/* endpoints | 11→0 | #TBD |
 
 ---
 
@@ -321,8 +324,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | 1 | Home | 3→0 ✅ | Low |
 | 2 | Admin (all pages) | 105→0 ✅ | High |
 | 3 | ELD (overview + DVIR) | 9→0 ✅ | Medium |
-| 4 | AI route-efficiency | 9 | Medium |
-| 5 | Integrations (connected provider, routing) | 11 | Medium |
+| 4 | AI route-efficiency | 0 ✅ | Medium |
+| 5 | Integrations (connected provider, routing) | 11→0 ✅ | Medium |
 | 6 | Healthcare records | 6 | Low |
 | 7 | Invoices (detail + create) | 5 | Low |
 | 8 | Settings (auth-providers, payments, billing, webhooks) | 8 | Low |
