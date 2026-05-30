@@ -6,106 +6,15 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 **Total pages**: ~204 (excluding design-system, stories)
 **Total mock signals (baseline)**: ~486
 
-| WIT | Section | Pages | Map Views | Endpoints Wired/Added | Mock Before→After | Notes |
-|-----|---------|-------|-----------|-----------------------|-------------------|-------|
-| WIT-340 | Analytics + Orders | analytics/, analytics/eta-accuracy, orders/board | ZoneAnalyticsMap (zone-heat-layer + WLMap) | /api/v4/analytics/*, /api/v4/orders | many → 0 | Introduced WLMap (keyless CARTO/Leaflet) |
-| WIT-341 | Zones + Payments + Billing | zones/, payments/, billing/ | ZonePolygonLayer on zones page (polygon + circle fallback, auto-fit) | /api/v4/zones (existing), /api/v4/payments (normalized), /api/v4/billing/quotas (new), /api/v4/billing/plans (shape fix), /api/v4/billing/invoices (shape fix), /api/v4/billing/subscription (wired), /api/v4/payment-methods/payment-methods (wired) | ZONES const + MOCK_PAYMENTS + MONTHLY_REVENUE + mock plan/quota/invoice fallbacks → 0 | |
-| WIT-342 | Drivers + Delivery | drivers/, drivers/[id], drivers/performance, delivery/ | DriverLocationLayer (status-coloured circle markers, popup, auto-fit, map/grid toggle), DeliveryMarkerLayer (delivery-point circles, status colors) | /api/v4/drivers/locations (new PostGIS + JSON fallback), /api/v4/driver-scoring/leaderboard (fixed URL), /api/v4/driver-scoring/:id (shape fixed), /api/v4/drivers/:id (profile wired), /api/v4/shipments (existing) | DEMO_SCORE_RESPONSE + DEMO_HISTORY → 0 | drivers/page: grid/map toggle; drivers/[id]: real scoring + history + profile; performance: leaderboard fixed; delivery: two-panel + DeliveryMarkerLayer |
-| WIT-343 | Customers | customers/, customers/[id], customers/segments | CustomerDensityLayer (log-scaled bubbles by city, 60+ city lookup, auto-fit, popup, map/grid toggle on list page) | /api/v4/customers (shape fixed, shopifyCustomerId→externalCustomerId bug fixed), /api/v4/customers/stats (new), /api/v4/customers/density (new, groups orders by city), /api/v4/customers/:id (normalized + order history), /api/v4/customers/:id/orders (wired) | hardcoded StatCard changes (5.2%/12.8%/2.3%/15.1%), wrong field names (totalOrders vs ordersCount, status/tier not in schema) → 0 | customers/: grid+map toggle, real stats, loading skeletons, error/empty states; customers/[id]: profile + order history + addresses; customers/segments: tier cards + progress bars + top spenders + density map |
-| WIT-344 | Returns + Finance/Invoices | returns/, invoices/[id], invoices/create | None (no geographic data) | /api/v4/returns (rewritten, real Prisma), /api/v4/returns/stats (real Prisma), /api/v4/returns/:id (wired), /api/v4/invoices/:id (wired via useApiQuery), /api/v4/customers (reused for customer picker) | MOCK_RETURNS (4 items) + MOCK_INVOICE + MOCK_CUSTOMERS (5) → 0 | ReturnRequest+ReturnRequestItem Prisma models added (schema + migration + RLS); returns page: status pipeline + filter tabs driven by real /stats; invoices/[id]: normalizeApiInvoice() + loading skeleton + error state; invoices/create: real customer picker with loading skeleton |
-| WIT-345 | Campaigns | campaigns/, campaigns/[id] | CampaignReachLayer (orange log-scaled bubbles by city, map/grid toggle on list page, audience reach panel on detail page) | /api/v4/campaigns (rewritten with Prisma, fixed snake_case→camelCase bug), /api/v4/campaigns/stats (new, groupBy status + aggregate counts), /api/v4/campaigns/:id/geo (new, customer city distribution for reach map) | raw SQL snake_case field mismatch (recipient_count/delivered_count vs Prisma camelCase) → 0; wrong column names → fixed | campaigns/: map/grid toggle + filter by type+status + real stats + links to detail; campaigns/[id]: engagement funnel + reach map; PAUSED/FAILED/CANCELLED statuses added |
-| WIT-346 | Field Service | field-service/, field-service/dispatch, field-service/jobs | DriverLocationLayer on dispatch page (live driver GPS, status-coloured markers, click-to-select, empty/loading/error states) | /api/v4/drivers (technician list + status counts), /api/v4/drivers/locations (GPS for map), /api/v4/orders (job queue + schedule + completions, normalizeOrder()) | const schedule=[] + const technicians=[] + const allTechs=[] + hardcoded slaMetrics (92%/85%/12/8/2/45) → 0; ?type=field-service&view=* params removed | field-service/page: real KPIs (activeJobs/completionRate/overdue/onTime) from live data; dispatch: split-pane WLMap + driver list + status filter + active/pending jobs; jobs: normalizeOrder() maps PENDING→created etc., priority from deliveryDate proximity |
-| WIT-347 | Demand | demand/, demand/anomalies, demand/scheduler, demand/models, demand/capacity | ZoneHeatLayer on demand page (city-level order intensity bubbles, data/map toggle) | /api/v4/analytics/demand (existing), /api/v4/analytics/demand-anomalies (existing), /api/v4/analytics/demand-scheduler (existing), /api/v4/analytics/demand-models (existing), /api/v4/analytics/demand-capacity (existing), /api/v4/analytics/demand-heatmap (new, orders by city with coord lookup) | capacity page wrong URL (/analytics?type=capacity→/analytics/demand-capacity), models/anomalies useApiList→useApiQuery (API returns {items,total} not array), scheduler table hours 0-5→8-20, KPI display operator precedence fix | demand/: data/map toggle + ZoneHeatLayer (city demand bubbles, empty state); demand/capacity: URL fixed; demand/models: hook fixed; demand/anomalies: hook fixed; demand/scheduler: hours fixed |
-| WIT-348 | Notifications | notifications/, notifications/log/, notifications/delivery-log/, notifications/preferences/ | None (no geographic data) | /api/v4/notifications (rewritten — inbox from NotificationLog, read/delete state in Shop.settings.notificationInbox), /api/v4/notifications/:id/read (new), /api/v4/notifications/:id/unread (new), /api/v4/notifications/mark-all-read (new), /api/v4/notifications/delete-bulk (new), /api/v4/notifications/delivery-log (new, real NotificationLog Prisma), /api/v4/notifications/delivery-log/export (stub returns URL), /api/v4/notifications/test (new), /api/v4/notification-preferences (rewritten — GET+PATCH from Shop.settings.notificationPreferences) | NOTIFICATION_LOGS (7 hardcoded items in log/page.tsx) + fake setTimeout in test notification → 0 | notifications/: error state + Mark All Read button wired; log/: full rewrite using useDeliveryLog hook (loading/empty/error/detail modal); delivery-log/: already used hook (endpoint now real); preferences/: loading skeleton (was "Coming soon…"), test notification wired to real endpoint, useSendTestNotification hook added; useNotifications: fixed :id URL-interpolation bug |
-| WIT-349 | Products + Healthcare | products/sync, healthcare/records | None (no geographic data) | /api/v4/integrations (real e-commerce platform connections for sync config), /api/v4/healthcare/records (new, derives from orders with healthcare metadata) | MOCK_PLATFORMS (3 hardcoded e-commerce platforms with fake latency/productCount) + mockRecords (3 hardcoded clinical records as fallback) → 0 | products/sync: loads real connected ECOMMERCE integrations, loading skeleton, error state, empty state with link to /integrations; static PLATFORM_FIELDS map per slug; healthcare/records: removes mock fallback, adds empty state row |
-| WIT-350 | AI | ai/driver-insights, ai/route-efficiency, ai/slots | None (no geographic data) | /api/v4/ai/analytics/leaderboard (existing, now registered), /api/v4/ai/analytics/route-efficiency/:id (existing, now registered), /api/v4/ai/slots/recommend (existing, now registered), /api/v4/routes (existing, used for completed route list), /api/v4/zones (existing, used for zone select) | DEMO_ENTRIES (8 drivers) + DEMO_ROUTES (5 routes) + DEMO_SCORE + DEMO_ZONES (5 zones) + DEMO_SLOTS (5 slots) → 0; server.ts missing registrations for ai/analytics + ai/slots routes fixed | driver-insights: leaderboard on real API with period switcher; route-efficiency: route list from /api/v4/routes, score panel null-guarded with empty state; slots: zone select from real /api/v4/zones, always calls recommend API, empty state when no slots |
-| WIT-351 | Supply Chain + Admin Audit | supply-chain/orders, admin/audit | None (no geographic data) | /api/v4/supply-chain/waves (new, groups orders by day → wave summaries), /api/v4/supply-chain/batches (new, active orders as batch picking tasks), /api/v4/returns (existing, reused for returns queue tab) | WAVE_PLANS (3 items) + BATCH_PICKING (4 items) + RETURN_QUEUE (3 items) + DEMO_DATA (12 audit entries) + makeDemo() factory → 0 | supply-chain/orders: waves/batches/returns tabs all on real API with loading skeletons + empty states; admin/audit: DEMO_DATA removed, shows empty state when no audit entries returned |
-| WIT-352 | Admin + Supply Chain dashboard + Freight | admin/activity, admin/users, admin/workflows, admin/queues, admin/integrations, freight/, supply-chain/ | None (no geographic data) | /api/v4/admin/queues (new, BullMQ stats for all 8 queues), /api/v4/admin/queues/jobs (new, recent active/waiting/failed jobs), /api/v4/admin/queues/scheduled (new, repeatable jobs), /api/v4/admin/queues/dlq (new, DLQ items from failed-delivery/wc-webhooks/notifications) | mockActivities (9 items, dead code) + mockUsers (8 items, dead code) + WORKFLOW_EXECUTIONS (12 items) + mockQueues/mockJobs/mockScheduledJobs/mockDLQ (4 constants) + mockIntegrations (5 items) + const totalSavings=15000 + KPI_METRICS (4 items) + INVENTORY_DISTRIBUTION (3 items) + demandSupplyData (3 hardcoded weeks) → 0 | admin/activity: dead mockActivities removed (real hook already present); admin/users: dead mockUsers removed (real hook already present); admin/workflows: WORKFLOW_EXECUTIONS → useApiQuery(/api/v4/workflow/executions), non-standard {executions,[]} shape; admin/queues: full rewrite → 4 new BullMQ admin endpoints, 4 useApiList hooks, loading/empty states; admin/integrations: mockIntegrations → useApiQuery(/api/v4/integrations) + mapIntegration(); freight: totalSavings → computed totalSpend from shipment rates; supply-chain/page: KPI_METRICS/INVENTORY_DISTRIBUTION → useMemo from real inventory.items, demandSupplyData → demand.items.map() |
-| WIT-353 | CRM + Partners + POS (tracker audit) | crm/, partners/, pos/ | None | None new — all three sections already wired to real API hooks before this sprint | None — no MOCK_/DEMO_ constants found; CRM/Partners use useApiQuery(/api/v4/integrations), POS uses custom use-pos hooks | Tracker updated to reflect reality: ⬜ CRM/Partners/POS → ✅; all dashboard pages now production-ready |
-| WIT-354 | Home + ELD + Returns + ESignatures (regression fixes) | home/, eld/, returns/, esignatures/ | None (no geographic data on these pages) | /api/v4/eld/compliance (new, Driver-derived), /api/v4/eld/violations (new), /api/v4/eld/events (new), /api/v4/eld/drivers/:id/hos (new); /api/v4/returns (rewritten — uses real ReturnRequest Prisma model); /api/v4/signing-templates (pre-existing hook now used) | home: mock recentOrders(5) + mockDrivers(8) → 0; eld: MOCK_DRIVERS(6) → 0; returns: MOCK_RETURNS(4 fallback) → 0; esig: mockTemplates(3) → 0 | ReturnRequest+ReturnRequestItem Prisma schema added (67-returns.prisma); migration 20260615_returns_table with RLS; ELD routes new file (eld.ts); all prisma as any hacks in returns.ts replaced with typed calls; RLS 61/61 ✅ |
-| WIT-355 | Final Mock Cleanup | integrations/health, integrations/connected/[id], admin/customers, supply-chain/inventory, activity, settings/webhooks, collections | None (no geographic data) | /api/v4/integrations (health list), /api/v4/integrations/:slug/events (activity log + error log), /api/v4/integrations/meter (usage metrics), /api/v4/integrations/:slug/test (real check-now), /api/v4/supply-chain/stock-gauges (wired), /api/v4/supply-chain/reorder-alerts (wired), DELETE /api/v4/collections/:id/products (remove button) | INTEGRATIONS[](8 hardcoded) + mockUsageMetrics(5) + mockActivityLog(3) + mockErrors(2) + mockCustomers[](8) + stockGauges=[]+reorderAlerts=[] placeholders + generateMockEvents dead fn + eventsPerHour*30 fake calc + alert("mock") → 0 | All 7 pages: real API, loading/empty/error states; mock scan: empty ✅ |
-| WIT-356 | Locations + Tracking | locations/, tracking/ | LocationMarkerLayer (type-coloured circle markers, status ring, popup, auto-fit, grid/map toggle on list; embedded 160px mini-map in detail panel); DriverLocationLayer on tracking map (live driver GPS, click-to-select, status legend) | /api/v4/locations (existing, returns lat/lng); /api/v4/drivers/locations (existing GPS endpoint reused) | locations: hardcoded "Map Placeholder" coordinate text → 0 (real WLMap); tracking: no map at all → live map with driver GPS + driver sidebar; removed `any` cast on Badge variant | New shared layer: location-marker-layer.tsx (WAREHOUSE=blue, STORE=green, HUB=purple, DEPOT=amber, PICKUP=teal; ACTIVE=emerald ring, MAINTENANCE=amber ring, INACTIVE=red ring). Tracking page: list/map toggle, driver sidebar with GPS indicator |
-| WIT-357 | Realtime Components + Header Bell | components/realtime/* (4 widgets), notification-stats-widget, dashboard-layout-client | ActiveDeliveryMap: WLMap + DriverLocationLayer replaces SVG mock map (live driver GPS, status colours, 30s poll) | /api/v4/notifications/stats (new — 7-day daily totals, channel breakdown, top-5 failed templates); /api/v4/notifications (existing, wired to NotificationCenter); /api/v4/dashboard/stats (existing, wired to LiveKPICounters); /api/v4/orders (existing, wired to LiveOrderFeed); /api/v4/drivers/locations (existing, wired to ActiveDeliveryMap) | mockDrivers(5)+mockDeliveries(2)+mockMetrics(4)+mockOrders(4)+mockNotifications(5)+MOCK_DAILY_STATS(7)+MOCK_CHANNEL_BREAKDOWN+MOCK_FAILED_TEMPLATES(3) → 0 | Header bell now shows real unread count badge; NotificationCenter wired to useNotifications(); LiveKPICounters polls every 60s; LiveOrderFeed polls every 30s; ActiveDeliveryMap polls every 30s; all have loading/error/empty states |
-
-## Remaining ⬜
-
 ---
 
-## Sprint Log
+## Status Legend
+- ✅ **Done** — 0 mock signals, real API wired
+- 🔄 **In-Progress** — current sprint
+- ⬜ **Pending** — not started
+- ⚙️ **No-API-Key** — gated behind missing env key (Stripe/Twilio/maps)
 
-| Sprint | Branch | Sections | Signals Eliminated | Date |
-|--------|--------|----------|--------------------|------|
-| WIT-501 | feat/WIT-501-admin-production | Admin (105) | 105 | 2026-05 |
-| WIT-502 | feat/WIT-502-eld-production | ELD (9) | 9 | 2026-05 |
-| WIT-503 | feat/WIT-503-integrations-production | Integrations (11) | 11 | 2026-05 |
-| WIT-504 | feat/WIT-504-settings-production | Settings (8) | 8 | 2026-05 |
-| WIT-505 | feat/WIT-505-dashboard-invoices-payments-production | Activity (2), Order Board (1), Invoices (5), Payments (1) | 9 | 2026-05-31 |
-| WIT-512 | feat/WIT-512-dashboard-analytics-production | Analytics overview (DEMO→real), Returns (MOCK_RETURNS→0), API route-performance (Math.random→Prisma), Map: DeliveryPerformanceLayer + route-performance Map tab | 7 + API | 2026-06-01 |
-| WIT-514 | feat/WIT-514-dashboard-supplychain-healthcare-esig-products-production | Healthcare Records (mockRecords→0), SC Inventory (2 new API hooks), SC Orders (WAVE_PLANS/BATCH_PICKING/RETURN_QUEUE→real), E-Signatures (new esignatures.ts routes + 0 mocks), Products Sync (MOCK_PLATFORMS→integrations/connections), Field Service (computed stats), Collections (alert→real DELETE) | 17 | 2026-06-01 |
-| WIT-515 | feat/WIT-515-dashboard-orders-production | Orders: Detail field-shape fix + Map view, Import hook fix; CourierAssignmentPanel Math.random→0 | 5 + API | 2026-06-02 |
-| WIT-517 | feat/WIT-517-dashboard-realtime-mock-cleanup | Realtime components (4), Notification stats widget, Activity polling, ELD HOS recap, Webhooks hourly chart, Webhook test page, Shipping labels pricing, Dispatch map (WLMap); API: notifications-v2 rewrite, outbound-webhooks/test endpoint | 13 files | 2026-06-02 |
-| WIT-518 | feat/WIT-518-dashboard-billing-drivers-map | Billing (4 hardcoded fallbacks→real API; billing API { data } wrapper fix); Drivers (Cards↔Map toggle; WLMap + DriverLayer status-coloured markers + useFitBounds) | 4 + API | 2026-06-03 |
-| WIT-519 | feat/WIT-519-supply-chain-kpis-locations-map | Supply Chain overview (KPI_METRICS/INVENTORY_DISTRIBUTION/demandSupplyData/pipeline percentages→real hooks); Locations map view (WLMap+PinLayer replaces coordinate placeholder) | 5 | 2026-06-03 |
-| WIT-520a | feat/WIT-520-marketplace-provider-real-api | Marketplace provider detail (PROVIDERS hardcoded object→GET /api/v4/integrations/marketplace/:slug; credentials form from credentialFields; install via POST /:slug/install); CRM: remove dead CRM_PROVIDER_LIST | 5 | 2026-06-03 |
-| WIT-400 | feat/WIT-400-dashboard-orders-payments-returns | Delivery (List↔Map toggle on delivery/page + delivery/standard; WLMap + ShipmentMarkerLayer + useFitBounds; stat cards; detail panel; proper Shipment type with addressLine1/city/deliveryLocation); use-shipment-tracking hook (removed hardcoded John Doe / FedEx / random mock fallback → real /api/v4/shipments calls) | 2 pages + 1 component + 1 hook | 2026-06-03 |
-| WIT-520b | feat/WIT-520-dashboard-demand-production | Demand section (5 API endpoints: Math.random→Prisma real data); Demand page map view (Charts/Map toggle + WLMap + DemandZoneLayer); Tracking Config (local state→API load/save); capacity page URL fix | 5 API + 2 pages | 2026-06-04 |
-| WIT-521 | feat/WIT-521-dashboard-freight-ux-design-tokens | Freight 4 pages (overview, loads, rates, compliance): 94 hardcoded hex CSS values → WL design tokens; removed totalSavings=15000 const; real Shipment fields; freight overview Charts↔Map toggle (WLMap+DeliveryMapView); hooks-order fix | 94 CSS signals | 2026-06-04 |
-| WIT-522 | feat/WIT-522-dashboard-tracking-timeslots | Time-Slots: SLOTS[7] hardcoded array → real useApiList('/api/v4/time-slots'); loading/empty/error states; Create Slot modal (POST /api/v4/time-slots); WL design tokens. Tracking overview: List↔Map toggle, /dispatch/drivers for lat/lng, WLMap+OrderLayer+DriverLayer. Tracking Live: List↔Map toggle, map panel with order+driver markers + sidebar detail, 30s auto-refresh via dispatch drivers. New shared component: tracking/components/tracking-map-view.tsx | 7 mock slots | 2026-06-04 |
-| WIT-523 | feat/WIT-523-notification-templates-profile | Notification templates list: TEMPLATES[8] hardcoded array → real useApiList('/api/v4/notification-templates'); delete/toggle via api.delete/api.patch; WL design tokens; loading/empty states. Profile: 3 fake sessions (192.168.1.x, San Francisco CA, Chrome/Safari/Firefox) → current-session-only display; WL design tokens throughout. WIT-521 notifications/preferences + settings/notifications + products/sync + template [id]: all fake setTimeout replaced with real API calls | 11 mocks | 2026-06-04 |
-| WIT-350 | feat/WIT-350-dashboard-zones-drivers-delivery | zones/[id]: remove NEXT_PUBLIC_FEATURE_ZONES_MAP gate + LegacyNotice; LoadingSkeleton + ErrorState with retry; useRouter navigation; Promise.all with proper error propagation; active/inactive badge. zones/new: remove feature flag gate; remove maptilerKey prop; replace alert() with submitError state in sidebar; try/catch/finally for submit | 0 mocks | 2026-06-05 |
-| WIT-533 | feat/WIT-533-routes-design-tokens-plan-map | Routes 6 pages: 105+ hex CSS → WL design tokens; routes/plan List↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer on optimized stop sequence); routes/[id]/edit Save Changes fix (useApiMutation); removed getPriorityColor() hex helper | 105 CSS signals | 2026-06-08 |
-| WIT-534 | feat/WIT-534-dashboard-ai-analytics-design-tokens | AI pages (3) + Analytics pages (3): 31 hex CSS → WL design tokens; ai/driver-insights List↔Map toggle (WLMap + DriverLayer tier-coloured); ai/route-efficiency Score↔Map toggle (WLMap + RoutePolylineLayer + RouteStopMarkersLayer); analytics/route-performance legend hex → CSS vars | 31 CSS signals + 2 map views | 2026-06-08 |
-| WIT-535 | feat/WIT-535-dashboard-integrations-design-tokens | integrations/payments full rewrite (5 real endpoints: gateways/summary/transactions/methods/reconciliation); integrations/eld full rewrite (5 real endpoints: connections/drivers/violations/dvir/compliance); integrations/overview CATEGORIES→useApiList; integrations/supply-chain warehouse/inventory→real API; 13 integrations sub-pages CSS-only pass; 179 dashboard pages total: all Tailwind arbitrary hex class values (bg-[#...]/border-[#...]/text-[#...]) eliminated codebase-wide; TableSkeleton cols→columns fix; Map→MapIcon lucide rename | 179 files, ~1900 CSS signals, 4 pages real API | 2026-06-09 |
-| WIT-536 | feat/WIT-536-nav-ui-design-token-cleanup | Navigation (sidebar: text-[#f5a623]→text-wl-primary-500 x6 + bg-[#0a0a0e]→bg-wl-bg-sidebar; page-header: bg-[#0f0f14]→bg-wl-bg-surface); UI components (dialog: bg-[#13131a]→bg-wl-bg-elevated; card: bg-[#13131a]+bg-[#161620]→bg-wl-bg-elevated+bg-wl-bg-overlay); global-error (bg-[#0a0a0f]+bg-[#1a1a20]→WL tokens); shipments-map-view (border-[#1e1e2e]→border-wl-border-subtle); courier-live-map (Math.random bearing→deterministic 0); provider-comparison (Math.random metrics→real provider.metrics.averageLatencyMs/successRate; hardcoded features matrix→real credentialConfig/webhookConfig/rateLimit flags); rate-limit-display (Math.random sparkline→deterministic sine wave) | 9 files, 18 signals → 0 | 2026-06-09 |
-| WIT-537 | feat/WIT-537-dashboard-returns-detail-map | Returns: NEW `/returns/[id]` detail page (RMA lifecycle: status pipeline, items table, action buttons approve/reject/receive/inspect/refund, timeline, customer+order sidebar, Detail/Map toggle); `/returns` list upgrades (stats row, List↔Map toggle, row navigation, status filter pills); Fixed `use-returns.ts` bugs (wrong paths + PATCH→POST); NEW `returns-map-view.tsx` (WLMap+PinLayer for list) + `return-location-map.tsx` (WLMap+PinLayer for detail) | `GET /api/v4/returns/:id`, action endpoints × 5, `GET /api/v4/returns/stats` | 5 files, 0 mocks, 2 map views | 2026-06-10 |
-| WIT-538 | feat/WIT-538-supplychain-crm-quality-hardening | supply-chain/page: added loading skeleton + error state for all 5 hooks; replaced 3 hardcoded Pipeline Summary metrics ("2.3 days", "94.2%", "12 orders") with real computed values from fulfillment/orders data. crm/page: removed dead `useState<SyncEvent[]>([])` (setter never called); replaced with `useMemo` deriving sync events from each CRM integration's `lastSyncAt`+`healthStatus`; Failed Syncs stat now reflects real UNHEALTHY integrations | no new endpoints | 2 files, 3 hardcoded strings → 0 | 2026-06-10 |
-| WIT-539 | feat/WIT-539-integration-hooks-auth-chaos-api | use-integration-status: raw `fetch()` → `api.get/post/delete`; removed `DEMO_CONNECTIONS` (5 hardcoded carriers/Shopify/Stripe). use-chaos-testing: removed `DEMO_CHAOS_SCENARIOS`/`DEMO_CHAOS_RESULTS`; wired to new `/api/v4/chaos/*`. use-integration-docs: static carrier reference docs (SDK methods, webhooks, rate limits, playbooks) — removed non-existent API calls, converted to pure `useMemo`. New `apps/api/src/routes/chaos.ts`: scenarios in `shop.settings`, executions in ActivityLog. chaos/page.tsx: LoadingSkeleton + ErrorState guards | NEW `/api/v4/chaos/*` (5 routes) | 5 hook/page files + 1 API route, DEMO_ fallbacks → 0 | 2026-06-10 |
-| WIT-540 | feat/WIT-540-dashboard-campaigns-production | Campaigns: list row-click + ExternalLink navigate to `/campaigns/:id`; CreateCampaignModal (POST /api/v4/campaigns); Pause/Resume/Delete/Duplicate buttons wired via `api.post/delete`; List↔Reach Map toggle. Campaign detail: 4 tabs — Overview (donut chart), Events (GET /:id/events), Recipients (GET /:id/recipients), Reach Map; Send Now / Pause / Resume / Archive action buttons; back nav. NEW `campaign-reach-map.tsx`: WLMap + ZoneLayer fetching `GET /api/v4/zones?format=geojson`, auto-fit bounds via useFitBounds inner-component, health-colour legend | existing campaign + zone endpoints | 3 files, 0 mocks, 1 map view | 2026-06-10 |
-| WIT-541 | feat/WIT-541-analytics-dashboards-reports-heatmap | analytics/dashboards page: fixed endpoint (?view=dashboards→/api/v4/analytics/dashboards); Create modal (POST name/desc/layout/isPublic); per-item Delete; empty/error states. analytics/reports page: fixed endpoint (?view=reports→/api/v4/analytics/reports); Create modal (POST with frequency/format/recipients multi-input); Delete; next-run date display. analytics/page.tsx: Charts↔Heatmap toggle; AnalyticsHeatmapView (WLMap+HeatmapLayer+AutoFit+density legend). use-dashboard-stats.ts: removed NYC hardcoded 404-fallback bounds; useDeliveryHeatmap wired directly to real endpoint. NEW `analytics/components/analytics-heatmap-view.tsx`. API: GET/POST/DELETE `/api/v4/analytics/dashboards` (shop.settings backed); GET/POST/DELETE `/api/v4/analytics/reports` (shop.settings backed); NEW `GET /api/v4/analytics/heatmap` (Prisma deliveryLocation → 0.01° grid clustering → real heatmap points) | 7 NEW API routes | 6 files, 1 hardcoded NYC fallback → 0, 1 map view | 2026-06-11 |
-| WIT-542 | feat/WIT-542-dashboard-stores-pos-notifications-quality | Quality hardening for 3 pages: supply-chain/orders — Header + TableSkeleton + ErrorState (loading/error guards on useOrders+useFulfillment); esignatures — ErrorState for all 3 hooks (useEnvelopes/useEsigAnalytics/useTemplates), loading skeleton, removed 3 hardcoded trend percentages ("12%"/"4%"/"8%") from KPI cards; notifications — ErrorState guard added (error from useNotifications) | no new endpoints | 3 files, 3 hardcoded trends → 0, 0 error states → 3 | 2026-06-11 |
-| WIT-543 | feat/WIT-543-esignatures-subpages-url-fix | esignatures/envelopes/page.tsx: wrong URL `/api/v4/esignatures/envelopes` → `/api/v4/envelopes` (always 404→ErrorState). esignatures/templates/page.tsx: wrong URL `/api/v4/esignatures/templates` → `/api/v4/signing-templates` (always 404→ErrorState); also fixed viewMode prop not flowing from parent Controls to TemplateGrid (view toggle buttons were silently broken) | no new endpoints | 2 files, 2 broken API paths → 0 | 2026-06-14 |
-| WIT-346 | feat/WIT-346-dashboard-field-service | Field Service overview page: rewritten from hardcoded `schedule:[]`/`technicians:[]`/placeholder stats to 3 real endpoints. NEW API file `field-service.ts`: GET /stats (6 Prisma KPIs), GET /schedule (today's assigned orders + driver names), GET /jobs (paginated, status/search filters, deterministic priority+serviceType). Overview page uses useApiQuery×2 + useApiList; technicians derived live from schedule; SLA panel, KPI cards, schedule, job queue, recent completions all real. Jobs page endpoint fixed from non-existent query param to /api/v4/field-service/jobs. | 3 new endpoints | 4 files, hardcoded arrays → 0 | 2026-06-14 |
-| WIT-347 | feat/WIT-347-dashboard-demand-bugs | Demand section runtime bug fixes: anomalies/page `useApiList→useApiQuery` (API returns `{items,total}` not flat array, anomaly list always empty); models/page same `useApiList→useApiQuery` fix; scheduler/page hours array `[0,1,2,3,4,5]→[8,10,12,14,16,18,20]` (API slots use business hours 8–20, schedule table showed all `—`); demand/page KPI operator-precedence `(totalPredicted\|\|0/1000)→((totalPredicted??0)/1000)` and same for totalActual | no new endpoints | 4 files, 4 runtime bugs → 0 | 2026-06-14 |
-| WIT-545 | feat/WIT-545-dashboard-partners-events-finance-production | Partners (3 pages): hardcoded `successRate:95`/`rating:4.5`/`coverageAreas:30`→real data; parallel call to new `GET /api/v4/couriers/partner-stats` (Prisma `CourierDelivery` grouped by partner: activeDeliveries, successRate); rating shows only when in config (no fake 4.5★); SLA defaults (30min/50km) show "Not configured" when absent; partners/[id] KPIs now show real activeDeliveries+successRate from partner-stats. Events: `"Pending: 2"` hardcoded→real `errorCount` from action field; `Last 24h: Math.floor(data.length*0.3)` fake→real timestamp filter. Finance/reconciliation: added empty state (was showing blank tables on no data). | `GET /api/v4/couriers/partner-stats` (new, Prisma CourierDelivery grouped per partner) | 6 files, 7 hardcoded values → 0 | 2026-06-14 |
-| WIT-544 | feat/WIT-544-customers-design-tokens-v2 | Customers section (3 files): 25 arbitrary hex CSS values → WL design tokens; `bg-[#0a0a0f]`→`bg-wl-bg-root`, `bg-[#12121a]`/`bg-[#111118]`→`bg-wl-bg-surface`, `bg-[#1a1a2e]`→`bg-wl-bg-elevated`, `bg-[#1e1e2e]`(track)→`bg-wl-bg-overlay`, `bg-[#0d0d14]`(map overlays)→`bg-wl-bg-root`, `border-[#1e1e2e]`→`border-wl-border-default` across customers/page.tsx, customers/segments/page.tsx, customers/components/customers-map-view.tsx | no new endpoints | 3 files, 25 hex CSS signals → 0 | 2026-06-14 |
-| WIT-546 | feat/WIT-546-widget-mobile-config-load-from-api | widget-config: `useApiQuery` imported but unused → now calls `GET /api/v4/shops/me` + `useEffect` initializing 12 config fields from `settings.widgetConfig`; skeleton guard added. mobile-config: same load-on-mount for `settings.mobileConfig`; fixed broken save from `PATCH /api/v4/mobile-config` (404, no route) → `PATCH /api/v4/shops/me`; removed raw `api` import; skeleton guard added | no new endpoints | 2 files, 2 dead endpoints, 2 missing load-on-mount → fixed | 2026-06-14 |
-| WIT-547 | feat/WIT-547-collaboration-auth-hardcoding | collaboration/page.tsx: `userId: "current-user"`, `userName: "Current User"`, 2× `currentUserId="current-user"` → `useAuth()` values (`user?.id`, `user?.name`); added `import { useAuth }` from auth-context | no new endpoints | 1 file, 4 hardcoded identity strings → 0 | 2026-06-14 |
-| WIT-548 | feat/WIT-548-admin-workflows-real-data | admin/workflows/page.tsx: `WORKFLOW_EXECUTIONS` constant (12 hardcoded items, dates 2026-03-07, fake durations) removed; `useApiList` (imported but unused) → `useApiQuery<WorkflowResponse>('/api/workflow/executions?...')` with debounced search and status params; interface updated to match API fields (`durationMs` not string `duration`, no fake `totalSteps`/`completedSteps`/`createdBy`/`tenantId`); `formatDuration(ms)` added; Steps column removed (not in API); row `style={{background:"#12121a"}}` → `className bg-wl-bg-surface`; StatCard hardcoded `change` values removed; loading skeleton rows; error state with retry | no new endpoints (existing `GET /api/workflow/executions`) | 1 file, 12 hardcoded rows → 0, 1 hex signal → 0 | 2026-06-14 |
-| WIT-549 | feat/WIT-549-copilot-auth-fetch | ai/copilot/page.tsx: raw `fetch("/api/v4/ai/copilot/query", { headers: { "Content-Type": "application/json" } })` → `api.post<CopilotResult>(...)` from `@/lib/api`; fixes silent 401 because raw fetch omits `Authorization: Bearer <token>` and `credentials: include` that the api client provides | no new endpoints | 1 file, 1 unauthenticated fetch → 0 | 2026-06-14 |
-| WIT-550 | feat/WIT-550-alert-ux-fixes | orders/create: 3× `alert()` for validation → inline states (`lineItemError`/`setSubmitError`); `lineItemError` displayed below Add Item button. operations/flows: delete error `alert()` → `setDeleteError` state shown inline above table. apps/installed: revoke error `alert()` → `setRevokeError` state shown inline | no new endpoints | 3 files, 5 alert() calls → 0 | 2026-06-14 |
-| WIT-551 | feat/WIT-551-remove-fake-stat-trends | Remove hardcoded `change`/`trend` percentage values from 3 pages: eld/page.tsx (4 fake trends: `2.3↑`, `0 neutral`, `1↓`, `3.1↑`); integrations/crm/page.tsx (3 fake changes: `8.3`/`12.5`/`2.1 vs last month`); integrations/lastmile/page.tsx (4 fake changes: `22.5`/`18.3`/`2.1`/`-1.5 vs yesterday/avg/target`) — no API provides these so they were always false | no new endpoints | 3 files, 11 fake trend values → 0 | 2026-06-14 |
-| WIT-552 | feat/WIT-552-lastmile-freight-real-data | integrations/lastmile: full rewrite — removed `DELIVERY_PROVIDERS`(3)/`DELIVERIES`(6)/`DRIVERS`(6)/`PERFORMANCE_METRICS`(3) hardcoded arrays; replaced with `useApiQuery` for partners, partner-stats, overall stats, deliveries, drivers; StatCards now show real connected count/total deliveries/success rate/active deliveries; provider cards from `GET /api/v4/couriers/partners` + partner-stats merged by provider; deliveries from new `GET /api/v4/couriers/deliveries` list endpoint; drivers from `GET /api/v4/drivers`; loading skeletons + empty states throughout. API (couriers.ts): fixed 3 broken response wrappers (`/partners`, `/stats`, `/partner-stats` were returning raw data without `{ data: ... }` causing `useApiQuery` hooks to always read `undefined`); added `GET /api/v4/couriers/deliveries` list endpoint (status+partnerId filters, pagination) | 1 new endpoint (`GET /api/v4/couriers/deliveries`), 3 response wrapper fixes | 2 files (page + API), 18 hardcoded rows → 0 | 2026-06-14 |
-| WIT-554 | fix/WIT-554-replace-confirm-dialogs | Replace 9 `window.confirm()`/`confirm()` calls with inline 2-step confirmation UI: apps/installed: `confirmRevokeId` state in card; operations/flows: `pendingDeleteId` state per card; collaboration: `pendingDeleteMsgId` banner above composer; campaigns: 2-button confirm in table row; components/integrations/alert-rules: `confirmDeleteRule` bool in footer; components/integrations/oauth-flow: `confirmDisconnect` bool replacing disconnect button; components/integrations/provider-card: `confirmDisconnect` bool; components/integrations/template-manager: `pendingDeleteTemplateId` per template; components/zones/zone-inspector: `confirmDelete` bool in ConfigureForm | no new endpoints | 9 files, 9 confirm() calls → 0 | 2026-06-14 |
-| WIT-553 | fix/WIT-553-replace-alerts-with-inline-states | products/page.tsx: removed 4 fake `change` props from StatCards (8.5%/22%/-15.3%/0%); `alert()` re-sync → `syncInfo` banner explaining Shopify triggers sync; `confirm()` delete → inline 2-step confirmation with real `api.delete()` calls per product + `refetch()`. analytics/date-range-picker.tsx: 2× `alert()` (start>end, invalid format) → `dateError` state shown above Apply button. onboarding/steps/company-info.tsx: `alert("Please upload an image file")` → `logoError` state shown below upload area | no new endpoints (uses existing `DELETE /api/v4/products/:id`) | 3 files, 4 fake change props + 4 alert()/confirm() → 0 | 2026-06-14 |
-| WIT-555 | fix/WIT-555-remove-fake-stat-changes | Removed fake `change` props from StatCards across 7 pages: integrations/shipping (15.8%/5.2%/0.8%/-2.1%), integrations/pos (12.5%/18.3%/15.7%/3.2%), integrations/freight (18/22/-4/2 vs avg/week), integrations/analytics (12 this month/0 configured/24 vs last week), drivers/performance (2.1%/1.3%/8.5%/0.5% vs last period), integrations/supply-chain (connections.length/syncs.length/connections.length/0 misused as change values), crm (0 "of X installed"/0 "CRM integrations"). Also removed unused `useApiList` import from freight/page.tsx | no new endpoints | 7 files, 26 fake change props → 0 | 2026-06-14 |
-| WIT-556 | fix/WIT-556-connections-endpoint-response-wrapper | `GET /api/v4/integrations/connections` returned `{ connections }` (no `.data` key) so `useApiList` silently read `undefined` and all 7 consumer pages showed empty lists. Fix: (1) API now returns `{ data: connections, meta: { total, page, limit, totalPages } }` + `?category` filter scopes by integration category; (2) `useApiList.buildUrl()` double-`?` bug when path already contained query params — fixed by splitting path on `?` and merging with `URLSearchParams` | no new endpoints | 2 files (API route + hook), 7 pages now receive real data | 2026-06-14 |
-| WIT-557 | fix/WIT-557-erp-telematics-real-data | integrations/erp/page.tsx: removed `ERP_PROVIDERS` (8 fake providers with hardcoded OAuth tokens, sync counts, field mappings, fake "2 hours ago" timestamps), `SYNC_LOG` (5 fake sync entries), all derived interfaces (`OAuthStatus`, `SyncDirection`, `ConflictResolution`, `FieldMapping`, `SyncOperation`, `ERPProvider`), helper components (`StatusBadge`, `SyncStatusBadge`), unused `useApiList` import, and `useState` — replaced with empty state UI (stat cards show 0, "No ERP providers connected — Browse Marketplace"). integrations/telematics/page.tsx: removed `TELEMATICS_PROVIDERS` (6 fake providers with hardcoded API keys like `samsara_key_****`, vehicle mappings, fake GPS coords `37.7749°N 122.4194°W`, fake speed/fuel data), connection wizard reading from fake list, vehicle mapping table, real-time data preview — replaced with same empty state pattern. Root cause: `erp-accounting` and `telematics` are not valid `IntegrationCategory` enum values in Prisma; there is no backend for these pages so showing fake "connected" data was always wrong | no new endpoints | 2 files, 14 hardcoded providers + 5 fake sync entries → 0 | 2026-06-14 |
-| WIT-558 | fix/WIT-558-freight-integrations-route-perf-dispatch-trends | integrations/freight/page.tsx: removed `FREIGHT_CONNECTIONS` (4 fake DAT/Truckstop/123Loadboard/DirectFreight connections with hardcoded load counts and "2 minutes ago" timestamps), `AGGREGATED_LOADS` (4 fake loads), `RATE_COMPARISONS` (4 fake lane rates with trend: -5/3/2/-8), `RECENT_BOOKINGS` (4 fake bookings with carrier names like "Smith Trucking LLC"), `MARKET_TRENDS` (4 fake market trend items), `COMPLIANCE_DOCS` (4 fake docs from FMCSA/Travelers/State Farm) — replaced with honest empty state (stat cards 0, "No freight providers connected — Browse Marketplace"). Root cause: DAT/Truckstop/123Loadboard/DirectFreight are not valid `IntegrationCategory` enum values in Prisma — no backend exists. analytics/route-performance/page.tsx: removed 4 fake `change: { value: 0, label: "vs planned/baseline/target" }` props from KPI StatCards. components/couriers/dispatch-stats-bar.tsx: removed 4 fake `trend: { value: 12/3/8/5, direction: "up/down" }` props never wired to real period-over-period data | no new endpoints | 3 files, 18 hardcoded values → 0 | 2026-06-14 |
-| WIT-560 | fix/WIT-560-fake-data-marketplace-esignatures-healthcare-crm | integrations/marketplace/page.tsx: removed 15 hardcoded `connected: true` flags from `ALL_PROVIDERS`; added `useApiList('/api/v4/integrations/connections')` + `connectedSlugs` Set to compute real connection status; updated sort and ProviderCard to use dynamic `isConnected` prop. integrations/esignatures/page.tsx: removed `providers` (DocuSign/Adobe Sign/PandaDoc/HelloSign with fake connectedAt/lastSync/templates/envelopes counts), `envelopes` (4 fake workflows with signer names john@customer.com/Enterprise Client), `SigningTemplate` (5 fake templates), `WebhookEvent` (5 fake events), `AuditEntry` (4 fake audit logs with legal@company.com) — replaced with empty state. healthcare/page.tsx: removed `ProviderSummaryCard` (Dr. Sarah Johnson/Dr. Michael Chen/Dr. Emily Watson); removed 3 hardcoded KPI metrics (`totalEncounters=128`, `labResultsThisMonth=42`, `pendingAlerts=3`); removed fake trends "↑3%"/"↑8%". integrations/crm/page.tsx: removed `DEAL_PIPELINE_STAGES` (5 stages with fake counts 342/156/89/34/78 and $1.083M fake pipeline); removed Deal Pipeline card; removed `formatCurrency()` | no new endpoints | 4 files, 340+ fake values → 0 | 2026-06-14 |
-| WIT-561 | fix/WIT-561-remove-fake-stat-change-props | pos/page.tsx: removed 4 fake `change` props (12.5% vs yesterday, 5.2% vs average, 3.1% increase, 0 online) from Today's Sales/Transactions/Avg Ticket/Terminals StatCards. collections/page.tsx: removed 4 fake `change` props (2.5%/18.3%/0/2.5% vs last month). fleet/fuel/page.tsx: removed 4 fake `change` props (8.5% vs last month, -2.1% efficiency decline, 3.2% increase, -1.5% improvement) | no new endpoints | 3 files, 12 fake change props → 0 | 2026-06-14 |
-| WIT-562 | fix/WIT-562-fleet-fuel-fake-data | fleet/fuel/page.tsx: removed `idleTimePercent: 8` (hardcoded, no API source) → replaced Idle Time StatCard with real `Flagged Transactions` count from API; removed Cost Breakdown card (`formatCurrency(12000)` fuel spend, `formatCurrency(3000)` maintenance, `formatCurrency(500)` insurance — all fabricated) → replaced with real Fuel Cost Summary using `analytics.totalSpend` + `transactions.length` + `analytics.anomalies.length`; removed Fuel Cards Status (`['Shell ****1234', 'Chevron ****5678', 'Shell ****9012']` with fabricated daily/monthly limits `500+idx*100`/`10000+idx*2000`) → replaced with honest empty state | no new endpoints | 1 file, 7 hardcoded values → 0 | 2026-06-14 |
-| WIT-564 | feat/WIT-354-dashboard-tracking-maps | shipping/tracking: List/Map toggle added to tracking index page — dynamically imported ShipmentsMapView (MapLibre + CARTO keyless) with status-coloured pins, empty state when no deliveryLocation coords, ShipmentTracking interface extended with deliveryLocation+driver+location. shipping/tracking/[trackingNumber]: Delivery Location card added (ShipmentLocationMap: WLMap + PinLayer centred on deliveryLocation, status→PinStatus mapping: DELIVERED→assigned, IN_TRANSIT/OUT_FOR_DELIVERY→in_transit, FAILED/RETURNED→delayed); falls back to MapPin placeholder with city/province text | no new endpoints — uses existing deliveryLocation JSON from GET /api/v4/shipments | 3 files, 2 new map views, 0 mock signals | #347 |
-| WIT-563 | fix/WIT-563-carrier-board-migration-fake-data | components/integrations/carrier-board.tsx: removed `defaultLoads` (6 fake freight loads: "Premium Logistics Inc"/"FastFreight Solutions"/"TransAmerica Freight"/"ColdChain Logistics"/"ShortHaul Express"/"HeavyLoad Transport" with hardcoded rates $2300/$2100/$1850/$1950/$850/$1100, weights, distances) — component is never rendered in any page; `loads` default now `[]`. integrations/migration/page.tsx: `MigrationProgress` was showing hardcoded "65%" progress, "2,450 / 3,750" requests, "0.2%" error rate, "+12ms" latency — rewired to accept `migrations` prop and derive all values from real `Migration` object found by ID (`migration.progress`, `migration.requestsMigrated`, `migration.errorRate`, `migration.latencyComparison`) | no new endpoints | 2 files, 10 hardcoded values → 0 | 2026-06-14 |
-| WIT-357 | feat/WIT-357-deliveries-couriers-real-api | **deliveries.ts**: replace `MOCK_DELIVERIES` (3 fake orders: Emma Johnson/David Kim/Sarah Williams) with real `CourierDelivery` Prisma queries. Batch-joins `Order` for dropoff address + recipient. All 4 mutations (GET list, GET /:id, PATCH assign, PATCH status, PATCH preferences) now hit the DB. **NEW `routes/integrations/crm.ts`**: GET /providers (CRMConnection→provider cards), GET /sync-logs (CRMSyncLog), GET /field-mappings (CRMFieldMapping) — previously 404, now real data. Registered in server.ts at /api/v4/integrations/crm. Dashboard CRM page stops erroring. | 2 API files + server.ts, 3 hardcoded delivery rows → 0, 3 broken 404 CRM endpoints → real | 2026-06-16 |
-| WIT-356 | feat/WIT-356-platform-integrations-ai-production | **Platform routes registered** (were returning 404 — never imported in server.ts). platform/status: real DB + Redis latency checks, removes hardcoded uptime percentages. platform/integrations: queries tenant's Integration table (was 8 hardcoded Shopify/Samsara/etc. rows). platform/metrics: real process.memoryUsage()/uptime/OS metrics/DB latency — removes fake rps=142/errorRate=0.23. platform/alerts: empty list (removes 3 hardcoded fake maintenance incidents). Dashboard platform/page: calls /status (not /health) for service list + score; new metric cards: Uptime/Memory%/DB Latency instead of fake Active Connections/Request Rate/Error Rate; loading skeletons; empty state with CTA for integrations. integrations/overview: replaces two "API usage tracking coming soon" cards with Active Connections progress bar + Integration Health breakdown derived from live connection data. ai/page: AI Co-pilot marked active (/ai/copilot page exists) | 5 files — 0 fake metric values, 0 hardcoded integration rows, 2 "coming soon" placeholders removed, all platform routes now functional | platform routes: platform.ts rewritten, server.ts: +1 safeRegister line; dashboard: platform/page.tsx + integrations/overview/page.tsx + ai/page.tsx | 2026-06-16 |
-| WIT-559 | fix/WIT-559-integration-pages-fake-provider-arrays | Replaced 6 integration pages containing large hardcoded fake-provider arrays with honest empty states + Marketplace CTA. integrations/routing: removed `ROUTING_PROVIDERS` (Valhalla/VROOM/Routific + more with fake API keys like `valhalla_key_****`, fake latency/request counts, fake health history arrays). integrations/ecommerce: removed `PLATFORMS` (Shopify/WooCommerce with fake productsSynced:1247/3891 orders, fake timestamps, fake webhook configs). integrations/shipping: removed `SHIPPING_CARRIERS` (Shippo/ShipStation/EasyPost/FedEx with fake shipsToday/avgCost/successRate), `SHIPMENTS` (customers "John Doe"/"Jane Smith" with real-looking tracking numbers), `RATE_QUOTES`, analytics arrays. integrations/pos: removed `POS_PROVIDERS` (Toast/Square with fake ordersToday/revenueToday), `LOCATIONS` (5 NY locations with "$4250 revenue today"), `MENU_ITEMS`, `ORDERS`, `ITEM_PERFORMANCE`. integrations/email: removed `PROVIDERS` (SendGrid with `SG.xxxxxxxxxxxx...` fake API key, Mailgun), `EMAIL_TEMPLATES`, `DELIVERY_METRICS`. integrations/messaging: removed `SMS_PROVIDERS` (Twilio/Vonage/TextMagic), `PUSH_PROVIDERS` (Firebase/OneSignal), `CHAT_PROVIDERS` (Sendbird), `MESSAGE_TEMPLATES`. Root cause: none of these provider names map to valid Prisma `IntegrationCategory` enum values; no backend exists for any of them | no new endpoints | 6 files, ~3477 lines of hardcoded data → honest empty states | 2026-06-14 |
-| WIT-565 | feat/WIT-565-local-orders-field-service-loads-maps | Map views for local orders + field-service jobs. orders/local: `ApiOrder` extended with `deliveryLat`/`deliveryLng`; List↔Map toggle; dynamic `LocalOrdersMapView` (WLMap + OrderLayer + FitBoundsController + empty-state when no geocoded orders). field-service/jobs: API (`field-service.ts`) now selects `deliveryLocation` from Order and extracts `{ lat, lng }`; `WorkOrder` extended with `lat`/`lng`; List↔Map toggle; dynamic `JobsMapView` (WLMap + OrderLayer + FitBoundsController + priority/status mapped to `OrderPinStatus`). | API: `deliveryLocation` added to `/api/v4/field-service/jobs` select (no new endpoints) | 5 files, 2 new map views, 0 mock signals | 2026-06-16 |
-| WIT-566 | feat/WIT-566-deliveries-crm-maps-production | **Consolidated PR #354** — merges WIT-357 + WIT-565 into single shippable unit. deliveries.ts: MOCK_DELIVERIES removed, real CourierDelivery Prisma. routes/integrations/crm.ts: 3 real endpoints (providers/sync-logs/field-mappings). orders/local: WLMap List↔Map toggle. field-service/jobs: WLMap List↔Map toggle. Build ✓ typecheck (pre-existing validator errors only) ✓ lint ✓. | 7 files, 0 mock signals | 2026-06-17 |
-| WIT-355 | feat/WIT-355-dashboard-mock-cleanup-final | **Orders main list map view.** orders/page.tsx: added List↔Map toggle (WLMap + OrderLayer + FitBoundsController); dynamic import `OrdersMapView`; `useOrders` hook extended with `deliveryLat`/`deliveryLng` fields; `toOrderPinStatus()` helper; empty-state when no geocoded orders; subtitle shows mappable count. New file: `orders/components/orders-map-view.tsx`. Build ✓ typecheck (pre-existing validator errors only) ✓ lint ✓. | 3 files, 1 map view added to highest-traffic page | 2026-06-17 |
-| WIT-357 | feat/WIT-357-analytics-admin-ai-design-tokens | **Design token cleanup — hex `style={}` props → WL CSS vars/Tailwind (8 pages).** analytics/page: zone ranking bar gradient → `bg-gradient-to-r`. analytics/eta-accuracy: FeatureBar + zone bars gradients → Tailwind. admin/customers: JS hover hex handlers removed → `hover:bg-wl-bg-elevated`. admin/users: `getRoleColor()` hex fn + Badge `style=` → `getRoleClass()` + `className`. admin/workflows/[id]: expanded step hex inline style → `cn()` tokens. ai/slots: driver availability bar hex → WL token classes. inventory: `getStatusBadge()` hex object → Badge `variant` prop. routes/create: `getPriorityColor()` hex fn + drag state hex → token classes. Build ✓ lint ✓. | 8 files, ~50 hex inline style signals → 0 | 2026-06-18 |
-| WIT-358 | feat/WIT-356-dashboard-inventory-map-pos-ux | **Supply-chain warehouse distribution map + UX hardening.** API: `GET /warehouses` now returns `lat`/`lng`/`city`/`itemCount`/`totalQuantity` from `Location.coordinates` JSON. NEW `WarehouseLayer` MapLibre component: circle size by quantity, color by utilization %, click popup, auto-fitBounds. inventory/page: replaced hardcoded `WAREHOUSES` const with real API data; List↔Map toggle + WLMap+WarehouseLayer; empty state when no coordinates set. UX hardening (loading/error guards added to 4 high-traffic pages missing them): pos/page (LoadingSkeleton+ErrorState), pos/transactions/page (TableSkeleton+ErrorState), payments/page (TableSkeleton), orders/conflicts/page (TableSkeleton+ErrorState). | 7 files, 1 hardcoded array → 0, 4 pages gained error/loading UI, 1 map view | 2026-06-17 |
-
-- `apps/dashboard/src/components/map/wl-map.tsx` — keyless Leaflet + CARTO dark basemap, no API key
-- `apps/dashboard/src/components/map/zone-heat-layer.tsx` — circle heatmap for zone analytics
-- `apps/dashboard/src/components/map/zone-polygon-layer.tsx` — polygon/circle rendering for zone management
-- `apps/dashboard/src/components/map/driver-location-layer.tsx` — status-coloured driver markers, popup with last-seen/heading, auto-fit bounds
-- `apps/dashboard/src/components/map/delivery-marker-layer.tsx` — delivery point dot markers with status colors
-- `apps/dashboard/src/components/map/customer-density-layer.tsx` — log-scaled bubble markers by city, tier colors, popup with customer/order count, auto-fit bounds
-- `apps/dashboard/src/components/map/campaign-reach-layer.tsx` — orange log-scaled bubble markers by city, audience count popup, auto-fit bounds
-- `apps/dashboard/src/components/map/location-marker-layer.tsx` — warehouse/store/hub/depot/pickup markers; type-coloured fill, status-coloured ring, popup with performance stats, auto-fit bounds
-- `apps/dashboard/src/components/map/order-marker-layer.tsx` — order circle markers; status-coloured (pending=amber, in_transit=blue, delivered=emerald, failed=red), popup with address + status, auto-fit bounds
-- `apps/dashboard/src/components/analytics/components/zone-analytics-map.tsx` — analytics map
-- `apps/dashboard/src/components/map/route-efficiency-layer.tsx` — city on-time % bubble markers, log-scaled radius, efficiency color gradient (emerald→amber→red), auto-fit bounds
+---
 
 ## Auth (0 mock signals)
 | Page | Route | Mock Before | Mock After | Status |
@@ -116,18 +25,302 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Magic Link | `/magic-link` | 0 | 0 | ✅ |
 | Reset Password | `/reset-password` | 0 | 0 | ✅ |
 
-| Check | Status |
-|-------|--------|
-| `pnpm --filter @witylogix/dashboard build` | ✅ |
-| `pnpm --filter @witylogix/dashboard typecheck` | ✅ |
-| `pnpm lint` | ✅ |
-| `pnpm test:run` | ✅ (2 pre-existing failures: ai-copilot, finance-cod — Prisma generated client missing, unrelated) |
+---
 
-## WIT-357 Sprint Summary
+## Home / Dashboard Overview (3 → 0 mock signals)
+| Page | Route | Mock Before | Mock After | Status | PR |
+|------|-------|------------|-----------|--------|----|
+| Dashboard Home | `/home` | 3 | 0 | 🔄 WIT-462 | #TBD |
+| Activity Feed | `/activity` | 2 | — | ⬜ | — |
+| Realtime Activity | `/activity/realtime` | 0 | — | ⬜ | — |
 
-**Section:** Realtime Components + Header Notification Bell
-**Mock before → after:** 26 hardcoded mock values → 0
-**New API endpoint:** `GET /api/v4/notifications/stats`
-**Map view added:** `ActiveDeliveryMap` now uses `WLMap + DriverLocationLayer` (live GPS, 30s poll)
-**Header:** `NotificationCenter` replaces placeholder bell — shows real unread badge count
-**Build/typecheck/lint:** ✅ ✅ ✅
+**Endpoints used**: `GET /api/v4/dashboard/stats`, `GET /api/v4/orders?limit=5`, `GET /api/v4/drivers?limit=8`
+
+---
+
+## Orders (1 mock signal — 8 pages total)
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Order List | `/orders` | 0 | 0 | ✅ |
+| Order Detail | `/orders/[id]` | 2 | — | ⬜ |
+| Order Board | `/orders/board` | 1 | — | ⬜ |
+| Order Import | `/orders/import` | 3 | — | ⬜ |
+| Order Create | `/orders/create` | 0 | — | ⬜ |
+| Order Bulk | `/orders/bulk` | 0 | — | ⬜ |
+| Order Conflicts | `/orders/conflicts` | 0 | — | ⬜ |
+| Order Local | `/orders/local` | 0 | — | ⬜ |
+
+---
+
+## Shipments (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Shipment List | `/shipments` | 0 | ✅ |
+| Shipment Detail | `/shipments/[id]` | 0 | ✅ |
+
+---
+
+## Delivery (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Delivery Overview | `/delivery` | 0 | ✅ |
+| Standard Delivery | `/delivery/standard` | 0 | ✅ |
+
+---
+
+## Customers (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Customer List | `/customers` | 0 | ✅ |
+| Customer Create | `/customers/create` | 0 | ✅ |
+
+---
+
+## Drivers (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Driver List | `/drivers` | 0 | ✅ |
+| Driver Detail | `/drivers/[id]` | 0 | ✅ |
+| Driver Create | `/drivers/create` | 0 | ✅ |
+| Driver Performance | `/drivers/performance` | 0 | ✅ |
+
+---
+
+## Routes (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Routes List | `/routes` | 0 | ✅ |
+| Route Detail | `/routes/[id]` | 0 | ✅ |
+| Route Plan | `/routes/plan` | 0 | ✅ |
+| Route Create | `/routes/create` | 0 | ✅ |
+| Route Assign | `/routes/[id]/assign` | 0 | ✅ |
+| Route Edit | `/routes/[id]/edit` | 0 | ✅ |
+
+---
+
+## Dispatch (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Dispatch | `/dispatch` | 0 | ✅ |
+| Couriers | `/dispatch/couriers` | 0 | ✅ |
+
+---
+
+## Fleet (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Fleet Overview | `/fleet` | 0 | ✅ |
+| Vehicles | `/fleet/vehicles` | 0 | ✅ |
+| Vehicle Detail | `/fleet/vehicles/[id]` | 0 | ✅ |
+| Fuel | `/fleet/fuel` | 0 | ✅ |
+| Maintenance | `/fleet/maintenance` | 0 | ✅ |
+
+---
+
+## Analytics (0 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Analytics Overview | `/analytics` | 0 | ✅ |
+| Dashboards | `/analytics/dashboards` | 0 | ✅ |
+| ETA Accuracy | `/analytics/eta-accuracy` | 0 | ✅ |
+| Reports | `/analytics/reports` | 0 | ✅ |
+| Route Performance | `/analytics/route-performance` | 0 | ✅ |
+
+---
+
+## AI Features (9 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| AI Overview | `/ai` | 0 | ✅ |
+| Route Efficiency | `/ai/route-efficiency` | 9 | ⬜ |
+| Copilot | `/ai/copilot` | 0 | ✅ |
+| Driver Insights | `/ai/driver-insights` | 0 | ✅ |
+| Slot Optimizer | `/ai/slots` | 0 | ✅ |
+
+---
+
+## Invoices / Finance (5 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Invoice List | `/invoices` | 0 | ✅ |
+| Invoice Detail | `/invoices/[id]` | 2 | ⬜ |
+| Invoice Create | `/invoices/create` | 3 | ⬜ |
+| Finance Overview | `/finance` | 0 | ✅ |
+| COD | `/finance/cod` | 0 | ✅ |
+| Finance Invoices | `/finance/invoices` | 0 | ✅ |
+| Reconciliation | `/finance/reconciliation` | 0 | ✅ |
+
+---
+
+## Billing / Payments (1 mock signal)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Billing | `/billing` | 0 | ✅ |
+| Payments | `/payments` | 1 | ⬜ |
+
+---
+
+## Settings (8 mock signals — 16 pages total)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Settings Overview | `/settings` | 0 | ✅ |
+| General | `/settings/general` | 0 | ✅ |
+| Team | `/settings/team` | 0 | ✅ |
+| Profile | `/settings/profile` | 0 | ✅ |
+| Organization | `/settings/organization` | 0 | ✅ |
+| Notifications | `/settings/notifications` | 0 | ✅ |
+| Notifications Config | `/settings/notifications-config` | 0 | ✅ |
+| Notification Templates | `/settings/notifications/templates` | 0 | ✅ |
+| Notification Template Detail | `/settings/notifications/templates/[id]` | 0 | ✅ |
+| Notifications WhatsApp | `/settings/notifications/whatsapp` | 0 | ✅ |
+| Auth Providers | `/settings/auth-providers` | 2 | ⬜ |
+| Payments | `/settings/payments` | 3 | ⬜ |
+| Billing | `/settings/billing` | 2 | ⬜ |
+| Carriers | `/settings/carriers` | 0 | ✅ |
+| API Keys | `/settings/api-keys` | 0 | ✅ |
+| Accounting | `/settings/accounting` | 0 | ✅ |
+| Branding | `/settings/branding` | 0 | ✅ |
+| Maps | `/settings/maps` | 0 | ⚙️ |
+| Preferences | `/settings/preferences` | 0 | ✅ |
+| Webhooks | `/settings/webhooks` | 1 | ⬜ |
+| Webhooks Test | `/settings/webhooks/test` | 0 | ✅ |
+
+---
+
+## Integrations (11 mock signals — 25 pages total)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Integrations Overview | `/integrations` | 0 | ✅ |
+| Overview | `/integrations/overview` | 0 | ✅ |
+| Catalog | `/integrations/catalog` | 0 | ✅ |
+| Marketplace | `/integrations/marketplace` | 0 | ✅ |
+| Marketplace Provider | `/integrations/marketplace/[providerId]` | 0 | ✅ |
+| Connected | `/integrations/connected` | 0 | ✅ |
+| **Connected Provider** | `/integrations/connected/[providerId]` | **8** | ⬜ |
+| Routing | `/integrations/routing` | 2 | ⬜ |
+| Health | `/integrations/health` | 1 | ⬜ |
+| Credentials | `/integrations/credentials` | 0 | ✅ |
+| Ecommerce | `/integrations/ecommerce` | 0 | ✅ |
+| Payments | `/integrations/payments` | 0 | ✅ |
+| Shipping | `/integrations/shipping` | 0 | ✅ |
+| Analytics | `/integrations/analytics` | 0 | ✅ |
+| CRM | `/integrations/crm` | 0 | ✅ |
+| ERP | `/integrations/erp` | 0 | ✅ |
+| Messaging | `/integrations/messaging` | 0 | ✅ |
+| Webhooks | `/integrations/webhooks` | 0 | ✅ |
+| Others | all others | 0 | ✅ |
+
+---
+
+## ELD (9 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| ELD Overview | `/eld` | 7 | ⬜ |
+| DVIR | `/eld/dvir` | 2 | ⬜ |
+| HOS | `/eld/hos` | 0 | ✅ |
+
+---
+
+## Activity / Events (2 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Activity | `/activity` | 2 | ⬜ |
+| Realtime | `/activity/realtime` | 0 | ✅ |
+| Events | `/events` | 0 | ✅ |
+
+---
+
+## Products (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Product List | `/products` | 0 | ✅ |
+| Product Sync | `/products/sync` | 3 | ⬜ |
+
+---
+
+## Returns (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Returns | `/returns` | 3 | ⬜ |
+
+---
+
+## Supply Chain (3 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Supply Chain Overview | `/supply-chain` | 0 | ✅ |
+| SC Inventory | `/supply-chain/inventory` | 2 | ⬜ |
+| SC Orders | `/supply-chain/orders` | 1 | ⬜ |
+
+---
+
+## Healthcare (6 mock signals)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Healthcare Overview | `/healthcare` | 0 | ✅ |
+| Patients | `/healthcare/patients` | 0 | ✅ |
+| Records | `/healthcare/records` | 6 | ⬜ |
+
+---
+
+## Admin (105 mock signals — highest priority after home)
+| Page | Route | Mock Before | Status |
+|------|-------|------------|--------|
+| Admin Overview | `/admin` | 0 | ✅ |
+| **Shops Detail** | `/admin/shops/[id]` | **36** | ⬜ |
+| **Test Dashboard** | `/admin/test-dashboard` | **23** | ⬜ |
+| **Queue Monitor** | `/admin/queues` | **16** | ⬜ |
+| **Integrations** | `/admin/integrations` | **9** | ⬜ |
+| System | `/admin/system` | 8 | ⬜ |
+| API Docs | `/admin/api-docs` | 6 | ⬜ |
+| Users | `/admin/users` | 2 | ⬜ |
+| Customers | `/admin/customers` | 2 | ⬜ |
+| Activity | `/admin/activity` | 0 | ✅ |
+| Audit | `/admin/audit` | 0 | ✅ |
+| Workflows | `/admin/workflows` | 0 | ✅ |
+| Workflows Detail | `/admin/workflows/[id]` | 2 | ⬜ |
+| Design System | `/admin/design-system` | 0 | ✅ |
+
+---
+
+## Misc / No-API-Key Gated
+| Section | Pages | Status |
+|---------|-------|--------|
+| Map | `/map` | ⚙️ (requires maps key) |
+| Campaigns | `/campaigns` | ✅ |
+| Notifications | `/notifications` | ✅ |
+| CRM | `/crm` | ✅ |
+| Collaboration | `/collaboration` | ✅ |
+| POS | `/pos` | ✅ |
+| Locations | `/locations` | ✅ |
+| Zones | `/zones` | ✅ |
+| Profile | `/profile` | ✅ |
+| Stores | `/stores` | ✅ |
+| Partners | `/partners` | ✅ |
+
+---
+
+## Sprint Log
+
+| Sprint | Branch | Section | Pages Wired | Endpoints Added | Mock Before→After | PR |
+|--------|--------|---------|-------------|-----------------|-------------------|----|
+| WIT-462 | `feat/WIT-462-dashboard-home-production` | Home / Dashboard | `home/page.tsx` | none (existing endpoints) | 3→0 | #TBD |
+
+---
+
+## Summary by Priority
+
+| Priority | Section | Mock Signals | Complexity |
+|----------|---------|-------------|-----------|
+| 1 | **Home (this sprint)** | 3→0 | Low |
+| 2 | Admin (shops/[id], test-dashboard, queues) | 105 | High |
+| 3 | ELD (overview + DVIR) | 9 | Medium |
+| 4 | AI route-efficiency | 9 | Medium |
+| 5 | Integrations (connected provider, routing) | 11 | Medium |
+| 6 | Healthcare records | 6 | Low |
+| 7 | Invoices (detail + create) | 5 | Low |
+| 8 | Settings (auth-providers, payments, billing, webhooks) | 8 | Low |
+| 9 | Returns, Products sync | 6 | Low |
+| 10 | Supply-chain | 3 | Low |
+| 11 | Activity feed | 2 | Low |
+| 12 | Orders (detail, board, import) | 6 | Medium |
