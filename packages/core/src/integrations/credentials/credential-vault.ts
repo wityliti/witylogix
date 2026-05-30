@@ -22,7 +22,6 @@
 import { EventEmitter } from 'events';
 import type { CryptoService } from '../../encryption/crypto.js';
 import type { AuditLogger } from '../../audit/logger.js';
-import type { EncryptedPayload } from '../../encryption/types.js';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
