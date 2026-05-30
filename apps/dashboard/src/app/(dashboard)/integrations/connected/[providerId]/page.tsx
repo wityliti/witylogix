@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useIntegrationStatus } from "@/hooks/use-integration-status";
+import { useApiQuery } from "@/hooks/use-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,13 +20,9 @@ import {
   Copy,
   ExternalLink,
   Trash2,
-  Gauge,
   AlertTriangle,
-  Activity,
-  Settings,
   ArrowRight,
   CheckCheck,
-  X,
 } from "lucide-react";
 
 interface UsageMetric {
@@ -51,20 +48,6 @@ interface ErrorEntry {
   context?: string;
 }
 
-/**
- * Single Integration Detail/Management Page
- *
- * Displays:
- * - Connection status with uptime
- * - Usage meters
- * - Recent activity log
- * - Error log with stack traces
- * - Configuration panel
- * - Sync controls
- * - Webhook URL and subscriptions
- * - Test Connection
- * - Disconnect
- */
 export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
@@ -74,6 +57,20 @@ export default function IntegrationDetailPage() {
 
   const connection = getStatus(connectionId);
 
+  const { data: usageData } = useApiQuery<{ usage: UsageMetric[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/usage` : null,
+  );
+  const { data: activityData } = useApiQuery<{ activity: ActivityLogEntry[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/activity` : null,
+  );
+  const { data: errorsData } = useApiQuery<{ errors: ErrorEntry[] }>(
+    connection ? `/api/v4/integrations/${connectionId}/errors` : null,
+  );
+
+  const usageMetrics: UsageMetric[] = usageData?.usage ?? [];
+  const activityLog: ActivityLogEntry[] = activityData?.activity ?? [];
+  const errorLog: ErrorEntry[] = errorsData?.errors ?? [];
+
   const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
   const [showTestResult, setShowTestResult] = useState<{
@@ -81,58 +78,8 @@ export default function IntegrationDetailPage() {
     message: string;
   } | null>(null);
 
-  // Mock data for development
-  const mockUsageMetrics: UsageMetric[] = [
-    { label: "API Calls", value: 4230, unit: "calls", period: "today" },
-    { label: "API Calls", value: 28950, unit: "calls", period: "week" },
-    { label: "API Calls", value: 125400, unit: "calls", period: "month" },
-    { label: "Data Synced", value: 2.5, unit: "GB", period: "month" },
-    { label: "Webhooks", value: 892, unit: "events", period: "today" },
-  ];
-
-  const mockActivityLog: ActivityLogEntry[] = [
-    {
-      id: "1",
-      type: "sync_completed",
-      description: "Full sync completed successfully",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      status: "success",
-    },
-    {
-      id: "2",
-      type: "webhook_delivered",
-      description: "Webhook event delivered",
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      status: "success",
-    },
-    {
-      id: "3",
-      type: "api_call",
-      description: "API call to /api/orders",
-      timestamp: new Date(Date.now() - 900000).toISOString(),
-      status: "success",
-    },
-  ];
-
-  const mockErrors: ErrorEntry[] = [
-    {
-      id: "err-1",
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      error: "Connection timeout",
-      stackTrace:
-        "Error: ETIMEDOUT\n  at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1141:23)",
-      context: "During sync operation",
-    },
-    {
-      id: "err-2",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      error: "Invalid credentials",
-      stackTrace: "UnauthorizedError: API key expired\n  at validateAuth (auth.js:45:12)",
-      context: "OAuth token refresh",
-    },
-  ];
-
   if (!connection) {
+    const isLoading = connections.length === 0;
     return (
       <div className="space-y-8">
         <Link
@@ -146,16 +93,24 @@ export default function IntegrationDetailPage() {
         <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              {isLoading ? (
+                <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-4" />
+              ) : (
+                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              )}
               <h2 className="text-xl font-semibold text-white mb-2">
-                Integration not found
+                {isLoading ? "Loading…" : "Integration not found"}
               </h2>
-              <p className="text-gray-400 mb-4">
-                The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
-              </p>
-              <Button variant="primary" asChild>
-                <Link href="/integrations/connected">View All Integrations</Link>
-              </Button>
+              {!isLoading && (
+                <>
+                  <p className="text-gray-400 mb-4">
+                    The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
+                  </p>
+                  <Button variant="primary" asChild>
+                    <Link href="/integrations/connected">View All Integrations</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -202,10 +157,6 @@ export default function IntegrationDetailPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Configure
-          </Button>
           <Button
             variant="danger"
             size="sm"
@@ -218,26 +169,28 @@ export default function IntegrationDetailPage() {
       </div>
 
       {/* Usage Meters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {mockUsageMetrics.map((metric) => (
-          <Card
-            key={`${metric.label}-${metric.period}`}
-            className="bg-[#1a1a2e] border-[#1e1e2e]"
-          >
-            <CardContent className="pt-6">
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                {metric.label} ({metric.period})
-              </div>
-              <div className="text-2xl font-bold text-white">
-                {metric.value.toLocaleString()}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {metric.unit}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {usageMetrics.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {usageMetrics.map((metric) => (
+            <Card
+              key={`${metric.label}-${metric.period}`}
+              className="bg-[#1a1a2e] border-[#1e1e2e]"
+            >
+              <CardContent className="pt-6">
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                  {metric.label} ({metric.period})
+                </div>
+                <div className="text-2xl font-bold text-white">
+                  {metric.value.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {metric.unit}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
@@ -281,8 +234,9 @@ export default function IntegrationDetailPage() {
                   className="w-full justify-center"
                   onClick={async () => {
                     try {
+                      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
                       const response = await fetch(
-                        `/api/integrations/connections/${connectionId}/test`,
+                        `${API_BASE}/api/v4/integrations/${connectionId}/test`,
                         { method: "POST" }
                       );
                       const result = await response.json();
@@ -355,47 +309,51 @@ export default function IntegrationDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockActivityLog.map((entry) => {
-                const time = new Date(entry.timestamp);
-                const diffMs = new Date().getTime() - time.getTime();
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMins / 60);
+              {activityLog.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
+              ) : (
+                activityLog.map((entry) => {
+                  const time = new Date(entry.timestamp);
+                  const diffMs = new Date().getTime() - time.getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMins / 60);
 
-                let timeStr = `${diffMins}m ago`;
-                if (diffHours > 0) timeStr = `${diffHours}h ago`;
-                if (diffMins < 1) timeStr = "just now";
+                  let timeStr = `${diffMins}m ago`;
+                  if (diffHours > 0) timeStr = `${diffHours}h ago`;
+                  if (diffMins < 1) timeStr = "just now";
 
-                return (
-                  <div
-                    key={entry.id}
-                    className={cn(
-                      "p-3 rounded-lg border-l-2",
-                      entry.status === "success"
-                        ? "border-l-emerald-500 bg-emerald-500/5"
-                        : "border-l-amber-500 bg-amber-500/5"
-                    )}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {entry.type.replace(/_/g, " ")}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {entry.description}
-                        </p>
+                  return (
+                    <div
+                      key={entry.id}
+                      className={cn(
+                        "p-3 rounded-lg border-l-2",
+                        entry.status === "success"
+                          ? "border-l-emerald-500 bg-emerald-500/5"
+                          : "border-l-amber-500 bg-amber-500/5"
+                      )}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            {entry.type.replace(/_/g, " ")}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {entry.description}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                          {timeStr}
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                        {timeStr}
-                      </span>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </CardContent>
           </Card>
 
           {/* Error Log */}
-          {mockErrors.length > 0 && (
+          {errorLog.length > 0 && (
             <Card className="bg-[#1a1a2e] border-[#1e1e2e]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-500">
@@ -404,7 +362,7 @@ export default function IntegrationDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {mockErrors.map((error) => {
+                {errorLog.map((error) => {
                   const isExpanded = expandedErrors.has(error.id);
 
                   return (
@@ -441,7 +399,7 @@ export default function IntegrationDetailPage() {
                         </div>
                       </button>
 
-                      {isExpanded && (
+                      {isExpanded && error.stackTrace && (
                         <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
                           <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
                             {error.stackTrace}
@@ -522,7 +480,7 @@ export default function IntegrationDetailPage() {
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Category</p>
-                <p className="text-white font-medium">
+                <p className="text-white font-medium capitalize">
                   {connection.category}
                 </p>
               </div>
@@ -596,7 +554,6 @@ export default function IntegrationDetailPage() {
                   try {
                     await disconnect(connectionId);
                     setShowDisconnectModal(false);
-                    // Redirect back
                     window.location.href = "/integrations/connected";
                   } catch (err) {
                     console.error("Disconnect failed:", err);
