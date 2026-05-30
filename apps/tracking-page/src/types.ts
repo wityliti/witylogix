@@ -1,52 +1,93 @@
+// ─── Public Tracking API Response Types ─────────────────────────────────────
+// Matches GET /tracking/token/:trackingToken response shape.
+// Driver phone / license plate are intentionally absent — not exposed by public API (PII).
+
 export interface Location {
   latitude: number
   longitude: number
-  timestamp: number
+  timestamp?: number
 }
 
-export interface Driver {
-  id: string
+export interface DriverInfo {
   name: string
-  phone: string
-  vehicle: {
-    type: string
-    licensePlate: string
-  }
+  vehicleType: string
 }
 
-export interface Order {
-  id: string
+export interface DriverLocation {
+  latitude: number
+  longitude: number
+  heading?: number | null
+  updatedAt?: string | null
+}
+
+export interface DeliveryAddress {
+  line1: string
+  city: string
+  province?: string
+  postalCode?: string
+}
+
+export interface TimeSlotInfo {
+  name: string
+  startTime: string
+  endTime: string
+}
+
+export interface ProofOfDelivery {
+  photoUrls?: string[]
+  recipientName?: string
+  deliveredAt?: string
+}
+
+export interface ShopBranding {
+  primaryColor?: string
+  logoUrl?: string
+}
+
+export interface TimelineStep {
+  status: string
+  label: string
+  completed: boolean
+  current: boolean
+}
+
+// Shape returned by the API in `response.data`
+export interface TrackingResponse {
+  orderNumber: string | null
   status: OrderStatus
-  pickupLocation: {
-    latitude: number
-    longitude: number
-    address: string
+  customerName: string | null
+  deliveryAddress: DeliveryAddress
+  deliveryDate: string | null
+  estimatedArrival: string | null
+  actualDelivery: string | null
+  timeSlot: TimeSlotInfo | null
+  driver: DriverInfo | null
+  driverLocation: DriverLocation | null
+  proofOfDelivery: ProofOfDelivery | null
+  shop: {
+    name: string
+    branding: ShopBranding
   }
-  deliveryLocation: {
-    latitude: number
-    longitude: number
-    address: string
-  }
-  eta: number // Unix timestamp
-  createdAt: number
-  completedAt?: number
+  timeline: TimelineStep[]
 }
 
+// Internal app state after fetching
 export interface TrackingData {
-  order: Order
-  driver: Driver
-  currentLocation: Location
-  route: Location[]
-  statusHistory: StatusEvent[]
+  trackingToken: string
+  response: TrackingResponse
+  // Real-time overlays from socket
+  liveDriverLocation?: DriverLocation | null
 }
 
-export type OrderStatus = 'PENDING' | 'ACCEPTED' | 'ASSIGNED' | 'PICKED_UP' | 'OUT_FOR_DELIVERY' | 'ARRIVED' | 'DELIVERED'
-
-export interface StatusEvent {
-  status: OrderStatus
-  timestamp: number
+export interface AIEtaData {
+  estimatedArrival: string
+  confidenceLow: string
+  confidenceHigh: string
+  isAIPredicted: boolean
+  lastUpdated: string
 }
 
+// Socket event payloads
 export interface LocationUpdate {
   orderId: string
   latitude: number
@@ -64,3 +105,15 @@ export interface ETAUpdate {
   orderId: string
   eta: number
 }
+
+export type OrderStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'ASSIGNED'
+  | 'PICKED_UP'
+  | 'OUT_FOR_DELIVERY'
+  | 'ARRIVED'
+  | 'DELIVERED'
+  | 'FAILED'
+  | 'RETURNED'
+  | 'CANCELLED'
