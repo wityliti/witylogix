@@ -1,252 +1,193 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Package, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { OrderCard } from '@/components/order-card';
+import { OrderListSkeleton, ErrorMessage, EmptyState } from '@/components/loading-skeleton';
+import { useQuery } from '@/lib/use-api';
+import type { ApiOrder } from '@/lib/portal-api';
+import { ROUTES } from '@/lib/portal-api';
 import type { Order, OrderStatus } from '@/types';
 
-// Mock orders data
-const allOrders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-001',
-    status: 'out-for-delivery',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    scheduledDeliveryDate: new Date(),
-    items: [
-      { id: '1', name: 'Premium Headphones', quantity: 1, price: 149.99 },
-    ],
+// ─── Map API order → portal Order type ───────────────────────
+
+function mapApiOrder(o: ApiOrder): Order {
+  return {
+    id: o.id,
+    orderNumber: o.externalOrderNumber ?? `#${o.id.slice(-8).toUpperCase()}`,
+    status: mapStatus(o.status),
+    createdAt: new Date(o.createdAt),
+    scheduledDeliveryDate: o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt),
+    actualDeliveryDate: o.actualDelivery ? new Date(o.actualDelivery) : undefined,
+    items: (o.lineItems ?? []).map((li) => ({
+      id: li.id,
+      name: li.title,
+      quantity: li.quantity,
+      price: li.price,
+    })),
     deliveryAddress: {
-      street: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94105',
-      country: 'USA',
+      street: [o.addressLine1, o.addressLine2].filter(Boolean).join(', '),
+      city: o.city,
+      state: o.province ?? '',
+      zipCode: o.postalCode ?? '',
+      country: o.country ?? '',
     },
-    totalPrice: 149.99,
-    estimatedDelivery: 'Today, 2-4 PM',
-  },
-  {
-    id: '2',
-    orderNumber: 'ORD-2024-002',
-    status: 'confirmed',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    scheduledDeliveryDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-    items: [
-      { id: '1', name: 'Wireless Charger', quantity: 2, price: 29.99 },
-      { id: '2', name: 'USB-C Cable', quantity: 3, price: 9.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94105',
-      country: 'USA',
-    },
-    totalPrice: 119.96,
-  },
-  {
-    id: '3',
-    orderNumber: 'ORD-2024-003',
-    status: 'delivered',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    scheduledDeliveryDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    actualDeliveryDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    items: [
-      { id: '1', name: 'Phone Case', quantity: 1, price: 19.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94105',
-      country: 'USA',
-    },
-    totalPrice: 19.99,
-    rating: {
-      driverRating: 5,
-      experienceRating: 5,
-      feedback: 'Great delivery!',
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-  },
-  {
-    id: '4',
-    orderNumber: 'ORD-2024-004',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    scheduledDeliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    items: [
-      { id: '1', name: 'Laptop Stand', quantity: 1, price: 49.99 },
-      { id: '2', name: 'Monitor Arm', quantity: 1, price: 79.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94105',
-      country: 'USA',
-    },
-    totalPrice: 129.98,
-  },
-  {
-    id: '5',
-    orderNumber: 'ORD-2024-005',
-    status: 'cancelled',
-    createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
-    scheduledDeliveryDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    items: [
-      { id: '1', name: 'Cancelled Item', quantity: 1, price: 99.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94105',
-      country: 'USA',
-    },
-    totalPrice: 99.99,
-  },
+    totalPrice: o.totalPrice ?? 0,
+    estimatedDelivery: o.estimatedArrival
+      ? format(new Date(o.estimatedArrival), 'PPp')
+      : undefined,
+  };
+}
+
+function mapStatus(status: string): OrderStatus {
+  const statusMap: Record<string, OrderStatus> = {
+    PENDING: 'pending',
+    ACCEPTED: 'confirmed',
+    ASSIGNED: 'confirmed',
+    PICKED_UP: 'out-for-delivery',
+    OUT_FOR_DELIVERY: 'out-for-delivery',
+    ARRIVED: 'out-for-delivery',
+    DELIVERED: 'delivered',
+    CANCELLED: 'cancelled',
+    FAILED: 'cancelled',
+    RETURNED: 'cancelled',
+  };
+  return statusMap[status] ?? 'pending';
+}
+
+// ─── Status filter tabs ───────────────────────────────────────
+
+type FilterTab = 'all' | 'active' | 'delivered' | 'cancelled';
+
+const FILTER_TABS: { id: FilterTab; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'active', label: 'Active' },
+  { id: 'delivered', label: 'Delivered' },
+  { id: 'cancelled', label: 'Cancelled' },
 ];
 
-const statusFilters: { value: OrderStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Orders' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'out-for-delivery', label: 'Out for Delivery' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
+const ACTIVE_STATUSES = new Set<OrderStatus>(['out-for-delivery', 'confirmed', 'pending']);
+const DELIVERED_STATUSES = new Set<OrderStatus>(['delivered']);
+const CANCELLED_STATUSES = new Set<OrderStatus>(['cancelled']);
+
+// ─── Paginated response shape ─────────────────────────────────
+
+interface PaginatedOrders {
+  data: ApiOrder[];
+  pagination: { total: number; page: number; limit: number; totalPages: number };
+}
+
+// ─── Component ────────────────────────────────────────────────
 
 export default function OrdersPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [search, setSearch] = useState('');
 
-  const filteredOrders = useMemo(() => {
-    let filtered = allOrders;
+  const { data, loading, error, refetch } = useQuery<PaginatedOrders>(
+    `${ROUTES.ORDERS}?limit=50&sortBy=createdAt&sortOrder=desc`,
+  );
 
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === statusFilter);
+  const orders = useMemo(() => (data?.data ?? []).map(mapApiOrder), [data]);
+
+  const filtered = useMemo(() => {
+    let result = orders;
+
+    switch (activeTab) {
+      case 'active':
+        result = result.filter((o) => ACTIVE_STATUSES.has(o.status));
+        break;
+      case 'delivered':
+        result = result.filter((o) => DELIVERED_STATUSES.has(o.status));
+        break;
+      case 'cancelled':
+        result = result.filter((o) => CANCELLED_STATUSES.has(o.status));
+        break;
     }
 
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(order =>
-        order.orderNumber.toLowerCase().includes(query) ||
-        order.deliveryAddress.street.toLowerCase().includes(query) ||
-        order.items.some(item => item.name.toLowerCase().includes(query))
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (o) =>
+          o.orderNumber.toLowerCase().includes(q) ||
+          o.items.some((i) => i.name.toLowerCase().includes(q)) ||
+          o.deliveryAddress.city.toLowerCase().includes(q),
       );
     }
 
-    // Apply sorting
-    if (sortBy === 'newest') {
-      filtered = filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    } else {
-      filtered = filtered.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    }
-
-    return filtered;
-  }, [searchQuery, statusFilter, sortBy]);
+    return result;
+  }, [orders, activeTab, search]);
 
   return (
-    <div className="page-container">
-      {/* Header */}
-      <header className="page-header animate-fade-in">
-        <h1 className="page-title">Orders</h1>
-        <p className="page-subtitle">Manage and track all your deliveries</p>
-      </header>
+    <div className="page-container animate-fade-in">
+      <div className="page-header">
+        <h1 className="page-title">My Orders</h1>
+        <p className="page-subtitle">
+          {data
+            ? `${data.pagination.total} order${data.pagination.total !== 1 ? 's' : ''} total`
+            : 'View and track all your deliveries'}
+        </p>
+      </div>
 
-      {/* Search & Filters */}
-      <div className="section-card animate-fade-in stagger-1">
-        {/* Search Bar */}
-        <div className="relative mb-5">
+      {/* Search + Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 stagger-1">
+        <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary"
           />
           <input
-            type="text"
-            placeholder="Search by order number, address, or item..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="input pl-9"
+            type="search"
+            placeholder="Search by order number, item, or city…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input w-full pl-9"
           />
         </div>
-
-        {/* Filter Pills */}
-        <div className="flex flex-wrap gap-2">
-          {statusFilters.map((filter) => (
+        <div className="flex gap-2 flex-wrap">
+          {FILTER_TABS.map((tab) => (
             <button
-              key={filter.value}
-              onClick={() => setStatusFilter(filter.value as OrderStatus | 'all')}
-              className={cn(
-                'btn',
-                statusFilter === filter.value
-                  ? 'btn-primary'
-                  : 'btn-ghost'
-              )}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn('btn', activeTab === tab.id ? 'btn-primary' : 'btn-ghost')}
             >
-              {filter.label}
+              {tab.label}
             </button>
           ))}
         </div>
-
-        {/* Sort */}
-        <div className="mt-5 pt-5 border-t border-wl-border-subtle flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-wl-text-tertiary">
-            <SlidersHorizontal size={14} />
-            <span>Sort by</span>
-          </div>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest')}
-            className="input w-auto"
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-          </select>
-        </div>
       </div>
 
-      {/* Results Count */}
-      <p className="text-xs text-wl-text-tertiary animate-fade-in stagger-2">
-        Showing <span className="mono">{filteredOrders.length}</span> of{' '}
-        <span className="mono">{allOrders.length}</span> orders
-      </p>
+      {/* Content */}
+      <div className="stagger-2">
+        {loading && <OrderListSkeleton count={4} />}
 
-      {/* Orders Grid */}
-      {filteredOrders.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredOrders.map((order, i) => (
-            <div
-              key={order.id}
-              className={cn('animate-fade-in', `stagger-${Math.min(i + 1, 6)}`)}
-            >
-              <OrderCard order={order} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="section-card text-center py-16 animate-fade-in">
-          <p className="text-wl-text-secondary mb-1">
-            No orders found matching your criteria
-          </p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setStatusFilter('all');
-            }}
-            className="btn btn-ghost mt-3"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
+        {!loading && error && (
+          <ErrorMessage message={error.message} onRetry={refetch} />
+        )}
+
+        {!loading && !error && filtered.length === 0 && (
+          <EmptyState
+            icon={<Package size={24} />}
+            title="No orders found"
+            description={
+              search
+                ? 'No orders match your search. Try a different term.'
+                : activeTab !== 'all'
+                  ? `You have no ${activeTab} orders.`
+                  : "You haven't placed any orders yet."
+            }
+          />
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
+          <div className="flex flex-col gap-4">
+            {filtered.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

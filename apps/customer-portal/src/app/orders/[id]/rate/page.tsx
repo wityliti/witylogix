@@ -2,9 +2,11 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, CheckCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RatingStars } from '@/components/rating-stars';
+import { useMutation } from '@/lib/use-api';
+import { ROUTES } from '@/lib/portal-api';
 
 type RatingStep = 'rating' | 'categories' | 'feedback' | 'success';
 
@@ -32,19 +34,46 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
   const [feedback, setFeedback] = useState('');
   const [wouldOrderAgain, setWouldOrderAgain] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleNext = () => {
+  const { mutate: submitRating, loading: submitting } = useMutation(
+    `${ROUTES.ORDERS}/${id}/rating`,
+    'POST',
+  );
+
+  const handleNext = async () => {
     if (step === 'rating' && driverRating > 0 && experienceRating > 0) {
       setStep('categories');
-    } else if (step === 'categories' && driverCategoryRating > 0 && timelinessCategoryRating > 0 && conditionCategoryRating > 0) {
+    } else if (
+      step === 'categories' &&
+      driverCategoryRating > 0 &&
+      timelinessCategoryRating > 0 &&
+      conditionCategoryRating > 0
+    ) {
       setStep('feedback');
     } else if (step === 'feedback') {
-      setStep('success');
+      setSubmitError(null);
+      try {
+        await submitRating({
+          driverRating,
+          experienceRating,
+          categories: {
+            driver: driverCategoryRating,
+            timeliness: timelinessCategoryRating,
+            condition: conditionCategoryRating,
+          },
+          feedback: feedback.trim() || undefined,
+          wouldOrderAgain,
+        });
+        setStep('success');
+      } catch (err: unknown) {
+        setSubmitError(err instanceof Error ? err.message : 'Failed to submit rating. Please try again.');
+      }
     }
   };
 
   const handleAddPhoto = () => {
-    // In a real app, this would open a file picker
+    // Photo uploads require file storage (S3/R2) — not available without third-party keys
     setPhotos([...photos, `photo-${photos.length + 1}`]);
   };
 
@@ -457,22 +486,40 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
 
       {/* Action Buttons */}
       {step !== 'success' && (
-        <div className="flex gap-3 max-w-2xl animate-fade-in">
-          {(step === 'feedback' || step === 'categories') && (
-            <button
-              onClick={() => setStep(step === 'feedback' ? 'categories' : 'rating')}
-              className="btn btn-secondary btn-lg"
-            >
-              Back
-            </button>
+        <div className="flex flex-col gap-3 max-w-2xl animate-fade-in">
+          {submitError && (
+            <p className="text-sm text-wl-error-500">{submitError}</p>
           )}
-          <button
-            onClick={handleNext}
-            disabled={!canProceed}
-            className="btn btn-primary btn-lg flex-1"
-          >
-            {step === 'feedback' ? 'Submit Rating' : 'Continue'}
-          </button>
+          <div className="flex gap-3">
+            {(step === 'feedback' || step === 'categories') && (
+              <button
+                onClick={() => setStep(step === 'feedback' ? 'categories' : 'rating')}
+                disabled={submitting}
+                className="btn btn-secondary btn-lg"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={!canProceed || submitting}
+              className={cn(
+                'btn btn-primary btn-lg flex-1',
+                (!canProceed || submitting) && 'opacity-50 cursor-not-allowed',
+              )}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Submitting…
+                </>
+              ) : step === 'feedback' ? (
+                'Submit Rating'
+              ) : (
+                'Continue'
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>
