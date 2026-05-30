@@ -1,144 +1,42 @@
+/**
+ * components/App.tsx — Alternative entry point used by embedded/cart widget context.
+ * Uses real API data via fetchTrackingData. No mock data.
+ */
 import React, { useState } from 'react';
 import TrackingSearch from './TrackingSearch';
 import DeliveryTimeline from './DeliveryTimeline';
 import DeliveryMap from './DeliveryMap';
-import DeliveryPreferences from './DeliveryPreferences';
 import RatingFeedback from './RatingFeedback';
 import LiveChat from './LiveChat';
-
-interface TimelineEvent {
-  id: string;
-  status: 'Order Placed' | 'Picked Up' | 'In Transit' | 'Out for Delivery' | 'Delivered' | 'Failed' | 'Exception';
-  timestamp: string;
-  location?: string;
-  description?: string;
-}
-
-interface TrackingData {
-  trackingNumber: string;
-  orderNumber: string;
-  status: string;
-  estimatedDelivery: string;
-  deliveryAddress: string;
-  events: TimelineEvent[];
-  driverName?: string;
-  eta?: string;
-  isDelivered: boolean;
-  storeName?: string;
-  storeIcon?: string;
-}
+import { fetchTrackingData } from '../lib/api';
+import type { TrackingResponse } from '../types';
 
 const App: React.FC = () => {
-  const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
+  const [trackingData, setTrackingData] = useState<TrackingResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Mock data for demonstration
-  const mockTrackingData: Record<string, TrackingData> = {
-    'WTX123456789': {
-      trackingNumber: 'WTX123456789',
-      orderNumber: 'ORD-2024-001',
-      status: 'Out for Delivery',
-      estimatedDelivery: 'Today by 5:00 PM',
-      deliveryAddress: '123 Main St, New York, NY 10001',
-      driverName: 'John Martinez',
-      eta: '2:30 PM',
-      isDelivered: false,
-      storeName: 'Witylogix Shop',
-      storeIcon: '🛍️',
-      events: [
-        {
-          id: '1',
-          status: 'Order Placed',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Online',
-          description: 'Your order has been confirmed',
-        },
-        {
-          id: '2',
-          status: 'Picked Up',
-          timestamp: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Distribution Center, NJ',
-          description: 'Package picked up from warehouse',
-        },
-        {
-          id: '3',
-          status: 'In Transit',
-          timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          location: 'New Jersey',
-          description: 'Package in transit to local facility',
-        },
-        {
-          id: '4',
-          status: 'Out for Delivery',
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          location: 'Local Delivery Hub, NYC',
-          description: 'Out for delivery with driver',
-        },
-      ],
-    },
-    'ORD-2024-001': {
-      trackingNumber: 'WTX987654321',
-      orderNumber: 'ORD-2024-001',
-      status: 'Delivered',
-      estimatedDelivery: 'Delivered on Mar 5, 2026',
-      deliveryAddress: '456 Oak Ave, Los Angeles, CA 90001',
-      driverName: 'Sarah Johnson',
-      eta: 'Completed',
-      isDelivered: true,
-      storeName: 'Witylogix Shop',
-      storeIcon: '🛍️',
-      events: [
-        {
-          id: '1',
-          status: 'Order Placed',
-          timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Online',
-        },
-        {
-          id: '2',
-          status: 'Picked Up',
-          timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Distribution Center, CA',
-        },
-        {
-          id: '3',
-          status: 'In Transit',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'California',
-        },
-        {
-          id: '4',
-          status: 'Out for Delivery',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Local Delivery Hub, LA',
-        },
-        {
-          id: '5',
-          status: 'Delivered',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          location: '456 Oak Ave, Los Angeles, CA 90001',
-          description: 'Package delivered to front door',
-        },
-      ],
-    },
-  };
-
   const handleSearch = (searchInput: string) => {
+    const token = searchInput.trim();
+    if (!token) {
+      setError('Please enter a tracking number.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      const data = mockTrackingData[searchInput];
-      if (data) {
-        setTrackingData(data);
+    fetchTrackingData(token)
+      .then((result) => {
+        setTrackingData(result.response);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Unable to find that tracking number.';
+        setError(message);
+      })
+      .finally(() => {
         setIsLoading(false);
-      } else {
-        setError('We could not find an order matching that number. Please check and try again.');
-        setIsLoading(false);
-      }
-    }, 800);
+      });
   };
 
   const handleReset = () => {
@@ -157,7 +55,32 @@ const App: React.FC = () => {
     );
   }
 
-  // Show full tracking view
+  const isDelivered = trackingData.status === 'DELIVERED';
+  const isLive = ['OUT_FOR_DELIVERY', 'ARRIVED'].includes(trackingData.status);
+
+  // Build timeline events from the timeline steps for DeliveryTimeline component
+  const timelineEvents = trackingData.timeline
+    .filter((step) => step.completed)
+    .map((step, idx) => ({
+      id: String(idx),
+      status: step.label as Parameters<typeof DeliveryTimeline>[0]['events'][number]['status'],
+      timestamp: new Date().toISOString(), // API timeline steps don't include timestamps
+      description: step.current ? 'Current status' : undefined,
+    }));
+
+  const deliveryAddress = [
+    trackingData.deliveryAddress.line1,
+    trackingData.deliveryAddress.city,
+    trackingData.deliveryAddress.province,
+    trackingData.deliveryAddress.postalCode,
+  ].filter(Boolean).join(', ');
+
+  const estimatedDelivery = trackingData.actualDelivery ?? trackingData.estimatedArrival
+    ? new Date(trackingData.actualDelivery ?? trackingData.estimatedArrival!).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+    : 'Date pending';
+
   return (
     <div style={styles.appContainer}>
       {/* Header */}
@@ -171,15 +94,16 @@ const App: React.FC = () => {
             ← New Search
           </button>
           <div style={styles.brandSection}>
-            <span style={styles.storeIcon}>{trackingData.storeIcon}</span>
             <div>
-              <h1 style={styles.storeName}>{trackingData.storeName}</h1>
-              <p style={styles.trackingNumber}>#{trackingData.trackingNumber}</p>
+              <h1 style={styles.storeName}>{trackingData.shop.name}</h1>
+              {trackingData.orderNumber && (
+                <p style={styles.trackingNumber}>#{trackingData.orderNumber}</p>
+              )}
             </div>
           </div>
           <div style={styles.statusBadge}>
             <span style={styles.statusIndicator} />
-            {trackingData.status}
+            {trackingData.status.replace(/_/g, ' ')}
           </div>
         </div>
       </header>
@@ -190,35 +114,27 @@ const App: React.FC = () => {
           {/* Timeline Section */}
           <section style={styles.section}>
             <DeliveryTimeline
-              events={trackingData.events}
-              estimatedDelivery={trackingData.estimatedDelivery}
-              currentStatus={trackingData.status}
+              events={timelineEvents as Parameters<typeof DeliveryTimeline>[0]['events']}
+              estimatedDelivery={estimatedDelivery}
+              currentStatus={trackingData.status.replace(/_/g, ' ')}
             />
           </section>
 
-          {/* Map Section - Only show if not delivered */}
-          {!trackingData.isDelivered && (
+          {/* Map Section — only when driver is live */}
+          {isLive && trackingData.driverLocation && (
             <section style={styles.section}>
               <DeliveryMap
-                
-                deliveryAddress={trackingData.deliveryAddress}
-                eta={trackingData.eta}
+                deliveryAddress={deliveryAddress}
+                eta={trackingData.timeSlot?.name}
               />
             </section>
           )}
 
-          {/* Preferences Section - Only show if not delivered */}
-          {!trackingData.isDelivered && (
-            <section style={styles.section}>
-              <DeliveryPreferences />
-            </section>
-          )}
-
-          {/* Rating Section - Only show if delivered */}
-          {trackingData.isDelivered && (
+          {/* Rating Section — only when delivered */}
+          {isDelivered && (
             <section style={styles.section}>
               <RatingFeedback
-                driverName={trackingData.driverName}
+                driverName={trackingData.driver?.name}
                 isDelivered={true}
               />
             </section>
@@ -273,9 +189,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-  } as React.CSSProperties,
-  storeIcon: {
-    fontSize: '32px',
   } as React.CSSProperties,
   storeName: {
     fontSize: '18px',
