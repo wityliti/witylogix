@@ -1,423 +1,206 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
+import { format, isAfter, isBefore, parseISO } from 'date-fns';
+import { Calendar, MapPin, Package, Star } from 'lucide-react';
 import Link from 'next/link';
-import { Calendar, Filter, MapPin, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Order } from '@/types';
+import { RatingStars } from '@/components/rating-stars';
+import { OrderListSkeleton, ErrorMessage, EmptyState } from '@/components/loading-skeleton';
+import { useQuery } from '@/lib/use-api';
+import type { ApiOrder } from '@/lib/portal-api';
+import { ROUTES, getStatusLabel, getStatusVariant } from '@/lib/portal-api';
 
-// Mock delivery history data
-const mockDeliveries: Order[] = [
-  {
-    id: 'ORD-2024-001',
-    orderNumber: '#1001',
-    status: 'delivered',
-    createdAt: new Date('2024-03-11T14:00:00'),
-    scheduledDeliveryDate: new Date('2024-03-11T18:00:00'),
-    actualDeliveryDate: new Date('2024-03-11T17:45:00'),
-    items: [
-      { id: '1', name: 'Fresh Vegetables Bundle', quantity: 2, price: 24.99 },
-      { id: '2', name: 'Organic Milk (1L)', quantity: 1, price: 5.99 },
-      { id: '3', name: 'Whole Wheat Bread', quantity: 1, price: 3.49 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    totalPrice: 34.47,
-    rating: {
-      driverRating: 5,
-      experienceRating: 5,
-      feedback: 'Great service, fast delivery!',
-      createdAt: new Date('2024-03-11T18:30:00'),
-    },
-  },
-  {
-    id: 'ORD-2024-002',
-    orderNumber: '#1002',
-    status: 'delivered',
-    createdAt: new Date('2024-03-10T10:00:00'),
-    scheduledDeliveryDate: new Date('2024-03-10T14:00:00'),
-    actualDeliveryDate: new Date('2024-03-10T13:55:00'),
-    items: [
-      { id: '1', name: 'Coffee Beans (1kg)', quantity: 1, price: 14.99 },
-      { id: '2', name: 'Almond Milk (1L)', quantity: 2, price: 6.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    totalPrice: 28.97,
-    rating: {
-      driverRating: 4,
-      experienceRating: 4,
-      feedback: 'Good, but slightly late',
-      createdAt: new Date('2024-03-10T14:30:00'),
-    },
-  },
-  {
-    id: 'ORD-2024-003',
-    orderNumber: '#1003',
-    status: 'delivered',
-    createdAt: new Date('2024-03-09T16:00:00'),
-    scheduledDeliveryDate: new Date('2024-03-09T19:00:00'),
-    actualDeliveryDate: new Date('2024-03-09T19:12:00'),
-    items: [
-      { id: '1', name: 'Greek Yogurt (500g)', quantity: 3, price: 4.99 },
-      { id: '2', name: 'Blueberries (400g)', quantity: 1, price: 8.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    totalPrice: 23.96,
-    rating: {
-      driverRating: 5,
-      experienceRating: 5,
-      feedback: 'Perfect condition, excellent service',
-      createdAt: new Date('2024-03-09T19:45:00'),
-    },
-  },
-  {
-    id: 'ORD-2024-004',
-    orderNumber: '#1004',
-    status: 'delivered',
-    createdAt: new Date('2024-03-08T11:30:00'),
-    scheduledDeliveryDate: new Date('2024-03-08T15:30:00'),
-    actualDeliveryDate: new Date('2024-03-08T15:28:00'),
-    items: [
-      { id: '1', name: 'Spinach (500g)', quantity: 2, price: 3.99 },
-      { id: '2', name: 'Tomatoes (1kg)', quantity: 1, price: 5.49 },
-      { id: '3', name: 'Bell Peppers (3 pack)', quantity: 1, price: 6.99 },
-    ],
-    deliveryAddress: {
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    totalPrice: 26.46,
-    rating: {
-      driverRating: 4,
-      experienceRating: 4,
-      feedback: 'Good delivery',
-      createdAt: new Date('2024-03-08T16:00:00'),
-    },
-  },
-];
+// ─── Paginated response ───────────────────────────────────────
 
-interface DeliveryFilter {
-  dateRange: 'all' | '7days' | '30days' | '90days';
-  status: 'all' | 'delivered' | 'cancelled';
+interface PaginatedOrders {
+  data: ApiOrder[];
+  pagination: { total: number; page: number; limit: number; totalPages: number };
 }
 
-const getStatusAccentClass = (status: string): string => {
-  switch (status) {
-    case 'delivered':
-      return 'card-accent-delivered';
-    case 'cancelled':
-      return 'card-accent-cancelled';
-    default:
-      return '';
-  }
-};
+// ─── Date range filter options ────────────────────────────────
 
-const getStatusBadgeClass = (status: string): string => {
-  switch (status) {
-    case 'delivered':
-      return 'status-delivered';
-    case 'cancelled':
-      return 'status-cancelled';
-    default:
-      return '';
-  }
-};
+type DateRange = 'all' | '7d' | '30d' | '90d';
 
-const getStatusLabel = (status: string): string => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-};
+const DATE_RANGES: { id: DateRange; label: string }[] = [
+  { id: 'all', label: 'All time' },
+  { id: '7d', label: 'Last 7 days' },
+  { id: '30d', label: 'Last 30 days' },
+  { id: '90d', label: 'Last 90 days' },
+];
+
+function cutoffForRange(range: DateRange): Date | null {
+  if (range === 'all') return null;
+  const now = new Date();
+  const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+}
+
+// ─── Component ────────────────────────────────────────────────
 
 export default function DeliveriesPage() {
-  const [deliveries, setDeliveries] = useState<Order[]>([]);
-  const [filters, setFilters] = useState<DeliveryFilter>({ dateRange: 'all', status: 'all' });
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [ratingFilter, setRatingFilter] = useState<'all' | 'rated' | 'unrated'>('all');
 
-  useEffect(() => {
-    // Filter deliveries based on selected filters
-    let filtered = mockDeliveries;
+  // Fetch delivered orders only
+  const { data, loading, error, refetch } = useQuery<PaginatedOrders>(
+    `${ROUTES.ORDERS}?status=DELIVERED&limit=100&sortBy=createdAt&sortOrder=desc`,
+  );
 
-    // Date range filter
-    if (filters.dateRange !== 'all') {
-      const daysAgo = filters.dateRange === '7days' ? 7 : filters.dateRange === '30days' ? 30 : 90;
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+  const deliveries = useMemo(() => data?.data ?? [], [data]);
 
-      filtered = filtered.filter((d) => d.createdAt >= cutoffDate);
+  const filtered = useMemo(() => {
+    let result = deliveries;
+
+    const cutoff = cutoffForRange(dateRange);
+    if (cutoff) {
+      result = result.filter((d) => {
+        const deliveredAt = d.actualDelivery ?? d.proofOfDelivery?.deliveredAt;
+        if (!deliveredAt) return false;
+        return isAfter(new Date(deliveredAt), cutoff);
+      });
     }
 
-    // Status filter
-    if (filters.status !== 'all') {
-      filtered = filtered.filter((d) => d.status === filters.status);
+    if (ratingFilter === 'rated') {
+      // POD with recipientName treated as "rated" proxy — real rating model TBD
+      result = result.filter((d) => d.proofOfDelivery?.recipientName);
+    } else if (ratingFilter === 'unrated') {
+      result = result.filter((d) => !d.proofOfDelivery?.recipientName);
     }
 
-    setDeliveries(filtered);
-  }, [filters]);
-
-  if (deliveries.length === 0) {
-    return (
-      <div className="page-container animate-fade-in">
-        <div className="page-header">
-          <h1 className="page-title">Delivery History</h1>
-          <p className="page-subtitle">Your past deliveries</p>
-        </div>
-
-        {/* Filter row even on empty state */}
-        <div className="flex justify-end relative">
-          <button
-            onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className="btn btn-secondary"
-          >
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
-
-          {showFilterMenu && (
-            <FilterDropdown
-              filters={filters}
-              onFilterChange={setFilters}
-              onClose={() => setShowFilterMenu(false)}
-            />
-          )}
-        </div>
-
-        <div className="section-card flex flex-col items-center py-12 text-center">
-          <h2 className="text-lg font-semibold text-wl-text-primary mb-2">
-            No deliveries found
-          </h2>
-          <p className="text-sm text-wl-text-secondary mb-6 max-w-xs">
-            Try adjusting your filters or place a new order
-          </p>
-          <Link href="/orders" className="btn btn-primary">
-            View Orders
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    return result;
+  }, [deliveries, dateRange, ratingFilter]);
 
   return (
     <div className="page-container animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="page-header">
-          <h1 className="page-title">Delivery History</h1>
-          <p className="page-subtitle">
-            <span className="mono">{deliveries.length}</span> deliveries found
-          </p>
+      <div className="page-header">
+        <h1 className="page-title">Delivery History</h1>
+        <p className="page-subtitle">
+          {data
+            ? `${data.pagination.total} completed delivery${data.pagination.total !== 1 ? 'ies' : ''}`
+            : 'Your past delivered orders'}
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 stagger-1">
+        <div className="flex gap-2 flex-wrap">
+          {DATE_RANGES.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setDateRange(r.id)}
+              className={cn('btn btn-sm', dateRange === r.id ? 'btn-primary' : 'btn-ghost')}
+            >
+              {r.label}
+            </button>
+          ))}
         </div>
-
-        {/* Filter Button */}
-        <div className="relative">
-          <button
-            onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className="btn btn-secondary"
-          >
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
-
-          {showFilterMenu && (
-            <FilterDropdown
-              filters={filters}
-              onFilterChange={setFilters}
-              onClose={() => setShowFilterMenu(false)}
-            />
-          )}
+        <div className="flex gap-2">
+          {(['all', 'rated', 'unrated'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setRatingFilter(v)}
+              className={cn('btn btn-sm', ratingFilter === v ? 'btn-primary' : 'btn-ghost')}
+            >
+              {v === 'all' ? 'All' : v === 'rated' ? 'Rated' : 'Unrated'}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Deliveries List */}
-      <div className="flex flex-col gap-3">
-        {deliveries.map((delivery, index) => (
-          <Link
-            key={delivery.id}
-            href={`/orders/${delivery.id}`}
-          >
-            <div
-              className={cn(
-                'card-accent group cursor-pointer',
-                'animate-fade-in',
-                `stagger-${Math.min(index + 1, 6)}`,
-                getStatusAccentClass(delivery.status)
-              )}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* Left: Date + Order */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-wl-text-tertiary">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span className="text-xs mono">
-                      {delivery.createdAt.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-base font-semibold text-wl-text-primary group-hover:text-wl-primary-400 transition-colors">
-                    Order {delivery.orderNumber}
-                  </p>
-                  <div className={cn('status-badge', getStatusBadgeClass(delivery.status))}>
-                    <span className="status-badge-dot" />
-                    {getStatusLabel(delivery.status)}
-                  </div>
-                </div>
+      {/* Content */}
+      <div className="stagger-2">
+        {loading && <OrderListSkeleton count={4} />}
 
-                {/* Center: Items */}
-                <div className="flex flex-col gap-1">
-                  <p className="label mb-1">Items</p>
-                  {delivery.items.slice(0, 2).map((item) => (
-                    <p key={item.id} className="text-sm text-wl-text-primary">
-                      <span className="mono">{item.quantity}x</span> {item.name}
-                    </p>
-                  ))}
-                  {delivery.items.length > 2 && (
-                    <p className="text-xs text-wl-text-tertiary">
-                      +{delivery.items.length - 2} more
-                    </p>
-                  )}
-                </div>
+        {!loading && error && (
+          <ErrorMessage message={error.message} onRetry={refetch} />
+        )}
 
-                {/* Right: Rating + Price */}
-                <div className="flex flex-col justify-between">
-                  <div>
-                    {delivery.rating ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn(
-                                'w-3.5 h-3.5',
-                                i < Math.round(delivery.rating!.driverRating)
-                                  ? 'fill-wl-warning-500 text-wl-warning-500'
-                                  : 'text-wl-neutral-700'
-                              )}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs font-medium text-wl-text-secondary mono">
-                          {delivery.rating.driverRating.toFixed(1)}
+        {!loading && !error && filtered.length === 0 && (
+          <EmptyState
+            icon={<Package size={24} />}
+            title="No deliveries found"
+            description={
+              dateRange !== 'all'
+                ? 'No deliveries in the selected time range.'
+                : 'Your completed deliveries will appear here.'
+            }
+          />
+        )}
+
+        {!loading && !error && filtered.length > 0 && (
+          <div className="flex flex-col gap-4">
+            {filtered.map((delivery) => {
+              const deliveredAt = delivery.actualDelivery ?? delivery.proofOfDelivery?.deliveredAt;
+              const orderNumber = delivery.externalOrderNumber ?? `#${delivery.id.slice(-8).toUpperCase()}`;
+
+              return (
+                <div key={delivery.id} className="section-card hover:border-wl-primary-500/30 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-wl-text-primary mono">{orderNumber}</p>
+                      <div className="flex items-center gap-1.5 mt-1 text-sm text-wl-text-secondary">
+                        <MapPin size={12} className="flex-shrink-0 text-wl-text-tertiary" />
+                        <span>
+                          {delivery.addressLine1}, {delivery.city}
                         </span>
                       </div>
-                    ) : (
-                      <p className="text-xs text-wl-text-tertiary">Not rated</p>
+                    </div>
+                    <span
+                      className={cn(
+                        'status-badge flex-shrink-0',
+                        getStatusVariant(delivery.status) === 'complete' && 'status-complete',
+                        getStatusVariant(delivery.status) === 'error' && 'status-error',
+                        getStatusVariant(delivery.status) === 'warn' && 'status-warn',
+                        getStatusVariant(delivery.status) === 'default' && 'status-default',
+                      )}
+                    >
+                      {getStatusLabel(delivery.status)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-3 text-xs text-wl-text-tertiary">
+                    {deliveredAt && (
+                      <div className="flex items-center gap-1">
+                        <Calendar size={12} />
+                        <span>Delivered {format(new Date(deliveredAt), 'PPP')}</span>
+                      </div>
+                    )}
+                    {delivery.totalPrice != null && (
+                      <span className="mono font-medium text-wl-text-secondary">
+                        ${delivery.totalPrice.toFixed(2)}
+                      </span>
                     )}
                   </div>
 
-                  <div className="text-right mt-3 md:mt-0">
-                    <p className="text-xl font-bold text-wl-text-primary mono">
-                      ${delivery.totalPrice.toFixed(2)}
+                  {delivery.driver && (
+                    <p className="mt-2 text-xs text-wl-text-tertiary">
+                      Driver: <span className="text-wl-text-secondary">{delivery.driver.name}</span>
                     </p>
+                  )}
+
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-wl-border-subtle">
+                    <Link
+                      href={`/orders/${delivery.id}`}
+                      className="btn btn-ghost text-sm"
+                    >
+                      View Details
+                    </Link>
+                    {delivery.status === 'DELIVERED' && !delivery.proofOfDelivery?.recipientName && (
+                      <Link
+                        href={`/orders/${delivery.id}/rate`}
+                        className="btn btn-primary text-sm"
+                      >
+                        <Star size={14} />
+                        Rate Delivery
+                      </Link>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              {/* Address Row */}
-              <div className="mt-4 pt-4 border-t border-wl-border-subtle flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-wl-text-tertiary flex-shrink-0" />
-                <span className="text-xs text-wl-text-tertiary">
-                  {delivery.deliveryAddress.street}, {delivery.deliveryAddress.city},{' '}
-                  {delivery.deliveryAddress.state} {delivery.deliveryAddress.zipCode}
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Load More */}
-      <div className="flex justify-center pt-2">
-        <button className="btn btn-secondary">
-          Load More
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Filter Dropdown ────────────────────────── */
-
-function FilterDropdown({
-  filters,
-  onFilterChange,
-  onClose,
-}: {
-  filters: DeliveryFilter;
-  onFilterChange: (filters: DeliveryFilter) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="section-card absolute right-0 top-full mt-2 z-20 w-52 shadow-lg animate-fade-in">
-      <div className="flex flex-col gap-4">
-        {/* Date Range */}
-        <div>
-          <p className="label mb-2">Date Range</p>
-          <select
-            value={filters.dateRange}
-            onChange={(e) =>
-              onFilterChange({
-                ...filters,
-                dateRange: e.target.value as DeliveryFilter['dateRange'],
-              })
-            }
-            className="input"
-          >
-            <option value="all">All Time</option>
-            <option value="7days">Last 7 Days</option>
-            <option value="30days">Last 30 Days</option>
-            <option value="90days">Last 90 Days</option>
-          </select>
-        </div>
-
-        {/* Status */}
-        <div>
-          <p className="label mb-2">Status</p>
-          <select
-            value={filters.status}
-            onChange={(e) =>
-              onFilterChange({
-                ...filters,
-                status: e.target.value as DeliveryFilter['status'],
-              })
-            }
-            className="input"
-          >
-            <option value="all">All Status</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-
-        <button
-          onClick={() => {
-            onFilterChange({ dateRange: 'all', status: 'all' });
-            onClose();
-          }}
-          className="btn btn-ghost w-full"
-        >
-          Clear Filters
-        </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -633,6 +633,67 @@ async function ordersRoutes(fastify: FastifyInstance): Promise<void> {
     }
   });
 
+  // ── ORDER RATING ─────────────────────────────────────────────
+  // POST /api/v4/orders/:id/rating
+  // Stores customer delivery rating in the order's metadata JSON field.
+  // No dedicated table required — metadata holds the rating object.
+
+  const orderRatingSchema = z.object({
+    driverRating: z.number().int().min(1).max(5),
+    experienceRating: z.number().int().min(1).max(5),
+    categories: z.object({
+      driver: z.number().int().min(1).max(5),
+      timeliness: z.number().int().min(1).max(5),
+      condition: z.number().int().min(1).max(5),
+    }).optional(),
+    feedback: z.string().max(2000).optional(),
+    wouldOrderAgain: z.boolean().optional(),
+  });
+
+  fastify.post("/:id/rating", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      const order = await request.tenantDb.order.findUnique({ where: { id } });
+      if (!order) throw new NotFoundError("Order", id);
+      if (order.shopId !== request.shopId) throw new NotFoundError("Order", id);
+
+      if (order.status !== "DELIVERED") {
+        throw new ValidationError("Rating can only be submitted for delivered orders");
+      }
+
+      let body: z.infer<typeof orderRatingSchema>;
+      try {
+        body = orderRatingSchema.parse(request.body);
+      } catch (err) {
+        throw new ValidationError(err instanceof Error ? err.message : "Invalid rating data");
+      }
+
+      const existingMeta = (order.metadata as Record<string, unknown>) ?? {};
+      if (existingMeta.customerRating) {
+        // Allow re-rating by overwriting
+      }
+
+      const updatedOrder = await request.tenantDb.order.update({
+        where: { id },
+        data: {
+          metadata: {
+            ...existingMeta,
+            customerRating: {
+              ...body,
+              ratedAt: new Date().toISOString(),
+            },
+          },
+        },
+        select: { id: true, metadata: true },
+      });
+
+      return reply.status(201).send({ data: updatedOrder });
+    } catch (err) {
+      throw err;
+    }
+  });
+
   // ── ORDER TIMELINE ──────────────────────────────────────────
 
   fastify.get("/:id/timeline", async (request: FastifyRequest, reply: FastifyReply) => {
