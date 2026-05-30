@@ -42,6 +42,10 @@ model Driver {
   shipments            Shipment[]
   codCollections       CODCollection[]
   driverBehaviorEvents DriverBehaviorEvent[]
+  eldHosRecords        EldHosRecord[]
+  dvirInspections      DvirInspection[]
+  dvirDefects          DvirDefect[]
+  eldEvents            EldEvent[]
 
   @@unique([orgId, phone])
   @@index([orgId, status])

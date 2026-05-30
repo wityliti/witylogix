@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useDVIR } from "@/hooks/use-eld";
+import { useDVIR, useDvirInspections } from "@/hooks/use-eld";
 import { DVIRForm } from "@/components/eld/dvir-form";
-import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { useApiMutation } from "@/hooks/use-api";
 import { useToast } from "@/components/ui/toast";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -16,70 +16,30 @@ import {
   CheckCircle,
   AlertTriangle,
   Calendar,
-  Search,
   Plus,
   Eye,
-  Download,
-  Filter,
   Wrench,
-  TrendingDown,
 } from "lucide-react";
 
 type DefectStatus = "REPORTED" | "ACKNOWLEDGED" | "REPAIRED" | "CERTIFIED";
-type InspectionStatus = "PASSED" | "FAILED";
-
-interface InspectionHistory {
-  id: string;
-  vehicleNumber: string;
-  driverId: string;
-  driverName: string;
-  type: "PRE_TRIP" | "POST_TRIP";
-  status: InspectionStatus;
-  date: string;
-  defectsCount: number;
-  criticalDefects: number;
-}
-
-const MOCK_INSPECTION_HISTORY: InspectionHistory[] = [
-  {
-    id: "ins-1",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "PRE_TRIP",
-    status: "PASSED",
-    date: new Date(Date.now() - 86400000).toISOString(),
-    defectsCount: 0,
-    criticalDefects: 0,
-  },
-  {
-    id: "ins-2",
-    vehicleNumber: "WTY-4501",
-    driverId: "drv-1",
-    driverName: "Carlos Martinez",
-    type: "POST_TRIP",
-    status: "FAILED",
-    date: new Date(Date.now() - 43200000).toISOString(),
-    defectsCount: 2,
-    criticalDefects: 0,
-  },
-];
 
 export default function DVIRPage() {
-  const { defects, isLoading: defectsLoading, updateDefectStatus } = useDVIR();
-  const { items: data, loading, error, refetch, pagination } = useApiList<{ id: string; number: string }>("/api/v4/eld/dvir");
-  const { execute: submitInspection } = useApiMutation('POST', '/api/v4/eld/dvir');
+  const { defects, isLoading: defectsLoading, error: defectsError, refetch: refetchDefects, updateDefectStatus } = useDVIR();
+  const { items: inspections, loading: inspectionsLoading, error: inspectionsError, refetch: refetchInspections } = useDvirInspections();
+  const { execute: submitInspection } = useApiMutation("POST", "/api/v4/eld/dvir");
   const { addToast } = useToast();
 
-  if (loading) return <TableSkeleton rows={10} columns={6} />;
-  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
-
   const [showForm, setShowForm] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("WTY-4501");
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("");
   const [inspectionType, setInspectionType] = useState<"PRE_TRIP" | "POST_TRIP">("PRE_TRIP");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<DefectStatus | "ALL">("ALL");
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
+
+  const loading = defectsLoading && inspectionsLoading;
+
+  if (loading) return <TableSkeleton rows={10} columns={6} />;
+  if (defectsError) return <ErrorState message={defectsError.message} onRetry={refetchDefects} />;
 
   const filteredDefects = useMemo(() => {
     let result = defects;
@@ -97,15 +57,23 @@ export default function DVIRPage() {
   }, [defects, filterStatus, searchQuery]);
 
   const filteredHistory = useMemo(() => {
-    let result = MOCK_INSPECTION_HISTORY;
-    if (selectedVehicle) {
-      result = result.filter((h) => h.vehicleNumber === selectedVehicle);
-    }
-    return result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedVehicle]);
+    if (!selectedVehicle) return inspections;
+    return inspections
+      .filter((h) => h.vehicleNumber === selectedVehicle)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inspections, selectedVehicle]);
+
+  const uniqueVehicles = useMemo(() => {
+    const seen = new Set<string>();
+    return inspections.filter((i) => {
+      if (seen.has(i.vehicleNumber)) return false;
+      seen.add(i.vehicleNumber);
+      return true;
+    });
+  }, [inspections]);
 
   const criticalDefectsCount = filteredDefects.filter((d) => d.severity === "CRITICAL").length;
-  const openDefectsCount = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
+  const openDefectsCount     = filteredDefects.filter((d) => d.status !== "CERTIFIED").length;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] space-y-6 p-6">
@@ -235,7 +203,9 @@ export default function DVIRPage() {
 
                         <select
                           value={defect.status}
-                          onChange={(e) => updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })}
+                          onChange={(e) =>
+                            updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })
+                          }
                           className="h-8 px-2 text-xs rounded bg-[#1a1a2e] border border-[#1e1e2e] text-white"
                         >
                           <option value="REPORTED">Reported</option>
@@ -273,26 +243,37 @@ export default function DVIRPage() {
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                   className="w-full h-9 px-3 rounded-lg border border-[#1e1e2e] bg-[#1a1a2e] text-white text-left flex items-center justify-between hover:bg-[#0a0a0f] transition-colors text-sm"
                 >
-                  <span>Vehicle: {selectedVehicle}</span>
+                  <span>
+                    {selectedVehicle ? `Vehicle: ${selectedVehicle}` : "All vehicles"}
+                  </span>
                 </button>
 
                 {showVehicleSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg">
-                    {data.map((vehicle) => (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-10 bg-[#1a1a2e] border border-[#1e1e2e] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <button
+                      onClick={() => { setSelectedVehicle(""); setShowVehicleSearch(false); }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e]",
+                        !selectedVehicle ? "bg-blue-500/10 text-blue-400" : "text-gray-400 hover:bg-[#0a0a0f]"
+                      )}
+                    >
+                      All vehicles
+                    </button>
+                    {uniqueVehicles.map((vehicle) => (
                       <button
                         key={vehicle.id}
                         onClick={() => {
-                          setSelectedVehicle(vehicle.number);
+                          setSelectedVehicle(vehicle.vehicleNumber);
                           setShowVehicleSearch(false);
                         }}
                         className={cn(
                           "w-full text-left px-3 py-2 text-xs transition-colors border-b border-[#1e1e2e] last:border-0",
-                          selectedVehicle === vehicle.number
+                          selectedVehicle === vehicle.vehicleNumber
                             ? "bg-blue-500/10 text-blue-400"
                             : "text-gray-400 hover:bg-[#0a0a0f]"
                         )}
                       >
-                        {vehicle.number}
+                        {vehicle.vehicleNumber}
                       </button>
                     ))}
                   </div>
@@ -301,11 +282,19 @@ export default function DVIRPage() {
             </CardHeader>
 
             <CardContent>
-              {filteredHistory.length === 0 ? (
+              {inspectionsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                </div>
+              ) : filteredHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                   <Calendar className="w-12 h-12 mb-3 opacity-50" />
                   <p className="text-sm font-medium">No inspections yet</p>
-                  <p className="text-xs mt-1">Schedule the first inspection for this vehicle</p>
+                  <p className="text-xs mt-1">
+                    {selectedVehicle
+                      ? `No inspections recorded for ${selectedVehicle}`
+                      : "Schedule the first inspection to get started"}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -321,7 +310,10 @@ export default function DVIRPage() {
                               {inspection.type === "PRE_TRIP" ? "📋" : "✓"}{" "}
                               {inspection.type.replace(/_/g, "-")} Inspection
                             </h4>
-                            <Badge variant={inspection.status === "PASSED" ? "success" : "danger"} className="text-xs">
+                            <Badge
+                              variant={inspection.status === "PASSED" ? "success" : "danger"}
+                              className="text-xs"
+                            >
                               {inspection.status === "PASSED" ? "✓ PASSED" : "✗ FAILED"}
                             </Badge>
                           </div>
@@ -366,16 +358,25 @@ export default function DVIRPage() {
         <>
           {/* Form mode */}
           <DVIRForm
-            vehicleNumber={selectedVehicle}
-            driverId="drv-1"
-            driverName="Carlos Martinez"
+            vehicleNumber={selectedVehicle || ""}
+            driverId=""
+            driverName=""
             inspectionType={inspectionType}
             onSubmit={async (data) => {
               try {
                 await submitInspection(data);
-                addToast({ type: 'success', title: 'Inspection submitted', message: 'DVIR inspection has been recorded.' });
+                addToast({
+                  type: "success",
+                  title: "Inspection submitted",
+                  message: "DVIR inspection has been recorded.",
+                });
+                refetchInspections();
               } catch {
-                addToast({ type: 'error', title: 'Submission failed', message: 'Could not submit inspection. Please try again.' });
+                addToast({
+                  type: "error",
+                  title: "Submission failed",
+                  message: "Could not submit inspection. Please try again.",
+                });
               }
               setShowForm(false);
             }}

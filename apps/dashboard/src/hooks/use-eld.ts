@@ -95,6 +95,31 @@ export interface FleetCompliance {
   criticalDefects: number;
 }
 
+export type DriverComplianceStatus = 'COMPLIANT' | 'WARNING' | 'VIOLATION' | 'OFFLINE';
+
+export interface DriverStatusInfo {
+  driverId: string;
+  name: string;
+  status: DriverComplianceStatus;
+  currentDuty: DutyStatus;
+  drivingRemaining: number;
+  breakStatus: 'TAKEN' | 'REQUIRED' | 'NOT_REQUIRED';
+  violations: number;
+  lastUpdate: string;
+}
+
+export interface DvirInspectionSummary {
+  id: string;
+  vehicleNumber: string;
+  driverId: string;
+  driverName: string;
+  type: InspectionType;
+  status: InspectionStatus;
+  date: string;
+  defectsCount: number;
+  criticalDefects: number;
+}
+
 // Hooks
 export const useDriverHOS = (driverId: string | null): UseApiQueryResult<DriverHOS> => {
   return useApiQuery<DriverHOS>(driverId ? `/api/v4/eld/drivers/${driverId}/hos` : null);
@@ -126,6 +151,14 @@ export const useELDEvents = (filters?: ApiFilters): UseApiListResult<EldEvent> =
 
 export const useFleetCompliance = (): UseApiQueryResult<FleetCompliance> => {
   return useApiQuery<FleetCompliance>('/api/v4/eld/compliance');
+};
+
+export const useELDDriverStatus = (filters?: ApiFilters): UseApiListResult<DriverStatusInfo> => {
+  return useApiList<DriverStatusInfo>('/api/v4/eld/drivers', filters);
+};
+
+export const useDvirInspections = (filters?: ApiFilters): UseApiListResult<DvirInspectionSummary> => {
+  return useApiList<DvirInspectionSummary>('/api/v4/eld/dvir', filters);
 };
 
 /**
