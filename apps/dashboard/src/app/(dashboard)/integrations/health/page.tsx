@@ -2,12 +2,9 @@
 
 import { useState } from 'react';
 import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, Badge, Button } from '@/components/ui';
-import { ErrorState } from '@/components/ui/error-state';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import {
   Package,
   Zap,
@@ -94,7 +91,7 @@ export default function IntegrationHealthPage() {
     Map<string, { lastCheck: Date; responseTime: number }>
   >(new Map());
 
-  const { data, loading, error, refetch } = useApiQuery<{ integrations: ApiIntegration[] }>(
+  const { data, refetch } = useApiQuery<{ integrations: ApiIntegration[] }>(
     "/api/v4/integrations",
   );
 
@@ -133,8 +130,9 @@ export default function IntegrationHealthPage() {
   const handleCheckNow = async (integrationId: string) => {
     setRefreshingId(integrationId);
     try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
       const start = Date.now();
-      await api.post(`/api/v4/integrations/${integrationId}/test`, {});
+      await fetch(`${API_BASE}/api/v4/integrations/${integrationId}/test`, { method: "POST" });
       const elapsed = Date.now() - start;
 
       setOverrides((prev) => {
@@ -145,7 +143,7 @@ export default function IntegrationHealthPage() {
 
       await refetch();
     } catch {
-      // ignore test errors — stale data still shows
+      // ignore errors
     } finally {
       setRefreshingId(null);
     }
@@ -297,7 +295,7 @@ export default function IntegrationHealthPage() {
               <Card
                 key={integration.id}
                 className={cn(
-                  "hover:border-wl-border-default transition-colors",
+                  "hover:border-[#1e1e2e] transition-colors",
                   integration.status === "healthy" && "border-emerald-500/20",
                   integration.status === "degraded" && "border-amber-500/20",
                   integration.status === "down" && "border-red-500/20"
@@ -365,7 +363,7 @@ export default function IntegrationHealthPage() {
                   </div>
 
                   {/* Progress bar for uptime */}
-                  <div className={cn("w-full h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
+                  <div className={cn("w-full h-1.5 bg-[#1a1a2e] rounded-full overflow-hidden")}>
                     <div
                       className={cn(
                         "h-full transition-all",

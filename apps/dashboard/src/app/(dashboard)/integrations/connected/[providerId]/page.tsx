@@ -207,7 +207,7 @@ export default function IntegrationDetailPage() {
           {usageMetrics.map((metric) => (
             <Card
               key={`${metric.label}-${metric.period}`}
-              className="bg-wl-bg-elevated border-wl-border-default"
+              className="bg-[#1a1a2e] border-[#1e1e2e]"
             >
               <CardContent className="pt-6">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
@@ -267,9 +267,10 @@ export default function IntegrationDetailPage() {
                   className="w-full justify-center"
                   onClick={async () => {
                     try {
-                      const result = await api.post<{ message?: string }>(
-                        `/api/v4/integrations/${connectionId}/test`,
-                        {}
+                      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+                      const response = await fetch(
+                        `${API_BASE}/api/v4/integrations/${connectionId}/test`,
+                        { method: "POST" }
                       );
                       setShowTestResult({
                         success: true,
@@ -415,9 +416,9 @@ export default function IntegrationDetailPage() {
                       </button>
 
                       {isExpanded && error.stackTrace && (
-                        <div className="border-t border-red-500/20 p-3 bg-wl-bg-root">
-                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-wl-bg-elevated p-2 rounded border border-wl-border-default">
-                            {error.stackTrace}
+                        <div className="border-t border-red-500/20 p-3 bg-[#0a0a0f]">
+                          <pre className="text-xs text-gray-400 font-mono overflow-auto bg-[#1a1a2e] p-2 rounded border border-[#1e1e2e]">
+                            {trace}
                           </pre>
                         </div>
                       )}
