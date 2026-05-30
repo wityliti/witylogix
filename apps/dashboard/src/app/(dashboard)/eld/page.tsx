@@ -178,10 +178,10 @@ export default function ELDOverviewPage() {
                       onClick={() => setSelectedDriver(driver.driverId)}
                       className={cn(
                         "p-3 rounded-lg border transition-all text-left",
-                        "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
+                        "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
                         selectedDriver === driver.driverId
                           ? "border-blue-500/50 bg-blue-500/5"
-                          : "border-wl-border-default"
+                          : "border-[#1e1e2e]"
                       )}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -236,7 +236,7 @@ export default function ELDOverviewPage() {
                         )}
                       </div>
 
-                      <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-wl-border-default">
+                      <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-[#1e1e2e]">
                         Updated {new Date(driver.lastUpdate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",

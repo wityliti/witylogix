@@ -212,12 +212,16 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## ELD (9 mock signals)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| ELD Overview | `/eld` | 7 | ⬜ |
-| DVIR | `/eld/dvir` | 2 | ⬜ |
-| HOS | `/eld/hos` | 0 | ✅ |
+## ELD (9 → 0 mock signals) ✅ WIT-502
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| ELD Overview | `/eld` | 7 | 0 | ✅ |
+| DVIR | `/eld/dvir` | 2 | 0 | ✅ |
+| HOS | `/eld/hos` | 0 | 0 | ✅ |
+
+**New endpoints**: `GET /api/v4/eld/compliance`, `GET /api/v4/eld/drivers`, `GET /api/v4/eld/drivers/:id/hos`, `GET /api/v4/eld/violations`, `GET /api/v4/eld/events`, `GET /api/v4/eld/defects`, `PATCH /api/v4/eld/defects/status`, `PATCH /api/v4/eld/defects/:id/status`, `GET /api/v4/eld/dvir`, `POST /api/v4/eld/dvir`
+**New Prisma models**: `EldHosRecord`, `DvirInspection`, `DvirDefect`, `EldEvent`
+**Migration**: `20260530_eld_dvir_hos` (4 tables + RLS policies)
 
 ---
 
@@ -306,6 +310,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 |--------|--------|---------|-------------|-----------------|-------------------|----|
 | WIT-462 | `feat/WIT-462-dashboard-home-production` | Home / Dashboard | `home/page.tsx` | none (existing endpoints) | 3→0 | #TBD |
 | WIT-501 | `feat/WIT-501-dashboard-admin-production` | Admin (all pages) | 14 pages | GET /admin/activity, /admin/queues, /admin/queues/:name/jobs, /admin/system, /admin/integrations, /admin/test-stats | 105→0 | pending |
+| WIT-502 | `feat/WIT-502-dashboard-eld-production` | ELD (overview + DVIR) | `eld/page.tsx`, `eld/dvir/page.tsx` | 10 new ELD endpoints + 4 Prisma models | 9→0 | pending |
 
 ---
 
@@ -315,7 +320,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 |----------|---------|-------------|-----------|
 | 1 | Home | 3→0 ✅ | Low |
 | 2 | Admin (all pages) | 105→0 ✅ | High |
-| 3 | ELD (overview + DVIR) | 9 | Medium |
+| 3 | ELD (overview + DVIR) | 9→0 ✅ | Medium |
 | 4 | AI route-efficiency | 9 | Medium |
 | 5 | Integrations (connected provider, routing) | 11 | Medium |
 | 6 | Healthcare records | 6 | Low |
