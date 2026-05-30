@@ -1,0 +1,124 @@
+// ─── ELD / HOS / DVIR ───────────────────────────────────────────
+// Electronic Logging Device compliance for fleet operators.
+// Covers Hours-of-Service (HOS) records, Driver Vehicle Inspection
+// Reports (DVIR), defect tracking, and ELD event audit logs.
+//
+// All models are org-scoped (multi-shop orgs share one ELD configuration).
+
+// Daily HOS record per driver. One record per driver per calendar day.
+model EldHosRecord {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId               String   @map("org_id") @db.Uuid
+  driverId            String   @map("driver_id") @db.Uuid
+
+  // Current duty status snapshot
+  currentStatus       String   @default("OFF_DUTY") @map("current_status") // OFF_DUTY | SLEEPER | DRIVING | ON_DUTY
+  drivingMinutesToday Int      @default(0) @map("driving_minutes_today")
+  onDutyMinutesToday  Int      @default(0) @map("on_duty_minutes_today")
+  cycleMinutesUsed    Int      @default(0) @map("cycle_minutes_used")  // running 8-day cycle total
+  breakStatus         String   @default("NOT_REQUIRED") @map("break_status") // TAKEN | REQUIRED | NOT_REQUIRED
+  lastStatusChangeAt  DateTime @default(now()) @map("last_status_change_at")
+
+  isViolation         Boolean  @default(false) @map("is_violation")
+  violationType       String?  @map("violation_type") // HOURS_EXCEEDED | NO_BREAK | FATIGUE | FALSIFIED | LOGGED_EDIT
+
+  personalConveyance  Boolean  @default(false) @map("personal_conveyance")
+  yardMove            Boolean  @default(false) @map("yard_move")
+
+  recordDate          DateTime @default(now()) @map("record_date") @db.Date
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  driver       Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  events       EldEvent[]
+
+  @@unique([orgId, driverId, recordDate])
+  @@index([orgId, currentStatus])
+  @@index([orgId, recordDate])
+  @@index([driverId, recordDate])
+  @@map("eld_hos_records")
+}
+
+// Vehicle inspection report (pre-trip or post-trip).
+model DvirInspection {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId          String   @map("org_id") @db.Uuid
+  vehicleNumber  String   @map("vehicle_number")
+  vehicleId      String?  @map("vehicle_id") @db.Uuid
+  driverId       String   @map("driver_id") @db.Uuid
+
+  type           String   // PRE_TRIP | POST_TRIP
+  status         String   // PASSED | FAILED
+  items          Json     @default("[]")
+  signatureUrl   String?  @map("signature_url")
+  photos         String[] @default([])
+
+  inspectedAt    DateTime @default(now()) @map("inspected_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  driver       Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  defects      DvirDefect[]
+
+  @@index([orgId, vehicleNumber])
+  @@index([orgId, inspectedAt])
+  @@map("dvir_inspections")
+}
+
+// Individual defect reported during a DVIR inspection or ad-hoc.
+model DvirDefect {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId         String    @map("org_id") @db.Uuid
+  inspectionId  String?   @map("inspection_id") @db.Uuid
+
+  vehicleNumber String    @map("vehicle_number")
+  vehicleId     String?   @map("vehicle_id") @db.Uuid
+  component     String
+  description   String
+  severity      String    // CRITICAL | MAJOR | MINOR
+  status        String    @default("REPORTED") // REPORTED | ACKNOWLEDGED | REPAIRED | CERTIFIED
+
+  driverId      String    @map("driver_id") @db.Uuid
+
+  mechanicId    String?   @map("mechanic_id") @db.Uuid
+  mechanicName  String?   @map("mechanic_name")
+  certifiedAt   DateTime? @map("certified_at")
+  photoUrl      String?   @map("photo_url")
+
+  reportedAt    DateTime  @default(now()) @map("reported_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  organization Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  driver       Driver          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  inspection   DvirInspection? @relation(fields: [inspectionId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, status])
+  @@index([orgId, severity])
+  @@index([orgId, vehicleNumber])
+  @@map("dvir_defects")
+}
+
+// Audit log of ELD state-change events (status changes, violations, edits).
+model EldEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  driverId  String   @map("driver_id") @db.Uuid
+  hosId     String?  @map("hos_id") @db.Uuid
+
+  type        String // STATUS_CHANGE | VIOLATION | EDIT_REQUEST | DVIR_COMPLETION
+  description String
+  data        Json   @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  driver       Driver        @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  hosRecord    EldHosRecord? @relation(fields: [hosId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, createdAt])
+  @@index([driverId, createdAt])
+  @@map("eld_events")
+}
