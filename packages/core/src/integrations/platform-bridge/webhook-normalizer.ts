@@ -3,9 +3,11 @@
  * Converts platform-specific webhook events to unified format
  */
 
+import {
+  PlatformSource,
+} from './types.js';
 import type {
   UnifiedWebhookEvent,
-  PlatformSource,
   UnifiedOrder,
   UnifiedProduct,
   UnifiedCustomer,
@@ -26,11 +28,11 @@ export class WebhookNormalizer {
   ): UnifiedWebhookEvent | null {
     try {
       switch (platform) {
-        case 'woocommerce':
+        case PlatformSource.WOOCOMMERCE:
           return this.normalizeWooCommerceWebhook(topic, payload as any);
-        case 'shopify':
+        case PlatformSource.SHOPIFY:
           return this.normalizeShopifyWebhook(topic, payload as any);
-        case 'magento':
+        case PlatformSource.MAGENTO:
           return this.normalizeMagentoWebhook(topic, payload as any);
         default:
           console.error(`Unknown platform: ${platform}`);
@@ -74,13 +76,13 @@ export class WebhookNormalizer {
       let normalizedData: UnifiedOrder | UnifiedProduct | UnifiedCustomer | null = null;
 
       if (resourceType === 'order' && payload) {
-        const result = DataNormalizer.normalizeOrder('woocommerce', payload);
+        const result = DataNormalizer.normalizeOrder(PlatformSource.WOOCOMMERCE, payload);
         normalizedData = result.data || null;
       } else if (resourceType === 'product' && payload) {
-        const result = DataNormalizer.normalizeProduct('woocommerce', payload);
+        const result = DataNormalizer.normalizeProduct(PlatformSource.WOOCOMMERCE, payload);
         normalizedData = result.data || null;
       } else if (resourceType === 'customer' && payload) {
-        const result = DataNormalizer.normalizeCustomer('woocommerce', payload);
+        const result = DataNormalizer.normalizeCustomer(PlatformSource.WOOCOMMERCE, payload);
         normalizedData = result.data || null;
       }
 
@@ -90,7 +92,7 @@ export class WebhookNormalizer {
 
       return {
         id: `wc-webhook-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        platform: 'woocommerce',
+        platform: PlatformSource.WOOCOMMERCE,
         topic,
         eventType,
         resourceType,
@@ -141,13 +143,13 @@ export class WebhookNormalizer {
       let normalizedData: UnifiedOrder | UnifiedProduct | UnifiedCustomer | null = null;
 
       if (resourceType === 'order' && payload) {
-        const result = DataNormalizer.normalizeOrder('shopify', payload);
+        const result = DataNormalizer.normalizeOrder(PlatformSource.SHOPIFY, payload);
         normalizedData = result.data || null;
       } else if (resourceType === 'product' && payload) {
-        const result = DataNormalizer.normalizeProduct('shopify', payload);
+        const result = DataNormalizer.normalizeProduct(PlatformSource.SHOPIFY, payload);
         normalizedData = result.data || null;
       } else if (resourceType === 'customer' && payload) {
-        const result = DataNormalizer.normalizeCustomer('shopify', payload);
+        const result = DataNormalizer.normalizeCustomer(PlatformSource.SHOPIFY, payload);
         normalizedData = result.data || null;
       }
 
@@ -157,7 +159,7 @@ export class WebhookNormalizer {
 
       return {
         id: `shopify-webhook-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        platform: 'shopify',
+        platform: PlatformSource.SHOPIFY,
         topic,
         eventType,
         resourceType,
@@ -194,10 +196,10 @@ export class WebhookNormalizer {
    * Get unified topic from platform-specific topic
    */
   static getUnifiedTopic(platform: PlatformSource, topic: string): string {
-    if (platform === 'woocommerce') {
+    if (platform === PlatformSource.WOOCOMMERCE) {
       // WC: order.created → unified: order.created
       return topic;
-    } else if (platform === 'shopify') {
+    } else if (platform === PlatformSource.SHOPIFY) {
       // Shopify: orders/created → unified: order.created
       const [resource, action] = topic.split('/');
       const singularResource = resource.replace(/s$/, ''); // Remove trailing 's'
@@ -213,17 +215,17 @@ export class WebhookNormalizer {
   static identifyPlatform(headers: Record<string, string>): PlatformSource | null {
     // Check for Shopify headers
     if (headers['x-shopify-shop-id'] || headers['x-shopify-hmac-sha256']) {
-      return 'shopify';
+      return PlatformSource.SHOPIFY;
     }
 
     // Check for WooCommerce headers
     if (headers['x-wc-webhook-id'] || headers['x-wc-webhook-topic']) {
-      return 'woocommerce';
+      return PlatformSource.WOOCOMMERCE;
     }
 
     // Check for Magento headers
     if (headers['x-magento-webhook-id']) {
-      return 'magento';
+      return PlatformSource.MAGENTO;
     }
 
     return null;
@@ -240,11 +242,11 @@ export class WebhookNormalizer {
   ): boolean {
     try {
       switch (platform) {
-        case 'shopify':
+        case PlatformSource.SHOPIFY:
           return this.verifyShopifySignature(payload, signature, secret);
-        case 'woocommerce':
+        case PlatformSource.WOOCOMMERCE:
           return this.verifyWooCommerceSignature(payload, signature, secret);
-        case 'magento':
+        case PlatformSource.MAGENTO:
           return this.verifyMagentoSignature(payload, signature, secret);
         default:
           return false;

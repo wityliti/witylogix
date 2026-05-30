@@ -85,7 +85,7 @@ interface GrubhubQuoteResponse {
 }
 
 export class GrubhubClient extends LastMileAdapter {
-  private api_key: string;
+  // api_key is inherited from LastMileAdapter as protected
   private oauth_token?: string;
   private oauth_client_id?: string;
   private oauth_client_secret?: string;
@@ -158,7 +158,7 @@ export class GrubhubClient extends LastMileAdapter {
     if (this.oauth_token) {
       headers.Authorization = `Bearer ${this.oauth_token}`;
     } else {
-      headers['X-Api-Key'] = this.api_key;
+      headers['X-Api-Key'] = this.api_key ?? '';
     }
 
     return headers;
@@ -233,7 +233,7 @@ export class GrubhubClient extends LastMileAdapter {
                 last_name: data.driver.name.split(' ')[1] || '',
                 phone: data.driver.phone,
                 vehicle: {
-                  type: data.driver.vehicle.type,
+                  type: (data.driver.vehicle.type || 'car') as 'car' | 'bike' | 'scooter' | 'truck',
                   license_plate: data.driver.vehicle.license_plate,
                 },
                 status: 'on_delivery',
@@ -313,7 +313,7 @@ export class GrubhubClient extends LastMileAdapter {
                 last_name: data.driver.name.split(' ')[1] || '',
                 phone: data.driver.phone,
                 vehicle: {
-                  type: data.driver.vehicle.type,
+                  type: (data.driver.vehicle.type || 'car') as 'car' | 'bike' | 'scooter' | 'truck',
                   license_plate: data.driver.vehicle.license_plate,
                 },
                 status: 'on_delivery',

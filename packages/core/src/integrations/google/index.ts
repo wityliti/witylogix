@@ -21,7 +21,6 @@ export {
 export type {
   GeocodingResult,
   DistanceResult,
-  DirectionsResult,
   Route,
   Leg,
   Step,
@@ -33,8 +32,9 @@ export type {
   CoverageStats,
   CalendarEvent,
   CalendarSyncResult,
-  OAuth2Config,
   OAuth2Token,
   GoogleMapsError,
-  RateLimitInfo,
 } from './types.js';
+// GoogleDirectionsResult and GoogleOAuth2Config are re-exported under distinct names
+// to avoid collision with traffic/types.ts DirectionsResult and ecommerce OAuth2Config.
+export type { DirectionsResult as GoogleDirectionsResult, OAuth2Config as GoogleOAuth2Config, RateLimitInfo as GoogleRateLimitInfo } from './types.js';
