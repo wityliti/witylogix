@@ -1,7 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
+import { useApiList } from '@/hooks/use-api';
+import { cn } from '@/lib/utils';
+import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,8 +55,19 @@ export default function RoutingIntegrationsPage() {
     apiCalls: items.reduce((s, i) => s + i.apiCallsCount, 0),
   }), [items]);
 
-  if (loading && items.length === 0) return <LoadingSkeleton />;
-  if (error && items.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+  const [comparisonResults, setComparisonResults] = useState<
+    Record<string, { distance: string; duration: string; eta: string }> | null
+  >(null);
+
+  const selected = providers.find((p) => p.slug === selectedSlug) ?? null;
+  const installed = providers.filter((p) => p.installed);
+  const active = installed.filter((p) => p.isEnabled && p.healthStatus !== 'DOWN' && p.healthStatus !== 'DEGRADED');
+  const errors = installed.filter((p) => p.healthStatus === 'DOWN' || p.healthStatus === 'DEGRADED');
 
   return (
     <>
@@ -98,56 +111,122 @@ export default function RoutingIntegrationsPage() {
           })}
         </div>
 
-        <Card className="bg-wl-bg-surface border-wl-border-default">
+        {/* Route Comparison */}
+        <Card>
           <CardHeader>
-            <CardTitle>Routing Providers</CardTitle>
+            <CardTitle>Route Comparison Tool</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            {items.length === 0 ? (
-              <div className="p-12 text-center">
-                <Route className="w-12 h-12 text-wl-text-muted mx-auto mb-4 opacity-40" />
-                <p className="text-wl-text-secondary mb-1">No routing providers connected</p>
-                <p className="text-sm text-wl-text-muted mb-6 max-w-sm mx-auto">
-                  Connect Valhalla, VROOM, Routific, OptimoRoute, HERE Maps, and more to optimize
-                  delivery routes and reduce fuel costs.
-                </p>
-                <Link href="/integrations/marketplace?category=ROUTING">
-                  <Button variant="primary">Browse Marketplace</Button>
-                </Link>
+          <div className={cn("p-4 pt-0")}>
+            <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4 mb-4")}>
+              <div>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                  Origin
+                </label>
+                <input
+                  type="text"
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  className={cn(
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                  )}
+                />
               </div>
-            ) : (
-              <div className="divide-y divide-wl-border-default">
-                {items.map((conn) => (
-                  <div
-                    key={conn.id}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-wl-bg-overlay transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-wl-bg-overlay flex items-center justify-center text-xs font-bold text-wl-text-secondary uppercase">
-                        {conn.providerName.slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-wl-text-primary">{conn.providerName}</p>
-                        <p className="text-xs text-wl-text-muted">Last sync: {timeSince(conn.lastSyncTime)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-wl-text-muted hidden sm:block">
-                        {conn.apiCallsCount.toLocaleString()} calls
-                      </span>
-                      <span className="text-xs text-wl-text-muted hidden md:block">
-                        {conn.uptime.toFixed(1)}% uptime
-                      </span>
-                      <Badge variant={statusVariant(conn.status)} dot>
-                        {conn.status}
-                      </Badge>
-                    </div>
-                  </div>
+              <div>
+                <label className={cn("text-xs font-semibold text-gray-400 block mb-2")}>
+                  Destination
+                </label>
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className={cn(
+                    "w-full px-3 py-2 bg-[#1a1a2e] border border-[#1e1e2e] rounded text-white text-sm outline-none"
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className={cn("flex gap-2 mb-4 flex-wrap items-center justify-between")}>
+              <div className={cn("flex gap-2 flex-wrap")}>
+                {["mapbox", "osrm", "valhalla", "google"].map((pid) => (
+                  <label key={pid} className={cn("flex items-center gap-2")}>
+                    <input
+                      type="checkbox"
+                      checked={compareProviders.includes(pid)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCompareProviders([...compareProviders, pid]);
+                        } else {
+                          setCompareProviders(compareProviders.filter((p) => p !== pid));
+                        }
+                      }}
+                      className={cn("w-4 h-4 rounded border-[#1e1e2e]")}
+                    />
+                    <span className={cn("text-sm text-white")}>
+                      {ROUTING_PROVIDERS.find((p) => p.id === pid)?.name}
+                    </span>
+                  </label>
                 ))}
               </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setComparisonResults(null)}
+                disabled
+              >
+                Compare Routes
+              </Button>
+            </div>
+
+            {comparisonResults ? (
+              <div className={cn("grid grid-cols-1 md:grid-cols-4 gap-4")}>
+                {compareProviders.map((pid) => {
+                  const provider = ROUTING_PROVIDERS.find((p) => p.id === pid);
+                  const comparison = comparisonResults[pid];
+                  if (!provider || !comparison) return null;
+
+                  return (
+                    <Card key={pid} className={cn("bg-[#12121a] border-[#1e1e2e]")}>
+                      <div className={cn("p-3")}>
+                        <h4 className={cn("font-semibold text-white mb-3")}>{provider.name}</h4>
+                        <div className={cn("space-y-2 text-sm")}>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Distance</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.distance}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>Duration</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.duration}</p>
+                          </div>
+                          <div>
+                            <p className={cn("text-xs text-gray-300")}>ETA</p>
+                            <p className={cn("font-semibold text-white")}>{comparison.eta}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={cn("py-8 text-center text-gray-500 text-sm bg-[#12121a] rounded border border-[#1e1e2e]")}>
+                Select providers above and click Compare Routes to see results.
+              </div>
             )}
-          </CardContent>
+          </div>
         </Card>
+
+        {!loading && installed.length === 0 && !error && (
+          <Card>
+            <div className={cn('p-8 text-center space-y-3')}>
+              <p className={cn('text-gray-300 font-medium')}>No routing providers installed</p>
+              <p className={cn('text-xs text-gray-500')}>
+                Select a provider from the catalog above and click Install to get started.
+              </p>
+              <Button variant="primary" size="sm">Browse Catalog</Button>
+            </div>
+          </Card>
+        )}
       </div>
     </>
   );
