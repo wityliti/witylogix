@@ -19,127 +19,27 @@ import {
   BarChart3,
   Mail,
 } from "lucide-react";
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useApiQuery } from '@/hooks/use-api';
 
 interface Integration {
   id: string;
   name: string;
-  category: "payment" | "shipping" | "analytics" | "notification" | "inventory";
+  category: string;
   status: "connected" | "disconnected" | "error";
-  lastSyncTime: string;
+  lastSyncTime: string | null;
   successRate: number;
   errorCount: number;
   totalSyncs: number;
-  errors: Array<{
-    timestamp: string;
-    message: string;
-    code: string;
-  }>;
+  shopName?: string;
+  errors: Array<{ timestamp: string; message: string; code: string }>;
 }
 
-const mockIntegrations: Integration[] = [
-  {
-    id: "stripe-001",
-    name: "Stripe Payments",
-    category: "payment",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:28:45",
-    successRate: 99.95,
-    errorCount: 2,
-    totalSyncs: 4521,
-    errors: [
-      {
-        timestamp: "2026-03-10 11:23:12",
-        message: "Rate limit exceeded",
-        code: "RATE_LIMIT",
-      },
-      {
-        timestamp: "2026-03-09 08:15:33",
-        message: "Connection timeout",
-        code: "TIMEOUT",
-      },
-    ],
-  },
-  {
-    id: "shippo-001",
-    name: "Shippo Logistics",
-    category: "shipping",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:32:10",
-    successRate: 99.88,
-    errorCount: 5,
-    totalSyncs: 3245,
-    errors: [
-      {
-        timestamp: "2026-03-11 16:45:22",
-        message: "Invalid address format",
-        code: "VALIDATION_ERROR",
-      },
-      {
-        timestamp: "2026-03-10 09:12:15",
-        message: "Service unavailable",
-        code: "SERVICE_UNAVAILABLE",
-      },
-    ],
-  },
-  {
-    id: "google-analytics",
-    name: "Google Analytics",
-    category: "analytics",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:15:00",
-    successRate: 99.99,
-    errorCount: 0,
-    totalSyncs: 8912,
-    errors: [],
-  },
-  {
-    id: "sendgrid-001",
-    name: "SendGrid Email",
-    category: "notification",
-    status: "error",
-    lastSyncTime: "2026-03-12 13:45:30",
-    successRate: 87.43,
-    errorCount: 156,
-    totalSyncs: 1203,
-    errors: [
-      {
-        timestamp: "2026-03-12 14:12:45",
-        message: "Authentication failed",
-        code: "AUTH_ERROR",
-      },
-      {
-        timestamp: "2026-03-12 13:58:10",
-        message: "Invalid API key",
-        code: "INVALID_KEY",
-      },
-      {
-        timestamp: "2026-03-12 13:45:30",
-        message: "API key rotated - please update credentials",
-        code: "CREDENTIALS_EXPIRED",
-      },
-    ],
-  },
-  {
-    id: "shopify-inventory",
-    name: "Shopify Inventory Sync",
-    category: "inventory",
-    status: "connected",
-    lastSyncTime: "2026-03-12 14:30:05",
-    successRate: 98.76,
-    errorCount: 12,
-    totalSyncs: 892,
-    errors: [
-      {
-        timestamp: "2026-03-11 10:33:44",
-        message: "Stock level mismatch",
-        code: "INVENTORY_MISMATCH",
-      },
-    ],
-  },
-];
+interface IntegrationsResponse {
+  data: Integration[];
+  pagination: { total: number };
+}
 
 function StatusBadge({ status }: { status: "connected" | "disconnected" | "error" }) {
   const variants: Record<typeof status, any> = {
@@ -147,39 +47,23 @@ function StatusBadge({ status }: { status: "connected" | "disconnected" | "error
     disconnected: "warning",
     error: "danger",
   };
-
   const labels: Record<typeof status, string> = {
     connected: "Connected",
     disconnected: "Disconnected",
     error: "Error",
   };
-
-  const icons: Record<typeof status, any> = {
-    connected: CheckCircle2,
-    disconnected: Clock,
-    error: AlertCircle,
-  };
-
-  const Icon = icons[status];
-
-  return (
-    <Badge variant={variants[status]} dot>
-      {labels[status]}
-    </Badge>
-  );
+  return <Badge variant={variants[status]} dot>{labels[status]}</Badge>;
 }
 
 function CategoryIcon({ category }: { category: string }) {
-  const icons: Record<string, any> = {
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
     payment: Zap,
     shipping: Package,
     analytics: BarChart3,
     notification: Mail,
     inventory: Link,
   };
-
   const Icon = icons[category] || Link;
-
   return <Icon className="w-4 h-4" />;
 }
 
@@ -202,39 +86,27 @@ function IntegrationRow({
           <div className="p-2 bg-[#1a1a2e] rounded-lg">
             <CategoryIcon category={integration.category} />
           </div>
-
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-white">
-              {integration.name}
-            </h4>
+            <h4 className="text-sm font-semibold text-white">{integration.name}</h4>
             <p className="text-xs text-gray-400 mt-0.5">
-              Last sync: {integration.lastSyncTime}
+              {integration.shopName ? `Store: ${integration.shopName} · ` : ""}
+              {integration.lastSyncTime
+                ? `Last sync: ${new Date(integration.lastSyncTime).toLocaleString()}`
+                : "Never synced"}
             </p>
           </div>
-
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-semibold text-white">
-                {integration.successRate}%
-              </p>
+              <p className="text-sm font-semibold text-white">{integration.successRate}%</p>
               <p className="text-xs text-gray-400">Success Rate</p>
             </div>
-
             <div className="text-right min-w-fit">
-              <p className="text-sm font-semibold text-white">
-                {integration.errorCount}
-              </p>
+              <p className="text-sm font-semibold text-white">{integration.errorCount}</p>
               <p className="text-xs text-gray-400">Errors</p>
             </div>
-
             <StatusBadge status={integration.status} />
-
             <div className="ml-2">
-              {expanded ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              )}
+              {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
             </div>
           </div>
         </div>
@@ -244,98 +116,62 @@ function IntegrationRow({
         <div className="px-5 py-4 bg-[#1a1a2e] border-t border-[#1e1e2e]">
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Performance Metrics
-              </p>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Performance Metrics</p>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">
-                    Total Syncs:
-                  </span>
-                  <span className="text-sm font-semibold text-white">
-                    {integration.totalSyncs.toLocaleString()}
-                  </span>
+                  <span className="text-sm text-gray-400">Total Syncs:</span>
+                  <span className="text-sm font-semibold text-white">{integration.totalSyncs.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">
-                    Success Rate:
-                  </span>
-                  <span className={cn(
-                    "text-sm font-semibold",
-                    integration.successRate >= 99 ? "text-emerald-500" : "text-amber-500"
-                  )}>
+                  <span className="text-sm text-gray-400">Success Rate:</span>
+                  <span className={cn("text-sm font-semibold", integration.successRate >= 99 ? "text-emerald-500" : "text-amber-500")}>
                     {integration.successRate}%
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-400">
-                    Error Count:
-                  </span>
-                  <span className={cn(
-                    "text-sm font-semibold",
-                    integration.errorCount === 0 ? "text-emerald-500" : "text-red-500"
-                  )}>
+                  <span className="text-sm text-gray-400">Error Count:</span>
+                  <span className={cn("text-sm font-semibold", integration.errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
                     {integration.errorCount}
                   </span>
                 </div>
               </div>
             </div>
-
             <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Actions
-              </p>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Actions</p>
               <div className="flex gap-2 flex-wrap">
                 <Button variant="secondary" size="sm">
                   <RefreshCw className="w-4 h-4" />
                   Test Connection
                 </Button>
-                <Button variant="ghost" size="sm">
-                  Reconnect
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Settings
-                </Button>
+                <Button variant="ghost" size="sm">Reconnect</Button>
+                <Button variant="ghost" size="sm">Settings</Button>
               </div>
             </div>
           </div>
 
-          {integration.errors.length > 0 && (
+          {integration.errors.length > 0 ? (
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold">
                 Recent Errors ({integration.errors.length})
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {integration.errors.map((error, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-red-600/50 rounded-md border border-red-500/30"
-                  >
+                  <div key={idx} className="p-3 bg-red-600/50 rounded-md border border-red-500/30">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-red-500">
-                          {error.code}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {error.message}
-                        </p>
+                        <p className="text-xs font-semibold text-red-500">{error.code}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{error.message}</p>
                       </div>
-                      <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                        {error.timestamp}
-                      </span>
+                      <span className="text-xs text-gray-400 whitespace-nowrap ml-2">{error.timestamp}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
-
-          {integration.errors.length === 0 && (
+          ) : (
             <div className="p-3 bg-emerald-600/50 rounded-md border border-emerald-500/30 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              <span className="text-sm text-emerald-500">
-                No recent errors. Integration is operating normally.
-              </span>
+              <span className="text-sm text-emerald-500">No recent errors. Integration is operating normally.</span>
             </div>
           )}
         </div>
@@ -348,164 +184,147 @@ export default function IntegrationsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = [
-    { id: "payment", label: "Payment", count: mockIntegrations.filter(i => i.category === "payment").length },
-    { id: "shipping", label: "Shipping", count: mockIntegrations.filter(i => i.category === "shipping").length },
-    { id: "analytics", label: "Analytics", count: mockIntegrations.filter(i => i.category === "analytics").length },
-    { id: "notification", label: "Notifications", count: mockIntegrations.filter(i => i.category === "notification").length },
-    { id: "inventory", label: "Inventory", count: mockIntegrations.filter(i => i.category === "inventory").length },
-  ];
+  const { data: integrationsData, loading, error, refetch } = useApiQuery<IntegrationsResponse>('/api/v4/admin/integrations');
+
+  const allIntegrations = integrationsData?.data ?? [];
+
+  const categories = useMemo(() => {
+    const cats = ["payment", "shipping", "analytics", "notification", "inventory"];
+    return cats.map(id => ({
+      id,
+      label: id.charAt(0).toUpperCase() + id.slice(1),
+      count: allIntegrations.filter(i => i.category === id).length,
+    }));
+  }, [allIntegrations]);
 
   const filteredIntegrations = useMemo(() => {
-    if (!selectedCategory) return mockIntegrations;
-    return mockIntegrations.filter(i => i.category === selectedCategory);
-  }, [selectedCategory]);
+    if (!selectedCategory) return allIntegrations;
+    return allIntegrations.filter(i => i.category === selectedCategory);
+  }, [allIntegrations, selectedCategory]);
 
   const connectedCount = filteredIntegrations.filter(i => i.status === "connected").length;
   const errorCount = filteredIntegrations.filter(i => i.status === "error").length;
-  const avgSuccessRate = (filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) / filteredIntegrations.length).toFixed(2);
+  const avgSuccessRate = filteredIntegrations.length > 0
+    ? (filteredIntegrations.reduce((sum, i) => sum + i.successRate, 0) / filteredIntegrations.length).toFixed(1)
+    : "0";
 
   return (
     <div className="min-h-screen bg-[#12121a]">
       <Header
         title="Integration Health"
-        subtitle="Monitor connected integrations and sync status"
+        subtitle="Monitor connected integrations and sync status across all stores"
         actions={
-          <div className="flex gap-2">
-            <Button variant="secondary" size="md">
-              <Link className="w-4 h-4" />
-              Add Integration
-            </Button>
-          </div>
+          <Button variant="secondary" size="md" onClick={refetch} disabled={loading}>
+            <RefreshCw className={cn("w-4 h-4 mr-1", loading && "animate-spin")} />
+            Refresh
+          </Button>
         }
       />
 
       <div className="p-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-5">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Connected
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-emerald-500">
-                  {connectedCount}
-                </span>
-                <span className="text-sm text-gray-400">
-                  of {filteredIntegrations.length}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-5">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                Average Success Rate
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">
-                  {avgSuccessRate}%
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-5">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                With Errors
-              </p>
-              <div className="flex items-baseline gap-2">
-                <span className={cn(
-                  "text-3xl font-bold",
-                  errorCount === 0 ? "text-emerald-500" : "text-red-500"
-                )}>
-                  {errorCount}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-              !selectedCategory
-                ? "bg-blue-600 text-white"
-                : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
-            )}
-          >
-            All ({mockIntegrations.length})
-          </button>
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id as any)}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                selectedCategory === cat.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
-              )}
-            >
-              {cat.label} ({cat.count})
-            </button>
-          ))}
-        </div>
-
-        {/* Integrations List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Integration Status</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div>
-              {filteredIntegrations.length === 0 ? (
-                <div className="p-6 text-center text-gray-400">
-                  No integrations found in this category.
-                </div>
-              ) : (
-                filteredIntegrations.map(integration => (
-                  <IntegrationRow
-                    key={integration.id}
-                    integration={integration}
-                    expanded={expandedId === integration.id}
-                    onToggle={() =>
-                      setExpandedId(
-                        expandedId === integration.id ? null : integration.id
-                      )
-                    }
-                  />
-                ))
-              )}
+        {loading && allIntegrations.length === 0 ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error.message} onRetry={refetch} />
+        ) : (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="pt-5">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Connected</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-emerald-500">{connectedCount}</span>
+                    <span className="text-sm text-gray-400">of {filteredIntegrations.length}</span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-5">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Avg Success Rate</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-white">{avgSuccessRate}%</span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-5">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">With Errors</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className={cn("text-3xl font-bold", errorCount === 0 ? "text-emerald-500" : "text-red-500")}>
+                      {errorCount}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Health Alert */}
-        {errorCount > 0 && (
-          <Card className="border border-red-600/30 bg-red-600/40">
-            <CardContent className="pt-5">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-red-500">
-                    {errorCount} Integration{errorCount !== 1 ? "s" : ""} Require Attention
-                  </h4>
-                  <p className="text-sm text-gray-400 mt-1">
-                    {errorCount === 1
-                      ? "The SendGrid Email integration has authentication issues. Please update the API credentials."
-                      : "Some integrations have encountered errors. Review and fix the issues to restore full functionality."}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Category Tabs */}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  !selectedCategory ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                )}
+              >
+                All ({allIntegrations.length})
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
+                  )}
+                >
+                  {cat.label} ({cat.count})
+                </button>
+              ))}
+            </div>
+
+            {/* Integrations List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Integration Status</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {filteredIntegrations.length === 0 ? (
+                  <div className="p-6 text-center text-gray-400">
+                    No integrations found{selectedCategory ? ` in the ${selectedCategory} category` : ""}. Integrations are added via the Integrations marketplace.
+                  </div>
+                ) : (
+                  filteredIntegrations.map(integration => (
+                    <IntegrationRow
+                      key={integration.id}
+                      integration={integration}
+                      expanded={expandedId === integration.id}
+                      onToggle={() => setExpandedId(expandedId === integration.id ? null : integration.id)}
+                    />
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {errorCount > 0 && (
+              <Card className="border border-red-600/30 bg-red-600/10">
+                <CardContent className="pt-5">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-red-500">
+                        {errorCount} Integration{errorCount !== 1 ? "s" : ""} Require Attention
+                      </h4>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Review and fix the issues above to restore full integration functionality.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </div>

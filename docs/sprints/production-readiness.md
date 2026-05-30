@@ -263,23 +263,23 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 ---
 
-## Admin (105 mock signals — highest priority after home)
-| Page | Route | Mock Before | Status |
-|------|-------|------------|--------|
-| Admin Overview | `/admin` | 0 | ✅ |
-| **Shops Detail** | `/admin/shops/[id]` | **36** | ⬜ |
-| **Test Dashboard** | `/admin/test-dashboard` | **23** | ⬜ |
-| **Queue Monitor** | `/admin/queues` | **16** | ⬜ |
-| **Integrations** | `/admin/integrations` | **9** | ⬜ |
-| System | `/admin/system` | 8 | ⬜ |
-| API Docs | `/admin/api-docs` | 6 | ⬜ |
-| Users | `/admin/users` | 2 | ⬜ |
-| Customers | `/admin/customers` | 2 | ⬜ |
-| Activity | `/admin/activity` | 0 | ✅ |
-| Audit | `/admin/audit` | 0 | ✅ |
-| Workflows | `/admin/workflows` | 0 | ✅ |
-| Workflows Detail | `/admin/workflows/[id]` | 2 | ⬜ |
-| Design System | `/admin/design-system` | 0 | ✅ |
+## Admin (105 → 0 mock signals) ✅ WIT-501
+| Page | Route | Mock Before | Mock After | Status |
+|------|-------|------------|-----------|--------|
+| Admin Overview | `/admin` | 0 | 0 | ✅ |
+| Shops Detail | `/admin/shops/[id]` | 36 | 0 | ✅ |
+| Test Dashboard | `/admin/test-dashboard` | 23 | 0 | ✅ |
+| Queue Monitor | `/admin/queues` | 16 | 0 | ✅ |
+| Integrations | `/admin/integrations` | 9 | 0 | ✅ |
+| System | `/admin/system` | 8 | 0 | ✅ |
+| API Docs | `/admin/api-docs` | 6 | 0 | ✅ |
+| Users | `/admin/users` | 2 | 0 | ✅ |
+| Customers | `/admin/customers` | 2 | 0 | ✅ |
+| Activity | `/admin/activity` | 0 | 0 | ✅ |
+| Audit | `/admin/audit` | 12 | 0 | ✅ |
+| Workflows | `/admin/workflows` | 0 | 0 | ✅ |
+| Workflows Detail | `/admin/workflows/[id]` | 2 | 0 | ✅ |
+| Design System | `/admin/design-system` | 0 | 0 | ✅ |
 
 ---
 
@@ -305,6 +305,7 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 | Sprint | Branch | Section | Pages Wired | Endpoints Added | Mock Before→After | PR |
 |--------|--------|---------|-------------|-----------------|-------------------|----|
 | WIT-462 | `feat/WIT-462-dashboard-home-production` | Home / Dashboard | `home/page.tsx` | none (existing endpoints) | 3→0 | #TBD |
+| WIT-501 | `feat/WIT-501-dashboard-admin-production` | Admin (all pages) | 14 pages | GET /admin/activity, /admin/queues, /admin/queues/:name/jobs, /admin/system, /admin/integrations, /admin/test-stats | 105→0 | pending |
 
 ---
 
@@ -312,8 +313,8 @@ Scan command: `grep -rniE "mock|dummy|sampleData|hardcoded|fake|lorem" <path> --
 
 | Priority | Section | Mock Signals | Complexity |
 |----------|---------|-------------|-----------|
-| 1 | **Home (this sprint)** | 3→0 | Low |
-| 2 | Admin (shops/[id], test-dashboard, queues) | 105 | High |
+| 1 | Home | 3→0 ✅ | Low |
+| 2 | Admin (all pages) | 105→0 ✅ | High |
 | 3 | ELD (overview + DVIR) | 9 | Medium |
 | 4 | AI route-efficiency | 9 | Medium |
 | 5 | Integrations (connected provider, routing) | 11 | Medium |

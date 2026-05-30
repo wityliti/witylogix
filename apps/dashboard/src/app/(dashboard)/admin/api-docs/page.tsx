@@ -16,9 +16,6 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
 
 interface ApiEndpoint {
   id: string;
@@ -44,7 +41,7 @@ interface ApiEndpoint {
   }>;
 }
 
-const mockEndpoints: ApiEndpoint[] = [
+const API_ENDPOINTS: ApiEndpoint[] = [
   {
     id: "orders-list",
     method: "GET",
@@ -502,10 +499,10 @@ export default function ApiDocsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const tags = Array.from(new Set(mockEndpoints.map(e => e.tag)));
+  const tags = Array.from(new Set(API_ENDPOINTS.map(e => e.tag)));
   const filteredEndpoints = selectedTag
-    ? mockEndpoints.filter(e => e.tag === selectedTag)
-    : mockEndpoints;
+    ? API_ENDPOINTS.filter(e => e.tag === selectedTag)
+    : API_ENDPOINTS;
 
   return (
     <div className="min-h-screen bg-[#12121a]">
@@ -577,7 +574,7 @@ export default function ApiDocsPage() {
                 : "bg-[#1a1a2e] text-gray-400 hover:text-white hover:bg-[#1e1e2e]"
             )}
           >
-            All Endpoints ({mockEndpoints.length})
+            All Endpoints ({API_ENDPOINTS.length})
           </button>
           {tags.map(tag => (
             <button
@@ -591,7 +588,7 @@ export default function ApiDocsPage() {
               )}
             >
               {tag} (
-              {mockEndpoints.filter(e => e.tag === tag).length})
+              {API_ENDPOINTS.filter(e => e.tag === tag).length})
             </button>
           ))}
         </div>
