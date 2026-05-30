@@ -9,6 +9,21 @@ import crypto from 'crypto';
 import { OAuthFlowState, OAuthTokenResponse, OAuthFlowError, ProviderOAuthConfig } from './types';
 import { getSetupConfig } from './integration-setup-registry';
 
+// ─── Internal JSON response shapes ──────────────────────────────
+
+interface OAuthErrorResponse {
+  error?: string;
+  error_description?: string;
+}
+
+interface OAuthTokenJsonResponse {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+}
+
 // ─── In-Memory State Store ──────────────────────────────────────
 
 interface StoredFlowState {
@@ -189,7 +204,7 @@ export class OAuthFlowManager {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = (await response.json().catch(() => ({}))) as OAuthErrorResponse;
         throw new OAuthFlowError(`Token exchange failed: ${response.statusText}`, {
           statusCode: response.status,
           error: errorData.error,
@@ -197,10 +212,10 @@ export class OAuthFlowManager {
         });
       }
 
-      const tokenData = await response.json();
+      const tokenData = (await response.json()) as OAuthTokenJsonResponse;
 
       return {
-        accessToken: tokenData.access_token,
+        accessToken: tokenData.access_token ?? '',
         refreshToken: tokenData.refresh_token,
         expiresIn: tokenData.expires_in,
         tokenType: tokenData.token_type,
@@ -247,18 +262,18 @@ export class OAuthFlowManager {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = (await response.json().catch(() => ({}))) as OAuthErrorResponse;
         throw new OAuthFlowError(`Token refresh failed: ${response.statusText}`, {
           statusCode: response.status,
           error: errorData.error,
         });
       }
 
-      const tokenData = await response.json();
+      const tokenData = (await response.json()) as OAuthTokenJsonResponse;
 
       return {
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token || refreshToken,
+        accessToken: tokenData.access_token ?? '',
+        refreshToken: tokenData.refresh_token ?? refreshToken,
         expiresIn: tokenData.expires_in,
         tokenType: tokenData.token_type,
         scope: tokenData.scope,

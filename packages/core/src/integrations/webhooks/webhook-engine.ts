@@ -23,7 +23,7 @@ import type {
   WebhookConfig,
   RetryPolicy,
   FanOutConfig,
-  DeliveryAnalytics,
+  DeliveryAnalytics as DeliveryAnalyticsShape,
   EndpointHealth,
   DeliveryAttempt,
 } from './webhook-types';
@@ -607,7 +607,7 @@ export class DeliveryAnalytics extends EventEmitter {
   /**
    * Get analytics for time window
    */
-  getAnalytics(timeWindowMs: number = this.windowSize): DeliveryAnalytics | null {
+  getAnalytics(timeWindowMs: number = this.windowSize): DeliveryAnalyticsShape | null {
     const now = Date.now();
     const startTime = new Date(now - timeWindowMs);
     const endTime = new Date(now);

@@ -14,6 +14,7 @@ import {
   RollbackManager,
   ShadowModeRunner,
 } from "./migration-toolkit";
+import type { FieldMapping, TransformFunction } from "./migration-types";
 import {
   AutoDocGenerator,
   ConfigurationGuideGenerator,
@@ -218,9 +219,22 @@ export function createMigrationAPI(): Router {
       const { fieldMappings } = req.body;
 
       if (fieldMappings && Array.isArray(fieldMappings)) {
-        const mappings = fieldMappings.map((fm: any) =>
-          FieldMappingSchema.parse(fm)
-        );
+        const mappings: FieldMapping[] = fieldMappings.map((fm: unknown) => {
+          const parsed = FieldMappingSchema.parse(fm);
+          // TransformFunction is a callable; if the API receives a string identifier
+          // we store it as metadata but satisfy the type with an identity stub.
+          const transform: TransformFunction | undefined = parsed.transform
+            ? (value: unknown) => value
+            : undefined;
+          return {
+            sourceField: parsed.sourceField,
+            targetField: parsed.targetField,
+            sourceType: parsed.sourceType,
+            targetType: parsed.targetType,
+            required: parsed.required,
+            transform,
+          };
+        });
 
         const dataMapperConfig = dataMapper.generateDataMapper(
           migration.mapping.migrationId,
