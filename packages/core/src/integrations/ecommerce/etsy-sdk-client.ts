@@ -233,6 +233,7 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
     info: (msg: string, data?: unknown) => console.info(`[EtsySdk] ${msg}`, data),
     error: (msg: string, error?: unknown) => console.error(`[EtsySdk] ${msg}`, error),
     warn: (msg: string, data?: unknown) => console.warn(`[EtsySdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) => console.debug(`[EtsySdk] ${msg}`, data),
   };
 
   /**
@@ -737,7 +738,7 @@ export class EtsySdkClient extends ECommerceAdapterBase implements IECommerceAda
       variants: [
         {
           id: listing.listing_id.toString(),
-          sku: listing.sku,
+          sku: listing.sku ?? "",
           price: parseFloat(listing.price || "0"),
           inventory: {
             variantId: listing.listing_id.toString(),

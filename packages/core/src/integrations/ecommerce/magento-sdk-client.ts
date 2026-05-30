@@ -250,9 +250,9 @@ export class MagentoSDKClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData: MagentoErrorResponse = await response.json().catch(() => ({
+        const errorData = await response.json().catch((): MagentoErrorResponse => ({
           message: response.statusText,
-        }));
+        })) as MagentoErrorResponse;
 
         throw new MagentoAPIError(
           response.status,

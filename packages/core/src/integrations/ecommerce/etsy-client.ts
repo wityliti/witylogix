@@ -661,7 +661,7 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
       variants: [
         {
           id: listing.listing_id.toString(),
-          sku: listing.sku,
+          sku: listing.sku ?? "",
           price: parseFloat(listing.price || "0"),
           inventory: {
             variantId: listing.listing_id.toString(),

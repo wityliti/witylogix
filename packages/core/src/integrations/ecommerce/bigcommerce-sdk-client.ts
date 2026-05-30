@@ -424,12 +424,7 @@ export class BigCommerceSDKClient extends EventEmitter {
       redirect_uri: oauthConfig.redirectUri,
     });
 
-    return this.makeRequest<BigCommerceOAuthToken>("POST", url, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: body.toString(),
-    });
+    return this.request<BigCommerceOAuthToken>("POST", url, body.toString());
   }
 
   /**

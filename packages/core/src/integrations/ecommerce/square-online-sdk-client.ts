@@ -348,6 +348,7 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
     info: (msg: string, data?: unknown) => console.info(`[SquareSdk] ${msg}`, data),
     error: (msg: string, error?: unknown) => console.error(`[SquareSdk] ${msg}`, error),
     warn: (msg: string, data?: unknown) => console.warn(`[SquareSdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) => console.debug(`[SquareSdk] ${msg}`, data),
   };
 
   /**
